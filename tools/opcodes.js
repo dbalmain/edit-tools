@@ -77,6 +77,20 @@ const OP = {
   BLANK_EXTRA: 72,
 
   BAG_ONLY_FIELDS: 80,
+
+  // Per-frame operands. Shared kind programs read these instead of
+  // baking open/close/sep/flags into the instruction stream.
+  ARG: 81,
+  ARGI: 82,
+  CTEXT: 83,
+  CPEEK: 84,
+  CTOKEN: 85,
+  CFIELD: 86,
+  CBAG_FIELD: 87,
+  CBAG_KIND: 88,
+  CBAG_TOKEN: 89,
+  CBAG_FMT: 90,
+  CBAG_ONLY: 91,
 };
 
 const HAS_IMM = new Set([
@@ -98,9 +112,10 @@ const HAS_IMM = new Set([
   OP.BAG_TOKEN,
   OP.BAG_INDEX,
   OP.BAG_FMT_KIND,
-  OP.HOST_CHAIN,
   OP.DSTORE,
   OP.DLOAD,
+  OP.ARG,
+  OP.CBAG_ONLY,
 ]);
 
 const OP_NAMES = {};

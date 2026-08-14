@@ -27,6 +27,8 @@ pub struct Bytecode {
     #[serde(default)]
     pub entry: BTreeMap<String, usize>,
     #[serde(default)]
+    pub args: BTreeMap<String, Vec<i32>>,
+    #[serde(default)]
     pub kinds: BTreeMap<String, String>,
     #[serde(default)]
     pub defaults: Defaults,
@@ -177,6 +179,17 @@ pub const ITEMS_GET: i32 = 71;
 pub const BLANK_EXTRA: i32 = 72;
 
 pub const BAG_ONLY_FIELDS: i32 = 80;
+pub const ARG: i32 = 81;
+pub const ARGI: i32 = 82;
+pub const CTEXT: i32 = 83;
+pub const CPEEK: i32 = 84;
+pub const CTOKEN: i32 = 85;
+pub const CFIELD: i32 = 86;
+pub const CBAG_FIELD: i32 = 87;
+pub const CBAG_KIND: i32 = 88;
+pub const CBAG_TOKEN: i32 = 89;
+pub const CBAG_FMT: i32 = 90;
+pub const CBAG_ONLY: i32 = 91;
 
 pub fn op_len(op: i32, code: &[i32], pc: usize) -> Result<usize, Refuse> {
     if op == BAG_ONLY_FIELDS {
@@ -211,9 +224,10 @@ fn has_imm(op: i32) -> bool {
             | BAG_TOKEN
             | BAG_INDEX
             | BAG_FMT_KIND
-            | HOST_CHAIN
             | DSTORE
             | DLOAD
+            | ARG
+            | CBAG_ONLY
     )
 }
 
@@ -287,6 +301,17 @@ fn known_op(op: i32) -> bool {
             | ITEMS_GET
             | BLANK_EXTRA
             | BAG_ONLY_FIELDS
+            | ARG
+            | ARGI
+            | CTEXT
+            | CPEEK
+            | CTOKEN
+            | CFIELD
+            | CBAG_FIELD
+            | CBAG_KIND
+            | CBAG_TOKEN
+            | CBAG_FMT
+            | CBAG_ONLY
     )
 }
 
@@ -331,6 +356,9 @@ pub fn verify(bc: &Bytecode) -> Result<(), Refuse> {
             }
             CONCAT if code[pc + 1] < 0 => {
                 return Err(Refuse(format!("CONCAT n<0 at {pc}")));
+            }
+            ARG | CBAG_ONLY if code[pc + 1] < 0 => {
+                return Err(Refuse(format!("negative arg index at {pc}")));
             }
             BAG_ONLY_FIELDS => {
                 let n = code[pc + 1];

@@ -277,13 +277,24 @@ const OP = {
   ITEMS_GET: 71,
   BLANK_EXTRA: 72,
   BAG_ONLY_FIELDS: 80,
+  ARG: 81,
+  ARGI: 82,
+  CTEXT: 83,
+  CPEEK: 84,
+  CTOKEN: 85,
+  CFIELD: 86,
+  CBAG_FIELD: 87,
+  CBAG_KIND: 88,
+  CBAG_TOKEN: 89,
+  CBAG_FMT: 90,
+  CBAG_ONLY: 91,
 };
 
 const HAS_IMM = new Set([
   OP.JZ, OP.JMP, OP.JNZ, OP.PUSH_I, OP.TEXT, OP.REFUSE, OP.PEEK_TOKEN,
   OP.NODE_TOKEN, OP.NODE_FIELD, OP.NODE_KIND, OP.STORE, OP.LOAD, OP.CONCAT,
   OP.BAG_FIELD, OP.BAG_KIND, OP.BAG_TOKEN, OP.BAG_INDEX, OP.BAG_FMT_KIND,
-  OP.HOST_CHAIN, OP.DSTORE, OP.DLOAD,
+  OP.DSTORE, OP.DLOAD, OP.ARG, OP.CBAG_ONLY,
 ]);
 
 const KNOWN = new Set(Object.values(OP));
@@ -329,6 +340,9 @@ function verify(pkg) {
       if (s < 0 || s > 3) refuse(`doc slot ${s} oob at ${pc}`);
     }
     if (op === OP.CONCAT && code[pc + 1] < 0) refuse(`CONCAT n<0 at ${pc}`);
+    if ((op === OP.ARG || op === OP.CBAG_ONLY) && code[pc + 1] < 0) {
+      refuse(`negative arg index at ${pc}`);
+    }
     if (op === OP.BAG_ONLY_FIELDS) {
       const n = code[pc + 1];
       for (let k = 0; k < n; k++) cst(pkg, code[pc + 2 + k]);
@@ -515,16 +529,22 @@ function entryFor(pkg, node) {
     return {
       pc: pkg.entry[node.type],
       kind: (pkg.kinds && pkg.kinds[node.type]) || "fwd",
+      args: (pkg.args && pkg.args[node.type]) || [],
     };
   }
   const opaque = (pkg.opaque || []).indexOf(node.type) !== -1;
-  if (opaque) return { pc: pkg.defaults.opaque, kind: "opaque" };
-  if (node.text != null) return { pc: pkg.defaults.leaf, kind: "leaf" };
-  return { pc: pkg.defaults.fwd, kind: "fwd" };
+  if (opaque) return { pc: pkg.defaults.opaque, kind: "opaque", args: [] };
+  if (node.text != null) return { pc: pkg.defaults.leaf, kind: "leaf", args: [] };
+  return { pc: pkg.defaults.fwd, kind: "fwd", args: [] };
+}
+
+function argAt(f, i) {
+  if (i < 0 || i >= f.args.length) refuse(`arg ${i} oob`);
+  return f.args[i] | 0;
 }
 
 function run(node, ctx, parentKind) {
-  const { pc: start, kind } = entryFor(ctx.pkg, node);
+  const { pc: start, kind, args } = entryFor(ctx.pkg, node);
   const f = {
     node,
     parentKind,
@@ -538,6 +558,7 @@ function run(node, ctx, parentKind) {
     docs: [],
     nodes: [],
     ints: [],
+    args,
   };
   let doc = exec(f, start, ctx);
   if (node.leading && node.leading.length) {
@@ -921,7 +942,7 @@ function exec(f, start, ctx) {
         break;
       }
       case OP.HOST_CHAIN:
-        f.docs.push(hostChain(f, imm, ctx));
+        f.docs.push(hostChain(f, popI(f), ctx));
         break;
       case OP.DSTORE:
         if (imm < 0 || imm > 3) refuse(`doc slot ${imm} oob`);
@@ -946,6 +967,77 @@ function exec(f, start, ctx) {
         const n = imm;
         const wanted = [];
         for (let k = 0; k < n; k++) wanted.push(cst(ctx.pkg, code[pc + 2 + k]));
+        for (const node of f.bag) {
+          const ok = node.field && wanted.indexOf(node.field) !== -1;
+          if (!ok && !isPunct(node)) {
+            refuse(`pfx ${f.node.type}: unexpected ${node.type}`);
+          }
+        }
+        break;
+      }
+      case OP.ARG:
+        f.ints.push(argAt(f, imm));
+        break;
+      case OP.ARGI:
+        f.ints.push(argAt(f, popI(f)));
+        break;
+      case OP.CTEXT:
+        f.docs.push(text(cst(ctx.pkg, popI(f))));
+        break;
+      case OP.CPEEK: {
+        const want = cst(ctx.pkg, popI(f));
+        f.ints.push(
+          f.cursor < f.kids.length && isToken(f.kids[f.cursor], want) ? 1 : 0,
+        );
+        break;
+      }
+      case OP.CTOKEN:
+        f.ints.push(isToken(peekN(f), cst(ctx.pkg, popI(f))) ? 1 : 0);
+        break;
+      case OP.CFIELD:
+        f.ints.push(peekN(f).field === cst(ctx.pkg, popI(f)) ? 1 : 0);
+        break;
+      case OP.CBAG_FIELD: {
+        const want = cst(ctx.pkg, popI(f));
+        const n = f.bag.find((x) => x.field === want);
+        if (n) {
+          f.nodes.push(n);
+          f.ints.push(1);
+        } else f.ints.push(0);
+        break;
+      }
+      case OP.CBAG_KIND: {
+        const want = cst(ctx.pkg, popI(f));
+        const n = f.bag.find((x) => x.type === want && x.text == null);
+        if (n) {
+          f.nodes.push(n);
+          f.ints.push(1);
+        } else f.ints.push(0);
+        break;
+      }
+      case OP.CBAG_TOKEN: {
+        const want = cst(ctx.pkg, popI(f));
+        f.ints.push(f.bag.some((x) => isToken(x, want)) ? 1 : 0);
+        break;
+      }
+      case OP.CBAG_FMT: {
+        const want = cst(ctx.pkg, popI(f));
+        const parts = [];
+        for (const n of f.bag) {
+          if (n.type === want) {
+            parts.push(hardline);
+            parts.push(run(n, ctx, f.kind));
+          }
+        }
+        f.docs.push(parts.length ? concat(parts) : concat([]));
+        break;
+      }
+      case OP.CBAG_ONLY: {
+        const base = imm;
+        const n = argAt(f, base);
+        if (n < 0) refuse(`CBAG_ONLY n<${n}`);
+        const wanted = [];
+        for (let k = 0; k < n; k++) wanted.push(cst(ctx.pkg, argAt(f, base + 1 + k)));
         for (const node of f.bag) {
           const ok = node.field && wanted.indexOf(node.field) !== -1;
           if (!ok && !isPunct(node)) {

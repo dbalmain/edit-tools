@@ -1,7 +1,9 @@
 "use strict";
 
 // Compile an authored kinds package into a bytecode package.
-// Authored form stays in authored/; shipped form is packages/<lang>.json.
+// Each kind's program is emitted once. Node types point at that
+// program and carry their own operand vector (brackets, flags, field
+// names). Templates stay unrolled: the spec is the program.
 
 const fs = require("fs");
 const path = require("path");
@@ -40,19 +42,6 @@ class Emitter {
     this.emit(OP.REFUSE, this.intern(msg));
   }
 
-  peekToken(s) {
-    this.emit(OP.PEEK_TOKEN, this.intern(s));
-  }
-
-  nodeToken(s) {
-    this.emit(OP.NODE_TOKEN, this.intern(s));
-  }
-
-  nodeField(s) {
-    this.emit(OP.NODE_FIELD, this.intern(s));
-  }
-
-  // Emit `op imm` and return the index of the immediate so a later patch can fill it.
   emitHole(op) {
     this.code.push(op);
     const i = this.code.length;
@@ -64,7 +53,6 @@ class Emitter {
     this.code[i] = value | 0;
   }
 
-  // JZ/JNZ/JMP to a pc that is known now.
   jzTo(pc) {
     this.emit(OP.JZ, pc);
   }
@@ -74,6 +62,23 @@ class Emitter {
   jmpTo(pc) {
     this.emit(OP.JMP, pc);
   }
+
+  atext(n) {
+    this.emit(OP.ARG, n);
+    this.emit(OP.CTEXT);
+  }
+  apeek(n) {
+    this.emit(OP.ARG, n);
+    this.emit(OP.CPEEK);
+  }
+  atoken(n) {
+    this.emit(OP.ARG, n);
+    this.emit(OP.CTOKEN);
+  }
+  afield(n) {
+    this.emit(OP.ARG, n);
+    this.emit(OP.CFIELD);
+  }
 }
 
 function compileLeaf(e) {
@@ -82,8 +87,6 @@ function compileLeaf(e) {
 }
 
 function compileOpaque(e) {
-  // Opaque reads the source span and must still consume every child so
-  // HALT's finish check holds. Skipping is a consume, not a leak.
   const loop = e.here();
   e.emit(OP.EMPTY);
   const after = e.emitHole(OP.JNZ);
@@ -94,7 +97,7 @@ function compileOpaque(e) {
   e.emit(OP.HALT);
 }
 
-function compileFwd(e, type) {
+function compileFwd(e) {
   e.emit(OP.ITEMS_NEW);
   const loop = e.here();
   e.emit(OP.EMPTY);
@@ -125,41 +128,48 @@ function compileFwd(e, type) {
   e.emit(OP.DROP_I);
   e.emit(OP.HALT);
   e.patch(notOne, e.here());
-  e.refuse(`fwd ${type} has multiple significant children`);
+  e.refuse("fwd has multiple significant children");
 }
 
-function compileInfix(e, rule, type) {
+function compileInfix(e) {
   e.emit(OP.ITEMS_NEW);
-  if (rule.op != null) {
-    e.text(rule.op);
-  } else {
-    e.text("");
-  }
+  e.emit(OP.ARG, 0);
+  const hasOp = e.emitHole(OP.JNZ);
+  e.text("");
   e.emit(OP.DSTORE, 0);
+  const afterInit = e.emitHole(OP.JMP);
+  e.patch(hasOp, e.here());
+  e.atext(1);
+  e.emit(OP.DSTORE, 0);
+  e.patch(afterInit, e.here());
 
   const loop = e.here();
   e.emit(OP.EMPTY);
   const after = e.emitHole(OP.JNZ);
   e.emit(OP.TAKE);
-  if (rule.op_field) {
-    e.nodeField(rule.op_field);
-  } else {
-    e.nodeToken((rule.op || "").trim());
-  }
+  e.emit(OP.ARG, 0);
+  const useToken = e.emitHole(OP.JNZ);
+
+  e.afield(2);
+  const isOpField = e.emitHole(OP.JNZ);
+  e.emit(OP.ITEMS_PUSH);
+  e.jmpTo(loop);
+  e.patch(isOpField, e.here());
+  e.emit(OP.FORMAT_OP);
+  e.text(" ");
+  e.emit(OP.SWAP_D);
+  e.text(" ");
+  e.emit(OP.CONCAT, 3);
+  e.emit(OP.DSTORE, 0);
+  e.jmpTo(loop);
+
+  e.patch(useToken, e.here());
+  e.atoken(3);
   const isOp = e.emitHole(OP.JNZ);
   e.emit(OP.ITEMS_PUSH);
   e.jmpTo(loop);
   e.patch(isOp, e.here());
-  if (rule.op == null) {
-    e.emit(OP.FORMAT_OP);
-    e.text(" ");
-    e.emit(OP.SWAP_D);
-    e.text(" ");
-    e.emit(OP.CONCAT, 3);
-    e.emit(OP.DSTORE, 0);
-  } else {
-    e.emit(OP.DROP_N);
-  }
+  e.emit(OP.DROP_N);
   e.jmpTo(loop);
 
   e.patch(after, e.here());
@@ -169,7 +179,7 @@ function compileInfix(e, rule, type) {
   e.emit(OP.PUSH_I, 0);
   e.emit(OP.EQ);
   const hasOps = e.emitHole(OP.JZ);
-  e.refuse(`infix ${type} has no operands`);
+  e.refuse("infix has no operands");
   e.patch(hasOps, e.here());
   e.emit(OP.DLOAD, 0);
   e.emit(OP.ITEMS_FORMAT);
@@ -177,249 +187,24 @@ function compileInfix(e, rule, type) {
   e.emit(OP.HALT);
 }
 
-function compileSeq(e, rule, type) {
-  const open = rule.open;
-  const close = rule.close;
-  const sep = rule.sep || ",";
-  if (open == null || close == null) {
-    e.refuse(`seq ${type} missing open/close`);
-    return;
-  }
-
+function compileSeq(e) {
   e.emit(OP.TAKE);
-  e.nodeToken(open);
+  e.atoken(0);
   const okOpen = e.emitHole(OP.JNZ);
-  e.refuse(`seq ${type}: expected ${open}`);
+  e.refuse("seq: expected open");
   e.patch(okOpen, e.here());
   e.emit(OP.DROP_N);
 
   e.emit(OP.EMPTY);
   const hasClose0 = e.emitHole(OP.JZ);
-  e.refuse(`seq ${type}: missing ${close}`);
+  e.refuse("seq: missing close");
   e.patch(hasClose0, e.here());
 
-  e.peekToken(close);
+  e.apeek(1);
   const notEmpty = e.emitHole(OP.JZ);
   e.emit(OP.SKIP);
   e.emit(OP.FINISH);
-  e.text(open + close);
-  e.emit(OP.HALT);
-
-  e.patch(notEmpty, e.here());
-  e.emit(OP.ITEMS_NEW);
-  e.emit(OP.PUSH_I, 0);
-  e.emit(OP.STORE, 0); // trailing
-
-  const itemLoop = e.here();
-  e.peekToken(close);
-  const afterItems = e.emitHole(OP.JNZ);
-  e.emit(OP.EMPTY);
-  const notEmpty2 = e.emitHole(OP.JZ);
-  e.refuse(`seq ${type}: missing ${close}`);
-  e.patch(notEmpty2, e.here());
-
-  e.peekToken(sep);
-  const notSep = e.emitHole(OP.JZ);
-  e.refuse(`seq ${type}: unexpected ${sep}`);
-  e.patch(notSep, e.here());
-
-  e.emit(OP.TAKE);
-  e.emit(OP.ITEMS_PUSH);
-
-  e.emit(OP.EMPTY);
-  const hasAfterItem = e.emitHole(OP.JZ);
-  e.refuse(`seq ${type}: missing ${close}`);
-  e.patch(hasAfterItem, e.here());
-
-  e.peekToken(sep);
-  const noSep = e.emitHole(OP.JZ);
-  e.emit(OP.SKIP);
-  e.peekToken(close);
-  const notTrail = e.emitHole(OP.JZ);
-  e.emit(OP.PUSH_I, 1);
-  e.emit(OP.STORE, 0);
-  e.jmpTo(0); // patch afterItems
-  const trailJmp = e.code.length - 1;
-  e.patch(notTrail, e.here());
-  e.jmpTo(itemLoop);
-
-  e.patch(noSep, e.here());
-  e.peekToken(close);
-  const goodClose = e.emitHole(OP.JNZ);
-  e.refuse(`seq ${type}: expected ${sep} or ${close}`);
-  e.patch(goodClose, e.here());
-  e.jmpTo(itemLoop);
-
-  const afterItemsPc = e.here();
-  e.patch(afterItems, afterItemsPc);
-  e.patch(trailJmp, afterItemsPc);
-
-  e.peekToken(close);
-  const gotClose = e.emitHole(OP.JNZ);
-  e.refuse(`seq ${type}: missing ${close}`);
-  e.patch(gotClose, e.here());
-  e.emit(OP.SKIP);
-  e.emit(OP.FINISH);
-
-  if (rule.trailing === "none") {
-    e.emit(OP.LOAD, 0);
-    const noTrail = e.emitHole(OP.JZ);
-    e.refuse(`seq ${type}: trailing ${sep} is forbidden`);
-    e.patch(noTrail, e.here());
-  }
-
-  // pad in D slot 0
-  if (rule.flat_pad) e.emit(OP.LINE);
-  else e.emit(OP.SOFTLINE);
-  e.emit(OP.DUP_D);
-  e.emit(OP.DSTORE, 0);
-
-  // acc = pad; then for i in items: if i>0 concat sep; concat format(item)
-  e.emit(OP.PUSH_I, 0);
-  e.emit(OP.STORE, 1); // i
-  e.emit(OP.ITEMS_LEN);
-  e.emit(OP.STORE, 2); // n
-
-  const buildLoop = e.here();
-  e.emit(OP.LOAD, 1);
-  e.emit(OP.LOAD, 2);
-  e.emit(OP.LT);
-  const buildDone = e.emitHole(OP.JZ);
-
-  e.emit(OP.LOAD, 1);
-  e.emit(OP.PUSH_I, 0);
-  e.emit(OP.EQ);
-  const first = e.emitHole(OP.JNZ);
-  e.text(sep);
-  e.emit(OP.LINE);
-  e.emit(OP.CONCAT, 2);
-  e.emit(OP.CONCAT, 2); // acc + sepDoc
-  e.patch(first, e.here());
-  e.emit(OP.LOAD, 1);
-  e.emit(OP.ITEMS_GET);
-  e.emit(OP.FORMAT);
-  e.emit(OP.CONCAT, 2);
-  e.emit(OP.LOAD, 1);
-  e.emit(OP.PUSH_I, 1);
-  e.emit(OP.ADD);
-  e.emit(OP.STORE, 1);
-  e.jmpTo(buildLoop);
-  e.patch(buildDone, e.here());
-
-  const singleton = !!rule.singleton_comma;
-  if (singleton) {
-    e.emit(OP.LOAD, 2);
-    e.emit(OP.PUSH_I, 1);
-    e.emit(OP.EQ);
-    const notSing = e.emitHole(OP.JZ);
-    e.text(sep);
-    e.emit(OP.CONCAT, 2);
-    const afterSing = e.emitHole(OP.JMP);
-    e.patch(notSing, e.here());
-    if (rule.trailing === "magic" || rule.trailing === "always-on-break") {
-      e.text(sep);
-      e.text("");
-      e.emit(OP.IF_BREAK);
-      e.emit(OP.CONCAT, 2);
-    }
-    e.patch(afterSing, e.here());
-  } else if (rule.trailing === "magic" || rule.trailing === "always-on-break") {
-    e.text(sep);
-    e.text("");
-    e.emit(OP.IF_BREAK);
-    e.emit(OP.CONCAT, 2);
-  }
-
-  // group(concat([text(open), indent(inner), pad, text(close)]))
-  e.text(open);
-  e.emit(OP.SWAP_D);
-  e.emit(OP.INDENT);
-  e.emit(OP.DLOAD, 0);
-  e.text(close);
-  e.emit(OP.CONCAT, 4);
-
-  const shouldBreakMagic = rule.trailing === "magic";
-  if (shouldBreakMagic) {
-    // should_break = trailing && !singleton
-    e.emit(OP.LOAD, 0);
-    if (singleton) {
-      e.emit(OP.LOAD, 2);
-      e.emit(OP.PUSH_I, 1);
-      e.emit(OP.EQ);
-      e.emit(OP.NOT);
-      // I: trailing, !singleton — need AND
-      // We don't have AND. a==1 && b==1: both on stack...
-      // trailing is 0/1, !singleton is 0/1. Multiply via... no MUL.
-      // AND: NOT a, NOT b, ... 
-      // (a!=0) && (b!=0): 
-      //   DUP path: if trailing==0, push 0; else push !singleton
-      e.emit(OP.SWAP_I_MISSING);
-    }
-    // Simpler: compute should_break in the compiler with a small sequence:
-    //   LOAD 0 (trailing)
-    //   if singleton: if n==1 then push 0 else keep trailing
-  }
-
-  if (shouldBreakMagic && singleton) {
-    // I currently empty. Compute: trailing && n!=1
-    e.emit(OP.LOAD, 0);
-    e.emit(OP.LOAD, 2);
-    e.emit(OP.PUSH_I, 1);
-    e.emit(OP.EQ);
-    e.emit(OP.NOT);
-    // I: [trailing, n!=1]. Want trailing!=0 && n!=1.
-    // Use: if n==1 then 0 else trailing. We have n!=1 on TOS.
-    const keep = e.emitHole(OP.JNZ);
-    e.emit(OP.DROP_I); // drop trailing
-    e.emit(OP.PUSH_I, 0);
-    const done = e.emitHole(OP.JMP);
-    e.patch(keep, e.here());
-    // trailing stays
-    e.emit(OP.GROUP_BREAK);
-    const afterGb = e.emitHole(OP.JMP);
-    e.patch(done, e.here());
-    e.emit(OP.GROUP_BREAK);
-    e.patch(afterGb, e.here());
-  } else if (shouldBreakMagic) {
-    e.emit(OP.LOAD, 0);
-    e.emit(OP.GROUP_BREAK);
-  } else {
-    e.emit(OP.GROUP);
-  }
-  e.emit(OP.HALT);
-}
-
-// Fix: I referenced SWAP_I_MISSING. Remove that dead branch — the
-// shouldBreakMagic && singleton / shouldBreakMagic / else handles it.
-// compileSeq as written has a leftover `if (shouldBreakMagic) { ... SWAP_I }`
-// block that I need to delete. I'll rewrite compileSeq more carefully.
-
-function compileSeqFixed(e, rule, type) {
-  const open = rule.open;
-  const close = rule.close;
-  const sep = rule.sep || ",";
-  if (open == null || close == null) {
-    e.refuse(`seq ${type} missing open/close`);
-    return;
-  }
-
-  e.emit(OP.TAKE);
-  e.nodeToken(open);
-  const okOpen = e.emitHole(OP.JNZ);
-  e.refuse(`seq ${type}: expected ${open}`);
-  e.patch(okOpen, e.here());
-  e.emit(OP.DROP_N);
-
-  e.emit(OP.EMPTY);
-  const hasClose0 = e.emitHole(OP.JZ);
-  e.refuse(`seq ${type}: missing ${close}`);
-  e.patch(hasClose0, e.here());
-
-  e.peekToken(close);
-  const notEmpty = e.emitHole(OP.JZ);
-  e.emit(OP.SKIP);
-  e.emit(OP.FINISH);
-  e.text(open + close);
+  e.atext(3);
   e.emit(OP.HALT);
 
   e.patch(notEmpty, e.here());
@@ -428,16 +213,16 @@ function compileSeqFixed(e, rule, type) {
   e.emit(OP.STORE, 0);
 
   const itemLoop = e.here();
-  e.peekToken(close);
+  e.apeek(1);
   const afterHole = e.emitHole(OP.JNZ);
   e.emit(OP.EMPTY);
   const notEmpty2 = e.emitHole(OP.JZ);
-  e.refuse(`seq ${type}: missing ${close}`);
+  e.refuse("seq: missing close");
   e.patch(notEmpty2, e.here());
 
-  e.peekToken(sep);
+  e.apeek(2);
   const notSep = e.emitHole(OP.JZ);
-  e.refuse(`seq ${type}: unexpected ${sep}`);
+  e.refuse("seq: unexpected sep");
   e.patch(notSep, e.here());
 
   e.emit(OP.TAKE);
@@ -445,13 +230,13 @@ function compileSeqFixed(e, rule, type) {
 
   e.emit(OP.EMPTY);
   const hasAfterItem = e.emitHole(OP.JZ);
-  e.refuse(`seq ${type}: missing ${close}`);
+  e.refuse("seq: missing close");
   e.patch(hasAfterItem, e.here());
 
-  e.peekToken(sep);
+  e.apeek(2);
   const noSep = e.emitHole(OP.JZ);
   e.emit(OP.SKIP);
-  e.peekToken(close);
+  e.apeek(1);
   const notTrail = e.emitHole(OP.JZ);
   e.emit(OP.PUSH_I, 1);
   e.emit(OP.STORE, 0);
@@ -460,9 +245,9 @@ function compileSeqFixed(e, rule, type) {
   e.jmpTo(itemLoop);
 
   e.patch(noSep, e.here());
-  e.peekToken(close);
+  e.apeek(1);
   const goodClose = e.emitHole(OP.JNZ);
-  e.refuse(`seq ${type}: expected ${sep} or ${close}`);
+  e.refuse("seq: expected sep or close");
   e.patch(goodClose, e.here());
   e.jmpTo(itemLoop);
 
@@ -470,22 +255,28 @@ function compileSeqFixed(e, rule, type) {
   e.patch(afterHole, afterItemsPc);
   e.patch(trailJmp, afterItemsPc);
 
-  e.peekToken(close);
+  e.apeek(1);
   const gotClose = e.emitHole(OP.JNZ);
-  e.refuse(`seq ${type}: missing ${close}`);
+  e.refuse("seq: missing close");
   e.patch(gotClose, e.here());
   e.emit(OP.SKIP);
   e.emit(OP.FINISH);
 
-  if (rule.trailing === "none") {
-    e.emit(OP.LOAD, 0);
-    const noTrail = e.emitHole(OP.JZ);
-    e.refuse(`seq ${type}: trailing ${sep} is forbidden`);
-    e.patch(noTrail, e.here());
-  }
+  e.emit(OP.ARG, 6);
+  const skipNone = e.emitHole(OP.JZ);
+  e.emit(OP.LOAD, 0);
+  const noTrail = e.emitHole(OP.JZ);
+  e.refuse("seq: trailing sep is forbidden");
+  e.patch(noTrail, e.here());
+  e.patch(skipNone, e.here());
 
-  if (rule.flat_pad) e.emit(OP.LINE);
-  else e.emit(OP.SOFTLINE);
+  e.emit(OP.ARG, 4);
+  const useSoft = e.emitHole(OP.JZ);
+  e.emit(OP.LINE);
+  const afterPad = e.emitHole(OP.JMP);
+  e.patch(useSoft, e.here());
+  e.emit(OP.SOFTLINE);
+  e.patch(afterPad, e.here());
   e.emit(OP.DUP_D);
   e.emit(OP.DSTORE, 0);
 
@@ -504,7 +295,7 @@ function compileSeqFixed(e, rule, type) {
   e.emit(OP.PUSH_I, 0);
   e.emit(OP.EQ);
   const first = e.emitHole(OP.JNZ);
-  e.text(sep);
+  e.atext(2);
   e.emit(OP.LINE);
   e.emit(OP.CONCAT, 2);
   e.emit(OP.CONCAT, 2);
@@ -520,80 +311,83 @@ function compileSeqFixed(e, rule, type) {
   e.jmpTo(buildLoop);
   e.patch(buildDone, e.here());
 
-  const singleton = !!rule.singleton_comma;
-  const trailBreak = rule.trailing === "magic" || rule.trailing === "always-on-break";
-  if (singleton) {
-    e.emit(OP.LOAD, 2);
-    e.emit(OP.PUSH_I, 1);
-    e.emit(OP.EQ);
-    const notSing = e.emitHole(OP.JZ);
-    e.text(sep);
-    e.emit(OP.CONCAT, 2);
-    const afterSing = e.emitHole(OP.JMP);
-    e.patch(notSing, e.here());
-    if (trailBreak) {
-      e.text(sep);
-      e.text("");
-      e.emit(OP.IF_BREAK);
-      e.emit(OP.CONCAT, 2);
-    }
-    e.patch(afterSing, e.here());
-  } else if (trailBreak) {
-    e.text(sep);
-    e.text("");
-    e.emit(OP.IF_BREAK);
-    e.emit(OP.CONCAT, 2);
-  }
+  e.emit(OP.ARG, 5);
+  const notSingKind = e.emitHole(OP.JZ);
+  e.emit(OP.LOAD, 2);
+  e.emit(OP.PUSH_I, 1);
+  e.emit(OP.EQ);
+  const notSing = e.emitHole(OP.JZ);
+  e.atext(2);
+  e.emit(OP.CONCAT, 2);
+  const afterSing = e.emitHole(OP.JMP);
+  e.patch(notSing, e.here());
+  e.emit(OP.ARG, 8);
+  const noTrailBrk = e.emitHole(OP.JZ);
+  e.atext(2);
+  e.text("");
+  e.emit(OP.IF_BREAK);
+  e.emit(OP.CONCAT, 2);
+  e.patch(noTrailBrk, e.here());
+  e.patch(afterSing, e.here());
+  const afterSingKind = e.emitHole(OP.JMP);
 
-  e.text(open);
+  e.patch(notSingKind, e.here());
+  e.emit(OP.ARG, 8);
+  const noTrailBrk2 = e.emitHole(OP.JZ);
+  e.atext(2);
+  e.text("");
+  e.emit(OP.IF_BREAK);
+  e.emit(OP.CONCAT, 2);
+  e.patch(noTrailBrk2, e.here());
+  e.patch(afterSingKind, e.here());
+
+  e.atext(0);
   e.emit(OP.SWAP_D);
   e.emit(OP.INDENT);
   e.emit(OP.DLOAD, 0);
-  e.text(close);
+  e.atext(1);
   e.emit(OP.CONCAT, 4);
 
-  if (rule.trailing === "magic") {
-    e.emit(OP.LOAD, 0); // trailing
-    if (singleton) {
-      e.emit(OP.LOAD, 2);
-      e.emit(OP.PUSH_I, 1);
-      e.emit(OP.EQ);
-      const isSing = e.emitHole(OP.JNZ);
-      e.emit(OP.GROUP_BREAK);
-      const done = e.emitHole(OP.JMP);
-      e.patch(isSing, e.here());
-      e.emit(OP.DROP_I); // drop trailing
-      e.emit(OP.PUSH_I, 0);
-      e.emit(OP.GROUP_BREAK);
-      e.patch(done, e.here());
-    } else {
-      e.emit(OP.GROUP_BREAK);
-    }
-  } else {
-    e.emit(OP.GROUP);
-  }
+  e.emit(OP.ARG, 7);
+  const noMagic = e.emitHole(OP.JZ);
+  e.emit(OP.LOAD, 0);
+  e.emit(OP.ARG, 5);
+  const noSingMagic = e.emitHole(OP.JZ);
+  e.emit(OP.LOAD, 2);
+  e.emit(OP.PUSH_I, 1);
+  e.emit(OP.EQ);
+  const isSing = e.emitHole(OP.JNZ);
+  e.emit(OP.GROUP_BREAK);
+  const doneMagic = e.emitHole(OP.JMP);
+  e.patch(isSing, e.here());
+  e.emit(OP.DROP_I);
+  e.emit(OP.PUSH_I, 0);
+  e.emit(OP.GROUP_BREAK);
+  e.patch(doneMagic, e.here());
+  const afterMagic = e.emitHole(OP.JMP);
+  e.patch(noSingMagic, e.here());
+  e.emit(OP.GROUP_BREAK);
+  e.patch(afterMagic, e.here());
+  const afterGroup = e.emitHole(OP.JMP);
+  e.patch(noMagic, e.here());
+  e.emit(OP.GROUP);
+  e.patch(afterGroup, e.here());
   e.emit(OP.HALT);
 }
 
-function compileWrap(e, rule, type) {
-  const open = rule.open;
-  const close = rule.close;
-  if (open == null || close == null) {
-    e.refuse(`wrap ${type} missing open/close`);
-    return;
-  }
+function compileWrap(e) {
   e.emit(OP.TAKE);
-  e.nodeToken(open);
+  e.atoken(0);
   const okO = e.emitHole(OP.JNZ);
-  e.refuse(`wrap ${type}: expected ${open}`);
+  e.refuse("wrap: expected open");
   e.patch(okO, e.here());
   e.emit(OP.DROP_N);
   e.emit(OP.TAKE);
   e.emit(OP.FORMAT);
   e.emit(OP.TAKE);
-  e.nodeToken(close);
+  e.atoken(1);
   const okC = e.emitHole(OP.JNZ);
-  e.refuse(`wrap ${type}: expected ${close}`);
+  e.refuse("wrap: expected close");
   e.patch(okC, e.here());
   e.emit(OP.DROP_N);
   e.emit(OP.FINISH);
@@ -601,55 +395,16 @@ function compileWrap(e, rule, type) {
   e.emit(OP.SWAP_D);
   e.emit(OP.CONCAT, 2);
   e.emit(OP.INDENT);
-  e.text(open);
+  e.atext(0);
   e.emit(OP.SWAP_D);
   e.emit(OP.SOFTLINE);
-  e.text(close);
+  e.atext(1);
   e.emit(OP.CONCAT, 4);
   e.emit(OP.GROUP);
   e.emit(OP.HALT);
 }
 
-function compilePfx(e, rule, type) {
-  if (rule.fields && rule.fields.length) {
-    e.emit(OP.TAKE_ALL);
-    e.emit(OP.BAG_ONLY_FIELDS);
-    e.code.push(rule.fields.length);
-    for (const f of rule.fields) e.code.push(e.intern(f));
-    e.emit(OP.PUSH_I, 0);
-    e.emit(OP.STORE, 0);
-    for (const f of rule.fields) {
-      e.emit(OP.BAG_FIELD, e.intern(f));
-      const miss = e.emitHole(OP.JZ);
-      e.emit(OP.FORMAT);
-      e.emit(OP.LOAD, 0);
-      e.emit(OP.PUSH_I, 1);
-      e.emit(OP.ADD);
-      e.emit(OP.STORE, 0);
-      e.patch(miss, e.here());
-    }
-    e.emit(OP.LOAD, 0);
-    e.emit(OP.CONCAT_DYN);
-    if (rule.paren) e.emit(OP.PAREN);
-    e.emit(OP.HALT);
-    return;
-  }
-
-  if (rule.kw != null) {
-    e.emit(OP.TAKE);
-    e.nodeToken(rule.kw);
-    const ok = e.emitHole(OP.JNZ);
-    e.refuse(`pfx ${type}: expected ${rule.kw}`);
-    e.patch(ok, e.here());
-    e.emit(OP.DROP_N);
-    e.text(rule.kw);
-  } else if (rule.op_field) {
-    e.emit(OP.TAKE);
-    e.emit(OP.NODE_RAW);
-  } else {
-    e.refuse(`pfx ${type}: need kw, op_field, or fields`);
-    return;
-  }
+function compilePfxTail(e) {
   e.emit(OP.ITEMS_NEW);
   const loop = e.here();
   e.emit(OP.EMPTY);
@@ -660,98 +415,93 @@ function compilePfx(e, rule, type) {
   e.patch(after, e.here());
   e.emit(OP.FINISH);
 
-  if (rule.sp) {
-    e.emit(OP.ITEMS_LEN);
-    e.emit(OP.PUSH_I, 0);
-    e.emit(OP.EQ);
-    const noSp = e.emitHole(OP.JNZ);
-    e.text(" ");
-    e.emit(OP.CONCAT, 2);
-    e.patch(noSp, e.here());
-  }
+  e.emit(OP.ARG, 2);
+  const noSp = e.emitHole(OP.JZ);
+  e.emit(OP.ITEMS_LEN);
+  e.emit(OP.PUSH_I, 0);
+  e.emit(OP.EQ);
+  const skipSp = e.emitHole(OP.JNZ);
+  e.text(" ");
+  e.emit(OP.CONCAT, 2);
+  e.patch(skipSp, e.here());
+  e.patch(noSp, e.here());
 
   e.emit(OP.ITEMS_FORMAT);
   e.emit(OP.PUSH_I, 1);
   e.emit(OP.ADD);
   e.emit(OP.CONCAT_DYN);
-  if (rule.paren) e.emit(OP.PAREN);
+  e.emit(OP.ARG, 3);
+  const noParen = e.emitHole(OP.JZ);
+  e.emit(OP.PAREN);
+  e.patch(noParen, e.here());
   e.emit(OP.HALT);
 }
 
-function compileBody(e, rule) {
-  e.emit(OP.ITEMS_NEW);
-  const loop = e.here();
-  e.emit(OP.EMPTY);
-  const after = e.emitHole(OP.JNZ);
-  e.emit(OP.TAKE);
-  e.emit(OP.ITEMS_PUSH);
-  e.jmpTo(loop);
-  e.patch(after, e.here());
-  e.emit(OP.FINISH);
-
-  e.emit(OP.ITEMS_LEN);
-  e.emit(OP.STORE, 0); // n
-  e.emit(OP.PUSH_I, 0);
-  e.emit(OP.STORE, 1); // i
+function compilePfx(e) {
+  e.emit(OP.ARG, 0);
+  e.emit(OP.DUP_I);
+  e.emit(OP.PUSH_I, 2);
+  e.emit(OP.EQ);
+  const fields = e.emitHole(OP.JNZ);
   e.emit(OP.PUSH_I, 1);
-  e.emit(OP.STORE, 2); // acc_empty
+  e.emit(OP.EQ);
+  const opField = e.emitHole(OP.JNZ);
 
-  const loop2 = e.here();
-  e.emit(OP.LOAD, 1);
-  e.emit(OP.LOAD, 0);
-  e.emit(OP.LT);
-  const done = e.emitHole(OP.JZ);
+  e.emit(OP.TAKE);
+  e.atoken(1);
+  const ok = e.emitHole(OP.JNZ);
+  e.refuse("pfx: expected keyword");
+  e.patch(ok, e.here());
+  e.emit(OP.DROP_N);
+  e.atext(1);
+  compilePfxTail(e);
 
-  e.emit(OP.LOAD, 2);
-  const first = e.emitHole(OP.JNZ);
+  e.patch(opField, e.here());
+  e.emit(OP.TAKE);
+  e.emit(OP.NODE_RAW);
+  compilePfxTail(e);
 
-  e.emit(OP.HARDLINE);
-  e.emit(OP.CONCAT, 2);
-  if (!rule.tight) {
-    e.emit(OP.LOAD, 1);
-    e.emit(OP.BLANK_EXTRA);
-    e.emit(OP.STORE, 3);
-    const bLoop = e.here();
-    e.emit(OP.LOAD, 3);
-    e.emit(OP.PUSH_I, 0);
-    e.emit(OP.EQ);
-    const bDone = e.emitHole(OP.JNZ);
-    e.emit(OP.HARDLINE);
-    e.emit(OP.CONCAT, 2);
-    e.emit(OP.LOAD, 3);
-    e.emit(OP.PUSH_I, 1);
-    e.emit(OP.SUB);
-    e.emit(OP.STORE, 3);
-    e.jmpTo(bLoop);
-    e.patch(bDone, e.here());
-  }
-
-  e.patch(first, e.here());
+  e.patch(fields, e.here());
+  e.emit(OP.DROP_I);
+  e.emit(OP.TAKE_ALL);
+  e.emit(OP.CBAG_ONLY, 4);
   e.emit(OP.PUSH_I, 0);
-  e.emit(OP.STORE, 2);
+  e.emit(OP.STORE, 0);
+  e.emit(OP.PUSH_I, 0);
+  e.emit(OP.STORE, 1);
+  const fLoop = e.here();
   e.emit(OP.LOAD, 1);
-  e.emit(OP.ITEMS_GET);
+  e.emit(OP.ARG, 4);
+  e.emit(OP.LT);
+  const fDone = e.emitHole(OP.JZ);
+  e.emit(OP.PUSH_I, 5);
+  e.emit(OP.LOAD, 1);
+  e.emit(OP.ADD);
+  e.emit(OP.ARGI);
+  e.emit(OP.CBAG_FIELD);
+  const miss = e.emitHole(OP.JZ);
   e.emit(OP.FORMAT);
-  // if this was first, acc was empty — FORMAT left the doc as acc.
-  // if not first, we already concat'd hardlines onto acc, then FORMAT
-  // pushed the stmt doc, so CONCAT 2.
-  // Problem: we don't know if first anymore (we cleared STORE 2).
-  // Fix: concat only when not first. Check a saved flag.
-  // Re-do: keep was_empty in slot 4 before clearing.
-
-  // I already cleared slot 2. Let me restructure.
-  // Actually look at the first branch: if slot2 (acc_empty) JNZ first.
-  // first: we fall through after patch to STORE 2=0, GET, FORMAT. D: [doc]. Good.
-  // not-first: HARDLINE, CONCAT, blanks, then we hit the same STORE/GET/FORMAT.
-  // After FORMAT, D: [acc, stmt]. Need CONCAT 2 only for not-first.
-  //
-  // I'll use slot 4 as "need_concat" set to 0 on first path and 1 on other.
-
-  // This function is already emitted wrong. Rewrite compileBody cleanly below.
+  e.emit(OP.LOAD, 0);
+  e.emit(OP.PUSH_I, 1);
+  e.emit(OP.ADD);
+  e.emit(OP.STORE, 0);
+  e.patch(miss, e.here());
+  e.emit(OP.LOAD, 1);
+  e.emit(OP.PUSH_I, 1);
+  e.emit(OP.ADD);
+  e.emit(OP.STORE, 1);
+  e.jmpTo(fLoop);
+  e.patch(fDone, e.here());
+  e.emit(OP.LOAD, 0);
+  e.emit(OP.CONCAT_DYN);
+  e.emit(OP.ARG, 3);
+  const noParenF = e.emitHole(OP.JZ);
+  e.emit(OP.PAREN);
+  e.patch(noParenF, e.here());
   e.emit(OP.HALT);
 }
 
-function compileBodyFixed(e, rule) {
+function compileBody(e) {
   e.emit(OP.ITEMS_NEW);
   const loop = e.here();
   e.emit(OP.EMPTY);
@@ -767,7 +517,6 @@ function compileBodyFixed(e, rule) {
   e.emit(OP.PUSH_I, 0);
   e.emit(OP.STORE, 1);
 
-  // if n==0: empty text, dangling, halt
   e.emit(OP.LOAD, 0);
   e.emit(OP.PUSH_I, 0);
   e.emit(OP.EQ);
@@ -777,7 +526,6 @@ function compileBodyFixed(e, rule) {
   e.emit(OP.HALT);
   e.patch(hasStmts, e.here());
 
-  // first stmt
   e.emit(OP.PUSH_I, 0);
   e.emit(OP.ITEMS_GET);
   e.emit(OP.FORMAT);
@@ -792,24 +540,26 @@ function compileBodyFixed(e, rule) {
 
   e.emit(OP.HARDLINE);
   e.emit(OP.CONCAT, 2);
-  if (!rule.tight) {
-    e.emit(OP.LOAD, 1);
-    e.emit(OP.BLANK_EXTRA);
-    e.emit(OP.STORE, 3);
-    const bLoop = e.here();
-    e.emit(OP.LOAD, 3);
-    e.emit(OP.PUSH_I, 0);
-    e.emit(OP.EQ);
-    const bDone = e.emitHole(OP.JNZ);
-    e.emit(OP.HARDLINE);
-    e.emit(OP.CONCAT, 2);
-    e.emit(OP.LOAD, 3);
-    e.emit(OP.PUSH_I, 1);
-    e.emit(OP.SUB);
-    e.emit(OP.STORE, 3);
-    e.jmpTo(bLoop);
-    e.patch(bDone, e.here());
-  }
+  e.emit(OP.ARG, 0);
+  const skipBlank = e.emitHole(OP.JNZ);
+  e.emit(OP.LOAD, 1);
+  e.emit(OP.BLANK_EXTRA);
+  e.emit(OP.STORE, 3);
+  const bLoop = e.here();
+  e.emit(OP.LOAD, 3);
+  e.emit(OP.PUSH_I, 0);
+  e.emit(OP.EQ);
+  const bDone = e.emitHole(OP.JNZ);
+  e.emit(OP.HARDLINE);
+  e.emit(OP.CONCAT, 2);
+  e.emit(OP.LOAD, 3);
+  e.emit(OP.PUSH_I, 1);
+  e.emit(OP.SUB);
+  e.emit(OP.STORE, 3);
+  e.jmpTo(bLoop);
+  e.patch(bDone, e.here());
+  e.patch(skipBlank, e.here());
+
   e.emit(OP.LOAD, 1);
   e.emit(OP.ITEMS_GET);
   e.emit(OP.FORMAT);
@@ -825,34 +575,28 @@ function compileBodyFixed(e, rule) {
   e.emit(OP.HALT);
 }
 
-function compileComp(e, rule, type) {
-  const open = rule.open;
-  const close = rule.close;
-  if (open == null || close == null) {
-    e.refuse(`comp ${type} missing open/close`);
-    return;
-  }
+function compileComp(e) {
   e.emit(OP.TAKE);
-  e.nodeToken(open);
+  e.atoken(0);
   const okO = e.emitHole(OP.JNZ);
-  e.refuse(`comp ${type}: expected ${open}`);
+  e.refuse("comp: expected open");
   e.patch(okO, e.here());
   e.emit(OP.DROP_N);
   e.emit(OP.ITEMS_NEW);
   const loop = e.here();
-  e.peekToken(close);
+  e.apeek(1);
   const after = e.emitHole(OP.JNZ);
   e.emit(OP.EMPTY);
   const notEmpty = e.emitHole(OP.JZ);
-  e.refuse(`comp ${type}: missing ${close}`);
+  e.refuse("comp: missing close");
   e.patch(notEmpty, e.here());
   e.emit(OP.TAKE);
   e.emit(OP.ITEMS_PUSH);
   e.jmpTo(loop);
   e.patch(after, e.here());
-  e.peekToken(close);
+  e.apeek(1);
   const okC = e.emitHole(OP.JNZ);
-  e.refuse(`comp ${type}: missing ${close}`);
+  e.refuse("comp: missing close");
   e.patch(okC, e.here());
   e.emit(OP.SKIP);
   e.emit(OP.FINISH);
@@ -885,17 +629,17 @@ function compileComp(e, rule, type) {
   e.jmpTo(bLoop);
   e.patch(bDone, e.here());
 
-  e.text(open);
+  e.atext(0);
   e.emit(OP.SWAP_D);
   e.emit(OP.INDENT);
   e.emit(OP.SOFTLINE);
-  e.text(close);
+  e.atext(1);
   e.emit(OP.CONCAT, 4);
   e.emit(OP.GROUP);
   e.emit(OP.HALT);
 }
 
-function compileDot(e, rule) {
+function compileDot(e) {
   e.emit(OP.PUSH_I, 0);
   e.emit(OP.STORE, 0);
   const loop = e.here();
@@ -918,29 +662,31 @@ function compileDot(e, rule) {
   e.emit(OP.FINISH);
   e.emit(OP.LOAD, 0);
   e.emit(OP.CONCAT_DYN);
-  if (rule.paren) e.emit(OP.PAREN);
+  e.emit(OP.ARG, 0);
+  const noParen = e.emitHole(OP.JZ);
+  e.emit(OP.PAREN);
+  e.patch(noParen, e.here());
   e.emit(OP.HALT);
 }
 
-function compileSub(e, type) {
+function compileSub(e) {
   e.emit(OP.TAKE);
   e.emit(OP.FORMAT);
   e.emit(OP.TAKE);
-  e.nodeToken("[");
+  e.emit(OP.NODE_TOKEN, e.intern("["));
   const okO = e.emitHole(OP.JNZ);
-  e.refuse(`sub ${type}: expected [`);
+  e.refuse("sub: expected [");
   e.patch(okO, e.here());
   e.emit(OP.DROP_N);
   e.emit(OP.TAKE);
   e.emit(OP.FORMAT);
   e.emit(OP.TAKE);
-  e.nodeToken("]");
+  e.emit(OP.NODE_TOKEN, e.intern("]"));
   const okC = e.emitHole(OP.JNZ);
-  e.refuse(`sub ${type}: expected ]`);
+  e.refuse("sub: expected ]");
   e.patch(okC, e.here());
   e.emit(OP.DROP_N);
   e.emit(OP.FINISH);
-  // D: [obj, index]
   e.emit(OP.SOFTLINE);
   e.emit(OP.SWAP_D);
   e.emit(OP.CONCAT, 2);
@@ -955,193 +701,7 @@ function compileSub(e, type) {
   e.emit(OP.HALT);
 }
 
-function compileTemplateSpec(e, spec, countsSlot) {
-  // Pushes one doc. Increments slot countsSlot by 1 if we want the caller
-  // to CONCAT_DYN — actually each call pushes exactly one doc.
-  if (typeof spec === "string") {
-    if (spec === "$children") {
-      // all non-punct bag nodes, concat
-      // Use BAG_FMT of... we don't have "all non-punct".
-      // Walk bag by index.
-      compileBagChildrenConcat(e, false);
-      return;
-    }
-    if (spec.charAt(0) === "$") {
-      const name = spec.slice(1);
-      if (/^\d+$/.test(name)) {
-        e.emit(OP.BAG_INDEX, Number(name));
-        const miss = e.emitHole(OP.JZ);
-        e.emit(OP.FORMAT);
-        const done = e.emitHole(OP.JMP);
-        e.patch(miss, e.here());
-        e.text("");
-        e.patch(done, e.here());
-        return;
-      }
-      // all field matches, else by_field (same)
-      compileBagFieldConcat(e, name);
-      return;
-    }
-    e.text(spec);
-    return;
-  }
-  if (Array.isArray(spec)) {
-    if (spec.length === 0) {
-      e.text("");
-      return;
-    }
-    for (const item of spec) compileTemplateSpec(e, item);
-    e.emit(OP.CONCAT, spec.length);
-    return;
-  }
-  if (spec && spec.join) {
-    const sep = (spec.join.sep != null ? spec.join.sep : "");
-    const items = spec.join.items || "$children";
-    e.text(sep);
-    if (items === "$children") {
-      compileBagChildrenToItems(e, false);
-    } else if (typeof items === "string" && items.charAt(0) === "$") {
-      const name = items.slice(1);
-      if (/^\d+$/.test(name)) {
-        e.emit(OP.ITEMS_NEW);
-        e.emit(OP.BAG_INDEX, Number(name));
-        const miss = e.emitHole(OP.JZ);
-        e.emit(OP.ITEMS_PUSH);
-        e.patch(miss, e.here());
-      } else {
-        compileBagFieldToItems(e, name);
-      }
-    } else {
-      e.emit(OP.ITEMS_NEW);
-    }
-    e.emit(OP.ITEMS_FORMAT);
-    e.emit(OP.JOIN_DYN);
-    return;
-  }
-  e.refuse("bad template");
-}
-
-function compileBagChildrenToItems(e, includePunct) {
-  // items = bag nodes that are (includePunct or !punct)
-  e.emit(OP.ITEMS_NEW);
-  e.emit(OP.BAG_LEN_MISSING);
-}
-
-// I don't have BAG_LEN or bag iteration except BAG_INDEX / BAG_FIELD / BAG_FMT_KIND.
-// Add BAG_LEN op? Or walk with BAG_INDEX 0,1,2,... we don't know length.
-//
-// Add OP.BAG_LEN = 42 (no imm) and OP.BAG_GET = 43 (pop i, push node; refuse oob)
-// That's enough to iterate the bag.
-//
-// Actually I already have BAG_INDEX which pushes node+flag without refusing.
-// But I need the length to loop. ADD BAG_LEN.
-
-function compileTemplate(e, rule) {
-  e.emit(OP.TAKE_ALL);
-  if (rule.doc == null) {
-    e.refuse("template missing doc");
-    return;
-  }
-  compileTemplateSpec(e, rule.doc);
-  if (rule.paren) e.emit(OP.PAREN);
-  e.emit(OP.HALT);
-}
-
-function compileClause(e, rule) {
-  e.emit(OP.TAKE_ALL);
-  const kw = rule.keyword || "";
-  const header = rule.header || [];
-  e.text(kw + (header.length ? " " : ""));
-  e.emit(OP.PUSH_I, 1);
-  e.emit(OP.STORE, 0);
-
-  for (const h of header) {
-    e.emit(OP.BAG_FIELD, e.intern(h));
-    const notField = e.emitHole(OP.JZ);
-    e.emit(OP.FORMAT);
-    e.emit(OP.LOAD, 0);
-    e.emit(OP.PUSH_I, 1);
-    e.emit(OP.ADD);
-    e.emit(OP.STORE, 0);
-    const next = e.emitHole(OP.JMP);
-
-    e.patch(notField, e.here());
-    e.emit(OP.BAG_KIND, e.intern(h));
-    const notKind = e.emitHole(OP.JZ);
-    e.emit(OP.FORMAT);
-    e.emit(OP.LOAD, 0);
-    e.emit(OP.PUSH_I, 1);
-    e.emit(OP.ADD);
-    e.emit(OP.STORE, 0);
-    const next2 = e.emitHole(OP.JMP);
-
-    e.patch(notKind, e.here());
-    e.emit(OP.BAG_TOKEN, e.intern(h));
-    const notTok = e.emitHole(OP.JZ);
-    e.text(" " + h + " ");
-    e.emit(OP.LOAD, 0);
-    e.emit(OP.PUSH_I, 1);
-    e.emit(OP.ADD);
-    e.emit(OP.STORE, 0);
-    e.patch(notTok, e.here());
-    e.patch(next, e.here());
-    e.patch(next2, e.here());
-  }
-
-  if (rule.arrow) {
-    e.emit(OP.BAG_FIELD, e.intern(rule.arrow));
-    const miss = e.emitHole(OP.JZ);
-    e.text(" -> ");
-    e.emit(OP.FORMAT);
-    e.emit(OP.LOAD, 0);
-    e.emit(OP.PUSH_I, 2);
-    e.emit(OP.ADD);
-    e.emit(OP.STORE, 0);
-    e.patch(miss, e.here());
-  }
-  if (rule.colon) {
-    e.text(":");
-    e.emit(OP.LOAD, 0);
-    e.emit(OP.PUSH_I, 1);
-    e.emit(OP.ADD);
-    e.emit(OP.STORE, 0);
-  }
-
-  // body: field or first "block"
-  if (rule.body) {
-    e.emit(OP.BAG_FIELD, e.intern(rule.body));
-    const missF = e.emitHole(OP.JZ);
-    emitIndentedBody(e);
-    const after = e.emitHole(OP.JMP);
-    e.patch(missF, e.here());
-    e.emit(OP.BAG_KIND, e.intern("block"));
-    const missB = e.emitHole(OP.JZ);
-    emitIndentedBody(e);
-    e.patch(missB, e.here());
-    e.patch(after, e.here());
-  } else {
-    e.emit(OP.BAG_KIND, e.intern("block"));
-    const missB = e.emitHole(OP.JZ);
-    emitIndentedBody(e);
-    e.patch(missB, e.here());
-  }
-
-  for (const t of rule.tails || []) {
-    e.emit(OP.BAG_FMT_KIND, e.intern(t));
-    // BAG_FMT_KIND pushes one doc (possibly empty concat) — always include
-    e.emit(OP.LOAD, 0);
-    e.emit(OP.PUSH_I, 1);
-    e.emit(OP.ADD);
-    e.emit(OP.STORE, 0);
-  }
-
-  e.emit(OP.LOAD, 0);
-  e.emit(OP.CONCAT_DYN);
-  e.emit(OP.HALT);
-}
-
 function emitIndentedBody(e) {
-  // indent(concat([hardline, format(body)])). Body node is TOS on N.
   e.emit(OP.FORMAT);
   e.emit(OP.HARDLINE);
   e.emit(OP.SWAP_D);
@@ -1153,12 +713,160 @@ function emitIndentedBody(e) {
   e.emit(OP.STORE, 0);
 }
 
-function compileChain(e, rule) {
-  const flags = (rule.already_flat ? 1 : 0) | (rule.break === "paren" ? 2 : 0);
-  if (!rule.already_flat) {
-    e.emit(OP.TAKE_ALL);
-  }
-  e.emit(OP.HOST_CHAIN, flags);
+function compileClause(e) {
+  e.emit(OP.TAKE_ALL);
+  e.atext(0);
+  e.emit(OP.PUSH_I, 1);
+  e.emit(OP.STORE, 0);
+
+  e.emit(OP.PUSH_I, 0);
+  e.emit(OP.STORE, 1);
+  const hLoop = e.here();
+  e.emit(OP.LOAD, 1);
+  e.emit(OP.ARG, 1);
+  e.emit(OP.LT);
+  const hDone = e.emitHole(OP.JZ);
+
+  e.emit(OP.PUSH_I, 8);
+  e.emit(OP.LOAD, 1);
+  e.emit(OP.ADD);
+  e.emit(OP.ARGI);
+  e.emit(OP.DUP_I);
+  e.emit(OP.STORE, 2);
+
+  e.emit(OP.CBAG_FIELD);
+  const notField = e.emitHole(OP.JZ);
+  e.emit(OP.FORMAT);
+  e.emit(OP.LOAD, 0);
+  e.emit(OP.PUSH_I, 1);
+  e.emit(OP.ADD);
+  e.emit(OP.STORE, 0);
+  const nextH = e.emitHole(OP.JMP);
+
+  e.patch(notField, e.here());
+  e.emit(OP.LOAD, 2);
+  e.emit(OP.CBAG_KIND);
+  const notKind = e.emitHole(OP.JZ);
+  e.emit(OP.FORMAT);
+  e.emit(OP.LOAD, 0);
+  e.emit(OP.PUSH_I, 1);
+  e.emit(OP.ADD);
+  e.emit(OP.STORE, 0);
+  const nextH2 = e.emitHole(OP.JMP);
+
+  e.patch(notKind, e.here());
+  e.emit(OP.LOAD, 2);
+  e.emit(OP.CBAG_TOKEN);
+  const notTok = e.emitHole(OP.JZ);
+  e.text(" ");
+  e.emit(OP.LOAD, 2);
+  e.emit(OP.CTEXT);
+  e.text(" ");
+  e.emit(OP.CONCAT, 3);
+  e.emit(OP.LOAD, 0);
+  e.emit(OP.PUSH_I, 1);
+  e.emit(OP.ADD);
+  e.emit(OP.STORE, 0);
+  e.patch(notTok, e.here());
+  e.patch(nextH, e.here());
+  e.patch(nextH2, e.here());
+
+  e.emit(OP.LOAD, 1);
+  e.emit(OP.PUSH_I, 1);
+  e.emit(OP.ADD);
+  e.emit(OP.STORE, 1);
+  e.jmpTo(hLoop);
+  e.patch(hDone, e.here());
+
+  e.emit(OP.ARG, 5);
+  e.emit(OP.PUSH_I, 0);
+  e.emit(OP.LT);
+  const noArrow = e.emitHole(OP.JNZ);
+  e.emit(OP.ARG, 5);
+  e.emit(OP.CBAG_FIELD);
+  const missArrow = e.emitHole(OP.JZ);
+  e.text(" -> ");
+  e.emit(OP.FORMAT);
+  e.emit(OP.LOAD, 0);
+  e.emit(OP.PUSH_I, 2);
+  e.emit(OP.ADD);
+  e.emit(OP.STORE, 0);
+  e.patch(missArrow, e.here());
+  e.patch(noArrow, e.here());
+
+  e.emit(OP.ARG, 2);
+  const noColon = e.emitHole(OP.JZ);
+  e.text(":");
+  e.emit(OP.LOAD, 0);
+  e.emit(OP.PUSH_I, 1);
+  e.emit(OP.ADD);
+  e.emit(OP.STORE, 0);
+  e.patch(noColon, e.here());
+
+  e.emit(OP.ARG, 3);
+  const noBody = e.emitHole(OP.JZ);
+  e.emit(OP.ARG, 3);
+  e.emit(OP.PUSH_I, 1);
+  e.emit(OP.EQ);
+  const blockOnly = e.emitHole(OP.JZ);
+  e.emit(OP.ARG, 4);
+  e.emit(OP.CBAG_FIELD);
+  const missF = e.emitHole(OP.JZ);
+  emitIndentedBody(e);
+  const afterBody = e.emitHole(OP.JMP);
+  e.patch(missF, e.here());
+  e.emit(OP.BAG_KIND, e.intern("block"));
+  const missB = e.emitHole(OP.JZ);
+  emitIndentedBody(e);
+  e.patch(missB, e.here());
+  e.patch(afterBody, e.here());
+  const afterBodyMode = e.emitHole(OP.JMP);
+
+  e.patch(blockOnly, e.here());
+  e.emit(OP.BAG_KIND, e.intern("block"));
+  const missB2 = e.emitHole(OP.JZ);
+  emitIndentedBody(e);
+  e.patch(missB2, e.here());
+  e.patch(afterBodyMode, e.here());
+  e.patch(noBody, e.here());
+
+  e.emit(OP.PUSH_I, 0);
+  e.emit(OP.STORE, 1);
+  const tLoop = e.here();
+  e.emit(OP.LOAD, 1);
+  e.emit(OP.ARG, 6);
+  e.emit(OP.LT);
+  const tDone = e.emitHole(OP.JZ);
+  e.emit(OP.PUSH_I, 8);
+  e.emit(OP.ARG, 1);
+  e.emit(OP.ADD);
+  e.emit(OP.LOAD, 1);
+  e.emit(OP.ADD);
+  e.emit(OP.ARGI);
+  e.emit(OP.CBAG_FMT);
+  e.emit(OP.LOAD, 0);
+  e.emit(OP.PUSH_I, 1);
+  e.emit(OP.ADD);
+  e.emit(OP.STORE, 0);
+  e.emit(OP.LOAD, 1);
+  e.emit(OP.PUSH_I, 1);
+  e.emit(OP.ADD);
+  e.emit(OP.STORE, 1);
+  e.jmpTo(tLoop);
+  e.patch(tDone, e.here());
+
+  e.emit(OP.LOAD, 0);
+  e.emit(OP.CONCAT_DYN);
+  e.emit(OP.HALT);
+}
+
+function compileChain(e) {
+  e.emit(OP.ARG, 0);
+  const skipTake = e.emitHole(OP.JNZ);
+  e.emit(OP.TAKE_ALL);
+  e.patch(skipTake, e.here());
+  e.emit(OP.ARG, 1);
+  e.emit(OP.HOST_CHAIN);
   e.emit(OP.HALT);
 }
 
@@ -1167,52 +875,11 @@ function compileFromImport(e) {
   e.emit(OP.HALT);
 }
 
-function compileKind(e, kind, rule, type) {
-  switch (kind) {
-    case "leaf":
-      return compileLeaf(e);
-    case "opaque":
-      return compileOpaque(e);
-    case "fwd":
-      return compileFwd(e, type);
-    case "infix":
-      return compileInfix(e, rule, type);
-    case "seq":
-      return compileSeqFixed(e, rule, type);
-    case "wrap":
-      return compileWrap(e, rule, type);
-    case "pfx":
-      return compilePfx(e, rule, type);
-    case "body":
-      return compileBodyFixed(e, rule);
-    case "comp":
-      return compileComp(e, rule, type);
-    case "dot":
-      return compileDot(e, rule);
-    case "sub":
-      return compileSub(e, type);
-    case "template":
-      return compileTemplate(e, rule);
-    case "clause":
-      return compileClause(e, rule);
-    case "chain":
-      return compileChain(e, rule);
-    case "from_import":
-      return compileFromImport(e);
-    default:
-      e.refuse(`unknown kind ${kind} for ${type}`);
-  }
-}
-
-// ---- bag helpers used by template: need BAG_LEN + BAG_GET ----
-// I'll add these ops rather than rewrite template as a host op.
-
-function compileBagChildrenConcat(e, includePunct) {
-  // iterate bag, format non-punct (or all), concat
+function compileBagChildrenConcat(e) {
   e.emit(OP.PUSH_I, 0);
-  e.emit(OP.STORE, 1); // i
+  e.emit(OP.STORE, 1);
   e.emit(OP.PUSH_I, 0);
-  e.emit(OP.STORE, 2); // count
+  e.emit(OP.STORE, 2);
   e.emit(OP.BAG_LEN);
   e.emit(OP.STORE, 3);
   const loop = e.here();
@@ -1222,25 +889,17 @@ function compileBagChildrenConcat(e, includePunct) {
   const done = e.emitHole(OP.JZ);
   e.emit(OP.LOAD, 1);
   e.emit(OP.BAG_GET);
-  if (!includePunct) {
-    e.emit(OP.NODE_PUNCT);
-    const skip = e.emitHole(OP.JNZ);
-    e.emit(OP.FORMAT);
-    e.emit(OP.LOAD, 2);
-    e.emit(OP.PUSH_I, 1);
-    e.emit(OP.ADD);
-    e.emit(OP.STORE, 2);
-    const next = e.emitHole(OP.JMP);
-    e.patch(skip, e.here());
-    e.emit(OP.DROP_N);
-    e.patch(next, e.here());
-  } else {
-    e.emit(OP.FORMAT);
-    e.emit(OP.LOAD, 2);
-    e.emit(OP.PUSH_I, 1);
-    e.emit(OP.ADD);
-    e.emit(OP.STORE, 2);
-  }
+  e.emit(OP.NODE_PUNCT);
+  const skip = e.emitHole(OP.JNZ);
+  e.emit(OP.FORMAT);
+  e.emit(OP.LOAD, 2);
+  e.emit(OP.PUSH_I, 1);
+  e.emit(OP.ADD);
+  e.emit(OP.STORE, 2);
+  const next = e.emitHole(OP.JMP);
+  e.patch(skip, e.here());
+  e.emit(OP.DROP_N);
+  e.patch(next, e.here());
   e.emit(OP.LOAD, 1);
   e.emit(OP.PUSH_I, 1);
   e.emit(OP.ADD);
@@ -1264,7 +923,7 @@ function compileBagFieldConcat(e, name) {
   const done = e.emitHole(OP.JZ);
   e.emit(OP.LOAD, 1);
   e.emit(OP.BAG_GET);
-  e.nodeField(name);
+  e.emit(OP.NODE_FIELD, e.intern(name));
   const no = e.emitHole(OP.JZ);
   e.emit(OP.ITEMS_PUSH);
   const next = e.emitHole(OP.JMP);
@@ -1294,7 +953,7 @@ function compileBagFieldToItems(e, name) {
   const done = e.emitHole(OP.JZ);
   e.emit(OP.LOAD, 1);
   e.emit(OP.BAG_GET);
-  e.nodeField(name);
+  e.emit(OP.NODE_FIELD, e.intern(name));
   const no = e.emitHole(OP.JZ);
   e.emit(OP.ITEMS_PUSH);
   const next = e.emitHole(OP.JMP);
@@ -1309,7 +968,7 @@ function compileBagFieldToItems(e, name) {
   e.patch(done, e.here());
 }
 
-function compileBagChildrenToItemsFixed(e) {
+function compileBagChildrenToItems(e) {
   e.emit(OP.ITEMS_NEW);
   e.emit(OP.PUSH_I, 0);
   e.emit(OP.STORE, 1);
@@ -1337,63 +996,10 @@ function compileBagChildrenToItemsFixed(e) {
   e.patch(done, e.here());
 }
 
-function compilePackage(src) {
-  const e = new Emitter();
-  const entry = {};
-  const kinds = {};
-
-  const defaults = {};
-  defaults.leaf = e.here();
-  compileLeaf(e);
-  defaults.opaque = e.here();
-  compileOpaque(e);
-  defaults.fwd = e.here();
-  compileFwd(e, "<fwd>");
-
-  const nodes = src.nodes || {};
-  for (const type of Object.keys(nodes)) {
-    const rule = nodes[type];
-    const kind = rule.kind;
-    kinds[type] = kind;
-    entry[type] = e.here();
-    compileKind(e, kind, rule, type);
-  }
-
-  // Patch template helpers that used missing ops: rewrite compileTemplate
-  // to use the fixed bag walkers. The functions compileBagChildrenConcat
-  // and compileBagFieldConcat emit BAG_LEN / BAG_GET.
-
-  return {
-    language: src.language,
-    indent: src.indent || 2,
-    comment_type: src.comment_type || null,
-    opaque: src.opaque || [],
-    steal_into_body: src.steal_into_body || [],
-    blank: src.blank || { max: 0, before_top: [] },
-    consts: e.consts,
-    entry,
-    kinds,
-    defaults,
-    code: e.code,
-  };
-}
-
-// Fix template compilation to use the real bag walkers.
-// Re-bind the helper names used inside compileTemplateSpec.
-function installTemplateFixes() {
-  // compileTemplateSpec calls compileBagChildrenConcat / compileBagFieldConcat
-  // / compileBagChildrenToItems. Replace compileBagChildrenToItems body.
-}
-
-// I referenced compileBagChildrenToItems (missing BAG_LEN) from compileTemplateSpec.
-// Patch that function's call site by rewriting compileTemplateSpec's $children
-// and join $children to use the Fixed versions. Easiest: replace the function
-// after the fact.
-
-function compileTemplateSpecFixed(e, spec) {
+function compileTemplateSpec(e, spec) {
   if (typeof spec === "string") {
     if (spec === "$children") {
-      compileBagChildrenConcat(e, false);
+      compileBagChildrenConcat(e);
       return;
     }
     if (spec.charAt(0) === "$") {
@@ -1419,7 +1025,7 @@ function compileTemplateSpecFixed(e, spec) {
       e.text("");
       return;
     }
-    for (const item of spec) compileTemplateSpecFixed(e, item);
+    for (const item of spec) compileTemplateSpec(e, item);
     e.emit(OP.CONCAT, spec.length);
     return;
   }
@@ -1428,7 +1034,7 @@ function compileTemplateSpecFixed(e, spec) {
     const items = spec.join.items || "$children";
     e.text(sep);
     if (items === "$children") {
-      compileBagChildrenToItemsFixed(e);
+      compileBagChildrenToItems(e);
     } else if (typeof items === "string" && items.charAt(0) === "$") {
       const name = items.slice(1);
       if (/^\d+$/.test(name)) {
@@ -1450,43 +1056,147 @@ function compileTemplateSpecFixed(e, spec) {
   e.refuse("bad template");
 }
 
-function compileTemplateFixed(e, rule) {
+function compileTemplate(e, rule) {
   e.emit(OP.TAKE_ALL);
   if (rule.doc == null) {
     e.refuse("template missing doc");
     return;
   }
-  compileTemplateSpecFixed(e, rule.doc);
+  compileTemplateSpec(e, rule.doc);
   if (rule.paren) e.emit(OP.PAREN);
   e.emit(OP.HALT);
 }
 
-function compileKindFixed(e, kind, rule, type) {
-  if (kind === "template") return compileTemplateFixed(e, rule);
-  if (kind === "seq") return compileSeqFixed(e, rule, type);
-  if (kind === "body") return compileBodyFixed(e, rule);
-  return compileKind(e, kind, rule, type);
+function argsFor(kind, rule, intern) {
+  switch (kind) {
+    case "seq": {
+      const open = rule.open == null ? "" : String(rule.open);
+      const close = rule.close == null ? "" : String(rule.close);
+      const sep = rule.sep == null ? "," : String(rule.sep);
+      return [
+        intern(open),
+        intern(close),
+        intern(sep),
+        intern(open + close),
+        rule.flat_pad ? 1 : 0,
+        rule.singleton_comma ? 1 : 0,
+        rule.trailing === "none" ? 1 : 0,
+        rule.trailing === "magic" ? 1 : 0,
+        rule.trailing === "magic" || rule.trailing === "always-on-break" ? 1 : 0,
+      ];
+    }
+    case "infix":
+      return [
+        rule.op != null ? 1 : 0,
+        intern(rule.op != null ? rule.op : ""),
+        intern(rule.op_field || ""),
+        intern((rule.op || "").trim()),
+      ];
+    case "wrap":
+    case "comp":
+      return [intern(rule.open || ""), intern(rule.close || "")];
+    case "pfx": {
+      let mode = 0;
+      if (rule.fields && rule.fields.length) mode = 2;
+      else if (rule.op_field) mode = 1;
+      const fields = rule.fields || [];
+      return [
+        mode,
+        intern(rule.kw || ""),
+        rule.sp ? 1 : 0,
+        rule.paren ? 1 : 0,
+        fields.length,
+        ...fields.map((f) => intern(f)),
+      ];
+    }
+    case "body":
+      return [rule.tight ? 1 : 0];
+    case "dot":
+      return [rule.paren ? 1 : 0];
+    case "chain":
+      return [
+        rule.already_flat ? 1 : 0,
+        (rule.already_flat ? 1 : 0) | (rule.break === "paren" ? 2 : 0),
+      ];
+    case "clause": {
+      const header = rule.header || [];
+      const tails = rule.tails || [];
+      const kw = rule.keyword || "";
+      const kwText = kw + (header.length ? " " : "");
+      let bodyMode = 2;
+      if (rule.body) bodyMode = 1;
+      return [
+        intern(kwText),
+        header.length,
+        rule.colon ? 1 : 0,
+        bodyMode,
+        intern(rule.body || ""),
+        rule.arrow ? intern(rule.arrow) : -1,
+        tails.length,
+        0,
+        ...header.map((h) => intern(h)),
+        ...tails.map((t) => intern(t)),
+      ];
+    }
+    default:
+      return [];
+  }
 }
 
-function compilePackageFixed(src) {
+const KIND_COMPILE = {
+  leaf: compileLeaf,
+  opaque: compileOpaque,
+  fwd: compileFwd,
+  infix: compileInfix,
+  seq: compileSeq,
+  wrap: compileWrap,
+  pfx: compilePfx,
+  body: compileBody,
+  comp: compileComp,
+  dot: compileDot,
+  sub: compileSub,
+  clause: compileClause,
+  chain: compileChain,
+  from_import: compileFromImport,
+};
+
+function compileShared(e, needed) {
+  const progs = {};
+  for (const kind of Object.keys(KIND_COMPILE)) {
+    if (!needed.has(kind)) continue;
+    progs[kind] = e.here();
+    KIND_COMPILE[kind](e);
+  }
+  return progs;
+}
+
+function compilePackage(src) {
+  const nodes = src.nodes || {};
+  const needed = new Set(["leaf", "opaque", "fwd"]);
+  for (const rule of Object.values(nodes)) {
+    if (rule.kind && rule.kind !== "template") needed.add(rule.kind);
+  }
   const e = new Emitter();
+  const progs = compileShared(e, needed);
   const entry = {};
   const kinds = {};
+  const args = {};
 
-  const defaults = {};
-  defaults.leaf = e.here();
-  compileLeaf(e);
-  defaults.opaque = e.here();
-  compileOpaque(e);
-  defaults.fwd = e.here();
-  compileFwd(e, "<fwd>");
-
-  const nodes = src.nodes || {};
   for (const type of Object.keys(nodes)) {
     const rule = nodes[type];
-    kinds[type] = rule.kind;
-    entry[type] = e.here();
-    compileKindFixed(e, rule.kind, rule, type);
+    const kind = rule.kind;
+    kinds[type] = kind;
+    if (kind === "template") {
+      entry[type] = e.here();
+      compileTemplate(e, rule);
+    } else if (progs[kind] != null) {
+      entry[type] = progs[kind];
+      const vec = argsFor(kind, rule, (s) => e.intern(s));
+      if (vec.length) args[type] = vec;
+    } else {
+      entry[type] = e.here();
+      e.refuse(`unknown kind ${kind} for ${type}`);
+    }
   }
 
   return {
@@ -1501,8 +1211,13 @@ function compilePackageFixed(src) {
     },
     consts: e.consts,
     entry,
+    args,
     kinds,
-    defaults,
+    defaults: {
+      leaf: progs.leaf,
+      opaque: progs.opaque,
+      fwd: progs.fwd,
+    },
     code: e.code,
   };
 }
@@ -1514,16 +1229,16 @@ function main() {
   const files = fs.readdirSync(srcDir).filter((f) => f.endsWith(".json"));
   for (const f of files) {
     const src = JSON.parse(fs.readFileSync(path.join(srcDir, f), "utf8"));
-    const bc = compilePackageFixed(src);
-    decode(bc.code); // fail fast on bad encoding
-    const out = path.join(outDir, f);
-    fs.writeFileSync(out, JSON.stringify(bc));
+    const bc = compilePackage(src);
+    decode(bc.code);
+    fs.writeFileSync(path.join(outDir, f), JSON.stringify(bc));
+    const nTmpl = Object.values(bc.kinds).filter((k) => k === "template").length;
     console.error(
-      `compiled ${f}: ${bc.code.length} ints, ${bc.consts.length} consts, ${Object.keys(bc.entry).length} entries`,
+      `compiled ${f}: ${bc.code.length} ints, ${bc.consts.length} consts, ${Object.keys(bc.entry).length} entries, ${nTmpl} unrolled templates`,
     );
   }
 }
 
 if (require.main === module) main();
 
-module.exports = { compilePackage: compilePackageFixed, Emitter, OP };
+module.exports = { compilePackage, Emitter, OP };

@@ -18,6 +18,7 @@ impl Engine<'_> {
     fn run(&self, node: &Node, parent_kind: Option<&str>) -> Result<Doc, Refuse> {
         let (pc, kind) = self.entry_for(node);
         let kids = non_comments(node, self.pkg.comment_type());
+        let args = self.pkg.args.get(&node.kind).cloned().unwrap_or_default();
         let mut f = Frame {
             node,
             parent_kind,
@@ -31,6 +32,7 @@ impl Engine<'_> {
             docs: Vec::new(),
             nodes: Vec::new(),
             ints: Vec::new(),
+            args,
         };
         let mut doc = self.exec(&mut f, pc)?;
         if !node.leading.is_empty() {
@@ -353,7 +355,8 @@ impl Engine<'_> {
                     });
                 }
                 package::HOST_CHAIN => {
-                    let d = self.host_chain(f, imm)?;
+                    let flags = f.pop_i()?;
+                    let d = self.host_chain(f, flags)?;
                     f.docs.push(d);
                 }
                 package::DSTORE => {
@@ -387,6 +390,113 @@ impl Engine<'_> {
                     let mut wanted = Vec::new();
                     for k in 0..n {
                         wanted.push(self.pkg.const_at(code[pc + 2 + k as usize])?);
+                    }
+                    for node in &f.bag {
+                        let field = node.field.as_deref();
+                        let ok = field.is_some_and(|fld| wanted.contains(&fld));
+                        if !ok && !node.is_punct() {
+                            return Err(Refuse(format!(
+                                "pfx {}: unexpected {}",
+                                f.node.kind, node.kind
+                            )));
+                        }
+                    }
+                }
+                package::ARG => f.ints.push(arg_at(f, imm)?),
+                package::ARGI => {
+                    let i = f.pop_i()?;
+                    f.ints.push(arg_at(f, i)?);
+                }
+                package::CTEXT => {
+                    let i = f.pop_i()?;
+                    f.docs.push(Doc::text(self.pkg.const_at(i)?));
+                }
+                package::CPEEK => {
+                    let i = f.pop_i()?;
+                    let want = self.pkg.const_at(i)?;
+                    let v = f.kids.get(f.cursor).is_some_and(|n| n.is_token(want));
+                    f.ints.push(i32::from(v));
+                }
+                package::CTOKEN => {
+                    let i = f.pop_i()?;
+                    let want = self.pkg.const_at(i)?;
+                    let n = f.peek_n()?;
+                    f.ints.push(i32::from(n.is_token(want)));
+                }
+                package::CFIELD => {
+                    let i = f.pop_i()?;
+                    let want = self.pkg.const_at(i)?;
+                    let n = f.peek_n()?;
+                    f.ints.push(i32::from(n.field.as_deref() == Some(want)));
+                }
+                package::CBAG_FIELD => {
+                    let i = f.pop_i()?;
+                    let want = self.pkg.const_at(i)?;
+                    if let Some(n) = f
+                        .bag
+                        .iter()
+                        .copied()
+                        .find(|n| n.field.as_deref() == Some(want))
+                    {
+                        f.nodes.push(n);
+                        f.ints.push(1);
+                    } else {
+                        f.ints.push(0);
+                    }
+                }
+                package::CBAG_KIND => {
+                    let i = f.pop_i()?;
+                    let want = self.pkg.const_at(i)?;
+                    if let Some(n) = f
+                        .bag
+                        .iter()
+                        .copied()
+                        .find(|n| n.kind == want && n.text.is_none())
+                    {
+                        f.nodes.push(n);
+                        f.ints.push(1);
+                    } else {
+                        f.ints.push(0);
+                    }
+                }
+                package::CBAG_TOKEN => {
+                    let i = f.pop_i()?;
+                    let want = self.pkg.const_at(i)?;
+                    let v = f.bag.iter().any(|n| n.is_token(want));
+                    f.ints.push(i32::from(v));
+                }
+                package::CBAG_FMT => {
+                    let i = f.pop_i()?;
+                    let want = self.pkg.const_at(i)?.to_string();
+                    let mut parts = Vec::new();
+                    let matches: Vec<&Node> =
+                        f.bag.iter().copied().filter(|n| n.kind == want).collect();
+                    for n in matches {
+                        parts.push(Doc::Hardline);
+                        parts.push(self.run(n, Some(f.kind))?);
+                    }
+                    f.docs.push(if parts.is_empty() {
+                        Doc::Concat(vec![])
+                    } else {
+                        Doc::Concat(parts)
+                    });
+                }
+                package::CBAG_ONLY => {
+                    let base = idx(imm)?;
+                    let n = *f
+                        .args
+                        .get(base)
+                        .ok_or_else(|| Refuse(format!("arg {base} oob")))?;
+                    if n < 0 {
+                        return Err(Refuse(format!("CBAG_ONLY n<{n}")));
+                    }
+                    let mut wanted = Vec::new();
+                    for k in 0..n {
+                        let ci = *f
+                            .args
+                            .get(base + 1 + k as usize)
+                            .ok_or_else(|| Refuse(format!("arg {} oob", base + 1 + k as usize)))?;
+                        wanted.push(self.pkg.const_at(ci)?);
                     }
                     for node in &f.bag {
                         let field = node.field.as_deref();
@@ -604,6 +714,7 @@ struct Frame<'a> {
     docs: Vec<Doc>,
     nodes: Vec<&'a Node>,
     ints: Vec<i32>,
+    args: Vec<i32>,
 }
 
 impl<'a> Frame<'a> {
@@ -639,6 +750,14 @@ impl<'a> Frame<'a> {
             .copied()
             .ok_or_else(|| Refuse("int stack empty".into()))
     }
+}
+
+fn arg_at(f: &Frame<'_>, i: i32) -> Result<i32, Refuse> {
+    let i = idx(i)?;
+    f.args
+        .get(i)
+        .copied()
+        .ok_or_else(|| Refuse(format!("arg {i} oob")))
 }
 
 fn i32_len(n: usize) -> i32 {
