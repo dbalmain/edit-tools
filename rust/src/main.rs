@@ -1,6 +1,6 @@
-//! Dual-runtime formatter: this side is the Rust interpreter.
-//! The package (`packages/<lang>.json`) names a layout kind per CST node
-//! type; `format` runs those kinds and a Wadler printer.
+//! Dual-runtime formatter: this side is the Rust bytecode interpreter.
+//! Authored packages live in `packages/src/`; `build.sh` compiles them
+//! to `packages/<lang>.json`. The Wadler printer is unchanged.
 
 #![forbid(unsafe_code)]
 

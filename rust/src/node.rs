@@ -1,8 +1,6 @@
-//! Corpus tree nodes and the linearity cursor.
+//! Corpus tree nodes.
 
 use serde::Deserialize;
-
-use crate::Refuse;
 
 #[derive(Debug, Deserialize)]
 pub struct TreeDoc {
@@ -53,45 +51,6 @@ impl Node {
 
     pub fn is_token(&self, want: &str) -> bool {
         self.kind == want || self.text.as_deref() == Some(want)
-    }
-}
-
-/// Ordered walk over a node's direct children. Exhaustion or leftovers
-/// are linearity failures.
-pub struct Cursor<'a> {
-    kids: &'a [&'a Node],
-    i: usize,
-}
-
-impl<'a> Cursor<'a> {
-    pub fn new(kids: &'a [&'a Node]) -> Self {
-        Self { kids, i: 0 }
-    }
-
-    pub fn peek(&self) -> Option<&'a Node> {
-        self.kids.get(self.i).copied()
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.i >= self.kids.len()
-    }
-
-    pub fn take(&mut self, what: &str) -> Result<&'a Node, Refuse> {
-        match self.kids.get(self.i) {
-            Some(n) => {
-                self.i += 1;
-                Ok(n)
-            }
-            None => Err(Refuse(format!("expected {what}, found end"))),
-        }
-    }
-
-    pub fn finish(self, where_: &str) -> Result<(), Refuse> {
-        if let Some(n) = self.kids.get(self.i) {
-            Err(Refuse(format!("unconsumed {} in {where_}", n.kind)))
-        } else {
-            Ok(())
-        }
     }
 }
 

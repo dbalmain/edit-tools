@@ -1,44 +1,38 @@
-//! Kind dispatch: the package names an algorithm, this module runs it.
+//! Bytecode interpreter. Comment attach and the Wadler printer stay in the host.
 
 use crate::Refuse;
 use crate::doc::{Doc, join};
-use crate::node::{Cursor, Node, non_comments};
-use crate::package::{Package, Rule};
+use crate::node::{Node, non_comments};
+use crate::package::{self, Bytecode};
 
 pub struct Engine<'a> {
-    pub pkg: &'a Package,
+    pkg: &'a Bytecode,
     source: Option<&'a [u8]>,
 }
 
 impl Engine<'_> {
     pub fn format_node(&self, node: &Node) -> Result<Doc, Refuse> {
-        self.format_in(node, None)
+        self.run(node, None)
     }
 
-    fn format_in(&self, node: &Node, parent_kind: Option<&str>) -> Result<Doc, Refuse> {
-        let rule = self.pkg.nodes.get(&node.kind);
-        let kind = match rule {
-            Some(r) => r.kind.as_str(),
-            None => self.default_kind(node),
+    fn run(&self, node: &Node, parent_kind: Option<&str>) -> Result<Doc, Refuse> {
+        let (pc, kind) = self.entry_for(node);
+        let kids = non_comments(node, self.pkg.comment_type());
+        let mut f = Frame {
+            node,
+            parent_kind,
+            kind,
+            kids,
+            cursor: 0,
+            items: Vec::new(),
+            bag: Vec::new(),
+            slots: [0; 8],
+            dslots: [None, None, None, None],
+            docs: Vec::new(),
+            nodes: Vec::new(),
+            ints: Vec::new(),
         };
-        let mut doc = match kind {
-            "leaf" => self.kind_leaf(node),
-            "opaque" => Ok(self.kind_opaque(node)),
-            "fwd" => self.kind_fwd(node, kind),
-            "infix" => self.kind_infix(node, rule, kind),
-            "seq" => self.kind_seq(node, rule, kind),
-            "body" => self.kind_body(node, rule, kind),
-            "pfx" => self.kind_pfx(node, rule, kind, parent_kind),
-            "wrap" => self.kind_wrap(node, rule, kind),
-            "chain" => self.kind_chain(node, rule, kind, parent_kind),
-            "comp" => self.kind_comp(node, rule, kind),
-            "dot" => self.kind_dot(node, kind, parent_kind),
-            "sub" => self.kind_sub(node, kind),
-            "template" => self.kind_template(node, rule, kind, parent_kind),
-            "from_import" => self.kind_from_import(node, kind),
-            "clause" => self.kind_clause(node, rule, kind),
-            other => Err(Refuse(format!("unknown kind {other} for {}", node.kind))),
-        }?;
+        let mut doc = self.exec(&mut f, pc)?;
         if !node.leading.is_empty() {
             let mut parts = Vec::new();
             for c in &node.leading {
@@ -54,18 +48,379 @@ impl Engine<'_> {
         Ok(doc)
     }
 
-    fn default_kind(&self, node: &Node) -> &'static str {
+    fn entry_for(&self, node: &Node) -> (usize, &str) {
+        if let Some(&pc) = self.pkg.entry.get(&node.kind) {
+            let kind = self
+                .pkg
+                .kinds
+                .get(&node.kind)
+                .map(String::as_str)
+                .unwrap_or("fwd");
+            return (pc, kind);
+        }
         if self.pkg.is_opaque(&node.kind) {
-            "opaque"
+            (self.pkg.defaults.opaque, "opaque")
         } else if node.text.is_some() {
-            "leaf"
+            (self.pkg.defaults.leaf, "leaf")
         } else {
-            "fwd"
+            (self.pkg.defaults.fwd, "fwd")
         }
     }
 
-    fn kids<'a>(&self, node: &'a Node) -> Vec<&'a Node> {
-        non_comments(node, self.pkg.comment_type())
+    fn exec(&self, f: &mut Frame<'_>, mut pc: usize) -> Result<Doc, Refuse> {
+        let code = &self.pkg.code;
+        loop {
+            let op = *code.get(pc).ok_or_else(|| Refuse(format!("pc {pc} oob")))?;
+            let len = package::op_len(op, code, pc)?;
+            let imm = if len >= 2 { code[pc + 1] } else { 0 };
+            match op {
+                package::HALT => {
+                    self.finish(f)?;
+                    return f.pop_d();
+                }
+                package::TAKE => {
+                    let n = self.take(f, "child")?;
+                    f.nodes.push(n);
+                }
+                package::SKIP => {
+                    self.take(f, "child")?;
+                }
+                package::FINISH => self.finish(f)?,
+                package::EMPTY => f.ints.push(i32::from(f.cursor >= f.kids.len())),
+                package::PEEK_PUNCT => {
+                    let v = f.kids.get(f.cursor).is_some_and(|n| n.is_punct());
+                    f.ints.push(i32::from(v));
+                }
+                package::NODE_PUNCT => {
+                    let n = f.peek_n()?;
+                    f.ints.push(i32::from(n.is_punct()));
+                }
+                package::DROP_N => {
+                    f.pop_n()?;
+                }
+                package::DUP_N => {
+                    let n = f.peek_n()?;
+                    f.nodes.push(n);
+                }
+                package::DROP_D => {
+                    f.pop_d()?;
+                }
+                package::DUP_D => {
+                    let d = f.peek_d()?.clone();
+                    f.docs.push(d);
+                }
+                package::DROP_I => {
+                    f.pop_i()?;
+                }
+                package::DUP_I => {
+                    let v = f.peek_i()?;
+                    f.ints.push(v);
+                }
+                package::NOT => {
+                    let v = f.pop_i()?;
+                    f.ints.push(i32::from(v == 0));
+                }
+                package::LEAF => f.docs.push(self.kind_leaf(f.node)?),
+                package::OPAQUE => f.docs.push(self.kind_opaque(f.node)),
+                package::LINE => f.docs.push(Doc::Line),
+                package::SOFTLINE => f.docs.push(Doc::Softline),
+                package::HARDLINE => f.docs.push(Doc::Hardline),
+                package::GROUP => {
+                    let d = f.pop_d()?;
+                    f.docs.push(Doc::group(d));
+                }
+                package::INDENT => {
+                    let d = f.pop_d()?;
+                    f.docs.push(Doc::indent(d));
+                }
+                package::IF_BREAK => {
+                    let flat = f.pop_d()?;
+                    let broken = f.pop_d()?;
+                    f.docs.push(Doc::if_break(broken, flat));
+                }
+                package::FORMAT => {
+                    let n = f.pop_n()?;
+                    let d = self.run(n, Some(f.kind))?;
+                    f.docs.push(d);
+                }
+                package::NODE_TEXT => {
+                    let n = f.pop_n()?;
+                    f.docs.push(Doc::text(n.text.clone().unwrap_or_default()));
+                }
+                package::FORMAT_OP => {
+                    let n = f.pop_n()?;
+                    f.docs.push(Doc::text(format_op(n)));
+                }
+                package::NODE_RAW => {
+                    let n = f.pop_n()?;
+                    f.docs.push(Doc::text(n.raw_text()));
+                }
+                package::ITEMS_NEW => f.items.clear(),
+                package::ITEMS_PUSH => {
+                    let n = f.pop_n()?;
+                    f.items.push(n);
+                }
+                package::ITEMS_LEN => f.ints.push(i32_len(f.items.len())),
+                package::ITEMS_FORMAT => {
+                    let items = f.items.clone();
+                    for n in items {
+                        let d = self.run(n, Some(f.kind))?;
+                        f.docs.push(d);
+                    }
+                    f.ints.push(i32_len(f.items.len()));
+                }
+                package::CONCAT_DYN => {
+                    let n = f.pop_i()?;
+                    let d = pop_concat(f, n)?;
+                    f.docs.push(d);
+                }
+                package::JOIN_DYN => {
+                    let n = f.pop_i()?;
+                    let docs = pop_n_docs(f, n)?;
+                    let sep = f.pop_d()?;
+                    f.docs.push(join(&sep, docs));
+                }
+                package::PAREN => {
+                    let d = f.pop_d()?;
+                    f.docs.push(paren_insert(d, f.parent_kind));
+                }
+                package::TAKE_ALL => {
+                    while f.cursor < f.kids.len() {
+                        f.bag.push(f.kids[f.cursor]);
+                        f.cursor += 1;
+                    }
+                    self.finish(f)?;
+                }
+                package::EQ => {
+                    let b = f.pop_i()?;
+                    let a = f.pop_i()?;
+                    f.ints.push(i32::from(a == b));
+                }
+                package::LT => {
+                    let b = f.pop_i()?;
+                    let a = f.pop_i()?;
+                    f.ints.push(i32::from(a < b));
+                }
+                package::ADD => {
+                    let b = f.pop_i()?;
+                    let a = f.pop_i()?;
+                    f.ints.push(a.wrapping_add(b));
+                }
+                package::SUB => {
+                    let b = f.pop_i()?;
+                    let a = f.pop_i()?;
+                    f.ints.push(a.wrapping_sub(b));
+                }
+                package::APPEND_DANGLING => {
+                    let d = f.pop_d()?;
+                    f.docs.push(append_dangling(d, f.node));
+                }
+                package::SWAP_D => {
+                    let a = f.pop_d()?;
+                    let b = f.pop_d()?;
+                    f.docs.push(a);
+                    f.docs.push(b);
+                }
+                package::GROUP_BREAK => {
+                    let should = f.pop_i()? != 0;
+                    let d = f.pop_d()?;
+                    f.docs.push(Doc::group_break(d, should));
+                }
+                package::HOST_FROM_IMPORT => {
+                    let d = self.host_from_import(f)?;
+                    f.docs.push(d);
+                }
+                package::BAG_LEN => f.ints.push(i32_len(f.bag.len())),
+                package::BAG_GET => {
+                    let i = idx(f.pop_i()?)?;
+                    let n = *f
+                        .bag
+                        .get(i)
+                        .ok_or_else(|| Refuse(format!("bag[{i}] oob")))?;
+                    f.nodes.push(n);
+                }
+                package::JZ => {
+                    if f.pop_i()? == 0 {
+                        pc = idx(imm)?;
+                        continue;
+                    }
+                }
+                package::JMP => {
+                    pc = idx(imm)?;
+                    continue;
+                }
+                package::JNZ => {
+                    if f.pop_i()? != 0 {
+                        pc = idx(imm)?;
+                        continue;
+                    }
+                }
+                package::PUSH_I => f.ints.push(imm),
+                package::TEXT => f.docs.push(Doc::text(self.pkg.const_at(imm)?)),
+                package::REFUSE => return Err(Refuse(self.pkg.const_at(imm)?.to_string())),
+                package::PEEK_TOKEN => {
+                    let want = self.pkg.const_at(imm)?;
+                    let v = f.kids.get(f.cursor).is_some_and(|n| n.is_token(want));
+                    f.ints.push(i32::from(v));
+                }
+                package::NODE_TOKEN => {
+                    let want = self.pkg.const_at(imm)?;
+                    let n = f.peek_n()?;
+                    f.ints.push(i32::from(n.is_token(want)));
+                }
+                package::NODE_FIELD => {
+                    let want = self.pkg.const_at(imm)?;
+                    let n = f.peek_n()?;
+                    f.ints.push(i32::from(n.field.as_deref() == Some(want)));
+                }
+                package::NODE_KIND => {
+                    let want = self.pkg.const_at(imm)?;
+                    let n = f.peek_n()?;
+                    f.ints.push(i32::from(n.kind == want));
+                }
+                package::STORE => {
+                    let v = f.pop_i()?;
+                    *f.slots
+                        .get_mut(idx(imm)?)
+                        .ok_or_else(|| Refuse(format!("int slot {imm} oob")))? = v;
+                }
+                package::LOAD => {
+                    let v = *f
+                        .slots
+                        .get(idx(imm)?)
+                        .ok_or_else(|| Refuse(format!("int slot {imm} oob")))?;
+                    f.ints.push(v);
+                }
+                package::CONCAT => {
+                    let d = pop_concat(f, imm)?;
+                    f.docs.push(d);
+                }
+                package::BAG_FIELD => {
+                    let want = self.pkg.const_at(imm)?;
+                    if let Some(n) = f
+                        .bag
+                        .iter()
+                        .copied()
+                        .find(|n| n.field.as_deref() == Some(want))
+                    {
+                        f.nodes.push(n);
+                        f.ints.push(1);
+                    } else {
+                        f.ints.push(0);
+                    }
+                }
+                package::BAG_KIND => {
+                    let want = self.pkg.const_at(imm)?;
+                    if let Some(n) = f
+                        .bag
+                        .iter()
+                        .copied()
+                        .find(|n| n.kind == want && n.text.is_none())
+                    {
+                        f.nodes.push(n);
+                        f.ints.push(1);
+                    } else {
+                        f.ints.push(0);
+                    }
+                }
+                package::BAG_TOKEN => {
+                    let want = self.pkg.const_at(imm)?;
+                    let v = f.bag.iter().any(|n| n.is_token(want));
+                    f.ints.push(i32::from(v));
+                }
+                package::BAG_INDEX => {
+                    let i = idx(imm)?;
+                    if let Some(n) = f.bag.get(i).copied() {
+                        f.nodes.push(n);
+                        f.ints.push(1);
+                    } else {
+                        f.ints.push(0);
+                    }
+                }
+                package::BAG_FMT_KIND => {
+                    let want = self.pkg.const_at(imm)?;
+                    let mut parts = Vec::new();
+                    let matches: Vec<&Node> =
+                        f.bag.iter().copied().filter(|n| n.kind == want).collect();
+                    for n in matches {
+                        parts.push(Doc::Hardline);
+                        parts.push(self.run(n, Some(f.kind))?);
+                    }
+                    f.docs.push(if parts.is_empty() {
+                        Doc::Concat(vec![])
+                    } else {
+                        Doc::Concat(parts)
+                    });
+                }
+                package::HOST_CHAIN => {
+                    let d = self.host_chain(f, imm)?;
+                    f.docs.push(d);
+                }
+                package::DSTORE => {
+                    let d = f.pop_d()?;
+                    *f.dslots
+                        .get_mut(idx(imm)?)
+                        .ok_or_else(|| Refuse(format!("doc slot {imm} oob")))? = Some(d);
+                }
+                package::DLOAD => {
+                    let d = f
+                        .dslots
+                        .get(idx(imm)?)
+                        .and_then(|s| s.clone())
+                        .ok_or_else(|| Refuse(format!("empty doc slot {imm}")))?;
+                    f.docs.push(d);
+                }
+                package::ITEMS_GET => {
+                    let i = idx(f.pop_i()?)?;
+                    let n = *f
+                        .items
+                        .get(i)
+                        .ok_or_else(|| Refuse(format!("items[{i}] oob")))?;
+                    f.nodes.push(n);
+                }
+                package::BLANK_EXTRA => {
+                    let i = idx(f.pop_i()?)?;
+                    f.ints.push(self.blank_extra(&f.items, i));
+                }
+                package::BAG_ONLY_FIELDS => {
+                    let n = imm;
+                    let mut wanted = Vec::new();
+                    for k in 0..n {
+                        wanted.push(self.pkg.const_at(code[pc + 2 + k as usize])?);
+                    }
+                    for node in &f.bag {
+                        let field = node.field.as_deref();
+                        let ok = field.is_some_and(|fld| wanted.contains(&fld));
+                        if !ok && !node.is_punct() {
+                            return Err(Refuse(format!(
+                                "pfx {}: unexpected {}",
+                                f.node.kind, node.kind
+                            )));
+                        }
+                    }
+                }
+                other => return Err(Refuse(format!("unknown opcode {other} at {pc}"))),
+            }
+            pc += len;
+        }
+    }
+
+    fn take<'f>(&self, f: &mut Frame<'f>, what: &str) -> Result<&'f Node, Refuse> {
+        match f.kids.get(f.cursor) {
+            Some(n) => {
+                f.cursor += 1;
+                Ok(*n)
+            }
+            None => Err(Refuse(format!("expected {what}, found end"))),
+        }
+    }
+
+    fn finish(&self, f: &Frame<'_>) -> Result<(), Refuse> {
+        if let Some(n) = f.kids.get(f.cursor) {
+            Err(Refuse(format!("unconsumed {} in {}", n.kind, f.node.kind)))
+        } else {
+            Ok(())
+        }
     }
 
     fn kind_leaf(&self, node: &Node) -> Result<Doc, Refuse> {
@@ -89,551 +444,94 @@ impl Engine<'_> {
         Doc::text(node.raw_text())
     }
 
-    fn kind_fwd(&self, node: &Node, kind: &str) -> Result<Doc, Refuse> {
-        let kids = self.kids(node);
-        let mut c = Cursor::new(&kids);
-        let mut interesting = Vec::new();
-        while !c.is_empty() {
-            let n = c.take("child")?;
-            if !n.is_punct() {
-                interesting.push(n);
-            }
+    fn blank_extra(&self, items: &[&Node], i: usize) -> i32 {
+        if i == 0 {
+            return 0;
         }
-        c.finish(&node.kind)?;
-        match interesting.as_slice() {
-            [] => Ok(Doc::text("")),
-            [only] => self.format_in(only, Some(kind)),
-            _ => Err(Refuse(format!(
-                "fwd {} has {} significant children",
-                node.kind,
-                interesting.len()
-            ))),
+        let Some(prev) = items.get(i - 1) else {
+            return 0;
+        };
+        let Some(cur) = items.get(i) else {
+            return 0;
+        };
+        let mut extra = 0usize;
+        if let Some(src) = self.source {
+            extra = count_blank_lines(src, prev.end, cur.start, self.pkg.blank.max);
         }
+        if self.pkg.blank.before_top.iter().any(|t| t == &cur.kind) {
+            extra = extra.max(2);
+        }
+        i32_len(extra)
     }
 
-    fn kind_infix(&self, node: &Node, rule: Option<&Rule>, kind: &str) -> Result<Doc, Refuse> {
-        let Some(rule) = rule else {
-            return Err(Refuse(format!("infix {} missing rule", node.kind)));
-        };
-        let kids = self.kids(node);
-        let mut c = Cursor::new(&kids);
-        let needle = rule.op.as_deref().unwrap_or("").trim();
-        let mut parts = Vec::new();
-        let mut op_emit = rule.op.clone().unwrap_or_default();
-        while !c.is_empty() {
-            let n = c.take("operand or op")?;
-            let is_op = rule
-                .op_field
-                .as_deref()
-                .is_some_and(|f| n.field.as_deref() == Some(f))
-                || (!needle.is_empty() && n.is_token(needle));
-            if is_op {
-                if rule.op.is_none() {
-                    op_emit = format!(" {} ", format_op(n));
-                }
-            } else {
-                parts.push(self.format_in(n, Some(kind))?);
-            }
-        }
-        c.finish(&node.kind)?;
-        if parts.is_empty() {
-            return Err(Refuse(format!("infix {} has no operands", node.kind)));
-        }
-        Ok(join(&Doc::text(op_emit), parts))
-    }
-
-    fn kind_seq(&self, node: &Node, rule: Option<&Rule>, kind: &str) -> Result<Doc, Refuse> {
-        let Some(rule) = rule else {
-            return Err(Refuse(format!("seq {} missing rule", node.kind)));
-        };
-        let open = rule
-            .open
-            .as_deref()
-            .ok_or_else(|| Refuse(format!("seq {} missing open", node.kind)))?;
-        let close = rule
-            .close
-            .as_deref()
-            .ok_or_else(|| Refuse(format!("seq {} missing close", node.kind)))?;
-        let sep = rule.sep.as_deref().unwrap_or(",");
-
-        let kids = self.kids(node);
-        let mut c = Cursor::new(&kids);
-        let open_tok = c.take("open")?;
-        if !open_tok.is_token(open) {
-            return Err(Refuse(format!(
-                "seq {}: expected {open}, got {}",
-                node.kind, open_tok.kind
-            )));
-        }
-        if c.is_empty() {
-            return Err(Refuse(format!("seq {}: missing {close}", node.kind)));
-        }
-        if c.peek().is_some_and(|n| n.is_token(close)) {
-            c.take("close")?;
-            c.finish(&node.kind)?;
-            return Ok(Doc::text(format!("{open}{close}")));
-        }
-
-        let mut items = Vec::new();
-        let mut trailing_comma = false;
-        while c.peek().is_some_and(|n| !n.is_token(close)) {
-            if c.peek().is_some_and(|n| n.is_token(sep)) {
-                return Err(Refuse(format!("seq {}: unexpected {sep}", node.kind)));
-            }
-            items.push(c.take("item")?);
-            if c.is_empty() {
-                return Err(Refuse(format!("seq {}: missing {close}", node.kind)));
-            }
-            if c.peek().is_some_and(|n| n.is_token(sep)) {
-                c.take("sep")?;
-                if c.peek().is_some_and(|n| n.is_token(close)) {
-                    trailing_comma = true;
-                    break;
-                }
-            } else if !c.peek().is_some_and(|n| n.is_token(close)) {
-                return Err(Refuse(format!(
-                    "seq {}: expected {sep} or {close}",
-                    node.kind
-                )));
-            }
-        }
-        if !c.peek().is_some_and(|n| n.is_token(close)) {
-            return Err(Refuse(format!("seq {}: missing {close}", node.kind)));
-        }
-        c.take("close")?;
-        c.finish(&node.kind)?;
-
-        if trailing_comma && rule.trailing.as_deref() == Some("none") {
-            return Err(Refuse(format!(
-                "seq {}: trailing {sep} is forbidden",
-                node.kind
-            )));
-        }
-
-        let pad = if rule.flat_pad {
-            Doc::Line
-        } else {
-            Doc::Softline
-        };
-        let sep_doc = Doc::Concat(vec![Doc::text(sep), Doc::Line]);
-        let mut item_docs = Vec::new();
-        for item in items.iter() {
-            item_docs.push(self.format_in(item, Some(kind))?);
-        }
-        let mut inner = vec![pad.clone()];
-        for (i, d) in item_docs.into_iter().enumerate() {
-            if i > 0 {
-                inner.push(sep_doc.clone());
-            }
-            inner.push(d);
-        }
-        let singleton = rule.singleton_comma && items.len() == 1;
-        if singleton {
-            // The comma is syntactic (`(lonely,)`), not a magic-break hint.
-            inner.push(Doc::text(sep));
-        } else if matches!(
-            rule.trailing.as_deref(),
-            Some("magic") | Some("always-on-break")
-        ) {
-            inner.push(Doc::if_break(Doc::text(sep), Doc::text("")));
-        }
-
-        let should_break =
-            rule.trailing.as_deref() == Some("magic") && trailing_comma && !singleton;
-        let grouped = Doc::Concat(vec![
-            Doc::text(open),
-            Doc::indent(Doc::Concat(inner)),
-            pad,
-            Doc::text(close),
-        ]);
-        Ok(if should_break {
-            Doc::group_break(grouped, true)
-        } else {
-            Doc::group(grouped)
-        })
-    }
-
-    fn kind_body(&self, node: &Node, rule: Option<&Rule>, kind: &str) -> Result<Doc, Refuse> {
-        let kids = self.kids(node);
-        let mut c = Cursor::new(&kids);
-        let mut stmts = Vec::new();
-        while !c.is_empty() {
-            stmts.push(c.take("stmt")?);
-        }
-        c.finish(&node.kind)?;
-        let tight = rule.is_some_and(|r| r.tight);
-        let max_blank = self.pkg.blank.max;
-        let mut docs = Vec::new();
-        for (i, stmt) in stmts.iter().enumerate() {
-            if i > 0 {
-                docs.push(Doc::Hardline);
-                if !tight {
-                    let mut extra = 0usize;
-                    if let Some(src) = self.source {
-                        extra = count_blank_lines(src, stmts[i - 1].end, stmt.start, max_blank);
-                    }
-                    if self.pkg.blank.before_top.iter().any(|t| t == &stmt.kind) {
-                        extra = extra.max(2);
-                    }
-                    for _ in 0..extra {
-                        docs.push(Doc::Hardline);
-                    }
-                }
-            }
-            docs.push(self.format_in(stmt, Some(kind))?);
-        }
-        for d in &node.dangling {
-            if !docs.is_empty() {
-                docs.push(Doc::Hardline);
-            }
-            docs.push(Doc::text(d.clone()));
-        }
-        if docs.is_empty() {
-            return Ok(Doc::text(""));
-        }
-        Ok(Doc::Concat(docs))
-    }
-
-    fn kind_pfx(
-        &self,
-        node: &Node,
-        rule: Option<&Rule>,
-        kind: &str,
-        parent_kind: Option<&str>,
-    ) -> Result<Doc, Refuse> {
-        let Some(rule) = rule else {
-            return Err(Refuse(format!("pfx {} missing rule", node.kind)));
-        };
-        let kids = self.kids(node);
-        let mut c = Cursor::new(&kids);
-
-        if !rule.fields.is_empty() {
-            let mut by_field = std::collections::BTreeMap::new();
-            while !c.is_empty() {
-                let n = c.take("child")?;
-                if n.field
-                    .as_deref()
-                    .is_some_and(|f| rule.fields.iter().any(|w| w == f))
-                {
-                    by_field.insert(n.field.clone().unwrap_or_default(), n);
-                } else if !n.is_punct() {
-                    return Err(Refuse(format!("pfx {}: unexpected {}", node.kind, n.kind)));
-                }
-            }
-            c.finish(&node.kind)?;
-            let mut docs = Vec::new();
-            for f in &rule.fields {
-                if let Some(n) = by_field.get(f) {
-                    docs.push(self.format_in(n, Some(kind))?);
-                }
-            }
-            return Ok(Doc::Concat(docs));
-        }
-
-        let op_text = if let Some(kw) = &rule.kw {
-            let tok = c.take("kw")?;
-            if !tok.is_token(kw) {
-                return Err(Refuse(format!(
-                    "pfx {}: expected {kw}, got {}",
-                    node.kind, tok.kind
-                )));
-            }
-            kw.clone()
-        } else if rule.op_field.is_some() {
-            let op = c.take("op")?;
-            op.raw_text()
-        } else {
-            return Err(Refuse(format!(
-                "pfx {}: need kw, op_field, or fields",
-                node.kind
-            )));
-        };
-        let mut rest = Vec::new();
-        while !c.is_empty() {
-            rest.push(c.take("operand")?);
-        }
-        c.finish(&node.kind)?;
-        let mut docs = vec![Doc::text(format!(
-            "{op_text}{}",
-            if rule.sp && !rest.is_empty() { " " } else { "" }
-        ))];
-        for n in rest {
-            docs.push(self.format_in(n, Some(kind))?);
-        }
-        let mut doc = Doc::Concat(docs);
-        if rule.paren {
-            doc = paren_insert(doc, parent_kind);
-        }
-        Ok(doc)
-    }
-
-    fn kind_wrap(&self, node: &Node, rule: Option<&Rule>, kind: &str) -> Result<Doc, Refuse> {
-        let Some(rule) = rule else {
-            return Err(Refuse(format!("wrap {} missing rule", node.kind)));
-        };
-        let open = rule
-            .open
-            .as_deref()
-            .ok_or_else(|| Refuse(format!("wrap {} missing open", node.kind)))?;
-        let close = rule
-            .close
-            .as_deref()
-            .ok_or_else(|| Refuse(format!("wrap {} missing close", node.kind)))?;
-        let kids = self.kids(node);
-        let mut c = Cursor::new(&kids);
-        let open_tok = c.take("open")?;
-        if !open_tok.is_token(open) {
-            return Err(Refuse(format!(
-                "wrap {}: expected {open}, got {}",
-                node.kind, open_tok.kind
-            )));
-        }
-        let inner = c.take("inner")?;
-        let close_tok = c.take("close")?;
-        if !close_tok.is_token(close) {
-            return Err(Refuse(format!(
-                "wrap {}: expected {close}, got {}",
-                node.kind, close_tok.kind
-            )));
-        }
-        c.finish(&node.kind)?;
-        Ok(Doc::group(Doc::Concat(vec![
-            Doc::text(open),
-            Doc::indent(Doc::Concat(vec![
-                Doc::Softline,
-                self.format_in(inner, Some(kind))?,
-            ])),
-            Doc::Softline,
-            Doc::text(close),
-        ])))
-    }
-
-    fn kind_chain(
-        &self,
-        node: &Node,
-        rule: Option<&Rule>,
-        kind: &str,
-        parent_kind: Option<&str>,
-    ) -> Result<Doc, Refuse> {
-        let Some(rule) = rule else {
-            return Err(Refuse(format!("chain {} missing rule", node.kind)));
-        };
-        let parts = if rule.already_flat {
-            let kids = self.kids(node);
-            let mut c = Cursor::new(&kids);
+    fn host_chain(&self, f: &mut Frame<'_>, flags: i32) -> Result<Doc, Refuse> {
+        let already_flat = flags & 1 != 0;
+        let paren = flags & 2 != 0;
+        let parts = if already_flat {
             let mut parts = vec![ChainPart {
                 op: None,
-                doc: self.format_in(c.take("operand")?, Some(kind))?,
+                doc: self.run(self.take(f, "operand")?, Some(f.kind))?,
             }];
-            while !c.is_empty() {
-                let op = c.take("op")?;
-                let operand = c.take("operand")?;
+            while f.cursor < f.kids.len() {
+                let op = self.take(f, "op")?;
+                let operand = self.take(f, "operand")?;
                 parts.push(ChainPart {
                     op: Some(format_op(op)),
-                    doc: self.format_in(operand, Some(kind))?,
+                    doc: self.run(operand, Some(f.kind))?,
                 });
             }
-            c.finish(&node.kind)?;
+            self.finish(f)?;
             parts
         } else {
-            let kids = self.kids(node);
-            let mut c = Cursor::new(&kids);
-            while !c.is_empty() {
-                c.take("child")?;
-            }
-            c.finish(&node.kind)?;
-            let op_node = field_child(node, "operator");
+            let op_node = field_child(f.node, "operator");
             let cls = prec_class(&format_op_opt(op_node));
-            self.flatten_chain(node, cls, kind)?
+            self.flatten_chain(f.node, cls, f.kind)?
         };
-        finish_chain(parts, rule, parent_kind)
+        finish_chain(parts, paren, f.parent_kind)
     }
 
-    fn kind_comp(&self, node: &Node, rule: Option<&Rule>, kind: &str) -> Result<Doc, Refuse> {
-        let Some(rule) = rule else {
-            return Err(Refuse(format!("comp {} missing rule", node.kind)));
-        };
-        let open = rule
-            .open
-            .as_deref()
-            .ok_or_else(|| Refuse(format!("comp {} missing open", node.kind)))?;
-        let close = rule
-            .close
-            .as_deref()
-            .ok_or_else(|| Refuse(format!("comp {} missing close", node.kind)))?;
-        let kids = self.kids(node);
-        let mut c = Cursor::new(&kids);
-        let open_tok = c.take("open")?;
-        if !open_tok.is_token(open) {
-            return Err(Refuse(format!(
-                "comp {}: expected {open}, got {}",
-                node.kind, open_tok.kind
-            )));
+    fn flatten_chain(&self, node: &Node, cls: u8, kind: &str) -> Result<Vec<ChainPart>, Refuse> {
+        if !is_bin_chain(node) {
+            return Ok(vec![ChainPart {
+                op: None,
+                doc: self.run(node, Some(kind))?,
+            }]);
         }
-        let mut parts = Vec::new();
-        while c.peek().is_some_and(|n| !n.is_token(close)) {
-            parts.push(c.take("part")?);
+        let op_node = field_child(node, "operator");
+        let op = format_op_opt(op_node);
+        if prec_class(&op) != cls {
+            return Ok(vec![ChainPart {
+                op: None,
+                doc: self.run(node, Some(kind))?,
+            }]);
         }
-        if !c.peek().is_some_and(|n| n.is_token(close)) {
-            return Err(Refuse(format!("comp {}: missing {close}", node.kind)));
-        }
-        c.take("close")?;
-        c.finish(&node.kind)?;
-        let mut docs = vec![Doc::Softline];
-        for (i, p) in parts.iter().enumerate() {
-            if i > 0 {
-                docs.push(Doc::Line);
-            }
-            docs.push(self.format_in(p, Some(kind))?);
-        }
-        Ok(Doc::group(Doc::Concat(vec![
-            Doc::text(open),
-            Doc::indent(Doc::Concat(docs)),
-            Doc::Softline,
-            Doc::text(close),
-        ])))
+        let left = field_child(node, "left")
+            .ok_or_else(|| Refuse(format!("chain {} missing left", node.kind)))?;
+        let right = field_child(node, "right")
+            .ok_or_else(|| Refuse(format!("chain {} missing right", node.kind)))?;
+        let mut head = self.flatten_chain(left, cls, kind)?;
+        head.push(ChainPart {
+            op: Some(op),
+            doc: self.run(right, Some(kind))?,
+        });
+        Ok(head)
     }
 
-    fn kind_dot(&self, node: &Node, kind: &str, parent_kind: Option<&str>) -> Result<Doc, Refuse> {
-        let kids = self.kids(node);
-        let mut c = Cursor::new(&kids);
-        let mut docs = Vec::new();
-        while !c.is_empty() {
-            let n = c.take("part")?;
-            if n.text.is_some() && n.is_punct() {
-                docs.push(Doc::text(n.text.clone().unwrap_or_default()));
-            } else {
-                docs.push(self.format_in(n, Some(kind))?);
-            }
-        }
-        c.finish(&node.kind)?;
-        let doc = Doc::Concat(docs);
-        Ok(if self.pkg.nodes.get(&node.kind).is_some_and(|r| r.paren) {
-            paren_insert(doc, parent_kind)
-        } else {
-            doc
-        })
-    }
-
-    fn kind_sub(&self, node: &Node, kind: &str) -> Result<Doc, Refuse> {
-        let kids = self.kids(node);
-        let mut c = Cursor::new(&kids);
-        let obj = c.take("obj")?;
-        let open = c.take("[")?;
-        if !open.is_token("[") {
-            return Err(Refuse(format!("sub {}: expected [", node.kind)));
-        }
-        let index = c.take("index")?;
-        let close = c.take("]")?;
-        if !close.is_token("]") {
-            return Err(Refuse(format!("sub {}: expected ]", node.kind)));
-        }
-        c.finish(&node.kind)?;
-        Ok(Doc::Concat(vec![
-            self.format_in(obj, Some(kind))?,
-            Doc::group(Doc::Concat(vec![
-                Doc::text("["),
-                Doc::indent(Doc::Concat(vec![
-                    Doc::Softline,
-                    self.format_in(index, Some(kind))?,
-                ])),
-                Doc::Softline,
-                Doc::text("]"),
-            ])),
-        ]))
-    }
-
-    fn kind_template(
-        &self,
-        node: &Node,
-        rule: Option<&Rule>,
-        kind: &str,
-        parent_kind: Option<&str>,
-    ) -> Result<Doc, Refuse> {
-        let Some(rule) = rule else {
-            return Err(Refuse(format!("template {} missing rule", node.kind)));
-        };
-        let spec = rule
-            .doc
-            .as_ref()
-            .ok_or_else(|| Refuse(format!("template {} missing doc", node.kind)))?;
-        let kids = self.kids(node);
-        let mut c = Cursor::new(&kids);
-        let mut all = Vec::new();
-        while !c.is_empty() {
-            all.push(c.take("child")?);
-        }
-        c.finish(&node.kind)?;
-        let mut by_field = std::collections::BTreeMap::new();
-        for n in &all {
-            if let Some(f) = &n.field {
-                by_field.insert(f.as_str(), *n);
-            }
-        }
-        let mut doc = self.eval_template(spec, &all, &by_field, kind)?;
-        if rule.paren {
-            doc = paren_insert(doc, parent_kind);
-        }
-        Ok(doc)
-    }
-
-    fn eval_template(
-        &self,
-        spec: &serde_json::Value,
-        all: &[&Node],
-        by_field: &std::collections::BTreeMap<&str, &Node>,
-        kind: &str,
-    ) -> Result<Doc, Refuse> {
-        if let Some(s) = spec.as_str() {
-            if let Some(nodes) = hole_nodes(s, all, by_field) {
-                let mut docs = Vec::new();
-                for n in nodes {
-                    docs.push(self.format_in(n, Some(kind))?);
-                }
-                return Ok(Doc::Concat(docs));
-            }
-            return Ok(Doc::text(s));
-        }
-        if let Some(arr) = spec.as_array() {
-            let mut docs = Vec::new();
-            for item in arr {
-                docs.push(self.eval_template(item, all, by_field, kind)?);
-            }
-            return Ok(Doc::Concat(docs));
-        }
-        if let Some(join) = spec.get("join") {
-            let sep = join.get("sep").and_then(|v| v.as_str()).unwrap_or("");
-            let items_spec = join
-                .get("items")
-                .and_then(|v| v.as_str())
-                .unwrap_or("$children");
-            let items = hole_nodes(items_spec, all, by_field).unwrap_or_default();
-            let mut docs = Vec::new();
-            for n in items {
-                docs.push(self.format_in(n, Some(kind))?);
-            }
-            return Ok(crate::doc::join(&Doc::text(sep), docs));
-        }
-        Err(Refuse("bad template".into()))
-    }
-
-    fn kind_from_import(&self, node: &Node, kind: &str) -> Result<Doc, Refuse> {
-        let kids = self.kids(node);
-        let mut c = Cursor::new(&kids);
-        let from_tok = c.take("from")?;
+    fn host_from_import(&self, f: &mut Frame<'_>) -> Result<Doc, Refuse> {
+        let from_tok = self.take(f, "from")?;
         if !from_tok.is_token("from") {
             return Err(Refuse("from_import: expected from".into()));
         }
-        let module = c.take("module")?;
-        let import_tok = c.take("import")?;
+        let module = self.take(f, "module")?;
+        let import_tok = self.take(f, "import")?;
         if !import_tok.is_token("import") {
             return Err(Refuse("from_import: expected import".into()));
         }
         let mut rest = Vec::new();
-        while !c.is_empty() {
-            rest.push(c.take("name")?);
+        while f.cursor < f.kids.len() {
+            rest.push(self.take(f, "name")?);
         }
-        c.finish(&node.kind)?;
+        self.finish(f)?;
 
         let names: Vec<&Node> = rest
             .iter()
@@ -654,7 +552,7 @@ impl Engine<'_> {
         let has_parens = rest.iter().any(|n| n.is_token("("));
         let mut name_docs = Vec::new();
         for n in names {
-            name_docs.push(self.format_in(n, Some(kind))?);
+            name_docs.push(self.run(n, Some(f.kind))?);
         }
         let sep_doc = Doc::Concat(vec![Doc::text(","), Doc::Line]);
         let mut inner = vec![Doc::Softline];
@@ -686,127 +584,106 @@ impl Engine<'_> {
         );
         Ok(Doc::Concat(vec![
             Doc::text("from "),
-            self.format_in(module, Some(kind))?,
+            self.run(module, Some(f.kind))?,
             Doc::text(" import "),
             list,
         ]))
     }
+}
 
-    fn kind_clause(&self, node: &Node, rule: Option<&Rule>, kind: &str) -> Result<Doc, Refuse> {
-        let Some(rule) = rule else {
-            return Err(Refuse(format!("clause {} missing rule", node.kind)));
-        };
-        let kids = self.kids(node);
-        let mut c = Cursor::new(&kids);
-        let mut all = Vec::new();
-        while !c.is_empty() {
-            all.push(c.take("child")?);
-        }
-        c.finish(&node.kind)?;
-        let mut by_field = std::collections::BTreeMap::new();
-        for n in &all {
-            if let Some(f) = &n.field {
-                by_field.insert(f.as_str(), *n);
-            }
-        }
-        let kw = rule.keyword.as_deref().unwrap_or("");
-        let mut docs = vec![Doc::text(format!(
-            "{kw}{}",
-            if rule.header.is_empty() { "" } else { " " }
-        ))];
-        for h in &rule.header {
-            if let Some(n) = all.iter().find(|n| n.field.as_deref() == Some(h.as_str())) {
-                docs.push(self.format_in(n, Some(kind))?);
-            } else if let Some(n) = all.iter().find(|n| n.kind == *h && n.text.is_none()) {
-                docs.push(self.format_in(n, Some(kind))?);
-            } else if all.iter().any(|n| n.is_token(h)) {
-                docs.push(Doc::text(format!(" {h} ")));
-            }
-        }
-        if let Some(arrow) = &rule.arrow
-            && let Some(n) = by_field.get(arrow.as_str())
-        {
-            docs.push(Doc::text(" -> "));
-            docs.push(self.format_in(n, Some(kind))?);
-        }
-        if rule.colon {
-            docs.push(Doc::text(":"));
-        }
-        let body = rule
-            .body
-            .as_deref()
-            .and_then(|b| by_field.get(b).copied())
-            .or_else(|| all.iter().copied().find(|n| n.kind == "block"));
-        if let Some(body) = body {
-            docs.push(Doc::indent(Doc::Concat(vec![
-                Doc::Hardline,
-                self.format_in(body, Some(kind))?,
-            ])));
-        }
-        for t in &rule.tails {
-            for n in all.iter().filter(|n| n.kind == *t) {
-                docs.push(Doc::Hardline);
-                docs.push(self.format_in(n, Some(kind))?);
-            }
-        }
-        Ok(Doc::Concat(docs))
+struct Frame<'a> {
+    node: &'a Node,
+    parent_kind: Option<&'a str>,
+    kind: &'a str,
+    kids: Vec<&'a Node>,
+    cursor: usize,
+    items: Vec<&'a Node>,
+    bag: Vec<&'a Node>,
+    slots: [i32; 8],
+    dslots: [Option<Doc>; 4],
+    docs: Vec<Doc>,
+    nodes: Vec<&'a Node>,
+    ints: Vec<i32>,
+}
+
+impl<'a> Frame<'a> {
+    fn pop_d(&mut self) -> Result<Doc, Refuse> {
+        self.docs
+            .pop()
+            .ok_or_else(|| Refuse("doc stack empty".into()))
     }
+    fn peek_d(&self) -> Result<&Doc, Refuse> {
+        self.docs
+            .last()
+            .ok_or_else(|| Refuse("doc stack empty".into()))
+    }
+    fn pop_n(&mut self) -> Result<&'a Node, Refuse> {
+        self.nodes
+            .pop()
+            .ok_or_else(|| Refuse("node stack empty".into()))
+    }
+    fn peek_n(&self) -> Result<&'a Node, Refuse> {
+        self.nodes
+            .last()
+            .copied()
+            .ok_or_else(|| Refuse("node stack empty".into()))
+    }
+    fn pop_i(&mut self) -> Result<i32, Refuse> {
+        self.ints
+            .pop()
+            .ok_or_else(|| Refuse("int stack empty".into()))
+    }
+    fn peek_i(&self) -> Result<i32, Refuse> {
+        self.ints
+            .last()
+            .copied()
+            .ok_or_else(|| Refuse("int stack empty".into()))
+    }
+}
 
-    fn flatten_chain(&self, node: &Node, cls: u8, kind: &str) -> Result<Vec<ChainPart>, Refuse> {
-        if !is_bin_chain(node) {
-            return Ok(vec![ChainPart {
-                op: None,
-                doc: self.format_in(node, Some(kind))?,
-            }]);
+fn i32_len(n: usize) -> i32 {
+    i32::try_from(n).unwrap_or(i32::MAX)
+}
+
+fn idx(v: i32) -> Result<usize, Refuse> {
+    usize::try_from(v).map_err(|_| Refuse(format!("negative index {v}")))
+}
+
+fn pop_n_docs(f: &mut Frame<'_>, n: i32) -> Result<Vec<Doc>, Refuse> {
+    let n = idx(n)?;
+    if f.docs.len() < n {
+        return Err(Refuse("doc stack underflow".into()));
+    }
+    Ok(f.docs.split_off(f.docs.len() - n))
+}
+
+fn pop_concat(f: &mut Frame<'_>, n: i32) -> Result<Doc, Refuse> {
+    Ok(Doc::Concat(pop_n_docs(f, n)?))
+}
+
+fn append_dangling(doc: Doc, node: &Node) -> Doc {
+    if node.dangling.is_empty() {
+        return doc;
+    }
+    let empty = matches!(&doc, Doc::Text(s) if s.is_empty())
+        || matches!(&doc, Doc::Concat(v) if v.is_empty());
+    let mut parts = if empty { Vec::new() } else { vec![doc] };
+    for d in &node.dangling {
+        if !parts.is_empty() {
+            parts.push(Doc::Hardline);
         }
-        let op_node = field_child(node, "operator");
-        let op = format_op_opt(op_node);
-        if prec_class(&op) != cls {
-            return Ok(vec![ChainPart {
-                op: None,
-                doc: self.format_in(node, Some(kind))?,
-            }]);
-        }
-        let left = field_child(node, "left")
-            .ok_or_else(|| Refuse(format!("chain {} missing left", node.kind)))?;
-        let right = field_child(node, "right")
-            .ok_or_else(|| Refuse(format!("chain {} missing right", node.kind)))?;
-        let mut head = self.flatten_chain(left, cls, kind)?;
-        head.push(ChainPart {
-            op: Some(op),
-            doc: self.format_in(right, Some(kind))?,
-        });
-        Ok(head)
+        parts.push(Doc::text(d.clone()));
+    }
+    if parts.is_empty() {
+        Doc::text("")
+    } else {
+        Doc::Concat(parts)
     }
 }
 
 struct ChainPart {
     op: Option<String>,
     doc: Doc,
-}
-
-fn hole_nodes<'a>(
-    spec: &str,
-    all: &[&'a Node],
-    by_field: &std::collections::BTreeMap<&str, &'a Node>,
-) -> Option<Vec<&'a Node>> {
-    if spec == "$children" {
-        return Some(all.iter().copied().filter(|n| !n.is_punct()).collect());
-    }
-    let name = spec.strip_prefix('$')?;
-    if name.chars().all(|c| c.is_ascii_digit()) {
-        let i: usize = name.parse().ok()?;
-        return Some(all.get(i).copied().into_iter().collect());
-    }
-    let matches: Vec<&Node> = all
-        .iter()
-        .copied()
-        .filter(|n| n.field.as_deref() == Some(name))
-        .collect();
-    if !matches.is_empty() {
-        return Some(matches);
-    }
-    Some(by_field.get(name).copied().into_iter().collect())
 }
 
 fn is_bin_chain(node: &Node) -> bool {
@@ -857,8 +734,6 @@ fn prec_class(op: &str) -> u8 {
 }
 
 fn paren_insert(inner: Doc, parent_kind: Option<&str>) -> Doc {
-    // wrap already supplies the group+parens. A nested group would stay
-    // flat inside a broken wrap (pass 2 hugs; pass 1 exploded). Share mode.
     if parent_kind == Some("wrap") {
         return inner;
     }
@@ -875,7 +750,7 @@ fn paren_insert(inner: Doc, parent_kind: Option<&str>) -> Doc {
 
 fn finish_chain(
     parts: Vec<ChainPart>,
-    rule: &Rule,
+    paren: bool,
     parent_kind: Option<&str>,
 ) -> Result<Doc, Refuse> {
     let mut iter = parts.into_iter();
@@ -889,7 +764,7 @@ fn finish_chain(
         docs.push(part.doc);
     }
     let inner = Doc::Concat(docs);
-    if rule.break_style.as_deref() == Some("paren") {
+    if paren {
         Ok(paren_insert(inner, parent_kind))
     } else {
         Ok(Doc::group(inner))

@@ -1,0 +1,245 @@
+{
+  "language": "python",
+  "indent": 4,
+  "opaque": ["string"],
+  "comment_type": "comment",
+  "steal_into_body": [
+    "function_definition",
+    "class_definition",
+    "if_statement",
+    "elif_clause",
+    "else_clause",
+    "for_statement",
+    "while_statement",
+    "with_statement",
+    "try_statement",
+    "except_clause",
+    "finally_clause"
+  ],
+  "blank": {
+    "max": 2,
+    "before_top": [
+      "function_definition",
+      "class_definition",
+      "decorated_definition"
+    ]
+  },
+  "nodes": {
+    "module": { "kind": "body" },
+    "block": { "kind": "body" },
+    "expression_statement": { "kind": "fwd" },
+    "assignment": { "kind": "infix", "op": " = " },
+    "augmented_assignment": { "kind": "infix", "op_field": "operator" },
+    "conditional_expression": {
+      "kind": "template",
+      "paren": true,
+      "doc": ["$0", " if ", "$2", " else ", "$4"]
+    },
+    "list": {
+      "kind": "seq",
+      "open": "[",
+      "close": "]",
+      "sep": ",",
+      "trailing": "magic"
+    },
+    "dictionary": {
+      "kind": "seq",
+      "open": "{",
+      "close": "}",
+      "sep": ",",
+      "trailing": "magic"
+    },
+    "tuple": {
+      "kind": "seq",
+      "open": "(",
+      "close": ")",
+      "sep": ",",
+      "trailing": "magic",
+      "singleton_comma": true
+    },
+    "set": {
+      "kind": "seq",
+      "open": "{",
+      "close": "}",
+      "sep": ",",
+      "trailing": "magic"
+    },
+    "pair": { "kind": "infix", "op": ": " },
+    "call": { "kind": "pfx", "fields": ["function", "arguments"] },
+    "argument_list": {
+      "kind": "seq",
+      "open": "(",
+      "close": ")",
+      "sep": ",",
+      "trailing": "magic"
+    },
+    "keyword_argument": { "kind": "infix", "op": "=" },
+    "list_splat": { "kind": "pfx", "kw": "*", "sp": false },
+    "dictionary_splat": { "kind": "pfx", "kw": "**", "sp": false },
+    "parenthesized_expression": { "kind": "wrap", "open": "(", "close": ")" },
+    "binary_operator": { "kind": "chain", "break": "paren" },
+    "boolean_operator": { "kind": "chain", "break": "paren" },
+    "comparison_operator": {
+      "kind": "chain",
+      "already_flat": true,
+      "break": "paren"
+    },
+    "not_operator": { "kind": "pfx", "kw": "not", "sp": true, "paren": true },
+    "unary_operator": { "kind": "pfx", "op_field": "operator", "sp": false },
+    "list_comprehension": { "kind": "comp", "open": "[", "close": "]" },
+    "set_comprehension": { "kind": "comp", "open": "{", "close": "}" },
+    "dictionary_comprehension": { "kind": "comp", "open": "{", "close": "}" },
+    "generator_expression": { "kind": "comp", "open": "(", "close": ")" },
+    "for_in_clause": {
+      "kind": "template",
+      "doc": ["for ", "$left", " in ", "$right"]
+    },
+    "if_clause": { "kind": "pfx", "kw": "if", "sp": true },
+    "pattern_list": { "kind": "infix", "op": ", " },
+    "attribute": { "kind": "dot", "paren": true },
+    "subscript": { "kind": "sub" },
+    "slice": { "kind": "dot" },
+    "dotted_name": { "kind": "dot" },
+    "import_statement": {
+      "kind": "template",
+      "doc": ["import ", { "join": { "sep": ", ", "items": "$name" } }]
+    },
+    "import_from_statement": { "kind": "from_import" },
+    "aliased_import": { "kind": "template", "doc": ["$name", " as ", "$alias"] },
+    "relative_import": {
+      "kind": "template",
+      "doc": [{ "join": { "sep": "", "items": "$children" } }]
+    },
+    "import_prefix": { "kind": "dot" },
+    "function_definition": {
+      "kind": "clause",
+      "keyword": "def",
+      "header": ["name", "parameters"],
+      "arrow": "return_type",
+      "colon": true,
+      "body": "body"
+    },
+    "class_definition": {
+      "kind": "clause",
+      "keyword": "class",
+      "header": ["name", "superclasses"],
+      "colon": true,
+      "body": "body"
+    },
+    "decorated_definition": { "kind": "body", "tight": true },
+    "decorator": { "kind": "pfx", "kw": "@", "sp": false },
+    "parameters": {
+      "kind": "seq",
+      "open": "(",
+      "close": ")",
+      "sep": ",",
+      "trailing": "magic"
+    },
+    "default_parameter": { "kind": "infix", "op": "=" },
+    "typed_parameter": { "kind": "infix", "op": ": " },
+    "type": { "kind": "fwd" },
+    "generic_type": {
+      "kind": "template",
+      "doc": [{ "join": { "sep": "", "items": "$children" } }]
+    },
+    "type_parameter": {
+      "kind": "seq",
+      "open": "[",
+      "close": "]",
+      "sep": ",",
+      "trailing": "none"
+    },
+    "return_statement": { "kind": "pfx", "kw": "return", "sp": true },
+    "list_splat_pattern": { "kind": "pfx", "kw": "*", "sp": false },
+    "dictionary_splat_pattern": { "kind": "pfx", "kw": "**", "sp": false },
+    "lambda": {
+      "kind": "template",
+      "paren": true,
+      "doc": ["lambda ", "$parameters", ": ", "$body"]
+    },
+    "lambda_parameters": {
+      "kind": "template",
+      "doc": [{ "join": { "sep": ", ", "items": "$children" } }]
+    },
+    "if_statement": {
+      "kind": "clause",
+      "keyword": "if",
+      "header": ["condition"],
+      "colon": true,
+      "body": "consequence",
+      "tails": ["elif_clause", "else_clause"]
+    },
+    "elif_clause": {
+      "kind": "clause",
+      "keyword": "elif",
+      "header": ["condition"],
+      "colon": true,
+      "body": "consequence"
+    },
+    "else_clause": {
+      "kind": "clause",
+      "keyword": "else",
+      "colon": true,
+      "body": "body"
+    },
+    "for_statement": {
+      "kind": "clause",
+      "keyword": "for",
+      "header": ["left", "in", "right"],
+      "colon": true,
+      "body": "body"
+    },
+    "while_statement": {
+      "kind": "clause",
+      "keyword": "while",
+      "header": ["condition"],
+      "colon": true,
+      "body": "body"
+    },
+    "with_statement": {
+      "kind": "clause",
+      "keyword": "with",
+      "header": ["with_clause"],
+      "colon": true,
+      "body": "body"
+    },
+    "with_clause": { "kind": "infix", "op": ", " },
+    "with_item": { "kind": "fwd" },
+    "try_statement": {
+      "kind": "clause",
+      "keyword": "try",
+      "colon": true,
+      "body": "body",
+      "tails": ["except_clause", "else_clause", "finally_clause"]
+    },
+    "except_clause": {
+      "kind": "clause",
+      "keyword": "except",
+      "header": ["value"],
+      "colon": true
+    },
+    "finally_clause": {
+      "kind": "clause",
+      "keyword": "finally",
+      "colon": true
+    },
+    "as_pattern": { "kind": "infix", "op": " as " },
+    "as_pattern_target": { "kind": "fwd" },
+    "pass_statement": { "kind": "pfx", "kw": "pass", "sp": false },
+    "continue_statement": { "kind": "pfx", "kw": "continue", "sp": false },
+    "raise_statement": { "kind": "pfx", "kw": "raise", "sp": true },
+    "keyword_separator": { "kind": "template", "doc": ["*"] },
+    "concatenated_string": {
+      "kind": "template",
+      "doc": [{ "join": { "sep": " ", "items": "$children" } }]
+    },
+    "tuple_pattern": {
+      "kind": "seq",
+      "open": "(",
+      "close": ")",
+      "sep": ",",
+      "trailing": "magic",
+      "singleton_comma": true
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "language": "json",
+  "indent": 2,
+  "opaque": ["string"],
+  "nodes": {
+    "document": { "kind": "fwd" },
+    "object": {
+      "kind": "seq",
+      "open": "{",
+      "close": "}",
+      "sep": ",",
+      "trailing": "none",
+      "flat_pad": true
+    },
+    "array": {
+      "kind": "seq",
+      "open": "[",
+      "close": "]",
+      "sep": ",",
+      "trailing": "none"
+    },
+    "pair": { "kind": "infix", "op": ": " }
+  }
+}
