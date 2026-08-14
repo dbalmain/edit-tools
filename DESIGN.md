@@ -1,5 +1,10 @@
 # Bytecode formatter
 
+**Do not ship this.** Shared-program bytecode is larger than the
+schema on every artefact; the code array is only 40% of the Python
+package gzip, and deleting it still loses. The VM is a good fuzzer
+IR. The download wants the schema. Full verdict at the end.
+
 The rule evaluator is a small stack VM. The authored form is still a
 map from CST node type to a **layout kind** — a named algorithm plus
 its parameters — in `authored/<lang>.json`. `build.sh` compiles that
@@ -44,7 +49,8 @@ count**.
 A compact kind-level opcode (`SEQ open close sep flags`) would
 probably draw or win on gzip, because it is the schema with shorter
 keys. Expanding kinds into a general instruction stream is the wrong
-direction for the download. It is the right IR for a fuzzer.
+direction for the download. It is the right IR for a fuzzer. The
+3049 is decomposed at the end; the code array is not most of it.
 
 ## ISA, in brief
 
@@ -345,3 +351,157 @@ that mix.
 - **Bitwise mixed-precedence** paren-inserts each class separately,
   so `|` may wrap an already-parenthesized `&`/`^` inner. Legal,
   not black.
+
+## Bytecode experiment — conclusion
+
+30/30 baselines byte-identical on both runtimes. Sharing was the
+right size change (Python 4789 → 3049 gzip). A denser encoding of
+the code array was **not** tried: the decomposition says it cannot
+rescue the verdict.
+
+### Size
+
+`gzip -9` of the named file (filename stored in the header). Same
+numbers as the table above; no encoding column, because none landed.
+
+|                        | schema raw | schema gzip | unrolled raw | unrolled gzip | shared raw | shared gzip | Δ gzip shared |
+| ---------------------- | ---------: | ----------: | -----------: | ------------: | ---------: | ----------: | ------------: |
+| `runtime-js/bundle.js` |      26351 |        6747 |        29032 |          7361 |      31717 |        7689 |          +942 |
+| `packages/python.json` |       7038 |        1376 |        20000 |          4789 |      10618 |        3049 |         +1673 |
+| `packages/json.json`   |        436 |         215 |         1908 |           764 |       1644 |         742 |          +527 |
+
+Python is 2.2× the schema (was 3.5× unrolled). JSON is 3.5×.
+
+### Decomposition of the 3049
+
+`packages/python.json` is not "a bytecode array with a small
+header." Content-only gzip (`gzip.compress(..., 9)` /
+`gzip -9 -c`, no filename) is **3037**. The published **3049** is
+that plus the 12-byte `python.json\0` filename in the gzip header.
+Deltas below are of the content; they do not change if you measure
+the named-file form.
+
+**Method: ablation**, with isolated gzip as a cross-check. For each
+part, replace it with the empty JSON equivalent (`[]` / `{}` / `""`),
+serialize compactly, gzip-9, and report `gzip(whole) − gzip(ablated)`.
+Isolated is gzip of just those keys as their own object. Gzip does
+not decompose additively — the columns are not a partition of 3037
+and must not be added up. Re-run with `python3 tools/decompose-package.py`.
+
+| Part | Isolated gzip | Ablation Δ gzip | Share of 3037 |
+| --- | ---: | ---: | ---: |
+| schema-shaped header (`opaque`, `steal_into_body`, `blank`, `comment_type`, …) | 199 | 54 | 2% |
+| string constant pool (`consts`) | 415 | 322 | 11% |
+| per-type maps (`entry` + `args` + `kinds` + `defaults`) | 1380 | 1258 | 41% |
+| shared code array (`code`) | 1171 | 1205 | 40% |
+
+The header fields that still look like the schema — `opaque`,
+`steal_into_body`, `blank`, `comment_type` — are **2%**. They are
+not the confound.
+
+The confound is the three maps from CST node-type name → payload
+(`entry` pc, `args` operand vector, `kinds` layout-kind string),
+plus the const pool. Ablation:
+
+| Map | Isolated gzip | Ablation Δ gzip |
+| --- | ---: | ---: |
+| `entry` | 570 | 319 |
+| `args` | 642 | 455 |
+| `kinds` | 566 | 346 |
+| `defaults` | 63 | 16 |
+
+`kinds` is not dead weight: the host still keys paren-insert on
+the parent layout-kind (`wrap` / `seq` / `pfx`). `entry` and
+`args` *are* the bytecode calling convention. Together the
+per-type maps slightly **outweigh** the code array (1258 vs
+1205). Node-type names are written three times; gzip of the 72
+names once is already 450.
+
+**Punchline.** Empty the code array, leave everything else:
+**1832 gzip**. The entire schema Python package is **1364**
+content-only (1376 named-file). The non-code remainder already
+exceeds the schema by 468 bytes. Re-encoding the code section —
+varint, base64, anything — cannot flip the comparison. The
+package is mostly not bytecode, and the bytecode part was never
+the problem.
+
+JSON is the same shape, just smaller: code ablation 364 of 732
+(~50%), remainder-without-code 368 vs schema 205. Still loses
+with the code deleted.
+
+### Break-even
+
+The download breaks even when
+
+`language count × per-package saving > incremental runtime cost`.
+
+Both terms go the wrong way.
+
+- Per-package *saving* is negative. Python **+1673** gzip, JSON
+  **+527**. Mean about **−1100**. Adding a language makes the
+  bytecode download *worse*, not better.
+- Incremental runtime cost is positive: **+942** gzip for the VM
+  against the schema walker.
+
+`n × (negative) > positive` is false for every `n ≥ 0`. No
+language count rescues it. The decomposition closes the obvious
+objection — "but the code is JSON integers; pack them" — because
+zeroing the code array still leaves a per-package loss (1832 vs
+1364). The first term stays negative even under that fantasy.
+
+A compact kind-level opcode (`SEQ open close sep flags`) would
+probably draw or win on gzip, because it *is* the schema with
+shorter keys. Expanding kinds into a general instruction stream
+is the wrong direction for the download.
+
+### What bytecode won
+
+**Structural linearity.** The ISA cannot express taking a child
+twice or walking children out of order: one cursor per frame,
+`TAKE` / `SKIP` only advance, there is no rewind. `HALT` refuses
+leftovers, so an unconsumed child cannot become output. Sharing
+programs does not weaken this — we share at kind level, and every
+`seq` (etc.) has the same child shape.
+
+The load-time verifier proves opcodes, immediates, jump targets,
+and that every path from an entry hits `HALT` or `REFUSE`.
+
+These checks stay **dynamic** (the verifier does not prove them):
+
+- a loop draining the cursor for every tree (the leftover-child
+  refuse is at `HALT`, at runtime)
+- input-dependent token checks (wrong keyword, missing bracket)
+- JSON `trailing: "none"` refusing a trailing comma
+- a leaf that arrived with children
+- stack discipline on `CONCAT_DYN` / `BAG_FIELD` (height is
+  data-dependent; underflow is a refuse both interpreters share)
+
+Two host ops also stay outside the stream: `HOST_CHAIN` and
+`HOST_FROM_IMPORT`. The verifier cannot see into them.
+
+**The fuzzer.** `harness-of-your-own/fuzz.js`: 1000
+verifier-accepted streams, **0 divergences**. 697 agreed on
+output; **303 agreed to refuse** (just over 30%). That refusal
+agreement is the strongest result in the experiment. Two
+independent runtimes voting the same programs invalid is a
+property the 15-file corpus cannot test at all: the corpus only
+shows that both sides format the fixtures we already believe are
+legal. The fuzzer is why a bytecode IR is still worth compiling
+in CI even though it must not ship.
+
+### Ship recommendation
+
+Ship the schema. Keep this VM, if at all, as a development-time
+IR: compile the schema to bytecode in CI and keep running the
+dual-interpreter fuzzer so refusal agreement stays a regression
+net. Do not replace `packages/*.json` with the instruction
+stream. The cost of that recommendation is carrying a compiler
+and two interpreters that never go in the download — real
+maintenance, paid for a property (cross-runtime refuse
+agreement on random well-typed programs) the schema walker has
+not given us another way to get. The cost of the other choice,
+shipping the VM, is +942 gzip on the JS runtime and a
+per-language tax that starts at +527 (JSON) and +1673 (Python)
+and grows with every language; that cost is strictly larger at
+every language count, and the decomposition says no encoding of
+the code section changes it.
