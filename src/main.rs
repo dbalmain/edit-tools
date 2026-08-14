@@ -23,6 +23,8 @@ struct Node {
     start: usize,
     end: usize,
     #[serde(default)]
+    field: Option<String>,
+    #[serde(default)]
     text: Option<String>,
     #[serde(default)]
     children: Vec<Node>,
@@ -71,6 +73,12 @@ enum Rule {
         items_verbatim: bool,
         #[serde(default, rename = "independentItems")]
         independent_items: bool,
+    },
+    Chain {
+        open: String,
+        close: String,
+        #[serde(default, rename = "reserveLineSuffix")]
+        reserve_line_suffix: bool,
     },
     Delimited {
         open: String,
@@ -284,9 +292,90 @@ fn build(node: &Node, rules: &HashMap<String, Rule>, source: &[u8]) -> Result<Do
             Ok(Doc::concat(parts))
         }
         Rule::ContinuationList { .. } => build_continuation_list(node, source, rule),
+        Rule::Chain { .. } => build_chain(node, source, rule),
         Rule::Flow { .. } => build_flow(node, rules, source, rule),
         Rule::Delimited { .. } => build_delimited(node, rules, source, rule),
     }
+}
+
+fn flatten_chain(
+    node: &Node,
+    kind: &str,
+    source: &[u8],
+    output: &mut Vec<Doc>,
+) -> Result<(), String> {
+    validate_subtree(node, source)?;
+    if node.kind != kind {
+        output.push(source_slice(source, node.start, node.end, kind)?);
+        return Ok(());
+    }
+    if node.children.len() < 3 || node.children.len().is_multiple_of(2) {
+        return Err(format!("{kind}: chain is not alternating"));
+    }
+    for (index, child) in node.children.iter().enumerate() {
+        if index % 2 == 0 {
+            flatten_chain(child, kind, source, output)?;
+        } else {
+            if !matches!(child.field.as_deref(), Some("operator" | "operators")) {
+                return Err(format!("{kind}: child {index} is not an operator"));
+            }
+            output.push(source_slice(source, child.start, child.end, kind)?);
+        }
+    }
+    Ok(())
+}
+
+fn line_suffix_width(node: &Node, source: &[u8]) -> Result<usize, String> {
+    let suffix = source
+        .get(node.end..)
+        .and_then(|bytes| bytes.split(|byte| *byte == b'\n').next())
+        .ok_or_else(|| format!("{}: cannot inspect line suffix", node.kind))?;
+    Ok(std::str::from_utf8(suffix)
+        .map_err(|_| format!("{}: line suffix is not UTF-8", node.kind))?
+        .chars()
+        .count())
+}
+
+fn build_chain(node: &Node, source: &[u8], rule: &Rule) -> Result<Doc, String> {
+    let Rule::Chain {
+        open,
+        close,
+        reserve_line_suffix,
+    } = rule
+    else {
+        return Err("internal error: expected chain rule".into());
+    };
+    let mut pieces = Vec::new();
+    flatten_chain(node, &node.kind, source, &mut pieces)?;
+    if pieces.len() < 3 || pieces.len().is_multiple_of(2) {
+        return Err(format!("{}: flattened chain is invalid", node.kind));
+    }
+    let mut iter = pieces.into_iter();
+    let Some(first) = iter.next() else {
+        return Err(format!("{}: flattened chain is empty", node.kind));
+    };
+    let mut body = vec![first];
+    while let Some(operator) = iter.next() {
+        let Some(operand) = iter.next() else {
+            return Err(format!("{}: operator has no operand", node.kind));
+        };
+        body.extend([Doc::Line, operator, Doc::Text(" ".into()), operand]);
+    }
+    let reserve = if *reserve_line_suffix {
+        line_suffix_width(node, source)?
+    } else {
+        0
+    };
+    Ok(Doc::reserved_group(
+        Doc::concat(vec![
+            Doc::if_break(Doc::Text(open.into()), Doc::Text(String::new())),
+            Doc::indent(Doc::concat(vec![Doc::Softline, Doc::concat(body)])),
+            Doc::Softline,
+            Doc::if_break(Doc::Text(close.into()), Doc::Text(String::new())),
+        ]),
+        false,
+        reserve,
+    ))
 }
 
 fn build_flow(

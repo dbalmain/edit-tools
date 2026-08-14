@@ -39,6 +39,11 @@ five schemas:
 - `flow` handles an existing delimited sequence whose direct children are
   whitespace-separated regions rather than comma-separated items. Python
   comprehensions use it for the body and ordered `for`/`if` clauses.
+- `chain` recursively partitions same-kind binary, boolean, or comparison
+  nodes into alternating operands and operator children. It flattens that
+  structural chain into one group and uses the same enumerated continuation
+  pair policy as import lists. A generated `parenthesized_expression` is an
+  explicit checked-verbatim rule on pass two, so the wrapper cannot multiply.
 
 A gap is `none`, `space`, `line`, `softline`, or `hardline`. `line` becomes one
 space when its group fits and a newline when it breaks. `softline` becomes
@@ -116,10 +121,11 @@ rather than smuggling language-specific behavior into either runtime.
 ## Limits and proposal changes
 
 The implemented core deliberately remains narrower than the proposal. It does
-not include general ordered predicates, operator chains, suites,
+not include general ordered predicates, a structural suite layout,
 boundary-comment Docs, or `lineSuffix`; continuation mutation is implemented
-only for import lists. Those mechanisms should be added only alongside a
-package that uses them and differential fixtures that fix their semantics.
+for import lists and three operator-chain families only. Those mechanisms
+should be added only alongside a package that uses them and differential
+fixtures that fix their semantics.
 
 This restriction exposed one useful correction to the proposal: a generic
 `verbatim` escape hatch based only on concatenating leaf text cannot reproduce

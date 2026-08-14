@@ -206,6 +206,29 @@ function sourceSlice(sourceBytes, start, end, context) {
   return verbatim(sourceBytes.subarray(start, end).toString("utf8"));
 }
 
+function flattenChain(node, kind, sourceBytes, output) {
+  validateSubtree(node, sourceBytes);
+  if (node.type !== kind) {
+    output.push(sourceSlice(sourceBytes, node.start, node.end, kind));
+    return;
+  }
+  const children = node.children || [];
+  if (children.length < 3 || children.length % 2 === 0) {
+    throw new Error(`${kind}: chain is not alternating`);
+  }
+  children.forEach((child, index) => {
+    if (index % 2 === 0) {
+      flattenChain(child, kind, sourceBytes, output);
+    } else {
+      const field = child.field;
+      if (field !== "operator" && field !== "operators") {
+        throw new Error(`${kind}: child ${index} is not an operator`);
+      }
+      output.push(sourceSlice(sourceBytes, child.start, child.end, kind));
+    }
+  });
+}
+
 function build(node, rules, sourceBytes) {
   if (Object.prototype.hasOwnProperty.call(node, "text")) {
     validateSubtree(node, sourceBytes);
@@ -300,6 +323,28 @@ function build(node, rules, sourceBytes) {
       ]),
       wrapped && hasTrailing,
     );
+  }
+  if (rule.layout === "chain") {
+    const pieces = [];
+    flattenChain(node, node.type, sourceBytes, pieces);
+    if (pieces.length < 3 || pieces.length % 2 === 0) {
+      throw new Error(`${node.type}: flattened chain is invalid`);
+    }
+    const body = [pieces[0]];
+    for (let index = 1; index < pieces.length; index += 2) {
+      body.push(line, pieces[index], text(" "), pieces[index + 1]);
+    }
+    let reserve = 0;
+    if (rule.reserveLineSuffix) {
+      const suffix = sourceBytes.subarray(node.end).toString("utf8").split("\n", 1)[0];
+      reserve = scalarWidth(suffix);
+    }
+    return group(concat([
+      ifBreak(text(rule.open), text("")),
+      indent(concat([softline, concat(body)])),
+      softline,
+      ifBreak(text(rule.close), text("")),
+    ]), false, reserve);
   }
   if (rule.layout === "flow") {
     if (children.length < 3 || children[0].text !== rule.open || children.at(-1).text !== rule.close) {
