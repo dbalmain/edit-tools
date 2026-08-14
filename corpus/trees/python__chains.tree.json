@@ -1,6 +1,7 @@
 {
  "language": "python",
  "source_file": "corpus/src/python/chains.py",
+ "source": "short = obj.attr\n\nattribute_chain = configuration.database.connection.settings.pool.maximum_size_limit\n\nmethod_chain = query.filter(active=True).order_by(\"name\").limit(100).offset(20).all()\n\nmixed_chain = client.session.request(\"GET\", url).json()[\"data\"][\"items\"][0][\"name\"]\n\ncall_then_attr = build_client(host, port).connection.metadata.version_identifier\n\nsubscript_chain = registry[\"handlers\"][\"default\"][\"callback\"](event, context, opts)\n\nslices = sequence[1:10]\n\nlong_slice = collection_of_items[start_index:end_index:step_size_between_elements]\n\nopen_slice = buffer[:]\n\nnegative = values[-1]\n\nnested_subscript = matrix[row_index][column_index][depth_index][final_axis_index]\n",
  "root": {
   "type": "module",
   "start": 0,

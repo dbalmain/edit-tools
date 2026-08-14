@@ -1,6 +1,7 @@
 {
  "language": "python",
  "source_file": "corpus/src/python/misc.py",
+ "source": "identity = lambda x: x\n\nlong_lambda = lambda first, second, third: first * second + third - first / second\n\nternary = value if condition else fallback\n\nlong_ternary = primary_result_value if some_fairly_long_condition else other_result\n\nnested_ternary = alpha if first_condition else (beta if second_condition else gamma)\n\nassignment_target = value\n\nmultiple_targets = first = second = shared_value\n\naugmented = counter\n\naugmented += increment_amount_that_is_reasonably_long_to_force_a_line_break_here\n\ntuple_unpack = first_variable, second_variable, third_variable = source_expression\n\n\ndef early_return(value):\n    if not value:\n        return None\n    return transform_the_value(value, using_these_options, and_this_context_object)\n\n\ndef bare_return():\n    return\n\n\nparenthesised = (a + b) * (c - d)\n\nredundant_parens = value\n",
  "root": {
   "type": "module",
   "start": 0,

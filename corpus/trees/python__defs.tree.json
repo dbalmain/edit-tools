@@ -1,6 +1,7 @@
 {
  "language": "python",
  "source_file": "corpus/src/python/defs.py",
+ "source": "def short(a, b):\n    return a\n\n\ndef with_long_parameter_list(first_param, second_param, third_param, fourth_param, fifth):\n    return first_param\n\n\ndef with_defaults(host=\"localhost\", port=8080, timeout=30.0, retries=3, verbose=False):\n    return host\n\n\ndef annotated(count: int, name: str, values: list[int], mapping: dict[str, int]) -> bool:\n    return True\n\n\ndef variadic(first, *args, keyword_only=None, **kwargs):\n    return first\n\n\n@decorator\ndef decorated(a):\n    return a\n\n\n@decorator_with_arguments(option_one=True, option_two=False, option_three=\"value\")\n@another_decorator\ndef multiply_decorated(a, b):\n    return a * b\n\n\ndef nested_defaults(callback=lambda x: x + 1, factory=dict, items=(1, 2, 3), flag=True):\n    return callback\n",
  "root": {
   "type": "module",
   "start": 0,

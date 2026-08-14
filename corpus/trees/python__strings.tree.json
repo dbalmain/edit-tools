@@ -1,6 +1,7 @@
 {
  "language": "python",
  "source_file": "corpus/src/python/strings.py",
+ "source": "short = \"hello\"\n\nsingle = 'single quoted'\n\nlong_string = \"this is a very long string literal that must never be reflowed by the formatter\"\n\nformatted = f\"user {name} has {count} items in {container_name} as of {timestamp}\"\n\nnested_quotes = f\"outer {inner['key']} value\"\n\nraw = r\"\\d+\\.\\d+\"\n\nbyte_string = b\"raw bytes\"\n\ntriple = \"\"\"a triple quoted string\nthat spans several lines\nand must be preserved exactly\n\"\"\"\n\nconcatenated = \"first part of the string \" \"second part of the string \" \"third part\"\n\nin_call = log_message(\"a fairly long message passed directly as a call argument here\")\n\nescape = \"line one\\nline two\\ttabbed\"\n\nunicode_literal = \"café\"\n",
  "root": {
   "type": "module",
   "start": 0,

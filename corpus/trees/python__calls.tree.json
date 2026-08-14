@@ -1,6 +1,7 @@
 {
  "language": "python",
  "source_file": "corpus/src/python/calls.py",
+ "source": "result = compute(alpha, beta, gamma)\n\nvalue = compute_the_weighted_average(first_operand, second_operand, third_operand, fourth)\n\nnested = outer(inner(deeply_nested(a, b, c), other_argument), final_argument, last)\n\nkwargs_call = build_request(method=\"POST\", url=endpoint, headers=default_headers, timeout=30)\n\nmixed = transform(positional_one, positional_two, keyword_one=1, keyword_two=2, keyword_three=3)\n\nstarred = dispatch(*positional_arguments, **keyword_arguments)\n\nsingle_long_argument = wrap(this_is_one_very_long_identifier_that_will_not_fit_on_a_line)\n\ntrailing = configure(\n    host,\n    port,\n)\n\nno_args = reset()\n\nchained_call_args = merge(first(a, b), second(c, d), third(e, f), fourth(g, h), fifth(i))\n",
  "root": {
   "type": "module",
   "start": 0,
