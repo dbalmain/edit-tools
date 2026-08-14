@@ -228,6 +228,10 @@ function build(node, rules, sourceBytes) {
     return concat(parts);
   }
   if (rule.layout === "delimited") {
+    if (rule.verbatimWithComments && children.some((child) => child.type === "comment")) {
+      validateSubtree(node, sourceBytes);
+      return sourceSlice(sourceBytes, node.start, node.end, node.type);
+    }
     if (children.length < 2) throw new Error(`${node.type}: missing delimiters`);
     if (children[0].text !== rule.open || children.at(-1).text !== rule.close) {
       throw new Error(`${node.type}: delimiter mismatch`);

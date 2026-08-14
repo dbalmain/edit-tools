@@ -67,6 +67,8 @@ enum Rule {
         independent_items: bool,
         #[serde(default, rename = "reserveLineSuffix")]
         reserve_line_suffix: bool,
+        #[serde(default, rename = "verbatimWithComments")]
+        verbatim_with_comments: bool,
     },
 }
 
@@ -246,18 +248,31 @@ fn build_delimited(
         force_trailing,
         independent_items,
         reserve_line_suffix,
+        verbatim_with_comments,
     } = rule
     else {
         return Err("internal error: expected delimited rule".into());
     };
     let (open, close, separator, edge) = (open.as_str(), close.as_str(), separator.as_str(), *edge);
-    let (items_verbatim, preserve_trailing, force_trailing, independent_items, reserve_line_suffix) = (
+    let (
+        items_verbatim,
+        preserve_trailing,
+        force_trailing,
+        independent_items,
+        reserve_line_suffix,
+        verbatim_with_comments,
+    ) = (
         *items_verbatim,
         *preserve_trailing,
         *force_trailing,
         *independent_items,
         *reserve_line_suffix,
+        *verbatim_with_comments,
     );
+    if verbatim_with_comments && node.children.iter().any(|child| child.kind == "comment") {
+        validate_subtree(node, source)?;
+        return source_slice(source, node.start, node.end, &node.kind);
+    }
     let Some((first, rest)) = node.children.split_first() else {
         return Err(format!("{}: missing delimiters", node.kind));
     };

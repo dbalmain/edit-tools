@@ -68,6 +68,9 @@ item, and `independentItems` gives the item sequence its own fit decision.
 `reserveLineSuffix` includes the source text following the closer on that line
 in the fit budget; this lets a parameter list account for a return annotation
 without searching descendants or moving the suffix into the list rule.
+`verbatimWithComments` is an ordered local case: a delimited node with a direct
+comment uses checked verbatim output instead of guessing which item owns the
+comment. Comment-free nodes continue through the normal delimited schema.
 Consequently, successful evaluation is a disjoint,
 ordered partition of the node's direct children. A missing, duplicated,
 reordered, or structurally unexpected child causes a non-zero exit.
