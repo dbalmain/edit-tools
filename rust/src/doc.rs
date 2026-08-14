@@ -6,20 +6,12 @@
 pub enum Doc {
     Text(String),
     Concat(Vec<Doc>),
-    Group {
-        inner: Box<Doc>,
-        should_break: bool,
-    },
+    Group { inner: Box<Doc>, should_break: bool },
     Indent(Box<Doc>),
     Line,
     Softline,
     Hardline,
-    IfBreak {
-        broken: Box<Doc>,
-        flat: Box<Doc>,
-    },
-    /// Trailing comments. Constructed once the attach pass exists.
-    #[allow(dead_code)]
+    IfBreak { broken: Box<Doc>, flat: Box<Doc> },
     LineSuffix(Box<Doc>),
 }
 
@@ -53,7 +45,6 @@ impl Doc {
         }
     }
 
-    #[allow(dead_code)]
     pub fn line_suffix(inner: Doc) -> Self {
         Self::LineSuffix(Box::new(inner))
     }

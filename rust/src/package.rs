@@ -19,6 +19,8 @@ pub struct Package {
     #[serde(default)]
     pub opaque: Vec<String>,
     #[serde(default)]
+    pub steal_into_body: Vec<String>,
+    #[serde(default)]
     pub blank: Blank,
     #[serde(default)]
     pub nodes: BTreeMap<String, Rule>,

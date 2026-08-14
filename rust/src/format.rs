@@ -7,6 +7,7 @@ use crate::package::{Package, Rule};
 
 pub struct Engine<'a> {
     pub pkg: &'a Package,
+    source: Option<&'a [u8]>,
 }
 
 impl Engine<'_> {
@@ -20,7 +21,7 @@ impl Engine<'_> {
             Some(r) => r.kind.as_str(),
             None => self.default_kind(node),
         };
-        match kind {
+        let mut doc = match kind {
             "leaf" => self.kind_leaf(node),
             "opaque" => Ok(self.kind_opaque(node)),
             "fwd" => self.kind_fwd(node, kind),
@@ -37,7 +38,20 @@ impl Engine<'_> {
             "from_import" => self.kind_from_import(node, kind),
             "clause" => self.kind_clause(node, rule, kind),
             other => Err(Refuse(format!("unknown kind {other} for {}", node.kind))),
+        }?;
+        if !node.leading.is_empty() {
+            let mut parts = Vec::new();
+            for c in &node.leading {
+                parts.push(Doc::text(c.clone()));
+                parts.push(Doc::Hardline);
+            }
+            parts.push(doc);
+            doc = Doc::Concat(parts);
         }
+        for c in &node.trailing {
+            doc = Doc::Concat(vec![doc, Doc::line_suffix(Doc::text(format!("  {c}")))]);
+        }
+        Ok(doc)
     }
 
     fn default_kind(&self, node: &Node) -> &'static str {
@@ -65,6 +79,13 @@ impl Engine<'_> {
     }
 
     fn kind_opaque(&self, node: &Node) -> Doc {
+        if let Some(src) = self.source {
+            let start = node.start.min(src.len());
+            let end = node.end.min(src.len()).max(start);
+            if let Ok(s) = std::str::from_utf8(&src[start..end]) {
+                return Doc::text(s);
+            }
+        }
         Doc::text(node.raw_text())
     }
 
@@ -240,9 +261,6 @@ impl Engine<'_> {
             stmts.push(c.take("stmt")?);
         }
         c.finish(&node.kind)?;
-        if stmts.is_empty() {
-            return Ok(Doc::text(""));
-        }
         let tight = rule.is_some_and(|r| r.tight);
         let mut docs = Vec::new();
         for (i, stmt) in stmts.iter().enumerate() {
@@ -254,6 +272,15 @@ impl Engine<'_> {
                 }
             }
             docs.push(self.format_in(stmt, Some(kind))?);
+        }
+        for d in &node.dangling {
+            if !docs.is_empty() {
+                docs.push(Doc::Hardline);
+            }
+            docs.push(Doc::text(d.clone()));
+        }
+        if docs.is_empty() {
+            return Ok(Doc::text(""));
         }
         Ok(Doc::Concat(docs))
     }
@@ -862,11 +889,102 @@ fn finish_chain(
 
 pub fn format_tree(tree: &crate::node::TreeDoc, width: usize) -> Result<String, Refuse> {
     let pkg = crate::package::load(&tree.language)?;
-    let engine = Engine { pkg: &pkg };
-    let body = engine.format_node(&tree.root)?;
+    let mut root = tree.root.clone();
+    if pkg.comment_type.is_some() && !tree.source.is_empty() {
+        attach_all(
+            &mut root,
+            tree.source.as_bytes(),
+            pkg.comment_type(),
+            &pkg.steal_into_body,
+        );
+    }
+    let engine = Engine {
+        pkg: &pkg,
+        source: Some(tree.source.as_bytes()),
+    };
+    let body = engine.format_node(&root)?;
     Ok(crate::doc::print(
         &Doc::Concat(vec![body, Doc::Hardline]),
         width,
         pkg.indent,
     ))
+}
+
+fn gap_newlines(source: &[u8], from: usize, to: usize) -> usize {
+    let from = from.min(source.len());
+    let to = to.min(source.len()).max(from);
+    source[from..to].iter().filter(|&&b| b == b'\n').count()
+}
+
+fn classify_comments(node: &mut Node, source: &[u8], comment_type: &str) {
+    let n_kids = node.children.len();
+    for i in 0..n_kids {
+        if node.children[i].kind != comment_type {
+            continue;
+        }
+        let prev = (0..i)
+            .rev()
+            .find(|&j| node.children[j].kind != comment_type);
+        let next = (i + 1..n_kids).find(|&j| node.children[j].kind != comment_type);
+        let from = prev.map_or(node.start, |j| node.children[j].end);
+        let start = node.children[i].start;
+        let nl = gap_newlines(source, from, start);
+        let text = node.children[i]
+            .text
+            .clone()
+            .unwrap_or_else(|| node.children[i].raw_text());
+        if nl == 0
+            && let Some(p) = prev
+        {
+            let mut owner = p;
+            if node.children[p].is_punct()
+                && let Some(item) = (0..i).rev().find(|&j| {
+                    node.children[j].kind != comment_type && !node.children[j].is_punct()
+                })
+            {
+                owner = item;
+            }
+            node.children[owner].trailing.push(text);
+            continue;
+        }
+        if let Some(n) = next {
+            node.children[n].leading.push(text);
+        } else {
+            node.dangling.push(text);
+        }
+    }
+}
+
+fn steal_into_body(node: &mut Node, steal: &[String]) {
+    if !steal.iter().any(|t| t == &node.kind) {
+        return;
+    }
+    let Some(block_i) = node.children.iter().position(|c| c.kind == "block") else {
+        return;
+    };
+    if node.children[block_i].leading.is_empty() {
+        return;
+    }
+    let stolen = std::mem::take(&mut node.children[block_i].leading);
+    let stmt_i = node.children[block_i]
+        .children
+        .iter()
+        .position(|c| c.text.is_none() && c.kind != "comment");
+    if let Some(si) = stmt_i {
+        let mut lead = stolen;
+        lead.extend(std::mem::take(
+            &mut node.children[block_i].children[si].leading,
+        ));
+        node.children[block_i].children[si].leading = lead;
+    } else {
+        node.children[block_i].dangling.extend(stolen);
+    }
+}
+
+fn attach_all(node: &mut Node, source: &[u8], comment_type: &str, steal: &[String]) {
+    classify_comments(node, source, comment_type);
+    for ch in &mut node.children {
+        attach_all(ch, source, comment_type, steal);
+    }
+    steal_into_body(node, steal);
 }

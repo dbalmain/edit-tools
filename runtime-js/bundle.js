@@ -248,7 +248,10 @@ function kindLeaf(node) {
   return text(node.text);
 }
 
-function kindOpaque(node) {
+function kindOpaque(node, _rule, ctx) {
+  if (ctx.sourceBytes && node.start != null && node.end != null) {
+    return text(ctx.sourceBytes.slice(node.start, node.end).toString("utf8"));
+  }
   return text(rawText(node));
 }
 
@@ -530,7 +533,8 @@ function kindBody(node, rule, ctx) {
   const stmts = [];
   while (!c.done()) stmts.push(c.take("stmt"));
   c.finish(node.type);
-  if (!stmts.length) return text("");
+  const dangling = node.dangling || [];
+  if (!stmts.length && !dangling.length) return text("");
   const beforeTop = new Set((ctx.pkg.blank && ctx.pkg.blank.before_top) || []);
   const docs = [];
   for (let i = 0; i < stmts.length; i++) {
@@ -542,6 +546,10 @@ function kindBody(node, rule, ctx) {
       }
     }
     docs.push(ctx.format(stmts[i]));
+  }
+  for (const d of dangling) {
+    if (docs.length) docs.push(hardline);
+    docs.push(text(d));
   }
   return concat(docs);
 }
@@ -773,7 +781,22 @@ function formatNode(node, ctx) {
   const selfCtx = Object.assign({}, ctx);
   selfCtx.format = (n) =>
     formatNode(n, Object.assign({}, ctx, { parentKind: kind }));
-  return impl(node, rule || {}, selfCtx);
+  let doc = impl(node, rule || {}, selfCtx);
+  if (node.leading && node.leading.length) {
+    const parts = [];
+    for (const c of node.leading) {
+      parts.push(text(c));
+      parts.push(hardline);
+    }
+    parts.push(doc);
+    doc = concat(parts);
+  }
+  if (node.trailing && node.trailing.length) {
+    for (const c of node.trailing) {
+      doc = concat([doc, lineSuffix(text("  " + c))]);
+    }
+  }
+  return doc;
 }
 
 // ---------------------------------------------------------------- public
@@ -781,15 +804,88 @@ function formatNode(node, ctx) {
 function format(tree, width) {
   if (!tree || !tree.language) refuse("tree is missing language");
   const pkg = loadPackage(tree.language);
+  const commentType = pkg.comment_type || "\0";
+  if (pkg.comment_type && tree.source != null) {
+    attachAll(tree.root, Buffer.from(tree.source, "utf8"), commentType, new Set(pkg.steal_into_body || []));
+  }
   const ctx = {
     pkg,
-    commentType: pkg.comment_type || "\0",
+    commentType,
+    sourceBytes: tree.source != null ? Buffer.from(tree.source, "utf8") : null,
     format(n) {
       return formatNode(n, ctx);
     },
   };
   const body = formatNode(tree.root, ctx);
   return printDoc(concat([body, hardline]), width, pkg.indent);
+}
+
+function gapNewlines(sourceBytes, from, to) {
+  const gap = sourceBytes.slice(from, to).toString("utf8");
+  return (gap.match(/\n/g) || []).length;
+}
+
+function classifyComments(node, sourceBytes, commentType) {
+  const kids = node.children || [];
+  for (let i = 0; i < kids.length; i++) {
+    const c = kids[i];
+    if (c.type !== commentType) continue;
+    let prev = null;
+    let next = null;
+    for (let j = i - 1; j >= 0; j--) {
+      if (kids[j].type !== commentType) {
+        prev = kids[j];
+        break;
+      }
+    }
+    for (let j = i + 1; j < kids.length; j++) {
+      if (kids[j].type !== commentType) {
+        next = kids[j];
+        break;
+      }
+    }
+    const from = prev ? prev.end : node.start;
+    const nl = gapNewlines(sourceBytes, from, c.start);
+    const textC = c.text || rawText(c);
+    if (nl === 0 && prev) {
+      let owner = prev;
+      if (isPunct(owner)) {
+        for (let j = i - 1; j >= 0; j--) {
+          if (kids[j].type !== commentType && !isPunct(kids[j])) {
+            owner = kids[j];
+            break;
+          }
+        }
+      }
+      (owner.trailing = owner.trailing || []).push(textC);
+    } else if (next) {
+      (next.leading = next.leading || []).push(textC);
+    } else {
+      (node.dangling = node.dangling || []).push(textC);
+    }
+  }
+}
+
+function stealIntoBody(node, stealSet) {
+  if (!stealSet.has(node.type)) return;
+  const block = (node.children || []).find((c) => c.type === "block");
+  if (!block || !(block.leading && block.leading.length)) return;
+  const stolen = block.leading;
+  block.leading = [];
+  const stmts = (block.children || []).filter((c) => c.text == null && c.type !== "comment");
+  if (stmts.length) {
+    stmts[0].leading = stolen.concat(stmts[0].leading || []);
+  } else {
+    block.dangling = stolen.concat(block.dangling || []);
+  }
+}
+
+function attachAll(node, sourceBytes, commentType, stealSet) {
+  classifyComments(node, sourceBytes, commentType);
+  for (const ch of node.children || []) {
+    attachAll(ch, sourceBytes, commentType, stealSet);
+  }
+  stealIntoBody(node, stealSet);
 }
 
 module.exports = {

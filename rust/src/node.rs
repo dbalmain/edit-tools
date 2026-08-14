@@ -7,29 +7,31 @@ use crate::Refuse;
 #[derive(Debug, Deserialize)]
 pub struct TreeDoc {
     pub language: String,
-    /// Original source; comment attachment reads the gaps. Unused until Python.
     #[serde(default)]
-    #[allow(dead_code)]
     pub source: String,
     pub root: Node,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct Node {
     #[serde(rename = "type")]
     pub kind: String,
     #[serde(default)]
     pub field: Option<String>,
     #[serde(default)]
-    #[allow(dead_code)]
     pub start: usize,
     #[serde(default)]
-    #[allow(dead_code)]
     pub end: usize,
     #[serde(default)]
     pub text: Option<String>,
     #[serde(default)]
     pub children: Vec<Node>,
+    #[serde(default, skip_deserializing)]
+    pub leading: Vec<String>,
+    #[serde(default, skip_deserializing)]
+    pub trailing: Vec<String>,
+    #[serde(default, skip_deserializing)]
+    pub dangling: Vec<String>,
 }
 
 impl Node {

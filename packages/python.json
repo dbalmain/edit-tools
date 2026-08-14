@@ -2,6 +2,20 @@
   "language": "python",
   "indent": 4,
   "opaque": ["string"],
+  "comment_type": "comment",
+  "steal_into_body": [
+    "function_definition",
+    "class_definition",
+    "if_statement",
+    "elif_clause",
+    "else_clause",
+    "for_statement",
+    "while_statement",
+    "with_statement",
+    "try_statement",
+    "except_clause",
+    "finally_clause"
+  ],
   "blank": {
     "max": 2,
     "before_top": [
@@ -211,6 +225,11 @@
     },
     "as_pattern": { "kind": "infix", "op": " as " },
     "as_pattern_target": { "kind": "fwd" },
+    "pass_statement": { "kind": "pfx", "kw": "pass", "sp": false },
+    "concatenated_string": {
+      "kind": "template",
+      "doc": [{ "join": { "sep": " ", "items": "$children" } }]
+    },
     "tuple_pattern": {
       "kind": "seq",
       "open": "(",
