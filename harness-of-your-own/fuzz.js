@@ -6,9 +6,12 @@
 // runs rust and js on a fixed tree, compares stdout byte-for-byte.
 //
 //   node harness-of-your-own/fuzz.js [--seeds N] [--start S] [--tree PATH]
+//                                    [--width W] [--stop-first]
 //
-// Exit 0 if no divergence. Prints a one-line summary and writes
-// .ai/fuzz-last.json on a divergence.
+// Exit 0 if no divergence. Prints a one-line summary (including
+// seeds/s) and writes .ai/fuzz-last.json on a divergence.
+// --stop-first exits after the first mismatch so a mutation test
+// can report which seed caught it.
 
 const fs = require("fs");
 const path = require("path");
@@ -298,13 +301,14 @@ function invoke(exe, treePath, width) {
 }
 
 function parseArgs(argv) {
-  const out = { seeds: 400, start: 1, tree: DEFAULT_TREE, width: 88 };
+  const out = { seeds: 400, start: 1, tree: DEFAULT_TREE, width: 88, stopFirst: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--seeds") out.seeds = Number(argv[++i]);
     else if (a === "--start") out.start = Number(argv[++i]);
     else if (a === "--tree") out.tree = path.resolve(argv[++i]);
     else if (a === "--width") out.width = Number(argv[++i]);
+    else if (a === "--stop-first") out.stopFirst = true;
   }
   return out;
 }
@@ -328,6 +332,7 @@ function main() {
   let agreedRefuse = 0;
   let divergences = 0;
   const firstDiv = [];
+  const t0 = process.hrtime.bigint();
 
   try {
     for (let i = 0; i < opts.seeds; i++) {
@@ -347,8 +352,8 @@ function main() {
         verify(bc);
       } catch (e) {
         divergences++;
-        firstDiv.push({ seed, kind: "verify-reject", err: String(e.message || e) });
-        if (firstDiv.length >= 5) break;
+        firstDiv.push({ seed, kind: "verify-reject", err: String(e.message || e), after: i + 1 });
+        if (opts.stopFirst || firstDiv.length >= 5) break;
         continue;
       }
       fs.writeFileSync(PKG_PATH, JSON.stringify(bc));
@@ -368,12 +373,13 @@ function main() {
             kind: "output",
             rustBytes: r.stdout.length,
             jsBytes: j.stdout.length,
+            after: i + 1,
           });
           fs.writeFileSync(
             path.join(ROOT, ".ai", "fuzz-last.json"),
             JSON.stringify({ seed, bc, rust: r.stdout.toString("utf8"), js: j.stdout.toString("utf8") }, null, 2),
           );
-          if (firstDiv.length >= 5) break;
+          if (opts.stopFirst || firstDiv.length >= 5) break;
         }
       } else if (!rOk && !jOk) {
         agreedRefuse++;
@@ -384,12 +390,13 @@ function main() {
           kind: "refuse-mismatch",
           rust: { status: r.status, err: r.stderr || r.error },
           js: { status: j.status, err: j.stderr || j.error },
+          after: i + 1,
         });
         fs.writeFileSync(
           path.join(ROOT, ".ai", "fuzz-last.json"),
           JSON.stringify({ seed, bc, rust: r, js: j }, null, 2),
         );
-        if (firstDiv.length >= 5) break;
+        if (opts.stopFirst || firstDiv.length >= 5) break;
       }
     }
   } finally {
@@ -401,8 +408,10 @@ function main() {
   }
 
   const ran = agreedOk + agreedRefuse + divergences;
+  const elapsedSec = Number(process.hrtime.bigint() - t0) / 1e9;
+  const perSec = elapsedSec > 0 ? ran / elapsedSec : 0;
   console.log(
-    `fuzz seeds=${ran} agreed_ok=${agreedOk} agreed_refuse=${agreedRefuse} divergences=${divergences} tree=${path.basename(opts.tree)} width=${opts.width}`,
+    `fuzz seeds=${ran} agreed_ok=${agreedOk} agreed_refuse=${agreedRefuse} divergences=${divergences} tree=${path.basename(opts.tree)} width=${opts.width} ${elapsedSec.toFixed(2)}s ${perSec.toFixed(1)} seeds/s`,
   );
   if (firstDiv.length) {
     console.log("first divergences:");
