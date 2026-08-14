@@ -118,9 +118,23 @@ are correctness properties, not preferences.
    output on 100% of the corpus at both widths. This is the whole premise of the
    project; a submission that cannot hold it has not demonstrated anything.
 2. **Idempotence.** `fmt(fmt(x)) == fmt(x)` for all corpus files at both widths.
-3. **Non-destruction.** Re-parsing the output yields the same non-whitespace
-   token sequence as the input tree, and no comment is dropped. This is the
-   "does not corrupt code" property.
+3. **Non-destruction.** The output parses, means the same thing as the input,
+   and drops no comment. This is the "does not corrupt code" property.
+
+   Meaning is compared via the language's own parser —
+   `ast.dump(ast.parse(...))` for Python, ordered `json.loads` for JSON — with
+   comments compared separately via `tokenize`, since `ast` cannot see them.
+
+   That choice matters, and an earlier token-stream version of this gate was
+   wrong. **Black inserts parentheses when it wraps a long expression**, and
+   turns a bare target list into a parenthesised one; comparing tokens or even
+   tree shape would have disqualified correct black-style output. Deferring to
+   `ast` draws the line where it belongs: **parenthesisation, quote style,
+   trailing commas and line breaks are yours to change; anything else is not.**
+
+   `harness/check_gate3.py` pins this by running black over the whole corpus at
+   both widths and asserting it passes — if a real formatter would fail the
+   gate, the gate is wrong. Re-run it after touching the comparison.
 
 Then, measured:
 
