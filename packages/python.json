@@ -1,0 +1,49 @@
+{
+  "language": "python",
+  "indent": 4,
+  "opaque": ["string"],
+  "blank": {
+    "max": 2,
+    "before_top": [
+      "function_definition",
+      "class_definition",
+      "decorated_definition"
+    ]
+  },
+  "nodes": {
+    "module": { "kind": "body" },
+    "block": { "kind": "body" },
+    "expression_statement": { "kind": "fwd" },
+    "assignment": { "kind": "infix", "op": " = " },
+    "list": {
+      "kind": "seq",
+      "open": "[",
+      "close": "]",
+      "sep": ",",
+      "trailing": "magic"
+    },
+    "dictionary": {
+      "kind": "seq",
+      "open": "{",
+      "close": "}",
+      "sep": ",",
+      "trailing": "magic"
+    },
+    "tuple": {
+      "kind": "seq",
+      "open": "(",
+      "close": ")",
+      "sep": ",",
+      "trailing": "magic",
+      "singleton_comma": true
+    },
+    "set": {
+      "kind": "seq",
+      "open": "{",
+      "close": "}",
+      "sep": ",",
+      "trailing": "magic"
+    },
+    "pair": { "kind": "infix", "op": ": " }
+  }
+}

@@ -22,6 +22,7 @@ impl Engine<'_> {
             "fwd" => self.kind_fwd(node),
             "infix" => self.kind_infix(node, rule),
             "seq" => self.kind_seq(node, rule),
+            "body" => self.kind_body(node, rule),
             other => Err(Refuse(format!("unknown kind {other} for {}", node.kind))),
         }
     }
@@ -188,15 +189,19 @@ impl Engine<'_> {
             }
             inner.push(d);
         }
-        match rule.trailing.as_deref() {
-            _ if rule.singleton_comma && items.len() == 1 => inner.push(Doc::text(sep)),
-            Some("magic") | Some("always-on-break") => {
-                inner.push(Doc::if_break(Doc::text(sep), Doc::text("")));
-            }
-            _ => {}
+        let singleton = rule.singleton_comma && items.len() == 1;
+        if singleton {
+            // The comma is syntactic (`(lonely,)`), not a magic-break hint.
+            inner.push(Doc::text(sep));
+        } else if matches!(
+            rule.trailing.as_deref(),
+            Some("magic") | Some("always-on-break")
+        ) {
+            inner.push(Doc::if_break(Doc::text(sep), Doc::text("")));
         }
 
-        let should_break = rule.trailing.as_deref() == Some("magic") && trailing_comma;
+        let should_break =
+            rule.trailing.as_deref() == Some("magic") && trailing_comma && !singleton;
         let grouped = Doc::Concat(vec![
             Doc::text(open),
             Doc::indent(Doc::Concat(inner)),
@@ -208,6 +213,32 @@ impl Engine<'_> {
         } else {
             Doc::group(grouped)
         })
+    }
+
+    fn kind_body(&self, node: &Node, rule: Option<&Rule>) -> Result<Doc, Refuse> {
+        let kids = self.kids(node);
+        let mut c = Cursor::new(&kids);
+        let mut stmts = Vec::new();
+        while !c.is_empty() {
+            stmts.push(c.take("stmt")?);
+        }
+        c.finish(&node.kind)?;
+        if stmts.is_empty() {
+            return Ok(Doc::text(""));
+        }
+        let tight = rule.is_some_and(|r| r.tight);
+        let mut docs = Vec::new();
+        for (i, stmt) in stmts.iter().enumerate() {
+            if i > 0 {
+                docs.push(Doc::Hardline);
+                if !tight && self.pkg.blank.before_top.iter().any(|t| t == &stmt.kind) {
+                    docs.push(Doc::Hardline);
+                    docs.push(Doc::Hardline);
+                }
+            }
+            docs.push(self.format_node(stmt)?);
+        }
+        Ok(Doc::Concat(docs))
     }
 }
 

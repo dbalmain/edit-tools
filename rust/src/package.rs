@@ -19,7 +19,18 @@ pub struct Package {
     #[serde(default)]
     pub opaque: Vec<String>,
     #[serde(default)]
+    pub blank: Blank,
+    #[serde(default)]
     pub nodes: BTreeMap<String, Rule>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+pub struct Blank {
+    #[serde(default)]
+    #[allow(dead_code)]
+    pub max: usize,
+    #[serde(default)]
+    pub before_top: Vec<String>,
 }
 
 fn default_indent() -> usize {
@@ -47,6 +58,8 @@ pub struct Rule {
     pub op: Option<String>,
     #[serde(default)]
     pub op_field: Option<String>,
+    #[serde(default)]
+    pub tight: bool,
 }
 
 impl Package {

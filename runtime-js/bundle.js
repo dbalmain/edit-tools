@@ -233,6 +233,7 @@ function loadPackage(language) {
   if (!pkg.nodes) pkg.nodes = {};
   if (!pkg.opaque) pkg.opaque = [];
   if (!pkg.indent) pkg.indent = 2;
+  if (!pkg.blank) pkg.blank = {};
   packageCache.set(language, pkg);
   return pkg;
 }
@@ -332,7 +333,9 @@ function kindSeq(node, rule, ctx) {
     if (i) inner.push(sepDoc);
     inner.push(itemDocs[i]);
   }
-  if (rule.singleton_comma && items.length === 1) {
+  const singleton = !!(rule.singleton_comma && items.length === 1);
+  if (singleton) {
+    // The comma is syntactic (`(lonely,)`), not a magic-break hint.
     inner.push(text(rule.sep));
   } else if (rule.trailing === "magic" || rule.trailing === "always-on-break") {
     inner.push(ifBreak(text(rule.sep), text("")));
@@ -340,8 +343,29 @@ function kindSeq(node, rule, ctx) {
 
   return group(
     concat([text(rule.open), indent(concat(inner)), pad, text(rule.close)]),
-    { shouldBreak: rule.trailing === "magic" && trailingComma },
+    { shouldBreak: rule.trailing === "magic" && trailingComma && !singleton },
   );
+}
+
+function kindBody(node, rule, ctx) {
+  const c = cursor(nonComments(node, ctx.commentType));
+  const stmts = [];
+  while (!c.done()) stmts.push(c.take("stmt"));
+  c.finish(node.type);
+  if (!stmts.length) return text("");
+  const beforeTop = new Set((ctx.pkg.blank && ctx.pkg.blank.before_top) || []);
+  const docs = [];
+  for (let i = 0; i < stmts.length; i++) {
+    if (i) {
+      docs.push(hardline);
+      if (!(rule && rule.tight) && beforeTop.has(stmts[i].type)) {
+        docs.push(hardline);
+        docs.push(hardline);
+      }
+    }
+    docs.push(ctx.format(stmts[i]));
+  }
+  return concat(docs);
 }
 
 const KINDS = {
@@ -350,6 +374,7 @@ const KINDS = {
   fwd: kindFwd,
   infix: kindInfix,
   seq: kindSeq,
+  body: kindBody,
 };
 
 function defaultKind(node, pkg) {
