@@ -50,13 +50,14 @@ a selected child, prints an input leaf, or invokes one of four schemas:
 3. `chain`: alternating operands and operators; and
 4. `suite`: a header followed by an indented statement list.
 
-Rules are validated when the package loads. Across all branches, selected
-syntax children must form a disjoint, ordered partition of the node's direct
-children. `delimited` and `chain` do that partitioning themselves. Unconsumed,
-duplicated or reordered tokens make the runtime refuse the file. A rule can
-declare a subtree `verbatim`, but only then is the subtree collapsed; its leaf
-texts are concatenated in order and still checked against the input token
-stream. An uncovered interior node is an error, not an invitation to guess.
+Rule structure and branch consistency are validated when the package loads. At
+format time, selected syntax children must form a disjoint, ordered partition
+of each matched node's direct children. `delimited` and `chain` do that
+partitioning themselves. Unconsumed, duplicated or reordered tokens make the
+runtime refuse the file. A rule can declare a subtree `verbatim`, but only then
+is the subtree collapsed; its leaf texts are concatenated in order and still
+checked against the input token stream. An uncovered interior node is an error,
+not an invitation to guess.
 
 The only operation allowed to change the token sequence is a package-declared
 `mutableTrailing` policy. Python permits this only in grammar contexts where a
@@ -344,6 +345,9 @@ can choose ugly whitespace, but it cannot silently move `# type: ignore` across
 code or change the non-whitespace token order. The package may use the anchor's
 preceding/following token kinds, enclosing node, parent field and whether the
 boundary is inside delimiters. It may not inspect the comment's prose.
+When a boundary contains comments, its comment layout replaces the ordinary
+gap Doc from `sequence`, `delimited`, `chain` or `suite`; it is not appended to
+that gap. This prevents doubled spaces and hardlines.
 
 For `comments.py`, this gives the intended cases directly: the module comment
 has a start boundary; the import and statement comments are end-of-line; the
