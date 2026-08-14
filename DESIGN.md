@@ -16,7 +16,7 @@ Packages are UTF-8 JSON files in `packages/`. The top-level fields are:
 
 Leaves need no rule: their `text` is emitted unchanged. Every interior node
 does. An unknown interior node is refused rather than guessed. Version 1 has
-four schemas:
+five schemas:
 
 - `tight` recursively emits every direct child with no inserted gap. It is for
   lexical containers such as JSON strings.
@@ -29,6 +29,9 @@ four schemas:
   validating that every descendant range is ordered, non-overlapping, in
   bounds, and that every leaf agrees byte-for-byte with `source`. It must be
   explicitly selected for a node type; it is never an uncovered-node fallback.
+- `source` emits the source gaps around each direct child while recursively
+  formatting those children. It validates the same range invariants first, so
+  it is the bridge from preserved statement structure to local reflow rules.
 
 A gap is `none`, `space`, `line`, `softline`, or `hardline`. `line` becomes one
 space when its group fits and a newline when it breaks. `softline` becomes
@@ -58,7 +61,11 @@ the colon and one space after it. The object rule is:
 Schemas consume children by index. `tight` and `sequence` visit the complete
 child array once in order. `sequence` also checks its declared arity.
 `delimited` checks both delimiters and every intervening separator while
-visiting each item once. Consequently, successful evaluation is a disjoint,
+visiting each item once. It can explicitly preserve an input trailing
+separator and use that token as a forced-break signal; it never synthesizes or
+removes one. `itemsVerbatim` applies the checked source-range operation to each
+item, and `independentItems` gives the item sequence its own fit decision.
+Consequently, successful evaluation is a disjoint,
 ordered partition of the node's direct children. A missing, duplicated,
 reordered, or structurally unexpected child causes a non-zero exit.
 
@@ -91,7 +98,7 @@ rather than smuggling language-specific behavior into either runtime.
 
 ## Limits and proposal changes
 
-The implemented core deliberately starts narrower than the proposal. It does
+The implemented core deliberately remains narrower than the proposal. It does
 not yet include ordered local cases, operator chains, suites, boundary-comment
 Docs, `ifBreak`, `lineSuffix`, or the two enumerated mutation policies. Those
 mechanisms should be added only alongside a package that uses them and

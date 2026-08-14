@@ -19,7 +19,12 @@ const concat = (parts) => ({
   breaks: parts.some((part) => part.breaks),
 });
 const indent = (doc) => ({ kind: "indent", doc, breaks: doc.breaks });
-const group = (doc) => ({ kind: "group", doc, breaks: doc.breaks });
+const group = (doc, force = false) => ({
+  kind: "group",
+  doc,
+  force,
+  breaks: force || doc.breaks,
+});
 
 function separated(docs, separator) {
   const parts = [];
@@ -53,7 +58,11 @@ function fits(remaining, initialIndent, doc, indentWidth) {
         stack.push([column + indentWidth, mode, current.doc]);
         break;
       case "group":
-        stack.push([column, current.doc.breaks ? "break" : "flat", current.doc]);
+        stack.push([
+          column,
+          current.force || current.doc.breaks ? "break" : "flat",
+          current.doc,
+        ]);
         break;
       case "line":
         if (mode === "flat") room -= 1;
@@ -105,6 +114,7 @@ function render(doc, width, indentWidth) {
         break;
       case "group": {
         const flat =
+          !current.force &&
           !current.doc.breaks &&
           fits(width - position, column, current.doc, indentWidth);
         stack.push([column, flat ? "flat" : "break", current.doc]);
@@ -169,8 +179,18 @@ function validateSubtree(node, sourceBytes) {
   }
 }
 
+function sourceSlice(sourceBytes, start, end, context) {
+  if (start < 0 || end < start || end > sourceBytes.length) {
+    throw new Error(`${context}: source gap is out of bounds`);
+  }
+  return verbatim(sourceBytes.subarray(start, end).toString("utf8"));
+}
+
 function build(node, rules, sourceBytes) {
-  if (Object.prototype.hasOwnProperty.call(node, "text")) return text(node.text);
+  if (Object.prototype.hasOwnProperty.call(node, "text")) {
+    validateSubtree(node, sourceBytes);
+    return text(node.text);
+  }
   const children = node.children || [];
   const rule = rules[node.type];
   if (!rule) throw new Error(`no rule for interior node ${node.type}`);
@@ -178,6 +198,18 @@ function build(node, rules, sourceBytes) {
   if (rule.layout === "verbatim") {
     validateSubtree(node, sourceBytes);
     return verbatim(sourceBytes.subarray(node.start, node.end).toString("utf8"));
+  }
+  if (rule.layout === "source") {
+    validateSubtree(node, sourceBytes);
+    const parts = [];
+    let cursor = node.start;
+    for (const child of children) {
+      parts.push(sourceSlice(sourceBytes, cursor, child.start, node.type));
+      parts.push(build(child, rules, sourceBytes));
+      cursor = child.end;
+    }
+    parts.push(sourceSlice(sourceBytes, cursor, node.end, node.type));
+    return concat(parts);
   }
 
   if (rule.layout === "tight") {
@@ -200,26 +232,52 @@ function build(node, rules, sourceBytes) {
       throw new Error(`${node.type}: delimiter mismatch`);
     }
     const items = [];
+    const hasTrailing = children.at(-2)?.text === rule.separator;
+    if (hasTrailing && !rule.preserveTrailing) {
+      throw new Error(`${node.type}: trailing separator is not allowed`);
+    }
+    const contentEnd = children.length - 1 - (hasTrailing ? 1 : 0);
     let index = 1;
-    while (index < children.length - 1) {
-      items.push(build(children[index], rules, sourceBytes));
+    while (index < contentEnd) {
+      if (rule.itemsVerbatim) {
+        validateSubtree(children[index], sourceBytes);
+        items.push(
+          sourceSlice(
+            sourceBytes,
+            children[index].start,
+            children[index].end,
+            node.type,
+          ),
+        );
+      } else {
+        items.push(build(children[index], rules, sourceBytes));
+      }
       index += 1;
-      if (index < children.length - 1) {
+      if (index < contentEnd) {
         if (children[index].text !== rule.separator) {
           throw new Error(`${node.type}: expected separator at child ${index}`);
         }
         index += 1;
       }
     }
+    if (index !== contentEnd) {
+      throw new Error(`${node.type}: children are not a delimited partition`);
+    }
     if (!items.length) return text(rule.open + rule.close);
     const edge = gap(rule.edge);
+    let itemDoc = separated(items, () => concat([text(rule.separator), line]));
+    if (rule.independentItems) {
+      itemDoc = group(itemDoc, hasTrailing && rule.forceTrailing);
+    }
+    if (hasTrailing) itemDoc = concat([itemDoc, text(rule.separator)]);
     return group(
       concat([
         text(rule.open),
-        indent(concat([edge, separated(items, () => concat([text(rule.separator), line]))])),
+        indent(concat([edge, itemDoc])),
         edge,
         text(rule.close),
       ]),
+      hasTrailing && rule.forceTrailing,
     );
   }
   throw new Error(`unknown layout ${rule.layout}`);

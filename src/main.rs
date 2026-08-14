@@ -48,6 +48,7 @@ struct Style {
 enum Rule {
     Tight,
     Verbatim,
+    Source,
     Sequence {
         gaps: Vec<Gap>,
     },
@@ -56,6 +57,14 @@ enum Rule {
         close: String,
         separator: String,
         edge: Gap,
+        #[serde(default, rename = "itemsVerbatim")]
+        items_verbatim: bool,
+        #[serde(default, rename = "preserveTrailing")]
+        preserve_trailing: bool,
+        #[serde(default, rename = "forceTrailing")]
+        force_trailing: bool,
+        #[serde(default, rename = "independentItems")]
+        independent_items: bool,
     },
 }
 
@@ -73,7 +82,7 @@ enum Doc {
     Text(String),
     Verbatim(String),
     Concat(Vec<Doc>),
-    Group(Box<Doc>),
+    Group(Box<Doc>, bool),
     Indent(Box<Doc>),
     Line,
     Softline,
@@ -85,7 +94,8 @@ impl Doc {
         match self {
             Self::Hardline => true,
             Self::Concat(parts) => parts.iter().any(Self::breaks),
-            Self::Group(doc) | Self::Indent(doc) => doc.breaks(),
+            Self::Group(doc, force) => *force || doc.breaks(),
+            Self::Indent(doc) => doc.breaks(),
             Self::Verbatim(value) => value.contains('\n'),
             Self::Text(_) | Self::Line | Self::Softline => false,
         }
@@ -95,8 +105,8 @@ impl Doc {
         Self::Concat(parts)
     }
 
-    fn group(doc: Self) -> Self {
-        Self::Group(Box::new(doc))
+    fn forced_group(doc: Self, force: bool) -> Self {
+        Self::Group(Box::new(doc), force)
     }
 
     fn indent(doc: Self) -> Self {
@@ -152,8 +162,18 @@ fn validate_subtree(node: &Node, source: &[u8]) -> Result<(), String> {
     Ok(())
 }
 
+fn source_slice(source: &[u8], start: usize, end: usize, context: &str) -> Result<Doc, String> {
+    let bytes = source
+        .get(start..end)
+        .ok_or_else(|| format!("{context}: source gap is out of bounds"))?;
+    let value =
+        std::str::from_utf8(bytes).map_err(|_| format!("{context}: source gap splits UTF-8"))?;
+    Ok(Doc::Verbatim(value.into()))
+}
+
 fn build(node: &Node, rules: &HashMap<String, Rule>, source: &[u8]) -> Result<Doc, String> {
     if let Some(value) = &node.text {
+        validate_subtree(node, source)?;
         return Ok(Doc::Text(value.clone()));
     }
     let rule = rules
@@ -165,6 +185,18 @@ fn build(node: &Node, rules: &HashMap<String, Rule>, source: &[u8]) -> Result<Do
             let value = std::str::from_utf8(&source[node.start..node.end])
                 .map_err(|_| format!("{}: source range splits UTF-8", node.kind))?;
             Ok(Doc::Verbatim(value.into()))
+        }
+        Rule::Source => {
+            validate_subtree(node, source)?;
+            let mut parts = Vec::new();
+            let mut cursor = node.start;
+            for child in &node.children {
+                parts.push(source_slice(source, cursor, child.start, &node.kind)?);
+                parts.push(build(child, rules, source)?);
+                cursor = child.end;
+            }
+            parts.push(source_slice(source, cursor, node.end, &node.kind)?);
+            Ok(Doc::concat(parts))
         }
         Rule::Tight => node
             .children
@@ -188,12 +220,7 @@ fn build(node: &Node, rules: &HashMap<String, Rule>, source: &[u8]) -> Result<Do
             }
             Ok(Doc::concat(parts))
         }
-        Rule::Delimited {
-            open,
-            close,
-            separator,
-            edge,
-        } => build_delimited(node, rules, source, open, close, separator, *edge),
+        Rule::Delimited { .. } => build_delimited(node, rules, source, rule),
     }
 }
 
@@ -201,11 +228,28 @@ fn build_delimited(
     node: &Node,
     rules: &HashMap<String, Rule>,
     source: &[u8],
-    open: &str,
-    close: &str,
-    separator: &str,
-    edge: Gap,
+    rule: &Rule,
 ) -> Result<Doc, String> {
+    let Rule::Delimited {
+        open,
+        close,
+        separator,
+        edge,
+        items_verbatim,
+        preserve_trailing,
+        force_trailing,
+        independent_items,
+    } = rule
+    else {
+        return Err("internal error: expected delimited rule".into());
+    };
+    let (open, close, separator, edge) = (open.as_str(), close.as_str(), separator.as_str(), *edge);
+    let (items_verbatim, preserve_trailing, force_trailing, independent_items) = (
+        *items_verbatim,
+        *preserve_trailing,
+        *force_trailing,
+        *independent_items,
+    );
     let Some((first, rest)) = node.children.split_first() else {
         return Err(format!("{}: missing delimiters", node.kind));
     };
@@ -216,30 +260,63 @@ fn build_delimited(
         return Err(format!("{}: delimiter mismatch", node.kind));
     }
 
+    let (content, has_trailing) =
+        if middle.last().and_then(|child| child.text.as_deref()) == Some(separator) {
+            if !preserve_trailing {
+                return Err(format!("{}: trailing separator is not allowed", node.kind));
+            }
+            (&middle[..middle.len() - 1], true)
+        } else {
+            (middle, false)
+        };
+
     let mut items = Vec::new();
-    let mut chunks = middle.chunks_exact(2);
+    let mut chunks = content.chunks_exact(2);
     for chunk in &mut chunks {
-        items.push(build(&chunk[0], rules, source)?);
+        items.push(if items_verbatim {
+            validate_subtree(&chunk[0], source)?;
+            source_slice(source, chunk[0].start, chunk[0].end, &node.kind)?
+        } else {
+            build(&chunk[0], rules, source)?
+        });
         if chunk[1].text.as_deref() != Some(separator) {
             return Err(format!("{}: separator mismatch", node.kind));
         }
     }
     let remainder = chunks.remainder();
     if let Some(item) = remainder.first() {
-        items.push(build(item, rules, source)?);
-    } else if !middle.is_empty() {
-        return Err(format!("{}: trailing separator is not allowed", node.kind));
+        items.push(if items_verbatim {
+            validate_subtree(item, source)?;
+            source_slice(source, item.start, item.end, &node.kind)?
+        } else {
+            build(item, rules, source)?
+        });
+    } else if !content.is_empty() {
+        return Err(format!(
+            "{}: children are not a delimited partition",
+            node.kind
+        ));
     }
     if items.is_empty() {
         return Ok(Doc::Text(format!("{open}{close}")));
     }
 
-    Ok(Doc::group(Doc::concat(vec![
-        Doc::Text(open.into()),
-        Doc::indent(Doc::concat(vec![gap(edge), separated(items, separator)])),
-        gap(edge),
-        Doc::Text(close.into()),
-    ])))
+    let mut item_doc = separated(items, separator);
+    if independent_items {
+        item_doc = Doc::forced_group(item_doc, has_trailing && force_trailing);
+    }
+    if has_trailing {
+        item_doc = Doc::concat(vec![item_doc, Doc::Text(separator.into())]);
+    }
+    Ok(Doc::forced_group(
+        Doc::concat(vec![
+            Doc::Text(open.into()),
+            Doc::indent(Doc::concat(vec![gap(edge), item_doc])),
+            gap(edge),
+            Doc::Text(close.into()),
+        ]),
+        has_trailing && force_trailing,
+    ))
 }
 
 fn fits(remaining: isize, initial_indent: usize, doc: &Doc, indent_width: usize) -> bool {
@@ -261,9 +338,9 @@ fn fits(remaining: isize, initial_indent: usize, doc: &Doc, indent_width: usize)
                 stack.extend(parts.iter().rev().map(|part| (column, mode, part)));
             }
             Doc::Indent(inner) => stack.push((column + indent_width, mode, inner)),
-            Doc::Group(inner) => stack.push((
+            Doc::Group(inner, force) => stack.push((
                 column,
-                if inner.breaks() {
+                if *force || inner.breaks() {
                     Mode::Break
                 } else {
                     Mode::Flat
@@ -309,9 +386,10 @@ fn render(doc: &Doc, width: usize, indent_width: usize) -> String {
                 stack.extend(parts.iter().rev().map(|part| (column, mode, part)));
             }
             Doc::Indent(inner) => stack.push((column + indent_width, mode, inner)),
-            Doc::Group(inner) => {
+            Doc::Group(inner, force) => {
                 let remaining = width as isize - position as isize;
-                let flat = !inner.breaks() && fits(remaining, column, inner, indent_width);
+                let flat =
+                    !force && !inner.breaks() && fits(remaining, column, inner, indent_width);
                 stack.push((column, if flat { Mode::Flat } else { Mode::Break }, inner));
             }
             Doc::Line => {
