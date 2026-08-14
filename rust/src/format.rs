@@ -33,6 +33,7 @@ impl Engine<'_> {
             "comp" => self.kind_comp(node, rule, kind),
             "dot" => self.kind_dot(node, kind),
             "template" => self.kind_template(node, rule, kind, parent_kind),
+            "from_import" => self.kind_from_import(node, kind),
             other => Err(Refuse(format!("unknown kind {other} for {}", node.kind))),
         }
     }
@@ -541,6 +542,81 @@ impl Engine<'_> {
         Err(Refuse("bad template".into()))
     }
 
+    fn kind_from_import(&self, node: &Node, kind: &str) -> Result<Doc, Refuse> {
+        let kids = self.kids(node);
+        let mut c = Cursor::new(&kids);
+        let from_tok = c.take("from")?;
+        if !from_tok.is_token("from") {
+            return Err(Refuse("from_import: expected from".into()));
+        }
+        let module = c.take("module")?;
+        let import_tok = c.take("import")?;
+        if !import_tok.is_token("import") {
+            return Err(Refuse("from_import: expected import".into()));
+        }
+        let mut rest = Vec::new();
+        while !c.is_empty() {
+            rest.push(c.take("name")?);
+        }
+        c.finish(&node.kind)?;
+
+        let names: Vec<&Node> = rest
+            .iter()
+            .copied()
+            .filter(|n| {
+                n.field.as_deref() == Some("name")
+                    || (!n.is_punct() && n.kind != "(" && n.kind != ")")
+            })
+            .collect();
+        let mut trailing_comma = false;
+        for n in rest.iter().rev() {
+            if n.is_token(")") {
+                continue;
+            }
+            trailing_comma = n.is_token(",");
+            break;
+        }
+        let has_parens = rest.iter().any(|n| n.is_token("("));
+        let mut name_docs = Vec::new();
+        for n in names {
+            name_docs.push(self.format_in(n, Some(kind))?);
+        }
+        let sep_doc = Doc::Concat(vec![Doc::text(","), Doc::Line]);
+        let mut inner = vec![Doc::Softline];
+        for (i, d) in name_docs.into_iter().enumerate() {
+            if i > 0 {
+                inner.push(sep_doc.clone());
+            }
+            inner.push(d);
+        }
+        inner.push(Doc::if_break(Doc::text(","), Doc::text("")));
+        let open = if has_parens {
+            Doc::text("(")
+        } else {
+            Doc::if_break(Doc::text("("), Doc::text(""))
+        };
+        let close = if has_parens {
+            Doc::text(")")
+        } else {
+            Doc::if_break(Doc::text(")"), Doc::text(""))
+        };
+        let list = Doc::group_break(
+            Doc::Concat(vec![
+                open,
+                Doc::indent(Doc::Concat(inner)),
+                Doc::Softline,
+                close,
+            ]),
+            trailing_comma,
+        );
+        Ok(Doc::Concat(vec![
+            Doc::text("from "),
+            self.format_in(module, Some(kind))?,
+            Doc::text(" import "),
+            list,
+        ]))
+    }
+
     fn flatten_chain(&self, node: &Node, cls: u8, kind: &str) -> Result<Vec<ChainPart>, Refuse> {
         if !is_bin_chain(node) {
             return Ok(vec![ChainPart {
@@ -586,6 +662,14 @@ fn hole_nodes<'a>(
     if name.chars().all(|c| c.is_ascii_digit()) {
         let i: usize = name.parse().ok()?;
         return Some(all.get(i).copied().into_iter().collect());
+    }
+    let matches: Vec<&Node> = all
+        .iter()
+        .copied()
+        .filter(|n| n.field.as_deref() == Some(name))
+        .collect();
+    if !matches.is_empty() {
+        return Some(matches);
     }
     Some(by_field.get(name).copied().into_iter().collect())
 }

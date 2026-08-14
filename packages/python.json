@@ -76,6 +76,18 @@
     },
     "if_clause": { "kind": "pfx", "kw": "if", "sp": true },
     "pattern_list": { "kind": "infix", "op": ", " },
-    "attribute": { "kind": "dot" }
+    "attribute": { "kind": "dot" },
+    "dotted_name": { "kind": "dot" },
+    "import_statement": {
+      "kind": "template",
+      "doc": ["import ", { "join": { "sep": ", ", "items": "$name" } }]
+    },
+    "import_from_statement": { "kind": "from_import" },
+    "aliased_import": { "kind": "template", "doc": ["$name", " as ", "$alias"] },
+    "relative_import": {
+      "kind": "template",
+      "doc": [{ "join": { "sep": "", "items": "$children" } }]
+    },
+    "import_prefix": { "kind": "dot" }
   }
 }

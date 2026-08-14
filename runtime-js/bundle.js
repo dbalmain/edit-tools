@@ -552,7 +552,47 @@ const KINDS = {
   comp: kindComp,
   template: kindTemplate,
   dot: kindDot,
+  from_import: kindFromImport,
 };
+
+function kindFromImport(node, _rule, ctx) {
+  const c = cursor(nonComments(node, ctx.commentType));
+  const fromTok = c.take("from");
+  if (!isToken(fromTok, "from")) refuse(`from_import: expected from`);
+  const mod = c.take("module");
+  const importTok = c.take("import");
+  if (!isToken(importTok, "import")) refuse(`from_import: expected import`);
+  const rest = [];
+  while (!c.done()) rest.push(c.take("name"));
+  c.finish(node.type);
+
+  const names = rest.filter((n) => n.field === "name" || (!isPunct(n) && n.type !== "(" && n.type !== ")"));
+  let trailingComma = false;
+  for (let i = rest.length - 1; i >= 0; i--) {
+    if (isToken(rest[i], ")")) continue;
+    trailingComma = isToken(rest[i], ",");
+    break;
+  }
+  const hasParens = rest.some((n) => isToken(n, "("));
+  const nameDocs = names.map((n) => ctx.format(n));
+  const sepDoc = concat([text(","), line]);
+  const inner = [softline];
+  for (let i = 0; i < nameDocs.length; i++) {
+    if (i) inner.push(sepDoc);
+    inner.push(nameDocs[i]);
+  }
+  inner.push(ifBreak(text(","), text("")));
+  const list = group(
+    concat([
+      hasParens ? text("(") : ifBreak(text("("), text("")),
+      indent(concat(inner)),
+      softline,
+      hasParens ? text(")") : ifBreak(text(")"), text("")),
+    ]),
+    { shouldBreak: trailingComma },
+  );
+  return concat([text("from "), ctx.format(mod), text(" import "), list]);
+}
 
 function kindComp(node, rule, ctx) {
   const c = cursor(nonComments(node, ctx.commentType));
@@ -604,6 +644,8 @@ function holeNodes(spec, all, byField) {
       const n = all[Number(name)];
       return n ? [n] : [];
     }
+    const matches = all.filter((n) => n.field === name);
+    if (matches.length) return matches;
     return byField[name] ? [byField[name]] : [];
   }
   return null;
