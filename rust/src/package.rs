@@ -74,6 +74,18 @@ pub struct Rule {
     pub paren: bool,
     #[serde(default)]
     pub doc: Option<serde_json::Value>,
+    #[serde(default)]
+    pub keyword: Option<String>,
+    #[serde(default)]
+    pub header: Vec<String>,
+    #[serde(default)]
+    pub colon: bool,
+    #[serde(default)]
+    pub body: Option<String>,
+    #[serde(default)]
+    pub tails: Vec<String>,
+    #[serde(default)]
+    pub arrow: Option<String>,
 }
 
 impl Package {

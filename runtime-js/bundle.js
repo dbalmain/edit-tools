@@ -382,7 +382,7 @@ function kindPfx(node, rule, ctx) {
   const rest = [];
   while (!c.done()) rest.push(c.take("operand"));
   c.finish(node.type);
-  const sp = rule.sp ? " " : "";
+  const sp = rule.sp && rest.length ? " " : "";
   let doc = concat([text(opText + sp), ...rest.map((n) => ctx.format(n))]);
   if (rule.paren) doc = parenInsert(doc, ctx);
   return doc;
@@ -553,7 +553,48 @@ const KINDS = {
   template: kindTemplate,
   dot: kindDot,
   from_import: kindFromImport,
+  clause: kindClause,
 };
+
+function kindClause(node, rule, ctx) {
+  const c = cursor(nonComments(node, ctx.commentType));
+  const all = [];
+  while (!c.done()) all.push(c.take("child"));
+  c.finish(node.type);
+  const byField = Object.create(null);
+  for (const n of all) {
+    if (n.field) byField[n.field] = n;
+  }
+  const kw = rule.keyword || "";
+  const header = rule.header || [];
+  const docs = [text(kw + (header.length ? " " : ""))];
+  for (const h of header) {
+    const fieldNode = all.find((n) => n.field === h);
+    if (fieldNode) {
+      docs.push(ctx.format(fieldNode));
+    } else {
+      const tok = all.find((n) => isToken(n, h));
+      if (tok) docs.push(text(" " + h + " "));
+    }
+  }
+  if (rule.arrow && byField[rule.arrow]) {
+    docs.push(text(" -> "));
+    docs.push(ctx.format(byField[rule.arrow]));
+  }
+  if (rule.colon) docs.push(text(":"));
+  let body = rule.body ? byField[rule.body] : null;
+  if (!body) body = all.find((n) => n.type === "block");
+  if (body) {
+    docs.push(indent(concat([hardline, ctx.format(body)])));
+  }
+  for (const t of rule.tails || []) {
+    for (const n of all.filter((n) => n.type === t)) {
+      docs.push(hardline);
+      docs.push(ctx.format(n));
+    }
+  }
+  return concat(docs);
+}
 
 function kindFromImport(node, _rule, ctx) {
   const c = cursor(nonComments(node, ctx.commentType));

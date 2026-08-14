@@ -34,6 +34,7 @@ impl Engine<'_> {
             "dot" => self.kind_dot(node, kind),
             "template" => self.kind_template(node, rule, kind, parent_kind),
             "from_import" => self.kind_from_import(node, kind),
+            "clause" => self.kind_clause(node, rule, kind),
             other => Err(Refuse(format!("unknown kind {other} for {}", node.kind))),
         }
     }
@@ -313,7 +314,7 @@ impl Engine<'_> {
         c.finish(&node.kind)?;
         let mut docs = vec![Doc::text(format!(
             "{op_text}{}",
-            if rule.sp { " " } else { "" }
+            if rule.sp && !rest.is_empty() { " " } else { "" }
         ))];
         for n in rest {
             docs.push(self.format_in(n, Some(kind))?);
@@ -615,6 +616,64 @@ impl Engine<'_> {
             Doc::text(" import "),
             list,
         ]))
+    }
+
+    fn kind_clause(&self, node: &Node, rule: Option<&Rule>, kind: &str) -> Result<Doc, Refuse> {
+        let Some(rule) = rule else {
+            return Err(Refuse(format!("clause {} missing rule", node.kind)));
+        };
+        let kids = self.kids(node);
+        let mut c = Cursor::new(&kids);
+        let mut all = Vec::new();
+        while !c.is_empty() {
+            all.push(c.take("child")?);
+        }
+        c.finish(&node.kind)?;
+        let mut by_field = std::collections::BTreeMap::new();
+        for n in &all {
+            if let Some(f) = &n.field {
+                by_field.insert(f.as_str(), *n);
+            }
+        }
+        let kw = rule.keyword.as_deref().unwrap_or("");
+        let mut docs = vec![Doc::text(format!(
+            "{kw}{}",
+            if rule.header.is_empty() { "" } else { " " }
+        ))];
+        for h in &rule.header {
+            if let Some(n) = all.iter().find(|n| n.field.as_deref() == Some(h.as_str())) {
+                docs.push(self.format_in(n, Some(kind))?);
+            } else if let Some(_tok) = all.iter().find(|n| n.is_token(h)) {
+                docs.push(Doc::text(format!(" {h} ")));
+            }
+        }
+        if let Some(arrow) = &rule.arrow
+            && let Some(n) = by_field.get(arrow.as_str())
+        {
+            docs.push(Doc::text(" -> "));
+            docs.push(self.format_in(n, Some(kind))?);
+        }
+        if rule.colon {
+            docs.push(Doc::text(":"));
+        }
+        let body = rule
+            .body
+            .as_deref()
+            .and_then(|b| by_field.get(b).copied())
+            .or_else(|| all.iter().copied().find(|n| n.kind == "block"));
+        if let Some(body) = body {
+            docs.push(Doc::indent(Doc::Concat(vec![
+                Doc::Hardline,
+                self.format_in(body, Some(kind))?,
+            ])));
+        }
+        for t in &rule.tails {
+            for n in all.iter().filter(|n| n.kind == *t) {
+                docs.push(Doc::Hardline);
+                docs.push(self.format_in(n, Some(kind))?);
+            }
+        }
+        Ok(Doc::Concat(docs))
     }
 
     fn flatten_chain(&self, node: &Node, cls: u8, kind: &str) -> Result<Vec<ChainPart>, Refuse> {

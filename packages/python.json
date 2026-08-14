@@ -88,6 +88,56 @@
       "kind": "template",
       "doc": [{ "join": { "sep": "", "items": "$children" } }]
     },
-    "import_prefix": { "kind": "dot" }
+    "import_prefix": { "kind": "dot" },
+    "function_definition": {
+      "kind": "clause",
+      "keyword": "def",
+      "header": ["name", "parameters"],
+      "arrow": "return_type",
+      "colon": true,
+      "body": "body"
+    },
+    "class_definition": {
+      "kind": "clause",
+      "keyword": "class",
+      "header": ["name", "superclasses"],
+      "colon": true,
+      "body": "body"
+    },
+    "decorated_definition": { "kind": "body", "tight": true },
+    "decorator": { "kind": "pfx", "kw": "@", "sp": false },
+    "parameters": {
+      "kind": "seq",
+      "open": "(",
+      "close": ")",
+      "sep": ",",
+      "trailing": "magic"
+    },
+    "default_parameter": { "kind": "infix", "op": "=" },
+    "typed_parameter": { "kind": "infix", "op": ": " },
+    "type": { "kind": "fwd" },
+    "generic_type": {
+      "kind": "template",
+      "doc": [{ "join": { "sep": "", "items": "$children" } }]
+    },
+    "type_parameter": {
+      "kind": "seq",
+      "open": "[",
+      "close": "]",
+      "sep": ",",
+      "trailing": "none"
+    },
+    "return_statement": { "kind": "pfx", "kw": "return", "sp": true },
+    "list_splat_pattern": { "kind": "pfx", "kw": "*", "sp": false },
+    "dictionary_splat_pattern": { "kind": "pfx", "kw": "**", "sp": false },
+    "lambda": {
+      "kind": "template",
+      "paren": true,
+      "doc": ["lambda ", "$parameters", ": ", "$body"]
+    },
+    "lambda_parameters": {
+      "kind": "template",
+      "doc": [{ "join": { "sep": ", ", "items": "$children" } }]
+    }
   }
 }
