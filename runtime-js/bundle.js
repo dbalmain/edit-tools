@@ -171,6 +171,8 @@ function newlinesBetween(bytes, from, to) {
   return n;
 }
 
+/** A node's children, split into items with every comment attached to one of
+ *  them -- or, for a node that holds nothing but comments, left dangling. */
 function splitChildren(fmt, node) {
   const items = [];
   let lead = [];
@@ -204,14 +206,10 @@ function splitChildren(fmt, node) {
     });
   }
 
-  if (lead.length > 0) {
-    const host = [...items].reverse().find((i) => !fmt.tokens.has(i.node.type));
-    if (!host) {
-      throw new Refusal(`\`${node.type}\` holds nothing but comments; nowhere to attach them`);
-    }
-    host.after = lead;
-  }
-  return items;
+  const host = [...items].reverse().find((i) => !fmt.tokens.has(i.node.type));
+  if (lead.length > 0 && host) host.after = lead;
+  // A file that is nothing but comments is still a file.
+  return { items, dangling: lead.length > 0 && !host ? lead : [] };
 }
 
 const decorated = (item) =>
@@ -258,7 +256,9 @@ class Ctx {
   constructor(fmt, node) {
     this.fmt = fmt;
     this.node = node;
-    this.items = splitChildren(fmt, node);
+    const split = splitChildren(fmt, node);
+    this.items = split.items;
+    this.dangling = split.dangling;
     this.cursor = 0;
   }
 
@@ -525,7 +525,15 @@ class Formatter {
     const rule = this.pkg.rules[node.type];
     if (!rule) throw new Refusal(`package has no rule for node type \`${node.type}\``);
     const ctx = new Ctx(this, node);
-    const doc = ctx.eval(rule);
+    let doc = ctx.eval(rule);
+    if (ctx.dangling.length > 0) {
+      const parts = [];
+      ctx.dangling.forEach((comment, i) => {
+        if (i > 0) for (let n = 0; n < Math.min(comment.blanks, 2); n++) parts.push(hard);
+        parts.push(text(comment.text), hard);
+      });
+      doc = concat([...parts, doc]);
+    }
     if (ctx.cursor !== ctx.items.length) {
       throw new Refusal(
         `rule for \`${node.type}\` left child \`${ctx.items[ctx.cursor].node.type}\` unconsumed`,

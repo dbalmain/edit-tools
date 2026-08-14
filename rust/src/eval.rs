@@ -5,7 +5,7 @@
 //! construction a disjoint, ordered partition of the children -- and a rule
 //! that fails to consume all of them refuses the file instead of emitting.
 
-use crate::attach::{items, Item};
+use crate::attach::{split, Comment, Item};
 use crate::doc::Doc;
 use crate::pkg::{Expr, Package, Pred, Sel};
 use crate::tree::{Node, TreeDoc};
@@ -39,8 +39,11 @@ impl<'a> Fmt<'a> {
             self.pkg.rules.get(&node.kind).ok_or_else(|| {
                 Refusal(format!("package has no rule for node type `{}`", node.kind))
             })?;
-        let mut ctx = Ctx::new(node, self)?;
-        let doc = ctx.eval(rule, self)?;
+        let mut ctx = Ctx::new(node, self);
+        let mut doc = ctx.eval(rule, self)?;
+        if !ctx.dangling.is_empty() {
+            doc = Doc::Concat(dangling(&ctx.dangling, doc));
+        }
         if ctx.cursor != ctx.items.len() {
             let left = &ctx.items[ctx.cursor];
             return Err(Refusal(format!(
@@ -105,19 +108,38 @@ fn decorate(pkg: &Package, item: &Item<'_>, inner: Doc) -> Doc {
     Doc::Concat(parts)
 }
 
+/// Comments held by a node with no child to attach them to.
+fn dangling(comments: &[Comment], inner: Doc) -> Vec<Doc> {
+    let mut parts = Vec::new();
+    for (i, comment) in comments.iter().enumerate() {
+        if i > 0 {
+            for _ in 0..comment.blanks.min(2) {
+                parts.push(Doc::Hard);
+            }
+        }
+        parts.push(Doc::text(comment.text.as_str()));
+        parts.push(Doc::Hard);
+    }
+    parts.push(inner);
+    parts
+}
+
 struct Ctx<'a> {
     node: &'a Node,
     items: Vec<Item<'a>>,
+    dangling: Vec<Comment>,
     cursor: usize,
 }
 
 impl<'a> Ctx<'a> {
-    fn new(node: &'a Node, f: &Fmt<'a>) -> Result<Ctx<'a>, Refusal> {
-        Ok(Ctx {
+    fn new(node: &'a Node, f: &Fmt<'a>) -> Ctx<'a> {
+        let parts = split(node, f.src, f.pkg);
+        Ctx {
             node,
-            items: items(node, f.src, f.pkg)?,
+            items: parts.items,
+            dangling: parts.dangling,
             cursor: 0,
-        })
+        }
     }
 
     fn matches(&self, at: usize, sel: &Sel, pkg: &Package) -> bool {
@@ -346,10 +368,7 @@ impl<'a> Ctx<'a> {
             spine.push(next);
             cur = next;
         }
-        let mut inner: Vec<Ctx<'a>> = spine
-            .iter()
-            .map(|n| Ctx::new(n, f))
-            .collect::<Result<_, _>>()?;
+        let mut inner: Vec<Ctx<'a>> = spine.iter().map(|n| Ctx::new(n, f)).collect();
 
         let mut parts = Vec::new();
         match inner.last_mut() {

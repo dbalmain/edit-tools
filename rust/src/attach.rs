@@ -12,7 +12,6 @@
 
 use crate::pkg::Package;
 use crate::tree::Node;
-use crate::Refusal;
 
 pub struct Comment {
     pub text: String,
@@ -45,8 +44,14 @@ fn newlines(src: &[u8], from: usize, to: usize) -> usize {
     src[from..to].iter().filter(|&&b| b == b'\n').count()
 }
 
-/// Split a node's children into items, attaching every comment to one of them.
-pub fn items<'a>(node: &'a Node, src: &[u8], pkg: &Package) -> Result<Vec<Item<'a>>, Refusal> {
+/// A node's children, split into items with every comment attached to one of
+/// them -- or, for a node that holds nothing but comments, left dangling.
+pub struct Split<'a> {
+    pub items: Vec<Item<'a>>,
+    pub dangling: Vec<Comment>,
+}
+
+pub fn split<'a>(node: &'a Node, src: &[u8], pkg: &Package) -> Split<'a> {
     let mut items: Vec<Item<'a>> = Vec::new();
     let mut lead: Vec<Comment> = Vec::new();
     let mut prev_end = node.start;
@@ -84,18 +89,17 @@ pub fn items<'a>(node: &'a Node, src: &[u8], pkg: &Package) -> Result<Vec<Item<'
         });
     }
 
+    let mut dangling = Vec::new();
     if !lead.is_empty() {
-        let host = items
+        match items
             .iter_mut()
             .rev()
-            .find(|item| !pkg.is_token(&item.node.kind));
-        let Some(host) = host else {
-            return Err(Refusal(format!(
-                "`{}` holds nothing but comments; nowhere to attach them",
-                node.kind
-            )));
-        };
-        host.after = lead;
+            .find(|item| !pkg.is_token(&item.node.kind))
+        {
+            Some(host) => host.after = lead,
+            // A file that is nothing but comments is still a file.
+            None => dangling = lead,
+        }
     }
-    Ok(items)
+    Split { items, dangling }
 }
