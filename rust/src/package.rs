@@ -60,6 +60,12 @@ pub struct Rule {
     pub op_field: Option<String>,
     #[serde(default)]
     pub tight: bool,
+    #[serde(default)]
+    pub kw: Option<String>,
+    #[serde(default)]
+    pub sp: bool,
+    #[serde(default)]
+    pub fields: Vec<String>,
 }
 
 impl Package {

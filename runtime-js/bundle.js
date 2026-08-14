@@ -347,6 +347,45 @@ function kindSeq(node, rule, ctx) {
   );
 }
 
+function kindPfx(node, rule, ctx) {
+  const c = cursor(nonComments(node, ctx.commentType));
+  if (rule.fields && rule.fields.length) {
+    const wanted = rule.fields;
+    const byField = Object.create(null);
+    while (!c.done()) {
+      const n = c.take("child");
+      if (n.field && wanted.indexOf(n.field) !== -1) {
+        byField[n.field] = n;
+      } else if (!isPunct(n)) {
+        refuse(`pfx ${node.type}: unexpected ${n.type}`);
+      }
+    }
+    c.finish(node.type);
+    return concat(
+      wanted.filter((f) => byField[f]).map((f) => ctx.format(byField[f])),
+    );
+  }
+
+  let opText;
+  if (rule.kw != null) {
+    const kw = c.take("kw");
+    if (!isToken(kw, rule.kw)) {
+      refuse(`pfx ${node.type}: expected ${rule.kw}, got ${kw.type}`);
+    }
+    opText = rule.kw;
+  } else if (rule.op_field) {
+    const op = c.take("op");
+    opText = rawText(op);
+  } else {
+    refuse(`pfx ${node.type}: need kw, op_field, or fields`);
+  }
+  const rest = [];
+  while (!c.done()) rest.push(c.take("operand"));
+  c.finish(node.type);
+  const sp = rule.sp ? " " : "";
+  return concat([text(opText + sp), ...rest.map((n) => ctx.format(n))]);
+}
+
 function kindBody(node, rule, ctx) {
   const c = cursor(nonComments(node, ctx.commentType));
   const stmts = [];
@@ -375,6 +414,7 @@ const KINDS = {
   infix: kindInfix,
   seq: kindSeq,
   body: kindBody,
+  pfx: kindPfx,
 };
 
 function defaultKind(node, pkg) {

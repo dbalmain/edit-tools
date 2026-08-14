@@ -44,6 +44,17 @@
       "sep": ",",
       "trailing": "magic"
     },
-    "pair": { "kind": "infix", "op": ": " }
+    "pair": { "kind": "infix", "op": ": " },
+    "call": { "kind": "pfx", "fields": ["function", "arguments"] },
+    "argument_list": {
+      "kind": "seq",
+      "open": "(",
+      "close": ")",
+      "sep": ",",
+      "trailing": "magic"
+    },
+    "keyword_argument": { "kind": "infix", "op": "=" },
+    "list_splat": { "kind": "pfx", "kw": "*", "sp": false },
+    "dictionary_splat": { "kind": "pfx", "kw": "**", "sp": false }
   }
 }

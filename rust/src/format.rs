@@ -23,6 +23,7 @@ impl Engine<'_> {
             "infix" => self.kind_infix(node, rule),
             "seq" => self.kind_seq(node, rule),
             "body" => self.kind_body(node, rule),
+            "pfx" => self.kind_pfx(node, rule),
             other => Err(Refuse(format!("unknown kind {other} for {}", node.kind))),
         }
     }
@@ -237,6 +238,69 @@ impl Engine<'_> {
                 }
             }
             docs.push(self.format_node(stmt)?);
+        }
+        Ok(Doc::Concat(docs))
+    }
+
+    fn kind_pfx(&self, node: &Node, rule: Option<&Rule>) -> Result<Doc, Refuse> {
+        let Some(rule) = rule else {
+            return Err(Refuse(format!("pfx {} missing rule", node.kind)));
+        };
+        let kids = self.kids(node);
+        let mut c = Cursor::new(&kids);
+
+        if !rule.fields.is_empty() {
+            let mut by_field = std::collections::BTreeMap::new();
+            while !c.is_empty() {
+                let n = c.take("child")?;
+                if n.field
+                    .as_deref()
+                    .is_some_and(|f| rule.fields.iter().any(|w| w == f))
+                {
+                    by_field.insert(n.field.clone().unwrap_or_default(), n);
+                } else if !n.is_punct() {
+                    return Err(Refuse(format!("pfx {}: unexpected {}", node.kind, n.kind)));
+                }
+            }
+            c.finish(&node.kind)?;
+            let mut docs = Vec::new();
+            for f in &rule.fields {
+                if let Some(n) = by_field.get(f) {
+                    docs.push(self.format_node(n)?);
+                }
+            }
+            return Ok(Doc::Concat(docs));
+        }
+
+        let op_text = if let Some(kw) = &rule.kw {
+            let tok = c.take("kw")?;
+            if !tok.is_token(kw) {
+                return Err(Refuse(format!(
+                    "pfx {}: expected {kw}, got {}",
+                    node.kind, tok.kind
+                )));
+            }
+            kw.clone()
+        } else if rule.op_field.is_some() {
+            let op = c.take("op")?;
+            op.raw_text()
+        } else {
+            return Err(Refuse(format!(
+                "pfx {}: need kw, op_field, or fields",
+                node.kind
+            )));
+        };
+        let mut rest = Vec::new();
+        while !c.is_empty() {
+            rest.push(c.take("operand")?);
+        }
+        c.finish(&node.kind)?;
+        let mut docs = vec![Doc::text(format!(
+            "{op_text}{}",
+            if rule.sp { " " } else { "" }
+        ))];
+        for n in rest {
+            docs.push(self.format_node(n)?);
         }
         Ok(Doc::Concat(docs))
     }
