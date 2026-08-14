@@ -4,12 +4,11 @@
 
 Ship a symbolic JSON program that describes how each concrete-syntax node is
 partitioned into a small number of layout families: sequence, delimited list,
-operator chain, and statement suite. The program may insert Doc structure and
-whitespace, but it consumes syntax children linearly. Every input token is
-therefore emitted exactly once and in source order unless the package explicitly
-declares that token as a mutable trailing delimiter. Comments are likewise kept
-at their original token boundary rather than being moved onto an arbitrary AST
-node.
+operator chain, and statement suite. The program may insert Doc structure,
+whitespace and package-declared continuation parentheses, but it consumes syntax
+children linearly. Every immutable input token is therefore emitted exactly once
+and in source order. Comments are likewise kept at their original token boundary
+rather than being moved onto an arbitrary AST node.
 
 I call this a **linear layout schema**. It is closest to design B, but the
 linearity check and boundary-anchored comments are the important differences.
@@ -59,12 +58,21 @@ is the subtree collapsed; its leaf texts are concatenated in order and still
 checked against the input token stream. An uncovered interior node is an error,
 not an invitation to guess.
 
-The only operation allowed to change the token sequence is a package-declared
-`mutableTrailing` policy. Python permits this only in grammar contexts where a
-trailing comma is semantically optional; JSON declares no mutable token. A
-single-element tuple and a subscript are deliberately excluded. This is a safe
-subset of the scorer's broader normalisation and makes non-destruction
-substantially easier to audit.
+Token-sequence changes are restricted to two package-declared policies.
+`mutableTrailing` can add or remove a trailing comma only in grammar contexts
+where it is semantically optional; a single-element tuple and a subscript are
+deliberately excluded. `continuation` can ensure a balanced `(`, `)` pair around
+one complete layout region when its group breaks, and can consume an existing
+redundant pair when the group flattens. It is legal only on rules whose exact
+node and parent/field context the package lists. The linearity checker treats a
+matched input pair as the region's wrapper rather than as ordinary children,
+rejects a partial or misplaced match, and never synthesizes two pairs for the
+same region. Thus an unparenthesized operator chain can become
+`x = (\n    a\n    + b\n)`, and the reparsed
+`parenthesized_expression` maps back to the same logical region on pass 2.
+Python declares both policies; JSON declares neither. The runtime cannot prove
+that a listed Python context is semantics-neutral, but its mutation surface is
+small enough to audit and gate 3 independently checks the result with `ast`.
 
 ### Concrete package fragment
 
@@ -244,10 +252,10 @@ newlines inside a `string_content` leaf. Treating that as ordinary `text` makes
 fit measurement and indentation wrong.
 
 `verbatim` containing a newline forces every enclosing group and updates the
-column to the number of Unicode scalar values after its last newline. Ordinary
-width is also defined in Unicode scalar values: Rust `char` and JS code-point
-iteration agree, unlike Rust `chars().count()` versus JS `string.length` for
-astral characters. This is deterministic but not full terminal display width;
+column to the number of Unicode scalar values after its last newline. Every fit
+calculation uses the same unit: Rust `chars().count()` and JS code-point
+iteration such as `[...s].length` agree for astral characters, unlike JS
+`string.length`. This is deterministic but not full terminal display width;
 that limitation is explicit below.
 
 `lineSuffix` accepts only concatenations of text in version 1. An `ifBreak`
@@ -362,62 +370,53 @@ Correctly deciding “end-of-line” requires the original source, as Prettier's
 own attachment API explicitly does: it distinguishes own-line and end-of-line
 comments from surrounding source text and passes that text to language hooks
 ([Prettier plugin comments](https://prettier.io/docs/plugins#handling-comments-in-a-printer)).
-The competition tree stores byte offsets but not row/column or intervening
-whitespace. `source_file` makes the source available on the first invocation,
-so the CLI reads it and the library API accepts source text alongside the tree.
+Every competition tree now carries the complete text in its top-level `source`
+field, including trees built by `as_tree_doc` for the idempotence pass. The
+runtime uses the leaf byte offsets to inspect the source slice at each boundary,
+so two spaces, two newlines and indentation are distinguishable in both passes.
+No source-file lookup, encoded gap convention or source-less fallback is needed.
 
-There is a scorer defect here: `as_tree_doc` removes `source_file` during the
-idempotence invocation. Offsets alone cannot distinguish `x  # comment` from
-some equal-length combination of newline and indentation. For the fixed scorer,
-source-less mode accepts only this formatter's canonical, prefix-free comment
-gaps: two spaces means end-of-line; own-line gaps are one newline at column zero,
-three newlines where two top-level blank lines are required, or one newline plus
-four-space indentation. Structural context resolves start/end boundaries. This
-is enough to recognize the runtime's own output, but it is not presented as a
-general solution. The real interface must receive source bytes, or the tree
-format must retain points or whitespace slices.
-
-Blank lines use canonical structural rules rather than input preservation:
-two between top-level definitions, one around the relevant top-level comment
-groups, none at the start/end beyond the final newline, and none gratuitously
-inside suites. That makes the first result a fixed point without relying on
-source provenance.
+Blank lines still use canonical structural rules rather than preserving every
+input run: two between top-level definitions, one around the relevant top-level
+comment groups, none at the start/end beyond the final newline, and none
+gratuitously inside suites. The source slice identifies the input boundary and
+comment class; the package policy chooses its canonical gap. On pass 2 the
+`source` field contains that canonical output, so the same policy is a fixed
+point without special recovery logic.
 
 ## What this design cannot do
 
-First, the scorer's “non-destruction” gate is token identity, not semantic
-non-destruction. It permits only trailing-comma changes. Black legitimately
-adds parentheses to create implicit-continuation regions, removes redundant
-parentheses, and normalizes string spelling. A gate-passing formatter therefore
-cannot match Black or reflow when those operations are necessary.
+First, the semantic non-destruction gate no longer imposes the width-60 ceiling
+in the original proposal. Package-declared continuation wrappers let the
+`chain` rules split the long arithmetic, boolean and comparison expressions in
+`python__operators.tree.json`; the same mechanism wraps long `if`, `elif` and
+`while` headers in `python__statements.tree.json` and lambda and ternary
+expressions in `python__misc.tree.json`. `delimited` can synthesize the pair
+around a long `from ... import` list when used with `continuation`, and a wrapped
+`chain` can legally break before selectors in `python__chains.tree.json`. Those
+are real break opportunities at width 60, so the files are no longer forced to
+overflow merely because their input omitted parentheses. They can reach
+Black-style shapes such as:
 
-The scorer's statement that every comma immediately before a closer “carries
-no meaning” is also false for Python: the comma in `(lonely,)` creates the tuple,
-and a trailing comma in a subscript can create a tuple key. Its normalizer would
-miss either semantic change. The package's context-specific mutable-token list
-is intentionally stricter than the gate.
+```python
+if (
+    first_condition
+    and second_condition
+    and third_condition
+    and fourth_condition
+):
+    handle_the_case()
+```
 
-Concrete consequences:
-
-- `python__operators.tree.json` has long unparenthesized arithmetic, boolean and
-  comparison expressions. Breaking them requires parentheses or backslashes,
-  either of which changes the token stream.
-- `python__statements.tree.json` has long `if`, `elif` and `while` headers with
-  the same problem.
-- `python__chains.tree.json` has unparenthesized attribute and method chains;
-  a legal break before `.` needs a continuation context.
-- `python__imports.tree.json` has long unparenthesized `from` imports; Black
-  adds parentheses, which gate 3 forbids.
-- `python__misc.tree.json` asks Black to remove redundant parentheses and has
-  long unparenthesized lambda/operator expressions.
-- `python__strings.tree.json` contains a single-quoted string. Preserving leaf
-  token text conflicts with Black's default quote normalization.
-
-The proposal chooses the disqualifying gate over Black agreement and accepts
-avoidable-looking overflows in these files. The harness should not interpret
-those misses as evidence that the Doc model cannot reflow: its token gate has
-forbidden the syntax needed to make the reflow legal. This also puts a hard
-ceiling below 100% on measure 6.
+The limitation is narrower: a package must enumerate every safe wrapper region
+and normalize the extra `parenthesized_expression` shape on pass 2. A construct
+not covered by such a rule remains verbatim or is refused; there is no generic
+parser-backed rewrite engine and no backslash continuation. The corpus's tuple
+and subscript comma cases still require context-specific policies because those
+commas can carry meaning. Quote normalization is legal under gate 3 but remains
+outside version 1: opaque string leaves, including the single-quoted cases in
+`python__strings.tree.json`, are preserved. Black agreement may therefore be
+below 100%, but no longer has a ceiling imposed by the old token gate.
 
 Second, linear local schemas cannot express layout alternatives whose regions
 cross CST subtrees, column alignment across sibling statements, a global cost
@@ -436,28 +435,30 @@ packages are coupled to a pinned CST schema.
 
 Finally, boundary anchoring preserves comment order, not comment meaning.
 Language-specific directives such as `# fmt: off`, pragmas and type-checker
-comments need explicit package rules. Without source text, arbitrary comment
-attachment is information-theoretically ambiguous; the scorer-only canonical
-decoder recognizes only this formatter's output.
+comments need explicit package rules. Source slices resolve the whitespace
+classification problem, but they do not reveal a directive's semantics.
 
 ## Riskiest assumption and smallest decisive experiment
 
-The riskiest assumption is that source-aware boundary comments plus local
-linear schemas are expressive enough for real Python without growing an
-imperative Python escape hatch. Comments are where local layouts interact with
-group forcing, separators, suites, blank lines and idempotence all at once.
+The riskiest assumption is now that a local rule can normalize one logical
+layout region across the CST shape change caused by inserted parentheses,
+without growing a parser or imperative Python escape hatch. Pass 1 sees an
+unparenthesized chain or import list; pass 2 sees wrapper nodes and shifted byte
+offsets. Both must select the same region, avoid double wrapping and build the
+same Doc. Comments remain interaction-heavy, but complete `source` text removes
+the information loss that made them the largest unknown.
 
-The smallest decisive experiment is a JS-only vertical slice for
-`python__comments.tree.json`, plus five tiny variants: one-space and two-space
-trailing comments, a comment before a closer with no final item, consecutive
-own-line comments, and an EOF suite comment. Implement only `sequence`,
-`delimited`, `suite`, comment anchors and the Doc renderer. Format at 88 and 60,
-reparse through the harness, delete `source_file` exactly as `as_tree_doc` does,
-and format again. Require byte idempotence, unchanged comment-token order, and
-no Python-kind branch in the runtime. Gzip the slice as well.
+The smallest decisive experiment is a JS-only slice with `sequence`, `chain`,
+`delimited`, the `continuation` modifier and the Doc renderer. Exercise four
+real width-60 regions: an assignment-side arithmetic chain, an `if` boolean
+header, a bare `from ... import` list, and the long lambda. Format at 88 and 60,
+reparse through the unmodified harness, and require byte idempotence and equal
+`ast.dump` results, with exactly one canonical wrapper in every broken case and
+no Python-kind branch in the runtime. Also gzip the runtime and the four rules.
 
-If the source-less second pass cannot recognize the canonical comment gaps, or
-if expressing these cases requires arbitrary descendant queries or a handwritten
-Python callback, the design's central simplification is false and the proposal
-should be withdrawn. If it passes, add `comprehensions.py` and `kitchen.py` next
-to test contextual grouping; only then is a Rust port worth funding.
+If the reparsed wrapper cannot map back to the same region using local selectors,
+or doing so requires arbitrary descendant queries or a handwritten callback,
+the design's central simplification is false and the proposal should be
+withdrawn. If it passes, add `comments.py`, `comprehensions.py` and `kitchen.py`
+to test source-aware comments and contextual grouping; only then is a Rust port
+worth funding.
