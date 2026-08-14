@@ -1,7 +1,7 @@
 "use strict";
 
 // Compile an authored kinds package into a bytecode package.
-// Authored form stays in packages/src/; shipped form is packages/<lang>.json.
+// Authored form stays in authored/; shipped form is packages/<lang>.json.
 
 const fs = require("fs");
 const path = require("path");
@@ -1509,7 +1509,7 @@ function compilePackageFixed(src) {
 
 function main() {
   const root = path.resolve(__dirname, "..");
-  const srcDir = path.join(root, "packages", "src");
+  const srcDir = path.join(root, "authored");
   const outDir = path.join(root, "packages");
   const files = fs.readdirSync(srcDir).filter((f) => f.endsWith(".json"));
   for (const f of files) {

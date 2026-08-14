@@ -1,5 +1,5 @@
 //! Dual-runtime formatter: this side is the Rust bytecode interpreter.
-//! Authored packages live in `packages/src/`; `build.sh` compiles them
+//! Authored packages live in `authored/`; `build.sh` compiles them
 //! to `packages/<lang>.json`. The Wadler printer is unchanged.
 
 #![forbid(unsafe_code)]

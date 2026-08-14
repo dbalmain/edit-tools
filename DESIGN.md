@@ -1,21 +1,73 @@
-# Layout kinds
+# Bytecode formatter
 
-A language package is a JSON object. It maps each CST node type to a
-**layout kind** — a named algorithm the runtime already knows how to
-run — plus the parameters that algorithm needs (brackets, separators,
-whether a trailing comma is sticky). The package does not describe Doc
-trees, match queries, or bytecode.
+The rule evaluator is a small stack VM. The authored form is still a
+map from CST node type to a **layout kind** — a named algorithm plus
+its parameters — in `authored/<lang>.json`. `build.sh` compiles that
+into `packages/<lang>.json`: a string constant pool and a flat array
+of integers. Both runtimes load only the compiled form.
 
-This is the inverted form of a node-schema template language. Templates
-would have the package describe a Doc shape and the runtime render it.
-Here the package *names an algorithm*; the runtime *is* those
-algorithms. Magic trailing commas, comment attachment, flattening a
-left-associative operator spine, and blank-line policy are algorithms.
-Writing each once, in two languages, is cheaper than asking every
-package to re-express them.
+This run exists to measure whether a VM is smaller than a schema
+walker and whether two interpreters of one instruction stream can be
+differentially fuzzed. Layout output is unchanged from the kinds
+build; any baseline diff is a port bug.
 
-A `template` kind exists as an escape hatch for one-off nodes. JSON
-does not use it.
+## Size (gzip -9)
+
+|                        | schema raw | schema gzip | bytecode raw | bytecode gzip | Δ gzip |
+| ---------------------- | ---------: | ----------: | -----------: | ------------: | -----: |
+| `runtime-js/bundle.js` |      26351 |        6747 |        29032 |          7361 |   +614 |
+| `packages/python.json` |       7038 |        1376 |        20000 |          4789 |  +3413 |
+| `packages/json.json`   |        436 |         215 |         1908 |           764 |   +549 |
+
+The integer array gzips well. It is still larger than the kinds
+schema, because compilation *unrolls* each kind once per node type.
+Eight `seq` nodes become eight copies of the seq program. The schema
+build named the algorithm once in the runtime and pointed at it.
+
+**Break-even.** Incremental shared-runtime cost is +614 gzip. Mean
+per-package *saving* is **−1981** gzip (packages grew). Language
+count × per-package saving never exceeds the runtime cost: bytecode
+**does not break even at any language count** under this encoding.
+
+A compact kind-level opcode (`SEQ open close sep flags`) would
+probably draw or win on gzip, because it is the schema with shorter
+keys. Expanding kinds into a general instruction stream is the wrong
+direction for the download. It is the right IR for a fuzzer.
+
+## ISA, in brief
+
+Typed stacks (docs, nodes, i32 wrapping). One forward-only child
+cursor per frame. `HALT` always finishes the cursor. Host ops are
+few: `FORMAT` (recurse), `OPAQUE` (source span), `PAREN`,
+`BLANK_EXTRA`, `HOST_CHAIN` (spine flatten), `HOST_FROM_IMPORT`.
+Everything else — `seq`, `infix`, `fwd`, `clause`, `template`,
+`body`, `comp`, `dot`, `sub`, `pfx`, `wrap` — is compiled to
+cursor + doc ops.
+
+No floats. No hash-map iteration. Jump targets are verified at load.
+
+## Linearity
+
+**Structural, with a caveat.** The ISA cannot express taking a child
+twice or walking children out of order: there is one cursor, `TAKE` /
+`SKIP` only advance, there is no rewind. `HALT` refuses leftovers, so
+an unconsumed child cannot become output. The verifier proves ops,
+immediates, jump targets, and that every path hits `HALT` or
+`REFUSE`. It does **not** prove that a loop drains the cursor for
+every tree — that refuse stays dynamic. Input-dependent checks (wrong
+token, trailing comma on JSON, leaf with children) also stay dynamic.
+
+`chain` flatten walks descendant fields of a node whose children were
+already `TAKE_ALL`'d. That is not a second consume of the current
+frame's cursor.
+
+## Authoring
+
+Edit `authored/<lang>.json`, not the compiled file. `build.sh` runs
+`node tools/compile-package.js` then the Rust release build. JSON
+does not use `template`.
+
+## Package shape (authored)
 
 ## Package shape
 
@@ -45,7 +97,7 @@ does not use it.
 }
 ```
 
-Authored readable, shipped as this JSON. No compiler.
+Authored readable in `authored/`. Shipped as compiled bytecode.
 
 | Field | Role |
 | --- | --- |
@@ -166,15 +218,15 @@ cannot look at a grandparent.
 
 ## Adding a language
 
-1. Write `packages/<lang>.json`.
+1. Write `authored/<lang>.json`.
 2. Mark string-like nodes `opaque`.
 3. For each interior type, pick a kind and fill in brackets.
 4. If the tree has comments, set `comment_type` and, if the grammar
    leaves comments as siblings of `block` (tree-sitter-python), list
    those parents in `steal_into_body`.
-5. Run both `fmt-rust` and `fmt-js` on a tree at two widths. They
-   must agree byte-for-byte; a mismatch is a runtime bug, not a
-   package bug.
+5. `./build.sh` compiles the package. Run both `fmt-rust` and
+   `fmt-js` on a tree at two widths. They must agree byte-for-byte;
+   a mismatch is a runtime bug, not a package bug.
 
 JSON is the existence proof: four node entries, no steal list, no
 templates.
@@ -222,7 +274,21 @@ templates.
   one-offs needed it. It still cannot measure or look at a
   grandparent.
 
-## What is weak
+## Bytecode experiment — what is weak
+
+- **Size lost.** See the table. Expanding kinds into bytecode
+  duplicates every algorithm per node type. The download wants the
+  opposite.
+- **Two host ops remain.** `HOST_CHAIN` and `HOST_FROM_IMPORT` are
+  still kind implementations, not compiled streams. Flattening a
+  left-associative spine walks descendants by field; `from_import`'s
+  paren/comma policy is a one-off. Both are fuzz-surface that the
+  verifier cannot see into.
+- **Stack typing is dynamic.** `CONCAT_DYN` / `BAG_FIELD` have
+  data-dependent height, so the verifier does not prove stack
+  discipline. Underflow is a refuse both interpreters share.
+
+## What is weak (layout, unchanged from the schema build)
 
 - **No method-spine flattening.** `query.filter(...).order_by(...)`
   breaks inside argument lists, not before `.`. Black does the
