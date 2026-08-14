@@ -144,9 +144,12 @@ touch them. Interpolations are not formatted; for this corpus they
 are identifiers.
 
 `steal_into_body` is the tree-sitter-python wart. A comment
-between `:` and the `body` field is a sibling of the `block`, not
-a child of it. The runtime hoists those comments into the body
-before kinds run. See §5.
+between `:` and the following `block` is a sibling of that
+`block`, not a child of it — and the `block` is not always a
+field named `body` (`except_clause` and `finally_clause` carry
+an un-fielded `block`). The runtime hoists any comment that
+sits immediately before a `block` child of a listed type.
+See §5.
 
 ### 1.1 Kinds
 
@@ -164,6 +167,7 @@ before kinds run. See §5.
 | `comp` | list/set/dict/generator comprehensions | `open`, `close` |
 | `dot` | `obj.attr` and `dotted_name` | — |
 | `sub` | `obj[index]` | — |
+| `from_import` | `from … import …`, with or without existing parens | — |
 | `template` | escape hatch | a Doc expression with `$` holes |
 
 Default for an unlisted type: if it has `text`, `leaf`; else
@@ -219,26 +223,33 @@ package:
 3. Build, in the IR of §2:
 
 ```
-group(
-  concat([
-    text("("),
-    indent(concat([
-      softline,
-      first,
-      ifBreak(",", ""), text(""),   # inserted only as the separator logic below
-      ...
-    ])),
-    concat([ifBreak(",", ""), softline]),
-    text(")")
-  ])
-)
+group(concat([
+  text("("),
+  indent(concat([
+    softline,
+    first,
+    concat([text(","), line]),
+    second,
+    concat([text(","), line]),
+    third,
+    concat([text(","), line]),
+    fourth,
+    ifBreak(",", "")
+  ])),
+  softline,
+  text(")")
+]))
 ```
 
-More precisely, items are joined by `concat([text(","), line])`,
-and after the last item the runtime appends `ifBreak(",", "")`
-before the closing `softline`. Empty `seq` is `text("()")`.
+Empty `seq` is `text(open + close)`. `trailing: "none"` (JSON)
+suppresses the final `ifBreak(",", "")`. `lambda_parameters` is
+*not* a `seq`: there are no brackets to break inside, and
+breaking a lambda parameter list would need parens we are
+forbidden to add. It is a flat join. The long lambda in
+`misc.py` overflows at width 60; that is the same gate-3 limit
+as unparenthesized `and` chains.
 
-At width 88 the group does not fit, so it prints:
+At width 88 the call does not fit (90 columns), so it prints:
 
 ```python
 value = compute_the_weighted_average(
@@ -398,7 +409,7 @@ one kind plus a few strings.
   "dictionary_comprehension":  { "kind": "comp", "open": "{", "close": "}" },
   "generator_expression":      { "kind": "comp", "open": "(", "close": ")" },
 
-  "import_statement":      { "kind": "template", "doc": ["import ", {"join": {"sep": ", ", "items": "$names"}}] },
+  "import_statement":      { "kind": "template", "doc": ["import ", {"join": {"sep": ", ", "items": "$name"}}] },
   "import_from_statement": { "kind": "from_import" },
 
   "conditional_expression": {
@@ -407,17 +418,25 @@ one kind plus a few strings.
   },
   "lambda": {
     "kind": "template",
-    "doc": ["lambda", "$parameters", ": ", "$body"]
+    "doc": ["lambda ", "$parameters", ": ", "$body"]
+  },
+  "lambda_parameters": {
+    "kind": "template",
+    "doc": [{"join": {"sep": ", ", "items": "$children"}}]
   },
   "concatenated_string": { "kind": "template", "doc": [{"join": {"sep": " ", "items": "$children"}}] }
 }
 ```
 
-`from_import` is a narrow extra kind (or a template with a
-conditional): if the imported names are already wrapped in
-parentheses in the tree, they are a `seq` and reflow; if not,
-they stay one line. We do not add parentheses. Long unparenthesized
-imports overflow. The parenthesized form in `imports.py` —
+`from_import` is a narrow extra kind. tree-sitter-python does
+not wrap a parenthesized import list in its own node: `(` and
+`)` are siblings of the `name` children on
+`import_from_statement`. The kind looks for those two tokens.
+If they are present, the names are a `seq` with
+`trailing: "magic"` and reflow inside the parens the author
+already wrote. If they are not, the names stay one line. We do
+not add parentheses. Long unparenthesized imports overflow.
+The parenthesized form in `imports.py` —
 
 ```python
 from package import (
@@ -426,13 +445,17 @@ from package import (
 )
 ```
 
-— is a `seq` with a magic comma and explodes, as written.
+— has the comma before `)` and explodes, as written.
 
 `clause` emits `keyword` + space + header fields (joined with
-their own docs; `in` in a `for` is the literal ` in `) + optional
-` -> ` + return type + `:`. Then `hardline` + `indent(body)`.
+their own docs; a header entry that is not a field name, such
+as `in` in a `for`, is the literal ` in `) + optional ` -> ` +
+return type + `:`. Then `hardline` + `indent(body)`. If the
+named body field is absent, the kind takes the `block` child —
+`except_clause` and `finally_clause` have one, un-fielded.
 Tails are each preceded by a `hardline` and are themselves
-clauses. Decorators sit in a `body` with `tight: true`, which
+clauses. Missing header fields (`superclasses` on a bare
+`class Simple`) are skipped. Decorators sit in a `body` with `tight: true`, which
 means hardlines between children and no blank-line insertion, so
 
 ```python
@@ -585,8 +608,14 @@ product is itself wrapped.
 `chain` flattens a left-associative same-operator spine
 (`binary_operator`, `boolean_operator`) into a list of operands
 and operators. `comparison_operator` is already flat in
-tree-sitter (one node, many children) and sets `already_flat`.
-Join with `concat([text(" "), op, text(" ")])`. Then:
+tree-sitter (one node, many children, operators in the
+`operators` field) and sets `already_flat`. Join with
+`concat([text(" "), op, text(" ")])`. Compound operators
+(`not in`, `is not`) are interior nodes with no `text` — two
+keyword children. Emitting them as concatenated leaves would
+print `notin`. The chain kind joins an operator node's
+descendant leaves with a single space, so those two survive as
+`not in` / `is not`. Then:
 
 - if `break` is `if_wrapped` *and* the parent kind is `wrap` or
   `seq` (the chain is already inside brackets), wrap the join in
@@ -763,9 +792,11 @@ Inspect `source[prev.end : C.start]` (or the start of `P` if no
   `P`. (end of a `block`, end of a `list`, end of the file)
 
 Then apply `steal_into_body`: a comment that is a child of a
-listed type, sits after `:`, and sits before the `body` field is
-re-attached as leading on the first statement of that body, or
-dangling on the body if the body is empty. This is how
+listed type and sits immediately before a `block` child
+(whether or not that child has `field: "body"` — `except_clause`
+and `finally_clause` do not) is re-attached as leading on the
+first statement of that block, or dangling on the block if the
+block is empty. This is how
 
 ```python
 def documented(a, b):
@@ -878,13 +909,14 @@ corpus and they are how comment formatters become large.
 Required, and specific.
 
 1. **It cannot reflow unparenthesized infix, attribute chains,
-   or import lists.** Gate 3. Hardest files: `chains.py` (the
-   `attribute_chain`, `method_chain`, `mixed_chain` lines),
-   `operators.py` (every chain), `imports.py` (the long
-   `from collections.abc import …` line), `statements.py` (the
-   `if first_condition and …` header). At width 60 these will
-   contribute overflow lines. Adding parens would match black
-   and fail the gate.
+   import lists, or lambda parameter lists.** Gate 3. Hardest
+   files: `chains.py` (the `attribute_chain`, `method_chain`,
+   `mixed_chain` lines), `operators.py` (every chain),
+   `imports.py` (the long `from collections.abc import …`
+   line), `statements.py` (the `if first_condition and …`
+   header), `misc.py` (the long `lambda first, second, third:
+   …`). At width 60 these will contribute overflow lines.
+   Adding parens would match black and fail the gate.
 
 2. **It cannot add or remove parentheses, quote styles, or
    implied tokens.** `redundant_parens` in `misc.py` is already
