@@ -113,6 +113,28 @@ exactly that bug, and the corpus could not catch it until `strings.py` and
 `.length`. (Diagnosed by grok during Phase 1; verified by constructing an input
 where the two runtimes chose different layouts at width 36.)
 
+**And gate 1 at two widths cannot enforce this.** A width-measurement bug only
+becomes visible when a mis-measured character sits exactly on a fit boundary,
+which depends on the width. Measured on this corpus: a JS runtime using
+`.length` diverges from Rust on exactly one file (`python__strings`) at exactly
+two runs of widths — **56–59 and 74–77**. The scored widths are 60 and 88. Width
+59 catches it; width 60 does not.
+
+So this section warned about the bug in writing and then scored at two widths
+that could not detect it. Any submission could have shipped it and passed gate 1
+on all 30 runs. (All three were checked afterwards and none had it — but the
+gate is not what established that.)
+
+The fix is not to hunt for a corpus case that lands on the boundary at 88 or 60;
+that chases one bug's arithmetic and would not generalise to the next
+width-measurement defect. `harness/check_width.py` sweeps gate 1 across every
+width in a range instead, making the property hold for every boundary the corpus
+can express. Cross-runtime agreement is cheap — run it at 100 widths, not 2.
+
+(Found by grok while mutation-testing its own bytecode fuzzer: the fuzzer missed
+a planted `.length` bug, and chasing why revealed that the corpus missed it too.
+Verified independently here by planting the same bug in a different submission.)
+
 Display width — East Asian wide characters counting as two columns — is
 deliberately **out of scope**. It needs a Unicode width table in both runtimes,
 which is a large dependency and a large divergence surface. A real editor would
