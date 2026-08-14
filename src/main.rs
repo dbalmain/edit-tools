@@ -80,6 +80,12 @@ enum Rule {
         #[serde(default, rename = "reserveLineSuffix")]
         reserve_line_suffix: bool,
     },
+    SelectorChain {
+        open: String,
+        close: String,
+        #[serde(default, rename = "reserveLineSuffix")]
+        reserve_line_suffix: bool,
+    },
     Delimited {
         open: String,
         close: String,
@@ -293,9 +299,94 @@ fn build(node: &Node, rules: &HashMap<String, Rule>, source: &[u8]) -> Result<Do
         }
         Rule::ContinuationList { .. } => build_continuation_list(node, source, rule),
         Rule::Chain { .. } => build_chain(node, source, rule),
+        Rule::SelectorChain { .. } => build_selector_chain(node, source, rule),
         Rule::Flow { .. } => build_flow(node, rules, source, rule),
         Rule::Delimited { .. } => build_delimited(node, rules, source, rule),
     }
+}
+
+fn flatten_selectors(node: &Node, source: &[u8], output: &mut Vec<Doc>) -> Result<(), String> {
+    validate_subtree(node, source)?;
+    let children = &node.children;
+    if node.kind == "attribute" && children.len() == 3 && children[1].text.as_deref() == Some(".") {
+        flatten_selectors(&children[0], source, output)?;
+        output.push(source_slice(
+            source,
+            children[1].start,
+            children[2].end,
+            &node.kind,
+        )?);
+        return Ok(());
+    }
+    if node.kind == "subscript"
+        && children.len() >= 3
+        && children[1].text.as_deref() == Some("[")
+        && children.last().and_then(|child| child.text.as_deref()) == Some("]")
+    {
+        flatten_selectors(&children[0], source, output)?;
+        let Some(last) = children.last() else {
+            return Err("subscript lost its checked closer".into());
+        };
+        output.push(source_slice(
+            source,
+            children[1].start,
+            last.end,
+            &node.kind,
+        )?);
+        return Ok(());
+    }
+    if node.kind == "call" && children.len() == 2 && children[1].kind == "argument_list" {
+        flatten_selectors(&children[0], source, output)?;
+        let Some(previous) = output.pop() else {
+            return Err(format!("{}: call has no function region", node.kind));
+        };
+        output.push(Doc::concat(vec![
+            previous,
+            source_slice(source, children[1].start, children[1].end, &node.kind)?,
+        ]));
+        return Ok(());
+    }
+    output.push(source_slice(source, node.start, node.end, &node.kind)?);
+    Ok(())
+}
+
+fn build_selector_chain(node: &Node, source: &[u8], rule: &Rule) -> Result<Doc, String> {
+    let Rule::SelectorChain {
+        open,
+        close,
+        reserve_line_suffix,
+    } = rule
+    else {
+        return Err("internal error: expected selector-chain rule".into());
+    };
+    let mut pieces = Vec::new();
+    flatten_selectors(node, source, &mut pieces)?;
+    if pieces.len() < 2 {
+        return Err(format!("{}: selector chain has no selector", node.kind));
+    }
+    let mut iter = pieces.into_iter();
+    let Some(first) = iter.next() else {
+        return Err(format!("{}: selector chain is empty", node.kind));
+    };
+    let mut body = vec![first];
+    for selector in iter {
+        body.extend([Doc::Softline, selector]);
+    }
+    let reserve = if *reserve_line_suffix {
+        line_suffix_width(node, source)?
+    } else {
+        0
+    };
+    Ok(Doc::reserved_group(
+        Doc::concat(vec![
+            Doc::if_break(Doc::Text(open.into()), Doc::Text(String::new())),
+            Doc::indent(Doc::concat(vec![Doc::Softline, Doc::concat(body)])),
+            Doc::Softline,
+            Doc::if_break(Doc::Text(close.into()), Doc::Text(String::new())),
+        ]),
+        false,
+        reserve,
+    ))
 }
 
 fn flatten_chain(

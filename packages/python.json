@@ -13,7 +13,7 @@
     "argument_list": { "layout": "delimited", "open": "(", "close": ")", "separator": ",", "edge": "softline", "itemsVerbatim": true, "preserveTrailing": true, "forceTrailing": true, "independentItems": true },
     "parameters": { "layout": "delimited", "open": "(", "close": ")", "separator": ",", "edge": "softline", "itemsVerbatim": true, "preserveTrailing": false, "forceTrailing": false, "independentItems": true, "reserveLineSuffix": true },
 
-    "attribute": { "layout": "verbatim" },
+    "attribute": { "layout": "selectorChain", "open": "(", "close": ")", "reserveLineSuffix": true },
     "augmented_assignment": { "layout": "verbatim" },
     "binary_operator": { "layout": "chain", "open": "(", "close": ")", "reserveLineSuffix": true },
     "block": { "layout": "source", "baseIndent": true },
@@ -40,7 +40,7 @@
     "set": { "layout": "delimited", "open": "{", "close": "}", "separator": ",", "edge": "softline", "itemsVerbatim": true, "preserveTrailing": true, "forceTrailing": true, "independentItems": true, "verbatimWithComments": true },
     "set_comprehension": { "layout": "flow", "open": "{", "close": "}", "edge": "softline", "itemsVerbatim": true, "independentItems": true },
     "string": { "layout": "verbatim" },
-    "subscript": { "layout": "verbatim" },
+    "subscript": { "layout": "selectorChain", "open": "(", "close": ")", "reserveLineSuffix": true },
     "try_statement": { "layout": "source" },
     "tuple": { "layout": "delimited", "open": "(", "close": ")", "separator": ",", "edge": "softline", "itemsVerbatim": true, "preserveTrailing": true, "forceTrailing": false, "independentItems": true, "verbatimWithComments": true },
     "type": { "layout": "verbatim" },

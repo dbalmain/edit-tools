@@ -229,6 +229,32 @@ function flattenChain(node, kind, sourceBytes, output) {
   });
 }
 
+function flattenSelectors(node, sourceBytes, output) {
+  validateSubtree(node, sourceBytes);
+  const children = node.children || [];
+  if (node.type === "attribute" && children.length === 3 && children[1].text === ".") {
+    flattenSelectors(children[0], sourceBytes, output);
+    output.push(sourceSlice(sourceBytes, children[1].start, children[2].end, node.type));
+    return;
+  }
+  if (node.type === "subscript" && children.length >= 3 && children[1].text === "[" && children.at(-1).text === "]") {
+    flattenSelectors(children[0], sourceBytes, output);
+    output.push(sourceSlice(sourceBytes, children[1].start, children.at(-1).end, node.type));
+    return;
+  }
+  if (node.type === "call" && children.length === 2 && children[1].type === "argument_list") {
+    flattenSelectors(children[0], sourceBytes, output);
+    const previous = output.pop();
+    if (!previous) throw new Error(`${node.type}: call has no function region`);
+    output.push(concat([
+      previous,
+      sourceSlice(sourceBytes, children[1].start, children[1].end, node.type),
+    ]));
+    return;
+  }
+  output.push(sourceSlice(sourceBytes, node.start, node.end, node.type));
+}
+
 function build(node, rules, sourceBytes) {
   if (Object.prototype.hasOwnProperty.call(node, "text")) {
     validateSubtree(node, sourceBytes);
@@ -334,6 +360,24 @@ function build(node, rules, sourceBytes) {
     for (let index = 1; index < pieces.length; index += 2) {
       body.push(line, pieces[index], text(" "), pieces[index + 1]);
     }
+    let reserve = 0;
+    if (rule.reserveLineSuffix) {
+      const suffix = sourceBytes.subarray(node.end).toString("utf8").split("\n", 1)[0];
+      reserve = scalarWidth(suffix);
+    }
+    return group(concat([
+      ifBreak(text(rule.open), text("")),
+      indent(concat([softline, concat(body)])),
+      softline,
+      ifBreak(text(rule.close), text("")),
+    ]), false, reserve);
+  }
+  if (rule.layout === "selectorChain") {
+    const pieces = [];
+    flattenSelectors(node, sourceBytes, pieces);
+    if (pieces.length < 2) throw new Error(`${node.type}: selector chain has no selector`);
+    const body = [pieces[0]];
+    for (const selector of pieces.slice(1)) body.push(softline, selector);
     let reserve = 0;
     if (rule.reserveLineSuffix) {
       const suffix = sourceBytes.subarray(node.end).toString("utf8").split("\n", 1)[0];

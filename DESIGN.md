@@ -16,7 +16,7 @@ Packages are UTF-8 JSON files in `packages/`. The top-level fields are:
 
 Leaves need no rule: their `text` is emitted unchanged. Every interior node
 does. An unknown interior node is refused rather than guessed. Version 1 has
-five schemas:
+the following schemas:
 
 - `tight` recursively emits every direct child with no inserted gap. It is for
   lexical containers such as JSON strings.
@@ -44,6 +44,10 @@ five schemas:
   structural chain into one group and uses the same enumerated continuation
   pair policy as import lists. A generated `parenthesized_expression` is an
   explicit checked-verbatim rule on pass two, so the wrapper cannot multiply.
+- `selectorChain` recursively partitions attributes, subscripts, and calls into
+  one base plus ordered selector regions. `softline` boundaries preserve exact
+  adjacency when flat and break before selectors when wrapped; a call's
+  argument list stays fused to its function selector.
 
 A gap is `none`, `space`, `line`, `softline`, or `hardline`. `line` becomes one
 space when its group fits and a newline when it breaks. `softline` becomes
@@ -123,9 +127,9 @@ rather than smuggling language-specific behavior into either runtime.
 The implemented core deliberately remains narrower than the proposal. It does
 not include general ordered predicates, a structural suite layout,
 boundary-comment Docs, or `lineSuffix`; continuation mutation is implemented
-for import lists and three operator-chain families only. Those mechanisms
-should be added only alongside a package that uses them and differential
-fixtures that fix their semantics.
+for import lists, three operator-chain families, and selectors only. Those
+mechanisms should be added only alongside a package that uses them and
+differential fixtures that fix their semantics.
 
 This restriction exposed one useful correction to the proposal: a generic
 `verbatim` escape hatch based only on concatenating leaf text cannot reproduce
