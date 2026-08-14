@@ -1,0 +1,16 @@
+#!/usr/bin/env node
+"use strict";
+const fs = require("fs");
+const { format } = require("./runtime-js/bundle.js");
+const [treePath, width] = process.argv.slice(2);
+if (!treePath || width === undefined) {
+  console.error("usage: fmt-js <tree.json> <width>");
+  process.exit(1);
+}
+try {
+  const tree = JSON.parse(fs.readFileSync(treePath, "utf8"));
+  process.stdout.write(format(tree, Number(width)));
+} catch (e) {
+  console.error(e && e.message ? e.message : e);
+  process.exit(1);
+}
