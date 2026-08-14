@@ -26,56 +26,33 @@ nodes. That is B, used where kinds run out — the opposite of E
 
 ## 0. Conflicts with the given docs
 
-The docs are a hypothesis. Four places they disagree with the
-scorer, the reference, or themselves. A design that papers over
-these will fail a gate or silently aim at the wrong target.
+The docs are a hypothesis. Two earlier disagreements with the
+scorer were harness defects and are now fixed (0.1, 0.2). Three
+live ones remain (0.3–0.5). A design that papers over those
+will fail a gate or silently aim at the wrong target.
 
-### 0.1 Gate 3 forbids the thing black (and Prettier) do to reflow
+### 0.1 Gate 3 compares meaning, not tokens
 
-`harness/score.py` `normalise_tokens` drops only a comma immediately
-before a closer. The comment says the rest, *including parentheses*,
-must survive verbatim. Adding `(` `)` around a long `and`/`or`
-chain, a method chain, or a `from … import` list therefore fails
-gate 3 and disqualifies the submission.
+An earlier token-stream gate forbade adding parentheses. That
+was a harness defect: black wraps `x = (\n    a\n    + b\n)`
+at width 60, and the gate would have disqualified it. The gate
+now compares `ast.dump(ast.parse(...))` / ordered `json.loads`,
+comments via `tokenize`. Parenthesisation, quote style, trailing
+commas and line breaks are ours; anything else is not.
+`check_gate3.py` asserts black passes the corpus at both widths.
 
-Python cannot break an unparenthesized infix expression, an
-unparenthesized attribute chain, or an unparenthesized import list
-without adding either parentheses or a backslash. Black adds
-parentheses. We cannot.
+This design therefore inserts parentheses to create break
+opportunities. `chain`, `from_import`, `dot`, `not`,
+`lambda`, and `conditional_expression` all do it. See §2.2.
+Strings stay opaque; quote-style freedom is unused.
 
-Consequence, which this design accepts:
+### 0.2 `source` is on every tree, both passes
 
-- Break only inside brackets that already exist in the tree
-  (calls, lists, dicts, sets, tuples, subscripts, existing parens,
-  parenthesized imports, comprehensions).
-- Unparenthesized chains overflow. That is scored by measure 4,
-  not by a gate. The overflow metric will punish a
-  gate-3-correct formatter on `chains.py`, `operators.py`, and
-  `imports.py` at width 60. The metric is slightly wrong for this
-  constraint; the constraint is the one that is fixed.
-
-Backslash continuation would pass gate 3 (`\` is not a tree-sitter
-leaf) and would cut overflow. It is ugly, it tanks black
-agreement, and it is a style no serious Python formatter uses. We
-do not do it.
-
-Black agreement (measure 6) is a proxy, not a requirement. This
-design will lose files to black wherever black inserts parens, and
-will say so in §6.
-
-### 0.2 The idempotence pass drops the source
-
-`as_tree_doc` rebuilds a tree from formatted text and does not set
-`source_file`. Pass 2 of `fmt(fmt(x))` therefore has byte offsets
-but no source bytes. Gap *length* between siblings cannot
-distinguish two spaces (trailing comment) from two newlines
-(own-line comment after one blank). Comment attachment and
-blank-line recovery must work from the tree alone on pass 2.
-
-§5 specifies a gap-size encoding that pass 1 emits and pass 2
-recovers. The harness would be a better harness if `as_tree_doc`
-kept the formatted text or a `source_file`; that is not the
-contract we have.
+Every tree carries a top-level `source` field — `gen_trees.py`
+and the idempotence pass's `as_tree_doc` both emit it. Comment
+attachment and blank-line recovery read `source` on both passes.
+The gap-size encoding a previous draft of this proposal specified
+is unnecessary and is gone.
 
 ### 0.3 `ifBreak` is in the minimum IR and missing from the reference
 
@@ -160,15 +137,15 @@ See §5.
 | `seq` | bracketed comma-lists | `open`, `close`, `sep`, `trailing`, `singleton_comma`, `flat_pad` |
 | `body` | `module`, `block` | uses `blank` |
 | `infix` | two-sided operators with fixed spacing | `op` *or* `op_field`, `pad` |
-| `pfx` | keyword/operator then operand | `kw` or field list, `sp` |
+| `pfx` | keyword/operator then operand | `kw` or field list, `sp`, `paren` |
 | `wrap` | already-present brackets around one expression | `open`, `close` |
-| `chain` | flatten-able operator trees | `flat`, `fill`, `break` |
+| `chain` | flatten-able operator trees | `flat`, `fill`, `break` (`paren`) |
 | `clause` | `keyword header:` + indented body + tails | `keyword`, header fields, `colon`, `body`, `tails` |
 | `comp` | list/set/dict/generator comprehensions | `open`, `close` |
-| `dot` | `obj.attr` and `dotted_name` | — |
+| `dot` | `obj.attr`, method spines | flatten, `paren` |
 | `sub` | `obj[index]` | — |
 | `from_import` | `from … import …`, with or without existing parens | — |
-| `template` | escape hatch | a Doc expression with `$` holes |
+| `template` | escape hatch | a Doc expression with `$` holes; `paren` |
 
 Default for an unlisted type: if it has `text`, `leaf`; else
 `fwd` into its non-punctuation children joined with nothing. A
@@ -204,9 +181,10 @@ Package entries that fire:
 ```
 
 `assignment` emits `concat([left, text(" = "), right])` with no
-group of its own — the `=` is not a break opportunity, because
-turning the RHS into a parenthesized continuation would add
-tokens.
+group of its own — the `=` is not a break opportunity. If the
+RHS needs to wrap, *it* inserts parentheses (`chain`, `lambda`,
+`not`, a long ternary). The `=` stays on the first line, which
+is black.
 
 `call` concatenates the function Doc and the argument-list Doc.
 All the reflow lives in `seq`.
@@ -243,11 +221,12 @@ group(concat([
 
 Empty `seq` is `text(open + close)`. `trailing: "none"` (JSON)
 suppresses the final `ifBreak(",", "")`. `lambda_parameters` is
-*not* a `seq`: there are no brackets to break inside, and
-breaking a lambda parameter list would need parens we are
-forbidden to add. It is a flat join. The long lambda in
-`misc.py` overflows at width 60; that is the same gate-3 limit
-as unparenthesized `and` chains.
+*not* a `seq`: Python 3 forbids parenthesised lambda parameter
+lists (`lambda (x, y):` is a syntax error). It is a flat join.
+The *lambda* is a `"paren": true` template (§1.4); its body is
+a normal expression. At width 60 the long lambda in `misc.py`
+wraps as black does — outer parens, body chain broken at `+` /
+`-` — and the parameter list stays one line and fits.
 
 At width 88 the call does not fit (90 columns), so it prints:
 
@@ -353,11 +332,11 @@ one kind plus a few strings.
 
   "parenthesized_expression": { "kind": "wrap", "open": "(", "close": ")" },
 
-  "binary_operator":     { "kind": "chain", "break": "if_wrapped" },
-  "boolean_operator":    { "kind": "chain", "break": "if_wrapped" },
-  "comparison_operator": { "kind": "chain", "already_flat": true, "break": "if_wrapped" },
+  "binary_operator":     { "kind": "chain", "break": "paren" },
+  "boolean_operator":    { "kind": "chain", "break": "paren" },
+  "comparison_operator": { "kind": "chain", "already_flat": true, "break": "paren" },
 
-  "not_operator":   { "kind": "pfx", "kw": "not", "sp": true },
+  "not_operator":   { "kind": "pfx", "kw": "not", "sp": true, "paren": true },
   "unary_operator": { "kind": "pfx", "op_field": "operator", "sp": false },
   "attribute":      { "kind": "dot" },
   "subscript":      { "kind": "sub" },
@@ -414,10 +393,12 @@ one kind plus a few strings.
 
   "conditional_expression": {
     "kind": "template",
+    "paren": true,
     "doc": ["$0", " if ", "$2", " else ", "$4"]
   },
   "lambda": {
     "kind": "template",
+    "paren": true,
     "doc": ["lambda ", "$parameters", ": ", "$body"]
   },
   "lambda_parameters": {
@@ -433,10 +414,14 @@ not wrap a parenthesized import list in its own node: `(` and
 `)` are siblings of the `name` children on
 `import_from_statement`. The kind looks for those two tokens.
 If they are present, the names are a `seq` with
-`trailing: "magic"` and reflow inside the parens the author
-already wrote. If they are not, the names stay one line. We do
-not add parentheses. Long unparenthesized imports overflow.
-The parenthesized form in `imports.py` —
+`trailing: "magic"` and reflow inside the author's parens.
+If they are not, the names are the same `seq`, but `(` / `)`
+are `ifBreak` — present only in the broken layout. Long
+unparenthesized imports wrap at width 60, matching black
+(`from collections.abc import (\n    Iterable,\n    …\n)`).
+Pass 2 sees the inserted parens as sibling tokens and takes
+the "already present" path; bytes match. The already
+parenthesized form in `imports.py` —
 
 ```python
 from package import (
@@ -485,14 +470,18 @@ group(concat([
 so a long comprehension wraps inside the brackets it already has,
 which is legal and what black does.
 
-`chain` is the one kind that looks at its parent. See §2.
+`chain` and `dot` look at their parent to decide whether
+parens are already present. See §2.2.
 
 `template` holes: `$0`, `$1`, … index non-comment children;
 `$name` is a field; `$children` is all significant children;
-`join` is the obvious. Templates cannot introduce new tokens that
-are not string literals in the template — a contributor who
-writes `"("` around a chain is choosing to fail gate 3, and the
-package review should catch it.
+`join` is the obvious. `"paren": true` wraps the produced Doc
+in the paren-inserting group of §2.2 — that is how `lambda`
+and `conditional_expression` break at width 60. Templates
+cannot measure and cannot look at a grandparent. A contributor
+who writes `"("` around a chain by hand is choosing a style,
+not failing a gate; the package review should still prefer the
+`chain` kind, which already knows when to wrap.
 
 ### 1.5 Why not queries, bytecode, or free templates
 
@@ -571,16 +560,15 @@ never put a `hardline` inside an `ifBreak`.
 Not included, and why:
 
 - **`fill`.** Prettier's paragraph wrapper. Load-bearing for
-  markdown and for long boolean chains *that we are allowed to
-  break*. The chains we are allowed to break already live inside
-  a `wrap`/`seq` group; all-or-nothing is what black does with
-  parenthesized `and`/`or` anyway. Deferred, as design.md
-  suggested. Revisit if a later corpus has a 30-term
-  parenthesized boolean.
+  markdown. Boolean chains now parenthesize and explode
+  all-or-nothing, which is what black does. Deferred, as
+  design.md suggested. Revisit if a later corpus has a 30-term
+  parenthesized boolean that should wrap as a paragraph rather
+  than a single explode.
 - **`conditionalGroup`.** Exponential when nested. Prettier
-  marks it last-resort. We have no "try layout A, then B, then
-  C" construct in the corpus once parenthesizing chains is
-  forbidden.
+  marks it last-resort. Paren-insert is one group with
+  `ifBreak("(", "")` / `ifBreak(")", "")`, not a try-A-then-B
+  construct. We do not need it.
 - **`align` / `literalline` / `dedent`.** Needed for HTML
   attributes, template-literal interiors, preprocessor
   directives. Strings are opaque. Not needed.
@@ -600,10 +588,31 @@ extra `hardline`s to satisfy `blank.before_top` (two blank lines
 `tight` bodies skip the extra blanks.
 
 `wrap` is `group(concat([text(open), indent(concat([softline, inner])), softline, text(close)]))`.
-This is the only thing that makes an existing `parenthesized_expression`
-into a break opportunity. `(a + b) * (c - d)` can break *inside*
-each pair of parens; it cannot break at `*` unless the whole
-product is itself wrapped.
+That is an *existing* `parenthesized_expression`. Invented parens
+— the ones we insert when the tree has none — live in `chain`,
+`from_import`, `dot` (method spines), `pfx` / `template` with
+`"paren": true`, via the combinator below. `(a + b) * (c - d)`
+can break *inside* each pair of parens; it cannot break at `*`
+unless the whole product wraps itself, which `chain` will do if
+it does not fit.
+
+**Paren-insert.** A runtime combinator, not a new kind:
+
+```
+group(concat([
+  ifBreak("(", ""),
+  indent(concat([softline, inner])),
+  softline,
+  ifBreak(")", "")
+]))
+```
+
+Flat, the parens vanish. Broken, they appear and `inner` gets
+a break opportunity it did not have. If the parent kind is
+already `wrap` or `seq`, the combinator is a no-op on the
+parens — just `group(inner)` — so pass 2 does not double-wrap.
+`"paren": true` on `pfx` or `template` is this combinator
+around the kind's Doc.
 
 `chain` flattens a left-associative same-operator spine
 (`binary_operator`, `boolean_operator`) into a list of operands
@@ -615,19 +624,40 @@ tree-sitter (one node, many children, operators in the
 keyword children. Emitting them as concatenated leaves would
 print `notin`. The chain kind joins an operator node's
 descendant leaves with a single space, so those two survive as
-`not in` / `is not`. Then:
+`not in` / `is not`. Then, if `break` is `paren`:
 
-- if `break` is `if_wrapped` *and* the parent kind is `wrap` or
-  `seq` (the chain is already inside brackets), wrap the join in
-  `group` and put `line` on both sides of each operator, so a
-  long parenthesized condition can explode;
-- otherwise emit the flat join, no group.
+- if the parent kind is `wrap` or `seq` (the chain is already
+  inside brackets), wrap the join in `group` and put `line`
+  before each operator (one space after), so a long
+  parenthesized condition explodes without a second pair of
+  parens;
+- otherwise wrap that same join in the paren-inserting group.
 
-That is the gate-3 rule, encoded once.
+Flat: `a + b + c`. Broken:
 
-`dot` and `sub` do not break at `.` or before `[`. A long
-attribute chain overflows. A long *index* can break inside the
-`[]` because those brackets exist: `sub` is
+```python
+(
+    a
+    + b
+    + c
+)
+```
+
+That is black at width 60 on every chain in `operators.py`, and
+on the `if` / `elif` / `while` headers in `statements.py`.
+Pass 2 sees a `parenthesized_expression`; wrap-detection
+prevents a second pair. Same shape as a magic comma. See §7.
+
+`dot` flattens a `.`-spine and uses the same wrap test as
+`chain`: paren-insert if the parent is not already `wrap` /
+`seq`, otherwise just a group. A pure attribute spine does
+not break at `.` — black wraps `attribute_chain` and the
+inner line is still 71 columns at width 60; we do the same.
+A *method* spine (`attribute` whose object is a `call`, or a
+`call` whose function is an `attribute`) breaks before each
+`.`, which is how black prints `method_chain`. `sub` does
+not invent parens: a long index breaks inside the `[]` that
+already exist,
 `concat([obj, group(concat([text("["), indent(concat([softline, index])), softline, text("]")]))])`.
 
 ### 2.3 The printer
@@ -666,7 +696,7 @@ Width of `text(s)` is the number of Unicode scalar values in
 | --- | --- |
 | Wadler printer | indent width |
 | Comment classifier and attach/steal | `comment_type`, `steal_into_body` |
-| Gap-encoding emit/recover (§5) | — |
+| Paren-insert combinator | `"paren": true`, `break: "paren"` |
 | Kind implementations | which kind each node type uses |
 | Magic-comma detection (walk to closer) | `trailing: magic \| always-on-break \| none` |
 | Operator-spine flattening | which types are `chain`, whether already-flat |
@@ -735,18 +765,20 @@ implementation, before minification:
 | Piece | Lines (unminified) |
 | --- | --- |
 | Tree load, leaf concat, refuse | 60 |
-| Comment classify + steal + attach | 120 |
+| Comment classify + steal + attach | 80 |
 | `seq` (items, magic comma, join, ifBreak) | 80 |
 | `body` + blanks | 50 |
-| `chain` flatten + wrap test | 50 |
+| Paren-insert combinator | 20 |
+| `chain` flatten + wrap test | 60 |
 | `clause` + tails | 60 |
-| `comp`, `wrap`, `infix`, `pfx`, `dot`, `sub` | 80 |
+| `comp`, `wrap`, `infix`, `pfx`, `dot`, `sub` | 90 |
 | `template` evaluator | 80 |
 | Dispatch and CLI | 40 |
 
-~620 lines. Minified JS of that density is ~10–14 KB raw.
-Gzipped at the ratio the reference actually shows (4301 → 1338,
-~3.2×) gives **3.2–4.5 KB**.
+~620 lines — dropping the gap-encoding path and adding
+paren-insert is a wash. Minified JS of that density is
+~10–14 KB raw. Gzipped at the ratio the reference actually
+shows (4301 → 1338, ~3.2×) gives **3.2–4.5 KB**.
 
 Total JS runtime: **5–7 KB gzipped**, against a 10 KB budget
 (3 + 7). The interpreter is the thing to watch during
@@ -776,10 +808,10 @@ trailing, or dangling on some AST node
 We start from siblings. The destination is the same three
 places.
 
-### 5.1 Classification, pass 1 (source available)
+### 5.1 Classification
 
-`source_file` is on the corpus trees. Read it. For each comment
-child `C` of parent `P`:
+`source` is on every tree, both passes. Read it. For each
+comment child `C` of parent `P`:
 
 Let `prev` / `next` be the adjacent non-comment siblings.
 Inspect `source[prev.end : C.start]` (or the start of `P` if no
@@ -807,51 +839,13 @@ def documented(a, b):
 becomes a leading comment on `result = a + b` rather than a
 sibling of the `block` that kinds would otherwise skip.
 
-### 5.2 Classification, pass 2 (no source)
+Pass 2 is the same algorithm. Its `source` is the text we just
+printed; the classifier reads the whitespace we emitted and
+attaches the same way. No gap-size encoding, no indent-0
+collision. The single blank before `comments.py`'s EOF comment
+is readable as `\n\n#` and survives.
 
-The harness's second pass has no `source_file`. Recover
-attachment from the *gap length* `g = C.start - prev.end`, using
-an encoding pass 1 is required to emit:
-
-| What pass 1 prints | `g` | Pass 2 reads |
-| --- | --- | --- |
-| trailing comment, exactly two spaces | 2 | trailing |
-| own-line, indent `i`, no blank | `1+i` | leading / dangling |
-| own-line, indent `i`, `N` blank lines | `(N+1)+i` | leading / dangling |
-
-The one collision: trailing (`g = 2`) versus own-line at indent
-0 with exactly one blank line (`\n\n`, `g = 2`).
-
-**Rule: never emit exactly one blank line immediately before an
-indent-0 comment.** Use zero blanks (`g = 1`) or two (`g = 3`).
-At indent 4 and up, own-line gaps include indent spaces and
-cannot be 2.
-
-This is a style constraint. It means we will not reproduce
-black's occasional single blank before a module-level comment.
-We will put two blanks before a top-level `def` (including its
-leading comment) and zero blanks between that comment and the
-`def`. `comments.py` under this rule:
-
-```python
-# Module level comment at the very top of the file.
-
-import os  # trailing comment on an import
-
-
-# Own-line comment before a definition, separated by a blank line.
-def documented(a, b):
-    # Leading comment inside the body.
-    result = a + b  # trailing comment on a statement
-    # Comment before return.
-    return result
-```
-
-The EOF comment, which in the source has one blank before it,
-gets two (the indent-0 rule). That is a named difference from
-black, not an attachment failure.
-
-### 5.3 Rendering
+### 5.2 Rendering
 
 After attach, kinds never see comments as children.
 
@@ -889,7 +883,7 @@ No comment is dropped. That is gate 3. The attach pass's
 invariant is: every `comment` node is in exactly one of the
 three buckets of exactly one node.
 
-### 5.4 What this does not do
+### 5.3 What this does not do
 
 Prettier's `ownLine` / `endOfLine` / `remaining` hooks, used by
 plugins to override attachment, are not in the package. The
@@ -908,21 +902,30 @@ corpus and they are how comment formatters become large.
 
 Required, and specific.
 
-1. **It cannot reflow unparenthesized infix, attribute chains,
-   import lists, or lambda parameter lists.** Gate 3. Hardest
-   files: `chains.py` (the `attribute_chain`, `method_chain`,
-   `mixed_chain` lines), `operators.py` (every chain),
-   `imports.py` (the long `from collections.abc import …`
-   line), `statements.py` (the `if first_condition and …`
-   header), `misc.py` (the long `lambda first, second, third:
-   …`). At width 60 these will contribute overflow lines.
-   Adding parens would match black and fail the gate.
+1. **It still overflows where black does, and where Python
+   syntax leaves no break.** Paren-insert reaches the things
+   the first draft of this proposal said it could not: every
+   operator chain in `operators.py`, every long `from … import`
+   in `imports.py`, the `if` / `elif` / `while` headers in
+   `statements.py`, the long lambda and ternaries in `misc.py`,
+   and `method_chain` in `chains.py`. What remains at width 60:
+   - `attribute_chain` — black wraps it and the inner line is
+     still 71 columns. We do the same. Breaking at every `.`
+     would cut overflow and lose black agreement.
+   - `augmented += increment_amount_that_is_…` — black leaves
+     this one line. A long identifier on the RHS of `+=` has
+     no useful break.
+   - Lambda *parameter* lists — Python 3 forbids parenthesising
+     them. The corpus lambda's params fit at 60 once the body
+     wraps.
+   - Over-long string literals (opaque, and one token).
 
-2. **It cannot add or remove parentheses, quote styles, or
-   implied tokens.** `redundant_parens` in `misc.py` is already
-   not parenthesized in the source. `single = 'single quoted'`
+2. **It does not change quote styles or rewrite string
+   contents.** Legal under gate 3; refused because `string` is
+   opaque (the contract trap, and the f-string / `café` /
+   triple / raw / bytes landmine). `single = 'single quoted'`
    stays single-quoted. Black agreement on `strings.py` will
-   lose. This is a correctness property, not a miss.
+   lose. This is a choice.
 
 3. **It cannot format expressions inside f-string
    interpolations.** `string` is opaque. The corpus interpolations
@@ -933,8 +936,8 @@ Required, and specific.
    and not a template.** Templates cannot measure, cannot look
    at a grandparent, and cannot introduce a new break algorithm.
    A rustfmt-style match-arm aligner, or Prettier's
-   `conditionalGroup` dance for JS method chains that *are*
-   allowed to break before `.` (JS has ASI rules, not
+   `conditionalGroup` dance for JS method chains that break
+   before `.` *without* inserting parens (JS has ASI rules, not
    indentation), would need a new kind.
 
 5. **It cannot preserve the author's line breaks as a
@@ -946,26 +949,25 @@ Required, and specific.
    way, even without a trailing comma" has no hook. Black
    agrees with us here, not with them.
 
-6. **It cannot put a single blank line immediately before an
-   indent-0 own-line comment.** §5.2. `comments.py`'s EOF
-   comment will have two blanks, not one. Measure 6 may lose
-   that file for this reason alone.
+6. **It will not match black on files where black normalizes
+   quotes, or where our method/mixed-chain flattening disagrees
+   with black's.** (Black's `mixed_chain` at width 60 is a
+   subscript break, not a paren-wrap.) Expected black
+   agreement: JSON is N/A; Python, perhaps 8–11 of 12 files at
+   width 88. At 88 most paren-inserts do not fire — those lines
+   fit — so the old "we lose wherever black parenthesizes"
+   miss list is gone. `calls.py`, `collections.py`, `defs.py`,
+   `comprehensions.py`, `operators.py`, `imports.py`,
+   `comments.py` are the likely hits. `strings.py` is the
+   likely miss. `chains.py` / `kitchen.py` are the integration
+   bets.
 
-7. **It will not match black on files where black parenthesizes,
-   normalizes quotes, or uses a different blank-line count.**
-   Expected black agreement: JSON is N/A; Python, perhaps 4–8
-   of 12 files at width 88. `calls.py`, `collections.py`,
-   `defs.py`, `comprehensions.py` are the likely hits.
-   `chains.py`, `operators.py`, `strings.py`, `imports.py`,
-   `comments.py` are the likely misses. `kitchen.py` is the
-   integration bet.
-
-8. **A new language whose native layout is not seq/body/clause
+7. **A new language whose native layout is not seq/body/clause
    /chain needs a runtime change.** Haskell layout, or a
    formatter that aligns table-like structures, is outside the
    kinds. That is the cost of a 5–7 KB runtime.
 
-9. **It does not handle the excluded Python.** `async`, `match`,
+8. **It does not handle the excluded Python.** `async`, `match`,
    walrus, `yield`, non-trivial class bodies. Adding them is
    package work *if* they fit a kind (`match` is a `clause`
    with `case` tails; walrus is `infix`). That is a claim, not
@@ -975,41 +977,47 @@ Required, and specific.
 
 ## 7. The riskiest thing, and the smallest experiment
 
-**Risk.** Comment attachment across the harness's source-less
-second pass. If the gap encoding is wrong, `fmt(fmt(x))` moves
-a comment, gate 2 fails, and the design is dead — not "slightly
-off", dead. Everything else (kinds, magic commas, Wadler) has
-prior art and a reference printer. This does not.
+**Risk.** Paren-insert idempotence. Pass 1 invents `(`/`)` that
+become real nodes on pass 2 (`parenthesized_expression` for
+expressions; sibling tokens on `import_from_statement`). The
+inner kind must notice the wrap and not insert a second pair.
+If it double-wraps or drops a break, `fmt(fmt(x))` differs,
+gate 2 fails, and the design is dead. Magic commas already
+have this shape; parens are the same pattern on more kinds.
+Comment attachment is no longer this — `source` is on both
+passes, one algorithm.
 
-**Smallest experiment.** Do not build the package. Do not build
-kinds. Write, in one language, a stub that:
+**Smallest experiment.** Do not build the package. Write, in
+one language, a stub that:
 
-1. Reads `corpus/trees/python__comments.tree.json`.
-2. Reads the source when `source_file` is present.
-3. Attaches comments with §5.1.
-4. Emits *only* the original tokens plus the whitespace and
-   comment placement §5 specifies — no reflow, identity
-   otherwise.
-5. Hands the output to the harness's exact `as_tree_doc` path
-   (or a ten-line copy of it).
-6. Attaches again with §5.2 only.
-7. Emits again.
+1. Reads `corpus/trees/python__operators.tree.json`.
+2. Formats *only* `boolean_chain` at width 60, using the §2.2
+   paren-inserting `chain` (identity otherwise).
+3. Hands the output to the harness's exact `as_tree_doc`.
+4. Formats again.
 
-If the two emissions differ, the encoding is wrong. The cases
-that will tell you first:
+If the two emissions differ, the wrap-detection is wrong. The
+cases that will tell you first:
 
-- trailing on `import os`
-- stolen leading comment inside `documented`
-- `# first` / `# second` / own-line inside `values = [`
-- dangling end-of-block on `between`
-- EOF comment (the indent-0 blank-line collision)
+- `boolean_chain` (bare `and` chain, assignment RHS)
+- `mixed_boolean` (already-parenthesized operands; the outer
+  chain also wraps)
+- the `if first_condition and …` header in `statements.py`
+  (chain as clause header)
+- `from collections.abc import Iterable, …` (sibling-token
+  parens, not a `parenthesized_expression`)
 
-If that loop is green, comments are not the thing that kills
-the design. The next experiment is `seq` + magic comma on
-`collections.py` and `calls.py` at both widths, in both
-runtimes, because that is gate 1 plus the sticky-comma
-idempotence story. Those are smaller risks; the reference
-already printed JSON this way.
+If that loop is green, paren-insert is not the thing that
+kills the design. The next experiment is `seq` + magic comma
+on `collections.py` and `calls.py` at both widths, in both
+runtimes — gate 1 plus the sticky-comma story. Those are
+smaller risks; the reference already printed JSON this way.
+
+Comment attachment is now the same algorithm twice. A cheap
+check: identity-format `comments.py` (no reflow) through
+`as_tree_doc` and confirm the EOF comment keeps its single
+blank. If that fails, we misread `source`; it is a bug, not
+an encoding problem.
 
 A third, cheap check: measure `café` in both `fits`
 implementations against a manufactured line that is exactly
@@ -1039,15 +1047,13 @@ are not.
   the flat one lacks without `ifBreak`). Operationally it is
   `ifBreak` plus `shouldBreak`. Not worth making the printer
   differ from the reference.
-- **Backslash continuation to dodge gate 3.** Passes the gate,
-  produces Python no one wants, still loses black agreement.
 - **Shipping Python rules hardcoded and only using a package
   for JSON.** That is the reference. It scores the harness, not
   the design.
 
 The framing is right. A data package can drive width-sensitive
-reflow at this size, provided we do not pretend we can
-parenthesize. The empty quadrant in `docs/design.md` is empty
+reflow at this size, including the parentheses black uses to
+make a break. The empty quadrant in `docs/design.md` is empty
 because Topiary chose a stream and everyone else chose a
 language-specific imperative printer. Kinds are the third
 shape: a small catalog of algorithms, parameterized by data,
