@@ -55,9 +55,18 @@ One `.tree.json` per corpus file. Deliberately boring:
 
 - Leaf nodes carry `text`; interior nodes carry `children`. A node has one or
   the other, never both.
-- `start`/`end` are byte offsets into the original source, retained so a design
-  can consult original layout (blank lines, magic trailing comma) if it wants
-  to. The original source is available as a sibling `.py` / `.json` file.
+- `start`/`end` are byte offsets into the original source, and the full original
+  text is in the top-level **`source`** field, so a design can consult original
+  layout — blank-line runs, magic trailing comma — without a parser.
+
+  `source` is load-bearing and was missing from the first cut of the harness:
+  byte offsets alone cannot distinguish two spaces from two newlines, so
+  blank-line preservation is impossible without the text. Worse, the idempotence
+  pass builds its round-two tree by re-parsing the output, so a design reading
+  the source worked in round one and broke in round two — losing gate 2 for a
+  reason that was the harness's fault, not the design's. Both passes now carry
+  `source`. (Found by grok during Phase 1.)
+
 - `field` is tree-sitter's field name where one exists, else absent.
 - **Comments appear as ordinary nodes in the child list**, exactly as
   tree-sitter emits them. Comment attachment is therefore part of what is being

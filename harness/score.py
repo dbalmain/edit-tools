@@ -180,7 +180,7 @@ def as_tree_doc(text: str, language: str) -> dict | None:
             out["text"] = source[node.start_byte : node.end_byte].decode("utf-8")
         return out
 
-    return {"language": language, "root": convert(root, None)}
+    return {"language": language, "source": text, "root": convert(root, None)}
 
 
 # --------------------------------------------------------------------------

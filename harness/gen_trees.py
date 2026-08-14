@@ -84,6 +84,11 @@ def main() -> int:
             doc = {
                 "language": lang,
                 "source_file": str(path.relative_to(ROOT)),
+                # Submissions need the original text: byte offsets alone cannot
+                # tell two spaces from two newlines, so blank-line preservation
+                # is impossible without it. The idempotence pass re-emits this
+                # field, so a design that reads it behaves the same in round 2.
+                "source": source.decode("utf-8"),
                 "root": convert(tree.root_node, source, None),
             }
             dest = OUT / f"{lang}__{path.stem}.tree.json"

@@ -1,6 +1,7 @@
 {
  "language": "python",
  "source_file": "corpus/src/python/comprehensions.py",
+ "source": "squares = [x * x for x in range(10)]\n\nfiltered = [element for element in collection_of_elements if element.is_valid_entry]\n\ntransformed = [transform(item) for item in source_items if predicate(item) and item]\n\nnested_loops = [(x, y) for x in first_range for y in second_range if x != y and x > 0]\n\ndict_comp = {key: value for key, value in mapping.items() if value is not None}\n\ndict_transform = {normalise(k): compute(v) for k, v in source_mapping.items() if k}\n\nset_comp = {element.identifier for element in collection if element.is_active_now}\n\ngenerator = sum(value.amount for value in transactions if value.currency == \"USD\")\n\nlong_body = [\n    build_the_result_object(element, context, options) for element in all_elements\n]\n",
  "root": {
   "type": "module",
   "start": 0,

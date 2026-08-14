@@ -1,6 +1,7 @@
 {
  "language": "python",
  "source_file": "corpus/src/python/statements.py",
+ "source": "if condition:\n    do_something()\n\nif first_condition and second_condition and third_condition and fourth_condition:\n    handle_the_case()\nelif alternative_condition or another_alternative_condition or third_alternative:\n    handle_alternative()\nelse:\n    handle_default()\n\nfor item in collection:\n    process(item)\n\nfor index, (first_element, second_element) in enumerate(zip(first_seq, second_seq)):\n    combine(first_element, second_element, index)\n\nwhile not finished and attempts < maximum_attempts and not should_abort_early():\n    attempt()\n\nwith open(path) as handle:\n    contents = handle.read()\n\nwith open(input_path) as source, open(output_path, \"w\") as destination:\n    destination.write(source.read())\n\ntry:\n    risky_operation()\nexcept ValueError as error:\n    handle(error)\nexcept (KeyError, IndexError):\n    handle_lookup_failure()\nfinally:\n    cleanup()\n\n\nclass Simple:\n    def method(self):\n        return self\n",
  "root": {
   "type": "module",
   "start": 0,
