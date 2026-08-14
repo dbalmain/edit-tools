@@ -1,0 +1,107 @@
+# Linear layout schemas
+
+This submission implements the Phase 1 proposal's central idea: a language
+package is data that maps concrete-syntax node types to local layout schemas.
+The JavaScript and Rust runtimes interpret the same package and independently
+render the resulting document. Neither runtime contains a parser.
+
+## Package shape
+
+Packages are UTF-8 JSON files in `packages/`. The top-level fields are:
+
+- `format`: currently `et-linear-layout/1`;
+- `language`: the tree's language name;
+- `style.indent` and `style.finalNewline`; and
+- `rules`: a map from concrete-syntax node type to a schema.
+
+Leaves need no rule: their `text` is emitted unchanged. Every interior node
+does. An unknown interior node is refused rather than guessed. Version 1 has
+three schemas:
+
+- `tight` recursively emits every direct child with no inserted gap. It is for
+  lexical containers such as JSON strings.
+- `sequence` recursively emits every direct child and inserts its `gaps`
+  between them. The gap count must be exactly one less than the child count.
+- `delimited` recognizes `open`, alternating items and `separator`, then
+  `close`. Empty forms remain compact. Nonempty forms are a group with one
+  indentation level and either a `line` or `softline` at each edge.
+
+A gap is `none`, `space`, `line`, `softline`, or `hardline`. `line` becomes one
+space when its group fits and a newline when it breaks. `softline` becomes
+nothing or a newline. `hardline` always breaks.
+
+For example, the complete JSON pair rule is:
+
+```json
+"pair": { "layout": "sequence", "gaps": ["none", "space"] }
+```
+
+It consumes the key, colon, and value in that order, inserting no text before
+the colon and one space after it. The object rule is:
+
+```json
+{
+  "layout": "delimited",
+  "open": "{",
+  "close": "}",
+  "separator": ",",
+  "edge": "line"
+}
+```
+
+## Linearity and refusal
+
+Schemas consume children by index. `tight` and `sequence` visit the complete
+child array once in order. `sequence` also checks its declared arity.
+`delimited` checks both delimiters and every intervening separator while
+visiting each item once. Consequently, successful evaluation is a disjoint,
+ordered partition of the node's direct children. A missing, duplicated,
+reordered, or structurally unexpected child causes a non-zero exit.
+
+The current packages declare no token mutation. The runtime cannot add, remove,
+or rewrite syntax tokens. Whitespace Docs are the only generated text. This is
+stricter than the contract's optional trailing-comma and continuation-paren
+allowances.
+
+## Document and rendering model
+
+The runtime builds `text`, `concat`, `group`, `indent`, `line`, `softline`, and
+`hardline` documents. A bounded Wadler-style lookahead decides whether each
+group fits. A hardline statically forces every enclosing group to break.
+
+Width means Unicode scalar values. Rust uses `chars().count()`; JavaScript uses
+code-point iteration (`[...value].length`). This deliberately does not attempt
+terminal display width.
+
+## Adding a language
+
+Start from the grammar's interior node types. Give lexical containers `tight`
+rules, fixed-arity nodes `sequence` rules, and homogeneous bracketed lists
+`delimited` rules. Run the scorer after each group of rules. A refusal naming an
+interior node indicates missing coverage; an arity or delimiter diagnostic
+indicates that one node type needs ordered cases or a more specific schema.
+
+Rules see direct children only. If a construct cannot be described without
+searching descendants or changing syntax, add a small checked schema operation
+rather than smuggling language-specific behavior into either runtime.
+
+## Limits and proposal changes
+
+The implemented core deliberately starts narrower than the proposal. It does
+not yet include ordered local cases, operator chains, suites, boundary-comment
+Docs, `ifBreak`, `lineSuffix`, `verbatim`, or the two enumerated mutation
+policies. Those mechanisms should be added only alongside a package that uses
+them and differential fixtures that fix their semantics.
+
+This restriction exposed one useful correction to the proposal: a generic
+`verbatim` escape hatch based only on concatenating leaf text cannot reproduce
+the whitespace between CST children. Source-backed verbatim must therefore be
+an explicit schema consuming one exact byte range, with leaf-order checks; it
+cannot be an automatic fallback for an uncovered node.
+
+The local model cannot express alignment across sibling statements, global
+layout optimization, embedded-language formatting, string splitting, or
+display-width measurement. Comments and Python continuation wrappers are the
+hardest extensions because their canonical output must map to the same local
+region after reparsing.
+

@@ -1,0 +1,25 @@
+{
+  "format": "et-linear-layout/1",
+  "language": "json",
+  "style": { "indent": 2, "finalNewline": true },
+  "rules": {
+    "document": { "layout": "sequence", "gaps": [] },
+    "object": {
+      "layout": "delimited",
+      "open": "{",
+      "close": "}",
+      "separator": ",",
+      "edge": "line"
+    },
+    "array": {
+      "layout": "delimited",
+      "open": "[",
+      "close": "]",
+      "separator": ",",
+      "edge": "softline"
+    },
+    "pair": { "layout": "sequence", "gaps": ["none", "space"] },
+    "string": { "layout": "tight" }
+  }
+}
+

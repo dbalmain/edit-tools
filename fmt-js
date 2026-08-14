@@ -1,0 +1,19 @@
+#!/usr/bin/env node
+"use strict";
+
+const fs = require("fs");
+const path = require("path");
+const { format } = require(path.join(__dirname, "runtime-js", "bundle.js"));
+
+const [treePath, widthText] = process.argv.slice(2);
+try {
+  if (!treePath || !widthText) throw new Error("usage: fmt-js <tree.json> <width>");
+  const width = Number(widthText);
+  if (!Number.isSafeInteger(width) || width < 1) throw new Error("width must be a positive integer");
+  const tree = JSON.parse(fs.readFileSync(treePath, "utf8"));
+  process.stdout.write(format(tree, width));
+} catch (error) {
+  console.error(error instanceof Error ? error.message : String(error));
+  process.exit(1);
+}
+
