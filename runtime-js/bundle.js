@@ -549,7 +549,97 @@ const KINDS = {
   pfx: kindPfx,
   wrap: kindWrap,
   chain: kindChain,
+  comp: kindComp,
+  template: kindTemplate,
+  dot: kindDot,
 };
+
+function kindComp(node, rule, ctx) {
+  const c = cursor(nonComments(node, ctx.commentType));
+  const open = c.take("open");
+  if (!isToken(open, rule.open)) {
+    refuse(`comp ${node.type}: expected ${rule.open}`);
+  }
+  const parts = [];
+  while (!c.done() && !isToken(c.peek(), rule.close)) {
+    parts.push(c.take("part"));
+  }
+  if (c.done() || !isToken(c.peek(), rule.close)) {
+    refuse(`comp ${node.type}: missing ${rule.close}`);
+  }
+  c.take("close");
+  c.finish(node.type);
+  const docs = [softline];
+  for (let i = 0; i < parts.length; i++) {
+    if (i) docs.push(line);
+    docs.push(ctx.format(parts[i]));
+  }
+  return group(
+    concat([
+      text(rule.open),
+      indent(concat(docs)),
+      softline,
+      text(rule.close),
+    ]),
+  );
+}
+
+function kindDot(node, _rule, ctx) {
+  const c = cursor(nonComments(node, ctx.commentType));
+  const docs = [];
+  while (!c.done()) {
+    const n = c.take("part");
+    if (isToken(n, ".")) docs.push(text("."));
+    else docs.push(ctx.format(n));
+  }
+  c.finish(node.type);
+  return concat(docs);
+}
+
+function holeNodes(spec, all, byField) {
+  if (spec === "$children") return all.filter((n) => !isPunct(n));
+  if (typeof spec === "string" && spec.charAt(0) === "$") {
+    const name = spec.slice(1);
+    if (/^\d+$/.test(name)) {
+      const n = all[Number(name)];
+      return n ? [n] : [];
+    }
+    return byField[name] ? [byField[name]] : [];
+  }
+  return null;
+}
+
+function kindTemplate(node, rule, ctx) {
+  const c = cursor(nonComments(node, ctx.commentType));
+  const all = [];
+  while (!c.done()) all.push(c.take("child"));
+  c.finish(node.type);
+  const byField = Object.create(null);
+  for (const n of all) {
+    if (n.field) byField[n.field] = n;
+  }
+
+  function evalDoc(spec) {
+    if (typeof spec === "string") {
+      const nodes = holeNodes(spec, all, byField);
+      if (nodes) return concat(nodes.map((n) => ctx.format(n)));
+      return text(spec);
+    }
+    if (Array.isArray(spec)) return concat(spec.map(evalDoc));
+    if (spec && spec.join) {
+      const items = holeNodes(spec.join.items, all, byField) || [];
+      return join(
+        text(spec.join.sep),
+        items.map((n) => ctx.format(n)),
+      );
+    }
+    refuse(`bad template in ${node.type}`);
+  }
+
+  let doc = evalDoc(rule.doc);
+  if (rule.paren) doc = parenInsert(doc, ctx);
+  return doc;
+}
 
 function defaultKind(node, pkg) {
   if (pkg.opaque.indexOf(node.type) !== -1) return "opaque";

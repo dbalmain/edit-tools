@@ -65,6 +65,17 @@
       "break": "paren"
     },
     "not_operator": { "kind": "pfx", "kw": "not", "sp": true, "paren": true },
-    "unary_operator": { "kind": "pfx", "op_field": "operator", "sp": false }
+    "unary_operator": { "kind": "pfx", "op_field": "operator", "sp": false },
+    "list_comprehension": { "kind": "comp", "open": "[", "close": "]" },
+    "set_comprehension": { "kind": "comp", "open": "{", "close": "}" },
+    "dictionary_comprehension": { "kind": "comp", "open": "{", "close": "}" },
+    "generator_expression": { "kind": "comp", "open": "(", "close": ")" },
+    "for_in_clause": {
+      "kind": "template",
+      "doc": ["for ", "$left", " in ", "$right"]
+    },
+    "if_clause": { "kind": "pfx", "kw": "if", "sp": true },
+    "pattern_list": { "kind": "infix", "op": ", " },
+    "attribute": { "kind": "dot" }
   }
 }

@@ -30,6 +30,9 @@ impl Engine<'_> {
             "pfx" => self.kind_pfx(node, rule, kind, parent_kind),
             "wrap" => self.kind_wrap(node, rule, kind),
             "chain" => self.kind_chain(node, rule, kind, parent_kind),
+            "comp" => self.kind_comp(node, rule, kind),
+            "dot" => self.kind_dot(node, kind),
+            "template" => self.kind_template(node, rule, kind, parent_kind),
             other => Err(Refuse(format!("unknown kind {other} for {}", node.kind))),
         }
     }
@@ -403,6 +406,141 @@ impl Engine<'_> {
         finish_chain(parts, rule, parent_kind)
     }
 
+    fn kind_comp(&self, node: &Node, rule: Option<&Rule>, kind: &str) -> Result<Doc, Refuse> {
+        let Some(rule) = rule else {
+            return Err(Refuse(format!("comp {} missing rule", node.kind)));
+        };
+        let open = rule
+            .open
+            .as_deref()
+            .ok_or_else(|| Refuse(format!("comp {} missing open", node.kind)))?;
+        let close = rule
+            .close
+            .as_deref()
+            .ok_or_else(|| Refuse(format!("comp {} missing close", node.kind)))?;
+        let kids = self.kids(node);
+        let mut c = Cursor::new(&kids);
+        let open_tok = c.take("open")?;
+        if !open_tok.is_token(open) {
+            return Err(Refuse(format!(
+                "comp {}: expected {open}, got {}",
+                node.kind, open_tok.kind
+            )));
+        }
+        let mut parts = Vec::new();
+        while c.peek().is_some_and(|n| !n.is_token(close)) {
+            parts.push(c.take("part")?);
+        }
+        if !c.peek().is_some_and(|n| n.is_token(close)) {
+            return Err(Refuse(format!("comp {}: missing {close}", node.kind)));
+        }
+        c.take("close")?;
+        c.finish(&node.kind)?;
+        let mut docs = vec![Doc::Softline];
+        for (i, p) in parts.iter().enumerate() {
+            if i > 0 {
+                docs.push(Doc::Line);
+            }
+            docs.push(self.format_in(p, Some(kind))?);
+        }
+        Ok(Doc::group(Doc::Concat(vec![
+            Doc::text(open),
+            Doc::indent(Doc::Concat(docs)),
+            Doc::Softline,
+            Doc::text(close),
+        ])))
+    }
+
+    fn kind_dot(&self, node: &Node, kind: &str) -> Result<Doc, Refuse> {
+        let kids = self.kids(node);
+        let mut c = Cursor::new(&kids);
+        let mut docs = Vec::new();
+        while !c.is_empty() {
+            let n = c.take("part")?;
+            if n.is_token(".") {
+                docs.push(Doc::text("."));
+            } else {
+                docs.push(self.format_in(n, Some(kind))?);
+            }
+        }
+        c.finish(&node.kind)?;
+        Ok(Doc::Concat(docs))
+    }
+
+    fn kind_template(
+        &self,
+        node: &Node,
+        rule: Option<&Rule>,
+        kind: &str,
+        parent_kind: Option<&str>,
+    ) -> Result<Doc, Refuse> {
+        let Some(rule) = rule else {
+            return Err(Refuse(format!("template {} missing rule", node.kind)));
+        };
+        let spec = rule
+            .doc
+            .as_ref()
+            .ok_or_else(|| Refuse(format!("template {} missing doc", node.kind)))?;
+        let kids = self.kids(node);
+        let mut c = Cursor::new(&kids);
+        let mut all = Vec::new();
+        while !c.is_empty() {
+            all.push(c.take("child")?);
+        }
+        c.finish(&node.kind)?;
+        let mut by_field = std::collections::BTreeMap::new();
+        for n in &all {
+            if let Some(f) = &n.field {
+                by_field.insert(f.as_str(), *n);
+            }
+        }
+        let mut doc = self.eval_template(spec, &all, &by_field, kind)?;
+        if rule.paren {
+            doc = paren_insert(doc, parent_kind);
+        }
+        Ok(doc)
+    }
+
+    fn eval_template(
+        &self,
+        spec: &serde_json::Value,
+        all: &[&Node],
+        by_field: &std::collections::BTreeMap<&str, &Node>,
+        kind: &str,
+    ) -> Result<Doc, Refuse> {
+        if let Some(s) = spec.as_str() {
+            if let Some(nodes) = hole_nodes(s, all, by_field) {
+                let mut docs = Vec::new();
+                for n in nodes {
+                    docs.push(self.format_in(n, Some(kind))?);
+                }
+                return Ok(Doc::Concat(docs));
+            }
+            return Ok(Doc::text(s));
+        }
+        if let Some(arr) = spec.as_array() {
+            let mut docs = Vec::new();
+            for item in arr {
+                docs.push(self.eval_template(item, all, by_field, kind)?);
+            }
+            return Ok(Doc::Concat(docs));
+        }
+        if let Some(join) = spec.get("join") {
+            let sep = join.get("sep").and_then(|v| v.as_str()).unwrap_or("");
+            let items_spec = join
+                .get("items")
+                .and_then(|v| v.as_str())
+                .unwrap_or("$children");
+            let items = hole_nodes(items_spec, all, by_field).unwrap_or_default();
+            let mut docs = Vec::new();
+            for n in items {
+                docs.push(self.format_in(n, Some(kind))?);
+            }
+            return Ok(crate::doc::join(&Doc::text(sep), docs));
+        }
+        Err(Refuse("bad template".into()))
+    }
+
     fn flatten_chain(&self, node: &Node, cls: u8, kind: &str) -> Result<Vec<ChainPart>, Refuse> {
         if !is_bin_chain(node) {
             return Ok(vec![ChainPart {
@@ -434,6 +572,22 @@ impl Engine<'_> {
 struct ChainPart {
     op: Option<String>,
     doc: Doc,
+}
+
+fn hole_nodes<'a>(
+    spec: &str,
+    all: &[&'a Node],
+    by_field: &std::collections::BTreeMap<&str, &'a Node>,
+) -> Option<Vec<&'a Node>> {
+    if spec == "$children" {
+        return Some(all.iter().copied().filter(|n| !n.is_punct()).collect());
+    }
+    let name = spec.strip_prefix('$')?;
+    if name.chars().all(|c| c.is_ascii_digit()) {
+        let i: usize = name.parse().ok()?;
+        return Some(all.get(i).copied().into_iter().collect());
+    }
+    Some(by_field.get(name).copied().into_iter().collect())
 }
 
 fn is_bin_chain(node: &Node) -> bool {

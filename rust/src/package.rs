@@ -72,6 +72,8 @@ pub struct Rule {
     pub break_style: Option<String>,
     #[serde(default)]
     pub paren: bool,
+    #[serde(default)]
+    pub doc: Option<serde_json::Value>,
 }
 
 impl Package {
