@@ -13,21 +13,33 @@ build; any baseline diff is a port bug.
 
 ## Size (gzip -9)
 
-|                        | schema raw | schema gzip | bytecode raw | bytecode gzip | Δ gzip |
-| ---------------------- | ---------: | ----------: | -----------: | ------------: | -----: |
-| `runtime-js/bundle.js` |      26351 |        6747 |        29032 |          7361 |   +614 |
-| `packages/python.json` |       7038 |        1376 |        20000 |          4789 |  +3413 |
-| `packages/json.json`   |        436 |         215 |         1908 |           764 |   +549 |
+Two bytecode encodings against the same schema baseline. *Unrolled*
+emits a full kind body per node type. *Shared* emits each kind
+program once; node types hold a small operand vector and jump to
+that program. `FORMAT` is the call — there is no `CALL`/`RET`.
+Templates stay unrolled: the spec *is* the program.
 
-The integer array gzips well. It is still larger than the kinds
-schema, because compilation *unrolls* each kind once per node type.
-Eight `seq` nodes become eight copies of the seq program. The schema
-build named the algorithm once in the runtime and pointed at it.
+|                        | schema raw | schema gzip | unrolled raw | unrolled gzip | shared raw | shared gzip | Δ gzip shared |
+| ---------------------- | ---------: | ----------: | -----------: | ------------: | ---------: | ----------: | ------------: |
+| `runtime-js/bundle.js` |      26351 |        6747 |        29032 |          7361 |      31717 |        7689 |          +942 |
+| `packages/python.json` |       7038 |        1376 |        20000 |          4789 |      10618 |        3049 |         +1673 |
+| `packages/json.json`   |        436 |         215 |         1908 |           764 |       1644 |         742 |          +527 |
 
-**Break-even.** Incremental shared-runtime cost is +614 gzip. Mean
-per-package *saving* is **−1981** gzip (packages grew). Language
-count × per-package saving never exceeds the runtime cost: bytecode
-**does not break even at any language count** under this encoding.
+Sharing closed about half the Python package gap (4789 → 3049 gzip)
+and almost none of the JSON gap (the leftover is the seq/infix
+programs plus the integer encoding, not copies). The runtime grew:
+operand opcodes (`ARG`, `CTEXT`, `CPEEK`, …) are new interpreter
+surface.
+
+Shared-program bytecode is still clearly behind the schema. Python
+is 2.2× gzip (was 3.5× unrolled). The schema's advantage is **not**
+merely that it avoids duplication.
+
+**Break-even.** Incremental shared-runtime cost is +942 gzip. Mean
+per-package *saving* is **−1100** gzip (packages still grew).
+Language count × per-package saving never exceeds the runtime cost:
+shared-program bytecode **does not break even at any language
+count**.
 
 A compact kind-level opcode (`SEQ open close sep flags`) would
 probably draw or win on gzip, because it is the schema with shorter
@@ -37,12 +49,14 @@ direction for the download. It is the right IR for a fuzzer.
 ## ISA, in brief
 
 Typed stacks (docs, nodes, i32 wrapping). One forward-only child
-cursor per frame. `HALT` always finishes the cursor. Host ops are
-few: `FORMAT` (recurse), `OPAQUE` (source span), `PAREN`,
-`BLANK_EXTRA`, `HOST_CHAIN` (spine flatten), `HOST_FROM_IMPORT`.
-Everything else — `seq`, `infix`, `fwd`, `clause`, `template`,
-`body`, `comp`, `dot`, `sub`, `pfx`, `wrap` — is compiled to
-cursor + doc ops.
+cursor per frame. `HALT` always finishes the cursor. A frame carries
+an operand vector; shared programs read it with `ARG` / `ARGI` and
+the `C*` ops (`CTEXT`, `CPEEK`, `CTOKEN`, …). Host ops are few:
+`FORMAT` (recurse), `OPAQUE` (source span), `PAREN`, `BLANK_EXTRA`,
+`HOST_CHAIN` (spine flatten; flags from the int stack),
+`HOST_FROM_IMPORT`. Everything else — `seq`, `infix`, `fwd`,
+`clause`, `template`, `body`, `comp`, `dot`, `sub`, `pfx`, `wrap` —
+is compiled to cursor + doc ops.
 
 No floats. No hash-map iteration. Jump targets are verified at load.
 
@@ -56,6 +70,15 @@ immediates, jump targets, and that every path hits `HALT` or
 `REFUSE`. It does **not** prove that a loop drains the cursor for
 every tree — that refuse stays dynamic. Input-dependent checks (wrong
 token, trailing comma on JSON, leaf with children) also stay dynamic.
+
+Sharing programs does **not** weaken this. We share at kind level:
+every `seq` type has the same child shape (open, items/seps, close)
+and differs only in operand tokens. A shared program called from two
+node types with *different* child shapes would be a real cost of
+sharing; we do not do that. `pfx` has three modes (keyword, op
+field, named fields) as branches of one program — each path still
+consumes the cursor exactly once. `clause` is `TAKE_ALL` plus bag
+lookup by operand field names, the same protocol for every clause.
 
 `chain` flatten walks descendant fields of a node whose children were
 already `TAKE_ALL`'d. That is not a second consume of the current
@@ -97,7 +120,9 @@ does not use `template`.
 }
 ```
 
-Authored readable in `authored/`. Shipped as compiled bytecode.
+Authored readable in `authored/`. Shipped as compiled bytecode:
+a const pool, a code section of shared kind programs, an `entry`
+map (type → pc), and an `args` map (type → operand vector).
 
 | Field | Role |
 | --- | --- |
@@ -277,18 +302,23 @@ templates.
 ## Fuzzer
 
 `harness-of-your-own/fuzz.js` compiles random well-typed packages
-(and a handful of drain-then-emit primitive streams), all of which
-the load-time verifier accepts, then runs `fmt-rust` and `fmt-js` on
-a fixed tree. Seeds 1–400 against `json__scalars` @ 88, 1000–1199
-against `python__misc` @ 60, 5000–5399 against `python__statements`
-@ 88: **1000 seeds, 0 divergences** (537 agreed output, 463 agreed
-refuse).
+(now with shared kind programs), drain-then-emit primitive streams,
+and shared-entry streams that hit `ARG`/`ARGI`/`CTEXT`/`CPEEK`. All
+of these the load-time verifier accepts, then `fmt-rust` and
+`fmt-js` run on a fixed tree.
+
+Seeds 1–400 against `json__scalars` @ 88, 1000–1199 against
+`python__misc` @ 60, 5000–5399 against `python__statements` @ 88:
+**1000 seeds, 0 divergences** (697 agreed output, 303 agreed
+refuse). The new ARG/C* streams and shared-entry packages are in
+that mix.
 
 ## Bytecode experiment — what is weak
 
-- **Size lost.** See the table. Expanding kinds into bytecode
-  duplicates every algorithm per node type. The download wants the
-  opposite.
+- **Size still lost after sharing.** See the table. Unrolling was
+  maybe half the Python gap; the rest is a general instruction
+  stream versus named algorithms with short keys. The download
+  wants the schema.
 - **Two host ops remain.** `HOST_CHAIN` and `HOST_FROM_IMPORT` are
   still kind implementations, not compiled streams. Flattening a
   left-associative spine walks descendants by field; `from_import`'s

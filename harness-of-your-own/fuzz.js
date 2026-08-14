@@ -226,6 +226,63 @@ function bytecodeFromRaw(types, rng) {
   };
 }
 
+// Shared program, distinct operand vectors. FORMAT is the call:
+// every type enters the same pc with its own args.
+function bytecodeFromArgs(types, rng) {
+  const e = new Emitter();
+  drain(e);
+  const style = rng.int(4);
+  if (style === 0) {
+    e.emit(OP.ARG, 0);
+    e.emit(OP.CTEXT);
+  } else if (style === 1) {
+    e.emit(OP.PUSH_I, 0);
+    e.emit(OP.ARGI);
+    e.emit(OP.CTEXT);
+    e.emit(OP.GROUP);
+  } else if (style === 2) {
+    e.emit(OP.ARG, 0);
+    e.emit(OP.CPEEK);
+    const miss = e.emitHole(OP.JZ);
+    e.emit(OP.SKIP);
+    e.patch(miss, e.here());
+    e.emit(OP.ARG, 1);
+    e.emit(OP.CTEXT);
+  } else {
+    e.emit(OP.ARG, 0);
+    e.emit(OP.PUSH_I, 0);
+    e.emit(OP.EQ);
+    const z = e.emitHole(OP.JNZ);
+    e.emit(OP.ARG, 1);
+    e.emit(OP.CTEXT);
+    const done = e.emitHole(OP.JMP);
+    e.patch(z, e.here());
+    e.text("");
+    e.patch(done, e.here());
+  }
+  e.emit(OP.HALT);
+  const words = ["", "x", "[", "]", ",", "()", "hi"];
+  const args = {};
+  const entry = {};
+  for (const t of types) {
+    entry[t] = 0;
+    args[t] = [e.intern(rng.pick(words)), e.intern(rng.pick(words))];
+  }
+  return {
+    language: "_fuzz",
+    indent: 2,
+    opaque: [],
+    steal_into_body: [],
+    blank: { max: 0, before_top: [] },
+    consts: e.consts,
+    entry,
+    args,
+    kinds: Object.fromEntries(types.map((t) => [t, "fwd"])),
+    defaults: { leaf: 0, opaque: 0, fwd: 0 },
+    code: e.code,
+  };
+}
+
 function invoke(exe, treePath, width) {
   const r = spawnSync(exe, [treePath, String(width)], {
     encoding: "buffer",
@@ -277,11 +334,14 @@ function main() {
       const seed = (opts.start + i) >>> 0;
       const rng = new Rng(seed);
       let bc;
-      if (rng.bool()) {
+      const which = rng.int(3);
+      if (which === 0) {
         bc = compilePackage(authoredFromKinds(types, rng));
         bc.language = "_fuzz";
-      } else {
+      } else if (which === 1) {
         bc = bytecodeFromRaw(types, rng);
+      } else {
+        bc = bytecodeFromArgs(types, rng);
       }
       try {
         verify(bc);
