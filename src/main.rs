@@ -65,6 +65,8 @@ enum Rule {
         force_trailing: bool,
         #[serde(default, rename = "independentItems")]
         independent_items: bool,
+        #[serde(default, rename = "reserveLineSuffix")]
+        reserve_line_suffix: bool,
     },
 }
 
@@ -82,7 +84,7 @@ enum Doc {
     Text(String),
     Verbatim(String),
     Concat(Vec<Doc>),
-    Group(Box<Doc>, bool),
+    Group(Box<Doc>, bool, usize),
     Indent(Box<Doc>),
     Line,
     Softline,
@@ -94,7 +96,7 @@ impl Doc {
         match self {
             Self::Hardline => true,
             Self::Concat(parts) => parts.iter().any(Self::breaks),
-            Self::Group(doc, force) => *force || doc.breaks(),
+            Self::Group(doc, force, _) => *force || doc.breaks(),
             Self::Indent(doc) => doc.breaks(),
             Self::Verbatim(value) => value.contains('\n'),
             Self::Text(_) | Self::Line | Self::Softline => false,
@@ -106,7 +108,11 @@ impl Doc {
     }
 
     fn forced_group(doc: Self, force: bool) -> Self {
-        Self::Group(Box::new(doc), force)
+        Self::Group(Box::new(doc), force, 0)
+    }
+
+    fn reserved_group(doc: Self, force: bool, reserve: usize) -> Self {
+        Self::Group(Box::new(doc), force, reserve)
     }
 
     fn indent(doc: Self) -> Self {
@@ -239,16 +245,18 @@ fn build_delimited(
         preserve_trailing,
         force_trailing,
         independent_items,
+        reserve_line_suffix,
     } = rule
     else {
         return Err("internal error: expected delimited rule".into());
     };
     let (open, close, separator, edge) = (open.as_str(), close.as_str(), separator.as_str(), *edge);
-    let (items_verbatim, preserve_trailing, force_trailing, independent_items) = (
+    let (items_verbatim, preserve_trailing, force_trailing, independent_items, reserve_line_suffix) = (
         *items_verbatim,
         *preserve_trailing,
         *force_trailing,
         *independent_items,
+        *reserve_line_suffix,
     );
     let Some((first, rest)) = node.children.split_first() else {
         return Err(format!("{}: missing delimiters", node.kind));
@@ -308,7 +316,19 @@ fn build_delimited(
     if has_trailing {
         item_doc = Doc::concat(vec![item_doc, Doc::Text(separator.into())]);
     }
-    Ok(Doc::forced_group(
+    let reserve = if reserve_line_suffix {
+        let suffix = source
+            .get(node.end..)
+            .and_then(|bytes| bytes.split(|byte| *byte == b'\n').next())
+            .ok_or_else(|| format!("{}: cannot inspect line suffix", node.kind))?;
+        std::str::from_utf8(suffix)
+            .map_err(|_| format!("{}: line suffix is not UTF-8", node.kind))?
+            .chars()
+            .count()
+    } else {
+        0
+    };
+    Ok(Doc::reserved_group(
         Doc::concat(vec![
             Doc::Text(open.into()),
             Doc::indent(Doc::concat(vec![gap(edge), item_doc])),
@@ -316,6 +336,7 @@ fn build_delimited(
             Doc::Text(close.into()),
         ]),
         has_trailing && force_trailing,
+        reserve,
     ))
 }
 
@@ -338,7 +359,7 @@ fn fits(remaining: isize, initial_indent: usize, doc: &Doc, indent_width: usize)
                 stack.extend(parts.iter().rev().map(|part| (column, mode, part)));
             }
             Doc::Indent(inner) => stack.push((column + indent_width, mode, inner)),
-            Doc::Group(inner, force) => stack.push((
+            Doc::Group(inner, force, _) => stack.push((
                 column,
                 if *force || inner.breaks() {
                     Mode::Break
@@ -386,8 +407,8 @@ fn render(doc: &Doc, width: usize, indent_width: usize) -> String {
                 stack.extend(parts.iter().rev().map(|part| (column, mode, part)));
             }
             Doc::Indent(inner) => stack.push((column + indent_width, mode, inner)),
-            Doc::Group(inner, force) => {
-                let remaining = width as isize - position as isize;
+            Doc::Group(inner, force, reserve) => {
+                let remaining = width as isize - position as isize - *reserve as isize;
                 let flat =
                     !force && !inner.breaks() && fits(remaining, column, inner, indent_width);
                 stack.push((column, if flat { Mode::Flat } else { Mode::Break }, inner));

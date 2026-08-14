@@ -19,10 +19,11 @@ const concat = (parts) => ({
   breaks: parts.some((part) => part.breaks),
 });
 const indent = (doc) => ({ kind: "indent", doc, breaks: doc.breaks });
-const group = (doc, force = false) => ({
+const group = (doc, force = false, reserve = 0) => ({
   kind: "group",
   doc,
   force,
+  reserve,
   breaks: force || doc.breaks,
 });
 
@@ -116,7 +117,7 @@ function render(doc, width, indentWidth) {
         const flat =
           !current.force &&
           !current.doc.breaks &&
-          fits(width - position, column, current.doc, indentWidth);
+          fits(width - position - current.reserve, column, current.doc, indentWidth);
         stack.push([column, flat ? "flat" : "break", current.doc]);
         break;
       }
@@ -270,6 +271,11 @@ function build(node, rules, sourceBytes) {
       itemDoc = group(itemDoc, hasTrailing && rule.forceTrailing);
     }
     if (hasTrailing) itemDoc = concat([itemDoc, text(rule.separator)]);
+    let reserve = 0;
+    if (rule.reserveLineSuffix) {
+      const suffix = sourceBytes.subarray(node.end).toString("utf8").split("\n", 1)[0];
+      reserve = scalarWidth(suffix);
+    }
     return group(
       concat([
         text(rule.open),
@@ -278,6 +284,7 @@ function build(node, rules, sourceBytes) {
         text(rule.close),
       ]),
       hasTrailing && rule.forceTrailing,
+      reserve,
     );
   }
   throw new Error(`unknown layout ${rule.layout}`);

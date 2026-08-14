@@ -65,6 +65,9 @@ visiting each item once. It can explicitly preserve an input trailing
 separator and use that token as a forced-break signal; it never synthesizes or
 removes one. `itemsVerbatim` applies the checked source-range operation to each
 item, and `independentItems` gives the item sequence its own fit decision.
+`reserveLineSuffix` includes the source text following the closer on that line
+in the fit budget; this lets a parameter list account for a return annotation
+without searching descendants or moving the suffix into the list rule.
 Consequently, successful evaluation is a disjoint,
 ordered partition of the node's direct children. A missing, duplicated,
 reordered, or structurally unexpected child causes a non-zero exit.
