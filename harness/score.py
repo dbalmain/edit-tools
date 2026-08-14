@@ -333,26 +333,49 @@ def first_diff(a: list[str], b: list[str]) -> str:
 
 
 def black_agreement(submission: Path) -> dict:
-    """Fraction of Python files whose width-88 output matches black's."""
+    """Fraction of Python files whose output matches black's, at both widths.
+
+    Measuring only at 88 hid a real defect: a submission that broke
+    mixed-precedence chains at every operator matched black on 11/12 files,
+    because operators.py fits at 88 and the fault only appears at 60. The
+    narrow width is where layout decisions are actually forced.
+
+    Black runs with `string_normalization=False` because the mandatory
+    linearity invariant forbids rewriting a token's text, so quote
+    normalisation is not available to any submission. Comparing against a black
+    that does it would make two of every twelve files unwinnable by a rule we
+    imposed ourselves.
+    """
     import black
 
-    mode = black.Mode(line_length=BLACK_WIDTH)
     matched = compared = black_overflow = 0
+    diverged: list[str] = []
     for tree_path in sorted(TREES.glob("python__*.tree.json")):
         doc = json.loads(tree_path.read_text())
         source = (ROOT / doc["source_file"]).read_text()
-        try:
-            expected = black.format_str(source, mode=mode)
-        except Exception:
-            continue
-        black_overflow += overflow_lines(expected, BLACK_WIDTH, leaves(doc["root"]))
-        run = invoke(submission / "fmt-rust", tree_path, BLACK_WIDTH)
-        if not run.ok:
+        for width in WIDTHS:
+            try:
+                expected = black.format_str(source, mode=black.Mode(line_length=width, string_normalization=False))
+            except Exception:
+                continue
+            black_overflow += overflow_lines(expected, width, leaves(doc["root"]))
+            run = invoke(submission / "fmt-rust", tree_path, width)
             compared += 1
-            continue
-        compared += 1
-        matched += run.text == expected
-    return {"matched": matched, "of": compared, "black_overflow": black_overflow}
+            if not run.ok:
+                continue
+            if run.text == expected:
+                matched += 1
+            else:
+                # Name the files and widths, not just a count: "11/12" hides
+                # *which* construct a design gets wrong -- the useful signal.
+                name = tree_path.stem.replace("python__", "").replace(".tree", "")
+                diverged.append(f"{name}@{width}")
+    return {
+        "matched": matched,
+        "of": compared,
+        "black_overflow": black_overflow,
+        "diverged": diverged,
+    }
 
 
 def main() -> int:
@@ -379,7 +402,9 @@ def main() -> int:
     print(f"  size (gzip)        {size['total']} B "
           f"= {size['js-runtime']} runtime + {size['packages']} packages")
     print(f"  black agreement    {ba['matched']}/{ba['of']}"
-          f"  (black's own overflow at 88: {ba['black_overflow']})")
+          f"  (black's own overflow: {ba['black_overflow']})")
+    if ba["diverged"]:
+        print(f"    diverges on:     {', '.join(ba['diverged'])}")
 
     if rep.detail:
         print("\nfailures:")
