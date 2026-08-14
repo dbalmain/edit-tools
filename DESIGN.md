@@ -274,6 +274,16 @@ templates.
   one-offs needed it. It still cannot measure or look at a
   grandparent.
 
+## Fuzzer
+
+`harness-of-your-own/fuzz.js` compiles random well-typed packages
+(and a handful of drain-then-emit primitive streams), all of which
+the load-time verifier accepts, then runs `fmt-rust` and `fmt-js` on
+a fixed tree. Seeds 1–400 against `json__scalars` @ 88, 1000–1199
+against `python__misc` @ 60, 5000–5399 against `python__statements`
+@ 88: **1000 seeds, 0 divergences** (537 agreed output, 463 agreed
+refuse).
+
 ## Bytecode experiment — what is weak
 
 - **Size lost.** See the table. Expanding kinds into bytecode
