@@ -1141,9 +1141,10 @@ function compileClause(e, rule) {
 }
 
 function emitIndentedBody(e) {
+  // indent(concat([hardline, format(body)])). Body node is TOS on N.
+  e.emit(OP.FORMAT);
   e.emit(OP.HARDLINE);
   e.emit(OP.SWAP_D);
-  e.emit(OP.FORMAT);
   e.emit(OP.CONCAT, 2);
   e.emit(OP.INDENT);
   e.emit(OP.LOAD, 0);
