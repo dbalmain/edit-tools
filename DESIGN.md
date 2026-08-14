@@ -380,8 +380,8 @@ already broken.
 
 A fuzzer that does not *construct* a group whose fit decision is
 that one column is not a Unicode-width test. The scored corpus
-has the same hole. A case that lands the boundary on 88 (or 60)
-belongs in `corpus/contrib/`.
+has the same hole. `corpus/contrib/length_boundary.py` lands it
+on both 88 and 60; `length_boundary.json` lands it on 88.
 
 After adding `group(text(pad+🙂) + line + "z")` sized to `width`
 (scalar columns = width → fits; UTF-16 = width+1 → breaks), seed
