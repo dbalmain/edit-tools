@@ -35,12 +35,10 @@ impl<'a> Fmt<'a> {
         if let Some(text) = &node.text {
             return Ok(Doc::text(text.as_str()));
         }
-        let rule = self.pkg.rules.get(&node.kind).ok_or_else(|| {
-            Refusal(format!(
-                "package has no rule for node type `{}`",
-                node.kind
-            ))
-        })?;
+        let rule =
+            self.pkg.rules.get(&node.kind).ok_or_else(|| {
+                Refusal(format!("package has no rule for node type `{}`", node.kind))
+            })?;
         let mut ctx = Ctx::new(node, self)?;
         let doc = ctx.eval(rule, self)?;
         if ctx.cursor != ctx.items.len() {
@@ -397,4 +395,157 @@ fn tightness(pkg: &Package, node: &Node) -> i64 {
     node.child_with_field("operator")
         .and_then(|op| op.text.as_deref())
         .map_or(0, |op| pkg.tightness(op))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    /// A toy language, so the machinery is exercised without Python's bulk.
+    fn toy(rules: serde_json::Value) -> Package {
+        serde_json::from_value(json!({
+            "indent": 2,
+            "tokens": ["(", ")", ",", "+"],
+            "precedence": { "+": 5, "*": 4 },
+            "rules": rules,
+        }))
+        .expect("toy package parses")
+    }
+
+    fn leaf(kind: &str, text: &str) -> serde_json::Value {
+        json!({ "type": kind, "start": 0, "end": 0, "text": text })
+    }
+
+    fn run(pkg: &Package, root: serde_json::Value, width: usize) -> Result<String, Refusal> {
+        let tree: TreeDoc = serde_json::from_value(json!({
+            "language": "toy",
+            "source": "",
+            "root": root,
+        }))
+        .expect("toy tree parses");
+        format(&tree, pkg, width)
+    }
+
+    fn list(items: &[&str], trailing: bool) -> serde_json::Value {
+        let mut children = vec![leaf("(", "(")];
+        for (i, item) in items.iter().enumerate() {
+            if i > 0 {
+                children.push(leaf(",", ","));
+            }
+            children.push(leaf("name", item));
+        }
+        if trailing {
+            children.push(leaf(",", ","));
+        }
+        children.push(leaf(")", ")"));
+        json!({ "type": "list", "start": 0, "end": 0, "children": children })
+    }
+
+    fn list_rule() -> serde_json::Value {
+        json!([
+            "group",
+            ["tok", "("],
+            [
+                "indent",
+                ["soft"],
+                ["each", "named", ["seq", ["tok", ","], ["line"]]],
+                ["trail", ",", "named"]
+            ],
+            ["soft"],
+            ["tok", ")"]
+        ])
+    }
+
+    #[test]
+    fn a_rule_that_ignores_a_child_refuses_rather_than_dropping_it() {
+        let pkg = toy(json!({ "list": ["seq", ["tok", "("]] }));
+        let err = run(&pkg, list(&["a"], false), 80).expect_err("must refuse");
+        assert!(err.0.contains("left child"), "{}", err.0);
+    }
+
+    #[test]
+    fn an_unknown_node_type_refuses_rather_than_guessing() {
+        let pkg = toy(json!({}));
+        let err = run(&pkg, list(&["a"], false), 80).expect_err("must refuse");
+        assert!(err.0.contains("no rule for node type `list`"), "{}", err.0);
+    }
+
+    #[test]
+    fn a_token_that_is_not_where_the_rule_says_refuses() {
+        let pkg = toy(json!({ "list": ["seq", ["tok", "["], ["each", "*", ["seq"]]] }));
+        let err = run(&pkg, list(&["a"], false), 80).expect_err("must refuse");
+        assert!(err.0.contains("the token `[`"), "{}", err.0);
+    }
+
+    #[test]
+    fn a_trailing_separator_is_added_only_when_the_bracket_holds_a_list() {
+        let pkg = toy(json!({ "list": list_rule() }));
+        // Two items, broken: the separator is added.
+        assert_eq!(
+            run(&pkg, list(&["aaa", "bbb"], false), 4).expect("ok"),
+            "(\n  aaa,\n  bbb,\n)\n"
+        );
+        // One item: black never reaches a comma splitting such a bracket.
+        assert_eq!(
+            run(&pkg, list(&["aaaaaa"], false), 4).expect("ok"),
+            "(\n  aaaaaa\n)\n"
+        );
+        // Flat: no separator at all.
+        assert_eq!(
+            run(&pkg, list(&["a", "b"], false), 80).expect("ok"),
+            "(a, b)\n"
+        );
+    }
+
+    #[test]
+    fn a_separator_already_in_the_source_pins_the_layout_open() {
+        let pkg = toy(json!({ "list": list_rule() }));
+        assert_eq!(
+            run(&pkg, list(&["a", "b"], true).clone(), 80).expect("ok"),
+            "(\n  a,\n  b,\n)\n"
+        );
+    }
+
+    fn chain(ops: &[(&str, &str)], base: &str) -> serde_json::Value {
+        let mut node = leaf("name", base);
+        for (op, rhs) in ops {
+            let mut left = node;
+            left["field"] = json!("left");
+            let mut right = leaf("name", rhs);
+            right["field"] = json!("right");
+            let mut operator = leaf(op, op);
+            operator["field"] = json!("operator");
+            node = json!({
+                "type": "sum", "start": 0, "end": 0,
+                "children": [left, operator, right],
+            });
+        }
+        node
+    }
+
+    #[test]
+    fn flatten_breaks_a_whole_chain_together_instead_of_staircasing() {
+        let pkg = toy(json!({
+            "sum": ["group", ["flatten", "sum", ["seq", ["line"], ["child", "f:operator"], ["sp"]]]]
+        }));
+        let tree = chain(&[("+", "bbb"), ("+", "ccc")], "aaa");
+        assert_eq!(
+            run(&pkg, tree.clone(), 80).expect("ok"),
+            "aaa + bbb + ccc\n"
+        );
+        assert_eq!(run(&pkg, tree, 4).expect("ok"), "aaa\n+ bbb\n+ ccc\n");
+    }
+
+    #[test]
+    fn flatten_stops_where_the_operator_binds_tighter() {
+        let pkg = toy(json!({
+            "sum": ["group", ["flatten", "sum", ["seq", ["line"], ["child", "f:operator"], ["sp"]]]]
+        }));
+        // (aaa * bbb) + ccc: only the `+` is a break point at this width.
+        // Narrower still and the inner chain breaks too, which is right --
+        // that recursion is how a chain of mixed precedence splits.
+        let tree = chain(&[("*", "bbb"), ("+", "ccc")], "aaa");
+        assert_eq!(run(&pkg, tree, 9).expect("ok"), "aaa * bbb\n+ ccc\n");
+    }
 }

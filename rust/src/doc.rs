@@ -190,3 +190,87 @@ pub fn print(doc: &Doc, width: usize, tab: usize) -> String {
         stack.extend(suffixes.drain(..).rev());
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn seq(parts: Vec<Doc>) -> Doc {
+        Doc::Concat(parts)
+    }
+
+    #[test]
+    fn a_group_stays_flat_while_it_fits_and_breaks_when_it_does_not() {
+        let doc = || {
+            Doc::group(seq(vec![
+                Doc::text("["),
+                Doc::indent(seq(vec![
+                    Doc::Soft,
+                    Doc::text("a"),
+                    Doc::text(","),
+                    Doc::Line,
+                    Doc::text("b"),
+                ])),
+                Doc::Soft,
+                Doc::text("]"),
+            ]))
+        };
+        assert_eq!(print(&doc(), 80, 2), "[a, b]");
+        assert_eq!(print(&doc(), 4, 2), "[\n  a,\n  b\n]");
+    }
+
+    #[test]
+    fn width_counts_scalar_values_not_utf16_code_units() {
+        // Three astral characters are three columns. Counting UTF-16 units
+        // would make them six and break agreement with the other runtime.
+        let doc = Doc::group(seq(vec![Doc::text("🙂🙂🙂"), Doc::Line, Doc::text("x")]));
+        assert_eq!(print(&doc, 5, 2), "🙂🙂🙂 x");
+        assert_eq!(print(&doc, 4, 2), "🙂🙂🙂\nx");
+    }
+
+    #[test]
+    fn a_blank_line_carries_no_trailing_whitespace() {
+        let doc = Doc::indent(seq(vec![
+            Doc::text("a"),
+            Doc::Hard,
+            Doc::Hard,
+            Doc::text("b"),
+        ]));
+        assert_eq!(print(&doc, 80, 4), "a\n\n    b");
+    }
+
+    #[test]
+    fn a_line_suffix_waits_for_the_end_of_the_line() {
+        let doc = seq(vec![
+            Doc::text("x"),
+            Doc::Suffix(Box::new(Doc::text("  # note"))),
+            Doc::text(","),
+            Doc::Hard,
+            Doc::text("y"),
+        ]);
+        assert_eq!(print(&doc, 80, 2), "x,  # note\ny");
+    }
+
+    #[test]
+    fn a_hardline_anywhere_inside_breaks_the_enclosing_group() {
+        let doc = Doc::group(seq(vec![
+            Doc::text("a"),
+            Doc::Line,
+            Doc::text("b"),
+            Doc::Hard,
+        ]));
+        assert_eq!(print(&doc, 80, 2), "a\nb\n");
+    }
+
+    #[test]
+    fn fits_measures_the_rest_of_the_line_not_just_the_group() {
+        // The group holds "ab"; the trailing ")))" is on the printer's stack
+        // and must still count, or the line silently overflows.
+        let doc = seq(vec![
+            Doc::group(seq(vec![Doc::text("a"), Doc::Line, Doc::text("b")])),
+            Doc::text(")))"),
+        ]);
+        assert_eq!(print(&doc, 6, 2), "a b)))");
+        assert_eq!(print(&doc, 5, 2), "a\nb)))");
+    }
+}

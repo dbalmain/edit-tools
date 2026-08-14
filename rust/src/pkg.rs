@@ -160,7 +160,10 @@ impl TryFrom<Value> for Expr {
             "flatten" => {
                 arity(2)?;
                 let kind = literal(&parts[0])?;
-                Ok(Expr::Flatten(kind, Box::new(Expr::try_from(parts.remove(1))?)))
+                Ok(Expr::Flatten(
+                    kind,
+                    Box::new(Expr::try_from(parts.remove(1))?),
+                ))
             }
             "when" => {
                 arity(3)?;
