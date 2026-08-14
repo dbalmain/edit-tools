@@ -271,17 +271,21 @@ function kindInfix(node, rule, ctx) {
   const c = cursor(nonComments(node, ctx.commentType));
   const needle = (rule.op || "").trim();
   const parts = [];
+  let opEmit = rule.op || "";
   while (!c.done()) {
     const n = c.take("operand or op");
     const isOp =
       (rule.op_field && n.field === rule.op_field) ||
       (needle && isToken(n, needle));
-    if (isOp) continue;
+    if (isOp) {
+      if (!rule.op) opEmit = ` ${formatOp(n)} `;
+      continue;
+    }
     parts.push(ctx.format(n));
   }
   c.finish(node.type);
   if (!parts.length) refuse(`infix ${node.type} has no operands`);
-  return join(text(rule.op), parts);
+  return join(text(opEmit), parts);
 }
 
 function kindSeq(node, rule, ctx) {
@@ -475,7 +479,10 @@ function flattenChain(node, cls, ctx) {
 
 function parenInsert(inner, ctx) {
   const pk = ctx.parentKind;
-  if (pk === "wrap" || pk === "seq" || pk === "pfx") return group(inner);
+  // wrap already supplies the group+parens. A nested group would stay
+  // flat inside a broken wrap (pass 2 hugs; pass 1 exploded). Share mode.
+  if (pk === "wrap") return inner;
+  if (pk === "seq" || pk === "pfx") return group(inner);
   return group(
     concat([
       ifBreak(text("("), text("")),

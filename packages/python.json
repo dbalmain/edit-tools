@@ -15,6 +15,12 @@
     "block": { "kind": "body" },
     "expression_statement": { "kind": "fwd" },
     "assignment": { "kind": "infix", "op": " = " },
+    "augmented_assignment": { "kind": "infix", "op_field": "operator" },
+    "conditional_expression": {
+      "kind": "template",
+      "paren": true,
+      "doc": ["$0", " if ", "$2", " else ", "$4"]
+    },
     "list": {
       "kind": "seq",
       "open": "[",

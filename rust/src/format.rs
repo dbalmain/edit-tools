@@ -98,6 +98,7 @@ impl Engine<'_> {
         let mut c = Cursor::new(&kids);
         let needle = rule.op.as_deref().unwrap_or("").trim();
         let mut parts = Vec::new();
+        let mut op_emit = rule.op.clone().unwrap_or_default();
         while !c.is_empty() {
             let n = c.take("operand or op")?;
             let is_op = rule
@@ -105,7 +106,11 @@ impl Engine<'_> {
                 .as_deref()
                 .is_some_and(|f| n.field.as_deref() == Some(f))
                 || (!needle.is_empty() && n.is_token(needle));
-            if !is_op {
+            if is_op {
+                if rule.op.is_none() {
+                    op_emit = format!(" {} ", format_op(n));
+                }
+            } else {
                 parts.push(self.format_in(n, Some(kind))?);
             }
         }
@@ -113,8 +118,7 @@ impl Engine<'_> {
         if parts.is_empty() {
             return Err(Refuse(format!("infix {} has no operands", node.kind)));
         }
-        let sep = Doc::text(rule.op.clone().unwrap_or_default());
-        Ok(join(&sep, parts))
+        Ok(join(&Doc::text(op_emit), parts))
     }
 
     fn kind_seq(&self, node: &Node, rule: Option<&Rule>, kind: &str) -> Result<Doc, Refuse> {
@@ -817,7 +821,12 @@ fn prec_class(op: &str) -> u8 {
 }
 
 fn paren_insert(inner: Doc, parent_kind: Option<&str>) -> Doc {
-    if matches!(parent_kind, Some("wrap") | Some("seq") | Some("pfx")) {
+    // wrap already supplies the group+parens. A nested group would stay
+    // flat inside a broken wrap (pass 2 hugs; pass 1 exploded). Share mode.
+    if parent_kind == Some("wrap") {
+        return inner;
+    }
+    if matches!(parent_kind, Some("seq") | Some("pfx")) {
         return Doc::group(inner);
     }
     Doc::group(Doc::Concat(vec![
