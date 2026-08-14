@@ -193,15 +193,61 @@ Doc ops. Smallest possible runtime, maximum expressiveness, but the authoring
 language and its compiler become the bulk of the work, and two VMs must agree
 exactly — the highest divergence risk and the best fuzz story.
 
-**Note on C (August 2026).** All three Phase 1 proposals rejected bytecode, and
-they were right *under the competition's rules* — its payoff is size, and size
-does not bind (packages measure 1-2 KB against a 25 KB budget). But that
-rejection is **contingent on the evaluation method**, not settled. The harness
-cuts the parser out and freezes a 15-file corpus, which suppresses exactly what
-a VM is good at: the scanner bytecode already forces a VM into the real system,
-size binds at N languages rather than one, and a VM is the most fuzzable design
-available since random bytecode can be compared across two interpreters without
-needing valid source. Revisit when the scanner VM forces the question.
+**Note on C (August 2026).** All three Phase 1 proposals rejected bytecode.
+Codex, asked directly afterwards, confirmed its rejection was **scoped to the
+competition, not the real system** — the frozen 15-file corpus rewarded rapid,
+inspectable coverage and gave no credit for a VM's verification and
+amortisation properties. Treat C as open, with the following corrections to how
+it is usually argued.
+
+**"A VM is the smallest runtime" is too strong.** A VM replaces only the *rule
+evaluator*. The Doc renderer, CST access, comment handling and token accounting
+remain either way, so a specialised schema walker can be smaller than a
+sufficiently *safe* general VM. What C actually costs is scope, not bytes: an
+authoring language and compiler, bytecode validation, diagnostics, resource
+bounds and versioning, identical stack and control-flow semantics defined twice,
+preserving the linearity invariant through arbitrary control flow, and testing
+the compiler as well as both interpreters.
+
+**There is no "not a VM" option.** Every proposal's JSON arrays are already an
+interpreted instruction representation. The real axis is **constrained,
+structurally validated instructions versus general control flow** — not
+interpretation versus its absence. B, C and E are points on that axis, and
+framing them as different kinds of thing was a mistake in the original design
+space.
+
+**Sharing with the scanner VM is real but not free.** Scanner programs operate
+on characters, lexer state, lookahead and token emission; formatter programs on
+CST values, selectors, comments and Doc construction. The host operations and
+safety invariants genuinely differ, and the scanner instruction set should not
+be distorted to force sharing. What *can* be shared, if designed for
+deliberately, is one small typed VM core: decoding, stack and control flow,
+validation, instruction budgeting, package versioning, and the two-runtime
+differential harness — with separate typed host-op sets on top. That makes a
+formatter VM much cheaper than a from-scratch one, so once the scanner VM is
+committed, "same execution core, separate host operations" becomes the default
+candidate rather than a stretch.
+
+**Fuzzability is a real advantage, and narrower than claimed.** Randomly
+generated *well-typed* bytecode is excellent at finding interpreter divergence.
+Random bytes mostly exercise rejection paths, and interpreter agreement tests
+neither compiler correctness, formatting policy, semantic preservation, nor
+idempotence — so source-level differential and property tests remain necessary
+regardless.
+
+**Falsifiable conditions to adopt C**, from codex:
+
+1. the scanner VM is already committed;
+2. adding formatting costs no more than ~1 KB gzipped of additional runtime;
+3. across eight representative languages, compiled bytecode saves at least
+   0.5 KB gzipped per formatter package against schemas; and
+4. CI differentially fuzzes well-typed bytecode in both interpreters, alongside
+   end-to-end semantic-preservation and idempotence tests.
+
+The economic test is `language count x per-package saving > incremental shared
+runtime cost`, adjusted for how many packages a client actually downloads —
+supporting thirty languages does not mean any client fetches thirty, so client
+transfer cost depends on usage even though CDN aggregate size does not.
 
 **D. Constraint solver.** Encode layout as cost minimisation (Google's `rfmt`,
 or "A Pretty Expressive Printer", POPL 2023). Provably optimal output; `O(n·w)`
