@@ -194,16 +194,48 @@ templates.
 
 ## What changed from the Phase 1 proposal
 
-- **Linearity is now a hard runtime check**, not an implicit
-  property of careful kinds. Codex's invariant was made universal
-  after Phase 1. Each kind uses an ordered child cursor and refuses
-  if anything remains or if a required token is missing.
+- **Linearity is a hard runtime check**, not an implicit property of
+  careful kinds. Each kind uses an ordered child cursor and refuses
+  if anything remains or a required token is missing.
 - **`trailing: "none"` refuses a trailing comma** rather than
-  silently dropping it. Dropping it would be a token mutation that
-  is not one of the two sanctioned policies (and would be invalid
-  JSON if we also *added* one).
-- Implementation is kinds-first as proposed; `template` is in the
-  runtime for the hatch described above but is unused by JSON.
+  silently dropping it. Dropping a token is not one of the two
+  sanctioned mutations.
+- **A singleton tuple's comma is syntactic**, not magic. `(lonely,)`
+  stays flat; the comma is kept. Treating it as `shouldBreak` exploded
+  a one-element tuple at every width.
+- **Opaque nodes read `source[start:end]`**, not concatenated
+  descendant leaves. tree-sitter-python's `string_content` omits
+  unescaped text and only lists `escape_sequence` children, so leaf
+  concat turned `"line one\nline two\ttabbed"` into `"\n\t"`.
+- **A chain inside an existing `wrap` shares that group's mode.**
+  A nested group stayed flat inside a broken wrap (pass 2 hugged
+  what pass 1 exploded). Returning the inner doc without a new
+  group keeps `fmt(fmt(x))` stable.
+- **Attribute `paren` is suppressed when the parent is `pfx`.**
+  Wrapping `query.limit` without its `(100)` produced
+  `(query.limit)(100)` — a meaning change. Calls own the parens.
+- **Blank-line recovery counts whitespace-only lines in the
+  source gap**, not raw newline counts. Counting comment lines as
+  blanks added a new blank on every pass.
+- **`template` and `from_import` shipped.** The proposal allowed
+  deferring `template`; lambda, ternary, imports, and a handful of
+  one-offs needed it. It still cannot measure or look at a
+  grandparent.
 
-Python support, when added, is a package plus the remaining kinds
-already listed — not a change to this document's shape.
+## What is weak
+
+- **No method-spine flattening.** `query.filter(...).order_by(...)`
+  breaks inside argument lists, not before `.`. Black does the
+  latter at width 60. Meaning is preserved; overflow is worse.
+- **No hugging.** A broken `seq` puts every item on its own line.
+  Black will keep `first_operand, second_operand, third_operand, fourth`
+  on one wrapped line. We explode. Same for a sole dict argument
+  of `append`.
+- **Quote style is untouched.** `string` is opaque. `strings.py`
+  will not match black.
+- **Comment blanks at file edges.** The leading module comment
+  eats the following blank; the EOF comment does not keep two
+  blanks above it. Comments themselves are not dropped.
+- **Bitwise mixed-precedence** paren-inserts each class separately,
+  so `|` may wrap an already-parenthesized `&`/`^` inner. Legal,
+  not black.

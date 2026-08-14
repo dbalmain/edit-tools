@@ -536,13 +536,23 @@ function kindBody(node, rule, ctx) {
   const dangling = node.dangling || [];
   if (!stmts.length && !dangling.length) return text("");
   const beforeTop = new Set((ctx.pkg.blank && ctx.pkg.blank.before_top) || []);
+  const maxBlank = (ctx.pkg.blank && ctx.pkg.blank.max) || 0;
   const docs = [];
   for (let i = 0; i < stmts.length; i++) {
     if (i) {
       docs.push(hardline);
-      if (!(rule && rule.tight) && beforeTop.has(stmts[i].type)) {
-        docs.push(hardline);
-        docs.push(hardline);
+      if (!(rule && rule.tight)) {
+        let extra = 0;
+        if (ctx.sourceBytes && stmts[i - 1].end != null && stmts[i].start != null) {
+          extra = countBlankLines(
+            ctx.sourceBytes,
+            stmts[i - 1].end,
+            stmts[i].start,
+            maxBlank,
+          );
+        }
+        if (beforeTop.has(stmts[i].type)) extra = Math.max(extra, 2);
+        for (let k = 0; k < extra; k++) docs.push(hardline);
       }
     }
     docs.push(ctx.format(stmts[i]));
@@ -823,6 +833,16 @@ function format(tree, width) {
 function gapNewlines(sourceBytes, from, to) {
   const gap = sourceBytes.slice(from, to).toString("utf8");
   return (gap.match(/\n/g) || []).length;
+}
+
+function countBlankLines(sourceBytes, from, to, max) {
+  const gap = sourceBytes.slice(from, to).toString("utf8");
+  const lines = gap.split("\n");
+  let blanks = 0;
+  for (let i = 1; i < lines.length - 1; i++) {
+    if (lines[i].trim() === "") blanks++;
+  }
+  return Math.min(max, blanks);
 }
 
 function classifyComments(node, sourceBytes, commentType) {

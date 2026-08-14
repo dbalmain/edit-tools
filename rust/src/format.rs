@@ -262,13 +262,22 @@ impl Engine<'_> {
         }
         c.finish(&node.kind)?;
         let tight = rule.is_some_and(|r| r.tight);
+        let max_blank = self.pkg.blank.max;
         let mut docs = Vec::new();
         for (i, stmt) in stmts.iter().enumerate() {
             if i > 0 {
                 docs.push(Doc::Hardline);
-                if !tight && self.pkg.blank.before_top.iter().any(|t| t == &stmt.kind) {
-                    docs.push(Doc::Hardline);
-                    docs.push(Doc::Hardline);
+                if !tight {
+                    let mut extra = 0usize;
+                    if let Some(src) = self.source {
+                        extra = count_blank_lines(src, stmts[i - 1].end, stmt.start, max_blank);
+                    }
+                    if self.pkg.blank.before_top.iter().any(|t| t == &stmt.kind) {
+                        extra = extra.max(2);
+                    }
+                    for _ in 0..extra {
+                        docs.push(Doc::Hardline);
+                    }
                 }
             }
             docs.push(self.format_in(stmt, Some(kind))?);
@@ -914,6 +923,22 @@ fn gap_newlines(source: &[u8], from: usize, to: usize) -> usize {
     let from = from.min(source.len());
     let to = to.min(source.len()).max(from);
     source[from..to].iter().filter(|&&b| b == b'\n').count()
+}
+
+fn count_blank_lines(source: &[u8], from: usize, to: usize, max: usize) -> usize {
+    let from = from.min(source.len());
+    let to = to.min(source.len()).max(from);
+    let Ok(gap) = std::str::from_utf8(&source[from..to]) else {
+        return 0;
+    };
+    let lines: Vec<&str> = gap.split('\n').collect();
+    let blanks = lines
+        .iter()
+        .skip(1)
+        .take(lines.len().saturating_sub(2))
+        .filter(|l| l.trim().is_empty())
+        .count();
+    blanks.min(max)
 }
 
 fn classify_comments(node: &mut Node, source: &[u8], comment_type: &str) {

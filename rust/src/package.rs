@@ -29,7 +29,6 @@ pub struct Package {
 #[derive(Debug, Default, Deserialize)]
 pub struct Blank {
     #[serde(default)]
-    #[allow(dead_code)]
     pub max: usize,
     #[serde(default)]
     pub before_top: Vec<String>,
