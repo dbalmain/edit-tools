@@ -13,6 +13,12 @@ const verbatim = (value) => ({
 const line = { kind: "line", breaks: false };
 const softline = { kind: "softline", breaks: false };
 const hardline = { kind: "hardline", breaks: true };
+const ifBreak = (broken, flat) => ({
+  kind: "ifBreak",
+  broken,
+  flat,
+  breaks: broken.breaks || flat.breaks,
+});
 const concat = (parts) => ({
   kind: "concat",
   parts,
@@ -64,6 +70,9 @@ function fits(remaining, initialIndent, doc, indentWidth) {
           current.force || current.doc.breaks ? "break" : "flat",
           current.doc,
         ]);
+        break;
+      case "ifBreak":
+        stack.push([column, mode, mode === "flat" ? current.flat : current.broken]);
         break;
       case "line":
         if (mode === "flat") room -= 1;
@@ -121,6 +130,9 @@ function render(doc, width, indentWidth) {
         stack.push([column, flat ? "flat" : "break", current.doc]);
         break;
       }
+      case "ifBreak":
+        stack.push([column, mode, mode === "flat" ? current.flat : current.broken]);
+        break;
       case "line":
         if (mode === "flat") {
           output.push(" ");
@@ -226,6 +238,58 @@ function build(node, rules, sourceBytes) {
       parts.push(build(child, rules, sourceBytes));
     });
     return concat(parts);
+  }
+  if (rule.layout === "continuationList") {
+    validateSubtree(node, sourceBytes);
+    const markerIndex = children.findIndex((child) => child.text === rule.marker);
+    if (markerIndex < 0) throw new Error(`${node.type}: list marker is missing`);
+    let first = markerIndex + 1;
+    let last = children.length;
+    const wrapped = children[first]?.text === rule.open;
+    if (wrapped) {
+      if (children.at(-1)?.text !== rule.close) {
+        throw new Error(`${node.type}: continuation wrapper is unbalanced`);
+      }
+      first += 1;
+      last -= 1;
+    }
+    const hasTrailing = children[last - 1]?.text === rule.separator;
+    if (hasTrailing) last -= 1;
+    const items = [];
+    let index = first;
+    while (index < last) {
+      validateSubtree(children[index], sourceBytes);
+      items.push(sourceSlice(sourceBytes, children[index].start, children[index].end, node.type));
+      index += 1;
+      if (index < last) {
+        if (children[index].text !== rule.separator) {
+          throw new Error(`${node.type}: expected separator at child ${index}`);
+        }
+        index += 1;
+      }
+    }
+    if (!items.length || index !== last) {
+      throw new Error(`${node.type}: invalid continuation list`);
+    }
+    const prefix = sourceSlice(sourceBytes, node.start, children[markerIndex].end, node.type);
+    const trailing = rule.addTrailing
+      ? ifBreak(text(rule.separator), hasTrailing ? text(rule.separator) : text(""))
+      : hasTrailing ? text(rule.separator) : text("");
+    return group(
+      concat([
+        prefix,
+        text(" "),
+        ifBreak(text(rule.open), text("")),
+        indent(concat([
+          softline,
+          separated(items, () => concat([text(rule.separator), line])),
+          trailing,
+        ])),
+        softline,
+        ifBreak(text(rule.close), text("")),
+      ]),
+      wrapped && hasTrailing,
+    );
   }
   if (rule.layout === "delimited") {
     if (rule.verbatimWithComments && children.some((child) => child.type === "comment")) {

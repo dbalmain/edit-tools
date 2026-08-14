@@ -52,6 +52,14 @@ enum Rule {
     Sequence {
         gaps: Vec<Gap>,
     },
+    ContinuationList {
+        marker: String,
+        open: String,
+        close: String,
+        separator: String,
+        #[serde(default, rename = "addTrailing")]
+        add_trailing: bool,
+    },
     Delimited {
         open: String,
         close: String,
@@ -87,6 +95,7 @@ enum Doc {
     Verbatim(String),
     Concat(Vec<Doc>),
     Group(Box<Doc>, bool, usize),
+    IfBreak(Box<Doc>, Box<Doc>),
     Indent(Box<Doc>),
     Line,
     Softline,
@@ -99,6 +108,7 @@ impl Doc {
             Self::Hardline => true,
             Self::Concat(parts) => parts.iter().any(Self::breaks),
             Self::Group(doc, force, _) => *force || doc.breaks(),
+            Self::IfBreak(broken, flat) => broken.breaks() || flat.breaks(),
             Self::Indent(doc) => doc.breaks(),
             Self::Verbatim(value) => value.contains('\n'),
             Self::Text(_) | Self::Line | Self::Softline => false,
@@ -115,6 +125,10 @@ impl Doc {
 
     fn reserved_group(doc: Self, force: bool, reserve: usize) -> Self {
         Self::Group(Box::new(doc), force, reserve)
+    }
+
+    fn if_break(broken: Self, flat: Self) -> Self {
+        Self::IfBreak(Box::new(broken), Box::new(flat))
     }
 
     fn indent(doc: Self) -> Self {
@@ -228,8 +242,99 @@ fn build(node: &Node, rules: &HashMap<String, Rule>, source: &[u8]) -> Result<Do
             }
             Ok(Doc::concat(parts))
         }
+        Rule::ContinuationList { .. } => build_continuation_list(node, source, rule),
         Rule::Delimited { .. } => build_delimited(node, rules, source, rule),
     }
+}
+
+fn build_continuation_list(node: &Node, source: &[u8], rule: &Rule) -> Result<Doc, String> {
+    let Rule::ContinuationList {
+        marker,
+        open,
+        close,
+        separator,
+        add_trailing,
+    } = rule
+    else {
+        return Err("internal error: expected continuation-list rule".into());
+    };
+    validate_subtree(node, source)?;
+    let marker_index = node
+        .children
+        .iter()
+        .position(|child| child.text.as_deref() == Some(marker))
+        .ok_or_else(|| format!("{}: list marker is missing", node.kind))?;
+    let mut first = marker_index + 1;
+    let mut last = node.children.len();
+    let wrapped = node
+        .children
+        .get(first)
+        .and_then(|child| child.text.as_deref())
+        == Some(open);
+    if wrapped {
+        if node.children.last().and_then(|child| child.text.as_deref()) != Some(close) {
+            return Err(format!("{}: continuation wrapper is unbalanced", node.kind));
+        }
+        first += 1;
+        last -= 1;
+    }
+    let has_trailing = node
+        .children
+        .get(last.saturating_sub(1))
+        .and_then(|child| child.text.as_deref())
+        == Some(separator);
+    if has_trailing {
+        last -= 1;
+    }
+
+    let mut items = Vec::new();
+    let mut index = first;
+    while index < last {
+        let item = &node.children[index];
+        validate_subtree(item, source)?;
+        items.push(source_slice(source, item.start, item.end, &node.kind)?);
+        index += 1;
+        if index < last {
+            if node.children[index].text.as_deref() != Some(separator) {
+                return Err(format!(
+                    "{}: expected separator at child {index}",
+                    node.kind
+                ));
+            }
+            index += 1;
+        }
+    }
+    if items.is_empty() || index != last {
+        return Err(format!("{}: invalid continuation list", node.kind));
+    }
+
+    let marker_end = node.children[marker_index].end;
+    let prefix = source_slice(source, node.start, marker_end, &node.kind)?;
+    let flat_trailing = if has_trailing {
+        Doc::Text(separator.into())
+    } else {
+        Doc::Text(String::new())
+    };
+    let trailing = if *add_trailing {
+        Doc::if_break(Doc::Text(separator.into()), flat_trailing)
+    } else {
+        flat_trailing
+    };
+    Ok(Doc::forced_group(
+        Doc::concat(vec![
+            prefix,
+            Doc::Text(" ".into()),
+            Doc::if_break(Doc::Text(open.into()), Doc::Text(String::new())),
+            Doc::indent(Doc::concat(vec![
+                Doc::Softline,
+                separated(items, separator),
+                trailing,
+            ])),
+            Doc::Softline,
+            Doc::if_break(Doc::Text(close.into()), Doc::Text(String::new())),
+        ]),
+        wrapped && has_trailing,
+    ))
 }
 
 fn build_delimited(
@@ -383,6 +488,9 @@ fn fits(remaining: isize, initial_indent: usize, doc: &Doc, indent_width: usize)
                 },
                 inner,
             )),
+            Doc::IfBreak(broken, flat) => {
+                stack.push((column, mode, if mode == Mode::Flat { flat } else { broken }))
+            }
             Doc::Line => {
                 if mode == Mode::Flat {
                     room -= 1;
@@ -427,6 +535,9 @@ fn render(doc: &Doc, width: usize, indent_width: usize) -> String {
                 let flat =
                     !force && !inner.breaks() && fits(remaining, column, inner, indent_width);
                 stack.push((column, if flat { Mode::Flat } else { Mode::Break }, inner));
+            }
+            Doc::IfBreak(broken, flat) => {
+                stack.push((column, mode, if mode == Mode::Flat { flat } else { broken }))
             }
             Doc::Line => {
                 if mode == Mode::Flat {

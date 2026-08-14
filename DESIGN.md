@@ -32,6 +32,10 @@ five schemas:
 - `source` emits the source gaps around each direct child while recursively
   formatting those children. It validates the same range invariants first, so
   it is the bridge from preserved statement structure to local reflow rules.
+- `continuationList` recognizes a fixed prefix marker followed by a punctuated
+  direct-child list. Its broken branch emits one package-enumerated balanced
+  delimiter pair and optional trailing separator; its flat branch omits a
+  redundant input pair. The same rule recognizes both CST shapes on pass two.
 
 A gap is `none`, `space`, `line`, `softline`, or `hardline`. `line` becomes one
 space when its group fits and a newline when it breaks. `softline` becomes
@@ -75,16 +79,18 @@ Consequently, successful evaluation is a disjoint,
 ordered partition of the node's direct children. A missing, duplicated,
 reordered, or structurally unexpected child causes a non-zero exit.
 
-The current packages declare no token mutation. The runtime cannot add, remove,
-or rewrite syntax tokens. Whitespace Docs are the only generated text. This is
-stricter than the contract's optional trailing-comma and continuation-paren
-allowances.
+JSON declares no token mutation. Python's `import_from_statement` rule declares
+the two sanctioned mutations together: a balanced continuation-parenthesis
+pair around the imported-name region, and a trailing comma inside that pair.
+No other rule can add, remove, or rewrite a syntax token.
 
 ## Document and rendering model
 
-The runtime builds `text`, `concat`, `group`, `indent`, `line`, `softline`, and
-`hardline` documents. A bounded Wadler-style lookahead decides whether each
-group fits. A hardline statically forces every enclosing group to break.
+The runtime builds `text`, `concat`, `group`, `indent`, `line`, `softline`,
+`hardline`, and `ifBreak` documents. `ifBreak` selects a branch using its
+lexically enclosing group's mode and is used only by enumerated continuation
+rules. A bounded Wadler-style lookahead decides whether each group fits. A
+hardline statically forces every enclosing group to break.
 
 Width means Unicode scalar values. Rust uses `chars().count()`; JavaScript uses
 code-point iteration (`[...value].length`). This deliberately does not attempt
@@ -105,10 +111,10 @@ rather than smuggling language-specific behavior into either runtime.
 ## Limits and proposal changes
 
 The implemented core deliberately remains narrower than the proposal. It does
-not yet include ordered local cases, operator chains, suites, boundary-comment
-Docs, `ifBreak`, `lineSuffix`, or the two enumerated mutation policies. Those
-mechanisms should be added only alongside a package that uses them and
-differential fixtures that fix their semantics.
+not include general ordered predicates, operator chains, suites,
+boundary-comment Docs, or `lineSuffix`; continuation mutation is implemented
+only for import lists. Those mechanisms should be added only alongside a
+package that uses them and differential fixtures that fix their semantics.
 
 This restriction exposed one useful correction to the proposal: a generic
 `verbatim` escape hatch based only on concatenating leaf text cannot reproduce

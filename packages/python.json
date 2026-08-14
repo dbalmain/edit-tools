@@ -29,7 +29,7 @@
     "generator_expression": { "layout": "verbatim" },
     "generic_type": { "layout": "verbatim" },
     "if_statement": { "layout": "verbatim" },
-    "import_from_statement": { "layout": "verbatim" },
+    "import_from_statement": { "layout": "continuationList", "marker": "import", "open": "(", "close": ")", "separator": ",", "addTrailing": true },
     "import_statement": { "layout": "verbatim" },
     "lambda": { "layout": "verbatim" },
     "list": { "layout": "delimited", "open": "[", "close": "]", "separator": ",", "edge": "softline", "itemsVerbatim": true, "preserveTrailing": true, "forceTrailing": true, "independentItems": true, "verbatimWithComments": true },
