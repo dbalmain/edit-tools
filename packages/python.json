@@ -138,6 +138,78 @@
     "lambda_parameters": {
       "kind": "template",
       "doc": [{ "join": { "sep": ", ", "items": "$children" } }]
+    },
+    "if_statement": {
+      "kind": "clause",
+      "keyword": "if",
+      "header": ["condition"],
+      "colon": true,
+      "body": "consequence",
+      "tails": ["elif_clause", "else_clause"]
+    },
+    "elif_clause": {
+      "kind": "clause",
+      "keyword": "elif",
+      "header": ["condition"],
+      "colon": true,
+      "body": "consequence"
+    },
+    "else_clause": {
+      "kind": "clause",
+      "keyword": "else",
+      "colon": true,
+      "body": "body"
+    },
+    "for_statement": {
+      "kind": "clause",
+      "keyword": "for",
+      "header": ["left", "in", "right"],
+      "colon": true,
+      "body": "body"
+    },
+    "while_statement": {
+      "kind": "clause",
+      "keyword": "while",
+      "header": ["condition"],
+      "colon": true,
+      "body": "body"
+    },
+    "with_statement": {
+      "kind": "clause",
+      "keyword": "with",
+      "header": ["with_clause"],
+      "colon": true,
+      "body": "body"
+    },
+    "with_clause": { "kind": "infix", "op": ", " },
+    "with_item": { "kind": "fwd" },
+    "try_statement": {
+      "kind": "clause",
+      "keyword": "try",
+      "colon": true,
+      "body": "body",
+      "tails": ["except_clause", "else_clause", "finally_clause"]
+    },
+    "except_clause": {
+      "kind": "clause",
+      "keyword": "except",
+      "header": ["value"],
+      "colon": true
+    },
+    "finally_clause": {
+      "kind": "clause",
+      "keyword": "finally",
+      "colon": true
+    },
+    "as_pattern": { "kind": "infix", "op": " as " },
+    "as_pattern_target": { "kind": "fwd" },
+    "tuple_pattern": {
+      "kind": "seq",
+      "open": "(",
+      "close": ")",
+      "sep": ",",
+      "trailing": "magic",
+      "singleton_comma": true
     }
   }
 }

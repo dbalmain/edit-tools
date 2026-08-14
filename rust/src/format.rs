@@ -643,7 +643,9 @@ impl Engine<'_> {
         for h in &rule.header {
             if let Some(n) = all.iter().find(|n| n.field.as_deref() == Some(h.as_str())) {
                 docs.push(self.format_in(n, Some(kind))?);
-            } else if let Some(_tok) = all.iter().find(|n| n.is_token(h)) {
+            } else if let Some(n) = all.iter().find(|n| n.kind == *h && n.text.is_none()) {
+                docs.push(self.format_in(n, Some(kind))?);
+            } else if all.iter().any(|n| n.is_token(h)) {
                 docs.push(Doc::text(format!(" {h} ")));
             }
         }

@@ -570,8 +570,11 @@ function kindClause(node, rule, ctx) {
   const docs = [text(kw + (header.length ? " " : ""))];
   for (const h of header) {
     const fieldNode = all.find((n) => n.field === h);
+    const typeNode = all.find((n) => n.type === h);
     if (fieldNode) {
       docs.push(ctx.format(fieldNode));
+    } else if (typeNode && typeNode.text == null) {
+      docs.push(ctx.format(typeNode));
     } else {
       const tok = all.find((n) => isToken(n, h));
       if (tok) docs.push(text(" " + h + " "));
