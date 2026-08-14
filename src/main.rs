@@ -12,6 +12,7 @@ use serde::Deserialize;
 #[serde(rename_all = "camelCase")]
 struct Tree {
     language: String,
+    source: String,
     root: Node,
 }
 
@@ -19,6 +20,8 @@ struct Tree {
 struct Node {
     #[serde(rename = "type")]
     kind: String,
+    start: usize,
+    end: usize,
     #[serde(default)]
     text: Option<String>,
     #[serde(default)]
@@ -44,6 +47,7 @@ struct Style {
 #[serde(tag = "layout", rename_all = "camelCase")]
 enum Rule {
     Tight,
+    Verbatim,
     Sequence {
         gaps: Vec<Gap>,
     },
@@ -67,6 +71,7 @@ enum Gap {
 
 enum Doc {
     Text(String),
+    Verbatim(String),
     Concat(Vec<Doc>),
     Group(Box<Doc>),
     Indent(Box<Doc>),
@@ -81,6 +86,7 @@ impl Doc {
             Self::Hardline => true,
             Self::Concat(parts) => parts.iter().any(Self::breaks),
             Self::Group(doc) | Self::Indent(doc) => doc.breaks(),
+            Self::Verbatim(value) => value.contains('\n'),
             Self::Text(_) | Self::Line | Self::Softline => false,
         }
     }
@@ -125,7 +131,28 @@ fn separated(docs: Vec<Doc>, separator: &str) -> Doc {
     Doc::concat(parts)
 }
 
-fn build(node: &Node, rules: &HashMap<String, Rule>) -> Result<Doc, String> {
+fn validate_subtree(node: &Node, source: &[u8]) -> Result<(), String> {
+    if node.start > node.end || node.end > source.len() {
+        return Err(format!("{}: source range is out of bounds", node.kind));
+    }
+    if let Some(value) = &node.text {
+        if source.get(node.start..node.end) != Some(value.as_bytes()) {
+            return Err(format!("{}: leaf text differs from source", node.kind));
+        }
+        return Ok(());
+    }
+    let mut previous_end = node.start;
+    for child in &node.children {
+        if child.start < previous_end || child.end > node.end {
+            return Err(format!("{}: children are reordered or overlap", node.kind));
+        }
+        validate_subtree(child, source)?;
+        previous_end = child.end;
+    }
+    Ok(())
+}
+
+fn build(node: &Node, rules: &HashMap<String, Rule>, source: &[u8]) -> Result<Doc, String> {
     if let Some(value) = &node.text {
         return Ok(Doc::Text(value.clone()));
     }
@@ -133,10 +160,16 @@ fn build(node: &Node, rules: &HashMap<String, Rule>) -> Result<Doc, String> {
         .get(&node.kind)
         .ok_or_else(|| format!("no rule for interior node {}", node.kind))?;
     match rule {
+        Rule::Verbatim => {
+            validate_subtree(node, source)?;
+            let value = std::str::from_utf8(&source[node.start..node.end])
+                .map_err(|_| format!("{}: source range splits UTF-8", node.kind))?;
+            Ok(Doc::Verbatim(value.into()))
+        }
         Rule::Tight => node
             .children
             .iter()
-            .map(|child| build(child, rules))
+            .map(|child| build(child, rules, source))
             .collect::<Result<Vec<_>, _>>()
             .map(Doc::concat),
         Rule::Sequence { gaps } => {
@@ -151,7 +184,7 @@ fn build(node: &Node, rules: &HashMap<String, Rule>) -> Result<Doc, String> {
                 if index > 0 {
                     parts.push(gap(gaps[index - 1]));
                 }
-                parts.push(build(child, rules)?);
+                parts.push(build(child, rules, source)?);
             }
             Ok(Doc::concat(parts))
         }
@@ -160,13 +193,14 @@ fn build(node: &Node, rules: &HashMap<String, Rule>) -> Result<Doc, String> {
             close,
             separator,
             edge,
-        } => build_delimited(node, rules, open, close, separator, *edge),
+        } => build_delimited(node, rules, source, open, close, separator, *edge),
     }
 }
 
 fn build_delimited(
     node: &Node,
     rules: &HashMap<String, Rule>,
+    source: &[u8],
     open: &str,
     close: &str,
     separator: &str,
@@ -185,14 +219,14 @@ fn build_delimited(
     let mut items = Vec::new();
     let mut chunks = middle.chunks_exact(2);
     for chunk in &mut chunks {
-        items.push(build(&chunk[0], rules)?);
+        items.push(build(&chunk[0], rules, source)?);
         if chunk[1].text.as_deref() != Some(separator) {
             return Err(format!("{}: separator mismatch", node.kind));
         }
     }
     let remainder = chunks.remainder();
     if let Some(item) = remainder.first() {
-        items.push(build(item, rules)?);
+        items.push(build(item, rules, source)?);
     } else if !middle.is_empty() {
         return Err(format!("{}: trailing separator is not allowed", node.kind));
     }
@@ -217,6 +251,12 @@ fn fits(remaining: isize, initial_indent: usize, doc: &Doc, indent_width: usize)
         }
         match current {
             Doc::Text(value) => room -= value.chars().count() as isize,
+            Doc::Verbatim(value) => {
+                if value.contains('\n') {
+                    return true;
+                }
+                room -= value.chars().count() as isize;
+            }
             Doc::Concat(parts) => {
                 stack.extend(parts.iter().rev().map(|part| (column, mode, part)));
             }
@@ -254,6 +294,16 @@ fn render(doc: &Doc, width: usize, indent_width: usize) -> String {
             Doc::Text(value) => {
                 output.push_str(value);
                 position += value.chars().count();
+            }
+            Doc::Verbatim(value) => {
+                output.push_str(value);
+                if let Some(last_line) = value.rsplit('\n').next() {
+                    if value.contains('\n') {
+                        position = last_line.chars().count();
+                    } else {
+                        position += value.chars().count();
+                    }
+                }
             }
             Doc::Concat(parts) => {
                 stack.extend(parts.iter().rev().map(|part| (column, mode, part)));
@@ -330,7 +380,7 @@ fn run() -> Result<(), String> {
         return Err("tree and package languages differ".into());
     }
 
-    let body = build(&tree.root, &package.rules)?;
+    let body = build(&tree.root, &package.rules, tree.source.as_bytes())?;
     let document = if package.style.final_newline {
         Doc::concat(vec![body, Doc::Hardline])
     } else {

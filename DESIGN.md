@@ -16,7 +16,7 @@ Packages are UTF-8 JSON files in `packages/`. The top-level fields are:
 
 Leaves need no rule: their `text` is emitted unchanged. Every interior node
 does. An unknown interior node is refused rather than guessed. Version 1 has
-three schemas:
+four schemas:
 
 - `tight` recursively emits every direct child with no inserted gap. It is for
   lexical containers such as JSON strings.
@@ -25,6 +25,10 @@ three schemas:
 - `delimited` recognizes `open`, alternating items and `separator`, then
   `close`. Empty forms remain compact. Nonempty forms are a group with one
   indentation level and either a `line` or `softline` at each edge.
+- `verbatim` emits the node's exact source byte range after recursively
+  validating that every descendant range is ordered, non-overlapping, in
+  bounds, and that every leaf agrees byte-for-byte with `source`. It must be
+  explicitly selected for a node type; it is never an uncovered-node fallback.
 
 A gap is `none`, `space`, `line`, `softline`, or `hardline`. `line` becomes one
 space when its group fits and a newline when it breaks. `softline` becomes
@@ -89,9 +93,9 @@ rather than smuggling language-specific behavior into either runtime.
 
 The implemented core deliberately starts narrower than the proposal. It does
 not yet include ordered local cases, operator chains, suites, boundary-comment
-Docs, `ifBreak`, `lineSuffix`, `verbatim`, or the two enumerated mutation
-policies. Those mechanisms should be added only alongside a package that uses
-them and differential fixtures that fix their semantics.
+Docs, `ifBreak`, `lineSuffix`, or the two enumerated mutation policies. Those
+mechanisms should be added only alongside a package that uses them and
+differential fixtures that fix their semantics.
 
 This restriction exposed one useful correction to the proposal: a generic
 `verbatim` escape hatch based only on concatenating leaf text cannot reproduce
@@ -104,4 +108,3 @@ layout optimization, embedded-language formatting, string splitting, or
 display-width measurement. Comments and Python continuation wrappers are the
 hardest extensions because their canonical output must map to the same local
 region after reparsing.
-

@@ -5,6 +5,11 @@ const path = require("path");
 
 const scalarWidth = (value) => [...value].length;
 const text = (value) => ({ kind: "text", value, breaks: false });
+const verbatim = (value) => ({
+  kind: "verbatim",
+  value,
+  breaks: value.includes("\n"),
+});
 const line = { kind: "line", breaks: false };
 const softline = { kind: "softline", breaks: false };
 const hardline = { kind: "hardline", breaks: true };
@@ -33,6 +38,10 @@ function fits(remaining, initialIndent, doc, indentWidth) {
     const [column, mode, current] = stack.pop();
     switch (current.kind) {
       case "text":
+        room -= scalarWidth(current.value);
+        break;
+      case "verbatim":
+        if (current.value.includes("\n")) return true;
         room -= scalarWidth(current.value);
         break;
       case "concat":
@@ -78,6 +87,14 @@ function render(doc, width, indentWidth) {
         output.push(current.value);
         position += scalarWidth(current.value);
         break;
+      case "verbatim": {
+        output.push(current.value);
+        const lines = current.value.split("\n");
+        position = lines.length === 1
+          ? position + scalarWidth(current.value)
+          : scalarWidth(lines.at(-1));
+        break;
+      }
       case "concat":
         for (let i = current.parts.length - 1; i >= 0; i--) {
           stack.push([column, mode, current.parts[i]]);
@@ -129,14 +146,42 @@ function gap(name) {
   }
 }
 
-function build(node, rules) {
+function validateSubtree(node, sourceBytes) {
+  if (!Number.isSafeInteger(node.start) || !Number.isSafeInteger(node.end)) {
+    throw new Error(`${node.type}: invalid source range`);
+  }
+  if (node.start < 0 || node.end < node.start || node.end > sourceBytes.length) {
+    throw new Error(`${node.type}: source range is out of bounds`);
+  }
+  if (Object.prototype.hasOwnProperty.call(node, "text")) {
+    if (sourceBytes.subarray(node.start, node.end).toString("utf8") !== node.text) {
+      throw new Error(`${node.type}: leaf text differs from source`);
+    }
+    return;
+  }
+  let previousEnd = node.start;
+  for (const child of node.children || []) {
+    if (child.start < previousEnd || child.end > node.end) {
+      throw new Error(`${node.type}: children are reordered or overlap`);
+    }
+    validateSubtree(child, sourceBytes);
+    previousEnd = child.end;
+  }
+}
+
+function build(node, rules, sourceBytes) {
   if (Object.prototype.hasOwnProperty.call(node, "text")) return text(node.text);
   const children = node.children || [];
   const rule = rules[node.type];
   if (!rule) throw new Error(`no rule for interior node ${node.type}`);
 
+  if (rule.layout === "verbatim") {
+    validateSubtree(node, sourceBytes);
+    return verbatim(sourceBytes.subarray(node.start, node.end).toString("utf8"));
+  }
+
   if (rule.layout === "tight") {
-    return concat(children.map((child) => build(child, rules)));
+    return concat(children.map((child) => build(child, rules, sourceBytes)));
   }
   if (rule.layout === "sequence") {
     if (rule.gaps.length + 1 !== children.length) {
@@ -145,7 +190,7 @@ function build(node, rules) {
     const parts = [];
     children.forEach((child, index) => {
       if (index) parts.push(gap(rule.gaps[index - 1]));
-      parts.push(build(child, rules));
+      parts.push(build(child, rules, sourceBytes));
     });
     return concat(parts);
   }
@@ -157,7 +202,7 @@ function build(node, rules) {
     const items = [];
     let index = 1;
     while (index < children.length - 1) {
-      items.push(build(children[index], rules));
+      items.push(build(children[index], rules, sourceBytes));
       index += 1;
       if (index < children.length - 1) {
         if (children[index].text !== rule.separator) {
@@ -189,7 +234,12 @@ function format(tree, width) {
   if (languagePackage.language !== tree.language) {
     throw new Error("tree and package languages differ");
   }
-  const body = build(tree.root, languagePackage.rules);
+  if (typeof tree.source !== "string") throw new Error("tree has no source text");
+  const body = build(
+    tree.root,
+    languagePackage.rules,
+    Buffer.from(tree.source, "utf8"),
+  );
   const document = languagePackage.style.finalNewline
     ? concat([body, hardline])
     : body;
@@ -197,4 +247,3 @@ function format(tree, width) {
 }
 
 module.exports = { format };
-
