@@ -337,16 +337,9 @@ class Ctx {
   test(pred) {
     if (!Array.isArray(pred)) throw new Refusal(`predicate must be an array, got ${pred}`);
     const [op, raw, n] = pred;
-    switch (op) {
-      case "count":
-        return this.tally(parseSelector(raw)) === n;
-      case "count>":
-        return this.tally(parseSelector(raw)) > n;
-      case "has":
-        return this.tally(parseSelector(raw)) > 0;
-      default:
-        throw new Refusal(`unknown predicate \`${op}\``);
-    }
+    // Arity is the only static test either package needed.
+    if (op !== "count") throw new Refusal(`unknown predicate \`${op}\``);
+    return this.tally(parseSelector(raw)) === n;
   }
 
   take(sel, what) {

@@ -340,8 +340,6 @@ impl<'a> Ctx<'a> {
     fn test(&self, pred: &Pred, pkg: &Package) -> bool {
         match pred {
             Pred::Count(sel, n) => self.tally(sel, pkg) == *n,
-            Pred::CountOver(sel, n) => self.tally(sel, pkg) > *n,
-            Pred::Has(sel) => self.tally(sel, pkg) > 0,
         }
     }
 

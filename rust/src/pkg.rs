@@ -61,14 +61,13 @@ pub enum Sel {
     Any,
 }
 
+/// A static test on the node. Arity is the only one either package needed.
 #[derive(Debug)]
 pub enum Pred {
     Count(Sel, usize),
-    CountOver(Sel, usize),
-    Has(Sel),
 }
 
-/// One expression of the package language. Nineteen opcodes; see DESIGN.md.
+/// One expression of the package language. Eighteen opcodes; see DESIGN.md.
 #[derive(Debug, Deserialize)]
 #[serde(try_from = "Value")]
 pub enum Expr {
@@ -210,10 +209,6 @@ fn predicate(value: &Value) -> Result<Pred, String> {
         Some("count") if parts.len() == 3 => {
             Ok(Pred::Count(selector(&parts[1])?, count(&parts[2])?))
         }
-        Some("count>") if parts.len() == 3 => {
-            Ok(Pred::CountOver(selector(&parts[1])?, count(&parts[2])?))
-        }
-        Some("has") if parts.len() == 2 => Ok(Pred::Has(selector(&parts[1])?)),
         _ => Err(format!("unknown predicate {value}")),
     }
 }
