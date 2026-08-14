@@ -55,6 +55,16 @@
     },
     "keyword_argument": { "kind": "infix", "op": "=" },
     "list_splat": { "kind": "pfx", "kw": "*", "sp": false },
-    "dictionary_splat": { "kind": "pfx", "kw": "**", "sp": false }
+    "dictionary_splat": { "kind": "pfx", "kw": "**", "sp": false },
+    "parenthesized_expression": { "kind": "wrap", "open": "(", "close": ")" },
+    "binary_operator": { "kind": "chain", "break": "paren" },
+    "boolean_operator": { "kind": "chain", "break": "paren" },
+    "comparison_operator": {
+      "kind": "chain",
+      "already_flat": true,
+      "break": "paren"
+    },
+    "not_operator": { "kind": "pfx", "kw": "not", "sp": true, "paren": true },
+    "unary_operator": { "kind": "pfx", "op_field": "operator", "sp": false }
   }
 }

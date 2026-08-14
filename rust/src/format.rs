@@ -11,6 +11,10 @@ pub struct Engine<'a> {
 
 impl Engine<'_> {
     pub fn format_node(&self, node: &Node) -> Result<Doc, Refuse> {
+        self.format_in(node, None)
+    }
+
+    fn format_in(&self, node: &Node, parent_kind: Option<&str>) -> Result<Doc, Refuse> {
         let rule = self.pkg.nodes.get(&node.kind);
         let kind = match rule {
             Some(r) => r.kind.as_str(),
@@ -19,11 +23,13 @@ impl Engine<'_> {
         match kind {
             "leaf" => self.kind_leaf(node),
             "opaque" => Ok(self.kind_opaque(node)),
-            "fwd" => self.kind_fwd(node),
-            "infix" => self.kind_infix(node, rule),
-            "seq" => self.kind_seq(node, rule),
-            "body" => self.kind_body(node, rule),
-            "pfx" => self.kind_pfx(node, rule),
+            "fwd" => self.kind_fwd(node, kind),
+            "infix" => self.kind_infix(node, rule, kind),
+            "seq" => self.kind_seq(node, rule, kind),
+            "body" => self.kind_body(node, rule, kind),
+            "pfx" => self.kind_pfx(node, rule, kind, parent_kind),
+            "wrap" => self.kind_wrap(node, rule, kind),
+            "chain" => self.kind_chain(node, rule, kind, parent_kind),
             other => Err(Refuse(format!("unknown kind {other} for {}", node.kind))),
         }
     }
@@ -56,7 +62,7 @@ impl Engine<'_> {
         Doc::text(node.raw_text())
     }
 
-    fn kind_fwd(&self, node: &Node) -> Result<Doc, Refuse> {
+    fn kind_fwd(&self, node: &Node, kind: &str) -> Result<Doc, Refuse> {
         let kids = self.kids(node);
         let mut c = Cursor::new(&kids);
         let mut interesting = Vec::new();
@@ -69,7 +75,7 @@ impl Engine<'_> {
         c.finish(&node.kind)?;
         match interesting.as_slice() {
             [] => Ok(Doc::text("")),
-            [only] => self.format_node(only),
+            [only] => self.format_in(only, Some(kind)),
             _ => Err(Refuse(format!(
                 "fwd {} has {} significant children",
                 node.kind,
@@ -78,7 +84,7 @@ impl Engine<'_> {
         }
     }
 
-    fn kind_infix(&self, node: &Node, rule: Option<&Rule>) -> Result<Doc, Refuse> {
+    fn kind_infix(&self, node: &Node, rule: Option<&Rule>, kind: &str) -> Result<Doc, Refuse> {
         let Some(rule) = rule else {
             return Err(Refuse(format!("infix {} missing rule", node.kind)));
         };
@@ -94,7 +100,7 @@ impl Engine<'_> {
                 .is_some_and(|f| n.field.as_deref() == Some(f))
                 || (!needle.is_empty() && n.is_token(needle));
             if !is_op {
-                parts.push(self.format_node(n)?);
+                parts.push(self.format_in(n, Some(kind))?);
             }
         }
         c.finish(&node.kind)?;
@@ -105,7 +111,7 @@ impl Engine<'_> {
         Ok(join(&sep, parts))
     }
 
-    fn kind_seq(&self, node: &Node, rule: Option<&Rule>) -> Result<Doc, Refuse> {
+    fn kind_seq(&self, node: &Node, rule: Option<&Rule>, kind: &str) -> Result<Doc, Refuse> {
         let Some(rule) = rule else {
             return Err(Refuse(format!("seq {} missing rule", node.kind)));
         };
@@ -181,7 +187,7 @@ impl Engine<'_> {
         let sep_doc = Doc::Concat(vec![Doc::text(sep), Doc::Line]);
         let mut item_docs = Vec::new();
         for item in items.iter() {
-            item_docs.push(self.format_node(item)?);
+            item_docs.push(self.format_in(item, Some(kind))?);
         }
         let mut inner = vec![pad.clone()];
         for (i, d) in item_docs.into_iter().enumerate() {
@@ -216,7 +222,7 @@ impl Engine<'_> {
         })
     }
 
-    fn kind_body(&self, node: &Node, rule: Option<&Rule>) -> Result<Doc, Refuse> {
+    fn kind_body(&self, node: &Node, rule: Option<&Rule>, kind: &str) -> Result<Doc, Refuse> {
         let kids = self.kids(node);
         let mut c = Cursor::new(&kids);
         let mut stmts = Vec::new();
@@ -237,12 +243,18 @@ impl Engine<'_> {
                     docs.push(Doc::Hardline);
                 }
             }
-            docs.push(self.format_node(stmt)?);
+            docs.push(self.format_in(stmt, Some(kind))?);
         }
         Ok(Doc::Concat(docs))
     }
 
-    fn kind_pfx(&self, node: &Node, rule: Option<&Rule>) -> Result<Doc, Refuse> {
+    fn kind_pfx(
+        &self,
+        node: &Node,
+        rule: Option<&Rule>,
+        kind: &str,
+        parent_kind: Option<&str>,
+    ) -> Result<Doc, Refuse> {
         let Some(rule) = rule else {
             return Err(Refuse(format!("pfx {} missing rule", node.kind)));
         };
@@ -266,7 +278,7 @@ impl Engine<'_> {
             let mut docs = Vec::new();
             for f in &rule.fields {
                 if let Some(n) = by_field.get(f) {
-                    docs.push(self.format_node(n)?);
+                    docs.push(self.format_in(n, Some(kind))?);
                 }
             }
             return Ok(Doc::Concat(docs));
@@ -300,9 +312,209 @@ impl Engine<'_> {
             if rule.sp { " " } else { "" }
         ))];
         for n in rest {
-            docs.push(self.format_node(n)?);
+            docs.push(self.format_in(n, Some(kind))?);
         }
-        Ok(Doc::Concat(docs))
+        let mut doc = Doc::Concat(docs);
+        if rule.paren {
+            doc = paren_insert(doc, parent_kind);
+        }
+        Ok(doc)
+    }
+
+    fn kind_wrap(&self, node: &Node, rule: Option<&Rule>, kind: &str) -> Result<Doc, Refuse> {
+        let Some(rule) = rule else {
+            return Err(Refuse(format!("wrap {} missing rule", node.kind)));
+        };
+        let open = rule
+            .open
+            .as_deref()
+            .ok_or_else(|| Refuse(format!("wrap {} missing open", node.kind)))?;
+        let close = rule
+            .close
+            .as_deref()
+            .ok_or_else(|| Refuse(format!("wrap {} missing close", node.kind)))?;
+        let kids = self.kids(node);
+        let mut c = Cursor::new(&kids);
+        let open_tok = c.take("open")?;
+        if !open_tok.is_token(open) {
+            return Err(Refuse(format!(
+                "wrap {}: expected {open}, got {}",
+                node.kind, open_tok.kind
+            )));
+        }
+        let inner = c.take("inner")?;
+        let close_tok = c.take("close")?;
+        if !close_tok.is_token(close) {
+            return Err(Refuse(format!(
+                "wrap {}: expected {close}, got {}",
+                node.kind, close_tok.kind
+            )));
+        }
+        c.finish(&node.kind)?;
+        Ok(Doc::group(Doc::Concat(vec![
+            Doc::text(open),
+            Doc::indent(Doc::Concat(vec![
+                Doc::Softline,
+                self.format_in(inner, Some(kind))?,
+            ])),
+            Doc::Softline,
+            Doc::text(close),
+        ])))
+    }
+
+    fn kind_chain(
+        &self,
+        node: &Node,
+        rule: Option<&Rule>,
+        kind: &str,
+        parent_kind: Option<&str>,
+    ) -> Result<Doc, Refuse> {
+        let Some(rule) = rule else {
+            return Err(Refuse(format!("chain {} missing rule", node.kind)));
+        };
+        let parts = if rule.already_flat {
+            let kids = self.kids(node);
+            let mut c = Cursor::new(&kids);
+            let mut parts = vec![ChainPart {
+                op: None,
+                doc: self.format_in(c.take("operand")?, Some(kind))?,
+            }];
+            while !c.is_empty() {
+                let op = c.take("op")?;
+                let operand = c.take("operand")?;
+                parts.push(ChainPart {
+                    op: Some(format_op(op)),
+                    doc: self.format_in(operand, Some(kind))?,
+                });
+            }
+            c.finish(&node.kind)?;
+            parts
+        } else {
+            let kids = self.kids(node);
+            let mut c = Cursor::new(&kids);
+            while !c.is_empty() {
+                c.take("child")?;
+            }
+            c.finish(&node.kind)?;
+            let op_node = field_child(node, "operator");
+            let cls = prec_class(&format_op_opt(op_node));
+            self.flatten_chain(node, cls, kind)?
+        };
+        finish_chain(parts, rule, parent_kind)
+    }
+
+    fn flatten_chain(&self, node: &Node, cls: u8, kind: &str) -> Result<Vec<ChainPart>, Refuse> {
+        if !is_bin_chain(node) {
+            return Ok(vec![ChainPart {
+                op: None,
+                doc: self.format_in(node, Some(kind))?,
+            }]);
+        }
+        let op_node = field_child(node, "operator");
+        let op = format_op_opt(op_node);
+        if prec_class(&op) != cls {
+            return Ok(vec![ChainPart {
+                op: None,
+                doc: self.format_in(node, Some(kind))?,
+            }]);
+        }
+        let left = field_child(node, "left")
+            .ok_or_else(|| Refuse(format!("chain {} missing left", node.kind)))?;
+        let right = field_child(node, "right")
+            .ok_or_else(|| Refuse(format!("chain {} missing right", node.kind)))?;
+        let mut head = self.flatten_chain(left, cls, kind)?;
+        head.push(ChainPart {
+            op: Some(op),
+            doc: self.format_in(right, Some(kind))?,
+        });
+        Ok(head)
+    }
+}
+
+struct ChainPart {
+    op: Option<String>,
+    doc: Doc,
+}
+
+fn is_bin_chain(node: &Node) -> bool {
+    node.kind == "binary_operator" || node.kind == "boolean_operator"
+}
+
+fn field_child<'a>(node: &'a Node, name: &str) -> Option<&'a Node> {
+    node.children
+        .iter()
+        .find(|c| c.field.as_deref() == Some(name))
+}
+
+fn format_op(node: &Node) -> String {
+    if let Some(t) = &node.text {
+        return t.clone();
+    }
+    let mut leaves = Vec::new();
+    fn walk(n: &Node, leaves: &mut Vec<String>) {
+        if let Some(t) = &n.text {
+            leaves.push(t.clone());
+        } else {
+            for c in &n.children {
+                walk(c, leaves);
+            }
+        }
+    }
+    walk(node, &mut leaves);
+    leaves.join(" ")
+}
+
+fn format_op_opt(node: Option<&Node>) -> String {
+    node.map(format_op).unwrap_or_default()
+}
+
+fn prec_class(op: &str) -> u8 {
+    match op {
+        "or" => 1,
+        "and" => 2,
+        "|" => 4,
+        "^" => 5,
+        "&" => 6,
+        "<<" | ">>" => 7,
+        "+" | "-" => 8,
+        "*" | "/" | "//" | "%" | "@" => 9,
+        "**" => 10,
+        _ => 3,
+    }
+}
+
+fn paren_insert(inner: Doc, parent_kind: Option<&str>) -> Doc {
+    if matches!(parent_kind, Some("wrap") | Some("seq")) {
+        return Doc::group(inner);
+    }
+    Doc::group(Doc::Concat(vec![
+        Doc::if_break(Doc::text("("), Doc::text("")),
+        Doc::indent(Doc::Concat(vec![Doc::Softline, inner])),
+        Doc::Softline,
+        Doc::if_break(Doc::text(")"), Doc::text("")),
+    ]))
+}
+
+fn finish_chain(
+    parts: Vec<ChainPart>,
+    rule: &Rule,
+    parent_kind: Option<&str>,
+) -> Result<Doc, Refuse> {
+    let mut iter = parts.into_iter();
+    let Some(first) = iter.next() else {
+        return Err(Refuse("empty chain".into()));
+    };
+    let mut docs = vec![first.doc];
+    for part in iter {
+        docs.push(Doc::Line);
+        docs.push(Doc::text(format!("{} ", part.op.unwrap_or_default())));
+        docs.push(part.doc);
+    }
+    let inner = Doc::Concat(docs);
+    if rule.break_style.as_deref() == Some("paren") {
+        Ok(paren_insert(inner, parent_kind))
+    } else {
+        Ok(Doc::group(inner))
     }
 }
 

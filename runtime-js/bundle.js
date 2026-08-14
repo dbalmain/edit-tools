@@ -383,7 +383,139 @@ function kindPfx(node, rule, ctx) {
   while (!c.done()) rest.push(c.take("operand"));
   c.finish(node.type);
   const sp = rule.sp ? " " : "";
-  return concat([text(opText + sp), ...rest.map((n) => ctx.format(n))]);
+  let doc = concat([text(opText + sp), ...rest.map((n) => ctx.format(n))]);
+  if (rule.paren) doc = parenInsert(doc, ctx);
+  return doc;
+}
+
+function kindWrap(node, rule, ctx) {
+  const c = cursor(nonComments(node, ctx.commentType));
+  const open = c.take("open");
+  if (!isToken(open, rule.open)) {
+    refuse(`wrap ${node.type}: expected ${rule.open}`);
+  }
+  const inner = c.take("inner");
+  const close = c.take("close");
+  if (!isToken(close, rule.close)) {
+    refuse(`wrap ${node.type}: expected ${rule.close}`);
+  }
+  c.finish(node.type);
+  return group(
+    concat([
+      text(rule.open),
+      indent(concat([softline, ctx.format(inner)])),
+      softline,
+      text(rule.close),
+    ]),
+  );
+}
+
+function formatOp(node) {
+  if (!node) return "";
+  if (node.text != null) return node.text;
+  const leaves = [];
+  (function walk(n) {
+    if (n.text != null) leaves.push(n.text);
+    else (n.children || []).forEach(walk);
+  })(node);
+  return leaves.join(" ");
+}
+
+function precClass(op) {
+  switch (op) {
+    case "or":
+      return 1;
+    case "and":
+      return 2;
+    case "|":
+      return 4;
+    case "^":
+      return 5;
+    case "&":
+      return 6;
+    case "<<":
+    case ">>":
+      return 7;
+    case "+":
+    case "-":
+      return 8;
+    case "*":
+    case "/":
+    case "//":
+    case "%":
+    case "@":
+      return 9;
+    case "**":
+      return 10;
+    default:
+      return 3;
+  }
+}
+
+function isBinChain(node) {
+  return node.type === "binary_operator" || node.type === "boolean_operator";
+}
+
+function fieldChild(node, name) {
+  return (node.children || []).find((c) => c.field === name) || null;
+}
+
+function flattenChain(node, cls, ctx) {
+  if (!isBinChain(node)) return [{ op: null, doc: ctx.format(node) }];
+  const opNode = fieldChild(node, "operator");
+  const op = formatOp(opNode);
+  if (precClass(op) !== cls) return [{ op: null, doc: ctx.format(node) }];
+  const left = fieldChild(node, "left");
+  const right = fieldChild(node, "right");
+  if (!left || !right) refuse(`chain ${node.type} missing operands`);
+  const head = flattenChain(left, cls, ctx);
+  head.push({ op, doc: ctx.format(right) });
+  return head;
+}
+
+function parenInsert(inner, ctx) {
+  const pk = ctx.parentKind;
+  if (pk === "wrap" || pk === "seq") return group(inner);
+  return group(
+    concat([
+      ifBreak(text("("), text("")),
+      indent(concat([softline, inner])),
+      softline,
+      ifBreak(text(")"), text("")),
+    ]),
+  );
+}
+
+function finishChain(parts, rule, ctx) {
+  const docs = [parts[0].doc];
+  for (let i = 1; i < parts.length; i++) {
+    docs.push(line);
+    docs.push(text(parts[i].op + " "));
+    docs.push(parts[i].doc);
+  }
+  const inner = concat(docs);
+  if (rule.break === "paren") return parenInsert(inner, ctx);
+  return group(inner);
+}
+
+function kindChain(node, rule, ctx) {
+  if (rule.already_flat) {
+    const c = cursor(nonComments(node, ctx.commentType));
+    const parts = [{ op: null, doc: ctx.format(c.take("operand")) }];
+    while (!c.done()) {
+      const op = c.take("op");
+      const operand = c.take("operand");
+      parts.push({ op: formatOp(op), doc: ctx.format(operand) });
+    }
+    c.finish(node.type);
+    return finishChain(parts, rule, ctx);
+  }
+  const c = cursor(nonComments(node, ctx.commentType));
+  while (!c.done()) c.take("child");
+  c.finish(node.type);
+  const opNode = fieldChild(node, "operator");
+  const cls = precClass(formatOp(opNode));
+  return finishChain(flattenChain(node, cls, ctx), rule, ctx);
 }
 
 function kindBody(node, rule, ctx) {
@@ -415,6 +547,8 @@ const KINDS = {
   seq: kindSeq,
   body: kindBody,
   pfx: kindPfx,
+  wrap: kindWrap,
+  chain: kindChain,
 };
 
 function defaultKind(node, pkg) {
@@ -428,7 +562,10 @@ function formatNode(node, ctx) {
   const kind = rule ? rule.kind : defaultKind(node, ctx.pkg);
   const impl = KINDS[kind];
   if (!impl) refuse(`unknown kind ${kind} for ${node.type}`);
-  return impl(node, rule || {}, ctx);
+  const selfCtx = Object.assign({}, ctx);
+  selfCtx.format = (n) =>
+    formatNode(n, Object.assign({}, ctx, { parentKind: kind }));
+  return impl(node, rule || {}, selfCtx);
 }
 
 // ---------------------------------------------------------------- public

@@ -66,6 +66,12 @@ pub struct Rule {
     pub sp: bool,
     #[serde(default)]
     pub fields: Vec<String>,
+    #[serde(default)]
+    pub already_flat: bool,
+    #[serde(rename = "break", default)]
+    pub break_style: Option<String>,
+    #[serde(default)]
+    pub paren: bool,
 }
 
 impl Package {
