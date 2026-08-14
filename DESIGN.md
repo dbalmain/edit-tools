@@ -139,6 +139,19 @@ cannot be an automatic fallback for an uncovered node.
 
 The local model cannot express alignment across sibling statements, global
 layout optimization, embedded-language formatting, string splitting, or
-display-width measurement. Comments and Python continuation wrappers are the
-hardest extensions because their canonical output must map to the same local
-region after reparsing.
+display-width measurement. Python v1 deliberately leaves lambda, ternary,
+decorator, multi-item `with`, and some nested collection regions verbatim.
+Direct comments inside delimiters also force checked verbatim output rather
+than receiving a guessed attachment.
+
+There is a further fixed-point tradeoff: a continuation wrapper generated at a
+narrow width reparses as `parenthesized_expression`, which v1 preserves as one
+checked region. Reformatting that already-formatted tree at a wider width will
+therefore not remove the wrapper. Same-width idempotence is strong, but layout
+is not fully responsive across width changes. General wrapper normalization
+would need parent/field cases that recover the enclosed logical rule without
+double wrapping.
+
+Package structure is deserialized up front in Rust, but semantic checks such as
+arity, delimiter balance, operator fields, and rule coverage run when a rule is
+evaluated. A production registry should validate every declared rule eagerly.
