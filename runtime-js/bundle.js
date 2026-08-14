@@ -25,6 +25,7 @@ const concat = (parts) => ({
   breaks: parts.some((part) => part.breaks),
 });
 const indent = (doc) => ({ kind: "indent", doc, breaks: doc.breaks });
+const align = (doc, column) => ({ kind: "align", doc, column, breaks: doc.breaks });
 const group = (doc, force = false, reserve = 0) => ({
   kind: "group",
   doc,
@@ -63,6 +64,9 @@ function fits(remaining, initialIndent, doc, indentWidth) {
         break;
       case "indent":
         stack.push([column + indentWidth, mode, current.doc]);
+        break;
+      case "align":
+        stack.push([current.column, mode, current.doc]);
         break;
       case "group":
         stack.push([
@@ -121,6 +125,9 @@ function render(doc, width, indentWidth) {
         break;
       case "indent":
         stack.push([column + indentWidth, mode, current.doc]);
+        break;
+      case "align":
+        stack.push([current.column, mode, current.doc]);
         break;
       case "group": {
         const flat =
@@ -222,7 +229,10 @@ function build(node, rules, sourceBytes) {
       cursor = child.end;
     }
     parts.push(sourceSlice(sourceBytes, cursor, node.end, node.type));
-    return concat(parts);
+    const doc = concat(parts);
+    if (!rule.baseIndent) return doc;
+    const before = sourceBytes.subarray(0, node.start).toString("utf8");
+    return align(doc, scalarWidth(before.split("\n").at(-1)));
   }
 
   if (rule.layout === "tight") {

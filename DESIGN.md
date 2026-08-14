@@ -92,7 +92,9 @@ No other rule can add, remove, or rewrite a syntax token.
 The runtime builds `text`, `concat`, `group`, `indent`, `line`, `softline`,
 `hardline`, and `ifBreak` documents. `ifBreak` selects a branch using its
 lexically enclosing group's mode and is used only by enumerated continuation
-rules. A bounded Wadler-style lookahead decides whether each group fits. A
+rules. `align` gives source-backed suites an absolute indentation derived from
+their checked byte offset, so nested groups do not accidentally inherit column
+zero. A bounded Wadler-style lookahead decides whether each group fits. A
 hardline statically forces every enclosing group to break.
 
 Width means Unicode scalar values. Rust uses `chars().count()`; JavaScript uses

@@ -48,7 +48,10 @@ struct Style {
 enum Rule {
     Tight,
     Verbatim,
-    Source,
+    Source {
+        #[serde(default, rename = "baseIndent")]
+        base_indent: bool,
+    },
     Sequence {
         gaps: Vec<Gap>,
     },
@@ -106,6 +109,7 @@ enum Doc {
     Group(Box<Doc>, bool, usize),
     IfBreak(Box<Doc>, Box<Doc>),
     Indent(Box<Doc>),
+    Align(Box<Doc>, usize),
     Line,
     Softline,
     Hardline,
@@ -119,6 +123,7 @@ impl Doc {
             Self::Group(doc, force, _) => *force || doc.breaks(),
             Self::IfBreak(broken, flat) => broken.breaks() || flat.breaks(),
             Self::Indent(doc) => doc.breaks(),
+            Self::Align(doc, _) => doc.breaks(),
             Self::Verbatim(value) => value.contains('\n'),
             Self::Text(_) | Self::Line | Self::Softline => false,
         }
@@ -228,7 +233,7 @@ fn build(node: &Node, rules: &HashMap<String, Rule>, source: &[u8]) -> Result<Do
                 .map_err(|_| format!("{}: source range splits UTF-8", node.kind))?;
             Ok(Doc::Verbatim(value.into()))
         }
-        Rule::Source => {
+        Rule::Source { base_indent } => {
             validate_subtree(node, source)?;
             let mut parts = Vec::new();
             let mut cursor = node.start;
@@ -238,7 +243,23 @@ fn build(node: &Node, rules: &HashMap<String, Rule>, source: &[u8]) -> Result<Do
                 cursor = child.end;
             }
             parts.push(source_slice(source, cursor, node.end, &node.kind)?);
-            Ok(Doc::concat(parts))
+            let doc = Doc::concat(parts);
+            if *base_indent {
+                let before = source
+                    .get(..node.start)
+                    .ok_or_else(|| format!("{}: source offset is out of bounds", node.kind))?;
+                let line = before
+                    .rsplit(|byte| *byte == b'\n')
+                    .next()
+                    .unwrap_or(before);
+                let column = std::str::from_utf8(line)
+                    .map_err(|_| format!("{}: indentation is not UTF-8", node.kind))?
+                    .chars()
+                    .count();
+                Ok(Doc::Align(Box::new(doc), column))
+            } else {
+                Ok(doc)
+            }
         }
         Rule::Tight => node
             .children
@@ -557,6 +578,7 @@ fn fits(remaining: isize, initial_indent: usize, doc: &Doc, indent_width: usize)
                 stack.extend(parts.iter().rev().map(|part| (column, mode, part)));
             }
             Doc::Indent(inner) => stack.push((column + indent_width, mode, inner)),
+            Doc::Align(inner, aligned) => stack.push((*aligned, mode, inner)),
             Doc::Group(inner, force, _) => stack.push((
                 column,
                 if *force || inner.breaks() {
@@ -608,6 +630,7 @@ fn render(doc: &Doc, width: usize, indent_width: usize) -> String {
                 stack.extend(parts.iter().rev().map(|part| (column, mode, part)));
             }
             Doc::Indent(inner) => stack.push((column + indent_width, mode, inner)),
+            Doc::Align(inner, aligned) => stack.push((*aligned, mode, inner)),
             Doc::Group(inner, force, reserve) => {
                 let remaining = width as isize - position as isize - *reserve as isize;
                 let flat =
