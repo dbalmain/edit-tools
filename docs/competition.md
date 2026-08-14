@@ -118,6 +118,27 @@ deliberately **out of scope**. It needs a Unicode width table in both runtimes,
 which is a large dependency and a large divergence surface. A real editor would
 need it; this competition does not.
 
+## Required of every submission: the linearity invariant
+
+The children a rule consumes must form a **disjoint, ordered partition** of the
+matched node's direct children. Unconsumed, duplicated or reordered children
+mean the runtime **refuses the file** (non-zero exit) rather than emitting
+something.
+
+Token mutation is permitted only through explicitly enumerated policies. Two are
+sanctioned: a trailing comma where it is semantically optional (single-element
+tuples and subscripts excluded), and a balanced parenthesis pair around one
+layout region when its group breaks.
+
+This makes gate 3 hold **by construction rather than by testing**, which matters
+because non-destruction is the one failure whose cost is corrupted source and
+the corpus is only 15 files. It comes from codex's Phase 1 proposal and is
+required of everyone: left as one submission's differentiator, it would decide
+gate 3 for a reason unrelated to the axis actually under test.
+
+How you satisfy it is yours to choose. That the runtime refuses rather than
+guesses is not.
+
 ## Submission contract
 
 At the worktree root:

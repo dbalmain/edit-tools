@@ -193,6 +193,16 @@ Doc ops. Smallest possible runtime, maximum expressiveness, but the authoring
 language and its compiler become the bulk of the work, and two VMs must agree
 exactly — the highest divergence risk and the best fuzz story.
 
+**Note on C (August 2026).** All three Phase 1 proposals rejected bytecode, and
+they were right *under the competition's rules* — its payoff is size, and size
+does not bind (packages measure 1-2 KB against a 25 KB budget). But that
+rejection is **contingent on the evaluation method**, not settled. The harness
+cuts the parser out and freezes a 15-file corpus, which suppresses exactly what
+a VM is good at: the scanner bytecode already forces a VM into the real system,
+size binds at N languages rather than one, and a VM is the most fuzzable design
+available since random bytecode can be compared across two interpreters without
+needing valid source. Revisit when the scanner VM forces the question.
+
 **D. Constraint solver.** Encode layout as cost minimisation (Google's `rfmt`,
 or "A Pretty Expressive Printer", POPL 2023). Provably optimal output; `O(n·w)`
 and much heavier. Probably wrong for this project, but worth someone arguing.
