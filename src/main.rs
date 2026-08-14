@@ -60,6 +60,15 @@ enum Rule {
         #[serde(default, rename = "addTrailing")]
         add_trailing: bool,
     },
+    Flow {
+        open: String,
+        close: String,
+        edge: Gap,
+        #[serde(default, rename = "itemsVerbatim")]
+        items_verbatim: bool,
+        #[serde(default, rename = "independentItems")]
+        independent_items: bool,
+    },
     Delimited {
         open: String,
         close: String,
@@ -163,6 +172,17 @@ fn separated(docs: Vec<Doc>, separator: &str) -> Doc {
     Doc::concat(parts)
 }
 
+fn joined_lines(docs: Vec<Doc>) -> Doc {
+    let mut parts = Vec::new();
+    for (index, doc) in docs.into_iter().enumerate() {
+        if index > 0 {
+            parts.push(Doc::Line);
+        }
+        parts.push(doc);
+    }
+    Doc::concat(parts)
+}
+
 fn validate_subtree(node: &Node, source: &[u8]) -> Result<(), String> {
     if node.start > node.end || node.end > source.len() {
         return Err(format!("{}: source range is out of bounds", node.kind));
@@ -243,8 +263,66 @@ fn build(node: &Node, rules: &HashMap<String, Rule>, source: &[u8]) -> Result<Do
             Ok(Doc::concat(parts))
         }
         Rule::ContinuationList { .. } => build_continuation_list(node, source, rule),
+        Rule::Flow { .. } => build_flow(node, rules, source, rule),
         Rule::Delimited { .. } => build_delimited(node, rules, source, rule),
     }
+}
+
+fn build_flow(
+    node: &Node,
+    rules: &HashMap<String, Rule>,
+    source: &[u8],
+    rule: &Rule,
+) -> Result<Doc, String> {
+    let Rule::Flow {
+        open,
+        close,
+        edge,
+        items_verbatim,
+        independent_items,
+    } = rule
+    else {
+        return Err("internal error: expected flow rule".into());
+    };
+    let Some((first, rest)) = node.children.split_first() else {
+        return Err(format!("{}: flow is missing delimiters", node.kind));
+    };
+    let Some((last, middle)) = rest.split_last() else {
+        return Err(format!("{}: flow is missing delimiters", node.kind));
+    };
+    if middle.is_empty()
+        || first.text.as_deref() != Some(open)
+        || last.text.as_deref() != Some(close)
+    {
+        return Err(format!(
+            "{}: flow delimiters do not partition children",
+            node.kind
+        ));
+    }
+    let items = middle
+        .iter()
+        .map(|child| {
+            if *items_verbatim {
+                validate_subtree(child, source)?;
+                source_slice(source, child.start, child.end, &node.kind)
+            } else {
+                build(child, rules, source)
+            }
+        })
+        .collect::<Result<Vec<_>, String>>()?;
+    let mut item_doc = joined_lines(items);
+    if *independent_items {
+        item_doc = Doc::forced_group(item_doc, false);
+    }
+    Ok(Doc::forced_group(
+        Doc::concat(vec![
+            Doc::Text(open.into()),
+            Doc::indent(Doc::concat(vec![gap(*edge), item_doc])),
+            gap(*edge),
+            Doc::Text(close.into()),
+        ]),
+        false,
+    ))
 }
 
 fn build_continuation_list(node: &Node, source: &[u8], rule: &Rule) -> Result<Doc, String> {

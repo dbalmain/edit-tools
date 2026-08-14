@@ -36,6 +36,9 @@ five schemas:
   direct-child list. Its broken branch emits one package-enumerated balanced
   delimiter pair and optional trailing separator; its flat branch omits a
   redundant input pair. The same rule recognizes both CST shapes on pass two.
+- `flow` handles an existing delimited sequence whose direct children are
+  whitespace-separated regions rather than comma-separated items. Python
+  comprehensions use it for the body and ordered `for`/`if` clauses.
 
 A gap is `none`, `space`, `line`, `softline`, or `hardline`. `line` becomes one
 space when its group fits and a newline when it breaks. `softline` becomes

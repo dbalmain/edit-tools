@@ -291,6 +291,26 @@ function build(node, rules, sourceBytes) {
       wrapped && hasTrailing,
     );
   }
+  if (rule.layout === "flow") {
+    if (children.length < 3 || children[0].text !== rule.open || children.at(-1).text !== rule.close) {
+      throw new Error(`${node.type}: flow delimiters do not partition children`);
+    }
+    const items = children.slice(1, -1).map((child) => {
+      validateSubtree(child, sourceBytes);
+      return rule.itemsVerbatim
+        ? sourceSlice(sourceBytes, child.start, child.end, node.type)
+        : build(child, rules, sourceBytes);
+    });
+    let itemDoc = separated(items, () => line);
+    if (rule.independentItems) itemDoc = group(itemDoc);
+    const edge = gap(rule.edge);
+    return group(concat([
+      text(rule.open),
+      indent(concat([edge, itemDoc])),
+      edge,
+      text(rule.close),
+    ]));
+  }
   if (rule.layout === "delimited") {
     if (rule.verbatimWithComments && children.some((child) => child.type === "comment")) {
       validateSubtree(node, sourceBytes);
