@@ -1,0 +1,9 @@
+#!/usr/bin/env node
+const { format } = require(require("path").join(__dirname, "runtime-js", "bundle.js"));
+const [treePath, width] = process.argv.slice(2);
+try {
+  process.stdout.write(format(JSON.parse(require("fs").readFileSync(treePath, "utf8")), Number(width)));
+} catch (e) {
+  console.error(e.message);
+  process.exit(1);
+}

@@ -1,0 +1,1734 @@
+{
+ "language": "python",
+ "source_file": "corpus/src/python/chains.py",
+ "root": {
+  "type": "module",
+  "start": 0,
+  "end": 681,
+  "children": [
+   {
+    "type": "expression_statement",
+    "start": 0,
+    "end": 16,
+    "children": [
+     {
+      "type": "assignment",
+      "start": 0,
+      "end": 16,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 0,
+        "end": 5,
+        "field": "left",
+        "text": "short"
+       },
+       {
+        "type": "=",
+        "start": 6,
+        "end": 7,
+        "text": "="
+       },
+       {
+        "type": "attribute",
+        "start": 8,
+        "end": 16,
+        "field": "right",
+        "children": [
+         {
+          "type": "identifier",
+          "start": 8,
+          "end": 11,
+          "field": "object",
+          "text": "obj"
+         },
+         {
+          "type": ".",
+          "start": 11,
+          "end": 12,
+          "text": "."
+         },
+         {
+          "type": "identifier",
+          "start": 12,
+          "end": 16,
+          "field": "attribute",
+          "text": "attr"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "expression_statement",
+    "start": 18,
+    "end": 102,
+    "children": [
+     {
+      "type": "assignment",
+      "start": 18,
+      "end": 102,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 18,
+        "end": 33,
+        "field": "left",
+        "text": "attribute_chain"
+       },
+       {
+        "type": "=",
+        "start": 34,
+        "end": 35,
+        "text": "="
+       },
+       {
+        "type": "attribute",
+        "start": 36,
+        "end": 102,
+        "field": "right",
+        "children": [
+         {
+          "type": "attribute",
+          "start": 36,
+          "end": 83,
+          "field": "object",
+          "children": [
+           {
+            "type": "attribute",
+            "start": 36,
+            "end": 78,
+            "field": "object",
+            "children": [
+             {
+              "type": "attribute",
+              "start": 36,
+              "end": 69,
+              "field": "object",
+              "children": [
+               {
+                "type": "attribute",
+                "start": 36,
+                "end": 58,
+                "field": "object",
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 36,
+                  "end": 49,
+                  "field": "object",
+                  "text": "configuration"
+                 },
+                 {
+                  "type": ".",
+                  "start": 49,
+                  "end": 50,
+                  "text": "."
+                 },
+                 {
+                  "type": "identifier",
+                  "start": 50,
+                  "end": 58,
+                  "field": "attribute",
+                  "text": "database"
+                 }
+                ]
+               },
+               {
+                "type": ".",
+                "start": 58,
+                "end": 59,
+                "text": "."
+               },
+               {
+                "type": "identifier",
+                "start": 59,
+                "end": 69,
+                "field": "attribute",
+                "text": "connection"
+               }
+              ]
+             },
+             {
+              "type": ".",
+              "start": 69,
+              "end": 70,
+              "text": "."
+             },
+             {
+              "type": "identifier",
+              "start": 70,
+              "end": 78,
+              "field": "attribute",
+              "text": "settings"
+             }
+            ]
+           },
+           {
+            "type": ".",
+            "start": 78,
+            "end": 79,
+            "text": "."
+           },
+           {
+            "type": "identifier",
+            "start": 79,
+            "end": 83,
+            "field": "attribute",
+            "text": "pool"
+           }
+          ]
+         },
+         {
+          "type": ".",
+          "start": 83,
+          "end": 84,
+          "text": "."
+         },
+         {
+          "type": "identifier",
+          "start": 84,
+          "end": 102,
+          "field": "attribute",
+          "text": "maximum_size_limit"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "expression_statement",
+    "start": 104,
+    "end": 189,
+    "children": [
+     {
+      "type": "assignment",
+      "start": 104,
+      "end": 189,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 104,
+        "end": 116,
+        "field": "left",
+        "text": "method_chain"
+       },
+       {
+        "type": "=",
+        "start": 117,
+        "end": 118,
+        "text": "="
+       },
+       {
+        "type": "call",
+        "start": 119,
+        "end": 189,
+        "field": "right",
+        "children": [
+         {
+          "type": "attribute",
+          "start": 119,
+          "end": 187,
+          "field": "function",
+          "children": [
+           {
+            "type": "call",
+            "start": 119,
+            "end": 183,
+            "field": "object",
+            "children": [
+             {
+              "type": "attribute",
+              "start": 119,
+              "end": 179,
+              "field": "function",
+              "children": [
+               {
+                "type": "call",
+                "start": 119,
+                "end": 172,
+                "field": "object",
+                "children": [
+                 {
+                  "type": "attribute",
+                  "start": 119,
+                  "end": 167,
+                  "field": "function",
+                  "children": [
+                   {
+                    "type": "call",
+                    "start": 119,
+                    "end": 161,
+                    "field": "object",
+                    "children": [
+                     {
+                      "type": "attribute",
+                      "start": 119,
+                      "end": 153,
+                      "field": "function",
+                      "children": [
+                       {
+                        "type": "call",
+                        "start": 119,
+                        "end": 144,
+                        "field": "object",
+                        "children": [
+                         {
+                          "type": "attribute",
+                          "start": 119,
+                          "end": 131,
+                          "field": "function",
+                          "children": [
+                           {
+                            "type": "identifier",
+                            "start": 119,
+                            "end": 124,
+                            "field": "object",
+                            "text": "query"
+                           },
+                           {
+                            "type": ".",
+                            "start": 124,
+                            "end": 125,
+                            "text": "."
+                           },
+                           {
+                            "type": "identifier",
+                            "start": 125,
+                            "end": 131,
+                            "field": "attribute",
+                            "text": "filter"
+                           }
+                          ]
+                         },
+                         {
+                          "type": "argument_list",
+                          "start": 131,
+                          "end": 144,
+                          "field": "arguments",
+                          "children": [
+                           {
+                            "type": "(",
+                            "start": 131,
+                            "end": 132,
+                            "text": "("
+                           },
+                           {
+                            "type": "keyword_argument",
+                            "start": 132,
+                            "end": 143,
+                            "children": [
+                             {
+                              "type": "identifier",
+                              "start": 132,
+                              "end": 138,
+                              "field": "name",
+                              "text": "active"
+                             },
+                             {
+                              "type": "=",
+                              "start": 138,
+                              "end": 139,
+                              "text": "="
+                             },
+                             {
+                              "type": "true",
+                              "start": 139,
+                              "end": 143,
+                              "field": "value",
+                              "text": "True"
+                             }
+                            ]
+                           },
+                           {
+                            "type": ")",
+                            "start": 143,
+                            "end": 144,
+                            "text": ")"
+                           }
+                          ]
+                         }
+                        ]
+                       },
+                       {
+                        "type": ".",
+                        "start": 144,
+                        "end": 145,
+                        "text": "."
+                       },
+                       {
+                        "type": "identifier",
+                        "start": 145,
+                        "end": 153,
+                        "field": "attribute",
+                        "text": "order_by"
+                       }
+                      ]
+                     },
+                     {
+                      "type": "argument_list",
+                      "start": 153,
+                      "end": 161,
+                      "field": "arguments",
+                      "children": [
+                       {
+                        "type": "(",
+                        "start": 153,
+                        "end": 154,
+                        "text": "("
+                       },
+                       {
+                        "type": "string",
+                        "start": 154,
+                        "end": 160,
+                        "children": [
+                         {
+                          "type": "string_start",
+                          "start": 154,
+                          "end": 155,
+                          "text": "\""
+                         },
+                         {
+                          "type": "string_content",
+                          "start": 155,
+                          "end": 159,
+                          "text": "name"
+                         },
+                         {
+                          "type": "string_end",
+                          "start": 159,
+                          "end": 160,
+                          "text": "\""
+                         }
+                        ]
+                       },
+                       {
+                        "type": ")",
+                        "start": 160,
+                        "end": 161,
+                        "text": ")"
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   {
+                    "type": ".",
+                    "start": 161,
+                    "end": 162,
+                    "text": "."
+                   },
+                   {
+                    "type": "identifier",
+                    "start": 162,
+                    "end": 167,
+                    "field": "attribute",
+                    "text": "limit"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "argument_list",
+                  "start": 167,
+                  "end": 172,
+                  "field": "arguments",
+                  "children": [
+                   {
+                    "type": "(",
+                    "start": 167,
+                    "end": 168,
+                    "text": "("
+                   },
+                   {
+                    "type": "integer",
+                    "start": 168,
+                    "end": 171,
+                    "text": "100"
+                   },
+                   {
+                    "type": ")",
+                    "start": 171,
+                    "end": 172,
+                    "text": ")"
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": ".",
+                "start": 172,
+                "end": 173,
+                "text": "."
+               },
+               {
+                "type": "identifier",
+                "start": 173,
+                "end": 179,
+                "field": "attribute",
+                "text": "offset"
+               }
+              ]
+             },
+             {
+              "type": "argument_list",
+              "start": 179,
+              "end": 183,
+              "field": "arguments",
+              "children": [
+               {
+                "type": "(",
+                "start": 179,
+                "end": 180,
+                "text": "("
+               },
+               {
+                "type": "integer",
+                "start": 180,
+                "end": 182,
+                "text": "20"
+               },
+               {
+                "type": ")",
+                "start": 182,
+                "end": 183,
+                "text": ")"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ".",
+            "start": 183,
+            "end": 184,
+            "text": "."
+           },
+           {
+            "type": "identifier",
+            "start": 184,
+            "end": 187,
+            "field": "attribute",
+            "text": "all"
+           }
+          ]
+         },
+         {
+          "type": "argument_list",
+          "start": 187,
+          "end": 189,
+          "field": "arguments",
+          "children": [
+           {
+            "type": "(",
+            "start": 187,
+            "end": 188,
+            "text": "("
+           },
+           {
+            "type": ")",
+            "start": 188,
+            "end": 189,
+            "text": ")"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "expression_statement",
+    "start": 191,
+    "end": 274,
+    "children": [
+     {
+      "type": "assignment",
+      "start": 191,
+      "end": 274,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 191,
+        "end": 202,
+        "field": "left",
+        "text": "mixed_chain"
+       },
+       {
+        "type": "=",
+        "start": 203,
+        "end": 204,
+        "text": "="
+       },
+       {
+        "type": "subscript",
+        "start": 205,
+        "end": 274,
+        "field": "right",
+        "children": [
+         {
+          "type": "subscript",
+          "start": 205,
+          "end": 266,
+          "field": "value",
+          "children": [
+           {
+            "type": "subscript",
+            "start": 205,
+            "end": 263,
+            "field": "value",
+            "children": [
+             {
+              "type": "subscript",
+              "start": 205,
+              "end": 254,
+              "field": "value",
+              "children": [
+               {
+                "type": "call",
+                "start": 205,
+                "end": 246,
+                "field": "value",
+                "children": [
+                 {
+                  "type": "attribute",
+                  "start": 205,
+                  "end": 244,
+                  "field": "function",
+                  "children": [
+                   {
+                    "type": "call",
+                    "start": 205,
+                    "end": 239,
+                    "field": "object",
+                    "children": [
+                     {
+                      "type": "attribute",
+                      "start": 205,
+                      "end": 227,
+                      "field": "function",
+                      "children": [
+                       {
+                        "type": "attribute",
+                        "start": 205,
+                        "end": 219,
+                        "field": "object",
+                        "children": [
+                         {
+                          "type": "identifier",
+                          "start": 205,
+                          "end": 211,
+                          "field": "object",
+                          "text": "client"
+                         },
+                         {
+                          "type": ".",
+                          "start": 211,
+                          "end": 212,
+                          "text": "."
+                         },
+                         {
+                          "type": "identifier",
+                          "start": 212,
+                          "end": 219,
+                          "field": "attribute",
+                          "text": "session"
+                         }
+                        ]
+                       },
+                       {
+                        "type": ".",
+                        "start": 219,
+                        "end": 220,
+                        "text": "."
+                       },
+                       {
+                        "type": "identifier",
+                        "start": 220,
+                        "end": 227,
+                        "field": "attribute",
+                        "text": "request"
+                       }
+                      ]
+                     },
+                     {
+                      "type": "argument_list",
+                      "start": 227,
+                      "end": 239,
+                      "field": "arguments",
+                      "children": [
+                       {
+                        "type": "(",
+                        "start": 227,
+                        "end": 228,
+                        "text": "("
+                       },
+                       {
+                        "type": "string",
+                        "start": 228,
+                        "end": 233,
+                        "children": [
+                         {
+                          "type": "string_start",
+                          "start": 228,
+                          "end": 229,
+                          "text": "\""
+                         },
+                         {
+                          "type": "string_content",
+                          "start": 229,
+                          "end": 232,
+                          "text": "GET"
+                         },
+                         {
+                          "type": "string_end",
+                          "start": 232,
+                          "end": 233,
+                          "text": "\""
+                         }
+                        ]
+                       },
+                       {
+                        "type": ",",
+                        "start": 233,
+                        "end": 234,
+                        "text": ","
+                       },
+                       {
+                        "type": "identifier",
+                        "start": 235,
+                        "end": 238,
+                        "text": "url"
+                       },
+                       {
+                        "type": ")",
+                        "start": 238,
+                        "end": 239,
+                        "text": ")"
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   {
+                    "type": ".",
+                    "start": 239,
+                    "end": 240,
+                    "text": "."
+                   },
+                   {
+                    "type": "identifier",
+                    "start": 240,
+                    "end": 244,
+                    "field": "attribute",
+                    "text": "json"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "argument_list",
+                  "start": 244,
+                  "end": 246,
+                  "field": "arguments",
+                  "children": [
+                   {
+                    "type": "(",
+                    "start": 244,
+                    "end": 245,
+                    "text": "("
+                   },
+                   {
+                    "type": ")",
+                    "start": 245,
+                    "end": 246,
+                    "text": ")"
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": "[",
+                "start": 246,
+                "end": 247,
+                "text": "["
+               },
+               {
+                "type": "string",
+                "start": 247,
+                "end": 253,
+                "field": "subscript",
+                "children": [
+                 {
+                  "type": "string_start",
+                  "start": 247,
+                  "end": 248,
+                  "text": "\""
+                 },
+                 {
+                  "type": "string_content",
+                  "start": 248,
+                  "end": 252,
+                  "text": "data"
+                 },
+                 {
+                  "type": "string_end",
+                  "start": 252,
+                  "end": 253,
+                  "text": "\""
+                 }
+                ]
+               },
+               {
+                "type": "]",
+                "start": 253,
+                "end": 254,
+                "text": "]"
+               }
+              ]
+             },
+             {
+              "type": "[",
+              "start": 254,
+              "end": 255,
+              "text": "["
+             },
+             {
+              "type": "string",
+              "start": 255,
+              "end": 262,
+              "field": "subscript",
+              "children": [
+               {
+                "type": "string_start",
+                "start": 255,
+                "end": 256,
+                "text": "\""
+               },
+               {
+                "type": "string_content",
+                "start": 256,
+                "end": 261,
+                "text": "items"
+               },
+               {
+                "type": "string_end",
+                "start": 261,
+                "end": 262,
+                "text": "\""
+               }
+              ]
+             },
+             {
+              "type": "]",
+              "start": 262,
+              "end": 263,
+              "text": "]"
+             }
+            ]
+           },
+           {
+            "type": "[",
+            "start": 263,
+            "end": 264,
+            "text": "["
+           },
+           {
+            "type": "integer",
+            "start": 264,
+            "end": 265,
+            "field": "subscript",
+            "text": "0"
+           },
+           {
+            "type": "]",
+            "start": 265,
+            "end": 266,
+            "text": "]"
+           }
+          ]
+         },
+         {
+          "type": "[",
+          "start": 266,
+          "end": 267,
+          "text": "["
+         },
+         {
+          "type": "string",
+          "start": 267,
+          "end": 273,
+          "field": "subscript",
+          "children": [
+           {
+            "type": "string_start",
+            "start": 267,
+            "end": 268,
+            "text": "\""
+           },
+           {
+            "type": "string_content",
+            "start": 268,
+            "end": 272,
+            "text": "name"
+           },
+           {
+            "type": "string_end",
+            "start": 272,
+            "end": 273,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": "]",
+          "start": 273,
+          "end": 274,
+          "text": "]"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "expression_statement",
+    "start": 276,
+    "end": 356,
+    "children": [
+     {
+      "type": "assignment",
+      "start": 276,
+      "end": 356,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 276,
+        "end": 290,
+        "field": "left",
+        "text": "call_then_attr"
+       },
+       {
+        "type": "=",
+        "start": 291,
+        "end": 292,
+        "text": "="
+       },
+       {
+        "type": "attribute",
+        "start": 293,
+        "end": 356,
+        "field": "right",
+        "children": [
+         {
+          "type": "attribute",
+          "start": 293,
+          "end": 337,
+          "field": "object",
+          "children": [
+           {
+            "type": "attribute",
+            "start": 293,
+            "end": 328,
+            "field": "object",
+            "children": [
+             {
+              "type": "call",
+              "start": 293,
+              "end": 317,
+              "field": "object",
+              "children": [
+               {
+                "type": "identifier",
+                "start": 293,
+                "end": 305,
+                "field": "function",
+                "text": "build_client"
+               },
+               {
+                "type": "argument_list",
+                "start": 305,
+                "end": 317,
+                "field": "arguments",
+                "children": [
+                 {
+                  "type": "(",
+                  "start": 305,
+                  "end": 306,
+                  "text": "("
+                 },
+                 {
+                  "type": "identifier",
+                  "start": 306,
+                  "end": 310,
+                  "text": "host"
+                 },
+                 {
+                  "type": ",",
+                  "start": 310,
+                  "end": 311,
+                  "text": ","
+                 },
+                 {
+                  "type": "identifier",
+                  "start": 312,
+                  "end": 316,
+                  "text": "port"
+                 },
+                 {
+                  "type": ")",
+                  "start": 316,
+                  "end": 317,
+                  "text": ")"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ".",
+              "start": 317,
+              "end": 318,
+              "text": "."
+             },
+             {
+              "type": "identifier",
+              "start": 318,
+              "end": 328,
+              "field": "attribute",
+              "text": "connection"
+             }
+            ]
+           },
+           {
+            "type": ".",
+            "start": 328,
+            "end": 329,
+            "text": "."
+           },
+           {
+            "type": "identifier",
+            "start": 329,
+            "end": 337,
+            "field": "attribute",
+            "text": "metadata"
+           }
+          ]
+         },
+         {
+          "type": ".",
+          "start": 337,
+          "end": 338,
+          "text": "."
+         },
+         {
+          "type": "identifier",
+          "start": 338,
+          "end": 356,
+          "field": "attribute",
+          "text": "version_identifier"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "expression_statement",
+    "start": 358,
+    "end": 441,
+    "children": [
+     {
+      "type": "assignment",
+      "start": 358,
+      "end": 441,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 358,
+        "end": 373,
+        "field": "left",
+        "text": "subscript_chain"
+       },
+       {
+        "type": "=",
+        "start": 374,
+        "end": 375,
+        "text": "="
+       },
+       {
+        "type": "call",
+        "start": 376,
+        "end": 441,
+        "field": "right",
+        "children": [
+         {
+          "type": "subscript",
+          "start": 376,
+          "end": 419,
+          "field": "function",
+          "children": [
+           {
+            "type": "subscript",
+            "start": 376,
+            "end": 407,
+            "field": "value",
+            "children": [
+             {
+              "type": "subscript",
+              "start": 376,
+              "end": 396,
+              "field": "value",
+              "children": [
+               {
+                "type": "identifier",
+                "start": 376,
+                "end": 384,
+                "field": "value",
+                "text": "registry"
+               },
+               {
+                "type": "[",
+                "start": 384,
+                "end": 385,
+                "text": "["
+               },
+               {
+                "type": "string",
+                "start": 385,
+                "end": 395,
+                "field": "subscript",
+                "children": [
+                 {
+                  "type": "string_start",
+                  "start": 385,
+                  "end": 386,
+                  "text": "\""
+                 },
+                 {
+                  "type": "string_content",
+                  "start": 386,
+                  "end": 394,
+                  "text": "handlers"
+                 },
+                 {
+                  "type": "string_end",
+                  "start": 394,
+                  "end": 395,
+                  "text": "\""
+                 }
+                ]
+               },
+               {
+                "type": "]",
+                "start": 395,
+                "end": 396,
+                "text": "]"
+               }
+              ]
+             },
+             {
+              "type": "[",
+              "start": 396,
+              "end": 397,
+              "text": "["
+             },
+             {
+              "type": "string",
+              "start": 397,
+              "end": 406,
+              "field": "subscript",
+              "children": [
+               {
+                "type": "string_start",
+                "start": 397,
+                "end": 398,
+                "text": "\""
+               },
+               {
+                "type": "string_content",
+                "start": 398,
+                "end": 405,
+                "text": "default"
+               },
+               {
+                "type": "string_end",
+                "start": 405,
+                "end": 406,
+                "text": "\""
+               }
+              ]
+             },
+             {
+              "type": "]",
+              "start": 406,
+              "end": 407,
+              "text": "]"
+             }
+            ]
+           },
+           {
+            "type": "[",
+            "start": 407,
+            "end": 408,
+            "text": "["
+           },
+           {
+            "type": "string",
+            "start": 408,
+            "end": 418,
+            "field": "subscript",
+            "children": [
+             {
+              "type": "string_start",
+              "start": 408,
+              "end": 409,
+              "text": "\""
+             },
+             {
+              "type": "string_content",
+              "start": 409,
+              "end": 417,
+              "text": "callback"
+             },
+             {
+              "type": "string_end",
+              "start": 417,
+              "end": 418,
+              "text": "\""
+             }
+            ]
+           },
+           {
+            "type": "]",
+            "start": 418,
+            "end": 419,
+            "text": "]"
+           }
+          ]
+         },
+         {
+          "type": "argument_list",
+          "start": 419,
+          "end": 441,
+          "field": "arguments",
+          "children": [
+           {
+            "type": "(",
+            "start": 419,
+            "end": 420,
+            "text": "("
+           },
+           {
+            "type": "identifier",
+            "start": 420,
+            "end": 425,
+            "text": "event"
+           },
+           {
+            "type": ",",
+            "start": 425,
+            "end": 426,
+            "text": ","
+           },
+           {
+            "type": "identifier",
+            "start": 427,
+            "end": 434,
+            "text": "context"
+           },
+           {
+            "type": ",",
+            "start": 434,
+            "end": 435,
+            "text": ","
+           },
+           {
+            "type": "identifier",
+            "start": 436,
+            "end": 440,
+            "text": "opts"
+           },
+           {
+            "type": ")",
+            "start": 440,
+            "end": 441,
+            "text": ")"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "expression_statement",
+    "start": 443,
+    "end": 466,
+    "children": [
+     {
+      "type": "assignment",
+      "start": 443,
+      "end": 466,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 443,
+        "end": 449,
+        "field": "left",
+        "text": "slices"
+       },
+       {
+        "type": "=",
+        "start": 450,
+        "end": 451,
+        "text": "="
+       },
+       {
+        "type": "subscript",
+        "start": 452,
+        "end": 466,
+        "field": "right",
+        "children": [
+         {
+          "type": "identifier",
+          "start": 452,
+          "end": 460,
+          "field": "value",
+          "text": "sequence"
+         },
+         {
+          "type": "[",
+          "start": 460,
+          "end": 461,
+          "text": "["
+         },
+         {
+          "type": "slice",
+          "start": 461,
+          "end": 465,
+          "field": "subscript",
+          "children": [
+           {
+            "type": "integer",
+            "start": 461,
+            "end": 462,
+            "text": "1"
+           },
+           {
+            "type": ":",
+            "start": 462,
+            "end": 463,
+            "text": ":"
+           },
+           {
+            "type": "integer",
+            "start": 463,
+            "end": 465,
+            "text": "10"
+           }
+          ]
+         },
+         {
+          "type": "]",
+          "start": 465,
+          "end": 466,
+          "text": "]"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "expression_statement",
+    "start": 468,
+    "end": 550,
+    "children": [
+     {
+      "type": "assignment",
+      "start": 468,
+      "end": 550,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 468,
+        "end": 478,
+        "field": "left",
+        "text": "long_slice"
+       },
+       {
+        "type": "=",
+        "start": 479,
+        "end": 480,
+        "text": "="
+       },
+       {
+        "type": "subscript",
+        "start": 481,
+        "end": 550,
+        "field": "right",
+        "children": [
+         {
+          "type": "identifier",
+          "start": 481,
+          "end": 500,
+          "field": "value",
+          "text": "collection_of_items"
+         },
+         {
+          "type": "[",
+          "start": 500,
+          "end": 501,
+          "text": "["
+         },
+         {
+          "type": "slice",
+          "start": 501,
+          "end": 549,
+          "field": "subscript",
+          "children": [
+           {
+            "type": "identifier",
+            "start": 501,
+            "end": 512,
+            "text": "start_index"
+           },
+           {
+            "type": ":",
+            "start": 512,
+            "end": 513,
+            "text": ":"
+           },
+           {
+            "type": "identifier",
+            "start": 513,
+            "end": 522,
+            "text": "end_index"
+           },
+           {
+            "type": ":",
+            "start": 522,
+            "end": 523,
+            "text": ":"
+           },
+           {
+            "type": "identifier",
+            "start": 523,
+            "end": 549,
+            "text": "step_size_between_elements"
+           }
+          ]
+         },
+         {
+          "type": "]",
+          "start": 549,
+          "end": 550,
+          "text": "]"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "expression_statement",
+    "start": 552,
+    "end": 574,
+    "children": [
+     {
+      "type": "assignment",
+      "start": 552,
+      "end": 574,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 552,
+        "end": 562,
+        "field": "left",
+        "text": "open_slice"
+       },
+       {
+        "type": "=",
+        "start": 563,
+        "end": 564,
+        "text": "="
+       },
+       {
+        "type": "subscript",
+        "start": 565,
+        "end": 574,
+        "field": "right",
+        "children": [
+         {
+          "type": "identifier",
+          "start": 565,
+          "end": 571,
+          "field": "value",
+          "text": "buffer"
+         },
+         {
+          "type": "[",
+          "start": 571,
+          "end": 572,
+          "text": "["
+         },
+         {
+          "type": "slice",
+          "start": 572,
+          "end": 573,
+          "field": "subscript",
+          "children": [
+           {
+            "type": ":",
+            "start": 572,
+            "end": 573,
+            "text": ":"
+           }
+          ]
+         },
+         {
+          "type": "]",
+          "start": 573,
+          "end": 574,
+          "text": "]"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "expression_statement",
+    "start": 576,
+    "end": 597,
+    "children": [
+     {
+      "type": "assignment",
+      "start": 576,
+      "end": 597,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 576,
+        "end": 584,
+        "field": "left",
+        "text": "negative"
+       },
+       {
+        "type": "=",
+        "start": 585,
+        "end": 586,
+        "text": "="
+       },
+       {
+        "type": "subscript",
+        "start": 587,
+        "end": 597,
+        "field": "right",
+        "children": [
+         {
+          "type": "identifier",
+          "start": 587,
+          "end": 593,
+          "field": "value",
+          "text": "values"
+         },
+         {
+          "type": "[",
+          "start": 593,
+          "end": 594,
+          "text": "["
+         },
+         {
+          "type": "unary_operator",
+          "start": 594,
+          "end": 596,
+          "field": "subscript",
+          "children": [
+           {
+            "type": "-",
+            "start": 594,
+            "end": 595,
+            "field": "operator",
+            "text": "-"
+           },
+           {
+            "type": "integer",
+            "start": 595,
+            "end": 596,
+            "field": "argument",
+            "text": "1"
+           }
+          ]
+         },
+         {
+          "type": "]",
+          "start": 596,
+          "end": 597,
+          "text": "]"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "expression_statement",
+    "start": 599,
+    "end": 680,
+    "children": [
+     {
+      "type": "assignment",
+      "start": 599,
+      "end": 680,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 599,
+        "end": 615,
+        "field": "left",
+        "text": "nested_subscript"
+       },
+       {
+        "type": "=",
+        "start": 616,
+        "end": 617,
+        "text": "="
+       },
+       {
+        "type": "subscript",
+        "start": 618,
+        "end": 680,
+        "field": "right",
+        "children": [
+         {
+          "type": "subscript",
+          "start": 618,
+          "end": 662,
+          "field": "value",
+          "children": [
+           {
+            "type": "subscript",
+            "start": 618,
+            "end": 649,
+            "field": "value",
+            "children": [
+             {
+              "type": "subscript",
+              "start": 618,
+              "end": 635,
+              "field": "value",
+              "children": [
+               {
+                "type": "identifier",
+                "start": 618,
+                "end": 624,
+                "field": "value",
+                "text": "matrix"
+               },
+               {
+                "type": "[",
+                "start": 624,
+                "end": 625,
+                "text": "["
+               },
+               {
+                "type": "identifier",
+                "start": 625,
+                "end": 634,
+                "field": "subscript",
+                "text": "row_index"
+               },
+               {
+                "type": "]",
+                "start": 634,
+                "end": 635,
+                "text": "]"
+               }
+              ]
+             },
+             {
+              "type": "[",
+              "start": 635,
+              "end": 636,
+              "text": "["
+             },
+             {
+              "type": "identifier",
+              "start": 636,
+              "end": 648,
+              "field": "subscript",
+              "text": "column_index"
+             },
+             {
+              "type": "]",
+              "start": 648,
+              "end": 649,
+              "text": "]"
+             }
+            ]
+           },
+           {
+            "type": "[",
+            "start": 649,
+            "end": 650,
+            "text": "["
+           },
+           {
+            "type": "identifier",
+            "start": 650,
+            "end": 661,
+            "field": "subscript",
+            "text": "depth_index"
+           },
+           {
+            "type": "]",
+            "start": 661,
+            "end": 662,
+            "text": "]"
+           }
+          ]
+         },
+         {
+          "type": "[",
+          "start": 662,
+          "end": 663,
+          "text": "["
+         },
+         {
+          "type": "identifier",
+          "start": 663,
+          "end": 679,
+          "field": "subscript",
+          "text": "final_axis_index"
+         },
+         {
+          "type": "]",
+          "start": 679,
+          "end": 680,
+          "text": "]"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

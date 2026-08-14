@@ -1,0 +1,951 @@
+{
+ "language": "python",
+ "source_file": "corpus/src/python/strings.py",
+ "root": {
+  "type": "module",
+  "start": 0,
+  "end": 652,
+  "children": [
+   {
+    "type": "expression_statement",
+    "start": 0,
+    "end": 15,
+    "children": [
+     {
+      "type": "assignment",
+      "start": 0,
+      "end": 15,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 0,
+        "end": 5,
+        "field": "left",
+        "text": "short"
+       },
+       {
+        "type": "=",
+        "start": 6,
+        "end": 7,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 8,
+        "end": 15,
+        "field": "right",
+        "children": [
+         {
+          "type": "string_start",
+          "start": 8,
+          "end": 9,
+          "text": "\""
+         },
+         {
+          "type": "string_content",
+          "start": 9,
+          "end": 14,
+          "text": "hello"
+         },
+         {
+          "type": "string_end",
+          "start": 14,
+          "end": 15,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "expression_statement",
+    "start": 17,
+    "end": 41,
+    "children": [
+     {
+      "type": "assignment",
+      "start": 17,
+      "end": 41,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 17,
+        "end": 23,
+        "field": "left",
+        "text": "single"
+       },
+       {
+        "type": "=",
+        "start": 24,
+        "end": 25,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 26,
+        "end": 41,
+        "field": "right",
+        "children": [
+         {
+          "type": "string_start",
+          "start": 26,
+          "end": 27,
+          "text": "'"
+         },
+         {
+          "type": "string_content",
+          "start": 27,
+          "end": 40,
+          "text": "single quoted"
+         },
+         {
+          "type": "string_end",
+          "start": 40,
+          "end": 41,
+          "text": "'"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "expression_statement",
+    "start": 43,
+    "end": 138,
+    "children": [
+     {
+      "type": "assignment",
+      "start": 43,
+      "end": 138,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 43,
+        "end": 54,
+        "field": "left",
+        "text": "long_string"
+       },
+       {
+        "type": "=",
+        "start": 55,
+        "end": 56,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 57,
+        "end": 138,
+        "field": "right",
+        "children": [
+         {
+          "type": "string_start",
+          "start": 57,
+          "end": 58,
+          "text": "\""
+         },
+         {
+          "type": "string_content",
+          "start": 58,
+          "end": 137,
+          "text": "this is a very long string literal that must never be reflowed by the formatter"
+         },
+         {
+          "type": "string_end",
+          "start": 137,
+          "end": 138,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "expression_statement",
+    "start": 140,
+    "end": 222,
+    "children": [
+     {
+      "type": "assignment",
+      "start": 140,
+      "end": 222,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 140,
+        "end": 149,
+        "field": "left",
+        "text": "formatted"
+       },
+       {
+        "type": "=",
+        "start": 150,
+        "end": 151,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 152,
+        "end": 222,
+        "field": "right",
+        "children": [
+         {
+          "type": "string_start",
+          "start": 152,
+          "end": 154,
+          "text": "f\""
+         },
+         {
+          "type": "string_content",
+          "start": 154,
+          "end": 159,
+          "text": "user "
+         },
+         {
+          "type": "interpolation",
+          "start": 159,
+          "end": 165,
+          "children": [
+           {
+            "type": "{",
+            "start": 159,
+            "end": 160,
+            "text": "{"
+           },
+           {
+            "type": "identifier",
+            "start": 160,
+            "end": 164,
+            "field": "expression",
+            "text": "name"
+           },
+           {
+            "type": "}",
+            "start": 164,
+            "end": 165,
+            "text": "}"
+           }
+          ]
+         },
+         {
+          "type": "string_content",
+          "start": 165,
+          "end": 170,
+          "text": " has "
+         },
+         {
+          "type": "interpolation",
+          "start": 170,
+          "end": 177,
+          "children": [
+           {
+            "type": "{",
+            "start": 170,
+            "end": 171,
+            "text": "{"
+           },
+           {
+            "type": "identifier",
+            "start": 171,
+            "end": 176,
+            "field": "expression",
+            "text": "count"
+           },
+           {
+            "type": "}",
+            "start": 176,
+            "end": 177,
+            "text": "}"
+           }
+          ]
+         },
+         {
+          "type": "string_content",
+          "start": 177,
+          "end": 187,
+          "text": " items in "
+         },
+         {
+          "type": "interpolation",
+          "start": 187,
+          "end": 203,
+          "children": [
+           {
+            "type": "{",
+            "start": 187,
+            "end": 188,
+            "text": "{"
+           },
+           {
+            "type": "identifier",
+            "start": 188,
+            "end": 202,
+            "field": "expression",
+            "text": "container_name"
+           },
+           {
+            "type": "}",
+            "start": 202,
+            "end": 203,
+            "text": "}"
+           }
+          ]
+         },
+         {
+          "type": "string_content",
+          "start": 203,
+          "end": 210,
+          "text": " as of "
+         },
+         {
+          "type": "interpolation",
+          "start": 210,
+          "end": 221,
+          "children": [
+           {
+            "type": "{",
+            "start": 210,
+            "end": 211,
+            "text": "{"
+           },
+           {
+            "type": "identifier",
+            "start": 211,
+            "end": 220,
+            "field": "expression",
+            "text": "timestamp"
+           },
+           {
+            "type": "}",
+            "start": 220,
+            "end": 221,
+            "text": "}"
+           }
+          ]
+         },
+         {
+          "type": "string_end",
+          "start": 221,
+          "end": 222,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "expression_statement",
+    "start": 224,
+    "end": 269,
+    "children": [
+     {
+      "type": "assignment",
+      "start": 224,
+      "end": 269,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 224,
+        "end": 237,
+        "field": "left",
+        "text": "nested_quotes"
+       },
+       {
+        "type": "=",
+        "start": 238,
+        "end": 239,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 240,
+        "end": 269,
+        "field": "right",
+        "children": [
+         {
+          "type": "string_start",
+          "start": 240,
+          "end": 242,
+          "text": "f\""
+         },
+         {
+          "type": "string_content",
+          "start": 242,
+          "end": 248,
+          "text": "outer "
+         },
+         {
+          "type": "interpolation",
+          "start": 248,
+          "end": 262,
+          "children": [
+           {
+            "type": "{",
+            "start": 248,
+            "end": 249,
+            "text": "{"
+           },
+           {
+            "type": "subscript",
+            "start": 249,
+            "end": 261,
+            "field": "expression",
+            "children": [
+             {
+              "type": "identifier",
+              "start": 249,
+              "end": 254,
+              "field": "value",
+              "text": "inner"
+             },
+             {
+              "type": "[",
+              "start": 254,
+              "end": 255,
+              "text": "["
+             },
+             {
+              "type": "string",
+              "start": 255,
+              "end": 260,
+              "field": "subscript",
+              "children": [
+               {
+                "type": "string_start",
+                "start": 255,
+                "end": 256,
+                "text": "'"
+               },
+               {
+                "type": "string_content",
+                "start": 256,
+                "end": 259,
+                "text": "key"
+               },
+               {
+                "type": "string_end",
+                "start": 259,
+                "end": 260,
+                "text": "'"
+               }
+              ]
+             },
+             {
+              "type": "]",
+              "start": 260,
+              "end": 261,
+              "text": "]"
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 261,
+            "end": 262,
+            "text": "}"
+           }
+          ]
+         },
+         {
+          "type": "string_content",
+          "start": 262,
+          "end": 268,
+          "text": " value"
+         },
+         {
+          "type": "string_end",
+          "start": 268,
+          "end": 269,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "expression_statement",
+    "start": 271,
+    "end": 288,
+    "children": [
+     {
+      "type": "assignment",
+      "start": 271,
+      "end": 288,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 271,
+        "end": 274,
+        "field": "left",
+        "text": "raw"
+       },
+       {
+        "type": "=",
+        "start": 275,
+        "end": 276,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 277,
+        "end": 288,
+        "field": "right",
+        "children": [
+         {
+          "type": "string_start",
+          "start": 277,
+          "end": 279,
+          "text": "r\""
+         },
+         {
+          "type": "string_content",
+          "start": 279,
+          "end": 287,
+          "text": "\\d+\\.\\d+"
+         },
+         {
+          "type": "string_end",
+          "start": 287,
+          "end": 288,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "expression_statement",
+    "start": 290,
+    "end": 316,
+    "children": [
+     {
+      "type": "assignment",
+      "start": 290,
+      "end": 316,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 290,
+        "end": 301,
+        "field": "left",
+        "text": "byte_string"
+       },
+       {
+        "type": "=",
+        "start": 302,
+        "end": 303,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 304,
+        "end": 316,
+        "field": "right",
+        "children": [
+         {
+          "type": "string_start",
+          "start": 304,
+          "end": 306,
+          "text": "b\""
+         },
+         {
+          "type": "string_content",
+          "start": 306,
+          "end": 315,
+          "text": "raw bytes"
+         },
+         {
+          "type": "string_end",
+          "start": 315,
+          "end": 316,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "expression_statement",
+    "start": 318,
+    "end": 411,
+    "children": [
+     {
+      "type": "assignment",
+      "start": 318,
+      "end": 411,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 318,
+        "end": 324,
+        "field": "left",
+        "text": "triple"
+       },
+       {
+        "type": "=",
+        "start": 325,
+        "end": 326,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 327,
+        "end": 411,
+        "field": "right",
+        "children": [
+         {
+          "type": "string_start",
+          "start": 327,
+          "end": 330,
+          "text": "\"\"\""
+         },
+         {
+          "type": "string_content",
+          "start": 330,
+          "end": 408,
+          "text": "a triple quoted string\nthat spans several lines\nand must be preserved exactly\n"
+         },
+         {
+          "type": "string_end",
+          "start": 408,
+          "end": 411,
+          "text": "\"\"\""
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "expression_statement",
+    "start": 413,
+    "end": 497,
+    "children": [
+     {
+      "type": "assignment",
+      "start": 413,
+      "end": 497,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 413,
+        "end": 425,
+        "field": "left",
+        "text": "concatenated"
+       },
+       {
+        "type": "=",
+        "start": 426,
+        "end": 427,
+        "text": "="
+       },
+       {
+        "type": "concatenated_string",
+        "start": 428,
+        "end": 497,
+        "field": "right",
+        "children": [
+         {
+          "type": "string",
+          "start": 428,
+          "end": 455,
+          "children": [
+           {
+            "type": "string_start",
+            "start": 428,
+            "end": 429,
+            "text": "\""
+           },
+           {
+            "type": "string_content",
+            "start": 429,
+            "end": 454,
+            "text": "first part of the string "
+           },
+           {
+            "type": "string_end",
+            "start": 454,
+            "end": 455,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": "string",
+          "start": 456,
+          "end": 484,
+          "children": [
+           {
+            "type": "string_start",
+            "start": 456,
+            "end": 457,
+            "text": "\""
+           },
+           {
+            "type": "string_content",
+            "start": 457,
+            "end": 483,
+            "text": "second part of the string "
+           },
+           {
+            "type": "string_end",
+            "start": 483,
+            "end": 484,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": "string",
+          "start": 485,
+          "end": 497,
+          "children": [
+           {
+            "type": "string_start",
+            "start": 485,
+            "end": 486,
+            "text": "\""
+           },
+           {
+            "type": "string_content",
+            "start": 486,
+            "end": 496,
+            "text": "third part"
+           },
+           {
+            "type": "string_end",
+            "start": 496,
+            "end": 497,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "expression_statement",
+    "start": 499,
+    "end": 585,
+    "children": [
+     {
+      "type": "assignment",
+      "start": 499,
+      "end": 585,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 499,
+        "end": 506,
+        "field": "left",
+        "text": "in_call"
+       },
+       {
+        "type": "=",
+        "start": 507,
+        "end": 508,
+        "text": "="
+       },
+       {
+        "type": "call",
+        "start": 509,
+        "end": 585,
+        "field": "right",
+        "children": [
+         {
+          "type": "identifier",
+          "start": 509,
+          "end": 520,
+          "field": "function",
+          "text": "log_message"
+         },
+         {
+          "type": "argument_list",
+          "start": 520,
+          "end": 585,
+          "field": "arguments",
+          "children": [
+           {
+            "type": "(",
+            "start": 520,
+            "end": 521,
+            "text": "("
+           },
+           {
+            "type": "string",
+            "start": 521,
+            "end": 584,
+            "children": [
+             {
+              "type": "string_start",
+              "start": 521,
+              "end": 522,
+              "text": "\""
+             },
+             {
+              "type": "string_content",
+              "start": 522,
+              "end": 583,
+              "text": "a fairly long message passed directly as a call argument here"
+             },
+             {
+              "type": "string_end",
+              "start": 583,
+              "end": 584,
+              "text": "\""
+             }
+            ]
+           },
+           {
+            "type": ")",
+            "start": 584,
+            "end": 585,
+            "text": ")"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "expression_statement",
+    "start": 587,
+    "end": 624,
+    "children": [
+     {
+      "type": "assignment",
+      "start": 587,
+      "end": 624,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 587,
+        "end": 593,
+        "field": "left",
+        "text": "escape"
+       },
+       {
+        "type": "=",
+        "start": 594,
+        "end": 595,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 596,
+        "end": 624,
+        "field": "right",
+        "children": [
+         {
+          "type": "string_start",
+          "start": 596,
+          "end": 597,
+          "text": "\""
+         },
+         {
+          "type": "string_content",
+          "start": 597,
+          "end": 623,
+          "children": [
+           {
+            "type": "escape_sequence",
+            "start": 605,
+            "end": 607,
+            "text": "\\n"
+           },
+           {
+            "type": "escape_sequence",
+            "start": 615,
+            "end": 617,
+            "text": "\\t"
+           }
+          ]
+         },
+         {
+          "type": "string_end",
+          "start": 623,
+          "end": 624,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "expression_statement",
+    "start": 626,
+    "end": 651,
+    "children": [
+     {
+      "type": "assignment",
+      "start": 626,
+      "end": 651,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 626,
+        "end": 641,
+        "field": "left",
+        "text": "unicode_literal"
+       },
+       {
+        "type": "=",
+        "start": 642,
+        "end": 643,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 644,
+        "end": 651,
+        "field": "right",
+        "children": [
+         {
+          "type": "string_start",
+          "start": 644,
+          "end": 645,
+          "text": "\""
+         },
+         {
+          "type": "string_content",
+          "start": 645,
+          "end": 650,
+          "text": "café"
+         },
+         {
+          "type": "string_end",
+          "start": 650,
+          "end": 651,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

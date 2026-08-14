@@ -1,0 +1,1943 @@
+{
+ "language": "python",
+ "source_file": "corpus/src/python/statements.py",
+ "root": {
+  "type": "module",
+  "start": 0,
+  "end": 928,
+  "children": [
+   {
+    "type": "if_statement",
+    "start": 0,
+    "end": 32,
+    "children": [
+     {
+      "type": "if",
+      "start": 0,
+      "end": 2,
+      "text": "if"
+     },
+     {
+      "type": "identifier",
+      "start": 3,
+      "end": 12,
+      "field": "condition",
+      "text": "condition"
+     },
+     {
+      "type": ":",
+      "start": 12,
+      "end": 13,
+      "text": ":"
+     },
+     {
+      "type": "block",
+      "start": 18,
+      "end": 32,
+      "field": "consequence",
+      "children": [
+       {
+        "type": "expression_statement",
+        "start": 18,
+        "end": 32,
+        "children": [
+         {
+          "type": "call",
+          "start": 18,
+          "end": 32,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 18,
+            "end": 30,
+            "field": "function",
+            "text": "do_something"
+           },
+           {
+            "type": "argument_list",
+            "start": 30,
+            "end": 32,
+            "field": "arguments",
+            "children": [
+             {
+              "type": "(",
+              "start": 30,
+              "end": 31,
+              "text": "("
+             },
+             {
+              "type": ")",
+              "start": 31,
+              "end": 32,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "if_statement",
+    "start": 34,
+    "end": 271,
+    "children": [
+     {
+      "type": "if",
+      "start": 34,
+      "end": 36,
+      "text": "if"
+     },
+     {
+      "type": "boolean_operator",
+      "start": 37,
+      "end": 114,
+      "field": "condition",
+      "children": [
+       {
+        "type": "boolean_operator",
+        "start": 37,
+        "end": 93,
+        "field": "left",
+        "children": [
+         {
+          "type": "boolean_operator",
+          "start": 37,
+          "end": 73,
+          "field": "left",
+          "children": [
+           {
+            "type": "identifier",
+            "start": 37,
+            "end": 52,
+            "field": "left",
+            "text": "first_condition"
+           },
+           {
+            "type": "and",
+            "start": 53,
+            "end": 56,
+            "field": "operator",
+            "text": "and"
+           },
+           {
+            "type": "identifier",
+            "start": 57,
+            "end": 73,
+            "field": "right",
+            "text": "second_condition"
+           }
+          ]
+         },
+         {
+          "type": "and",
+          "start": 74,
+          "end": 77,
+          "field": "operator",
+          "text": "and"
+         },
+         {
+          "type": "identifier",
+          "start": 78,
+          "end": 93,
+          "field": "right",
+          "text": "third_condition"
+         }
+        ]
+       },
+       {
+        "type": "and",
+        "start": 94,
+        "end": 97,
+        "field": "operator",
+        "text": "and"
+       },
+       {
+        "type": "identifier",
+        "start": 98,
+        "end": 114,
+        "field": "right",
+        "text": "fourth_condition"
+       }
+      ]
+     },
+     {
+      "type": ":",
+      "start": 114,
+      "end": 115,
+      "text": ":"
+     },
+     {
+      "type": "block",
+      "start": 120,
+      "end": 137,
+      "field": "consequence",
+      "children": [
+       {
+        "type": "expression_statement",
+        "start": 120,
+        "end": 137,
+        "children": [
+         {
+          "type": "call",
+          "start": 120,
+          "end": 137,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 120,
+            "end": 135,
+            "field": "function",
+            "text": "handle_the_case"
+           },
+           {
+            "type": "argument_list",
+            "start": 135,
+            "end": 137,
+            "field": "arguments",
+            "children": [
+             {
+              "type": "(",
+              "start": 135,
+              "end": 136,
+              "text": "("
+             },
+             {
+              "type": ")",
+              "start": 136,
+              "end": 137,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "elif_clause",
+      "start": 138,
+      "end": 244,
+      "field": "alternative",
+      "children": [
+       {
+        "type": "elif",
+        "start": 138,
+        "end": 142,
+        "text": "elif"
+       },
+       {
+        "type": "boolean_operator",
+        "start": 143,
+        "end": 218,
+        "field": "condition",
+        "children": [
+         {
+          "type": "boolean_operator",
+          "start": 143,
+          "end": 197,
+          "field": "left",
+          "children": [
+           {
+            "type": "identifier",
+            "start": 143,
+            "end": 164,
+            "field": "left",
+            "text": "alternative_condition"
+           },
+           {
+            "type": "or",
+            "start": 165,
+            "end": 167,
+            "field": "operator",
+            "text": "or"
+           },
+           {
+            "type": "identifier",
+            "start": 168,
+            "end": 197,
+            "field": "right",
+            "text": "another_alternative_condition"
+           }
+          ]
+         },
+         {
+          "type": "or",
+          "start": 198,
+          "end": 200,
+          "field": "operator",
+          "text": "or"
+         },
+         {
+          "type": "identifier",
+          "start": 201,
+          "end": 218,
+          "field": "right",
+          "text": "third_alternative"
+         }
+        ]
+       },
+       {
+        "type": ":",
+        "start": 218,
+        "end": 219,
+        "text": ":"
+       },
+       {
+        "type": "block",
+        "start": 224,
+        "end": 244,
+        "field": "consequence",
+        "children": [
+         {
+          "type": "expression_statement",
+          "start": 224,
+          "end": 244,
+          "children": [
+           {
+            "type": "call",
+            "start": 224,
+            "end": 244,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 224,
+              "end": 242,
+              "field": "function",
+              "text": "handle_alternative"
+             },
+             {
+              "type": "argument_list",
+              "start": 242,
+              "end": 244,
+              "field": "arguments",
+              "children": [
+               {
+                "type": "(",
+                "start": 242,
+                "end": 243,
+                "text": "("
+               },
+               {
+                "type": ")",
+                "start": 243,
+                "end": 244,
+                "text": ")"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "else_clause",
+      "start": 245,
+      "end": 271,
+      "field": "alternative",
+      "children": [
+       {
+        "type": "else",
+        "start": 245,
+        "end": 249,
+        "text": "else"
+       },
+       {
+        "type": ":",
+        "start": 249,
+        "end": 250,
+        "text": ":"
+       },
+       {
+        "type": "block",
+        "start": 255,
+        "end": 271,
+        "field": "body",
+        "children": [
+         {
+          "type": "expression_statement",
+          "start": 255,
+          "end": 271,
+          "children": [
+           {
+            "type": "call",
+            "start": 255,
+            "end": 271,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 255,
+              "end": 269,
+              "field": "function",
+              "text": "handle_default"
+             },
+             {
+              "type": "argument_list",
+              "start": 269,
+              "end": 271,
+              "field": "arguments",
+              "children": [
+               {
+                "type": "(",
+                "start": 269,
+                "end": 270,
+                "text": "("
+               },
+               {
+                "type": ")",
+                "start": 270,
+                "end": 271,
+                "text": ")"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "for_statement",
+    "start": 273,
+    "end": 314,
+    "children": [
+     {
+      "type": "for",
+      "start": 273,
+      "end": 276,
+      "text": "for"
+     },
+     {
+      "type": "identifier",
+      "start": 277,
+      "end": 281,
+      "field": "left",
+      "text": "item"
+     },
+     {
+      "type": "in",
+      "start": 282,
+      "end": 284,
+      "text": "in"
+     },
+     {
+      "type": "identifier",
+      "start": 285,
+      "end": 295,
+      "field": "right",
+      "text": "collection"
+     },
+     {
+      "type": ":",
+      "start": 295,
+      "end": 296,
+      "text": ":"
+     },
+     {
+      "type": "block",
+      "start": 301,
+      "end": 314,
+      "field": "body",
+      "children": [
+       {
+        "type": "expression_statement",
+        "start": 301,
+        "end": 314,
+        "children": [
+         {
+          "type": "call",
+          "start": 301,
+          "end": 314,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 301,
+            "end": 308,
+            "field": "function",
+            "text": "process"
+           },
+           {
+            "type": "argument_list",
+            "start": 308,
+            "end": 314,
+            "field": "arguments",
+            "children": [
+             {
+              "type": "(",
+              "start": 308,
+              "end": 309,
+              "text": "("
+             },
+             {
+              "type": "identifier",
+              "start": 309,
+              "end": 313,
+              "text": "item"
+             },
+             {
+              "type": ")",
+              "start": 313,
+              "end": 314,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "for_statement",
+    "start": 316,
+    "end": 450,
+    "children": [
+     {
+      "type": "for",
+      "start": 316,
+      "end": 319,
+      "text": "for"
+     },
+     {
+      "type": "pattern_list",
+      "start": 320,
+      "end": 358,
+      "field": "left",
+      "children": [
+       {
+        "type": "identifier",
+        "start": 320,
+        "end": 325,
+        "text": "index"
+       },
+       {
+        "type": ",",
+        "start": 325,
+        "end": 326,
+        "text": ","
+       },
+       {
+        "type": "tuple_pattern",
+        "start": 327,
+        "end": 358,
+        "children": [
+         {
+          "type": "(",
+          "start": 327,
+          "end": 328,
+          "text": "("
+         },
+         {
+          "type": "identifier",
+          "start": 328,
+          "end": 341,
+          "text": "first_element"
+         },
+         {
+          "type": ",",
+          "start": 341,
+          "end": 342,
+          "text": ","
+         },
+         {
+          "type": "identifier",
+          "start": 343,
+          "end": 357,
+          "text": "second_element"
+         },
+         {
+          "type": ")",
+          "start": 357,
+          "end": 358,
+          "text": ")"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "in",
+      "start": 359,
+      "end": 361,
+      "text": "in"
+     },
+     {
+      "type": "call",
+      "start": 362,
+      "end": 399,
+      "field": "right",
+      "children": [
+       {
+        "type": "identifier",
+        "start": 362,
+        "end": 371,
+        "field": "function",
+        "text": "enumerate"
+       },
+       {
+        "type": "argument_list",
+        "start": 371,
+        "end": 399,
+        "field": "arguments",
+        "children": [
+         {
+          "type": "(",
+          "start": 371,
+          "end": 372,
+          "text": "("
+         },
+         {
+          "type": "call",
+          "start": 372,
+          "end": 398,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 372,
+            "end": 375,
+            "field": "function",
+            "text": "zip"
+           },
+           {
+            "type": "argument_list",
+            "start": 375,
+            "end": 398,
+            "field": "arguments",
+            "children": [
+             {
+              "type": "(",
+              "start": 375,
+              "end": 376,
+              "text": "("
+             },
+             {
+              "type": "identifier",
+              "start": 376,
+              "end": 385,
+              "text": "first_seq"
+             },
+             {
+              "type": ",",
+              "start": 385,
+              "end": 386,
+              "text": ","
+             },
+             {
+              "type": "identifier",
+              "start": 387,
+              "end": 397,
+              "text": "second_seq"
+             },
+             {
+              "type": ")",
+              "start": 397,
+              "end": 398,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ")",
+          "start": 398,
+          "end": 399,
+          "text": ")"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": ":",
+      "start": 399,
+      "end": 400,
+      "text": ":"
+     },
+     {
+      "type": "block",
+      "start": 405,
+      "end": 450,
+      "field": "body",
+      "children": [
+       {
+        "type": "expression_statement",
+        "start": 405,
+        "end": 450,
+        "children": [
+         {
+          "type": "call",
+          "start": 405,
+          "end": 450,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 405,
+            "end": 412,
+            "field": "function",
+            "text": "combine"
+           },
+           {
+            "type": "argument_list",
+            "start": 412,
+            "end": 450,
+            "field": "arguments",
+            "children": [
+             {
+              "type": "(",
+              "start": 412,
+              "end": 413,
+              "text": "("
+             },
+             {
+              "type": "identifier",
+              "start": 413,
+              "end": 426,
+              "text": "first_element"
+             },
+             {
+              "type": ",",
+              "start": 426,
+              "end": 427,
+              "text": ","
+             },
+             {
+              "type": "identifier",
+              "start": 428,
+              "end": 442,
+              "text": "second_element"
+             },
+             {
+              "type": ",",
+              "start": 442,
+              "end": 443,
+              "text": ","
+             },
+             {
+              "type": "identifier",
+              "start": 444,
+              "end": 449,
+              "text": "index"
+             },
+             {
+              "type": ")",
+              "start": 449,
+              "end": 450,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "while_statement",
+    "start": 452,
+    "end": 546,
+    "children": [
+     {
+      "type": "while",
+      "start": 452,
+      "end": 457,
+      "text": "while"
+     },
+     {
+      "type": "boolean_operator",
+      "start": 458,
+      "end": 531,
+      "field": "condition",
+      "children": [
+       {
+        "type": "boolean_operator",
+        "start": 458,
+        "end": 502,
+        "field": "left",
+        "children": [
+         {
+          "type": "not_operator",
+          "start": 458,
+          "end": 470,
+          "field": "left",
+          "children": [
+           {
+            "type": "not",
+            "start": 458,
+            "end": 461,
+            "text": "not"
+           },
+           {
+            "type": "identifier",
+            "start": 462,
+            "end": 470,
+            "field": "argument",
+            "text": "finished"
+           }
+          ]
+         },
+         {
+          "type": "and",
+          "start": 471,
+          "end": 474,
+          "field": "operator",
+          "text": "and"
+         },
+         {
+          "type": "comparison_operator",
+          "start": 475,
+          "end": 502,
+          "field": "right",
+          "children": [
+           {
+            "type": "identifier",
+            "start": 475,
+            "end": 483,
+            "text": "attempts"
+           },
+           {
+            "type": "<",
+            "start": 484,
+            "end": 485,
+            "field": "operators",
+            "text": "<"
+           },
+           {
+            "type": "identifier",
+            "start": 486,
+            "end": 502,
+            "text": "maximum_attempts"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "and",
+        "start": 503,
+        "end": 506,
+        "field": "operator",
+        "text": "and"
+       },
+       {
+        "type": "not_operator",
+        "start": 507,
+        "end": 531,
+        "field": "right",
+        "children": [
+         {
+          "type": "not",
+          "start": 507,
+          "end": 510,
+          "text": "not"
+         },
+         {
+          "type": "call",
+          "start": 511,
+          "end": 531,
+          "field": "argument",
+          "children": [
+           {
+            "type": "identifier",
+            "start": 511,
+            "end": 529,
+            "field": "function",
+            "text": "should_abort_early"
+           },
+           {
+            "type": "argument_list",
+            "start": 529,
+            "end": 531,
+            "field": "arguments",
+            "children": [
+             {
+              "type": "(",
+              "start": 529,
+              "end": 530,
+              "text": "("
+             },
+             {
+              "type": ")",
+              "start": 530,
+              "end": 531,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": ":",
+      "start": 531,
+      "end": 532,
+      "text": ":"
+     },
+     {
+      "type": "block",
+      "start": 537,
+      "end": 546,
+      "field": "body",
+      "children": [
+       {
+        "type": "expression_statement",
+        "start": 537,
+        "end": 546,
+        "children": [
+         {
+          "type": "call",
+          "start": 537,
+          "end": 546,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 537,
+            "end": 544,
+            "field": "function",
+            "text": "attempt"
+           },
+           {
+            "type": "argument_list",
+            "start": 544,
+            "end": 546,
+            "field": "arguments",
+            "children": [
+             {
+              "type": "(",
+              "start": 544,
+              "end": 545,
+              "text": "("
+             },
+             {
+              "type": ")",
+              "start": 545,
+              "end": 546,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "with_statement",
+    "start": 548,
+    "end": 603,
+    "children": [
+     {
+      "type": "with",
+      "start": 548,
+      "end": 552,
+      "text": "with"
+     },
+     {
+      "type": "with_clause",
+      "start": 553,
+      "end": 573,
+      "children": [
+       {
+        "type": "with_item",
+        "start": 553,
+        "end": 573,
+        "children": [
+         {
+          "type": "as_pattern",
+          "start": 553,
+          "end": 573,
+          "field": "value",
+          "children": [
+           {
+            "type": "call",
+            "start": 553,
+            "end": 563,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 553,
+              "end": 557,
+              "field": "function",
+              "text": "open"
+             },
+             {
+              "type": "argument_list",
+              "start": 557,
+              "end": 563,
+              "field": "arguments",
+              "children": [
+               {
+                "type": "(",
+                "start": 557,
+                "end": 558,
+                "text": "("
+               },
+               {
+                "type": "identifier",
+                "start": 558,
+                "end": 562,
+                "text": "path"
+               },
+               {
+                "type": ")",
+                "start": 562,
+                "end": 563,
+                "text": ")"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "as",
+            "start": 564,
+            "end": 566,
+            "text": "as"
+           },
+           {
+            "type": "as_pattern_target",
+            "start": 567,
+            "end": 573,
+            "field": "alias",
+            "children": [
+             {
+              "type": "identifier",
+              "start": 567,
+              "end": 573,
+              "text": "handle"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": ":",
+      "start": 573,
+      "end": 574,
+      "text": ":"
+     },
+     {
+      "type": "block",
+      "start": 579,
+      "end": 603,
+      "field": "body",
+      "children": [
+       {
+        "type": "expression_statement",
+        "start": 579,
+        "end": 603,
+        "children": [
+         {
+          "type": "assignment",
+          "start": 579,
+          "end": 603,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 579,
+            "end": 587,
+            "field": "left",
+            "text": "contents"
+           },
+           {
+            "type": "=",
+            "start": 588,
+            "end": 589,
+            "text": "="
+           },
+           {
+            "type": "call",
+            "start": 590,
+            "end": 603,
+            "field": "right",
+            "children": [
+             {
+              "type": "attribute",
+              "start": 590,
+              "end": 601,
+              "field": "function",
+              "children": [
+               {
+                "type": "identifier",
+                "start": 590,
+                "end": 596,
+                "field": "object",
+                "text": "handle"
+               },
+               {
+                "type": ".",
+                "start": 596,
+                "end": 597,
+                "text": "."
+               },
+               {
+                "type": "identifier",
+                "start": 597,
+                "end": 601,
+                "field": "attribute",
+                "text": "read"
+               }
+              ]
+             },
+             {
+              "type": "argument_list",
+              "start": 601,
+              "end": 603,
+              "field": "arguments",
+              "children": [
+               {
+                "type": "(",
+                "start": 601,
+                "end": 602,
+                "text": "("
+               },
+               {
+                "type": ")",
+                "start": 602,
+                "end": 603,
+                "text": ")"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "with_statement",
+    "start": 605,
+    "end": 713,
+    "children": [
+     {
+      "type": "with",
+      "start": 605,
+      "end": 609,
+      "text": "with"
+     },
+     {
+      "type": "with_clause",
+      "start": 610,
+      "end": 675,
+      "children": [
+       {
+        "type": "with_item",
+        "start": 610,
+        "end": 636,
+        "children": [
+         {
+          "type": "as_pattern",
+          "start": 610,
+          "end": 636,
+          "field": "value",
+          "children": [
+           {
+            "type": "call",
+            "start": 610,
+            "end": 626,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 610,
+              "end": 614,
+              "field": "function",
+              "text": "open"
+             },
+             {
+              "type": "argument_list",
+              "start": 614,
+              "end": 626,
+              "field": "arguments",
+              "children": [
+               {
+                "type": "(",
+                "start": 614,
+                "end": 615,
+                "text": "("
+               },
+               {
+                "type": "identifier",
+                "start": 615,
+                "end": 625,
+                "text": "input_path"
+               },
+               {
+                "type": ")",
+                "start": 625,
+                "end": 626,
+                "text": ")"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "as",
+            "start": 627,
+            "end": 629,
+            "text": "as"
+           },
+           {
+            "type": "as_pattern_target",
+            "start": 630,
+            "end": 636,
+            "field": "alias",
+            "children": [
+             {
+              "type": "identifier",
+              "start": 630,
+              "end": 636,
+              "text": "source"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 636,
+        "end": 637,
+        "text": ","
+       },
+       {
+        "type": "with_item",
+        "start": 638,
+        "end": 675,
+        "children": [
+         {
+          "type": "as_pattern",
+          "start": 638,
+          "end": 675,
+          "field": "value",
+          "children": [
+           {
+            "type": "call",
+            "start": 638,
+            "end": 660,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 638,
+              "end": 642,
+              "field": "function",
+              "text": "open"
+             },
+             {
+              "type": "argument_list",
+              "start": 642,
+              "end": 660,
+              "field": "arguments",
+              "children": [
+               {
+                "type": "(",
+                "start": 642,
+                "end": 643,
+                "text": "("
+               },
+               {
+                "type": "identifier",
+                "start": 643,
+                "end": 654,
+                "text": "output_path"
+               },
+               {
+                "type": ",",
+                "start": 654,
+                "end": 655,
+                "text": ","
+               },
+               {
+                "type": "string",
+                "start": 656,
+                "end": 659,
+                "children": [
+                 {
+                  "type": "string_start",
+                  "start": 656,
+                  "end": 657,
+                  "text": "\""
+                 },
+                 {
+                  "type": "string_content",
+                  "start": 657,
+                  "end": 658,
+                  "text": "w"
+                 },
+                 {
+                  "type": "string_end",
+                  "start": 658,
+                  "end": 659,
+                  "text": "\""
+                 }
+                ]
+               },
+               {
+                "type": ")",
+                "start": 659,
+                "end": 660,
+                "text": ")"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "as",
+            "start": 661,
+            "end": 663,
+            "text": "as"
+           },
+           {
+            "type": "as_pattern_target",
+            "start": 664,
+            "end": 675,
+            "field": "alias",
+            "children": [
+             {
+              "type": "identifier",
+              "start": 664,
+              "end": 675,
+              "text": "destination"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": ":",
+      "start": 675,
+      "end": 676,
+      "text": ":"
+     },
+     {
+      "type": "block",
+      "start": 681,
+      "end": 713,
+      "field": "body",
+      "children": [
+       {
+        "type": "expression_statement",
+        "start": 681,
+        "end": 713,
+        "children": [
+         {
+          "type": "call",
+          "start": 681,
+          "end": 713,
+          "children": [
+           {
+            "type": "attribute",
+            "start": 681,
+            "end": 698,
+            "field": "function",
+            "children": [
+             {
+              "type": "identifier",
+              "start": 681,
+              "end": 692,
+              "field": "object",
+              "text": "destination"
+             },
+             {
+              "type": ".",
+              "start": 692,
+              "end": 693,
+              "text": "."
+             },
+             {
+              "type": "identifier",
+              "start": 693,
+              "end": 698,
+              "field": "attribute",
+              "text": "write"
+             }
+            ]
+           },
+           {
+            "type": "argument_list",
+            "start": 698,
+            "end": 713,
+            "field": "arguments",
+            "children": [
+             {
+              "type": "(",
+              "start": 698,
+              "end": 699,
+              "text": "("
+             },
+             {
+              "type": "call",
+              "start": 699,
+              "end": 712,
+              "children": [
+               {
+                "type": "attribute",
+                "start": 699,
+                "end": 710,
+                "field": "function",
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 699,
+                  "end": 705,
+                  "field": "object",
+                  "text": "source"
+                 },
+                 {
+                  "type": ".",
+                  "start": 705,
+                  "end": 706,
+                  "text": "."
+                 },
+                 {
+                  "type": "identifier",
+                  "start": 706,
+                  "end": 710,
+                  "field": "attribute",
+                  "text": "read"
+                 }
+                ]
+               },
+               {
+                "type": "argument_list",
+                "start": 710,
+                "end": 712,
+                "field": "arguments",
+                "children": [
+                 {
+                  "type": "(",
+                  "start": 710,
+                  "end": 711,
+                  "text": "("
+                 },
+                 {
+                  "type": ")",
+                  "start": 711,
+                  "end": 712,
+                  "text": ")"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ")",
+              "start": 712,
+              "end": 713,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "try_statement",
+    "start": 715,
+    "end": 869,
+    "children": [
+     {
+      "type": "try",
+      "start": 715,
+      "end": 718,
+      "text": "try"
+     },
+     {
+      "type": ":",
+      "start": 718,
+      "end": 719,
+      "text": ":"
+     },
+     {
+      "type": "block",
+      "start": 724,
+      "end": 741,
+      "field": "body",
+      "children": [
+       {
+        "type": "expression_statement",
+        "start": 724,
+        "end": 741,
+        "children": [
+         {
+          "type": "call",
+          "start": 724,
+          "end": 741,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 724,
+            "end": 739,
+            "field": "function",
+            "text": "risky_operation"
+           },
+           {
+            "type": "argument_list",
+            "start": 739,
+            "end": 741,
+            "field": "arguments",
+            "children": [
+             {
+              "type": "(",
+              "start": 739,
+              "end": 740,
+              "text": "("
+             },
+             {
+              "type": ")",
+              "start": 740,
+              "end": 741,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "except_clause",
+      "start": 742,
+      "end": 787,
+      "children": [
+       {
+        "type": "except",
+        "start": 742,
+        "end": 748,
+        "text": "except"
+       },
+       {
+        "type": "as_pattern",
+        "start": 749,
+        "end": 768,
+        "field": "value",
+        "children": [
+         {
+          "type": "identifier",
+          "start": 749,
+          "end": 759,
+          "text": "ValueError"
+         },
+         {
+          "type": "as",
+          "start": 760,
+          "end": 762,
+          "text": "as"
+         },
+         {
+          "type": "as_pattern_target",
+          "start": 763,
+          "end": 768,
+          "field": "alias",
+          "children": [
+           {
+            "type": "identifier",
+            "start": 763,
+            "end": 768,
+            "text": "error"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ":",
+        "start": 768,
+        "end": 769,
+        "text": ":"
+       },
+       {
+        "type": "block",
+        "start": 774,
+        "end": 787,
+        "children": [
+         {
+          "type": "expression_statement",
+          "start": 774,
+          "end": 787,
+          "children": [
+           {
+            "type": "call",
+            "start": 774,
+            "end": 787,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 774,
+              "end": 780,
+              "field": "function",
+              "text": "handle"
+             },
+             {
+              "type": "argument_list",
+              "start": 780,
+              "end": 787,
+              "field": "arguments",
+              "children": [
+               {
+                "type": "(",
+                "start": 780,
+                "end": 781,
+                "text": "("
+               },
+               {
+                "type": "identifier",
+                "start": 781,
+                "end": 786,
+                "text": "error"
+               },
+               {
+                "type": ")",
+                "start": 786,
+                "end": 787,
+                "text": ")"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "except_clause",
+      "start": 788,
+      "end": 846,
+      "children": [
+       {
+        "type": "except",
+        "start": 788,
+        "end": 794,
+        "text": "except"
+       },
+       {
+        "type": "tuple",
+        "start": 795,
+        "end": 817,
+        "field": "value",
+        "children": [
+         {
+          "type": "(",
+          "start": 795,
+          "end": 796,
+          "text": "("
+         },
+         {
+          "type": "identifier",
+          "start": 796,
+          "end": 804,
+          "text": "KeyError"
+         },
+         {
+          "type": ",",
+          "start": 804,
+          "end": 805,
+          "text": ","
+         },
+         {
+          "type": "identifier",
+          "start": 806,
+          "end": 816,
+          "text": "IndexError"
+         },
+         {
+          "type": ")",
+          "start": 816,
+          "end": 817,
+          "text": ")"
+         }
+        ]
+       },
+       {
+        "type": ":",
+        "start": 817,
+        "end": 818,
+        "text": ":"
+       },
+       {
+        "type": "block",
+        "start": 823,
+        "end": 846,
+        "children": [
+         {
+          "type": "expression_statement",
+          "start": 823,
+          "end": 846,
+          "children": [
+           {
+            "type": "call",
+            "start": 823,
+            "end": 846,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 823,
+              "end": 844,
+              "field": "function",
+              "text": "handle_lookup_failure"
+             },
+             {
+              "type": "argument_list",
+              "start": 844,
+              "end": 846,
+              "field": "arguments",
+              "children": [
+               {
+                "type": "(",
+                "start": 844,
+                "end": 845,
+                "text": "("
+               },
+               {
+                "type": ")",
+                "start": 845,
+                "end": 846,
+                "text": ")"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "finally_clause",
+      "start": 847,
+      "end": 869,
+      "children": [
+       {
+        "type": "finally",
+        "start": 847,
+        "end": 854,
+        "text": "finally"
+       },
+       {
+        "type": ":",
+        "start": 854,
+        "end": 855,
+        "text": ":"
+       },
+       {
+        "type": "block",
+        "start": 860,
+        "end": 869,
+        "children": [
+         {
+          "type": "expression_statement",
+          "start": 860,
+          "end": 869,
+          "children": [
+           {
+            "type": "call",
+            "start": 860,
+            "end": 869,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 860,
+              "end": 867,
+              "field": "function",
+              "text": "cleanup"
+             },
+             {
+              "type": "argument_list",
+              "start": 867,
+              "end": 869,
+              "field": "arguments",
+              "children": [
+               {
+                "type": "(",
+                "start": 867,
+                "end": 868,
+                "text": "("
+               },
+               {
+                "type": ")",
+                "start": 868,
+                "end": 869,
+                "text": ")"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "class_definition",
+    "start": 872,
+    "end": 927,
+    "children": [
+     {
+      "type": "class",
+      "start": 872,
+      "end": 877,
+      "text": "class"
+     },
+     {
+      "type": "identifier",
+      "start": 878,
+      "end": 884,
+      "field": "name",
+      "text": "Simple"
+     },
+     {
+      "type": ":",
+      "start": 884,
+      "end": 885,
+      "text": ":"
+     },
+     {
+      "type": "block",
+      "start": 890,
+      "end": 927,
+      "field": "body",
+      "children": [
+       {
+        "type": "function_definition",
+        "start": 890,
+        "end": 927,
+        "children": [
+         {
+          "type": "def",
+          "start": 890,
+          "end": 893,
+          "text": "def"
+         },
+         {
+          "type": "identifier",
+          "start": 894,
+          "end": 900,
+          "field": "name",
+          "text": "method"
+         },
+         {
+          "type": "parameters",
+          "start": 900,
+          "end": 906,
+          "field": "parameters",
+          "children": [
+           {
+            "type": "(",
+            "start": 900,
+            "end": 901,
+            "text": "("
+           },
+           {
+            "type": "identifier",
+            "start": 901,
+            "end": 905,
+            "text": "self"
+           },
+           {
+            "type": ")",
+            "start": 905,
+            "end": 906,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": ":",
+          "start": 906,
+          "end": 907,
+          "text": ":"
+         },
+         {
+          "type": "block",
+          "start": 916,
+          "end": 927,
+          "field": "body",
+          "children": [
+           {
+            "type": "return_statement",
+            "start": 916,
+            "end": 927,
+            "children": [
+             {
+              "type": "return",
+              "start": 916,
+              "end": 922,
+              "text": "return"
+             },
+             {
+              "type": "identifier",
+              "start": 923,
+              "end": 927,
+              "text": "self"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

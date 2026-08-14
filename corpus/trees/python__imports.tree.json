@@ -1,0 +1,848 @@
+{
+ "language": "python",
+ "source_file": "corpus/src/python/imports.py",
+ "root": {
+  "type": "module",
+  "start": 0,
+  "end": 467,
+  "children": [
+   {
+    "type": "import_statement",
+    "start": 0,
+    "end": 9,
+    "children": [
+     {
+      "type": "import",
+      "start": 0,
+      "end": 6,
+      "text": "import"
+     },
+     {
+      "type": "dotted_name",
+      "start": 7,
+      "end": 9,
+      "field": "name",
+      "children": [
+       {
+        "type": "identifier",
+        "start": 7,
+        "end": 9,
+        "text": "os"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "import_statement",
+    "start": 11,
+    "end": 25,
+    "children": [
+     {
+      "type": "import",
+      "start": 11,
+      "end": 17,
+      "text": "import"
+     },
+     {
+      "type": "dotted_name",
+      "start": 18,
+      "end": 25,
+      "field": "name",
+      "children": [
+       {
+        "type": "identifier",
+        "start": 18,
+        "end": 20,
+        "text": "os"
+       },
+       {
+        "type": ".",
+        "start": 20,
+        "end": 21,
+        "text": "."
+       },
+       {
+        "type": "identifier",
+        "start": 21,
+        "end": 25,
+        "text": "path"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "import_statement",
+    "start": 27,
+    "end": 49,
+    "children": [
+     {
+      "type": "import",
+      "start": 27,
+      "end": 33,
+      "text": "import"
+     },
+     {
+      "type": "dotted_name",
+      "start": 34,
+      "end": 49,
+      "field": "name",
+      "children": [
+       {
+        "type": "identifier",
+        "start": 34,
+        "end": 45,
+        "text": "collections"
+       },
+       {
+        "type": ".",
+        "start": 45,
+        "end": 46,
+        "text": "."
+       },
+       {
+        "type": "identifier",
+        "start": 46,
+        "end": 49,
+        "text": "abc"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "import_from_statement",
+    "start": 51,
+    "end": 73,
+    "children": [
+     {
+      "type": "from",
+      "start": 51,
+      "end": 55,
+      "text": "from"
+     },
+     {
+      "type": "dotted_name",
+      "start": 56,
+      "end": 62,
+      "field": "module_name",
+      "children": [
+       {
+        "type": "identifier",
+        "start": 56,
+        "end": 62,
+        "text": "typing"
+       }
+      ]
+     },
+     {
+      "type": "import",
+      "start": 63,
+      "end": 69,
+      "text": "import"
+     },
+     {
+      "type": "dotted_name",
+      "start": 70,
+      "end": 73,
+      "field": "name",
+      "children": [
+       {
+        "type": "identifier",
+        "start": 70,
+        "end": 73,
+        "text": "Any"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "import_from_statement",
+    "start": 75,
+    "end": 156,
+    "children": [
+     {
+      "type": "from",
+      "start": 75,
+      "end": 79,
+      "text": "from"
+     },
+     {
+      "type": "dotted_name",
+      "start": 80,
+      "end": 95,
+      "field": "module_name",
+      "children": [
+       {
+        "type": "identifier",
+        "start": 80,
+        "end": 91,
+        "text": "collections"
+       },
+       {
+        "type": ".",
+        "start": 91,
+        "end": 92,
+        "text": "."
+       },
+       {
+        "type": "identifier",
+        "start": 92,
+        "end": 95,
+        "text": "abc"
+       }
+      ]
+     },
+     {
+      "type": "import",
+      "start": 96,
+      "end": 102,
+      "text": "import"
+     },
+     {
+      "type": "dotted_name",
+      "start": 103,
+      "end": 111,
+      "field": "name",
+      "children": [
+       {
+        "type": "identifier",
+        "start": 103,
+        "end": 111,
+        "text": "Iterable"
+       }
+      ]
+     },
+     {
+      "type": ",",
+      "start": 111,
+      "end": 112,
+      "text": ","
+     },
+     {
+      "type": "dotted_name",
+      "start": 113,
+      "end": 120,
+      "field": "name",
+      "children": [
+       {
+        "type": "identifier",
+        "start": 113,
+        "end": 120,
+        "text": "Mapping"
+       }
+      ]
+     },
+     {
+      "type": ",",
+      "start": 120,
+      "end": 121,
+      "text": ","
+     },
+     {
+      "type": "dotted_name",
+      "start": 122,
+      "end": 130,
+      "field": "name",
+      "children": [
+       {
+        "type": "identifier",
+        "start": 122,
+        "end": 130,
+        "text": "Sequence"
+       }
+      ]
+     },
+     {
+      "type": ",",
+      "start": 130,
+      "end": 131,
+      "text": ","
+     },
+     {
+      "type": "dotted_name",
+      "start": 132,
+      "end": 146,
+      "field": "name",
+      "children": [
+       {
+        "type": "identifier",
+        "start": 132,
+        "end": 146,
+        "text": "MutableMapping"
+       }
+      ]
+     },
+     {
+      "type": ",",
+      "start": 146,
+      "end": 147,
+      "text": ","
+     },
+     {
+      "type": "dotted_name",
+      "start": 148,
+      "end": 156,
+      "field": "name",
+      "children": [
+       {
+        "type": "identifier",
+        "start": 148,
+        "end": 156,
+        "text": "Callable"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "import_from_statement",
+    "start": 158,
+    "end": 238,
+    "children": [
+     {
+      "type": "from",
+      "start": 158,
+      "end": 162,
+      "text": "from"
+     },
+     {
+      "type": "dotted_name",
+      "start": 163,
+      "end": 187,
+      "field": "module_name",
+      "children": [
+       {
+        "type": "identifier",
+        "start": 163,
+        "end": 170,
+        "text": "package"
+       },
+       {
+        "type": ".",
+        "start": 170,
+        "end": 171,
+        "text": "."
+       },
+       {
+        "type": "identifier",
+        "start": 171,
+        "end": 177,
+        "text": "module"
+       },
+       {
+        "type": ".",
+        "start": 177,
+        "end": 178,
+        "text": "."
+       },
+       {
+        "type": "identifier",
+        "start": 178,
+        "end": 187,
+        "text": "submodule"
+       }
+      ]
+     },
+     {
+      "type": "import",
+      "start": 188,
+      "end": 194,
+      "text": "import"
+     },
+     {
+      "type": "dotted_name",
+      "start": 195,
+      "end": 205,
+      "field": "name",
+      "children": [
+       {
+        "type": "identifier",
+        "start": 195,
+        "end": 205,
+        "text": "first_name"
+       }
+      ]
+     },
+     {
+      "type": ",",
+      "start": 205,
+      "end": 206,
+      "text": ","
+     },
+     {
+      "type": "dotted_name",
+      "start": 207,
+      "end": 218,
+      "field": "name",
+      "children": [
+       {
+        "type": "identifier",
+        "start": 207,
+        "end": 218,
+        "text": "second_name"
+       }
+      ]
+     },
+     {
+      "type": ",",
+      "start": 218,
+      "end": 219,
+      "text": ","
+     },
+     {
+      "type": "dotted_name",
+      "start": 220,
+      "end": 230,
+      "field": "name",
+      "children": [
+       {
+        "type": "identifier",
+        "start": 220,
+        "end": 230,
+        "text": "third_name"
+       }
+      ]
+     },
+     {
+      "type": ",",
+      "start": 230,
+      "end": 231,
+      "text": ","
+     },
+     {
+      "type": "dotted_name",
+      "start": 232,
+      "end": 238,
+      "field": "name",
+      "children": [
+       {
+        "type": "identifier",
+        "start": 232,
+        "end": 238,
+        "text": "fourth"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "import_from_statement",
+    "start": 240,
+    "end": 284,
+    "children": [
+     {
+      "type": "from",
+      "start": 240,
+      "end": 244,
+      "text": "from"
+     },
+     {
+      "type": "dotted_name",
+      "start": 245,
+      "end": 252,
+      "field": "module_name",
+      "children": [
+       {
+        "type": "identifier",
+        "start": 245,
+        "end": 252,
+        "text": "package"
+       }
+      ]
+     },
+     {
+      "type": "import",
+      "start": 253,
+      "end": 259,
+      "text": "import"
+     },
+     {
+      "type": "(",
+      "start": 260,
+      "end": 261,
+      "text": "("
+     },
+     {
+      "type": "dotted_name",
+      "start": 266,
+      "end": 271,
+      "field": "name",
+      "children": [
+       {
+        "type": "identifier",
+        "start": 266,
+        "end": 271,
+        "text": "alpha"
+       }
+      ]
+     },
+     {
+      "type": ",",
+      "start": 271,
+      "end": 272,
+      "text": ","
+     },
+     {
+      "type": "dotted_name",
+      "start": 277,
+      "end": 281,
+      "field": "name",
+      "children": [
+       {
+        "type": "identifier",
+        "start": 277,
+        "end": 281,
+        "text": "beta"
+       }
+      ]
+     },
+     {
+      "type": ",",
+      "start": 281,
+      "end": 282,
+      "text": ","
+     },
+     {
+      "type": ")",
+      "start": 283,
+      "end": 284,
+      "text": ")"
+     }
+    ]
+   },
+   {
+    "type": "import_from_statement",
+    "start": 286,
+    "end": 307,
+    "children": [
+     {
+      "type": "from",
+      "start": 286,
+      "end": 290,
+      "text": "from"
+     },
+     {
+      "type": "relative_import",
+      "start": 291,
+      "end": 292,
+      "field": "module_name",
+      "children": [
+       {
+        "type": "import_prefix",
+        "start": 291,
+        "end": 292,
+        "children": [
+         {
+          "type": ".",
+          "start": 291,
+          "end": 292,
+          "text": "."
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "import",
+      "start": 293,
+      "end": 299,
+      "text": "import"
+     },
+     {
+      "type": "dotted_name",
+      "start": 300,
+      "end": 307,
+      "field": "name",
+      "children": [
+       {
+        "type": "identifier",
+        "start": 300,
+        "end": 307,
+        "text": "sibling"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "import_from_statement",
+    "start": 309,
+    "end": 347,
+    "children": [
+     {
+      "type": "from",
+      "start": 309,
+      "end": 313,
+      "text": "from"
+     },
+     {
+      "type": "relative_import",
+      "start": 314,
+      "end": 330,
+      "field": "module_name",
+      "children": [
+       {
+        "type": "import_prefix",
+        "start": 314,
+        "end": 315,
+        "children": [
+         {
+          "type": ".",
+          "start": 314,
+          "end": 315,
+          "text": "."
+         }
+        ]
+       },
+       {
+        "type": "dotted_name",
+        "start": 315,
+        "end": 330,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 315,
+          "end": 323,
+          "text": "relative"
+         },
+         {
+          "type": ".",
+          "start": 323,
+          "end": 324,
+          "text": "."
+         },
+         {
+          "type": "identifier",
+          "start": 324,
+          "end": 330,
+          "text": "module"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "import",
+      "start": 331,
+      "end": 337,
+      "text": "import"
+     },
+     {
+      "type": "dotted_name",
+      "start": 338,
+      "end": 347,
+      "field": "name",
+      "children": [
+       {
+        "type": "identifier",
+        "start": 338,
+        "end": 347,
+        "text": "something"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "import_statement",
+    "start": 349,
+    "end": 383,
+    "children": [
+     {
+      "type": "import",
+      "start": 349,
+      "end": 355,
+      "text": "import"
+     },
+     {
+      "type": "dotted_name",
+      "start": 356,
+      "end": 368,
+      "field": "name",
+      "children": [
+       {
+        "type": "identifier",
+        "start": 356,
+        "end": 368,
+        "text": "first_module"
+       }
+      ]
+     },
+     {
+      "type": ",",
+      "start": 368,
+      "end": 369,
+      "text": ","
+     },
+     {
+      "type": "dotted_name",
+      "start": 370,
+      "end": 383,
+      "field": "name",
+      "children": [
+       {
+        "type": "identifier",
+        "start": 370,
+        "end": 383,
+        "text": "second_module"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "import_from_statement",
+    "start": 385,
+    "end": 466,
+    "children": [
+     {
+      "type": "from",
+      "start": 385,
+      "end": 389,
+      "text": "from"
+     },
+     {
+      "type": "dotted_name",
+      "start": 390,
+      "end": 396,
+      "field": "module_name",
+      "children": [
+       {
+        "type": "identifier",
+        "start": 390,
+        "end": 396,
+        "text": "module"
+       }
+      ]
+     },
+     {
+      "type": "import",
+      "start": 397,
+      "end": 403,
+      "text": "import"
+     },
+     {
+      "type": "aliased_import",
+      "start": 404,
+      "end": 417,
+      "field": "name",
+      "children": [
+       {
+        "type": "dotted_name",
+        "start": 404,
+        "end": 408,
+        "field": "name",
+        "children": [
+         {
+          "type": "identifier",
+          "start": 404,
+          "end": 408,
+          "text": "name"
+         }
+        ]
+       },
+       {
+        "type": "as",
+        "start": 409,
+        "end": 411,
+        "text": "as"
+       },
+       {
+        "type": "identifier",
+        "start": 412,
+        "end": 417,
+        "field": "alias",
+        "text": "alias"
+       }
+      ]
+     },
+     {
+      "type": ",",
+      "start": 417,
+      "end": 418,
+      "text": ","
+     },
+     {
+      "type": "aliased_import",
+      "start": 419,
+      "end": 439,
+      "field": "name",
+      "children": [
+       {
+        "type": "dotted_name",
+        "start": 419,
+        "end": 424,
+        "field": "name",
+        "children": [
+         {
+          "type": "identifier",
+          "start": 419,
+          "end": 424,
+          "text": "other"
+         }
+        ]
+       },
+       {
+        "type": "as",
+        "start": 425,
+        "end": 427,
+        "text": "as"
+       },
+       {
+        "type": "identifier",
+        "start": 428,
+        "end": 439,
+        "field": "alias",
+        "text": "other_alias"
+       }
+      ]
+     },
+     {
+      "type": ",",
+      "start": 439,
+      "end": 440,
+      "text": ","
+     },
+     {
+      "type": "aliased_import",
+      "start": 441,
+      "end": 466,
+      "field": "name",
+      "children": [
+       {
+        "type": "dotted_name",
+        "start": 441,
+        "end": 446,
+        "field": "name",
+        "children": [
+         {
+          "type": "identifier",
+          "start": 441,
+          "end": 446,
+          "text": "third"
+         }
+        ]
+       },
+       {
+        "type": "as",
+        "start": 447,
+        "end": 449,
+        "text": "as"
+       },
+       {
+        "type": "identifier",
+        "start": 450,
+        "end": 466,
+        "field": "alias",
+        "text": "third_alias_name"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}
