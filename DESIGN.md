@@ -308,16 +308,92 @@ templates.
 ## Fuzzer
 
 `harness-of-your-own/fuzz.js` compiles random well-typed packages
-(now with shared kind programs), drain-then-emit primitive streams,
-and shared-entry streams that hit `ARG`/`ARGI`/`CTEXT`/`CPEEK`. All
-of these the load-time verifier accepts, then `fmt-rust` and
-`fmt-js` run on a fixed tree.
+(shared kind programs), drain-then-emit primitive streams, and
+shared-entry streams that hit `ARG`/`ARGI`/`CTEXT`/`CPEEK`. Raw
+styles also include an astral fit-probe and a HALT-without-drain
+leftover probe (see mutation tests). The load-time verifier
+accepts every stream; then `fmt-rust` and `fmt-js` run on a fixed
+tree.
 
-Seeds 1–400 against `json__scalars` @ 88, 1000–1199 against
-`python__misc` @ 60, 5000–5399 against `python__statements` @ 88:
-**1000 seeds, 0 divergences** (697 agreed output, 303 agreed
-refuse). The new ARG/C* streams and shared-entry packages are in
-that mix.
+| seeds | tree | width | agreed ok | agreed refuse | div | seeds/s |
+| ----: | --- | ----: | --------: | ------------: | --: | ------: |
+| 1–400 | `json__scalars` | 88 | 251 | 149 | 0 | 20.9 |
+| 1000–1199 | `python__misc` | 60 | 136 | 64 | 0 | 20.7 |
+| 5000–5399 | `python__statements` | 88 | 266 | 134 | 0 | 20.5 |
+| 1–200 | `json__basic` | 88 | 132 | 68 | 0 | 20.2 |
+| 1000–1199 | `python__strings` | 60 | 133 | 67 | 0 | 20.7 |
+| 3000–3199 | `python__collections` | 88 | 136 | 64 | 0 | 20.2 |
+| 2000–2199 | `json__nested` | 88 | 128 | 72 | 0 | 19.3 |
+
+**1800 seeds, 0 divergences** (1182 agreed output, 618 agreed
+refuse, 34%). About **20.5 seeds/s** (two process spawns per
+seed). A one-minute CI slot is ~1200 seeds; five minutes ~6000.
+
+### Mutation tests
+
+A fuzzer that has never caught anything and a fuzzer that cannot
+catch anything print the same summary. Each row is one bug planted
+in **one** runtime, the standard 1000-seed campaign (or the first
+tree, if that was enough), then a revert. Nothing planted was
+committed.
+
+| Mutation | Surface | Detected? | Seed / seeds needed | Kind |
+| --- | --- | --- | --- | --- |
+| JS `EQ`: `a === b + 1` | comparison | yes | 36 / 36 | output |
+| JS `ARG` reads `args[i+1]` | operand table | yes | 2 / 2 | output |
+| JS `ADD`: `a + b + 1` | arithmetic | yes | 5079 / 680 | refuse-mismatch |
+| Rust verify: jump target `t <= 0` | load-time verifier | yes | 1 / 1 | refuse-mismatch |
+| JS `widthOf = s.length` | printer width | **no**, then yes | missed 2000+ (incl. astral trees); after probe: **25 / 25** | output |
+| JS `HALT` skips leftover-child refuse | runtime validity | **no**, then yes | missed the 1000; after probe: **10 / 10** | refuse-mismatch |
+
+EQ / ARG / ADD / verify-jump were measured on the drain-then-ASCII
+generator. The two probes were added only after width and leftover
+HALT survived; those after-numbers are against the new styles.
+
+**Width.** This is the bug that really shipped in the reference
+implementation (gate 1: UTF-16 `.length` vs scalar count). The
+original generator emits ASCII `TEXT` and the campaign widths
+(60 / 88) never sit on a one-column fit boundary. Swapping in
+`json__basic` and `python__strings` — the trees that contain `🙂`
+— still agreed, even at width 75. The *real* packages on those
+trees only diverge at widths 74–77 on `python__strings`; the 30
+baselines are 60 and 88, so they miss it too. A fuzzer that does
+not *construct* a group whose fit decision is that one column is
+not a Unicode-width test.
+
+After adding `group(text(pad+🙂) + line + "z")` sized to `width`
+(scalar columns = width → fits; UTF-16 = width+1 → breaks), seed
+25 caught it: rust prints `…🙂 z`, js prints `…🙂\nz`.
+
+**HALT leftover.** Drain-then-emit never reaches `finish()`'s
+unconsumed-child check; compiled random kinds refuse on explicit
+token / leaf-has-children errors instead. The agreed-refuse
+statistic did **not** cover the structural-linearity check. A
+`HALT` without `drain` catches a skipped leftover refuse at seed
+10 (`unconsumed array in document` vs js exit 0).
+
+`ADD + 1` needed 680 seeds (the whole scalars + misc ranges, then
+80 of statements) because only compiled kind programs execute
+`ADD`, and most random kinds refuse before they get there. Slow
+is still a catch; it is a coverage note.
+
+### What the fuzzer does not cover
+
+It tests **interpreter agreement** on verifier-accepted streams.
+It does not test compiler correctness, formatting policy, or
+semantic preservation. In particular:
+
+- `compile-package.js` bugs that both interpreters share
+- hugging, quote style, black agreement, comment attach / steal
+- whether an authored kind means what the language needs
+- `HOST_CHAIN` / `HOST_FROM_IMPORT` (opaque to the stream)
+- stack discipline on `CONCAT_DYN` / `BAG_FIELD` (height is
+  data-dependent)
+- pretty-printer decisions that both sides get wrong the same way
+
+"0 divergences" means the two interpreters agree on these random
+streams, and that a one-sided bug of the kinds in the table is
+now visible. It does not mean the formatter is correct.
 
 ## Bytecode experiment — what is weak
 
@@ -479,15 +555,19 @@ These checks stay **dynamic** (the verifier does not prove them):
 Two host ops also stay outside the stream: `HOST_CHAIN` and
 `HOST_FROM_IMPORT`. The verifier cannot see into them.
 
-**The fuzzer.** `harness-of-your-own/fuzz.js`: 1000
-verifier-accepted streams, **0 divergences**. 697 agreed on
-output; **303 agreed to refuse** (just over 30%). That refusal
-agreement is the strongest result in the experiment. Two
-independent runtimes voting the same programs invalid is a
-property the 15-file corpus cannot test at all: the corpus only
-shows that both sides format the fixtures we already believe are
-legal. The fuzzer is why a bytecode IR is still worth compiling
-in CI even though it must not ship.
+**The fuzzer.** `harness-of-your-own/fuzz.js`: 1800
+verifier-accepted streams across seven trees, **0 divergences**,
+~20.5 seeds/s. 1182 agreed on output; **618 agreed to refuse**
+(34%). Mutation tests show that number is falsifiable: a
+stricter rust jump check is a refuse-mismatch at seed 1, and
+(after a leftover probe) a skipped `HALT` leftover refuse is a
+refuse-mismatch at seed 10. Two independent runtimes voting the
+same programs invalid is a property the 15-file corpus cannot
+test at all. The fuzzer is why a bytecode IR is still worth
+compiling in CI even though it must not ship. It is not a test
+of the compiler, of formatting policy, or of semantic
+preservation — and until the astral fit-probe, it could not see
+the `.length` bug this project exists to catch.
 
 ### Ship recommendation
 
