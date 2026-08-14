@@ -475,7 +475,7 @@ function flattenChain(node, cls, ctx) {
 
 function parenInsert(inner, ctx) {
   const pk = ctx.parentKind;
-  if (pk === "wrap" || pk === "seq") return group(inner);
+  if (pk === "wrap" || pk === "seq" || pk === "pfx") return group(inner);
   return group(
     concat([
       ifBreak(text("("), text("")),
@@ -552,6 +552,7 @@ const KINDS = {
   comp: kindComp,
   template: kindTemplate,
   dot: kindDot,
+  sub: kindSub,
   from_import: kindFromImport,
   clause: kindClause,
 };
@@ -673,11 +674,35 @@ function kindDot(node, _rule, ctx) {
   const docs = [];
   while (!c.done()) {
     const n = c.take("part");
-    if (isToken(n, ".")) docs.push(text("."));
+    if (n.text != null && isPunct(n)) docs.push(text(n.text));
     else docs.push(ctx.format(n));
   }
   c.finish(node.type);
-  return concat(docs);
+  let doc = concat(docs);
+  if (_rule && _rule.paren) doc = parenInsert(doc, ctx);
+  return doc;
+}
+
+function kindSub(node, _rule, ctx) {
+  const c = cursor(nonComments(node, ctx.commentType));
+  const obj = c.take("obj");
+  const open = c.take("[");
+  if (!isToken(open, "[")) refuse(`sub ${node.type}: expected [`);
+  const index = c.take("index");
+  const close = c.take("]");
+  if (!isToken(close, "]")) refuse(`sub ${node.type}: expected ]`);
+  c.finish(node.type);
+  return concat([
+    ctx.format(obj),
+    group(
+      concat([
+        text("["),
+        indent(concat([softline, ctx.format(index)])),
+        softline,
+        text("]"),
+      ]),
+    ),
+  ]);
 }
 
 function holeNodes(spec, all, byField) {

@@ -31,7 +31,8 @@ impl Engine<'_> {
             "wrap" => self.kind_wrap(node, rule, kind),
             "chain" => self.kind_chain(node, rule, kind, parent_kind),
             "comp" => self.kind_comp(node, rule, kind),
-            "dot" => self.kind_dot(node, kind),
+            "dot" => self.kind_dot(node, kind, parent_kind),
+            "sub" => self.kind_sub(node, kind),
             "template" => self.kind_template(node, rule, kind, parent_kind),
             "from_import" => self.kind_from_import(node, kind),
             "clause" => self.kind_clause(node, rule, kind),
@@ -453,20 +454,53 @@ impl Engine<'_> {
         ])))
     }
 
-    fn kind_dot(&self, node: &Node, kind: &str) -> Result<Doc, Refuse> {
+    fn kind_dot(&self, node: &Node, kind: &str, parent_kind: Option<&str>) -> Result<Doc, Refuse> {
         let kids = self.kids(node);
         let mut c = Cursor::new(&kids);
         let mut docs = Vec::new();
         while !c.is_empty() {
             let n = c.take("part")?;
-            if n.is_token(".") {
-                docs.push(Doc::text("."));
+            if n.text.is_some() && n.is_punct() {
+                docs.push(Doc::text(n.text.clone().unwrap_or_default()));
             } else {
                 docs.push(self.format_in(n, Some(kind))?);
             }
         }
         c.finish(&node.kind)?;
-        Ok(Doc::Concat(docs))
+        let doc = Doc::Concat(docs);
+        Ok(if self.pkg.nodes.get(&node.kind).is_some_and(|r| r.paren) {
+            paren_insert(doc, parent_kind)
+        } else {
+            doc
+        })
+    }
+
+    fn kind_sub(&self, node: &Node, kind: &str) -> Result<Doc, Refuse> {
+        let kids = self.kids(node);
+        let mut c = Cursor::new(&kids);
+        let obj = c.take("obj")?;
+        let open = c.take("[")?;
+        if !open.is_token("[") {
+            return Err(Refuse(format!("sub {}: expected [", node.kind)));
+        }
+        let index = c.take("index")?;
+        let close = c.take("]")?;
+        if !close.is_token("]") {
+            return Err(Refuse(format!("sub {}: expected ]", node.kind)));
+        }
+        c.finish(&node.kind)?;
+        Ok(Doc::Concat(vec![
+            self.format_in(obj, Some(kind))?,
+            Doc::group(Doc::Concat(vec![
+                Doc::text("["),
+                Doc::indent(Doc::Concat(vec![
+                    Doc::Softline,
+                    self.format_in(index, Some(kind))?,
+                ])),
+                Doc::Softline,
+                Doc::text("]"),
+            ])),
+        ]))
     }
 
     fn kind_template(
@@ -783,7 +817,7 @@ fn prec_class(op: &str) -> u8 {
 }
 
 fn paren_insert(inner: Doc, parent_kind: Option<&str>) -> Doc {
-    if matches!(parent_kind, Some("wrap") | Some("seq")) {
+    if matches!(parent_kind, Some("wrap") | Some("seq") | Some("pfx")) {
         return Doc::group(inner);
     }
     Doc::group(Doc::Concat(vec![

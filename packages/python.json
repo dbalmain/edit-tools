@@ -76,7 +76,9 @@
     },
     "if_clause": { "kind": "pfx", "kw": "if", "sp": true },
     "pattern_list": { "kind": "infix", "op": ", " },
-    "attribute": { "kind": "dot" },
+    "attribute": { "kind": "dot", "paren": true },
+    "subscript": { "kind": "sub" },
+    "slice": { "kind": "dot" },
     "dotted_name": { "kind": "dot" },
     "import_statement": {
       "kind": "template",
