@@ -226,6 +226,9 @@
     "as_pattern": { "kind": "infix", "op": " as " },
     "as_pattern_target": { "kind": "fwd" },
     "pass_statement": { "kind": "pfx", "kw": "pass", "sp": false },
+    "continue_statement": { "kind": "pfx", "kw": "continue", "sp": false },
+    "raise_statement": { "kind": "pfx", "kw": "raise", "sp": true },
+    "keyword_separator": { "kind": "template", "doc": ["*"] },
     "concatenated_string": {
       "kind": "template",
       "doc": [{ "join": { "sep": " ", "items": "$children" } }]
