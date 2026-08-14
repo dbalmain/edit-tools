@@ -214,11 +214,15 @@ def gzipped_tree(path: Path) -> int:
 
 
 def overflow_lines(text: str, width: int, tokens: list[str]) -> int:
-    """Lines over budget that a better layout could have fixed.
+    """Lines over budget.
 
-    A line containing a token longer than the budget is exempt -- no formatter
-    can break a long string literal or identifier, so the overflow is not
-    evidence of a bad layout decision.
+    This is a **comparative** measure, not an absolute one. Exempting lines that
+    contain an over-long token removes the obvious false positives, but some
+    overflow is genuinely unfixable -- a JSON pair whose value is a long string
+    has no break opportunity at all -- and the scorer cannot tell those apart
+    without modelling each design's break points. Every submission formats the
+    same corpus, so the floor is shared; compare submissions to each other and
+    to the black baseline reported alongside, not to zero.
     """
     unbreakable = [t for t in tokens if len(t) > width]
     count = 0
@@ -333,7 +337,7 @@ def black_agreement(submission: Path) -> dict:
     import black
 
     mode = black.Mode(line_length=BLACK_WIDTH)
-    matched = compared = 0
+    matched = compared = black_overflow = 0
     for tree_path in sorted(TREES.glob("python__*.tree.json")):
         doc = json.loads(tree_path.read_text())
         source = (ROOT / doc["source_file"]).read_text()
@@ -341,13 +345,14 @@ def black_agreement(submission: Path) -> dict:
             expected = black.format_str(source, mode=mode)
         except Exception:
             continue
+        black_overflow += overflow_lines(expected, BLACK_WIDTH, leaves(doc["root"]))
         run = invoke(submission / "fmt-rust", tree_path, BLACK_WIDTH)
         if not run.ok:
             compared += 1
             continue
         compared += 1
         matched += run.text == expected
-    return {"matched": matched, "of": compared}
+    return {"matched": matched, "of": compared, "black_overflow": black_overflow}
 
 
 def main() -> int:
@@ -373,7 +378,8 @@ def main() -> int:
     print(f"\n  overflow lines     {m['4-overflow-lines']}")
     print(f"  size (gzip)        {size['total']} B "
           f"= {size['js-runtime']} runtime + {size['packages']} packages")
-    print(f"  black agreement    {ba['matched']}/{ba['of']}")
+    print(f"  black agreement    {ba['matched']}/{ba['of']}"
+          f"  (black's own overflow at 88: {ba['black_overflow']})")
 
     if rep.detail:
         print("\nfailures:")

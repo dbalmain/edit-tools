@@ -4,6 +4,11 @@
 // text/concat/group/indent/line/softline/hardline, per docs/design.md.
 // `brk` marks a doc containing a hardline: any group enclosing one must break.
 
+// Width is measured in Unicode scalar values, never `.length` --
+// JS `.length` counts UTF-16 units, so an astral character would
+// measure 2 in JS and 1 in Rust and break gate 1. See docs/competition.md.
+const width_of = (s) => [...s].length;
+
 const text = (s) => ({ t: "text", s, brk: false });
 const line = { t: "line", brk: false };
 const softline = { t: "softline", brk: false };
@@ -34,7 +39,7 @@ function fits(remaining, ind, doc) {
     const [i, mode, d] = stack.pop();
     switch (d.t) {
       case "text":
-        rem -= d.s.length;
+        rem -= width_of(d.s);
         break;
       case "concat":
         for (let k = d.d.length - 1; k >= 0; k--) stack.push([i, mode, d.d[k]]);
@@ -72,7 +77,7 @@ function print(doc, width) {
     switch (d.t) {
       case "text":
         out.push(d.s);
-        pos += d.s.length;
+        pos += width_of(d.s);
         break;
       case "concat":
         for (let k = d.d.length - 1; k >= 0; k--) stack.push([i, mode, d.d[k]]);

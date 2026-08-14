@@ -1,11 +1,11 @@
 {
  "language": "python",
  "source_file": "corpus/src/python/strings.py",
- "source": "short = \"hello\"\n\nsingle = 'single quoted'\n\nlong_string = \"this is a very long string literal that must never be reflowed by the formatter\"\n\nformatted = f\"user {name} has {count} items in {container_name} as of {timestamp}\"\n\nnested_quotes = f\"outer {inner['key']} value\"\n\nraw = r\"\\d+\\.\\d+\"\n\nbyte_string = b\"raw bytes\"\n\ntriple = \"\"\"a triple quoted string\nthat spans several lines\nand must be preserved exactly\n\"\"\"\n\nconcatenated = \"first part of the string \" \"second part of the string \" \"third part\"\n\nin_call = log_message(\"a fairly long message passed directly as a call argument here\")\n\nescape = \"line one\\nline two\\ttabbed\"\n\nunicode_literal = \"café\"\n",
+ "source": "short = \"hello\"\n\nsingle = 'single quoted'\n\nlong_string = \"this is a very long string literal that must never be reflowed by the formatter\"\n\nformatted = f\"user {name} has {count} items in {container_name} as of {timestamp}\"\n\nnested_quotes = f\"outer {inner['key']} value\"\n\nraw = r\"\\d+\\.\\d+\"\n\nbyte_string = b\"raw bytes\"\n\ntriple = \"\"\"a triple quoted string\nthat spans several lines\nand must be preserved exactly\n\"\"\"\n\nconcatenated = \"first part of the string \" \"second part of the string \" \"third part\"\n\nin_call = log_message(\"a fairly long message passed directly as a call argument here\")\n\nescape = \"line one\\nline two\\ttabbed\"\n\nunicode_literal = \"café\"\n\n# astral characters: width must be counted in scalar values, not UTF-16 units\nastral = \"🙂🙂🙂🙂🙂🙂 a string whose width differs between JS and Rust naively\"\n\nastral_call = render(\"🙂🙂🙂🙂\", alignment_option, padding_option, width_hint)\n",
  "root": {
   "type": "module",
   "start": 0,
-  "end": 652,
+  "end": 912,
   "children": [
    {
     "type": "expression_statement",
@@ -940,6 +940,188 @@
           "start": 650,
           "end": 651,
           "text": "\""
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 653,
+    "end": 730,
+    "text": "# astral characters: width must be counted in scalar values, not UTF-16 units"
+   },
+   {
+    "type": "expression_statement",
+    "start": 731,
+    "end": 823,
+    "children": [
+     {
+      "type": "assignment",
+      "start": 731,
+      "end": 823,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 731,
+        "end": 737,
+        "field": "left",
+        "text": "astral"
+       },
+       {
+        "type": "=",
+        "start": 738,
+        "end": 739,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 740,
+        "end": 823,
+        "field": "right",
+        "children": [
+         {
+          "type": "string_start",
+          "start": 740,
+          "end": 741,
+          "text": "\""
+         },
+         {
+          "type": "string_content",
+          "start": 741,
+          "end": 822,
+          "text": "🙂🙂🙂🙂🙂🙂 a string whose width differs between JS and Rust naively"
+         },
+         {
+          "type": "string_end",
+          "start": 822,
+          "end": 823,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "expression_statement",
+    "start": 825,
+    "end": 911,
+    "children": [
+     {
+      "type": "assignment",
+      "start": 825,
+      "end": 911,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 825,
+        "end": 836,
+        "field": "left",
+        "text": "astral_call"
+       },
+       {
+        "type": "=",
+        "start": 837,
+        "end": 838,
+        "text": "="
+       },
+       {
+        "type": "call",
+        "start": 839,
+        "end": 911,
+        "field": "right",
+        "children": [
+         {
+          "type": "identifier",
+          "start": 839,
+          "end": 845,
+          "field": "function",
+          "text": "render"
+         },
+         {
+          "type": "argument_list",
+          "start": 845,
+          "end": 911,
+          "field": "arguments",
+          "children": [
+           {
+            "type": "(",
+            "start": 845,
+            "end": 846,
+            "text": "("
+           },
+           {
+            "type": "string",
+            "start": 846,
+            "end": 864,
+            "children": [
+             {
+              "type": "string_start",
+              "start": 846,
+              "end": 847,
+              "text": "\""
+             },
+             {
+              "type": "string_content",
+              "start": 847,
+              "end": 863,
+              "text": "🙂🙂🙂🙂"
+             },
+             {
+              "type": "string_end",
+              "start": 863,
+              "end": 864,
+              "text": "\""
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 864,
+            "end": 865,
+            "text": ","
+           },
+           {
+            "type": "identifier",
+            "start": 866,
+            "end": 882,
+            "text": "alignment_option"
+           },
+           {
+            "type": ",",
+            "start": 882,
+            "end": 883,
+            "text": ","
+           },
+           {
+            "type": "identifier",
+            "start": 884,
+            "end": 898,
+            "text": "padding_option"
+           },
+           {
+            "type": ",",
+            "start": 898,
+            "end": 899,
+            "text": ","
+           },
+           {
+            "type": "identifier",
+            "start": 900,
+            "end": 910,
+            "text": "width_hint"
+           },
+           {
+            "type": ")",
+            "start": 910,
+            "end": 911,
+            "text": ")"
+           }
+          ]
          }
         ]
        }

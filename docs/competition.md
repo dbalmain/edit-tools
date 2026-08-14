@@ -101,6 +101,23 @@ and must never be reflowed — a deliberate correctness trap.
 Widths tested: **88** (black's default) and **60** (to prove width-sensitivity;
 a submission that hardcodes breaks will pass 88 and fail 60).
 
+### How width is measured
+
+**Width is counted in Unicode scalar values.** One scalar, one column.
+
+This has to be specified rather than left to each submission, or gate 1 becomes
+a coin flip. JavaScript's `String.length` counts UTF-16 code units, so an astral
+character measures 2 in JS and 1 in Rust — the reference submission shipped with
+exactly that bug, and the corpus could not catch it until `strings.py` and
+`basic.json` gained astral cases. In JS, measure `[...s].length`, never
+`.length`. (Diagnosed by grok during Phase 1; verified by constructing an input
+where the two runtimes chose different layouts at width 36.)
+
+Display width — East Asian wide characters counting as two columns — is
+deliberately **out of scope**. It needs a Unicode width table in both runtimes,
+which is a large dependency and a large divergence surface. A real editor would
+need it; this competition does not.
+
 ## Submission contract
 
 At the worktree root:
