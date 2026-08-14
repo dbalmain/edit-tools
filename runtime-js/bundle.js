@@ -199,6 +199,8 @@ function splitChildren(fmt, node) {
       suffix: [],
       after: [],
       blanks: take.length > 0 ? take[0].blanks : Math.max(gap - 1, 0),
+      // Blank lines between the last leading comment and the item itself.
+      gap: take.length > 0 ? Math.max(gap - 1, 0) : 0,
     });
   }
 
@@ -226,6 +228,9 @@ function decorate(fmt, item, inner) {
     parts.push(text(comment.text));
     if (!sink) parts.push(hard);
   });
+  if (!sink) {
+    for (let i = 0; i < Math.min(item.gap, 2); i++) parts.push(hard);
+  }
   if (sink && parts.length > 0) parts = [indent(concat(parts))];
   parts.push(inner);
   for (const s of item.suffix) parts.push(suffix(text(`  ${s}`)));
@@ -272,9 +277,10 @@ class Ctx {
     return new Refusal(`rule for \`${this.node.type}\` wants ${what} but found ${found}`);
   }
 
+  /** Predicates describe the node, not the cursor: count over every child. */
   tally(sel) {
     let n = 0;
-    for (let i = this.cursor; i < this.items.length; i++) if (this.matches(i, sel)) n++;
+    for (let i = 0; i < this.items.length; i++) if (this.matches(i, sel)) n++;
     return n;
   }
 
@@ -309,7 +315,7 @@ class Ctx {
       case "opt":
         return this.matches(this.cursor, parseSelector(rest[0])) ? this.eval(rest[1]) : nil;
       case "trail":
-        return this.trail(rest[0]);
+        return this.trail(rest[0], parseSelector(rest[1]));
       case "paren":
         return this.paren(rest);
       case "autoparen":
@@ -372,11 +378,13 @@ class Ctx {
 
   /** The trailing-separator policy: adopt a separator the source already has
    *  -- which pins the layout open, black's magic trailing comma -- or add one
-   *  when the enclosing group breaks. */
-  trail(sep) {
+   *  when the enclosing group breaks and `sel` picks out a real list. */
+  trail(sep, sel) {
     const optional = ifBreak(text(sep), nil);
     const item = this.items[this.cursor];
-    if (!item || item.node.text !== sep) return optional;
+    // One item is not a list: black splits such a bracket without ever
+    // reaching a comma, and so leaves none behind.
+    if (!item || item.node.text !== sep) return this.tally(sel) > 1 ? optional : nil;
     this.cursor++;
     return concat([decorate(this.fmt, item, optional), breakParent]);
   }

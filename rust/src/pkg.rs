@@ -84,7 +84,7 @@ pub enum Expr {
     Tok(String),
     Verbatim,
     Opt(Sel, Box<Expr>),
-    Trail(String),
+    Trail(String, Sel),
     Paren(Vec<Expr>),
     AutoParen(Sel),
     When(Pred, Box<Expr>, Box<Expr>),
@@ -140,8 +140,8 @@ impl TryFrom<Value> for Expr {
                 Ok(Expr::Tok(literal(&parts[0])?))
             }
             "trail" => {
-                arity(1)?;
-                Ok(Expr::Trail(literal(&parts[0])?))
+                arity(2)?;
+                Ok(Expr::Trail(literal(&parts[0])?, selector(&parts[1])?))
             }
             "blank" => {
                 arity(1)?;

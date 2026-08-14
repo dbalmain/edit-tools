@@ -28,6 +28,8 @@ pub struct Item<'a> {
     pub after: Vec<Comment>,
     /// Blank lines before this item, counting from its first leading comment.
     pub blanks: usize,
+    /// Blank lines between the last leading comment and the item itself.
+    pub gap: usize,
 }
 
 impl Item<'_> {
@@ -75,6 +77,7 @@ pub fn items<'a>(node: &'a Node, src: &[u8], pkg: &Package) -> Result<Vec<Item<'
         items.push(Item {
             node: child,
             blanks: take.first().map_or(blanks, |c| c.blanks),
+            gap: if take.is_empty() { 0 } else { blanks },
             lead: take,
             suffix: Vec::new(),
             after: Vec::new(),

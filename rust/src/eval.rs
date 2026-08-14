@@ -84,6 +84,11 @@ fn decorate(pkg: &Package, item: &Item<'_>, inner: Doc) -> Doc {
             parts.push(Doc::Hard);
         }
     }
+    if !sink {
+        for _ in 0..item.gap.min(2) {
+            parts.push(Doc::Hard);
+        }
+    }
     if sink && !parts.is_empty() {
         parts = vec![Doc::indent(Doc::Concat(parts))];
     }
@@ -162,7 +167,7 @@ impl<'a> Ctx<'a> {
                     Ok(Doc::nil())
                 }
             }
-            Expr::Trail(s) => self.trail(s, f),
+            Expr::Trail(sep, sel) => self.trail(sep, sel, f),
             Expr::Paren(es) => self.paren(es, f),
             Expr::AutoParen(sel) => self.autoparen(sel, f),
             Expr::When(pred, then, alt) => {
@@ -223,12 +228,18 @@ impl<'a> Ctx<'a> {
 
     /// The trailing-separator policy: adopt a separator the source already has
     /// -- which pins the layout open, black's magic trailing comma -- or add
-    /// one when the enclosing group breaks.
-    fn trail(&mut self, sep: &str, f: &Fmt<'a>) -> Result<Doc, Refusal> {
+    /// one when the enclosing group breaks and `sel` picks out a real list.
+    fn trail(&mut self, sep: &str, sel: &Sel, f: &Fmt<'a>) -> Result<Doc, Refusal> {
         let optional = Doc::IfBreak(Box::new(Doc::text(sep)), Box::new(Doc::nil()));
         let at = self.cursor;
         if self.items.get(at).and_then(|i| i.node.text.as_deref()) != Some(sep) {
-            return Ok(optional);
+            // One item is not a list: black splits such a bracket without ever
+            // reaching a comma, and so leaves none behind.
+            return Ok(if self.tally(sel, f.pkg) > 1 {
+                optional
+            } else {
+                Doc::nil()
+            });
         }
         self.cursor += 1;
         Ok(Doc::Concat(vec![
@@ -307,16 +318,18 @@ impl<'a> Ctx<'a> {
     }
 
     fn test(&self, pred: &Pred, pkg: &Package) -> bool {
-        let tally = |sel: &Sel| {
-            (self.cursor..self.items.len())
-                .filter(|&i| self.matches(i, sel, pkg))
-                .count()
-        };
         match pred {
-            Pred::Count(sel, n) => tally(sel) == *n,
-            Pred::CountOver(sel, n) => tally(sel) > *n,
-            Pred::Has(sel) => tally(sel) > 0,
+            Pred::Count(sel, n) => self.tally(sel, pkg) == *n,
+            Pred::CountOver(sel, n) => self.tally(sel, pkg) > *n,
+            Pred::Has(sel) => self.tally(sel, pkg) > 0,
         }
+    }
+
+    /// Predicates describe the node, not the cursor: count over every child.
+    fn tally(&self, sel: &Sel, pkg: &Package) -> usize {
+        (0..self.items.len())
+            .filter(|&i| self.matches(i, sel, pkg))
+            .count()
     }
 
     /// Collect a left-nested run of same-type, same-tightness operators into
