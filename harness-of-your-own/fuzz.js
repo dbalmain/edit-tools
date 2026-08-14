@@ -4,6 +4,8 @@
 // Differential fuzzer for the two bytecode interpreters.
 // Generates well-typed instruction streams (the verifier accepts them),
 // runs rust and js on a fixed tree, compares stdout byte-for-byte.
+// Raw styles include an astral fit-probe (🙂 vs UTF-16 .length) and a
+// HALT-without-drain leftover probe; see DESIGN.md mutation table.
 //
 //   node harness-of-your-own/fuzz.js [--seeds N] [--start S] [--tree PATH]
 //                                    [--width W] [--stop-first]
@@ -172,10 +174,17 @@ function drain(e) {
   e.patch(after, e.here());
 }
 
-function rawProgram(rng) {
+function rawProgram(rng, width) {
   const e = new Emitter();
+  const style = rng.int(8);
+  // Style 7: HALT without draining. The leftover-child refuse is the
+  // structural-linearity check; drain-then-emit never reaches it.
+  if (style === 7) {
+    e.text(rng.pick(["x", ""]));
+    e.emit(OP.HALT);
+    return e;
+  }
   drain(e);
-  const style = rng.int(6);
   if (style === 0) {
     e.text(rng.pick(["", "x", " ", "[]", "hello"]));
   } else if (style === 1) {
@@ -197,6 +206,16 @@ function rawProgram(rng) {
     e.emit(OP.HARDLINE);
     e.text("x");
     e.emit(OP.CONCAT, 2);
+  } else if (style === 6) {
+    // Astral fit probe. group(text(pad+🙂) + line + "z") is `width`
+    // scalar columns (fits) and `width+1` UTF-16 units (breaks).
+    // ASCII-only TEXT at a generous width cannot see .length vs [...s].
+    const n = Math.max(0, width - 3);
+    e.text("a".repeat(n) + "🙂");
+    e.emit(OP.LINE);
+    e.text("z");
+    e.emit(OP.CONCAT, 3);
+    e.emit(OP.GROUP);
   } else {
     e.text("[");
     e.emit(OP.SOFTLINE);
@@ -211,8 +230,8 @@ function rawProgram(rng) {
   return e;
 }
 
-function bytecodeFromRaw(types, rng) {
-  const e = rawProgram(rng);
+function bytecodeFromRaw(types, rng, width) {
+  const e = rawProgram(rng, width);
   const entry = {};
   for (const t of types) entry[t] = 0;
   return {
@@ -344,7 +363,7 @@ function main() {
         bc = compilePackage(authoredFromKinds(types, rng));
         bc.language = "_fuzz";
       } else if (which === 1) {
-        bc = bytecodeFromRaw(types, rng);
+        bc = bytecodeFromRaw(types, rng, opts.width);
       } else {
         bc = bytecodeFromArgs(types, rng);
       }
