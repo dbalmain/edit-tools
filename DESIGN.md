@@ -282,8 +282,9 @@ Named precisely, because a limit you can name is cheaper than one you can't.
 - **Method chains at the dots**, as above.
 - **Quote normalisation, and every other token rewrite.** `'single quoted'`
   stays single-quoted. This is not an oversight — the linearity invariant
-  forbids it, and it is the only reason `strings.py` misses black. I think that
-  is the right trade: a formatter that can rewrite a token can corrupt one.
+  forbids it, and together with the paren case above it is why `strings.py` is
+  the one file that misses black. I think that is the right trade: a formatter
+  that can rewrite a token can corrupt one.
 - **Unknown node types.** A node type with no rule is a refusal, not a guess.
   This makes an incomplete package loud instead of silently wrong, but it means
   a package must cover its language before it is useful at all.
