@@ -355,11 +355,33 @@ implementation (gate 1: UTF-16 `.length` vs scalar count). The
 original generator emits ASCII `TEXT` and the campaign widths
 (60 / 88) never sit on a one-column fit boundary. Swapping in
 `json__basic` and `python__strings` — the trees that contain `🙂`
-— still agreed, even at width 75. The *real* packages on those
-trees only diverge at widths 74–77 on `python__strings`; the 30
-baselines are 60 and 88, so they miss it too. A fuzzer that does
-not *construct* a group whose fit decision is that one column is
-not a Unicode-width test.
+— still agreed, even at width 75.
+
+The *real* packages on the frozen corpus, with `widthOf = s.length`
+planted in JS and compared against rust, only diverge here:
+
+| file | astral scalars | `.length` detectable at | 60? | 88? |
+| --- | ---: | --- | --- | --- |
+| `json__basic` | 6 | 324–329 | no | no |
+| `python__strings` | 10 | 74–77 | no | no |
+| every other corpus file | 0 | — | no | no |
+
+**No corpus file detects a `.length` bug at either scored width.**
+The 30 baselines are 60 and 88, so a submission can ship exactly
+this bug and pass gate 1.
+
+`python__strings` is `astral_call`: the flat form is 74 scalars /
+78 UTF-16 units, so the argument-list group flips at 74–77. At 60
+both already break; at 88 both already fit. The `astral = "🙂…"`
+assignment is 74 / 80 but has no interior break, so it never
+changes layout. `json__basic` only decides at the whole-object
+group (324 scalars / 330 UTF-16); at 60 and 88 that group is
+already broken.
+
+A fuzzer that does not *construct* a group whose fit decision is
+that one column is not a Unicode-width test. The scored corpus
+has the same hole. A case that lands the boundary on 88 (or 60)
+belongs in `corpus/contrib/`.
 
 After adding `group(text(pad+🙂) + line + "z")` sized to `width`
 (scalar columns = width → fits; UTF-16 = width+1 → breaks), seed
