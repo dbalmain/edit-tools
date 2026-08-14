@@ -1,6 +1,7 @@
 {
  "language": "python",
  "source_file": "corpus/src/python/imports.py",
+ "source": "import os\n\nimport os.path\n\nimport collections.abc\n\nfrom typing import Any\n\nfrom collections.abc import Iterable, Mapping, Sequence, MutableMapping, Callable\n\nfrom package.module.submodule import first_name, second_name, third_name, fourth\n\nfrom package import (\n    alpha,\n    beta,\n)\n\nfrom . import sibling\n\nfrom .relative.module import something\n\nimport first_module, second_module\n\nfrom module import name as alias, other as other_alias, third as third_alias_name\n",
  "root": {
   "type": "module",
   "start": 0,

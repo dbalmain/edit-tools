@@ -1,6 +1,7 @@
 {
  "language": "python",
  "source_file": "corpus/src/python/comments.py",
+ "source": "# Module level comment at the very top of the file.\n\nimport os  # trailing comment on an import\n\n\n# Own-line comment before a definition, separated by a blank line.\ndef documented(a, b):\n    # Leading comment inside the body.\n    result = a + b  # trailing comment on a statement\n    # Comment before return.\n    return result\n\n\nvalues = [\n    1,  # first\n    2,  # second\n    # own-line comment inside a bracketed list\n    3,\n]\n\nconfig = {\n    # comment before the first key\n    \"host\": \"localhost\",\n    \"port\": 8080,  # trailing on a pair\n}\n\n\ndef between():\n    pass\n    # trailing comment at the end of a block\n\n\n# Comment at the end of the file.\n",
  "root": {
   "type": "module",
   "start": 0,

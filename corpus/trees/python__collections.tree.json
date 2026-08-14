@@ -1,6 +1,7 @@
 {
  "language": "python",
  "source_file": "corpus/src/python/collections.py",
+ "source": "empty_list = []\n\nempty_dict = {}\n\nshort_list = [1, 2, 3]\n\nlong_list = [alpha, beta, gamma, delta, epsilon, zeta, eta, theta, iota, kappa, lam]\n\nnested_list = [[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12], [13, 14, 15], [16, 17]]\n\nconfig = {\"host\": \"localhost\", \"port\": 8080, \"debug\": True, \"timeout\": 30, \"retry\": 3}\n\nnested_dict = {\"outer\": {\"inner\": {\"deep\": [1, 2, 3], \"other\": \"value\"}}, \"sibling\": 2}\n\nmagic_trailing = [\n    1,\n    2,\n]\n\ntuple_literal = (first_element, second_element, third_element, fourth_element, fifth)\n\nsingle_tuple = (lonely,)\n\nset_literal = {alpha, beta, gamma, delta, epsilon, zeta, eta, theta, iota, kappa, mu}\n\nmixed = {\"items\": [1, 2, 3], \"pairs\": [(a, b), (c, d)], \"nested\": {\"key\": \"value\"}}\n",
  "root": {
   "type": "module",
   "start": 0,

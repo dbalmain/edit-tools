@@ -16,11 +16,14 @@ That is what lets submissions ship no parser at all.
 """
 
 import argparse
+import ast
 import gzip
+import io
 import json
 import subprocess
 import sys
 import tempfile
+import tokenize
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -98,19 +101,52 @@ def ts_leaves(node: Node, source: bytes) -> list[str]:
     return out
 
 
-def normalise_tokens(tokens: list[str]) -> list[str]:
-    """Drop trailing commas so magic-trailing-comma behaviour is not penalised.
+def semantics(text: str, language: str) -> tuple | None:
+    """A meaning-preserving signature, computed by the language's own parser.
 
-    A comma immediately before a closing bracket carries no meaning, and a
-    formatter is free to add or remove one. Everything else -- including
-    parentheses -- must survive verbatim.
+    Deferring to `ast` rather than normalising a tree-sitter tree by hand is
+    what makes this gate principled. `ast` already discards exactly what a
+    formatter is entitled to change -- parenthesisation, quote style, trailing
+    commas, line breaks -- and preserves everything it is not. Hand-rolled
+    normalisation was whack-a-mole: stripping `parenthesized_expression` still
+    missed the parens black adds to an import list, and missed `pattern_list`
+    becoming `tuple_pattern` when a target list gains parens.
+
+    Comments are invisible to `ast`, so they are compared separately; dropping
+    one is the destructive change this gate most needs to catch.
+
+    Returns None if the text does not parse, which is itself a gate failure.
     """
+    if language == "python":
+        try:
+            tree = ast.parse(text)
+        except (SyntaxError, ValueError):
+            return None
+        return ("python", ast.dump(tree), tuple(comments_of(text)))
+    try:
+        # object_pairs_hook keeps key order significant -- reordering an
+        # object's keys is a change a formatter must not make.
+        return ("json", json.loads(text, object_pairs_hook=list))
+    except ValueError:
+        return None
+
+
+def comments_of(text: str) -> list[str]:
     out: list[str] = []
-    for i, tok in enumerate(tokens):
-        if tok == "," and i + 1 < len(tokens) and tokens[i + 1] in CLOSERS:
-            continue
-        out.append(tok)
+    try:
+        for tok in tokenize.generate_tokens(io.StringIO(text).readline):
+            if tok.type == tokenize.COMMENT:
+                out.append(tok.string.strip())
+    except (tokenize.TokenError, IndentationError, SyntaxError):
+        pass
     return out
+
+
+def describe_diff(before: tuple, after: tuple) -> str:
+    if before[0] == "python" and before[2] != after[2]:
+        lost = [c for c in before[2] if c not in after[2]]
+        return f"comments changed, lost {lost[:3]}" if lost else "comments changed"
+    return "parse tree differs"
 
 
 def reparse(text: str, language: str) -> tuple[Node | None, bytes]:
@@ -144,7 +180,7 @@ def as_tree_doc(text: str, language: str) -> dict | None:
             out["text"] = source[node.start_byte : node.end_byte].decode("utf-8")
         return out
 
-    return {"language": language, "root": convert(root, None)}
+    return {"language": language, "source": text, "root": convert(root, None)}
 
 
 # --------------------------------------------------------------------------
@@ -178,11 +214,15 @@ def gzipped_tree(path: Path) -> int:
 
 
 def overflow_lines(text: str, width: int, tokens: list[str]) -> int:
-    """Lines over budget that a better layout could have fixed.
+    """Lines over budget.
 
-    A line containing a token longer than the budget is exempt -- no formatter
-    can break a long string literal or identifier, so the overflow is not
-    evidence of a bad layout decision.
+    This is a **comparative** measure, not an absolute one. Exempting lines that
+    contain an over-long token removes the obvious false positives, but some
+    overflow is genuinely unfixable -- a JSON pair whose value is a long string
+    has no break opportunity at all -- and the scorer cannot tell those apart
+    without modelling each design's break points. Every submission formats the
+    same corpus, so the floor is shared; compare submissions to each other and
+    to the black baseline reported alongside, not to zero.
     """
     unbreakable = [t for t in tokens if len(t) > width]
     count = 0
@@ -213,7 +253,9 @@ def score(submission: Path, verbose: bool = False) -> Report:
         for tree_path in trees:
             doc = json.loads(tree_path.read_text())
             language = doc["language"]
-            src_tokens = normalise_tokens(leaves(doc["root"]))
+            src_text = (ROOT / doc["source_file"]).read_text()
+            src_sig = semantics(src_text, language)
+            src_tokens = leaves(doc["root"])
 
             for width in WIDTHS:
                 tag = f"{tree_path.stem}@{width}"
@@ -233,14 +275,13 @@ def score(submission: Path, verbose: bool = False) -> Report:
                 agree += 1
                 text = r_run.text
 
-                # --- gate 3: output re-parses and preserves every token
-                out_tokens_root, out_source = reparse(text, language)
-                if out_tokens_root is None:
+                # --- gate 3: output parses and means the same thing
+                out_sig = semantics(text, language)
+                if out_sig is None:
                     notes.append(f"{tag}: output does not parse")
                     continue
-                out_tokens = normalise_tokens(ts_leaves(out_tokens_root, out_source))
-                if out_tokens != src_tokens:
-                    notes.append(f"{tag}: token stream changed ({_first_diff(src_tokens, out_tokens)})")
+                if out_sig != src_sig:
+                    notes.append(f"{tag}: {describe_diff(src_sig, out_sig)}")
                     continue
                 nondestructive += 1
 
@@ -262,7 +303,7 @@ def score(submission: Path, verbose: bool = False) -> Report:
         "0-coverage": _gate(covered, total, "formatted every corpus file at every width"),
         "1-agreement": _gate(agree, total, "rust and js byte-identical"),
         "2-idempotence": _gate(idempotent, total, "fmt(fmt(x)) == fmt(x)"),
-        "3-nondestruction": _gate(nondestructive, total, "token stream and comments preserved"),
+        "3-nondestruction": _gate(nondestructive, total, "meaning and comments preserved"),
     }
 
     js_bytes = gzipped_tree(submission / "runtime-js" / "bundle.js")
@@ -284,7 +325,7 @@ def _gate(got: int, total: int, what: str) -> dict:
     return {"pass": got == total, "got": got, "of": total, "what": what}
 
 
-def _first_diff(a: list[str], b: list[str]) -> str:
+def first_diff(a: list[str], b: list[str]) -> str:
     for i, (x, y) in enumerate(zip(a, b)):
         if x != y:
             return f"at token {i}: expected {x!r}, got {y!r}"
@@ -296,7 +337,7 @@ def black_agreement(submission: Path) -> dict:
     import black
 
     mode = black.Mode(line_length=BLACK_WIDTH)
-    matched = compared = 0
+    matched = compared = black_overflow = 0
     for tree_path in sorted(TREES.glob("python__*.tree.json")):
         doc = json.loads(tree_path.read_text())
         source = (ROOT / doc["source_file"]).read_text()
@@ -304,13 +345,14 @@ def black_agreement(submission: Path) -> dict:
             expected = black.format_str(source, mode=mode)
         except Exception:
             continue
+        black_overflow += overflow_lines(expected, BLACK_WIDTH, leaves(doc["root"]))
         run = invoke(submission / "fmt-rust", tree_path, BLACK_WIDTH)
         if not run.ok:
             compared += 1
             continue
         compared += 1
         matched += run.text == expected
-    return {"matched": matched, "of": compared}
+    return {"matched": matched, "of": compared, "black_overflow": black_overflow}
 
 
 def main() -> int:
@@ -336,7 +378,8 @@ def main() -> int:
     print(f"\n  overflow lines     {m['4-overflow-lines']}")
     print(f"  size (gzip)        {size['total']} B "
           f"= {size['js-runtime']} runtime + {size['packages']} packages")
-    print(f"  black agreement    {ba['matched']}/{ba['of']}")
+    print(f"  black agreement    {ba['matched']}/{ba['of']}"
+          f"  (black's own overflow at 88: {ba['black_overflow']})")
 
     if rep.detail:
         print("\nfailures:")

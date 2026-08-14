@@ -24,3 +24,8 @@ in_call = log_message("a fairly long message passed directly as a call argument 
 escape = "line one\nline two\ttabbed"
 
 unicode_literal = "café"
+
+# astral characters: width must be counted in scalar values, not UTF-16 units
+astral = "🙂🙂🙂🙂🙂🙂 a string whose width differs between JS and Rust naively"
+
+astral_call = render("🙂🙂🙂🙂", alignment_option, padding_option, width_hint)

@@ -1,15 +1,16 @@
 {
  "language": "json",
  "source_file": "corpus/src/json/basic.json",
+ "source": "{\n  \"string\": \"value\",\n  \"number\": 42,\n  \"float\": 3.14159,\n  \"negative\": -17,\n  \"exponent\": 1.5e10,\n  \"true\": true,\n  \"false\": false,\n  \"null\": null,\n  \"empty_object\": {},\n  \"empty_array\": [],\n  \"short_array\": [1, 2, 3],\n  \"escaped\": \"quote \\\" backslash \\\\ newline \\n unicode é\",\n  \"astral\": \"🙂🙂🙂🙂🙂🙂 counted as scalar values, not UTF-16 code units\"\n}\n",
  "root": {
   "type": "document",
   "start": 0,
-  "end": 282,
+  "end": 370,
   "children": [
    {
     "type": "object",
     "start": 0,
-    "end": 281,
+    "end": 369,
     "children": [
      {
       "type": "{",
@@ -779,9 +780,80 @@
       ]
      },
      {
+      "type": ",",
+      "start": 279,
+      "end": 280,
+      "text": ","
+     },
+     {
+      "type": "pair",
+      "start": 283,
+      "end": 367,
+      "children": [
+       {
+        "type": "string",
+        "start": 283,
+        "end": 291,
+        "field": "key",
+        "children": [
+         {
+          "type": "\"",
+          "start": 283,
+          "end": 284,
+          "text": "\""
+         },
+         {
+          "type": "string_content",
+          "start": 284,
+          "end": 290,
+          "text": "astral"
+         },
+         {
+          "type": "\"",
+          "start": 290,
+          "end": 291,
+          "text": "\""
+         }
+        ]
+       },
+       {
+        "type": ":",
+        "start": 291,
+        "end": 292,
+        "text": ":"
+       },
+       {
+        "type": "string",
+        "start": 293,
+        "end": 367,
+        "field": "value",
+        "children": [
+         {
+          "type": "\"",
+          "start": 293,
+          "end": 294,
+          "text": "\""
+         },
+         {
+          "type": "string_content",
+          "start": 294,
+          "end": 366,
+          "text": "🙂🙂🙂🙂🙂🙂 counted as scalar values, not UTF-16 code units"
+         },
+         {
+          "type": "\"",
+          "start": 366,
+          "end": 367,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     },
+     {
       "type": "}",
-      "start": 280,
-      "end": 281,
+      "start": 368,
+      "end": 369,
       "text": "}"
      }
     ]
