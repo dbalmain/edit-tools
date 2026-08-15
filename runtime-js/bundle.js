@@ -320,7 +320,7 @@ function buildPackage(pkg) {
 const text = (s) => ({ k: "text", s, brk: false });
 const concat = (parts) => ({ k: "concat", parts, brk: parts.some((p) => p.brk) });
 const group = (d) => ({ k: "group", d, brk: d.brk });
-const indent = (d) => ({ k: "indent", d, brk: d.brk });
+const indent = (n, d) => ({ k: "indent", n, d, brk: d.brk });
 const line = { k: "line", brk: false };
 const soft = { k: "soft", brk: false };
 const hard = { k: "hard", brk: true };
@@ -339,7 +339,7 @@ const BREAK = 1;
 /** Does `next` fit in `rem` columns, given the work still on the printer's
  *  stack? Measuring the rest of the line -- not just the group -- is what
  *  makes a trailing `)` or a trailing comment count against the budget. */
-function fits(next, rest, rem, tab) {
+function fits(next, rest, rem) {
   const stack = [next];
   let restAt = rest.length;
   for (;;) {
@@ -364,7 +364,7 @@ function fits(next, rest, rem, tab) {
         stack.push([ind, doc.brk ? BREAK : mode, doc.d]);
         break;
       case "indent":
-        stack.push([ind + tab, mode, doc.d]);
+        stack.push([ind + doc.n, mode, doc.d]);
         break;
       case "line":
         if (mode === BREAK) return true;
@@ -387,7 +387,7 @@ function fits(next, rest, rem, tab) {
 }
 
 /** Indentation is written lazily, so a blank line is genuinely empty. */
-function print(doc, cols, tab) {
+function print(doc, cols) {
   const out = [];
   let pos = 0;
   let pending = 0;
@@ -418,10 +418,10 @@ function print(doc, cols, tab) {
           for (let i = d.parts.length - 1; i >= 0; i--) stack.push([ind, mode, d.parts[i]]);
           break;
         case "indent":
-          stack.push([ind + tab, mode, d.d]);
+          stack.push([ind + d.n, mode, d.d]);
           break;
         case "group": {
-          const flat = !d.brk && fits([ind, FLAT, d.d], stack, cols - pos, tab);
+          const flat = !d.brk && fits([ind, FLAT, d.d], stack, cols - pos);
           stack.push([ind, flat ? FLAT : BREAK, d.d]);
           break;
         }
@@ -534,7 +534,7 @@ function decorate(fmt, item, inner) {
   if (!sink) {
     for (let i = 0; i < Math.min(item.gap, fmt.blankCap); i++) parts.push(hard);
   }
-  if (sink && parts.length > 0) parts = [indent(concat(parts))];
+  if (sink && parts.length > 0) parts = [indent(fmt.pkg.indent, concat(parts))];
   parts.push(inner);
   const gap = " ".repeat(fmt.commentGap);
   for (const s of item.suffix) parts.push(suffix(text(`${gap}${s}`)));
@@ -618,7 +618,7 @@ class Ctx {
       case "group":
         return group(concat(rest.map((e) => this.eval(e))));
       case "indent":
-        return indent(concat(rest.map((e) => this.eval(e))));
+        return indent(this.fmt.pkg.indent, concat(rest.map((e) => this.eval(e))));
       case "line":
         return line;
       case "soft":
@@ -736,7 +736,7 @@ class Ctx {
     } else {
       close = ifBreak(text(")"), nil);
     }
-    return group(concat([open, indent(concat([soft, inner])), soft, close]));
+    return group(concat([open, indent(this.fmt.pkg.indent, concat([soft, inner])), soft, close]));
   }
 
   /** Format a child, adding optional parentheses if its type is one the
@@ -747,7 +747,7 @@ class Ctx {
     const inner = this.child(sel);
     if (!wrap) return inner;
     return group(
-      concat([ifBreak(text("("), nil), indent(concat([soft, inner])), soft, ifBreak(text(")"), nil)]),
+      concat([ifBreak(text("("), nil), indent(this.fmt.pkg.indent, concat([soft, inner])), soft, ifBreak(text(")"), nil)]),
     );
   }
 
@@ -905,7 +905,7 @@ class Formatter {
 /** Format a corpus tree. Throws `Refusal` rather than guessing. */
 function format(tree, cols, pkg) {
   const fmt = new Formatter(pkg, tree.source);
-  const out = print(fmt.node(tree.root), cols, fmt.pkg.indent);
+  const out = print(fmt.node(tree.root), cols);
   return `${out.replace(/\n+$/, "")}\n`;
 }
 

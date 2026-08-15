@@ -323,7 +323,10 @@ Width is Unicode scalar values in both runtimes: `s.chars().count()` in Rust,
 failure is invisible until someone writes an emoji.
 
 Indentation is written lazily, so a blank line is genuinely empty rather than a
-run of spaces.
+run of spaces. Each `Indent` node carries its own column count, resolved from
+the package header when the Doc is built, so the printer has no global tab. The
+amount is relative — nested indents add — which is what lets a later embedded
+language bring a different width without a printer change.
 
 The two implementations are independent, not transliterations. The Rust one
 parses the package into a typed `Expr` enum with `TryFrom<Value>`, so a

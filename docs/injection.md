@@ -45,22 +45,23 @@ A node naming a language with no package in the map is a **refusal**, in the
 same voice as an unknown node type. It is not a silent fallback — see below for
 why that does not hurt.
 
-### 3. `indent` must carry its own amount
+### 3. `indent` carries its own amount — **done**
 
-This is the only real change, and it is worth making regardless of injection.
+This was the only real change, and it was worth making regardless of injection.
 
-`Doc::Indent` today means "one level deeper", and the printer resolves a level
+`Doc::Indent` used to mean "one level deeper", and the printer resolved a level
 into columns using a single `tab` passed to `print` — the root package's
 `indent`. A markdown document indenting by 2 that contains Python indenting by 4
 has no single correct `tab`.
 
-The fix: **`Indent` carries its column count, resolved when the Doc is built**,
-by whichever package built it. `print` then needs no `tab` argument at all.
+**`Indent` now carries its column count, resolved when the Doc is built**, by
+whichever package built it. `print` has no `tab` argument. The amount is
+relative (`ind + n`), so a single-package document is unchanged.
 
-It is a small change to both printers and it removes an argument rather than
-adding one. It also buys something unrelated: a language whose continuation
-lines indent differently from its block bodies becomes expressible, which is a
-`LANGUAGES.md` "known stress" for Haskell.
+It removed an argument rather than adding one. It also buys something
+unrelated: a language whose continuation lines indent differently from its
+block bodies becomes expressible, which is a `LANGUAGES.md` "known stress" for
+Haskell.
 
 ### 4. Nothing else
 
@@ -154,9 +155,9 @@ highlighter invent its own.
 
 ## Suggested order
 
-1. `Indent` carries its own amount. Independent of everything else, small, and
-   it removes a printer argument. Do it first and alone, so the diff is
-   reviewable against a byte-identical corpus.
+1. `Indent` carries its own amount — **done**. Independent of everything else,
+   small, and it removes a printer argument. Done first and alone, so the
+   diff is reviewable against a byte-identical corpus.
 2. Package map plus the node `language` field, with a two-language toy fixture
    in both runtimes — no grammar work, no corpus.
 3. Harness splicing in `gen_trees.py`, with markdown + JavaScript as the first

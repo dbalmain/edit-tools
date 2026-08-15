@@ -178,8 +178,9 @@ opcodes**. Degradation for unparseable or unsupported snippets lives in the
 harness and the package (`verbatim`), so the runtime keeps its refuse-rather-
 than-guess rule intact.
 
-The one architectural change is `Indent` carrying its own amount, which is worth
-doing on its own merits and should land as an isolated, byte-identical diff.
+The one architectural change — `Indent` carrying its own amount — has landed,
+as an isolated, byte-identical diff. Remaining for this point: the package map
+and the node `language` field.
 
 ## 7. Is the tree interface actually independent of tree-sitter? — **closed, yes**
 

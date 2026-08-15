@@ -11,7 +11,8 @@ pub enum Doc {
     Text(String),
     Concat(Vec<Doc>),
     Group(Box<Doc>),
-    Indent(Box<Doc>),
+    /// Relative indent of `n` columns for line breaks inside.
+    Indent(usize, Box<Doc>),
     /// Space when flat, newline when broken.
     Line,
     /// Nothing when flat, newline when broken.
@@ -38,8 +39,8 @@ impl Doc {
         Doc::Group(Box::new(d))
     }
 
-    pub fn indent(d: Doc) -> Doc {
-        Doc::Indent(Box::new(d))
+    pub fn indent(n: usize, d: Doc) -> Doc {
+        Doc::Indent(n, Box::new(d))
     }
 }
 
@@ -65,7 +66,7 @@ fn collect_forced(doc: &Doc, forced: &mut Forced) -> bool {
             }
             inner_forced
         }
-        Doc::Indent(inner) => collect_forced(inner, forced),
+        Doc::Indent(_, inner) => collect_forced(inner, forced),
         Doc::IfBreak(broken, flat) => {
             collect_forced(broken, forced);
             collect_forced(flat, forced);
@@ -106,7 +107,7 @@ fn first_line(s: &str) -> (isize, bool) {
 /// Does `next` fit in `rem` columns, given the work still on the printer's
 /// stack? Measuring the rest of the line -- not just the group -- is what
 /// makes a trailing `)` or a trailing comment count against the budget.
-fn fits(next: Cmd<'_>, rest: &[Cmd<'_>], mut rem: isize, tab: usize, forced: &Forced) -> bool {
+fn fits(next: Cmd<'_>, rest: &[Cmd<'_>], mut rem: isize, forced: &Forced) -> bool {
     let mut stack = vec![next];
     let mut rest_at = rest.len();
     loop {
@@ -140,7 +141,7 @@ fn fits(next: Cmd<'_>, rest: &[Cmd<'_>], mut rem: isize, tab: usize, forced: &Fo
                 };
                 stack.push((ind, m, inner));
             }
-            Doc::Indent(inner) => stack.push((ind + tab, mode, inner)),
+            Doc::Indent(n, inner) => stack.push((ind + n, mode, inner)),
             Doc::Line => {
                 if mode == Mode::Break {
                     return true;
@@ -165,7 +166,7 @@ fn fits(next: Cmd<'_>, rest: &[Cmd<'_>], mut rem: isize, tab: usize, forced: &Fo
     }
 }
 
-pub fn print(doc: &Doc, width: usize, tab: usize) -> String {
+pub fn print(doc: &Doc, width: usize) -> String {
     let mut forced = Forced::new();
     collect_forced(doc, &mut forced);
     let mut out = String::new();
@@ -189,11 +190,11 @@ pub fn print(doc: &Doc, width: usize, tab: usize) -> String {
                     }
                 }
                 Doc::Concat(ds) => stack.extend(ds.iter().rev().map(|d| (ind, mode, d))),
-                Doc::Indent(inner) => stack.push((ind + tab, mode, inner)),
+                Doc::Indent(n, inner) => stack.push((ind + n, mode, inner)),
                 Doc::Group(inner) => {
                     let rem = width as isize - pos as isize;
                     let flat = !forces_break(inner, &forced)
-                        && fits((ind, Mode::Flat, inner), &stack, rem, tab, &forced);
+                        && fits((ind, Mode::Flat, inner), &stack, rem, &forced);
                     stack.push((ind, if flat { Mode::Flat } else { Mode::Break }, inner));
                 }
                 Doc::Line | Doc::Soft | Doc::Hard => {
@@ -241,19 +242,22 @@ mod tests {
         let doc = || {
             Doc::group(seq(vec![
                 Doc::text("["),
-                Doc::indent(seq(vec![
-                    Doc::Soft,
-                    Doc::text("a"),
-                    Doc::text(","),
-                    Doc::Line,
-                    Doc::text("b"),
-                ])),
+                Doc::indent(
+                    2,
+                    seq(vec![
+                        Doc::Soft,
+                        Doc::text("a"),
+                        Doc::text(","),
+                        Doc::Line,
+                        Doc::text("b"),
+                    ]),
+                ),
                 Doc::Soft,
                 Doc::text("]"),
             ]))
         };
-        assert_eq!(print(&doc(), 80, 2), "[a, b]");
-        assert_eq!(print(&doc(), 4, 2), "[\n  a,\n  b\n]");
+        assert_eq!(print(&doc(), 80), "[a, b]");
+        assert_eq!(print(&doc(), 4), "[\n  a,\n  b\n]");
     }
 
     #[test]
@@ -261,19 +265,17 @@ mod tests {
         // Three astral characters are three columns. Counting UTF-16 units
         // would make them six and break agreement with the other runtime.
         let doc = Doc::group(seq(vec![Doc::text("🙂🙂🙂"), Doc::Line, Doc::text("x")]));
-        assert_eq!(print(&doc, 5, 2), "🙂🙂🙂 x");
-        assert_eq!(print(&doc, 4, 2), "🙂🙂🙂\nx");
+        assert_eq!(print(&doc, 5), "🙂🙂🙂 x");
+        assert_eq!(print(&doc, 4), "🙂🙂🙂\nx");
     }
 
     #[test]
     fn a_blank_line_carries_no_trailing_whitespace() {
-        let doc = Doc::indent(seq(vec![
-            Doc::text("a"),
-            Doc::Hard,
-            Doc::Hard,
-            Doc::text("b"),
-        ]));
-        assert_eq!(print(&doc, 80, 4), "a\n\n    b");
+        let doc = Doc::indent(
+            4,
+            seq(vec![Doc::text("a"), Doc::Hard, Doc::Hard, Doc::text("b")]),
+        );
+        assert_eq!(print(&doc, 80), "a\n\n    b");
     }
 
     #[test]
@@ -285,7 +287,7 @@ mod tests {
             Doc::Hard,
             Doc::text("y"),
         ]);
-        assert_eq!(print(&doc, 80, 2), "x,  # note\ny");
+        assert_eq!(print(&doc, 80), "x,  # note\ny");
     }
 
     #[test]
@@ -296,7 +298,7 @@ mod tests {
             Doc::text("b"),
             Doc::Hard,
         ]));
-        assert_eq!(print(&doc, 80, 2), "a\nb\n");
+        assert_eq!(print(&doc, 80), "a\nb\n");
     }
 
     #[test]
@@ -308,7 +310,7 @@ mod tests {
             Doc::BreakParent,
         ]));
         let doc = Doc::IfBreak(Box::new(inner), Box::new(Doc::nil()));
-        assert_eq!(print(&doc, 80, 2), "a\nb");
+        assert_eq!(print(&doc, 80), "a\nb");
     }
 
     #[test]
@@ -319,7 +321,22 @@ mod tests {
             Doc::group(seq(vec![Doc::text("a"), Doc::Line, Doc::text("b")])),
             Doc::text(")))"),
         ]);
-        assert_eq!(print(&doc, 6, 2), "a b)))");
-        assert_eq!(print(&doc, 5, 2), "a\nb)))");
+        assert_eq!(print(&doc, 6), "a b)))");
+        assert_eq!(print(&doc, 5), "a\nb)))");
+    }
+
+    #[test]
+    fn nested_indents_add_their_own_amounts() {
+        // Relative: a break inside a 2-column indent that sits inside a
+        // 4-column one lands at column 6. The inner Hard has to live under
+        // the inner Indent — wrapping already-emitted text is a no-op.
+        let doc = Doc::indent(
+            4,
+            seq(vec![
+                Doc::text("a"),
+                Doc::indent(2, seq(vec![Doc::Hard, Doc::text("b")])),
+            ]),
+        );
+        assert_eq!(print(&doc, 80), "a\n      b");
     }
 }

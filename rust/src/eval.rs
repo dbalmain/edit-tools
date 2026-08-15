@@ -17,7 +17,7 @@ pub fn format(tree: &TreeDoc, pkg: &Package, width: usize) -> Result<String, Ref
         src: tree.source.as_bytes(),
     };
     let doc = fmt.node(&tree.root)?;
-    let mut out = crate::doc::print(&doc, width, pkg.indent);
+    let mut out = crate::doc::print(&doc, width);
     while out.ends_with('\n') {
         out.pop();
     }
@@ -91,7 +91,7 @@ fn decorate(pkg: &Package, item: &Item<'_>, inner: Doc) -> Doc {
         }
     }
     if sink && !parts.is_empty() {
-        parts = vec![Doc::indent(Doc::Concat(parts))];
+        parts = vec![Doc::indent(pkg.indent, Doc::Concat(parts))];
     }
     parts.push(inner);
     let gap = " ".repeat(pkg.comment_gap);
@@ -172,7 +172,10 @@ impl<'a> Ctx<'a> {
         match expr {
             Expr::Seq(es) => Ok(Doc::Concat(self.eval_all(es, f)?)),
             Expr::Group(es) => Ok(Doc::group(Doc::Concat(self.eval_all(es, f)?))),
-            Expr::Indent(es) => Ok(Doc::indent(Doc::Concat(self.eval_all(es, f)?))),
+            Expr::Indent(es) => Ok(Doc::indent(
+                f.pkg.indent,
+                Doc::Concat(self.eval_all(es, f)?),
+            )),
             Expr::Line => Ok(Doc::Line),
             Expr::Soft => Ok(Doc::Soft),
             Expr::Hard => Ok(Doc::Hard),
@@ -319,7 +322,7 @@ impl<'a> Ctx<'a> {
         };
         Ok(Doc::group(Doc::Concat(vec![
             open,
-            Doc::indent(Doc::Concat(vec![Doc::Soft, inner])),
+            Doc::indent(f.pkg.indent, Doc::Concat(vec![Doc::Soft, inner])),
             Doc::Soft,
             close,
         ])))
@@ -341,7 +344,7 @@ impl<'a> Ctx<'a> {
         }
         Ok(Doc::group(Doc::Concat(vec![
             Doc::IfBreak(Box::new(Doc::text("(")), Box::new(Doc::nil())),
-            Doc::indent(Doc::Concat(vec![Doc::Soft, inner])),
+            Doc::indent(f.pkg.indent, Doc::Concat(vec![Doc::Soft, inner])),
             Doc::Soft,
             Doc::IfBreak(Box::new(Doc::text(")")), Box::new(Doc::nil())),
         ])))

@@ -47,9 +47,8 @@ time rather than all at once.
   that it **contains other languages**. Dave's headline requirement is that
   JavaScript inside a ` ```javascript ` fence is formatted and highlighted as
   JavaScript, which is why it sits with JavaScript in R4 rather than earlier.
-  Designed in [../injection.md](../injection.md); it needs runtime work (a
-  package map, `indent` carrying its own column count) that must land before the
-  round opens. **The injection machinery can be proved before R4 without waiting
+  Designed in [../injection.md](../injection.md); `indent` now carries its own
+  column count. A package map still has to land before the round opens. **The injection machinery can be proved before R4 without waiting
   for it** — markdown containing ` ```json ` needs only the JSON package, which
   merged in stage 0. Markdown is also the language where refusing is the wrong
   default: a document with one unparseable snippet must still format.
