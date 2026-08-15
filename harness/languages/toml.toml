@@ -17,8 +17,8 @@ reference_width = "flag"
 
 widths = [88, 60]
 
-# The default named-tree comparison preserves TOML's spelling-sensitive syntax;
-# tree-sitter's universal extras check separately preserves comment order.
-gate3 = "default"
+# tomllib independently parses the semantic value; gate3.py's universal
+# tree-sitter layer separately preserves the ordered comment sequence.
+gate3 = "toml"
 transparent_wrappers = []
 equivalent_kinds = []
