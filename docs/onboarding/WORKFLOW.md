@@ -201,9 +201,8 @@ reflows to a width" assumption the python corpus was built on:
 
 - **gofmt has no width setting.** Go is tab-indented and does not reflow. Its
   manifest sets `reference_width = "fixed"` and a single width; gate 4 is
-  agreement with
-  gofmt's one fixed output. This is the first real stress on the template and is
-  deliberately placed early.
+  agreement with gofmt's one fixed output. This is the first real stress on the
+  template and is deliberately placed early.
 - **ormolu has a fixed style**, similarly non-negotiable.
 - **emacs `indent-region` only re-indents; it does not re-flow lines.** So
   Scheme's gate 4 is honestly _indentation_ agreement, not layout agreement. Say
@@ -341,8 +340,30 @@ opencode run --dir <worktree> -m opencode-go/deepseek-v4-pro --auto \
   "$(cat <prompt>)" > <log> 2>&1
 ```
 
+**Strip the template's leading `---` before launching.** The briefs in
+`templates/` open with a `---` rule separating the "this is a template" header
+from the body, and the substitution step slices from that line. grok and codex
+take the prompt as a file or on stdin and do not care. `opencode` takes it as an
+**argv positional**, and yargs reads a leading `---` as a malformed option — it
+prints its usage text and exits 0, having run nothing. Exit 0 plus a log that
+grows to a few KB looks exactly like a launch that worked. Generate the prompt
+with `sed -n '/^---$/,$p' | tail -n +2`.
+
+Two more substitution traps, both found the hard way:
+
+- **Anchor the branch rewrite.** The worktree path contains the branch name as a
+  substring (`editor-tools-wt/lang-toml`), so a bare `s|wt/lang-toml|…|g`
+  rewrites the path too and points the agent at a directory that does not exist.
+  Substitute the backticked form.
+- **Substitute `{{WORKTREE}}` after any branch rewrite**, not before.
+
 Worktrees: `/home/dave/w/editor-tools-wt/lang-<name>/` on `wt/lang-<name>`,
 based on `main`. One language per worktree, one agent per worktree, always.
+
+For a **head-to-head round**, where several agents build the same language, the
+worktree and branch take an agent suffix: `lang-<name>-<agent>` on
+`wt/lang-<name>-<agent>`. The rule that matters is unchanged — one agent per
+worktree, never two writers in one tree.
 
 ## The revision rule
 

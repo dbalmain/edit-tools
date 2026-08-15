@@ -12,7 +12,7 @@ building · `D` package review · `E`/`F` escalated · **merged** · **blocked**
 | ---------- | ---- | ----- | ------- | ------ | ---------------------- | --------------------------------- |
 | JSON       | T1   | —     | —       | merged | tree_sitter_json       | prettier                          |
 | Python     | T2   | —     | —       | merged | tree_sitter_python     | black                             |
-| TOML       | T1   | 1     | all 3   | -      | tree_sitter_toml       | taplo                             |
+| TOML       | T1   | 1     | all 3   | A      | tree-sitter-toml       | taplo 0.10.0                      |
 | YAML       | T1   | 2     | tbd     | -      | tree_sitter_yaml       | prettier                          |
 | CSS        | T1   | 2     | tbd     | -      | tree_sitter_css        | prettier                          |
 | Go         | T2   | 2     | tbd     | -      | tree_sitter_go         | gofmt                             |
