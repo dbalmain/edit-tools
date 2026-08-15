@@ -20,6 +20,16 @@ const leaf = (type, text) => ({ type, start: 0, end: 0, text });
 const run = (pkg, root, width) => runOn(pkg, "", root, width);
 const runOn = (pkg, source, root, width) => format({ language: "toy", source, root }, width, pkg);
 
+const commentsPkg = (fields = {}) => ({
+  format: "et-doc-rules/1",
+  indent: 2,
+  comments: ["comment"],
+  rules: { file: ["each", "named", ["seq"]] },
+  ...fields,
+});
+
+const commentedFile = (children, end) => ({ type: "file", start: 0, end, children });
+
 const span = (type, start, end, text) => ({ type, start, end, text });
 
 /** `"hi"` as a three-child `quote` node — the shape `verbatim` actually sees. */
@@ -89,6 +99,47 @@ test("a rule that ignores a child refuses rather than dropping it", () => {
 
 test("an unknown node type refuses rather than guessing", () => {
   assert.throws(() => run(toy({}), list(["a"], false), 80), /no rule for node type `list`/);
+});
+
+test("comment fields default to one", () => {
+  const source = "x# one\n\n\n# two";
+  const root = commentedFile([
+    { type: "name", start: 0, end: 1, text: "x" },
+    { type: "comment", start: 1, end: 6, text: "# one" },
+    { type: "comment", start: 9, end: 14, text: "# two" },
+  ], 14);
+  assert.equal(runOn(commentsPkg(), source, root, 80), "x # one\n\n# two\n");
+});
+
+test("comment_gap controls trailing comment spacing", () => {
+  const source = "x# c";
+  const root = commentedFile([
+    { type: "name", start: 0, end: 1, text: "x" },
+    { type: "comment", start: 1, end: 4, text: "# c" },
+  ], 4);
+  assert.equal(runOn(commentsPkg({ comment_gap: 4 }), source, root, 80), "x    # c\n");
+});
+
+test("blank_cap limits blank lines next to a comment", () => {
+  const source = "x\n\n\n\n\n# c";
+  const root = commentedFile([
+    { type: "name", start: 0, end: 1, text: "x" },
+    { type: "comment", start: 6, end: 9, text: "# c" },
+  ], 9);
+  assert.equal(runOn(commentsPkg({ blank_cap: 3 }), source, root, 80), "x\n\n\n\n# c\n");
+});
+
+test("comment fields refuse invalid counts", () => {
+  for (const [value, message] of [
+    [9, /`comment_gap` is 9; the most allowed is 8/],
+    [-1, /`comment_gap` must be a non-negative integer, got -1/],
+    [1.5, /`comment_gap` must be a non-negative integer, got 1.5/],
+  ]) {
+    assert.throws(
+      () => runOn(commentsPkg({ comment_gap: value }), "", commentedFile([], 0), 80),
+      (e) => e instanceof Refusal && message.test(e.message),
+    );
+  }
 });
 
 test("the current package format is required", () => {
