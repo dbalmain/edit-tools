@@ -54,7 +54,9 @@ fn walk<'a>(
     ancestors.pop();
 
     if node.kind == "ERROR" {
-        backfill_error(node, spans);
+        backfill(node, "error", spans);
+    } else if let Some(scope) = package.leaf.get(&node.kind) {
+        backfill(node, scope, spans);
     }
 }
 
@@ -104,7 +106,7 @@ fn emit(start: usize, end: usize, scope: &str, spans: &mut Vec<Span>) {
     }
 }
 
-fn backfill_error(node: &Node, spans: &mut Vec<Span>) {
+fn backfill(node: &Node, scope: &str, spans: &mut Vec<Span>) {
     if node.start >= node.end {
         return;
     }
@@ -121,10 +123,10 @@ fn backfill_error(node: &Node, spans: &mut Vec<Span>) {
 
     let mut cursor = node.start;
     for (start, end) in ranges {
-        emit(cursor, start, "error", spans);
+        emit(cursor, start, scope, spans);
         cursor = cursor.max(end);
     }
-    emit(cursor, node.end, "error", spans);
+    emit(cursor, node.end, scope, spans);
 }
 
 fn merge_adjacent(spans: Vec<Span>) -> Vec<Span> {
@@ -246,6 +248,33 @@ mod tests {
         let kwargs = tree.source.find("**kwargs").expect("kwargs splat") + 2;
         assert_eq!(span_scope(&spans, args, args + 4), "parameter");
         assert_eq!(span_scope(&spans, kwargs, kwargs + 6), "parameter");
+        assert_partition(&tree, &package, &spans);
+    }
+
+    #[test]
+    fn an_interior_leaf_default_paints_around_refined_children() {
+        let tree = corpus("python__strings.tree.json");
+        let package = package();
+        let spans = highlight(&tree, &package);
+        let line_one = tree.source.find("line one").expect("escaped string");
+        let newline = tree.source[line_one..]
+            .find("\\n")
+            .map(|offset| offset + line_one)
+            .expect("newline escape");
+        let line_two = newline + 2;
+        let tab = tree.source[line_two..]
+            .find("\\t")
+            .map(|offset| offset + line_two)
+            .expect("tab escape");
+        let closing_quote = tree.source[tab + 2..]
+            .find('"')
+            .map(|offset| offset + tab + 3)
+            .expect("closing quote");
+        assert_eq!(span_scope(&spans, line_one - 1, newline), "string");
+        assert_eq!(span_scope(&spans, newline, line_two), "string.escape");
+        assert_eq!(span_scope(&spans, line_two, tab), "string");
+        assert_eq!(span_scope(&spans, tab, tab + 2), "string.escape");
+        assert_eq!(span_scope(&spans, tab + 2, closing_quote), "string");
         assert_partition(&tree, &package, &spans);
     }
 

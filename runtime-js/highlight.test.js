@@ -129,6 +129,22 @@ test("Rust and JS agree on splat parameters", () => {
   assertPartition(tree, pkg, spans);
 });
 
+test("interior leaf defaults paint around refined children", () => {
+  const tree = readTree("python__strings.tree.json");
+  const spans = assertIdentity(tree);
+  const lineOne = byteOffset(tree.source, "line one");
+  const newline = byteOffset(tree.source, "\\n", lineOne);
+  const lineTwo = newline + 2;
+  const tab = byteOffset(tree.source, "\\t", lineTwo);
+  const closingQuote = byteOffset(tree.source, '"', tab + 2) + 1;
+  assert.equal(spanScope(spans, lineOne - 1, newline), "string");
+  assert.equal(spanScope(spans, newline, lineTwo), "string.escape");
+  assert.equal(spanScope(spans, lineTwo, tab), "string");
+  assert.equal(spanScope(spans, tab, tab + 2), "string.escape");
+  assert.equal(spanScope(spans, tab + 2, closingQuote), "string");
+  assertPartition(tree, pkg, spans);
+});
+
 test("Rust and JS agree on ERROR child-range backfill", () => {
   const spans = assertIdentity(errorTree);
   assert.deepEqual(spans, [

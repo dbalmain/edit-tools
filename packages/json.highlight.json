@@ -23,13 +23,19 @@
     "]": "punctuation",
     ",": "punctuation",
     ":": "punctuation",
-    "\"": "punctuation"
+    "\"": "string"
   },
   "context": [
     {
       "parent": "string",
       "parent_field": "key",
       "type": "string_content",
+      "scope": "property"
+    },
+    {
+      "parent": "string",
+      "parent_field": "key",
+      "type": "\"",
       "scope": "property"
     }
   ]

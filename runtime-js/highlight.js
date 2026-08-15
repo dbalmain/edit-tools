@@ -108,17 +108,18 @@ function highlight(tree, pkg) {
     for (const child of children) visit(child, node);
     ancestors.pop();
 
-    if (node.type === "ERROR" && node.start < node.end) {
+    const background = node.type === "ERROR" ? "error" : pkg.leaf[node.type];
+    if (background !== undefined && node.start < node.end) {
       const covered = children
         .map((child) => [Math.max(child.start, node.start), Math.min(child.end, node.end)])
         .filter(([start, end]) => start < end)
         .sort((left, right) => left[0] - right[0] || left[1] - right[1]);
       let cursor = node.start;
       for (const [start, end] of covered) {
-        emit(cursor, start, "error");
+        emit(cursor, start, background);
         cursor = Math.max(cursor, end);
       }
-      emit(cursor, node.end, "error");
+      emit(cursor, node.end, background);
     }
   };
 

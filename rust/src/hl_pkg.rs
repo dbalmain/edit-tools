@@ -139,12 +139,14 @@ mod tests {
         let package = Package::load(raw).expect("shipped JSON package loads");
         assert!(package.scopes.contains("string.escape"));
         assert_eq!(package.leaf["string_content"], "string");
-        assert_eq!(package.context.len(), 1);
+        assert_eq!(package.context.len(), 2);
         assert_eq!(package.context[0].parent.as_deref(), Some("string"));
         assert_eq!(package.context[0].field, None);
         assert_eq!(package.context[0].parent_field.as_deref(), Some("key"));
         assert_eq!(package.context[0].kind.as_deref(), Some("string_content"));
         assert_eq!(package.context[0].ancestor, None);
+        assert_eq!(package.context[1].kind.as_deref(), Some("\""));
+        assert_eq!(package.context[1].scope, "property");
     }
 
     #[test]
