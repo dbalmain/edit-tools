@@ -18,6 +18,10 @@ reference_width = "flag"
 # 88 is black's default; 60 forces the layout decisions 88 lets a package dodge.
 widths = [88, 60]
 
+# Exact file-and-width cases where differing from black is a reviewed house-style
+# decision. A reason is mandatory, and score.py fails if a declaration goes stale.
+intentional_divergences = []
+
 # `ast.dump` is stronger than the generic tree comparison and stays: it already
 # discards exactly what a formatter may change (parenthesisation, quote style,
 # trailing commas, line breaks) and nothing else.

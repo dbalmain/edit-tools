@@ -25,7 +25,7 @@ import subprocess
 import sys
 import tomllib
 from dataclasses import dataclass
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -36,13 +36,21 @@ LANG_DIR = Path(__file__).resolve().parent / "languages"
 _BOOTSTRAPPED = "EDITOR_TOOLS_GRAMMARS_READY"
 
 _REQUIRED = ("name", "extensions", "grammar", "grammar_module", "reference",
-             "reference_version", "widths", "reference_width", "gate3")
+             "reference_version", "widths", "reference_width", "gate3",
+             "intentional_divergences")
 _KNOWN = set(_REQUIRED) | {"grammar_symbol", "gate3_requires",
                            "transparent_wrappers", "equivalent_kinds"}
 
 
 class ManifestError(Exception):
     """A manifest is malformed. Always names the file and the field."""
+
+
+@dataclass(frozen=True)
+class IntentionalDivergence:
+    file: str
+    width: int
+    reason: str
 
 
 @dataclass(frozen=True)
@@ -60,6 +68,7 @@ class Manifest:
     gate3_requires: tuple[str, ...]
     transparent_wrappers: frozenset[str]
     equivalent_kinds: tuple[frozenset[str], ...]
+    intentional_divergences: tuple[IntentionalDivergence, ...]
     path: Path
 
     @property
@@ -79,6 +88,77 @@ def _need(raw: dict[str, Any], key: str, kind: type, path: Path) -> Any:
             f"{path.name}: `{key}` must be {kind.__name__}, got {type(val).__name__}"
         )
     return val
+
+
+def _intentional_divergences(
+    raw: dict[str, Any],
+    path: Path,
+    widths: tuple[int, ...],
+    extensions: tuple[str, ...],
+) -> tuple[IntentionalDivergence, ...]:
+    entries = _need(raw, "intentional_divergences", list, path)
+    out = []
+    seen = set()
+    fields = {"file", "width", "reason"}
+    for i, entry in enumerate(entries):
+        field = f"intentional_divergences[{i}]"
+        if not isinstance(entry, dict):
+            raise ManifestError(f"{path.name}: `{field}` must be a table")
+        unknown = set(entry) - fields
+        if unknown:
+            raise ManifestError(
+                f"{path.name}: `{field}` has unknown field(s) {sorted(unknown)}"
+            )
+        missing = fields - set(entry)
+        if missing:
+            raise ManifestError(
+                f"{path.name}: `{field}` missing required field(s) {sorted(missing)}"
+            )
+
+        file = entry["file"]
+        file_field = f"{field}.file"
+        if not isinstance(file, str) or not file:
+            raise ManifestError(
+                f"{path.name}: `{file_field}` must be a non-empty string"
+            )
+        relative = PurePosixPath(file)
+        if (
+            relative.is_absolute()
+            or relative.as_posix() != file
+            or ".." in relative.parts
+        ):
+            raise ManifestError(
+                f"{path.name}: `{file_field}` must be a normalised relative path"
+            )
+        if relative.suffix not in extensions:
+            raise ManifestError(
+                f"{path.name}: `{file_field}` must use one of `extensions` "
+                f"{list(extensions)}, got {file!r}"
+            )
+
+        width = entry["width"]
+        width_field = f"{field}.width"
+        if type(width) is not int or width not in widths:
+            raise ManifestError(
+                f"{path.name}: `{width_field}` must be one of `widths` "
+                f"{list(widths)}, got {width!r}"
+            )
+
+        reason = entry["reason"]
+        reason_field = f"{field}.reason"
+        if not isinstance(reason, str) or not reason.strip():
+            raise ManifestError(
+                f"{path.name}: `{reason_field}` must be a non-empty string"
+            )
+
+        key = (file, width)
+        if key in seen:
+            raise ManifestError(
+                f"{path.name}: `{field}` duplicates declaration for {file}@{width}"
+            )
+        seen.add(key)
+        out.append(IntentionalDivergence(file, width, reason.strip()))
+    return tuple(out)
 
 
 def parse(path: Path) -> Manifest:
@@ -139,6 +219,10 @@ def parse(path: Path) -> Manifest:
             f"{path.name}: `extensions` must be a non-empty list like [\".py\"]"
         )
 
+    intentional_divergences = _intentional_divergences(
+        raw, path, widths, extensions
+    )
+
     equiv = []
     for group in raw.get("equivalent_kinds", []):
         if not isinstance(group, list) or len(group) < 2:
@@ -162,6 +246,7 @@ def parse(path: Path) -> Manifest:
         gate3_requires=tuple(raw.get("gate3_requires", [])),
         transparent_wrappers=frozenset(raw.get("transparent_wrappers", [])),
         equivalent_kinds=tuple(equiv),
+        intentional_divergences=intentional_divergences,
         path=path,
     )
 

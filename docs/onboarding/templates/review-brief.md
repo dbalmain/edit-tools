@@ -74,11 +74,15 @@ whether the package is right. Budget your effort here:
 2. **Rust/JS parity on a file the builder did not highlight.** Parity is a hard
    requirement and a package can pass its own scoring while diverging on
    something unscored.
-3. **Audit the divergence classifications.** This is the real review. A **design
-   limit** mislabelled as a **reference quirk** hides exactly the finding this
-   whole exercise exists to produce. Take two or three "reference quirk" labels
-   and check whether the reference is actually being arbitrary or whether the
-   package simply cannot do it. Be sceptical of that label specifically.
+3. **Audit the divergence classifications.** This is the real review. For each
+   manifest declaration, test its stated reason: does the difference actually
+   improve readability or cross-language consistency enough to justify a house
+   rule? Differing from the reference is not a defect by itself, but a vague or
+   weak reason is not a licence to hide one. For unexplained divergences, a
+   **design limit** mislabelled as a **reference quirk** hides exactly the finding
+   this whole exercise exists to produce. Take two or three "reference quirk"
+   labels and check whether the reference is actually being arbitrary or whether
+   the package simply cannot do it. Be sceptical of that label specifically.
 4. **Verdict each runtime edit**: `warranted` | `unnecessary` |
    `needs-redesign`. Ask whether a package-level expression would have done it.
    State whether you now recommend **freezing** the runtime against further
@@ -94,13 +98,19 @@ whether the package is right. Budget your effort here:
 
 - The scorer's gates `0-coverage`, `2-idempotence` and `3-nondestruction`
   perfect. Rust/JS parity perfect. Both are hard.
-- Reference agreement at or above **70% of files** at each measured width.
+- At each measured width, **unexplained divergence at or below 30% of compared
+  files** — equivalently, reference agreement plus reviewed intentional
+  divergence at or above 70%. Agreement, intentional divergence and unexplained
+  divergence remain separate numbers; do not call the first two the same thing.
 - **Width is a measure, not a gate**, and it is comparative. The scorer prints
   the reference's own overflow count; references overrun their own width, taplo
-  included. Do not reject a package for matching its reference's overflow, and
-  be suspicious of one that beats it — it is probably losing agreement to do so.
-- Every divergence classified. An unclassified divergence is an automatic
-  _escalate_.
+  included. Do not reject a package for matching its reference's overflow. A
+  package that beats it deserves inspection because it may be losing agreement,
+  but judge a declared intentional divergence on its stated readability and
+  consistency reason, not on the fact that it differs from the reference.
+- Every intentional divergence declared with a defensible reason, and every
+  unexplained divergence classified in the report. A weak declaration should be
+  challenged; an unclassified divergence is an automatic _escalate_.
 
 ### Required output
 
