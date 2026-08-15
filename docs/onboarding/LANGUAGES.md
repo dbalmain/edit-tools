@@ -71,10 +71,18 @@ time rather than all at once.
 
 **Aven has no tree-sitter grammar.** Confirmed by Dave, so stage A does not need
 to go looking. It does have syntax highlighting in
-`~/w/clex/aven-lang/editors/`, but that is very likely a token-level
-regex/TextMate-style definition rather than anything with tree structure — a
-highlighter tells you _what a token is_, and a formatter needs _what contains
-what_. Assume it does not carry us and be pleased if it does.
+`~/w/clex/aven-lang/editors/`, and **this document used to guess that was a
+token-level regex/TextMate definition. That guess was wrong** — checked, and
+recorded in [../highlight-design.md](../highlight-design.md). There is no
+TextMate grammar. `editors/` holds only `nvim/aven.lua`, which starts
+`aven lsp`; the colours are LSP semantic tokens from
+`crates/aven-lsp/src/semantic_tokens.rs`, classified by a lexical default and
+then overridden from the AST at binder sites and declarations.
+
+That is better news than the guess. It means Aven's own parser already produces
+something with tree structure and already survives being asked what contains
+what — which is exactly what route 1 below needs, and it is independent evidence
+that the route is open.
 
 So Aven's stage A is not "build a corpus against a grammar" but "establish
 whether there is a usable CST at all". Two routes, in order of preference:

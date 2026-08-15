@@ -251,6 +251,44 @@ The scoping questions to answer first:
 A pilot over JSON and Python, both already merged, would answer all four without
 touching the roster.
 
+**Designed: [highlight-design.md](highlight-design.md).** Two packages per
+language, one tree, no query engine. `et-highlight/1` is a leaf table plus an
+ordered context list keyed on parent and field, first match wins.
+
+The load-bearing answer is that **type-only dispatch does not survive contact
+with `identifier`** — 632 occurrences in **56** distinct `(parent, field)` roles
+across the Python corpus, with `assignment/left`, `call/function` and
+`attribute/attribute` all wanting different colours and all being the same node
+type. Checked against the committed trees rather than taken on trust. A query
+engine is not the fix; Lezer showed the middle, and because our CST carries
+fields, its paths collapse to a table.
+
+There is **no reference highlighter, and the paper argues there should not be
+one**: Helix, nvim, the grammar repos and Lezer already disagree, so adopting
+one is adopting a taste rather than a ground truth. Gate 4's replacement is
+Rust/JS span identity, committed goldens, and a partition invariant.
+
+Two corrections to the framing above, both accepted:
+
+- **Question 4 was the wrong question.** It is not "how does the evaluator skip
+  `ERROR`" but "this evaluator is the wrong shape". Cursor, consumption, refusal
+  and comment attachment all exist because a wrong layout byte is corruption; a
+  wrong colour is not. One walker with a mode flag "will make the formatter
+  timid and the highlighter precious".
+- **Linearity does not transfer as consumption — the invariant behind it does.**
+  The formatter's best idea is not "consume every child", it is _make the wrong
+  thing unreachable, then test the invariant_. For spans the unreachable thing
+  is an overlapping or mis-ordered span, and the merge rule is the test.
+
+The 1 ms/keystroke budget was rejected as a package-format concern at all: there
+is no parser and trees are frozen, so designing for incrementality now is how
+this slice quietly becomes a parser project. That is a real fifth question, for
+later.
+
+**Open, and genuinely for Dave:** whether dirty trees live in-tree or in a side
+directory, and whether `vici` already has a scope vocabulary the tag list should
+rhyme with.
+
 ---
 
 ## Not raised in the review, but now visible
