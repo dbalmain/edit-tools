@@ -153,12 +153,27 @@ children, and its separator consumes the real `,` children sitting between them.
 Nothing here mentions comments, blank lines, or the magic trailing comma — those
 are the runtime's or the policies'.
 
-The list, set, dict and tuple rules are the same expression with different
-brackets and **one group instead of two**, which is exactly black's rule: a call
-or a `def` splits its brackets first and its arguments only if it must; a
-collection literal that splits at all splits one element per line. That the
-distinction is expressible as "one group or two" — rather than as a flag — is
-the strongest evidence I have that the IR is at the right altitude.
+The list, set and dict rules instantiate `bracketed_list` with different
+brackets; the tuple definition reuses it behind the one-item arity guard.
+`parameters` and `argument_list` share `parenthesized_arguments`, whose extra
+inner group is exactly black's rule: a call or a `def` splits its brackets first
+and its arguments only if it must, while a collection literal that splits at
+all splits one element per line. That the distinction is expressible as "one
+group or two" — rather than as a flag — is still the strongest evidence I have
+that the IR is at the right altitude. Writing five copies of the one-group
+expression was not evidence of anything, though; naming the shape keeps the IR
+fact visible without making a contributor diff near-duplicates to discover it.
+
+Macros are deliberately not a size optimisation. Measured as compact JSON,
+the Python package moved from 7,994 to 7,409 raw bytes (down 7%), but from 1,603
+to 1,693 gzipped bytes (up 6%, or 90 bytes, using the scorer's compressor).
+gzip's LZ77 window had already deduplicated the repeated expressions; `defs`
+adds a name layer it must also encode. Across the scored JavaScript runtime and
+both packages, the change is larger: 8,272 to 9,988 gzipped bytes (up 21%, or
+1,716 bytes). The packages account for 93 of those bytes; the other 1,623 are
+the JavaScript load-time expander and operand validator that keep its refusals
+aligned with Rust's eager parser. The compressed-size cost buys both that
+agreement and a package that states its recurring language shapes directly.
 
 ## The three mechanisms that carry the design
 

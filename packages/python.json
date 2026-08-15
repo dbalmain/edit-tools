@@ -33,6 +33,54 @@
     "*": 4, "/": 4, "//": 4, "%": 4, "@": 4
   },
 
+  "defs": {
+    "bracketed_list": [
+      "group",
+      ["tok", ["$", 0]],
+      [
+        "indent",
+        ["soft"],
+        ["each", "named", ["seq", ["tok", ["$", 1]], ["line"]]],
+        ["trail", ["$", 1], "named"]
+      ],
+      ["soft"],
+      ["tok", ["$", 2]]
+    ],
+    "parenthesized_arguments": [
+      "group",
+      ["tok", "("],
+      [
+        "indent",
+        ["soft"],
+        [
+          "group",
+          ["each", "named", ["seq", ["tok", ","], ["line"]]],
+          ["trail", ",", "named"]
+        ]
+      ],
+      ["soft"],
+      ["tok", ")"]
+    ],
+    "parenthesized_tuple": [
+      "when",
+      ["count", "named", 1],
+      ["seq", ["tok", "("], ["child", "named"], ["tok", ","], ["tok", ")"]],
+      ["use", "bracketed_list", "(", ",", ")"]
+    ],
+    "comprehension": [
+      "group",
+      ["tok", ["$", 0]],
+      [
+        "indent",
+        ["soft"],
+        ["group", ["child", "f:body"], ["each", "named", ["seq"]]]
+      ],
+      ["soft"],
+      ["tok", ["$", 1]]
+    ],
+    "splat": ["seq", ["tok", ["$", 0]], ["child", "named"]]
+  },
+
   "rules": {
     "module": ["each", "named", ["seq", ["hard"], ["blank", 2, ["function_definition", "class_definition", "decorated_definition"]]]],
     "block": [
@@ -190,36 +238,8 @@
     ],
     "decorator": ["seq", ["tok", "@"], ["child", "named"], ["hard"]],
 
-    "parameters": [
-      "group",
-      ["tok", "("],
-      [
-        "indent",
-        ["soft"],
-        [
-          "group",
-          ["each", "named", ["seq", ["tok", ","], ["line"]]],
-          ["trail", ",", "named"]
-        ]
-      ],
-      ["soft"],
-      ["tok", ")"]
-    ],
-    "argument_list": [
-      "group",
-      ["tok", "("],
-      [
-        "indent",
-        ["soft"],
-        [
-          "group",
-          ["each", "named", ["seq", ["tok", ","], ["line"]]],
-          ["trail", ",", "named"]
-        ]
-      ],
-      ["soft"],
-      ["tok", ")"]
-    ],
+    "parameters": ["use", "parenthesized_arguments"],
+    "argument_list": ["use", "parenthesized_arguments"],
     "lambda_parameters": ["each", "named", ["seq", ["tok", ","], ["sp"]]],
     "default_parameter": [
       "seq",
@@ -235,10 +255,10 @@
       ["child", "f:type"]
     ],
     "keyword_separator": ["tok", "*"],
-    "list_splat_pattern": ["seq", ["tok", "*"], ["child", "named"]],
-    "dictionary_splat_pattern": ["seq", ["tok", "**"], ["child", "named"]],
-    "list_splat": ["seq", ["tok", "*"], ["child", "named"]],
-    "dictionary_splat": ["seq", ["tok", "**"], ["child", "named"]],
+    "list_splat_pattern": ["use", "splat", "*"],
+    "dictionary_splat_pattern": ["use", "splat", "**"],
+    "list_splat": ["use", "splat", "*"],
+    "dictionary_splat": ["use", "splat", "**"],
     "keyword_argument": [
       "seq",
       ["child", "f:name"],
@@ -259,76 +279,11 @@
       ["tok", "]"]
     ],
 
-    "list": [
-      "group",
-      ["tok", "["],
-      [
-        "indent",
-        ["soft"],
-        ["each", "named", ["seq", ["tok", ","], ["line"]]],
-        ["trail", ",", "named"]
-      ],
-      ["soft"],
-      ["tok", "]"]
-    ],
-    "set": [
-      "group",
-      ["tok", "{"],
-      [
-        "indent",
-        ["soft"],
-        ["each", "named", ["seq", ["tok", ","], ["line"]]],
-        ["trail", ",", "named"]
-      ],
-      ["soft"],
-      ["tok", "}"]
-    ],
-    "dictionary": [
-      "group",
-      ["tok", "{"],
-      [
-        "indent",
-        ["soft"],
-        ["each", "named", ["seq", ["tok", ","], ["line"]]],
-        ["trail", ",", "named"]
-      ],
-      ["soft"],
-      ["tok", "}"]
-    ],
-    "tuple": [
-      "when",
-      ["count", "named", 1],
-      ["seq", ["tok", "("], ["child", "named"], ["tok", ","], ["tok", ")"]],
-      [
-        "group",
-        ["tok", "("],
-        [
-          "indent",
-          ["soft"],
-          ["each", "named", ["seq", ["tok", ","], ["line"]]],
-          ["trail", ",", "named"]
-        ],
-        ["soft"],
-        ["tok", ")"]
-      ]
-    ],
-    "tuple_pattern": [
-      "when",
-      ["count", "named", 1],
-      ["seq", ["tok", "("], ["child", "named"], ["tok", ","], ["tok", ")"]],
-      [
-        "group",
-        ["tok", "("],
-        [
-          "indent",
-          ["soft"],
-          ["each", "named", ["seq", ["tok", ","], ["line"]]],
-          ["trail", ",", "named"]
-        ],
-        ["soft"],
-        ["tok", ")"]
-      ]
-    ],
+    "list": ["use", "bracketed_list", "[", ",", "]"],
+    "set": ["use", "bracketed_list", "{", ",", "}"],
+    "dictionary": ["use", "bracketed_list", "{", ",", "}"],
+    "tuple": ["use", "parenthesized_tuple"],
+    "tuple_pattern": ["use", "parenthesized_tuple"],
     "pattern_list": [
       "paren",
       ["each", "named", ["seq", ["tok", ","], ["line"]]],
@@ -349,50 +304,10 @@
       ["child", "f:value"]
     ],
 
-    "list_comprehension": [
-      "group",
-      ["tok", "["],
-      [
-        "indent",
-        ["soft"],
-        ["group", ["child", "f:body"], ["each", "named", ["seq"]]]
-      ],
-      ["soft"],
-      ["tok", "]"]
-    ],
-    "set_comprehension": [
-      "group",
-      ["tok", "{"],
-      [
-        "indent",
-        ["soft"],
-        ["group", ["child", "f:body"], ["each", "named", ["seq"]]]
-      ],
-      ["soft"],
-      ["tok", "}"]
-    ],
-    "dictionary_comprehension": [
-      "group",
-      ["tok", "{"],
-      [
-        "indent",
-        ["soft"],
-        ["group", ["child", "f:body"], ["each", "named", ["seq"]]]
-      ],
-      ["soft"],
-      ["tok", "}"]
-    ],
-    "generator_expression": [
-      "group",
-      ["tok", "("],
-      [
-        "indent",
-        ["soft"],
-        ["group", ["child", "f:body"], ["each", "named", ["seq"]]]
-      ],
-      ["soft"],
-      ["tok", ")"]
-    ],
+    "list_comprehension": ["use", "comprehension", "[", "]"],
+    "set_comprehension": ["use", "comprehension", "{", "}"],
+    "dictionary_comprehension": ["use", "comprehension", "{", "}"],
+    "generator_expression": ["use", "comprehension", "(", ")"],
     "for_in_clause": [
       "seq",
       ["line"],
