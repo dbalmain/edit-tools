@@ -280,10 +280,26 @@ reject — but it makes the ledger useless, so ask for it every time.
 
 ## Merge bar (stage D)
 
-- **Gates 1–3 are hard.** Idempotence, width compliance and non-destruction must
-  be perfect. A formatter that loses code is not a formatter.
-- **Gate 4 is reported, with a floor.** Reference agreement measured at both
-  widths, floor of **70% of corpus files**. Every divergence must be named and
+**Read the scorer's numbering, not this document's history.** `score.py` has
+gates `0-coverage`, `1-agreement`, `2-idempotence`, `3-nondestruction`, and then
+_measures_ starting at `4-overflow-lines`. The four "gates" this workflow was
+first written around were a different numbering, and the mismatch has already
+produced one wrong instruction (below) and one wrong manifest field name
+(`gate2`, renamed to `reference_width` in Stage 0). When in doubt, the scorer is
+authoritative and this file is not.
+
+- **Coverage, idempotence and non-destruction are hard** — the scorer's gates 0,
+  2 and 3. A formatter that loses code is not a formatter.
+- **Width compliance is _not_ a gate.** It is measure `4-overflow-lines`, and it
+  is **comparative, not absolute**: the scorer prints the reference formatter's
+  own overflow count for each language precisely because references overrun
+  their own target width. taplo overruns on 8 line-runs across the TOML corpus,
+  one of them _manufactured_ — it pads a 66-character line out to 107 to align a
+  comment. An earlier version of this bullet demanded perfect width compliance,
+  which would have had stage-D reviewers rejecting packages for matching their
+  reference. **Match the reference and report the number; do not chase zero.**
+- **Reference agreement is reported, with a floor.** Measured at both widths,
+  floor of **70% of corpus files**. Every divergence must be named and
   classified as **design limit**, **package bug**, or **reference quirk**. An
   unclassified divergence is an automatic escalate — the classification is the
   actual deliverable.

@@ -33,8 +33,8 @@ Check, in roughly this order of importance:
    a real semantic checker was available, say so. If it declared an override, is
    the override actually stronger?
 6. **Is `reference_width = "fixed"` honest** where used — does the reference
-   genuinely not
-   honour a width, or did the builder waive a gate it found inconvenient?
+   genuinely not honour a width, or did the builder waive a gate it found
+   inconvenient?
 7. **What did the builder change outside `corpus/` and `harness/languages/`?**
    Every such edit needs a reason. Edits to `rust/` or `runtime-js/` at stage A
    are a strong smell.
@@ -92,8 +92,13 @@ whether the package is right. Budget your effort here:
 
 ### Merge bar
 
-- Gates 1–3 perfect. Rust/JS parity perfect. Both are hard.
-- Gate 4 at or above **70% of files** at each measured width.
+- The scorer's gates `0-coverage`, `2-idempotence` and `3-nondestruction`
+  perfect. Rust/JS parity perfect. Both are hard.
+- Reference agreement at or above **70% of files** at each measured width.
+- **Width is a measure, not a gate**, and it is comparative. The scorer prints
+  the reference's own overflow count; references overrun their own width, taplo
+  included. Do not reject a package for matching its reference's overflow, and
+  be suspicious of one that beats it — it is probably losing agreement to do so.
 - Every divergence classified. An unclassified divergence is an automatic
   _escalate_.
 
