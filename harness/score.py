@@ -177,8 +177,12 @@ def corpus(manifests: dict[str, mf.Manifest]) -> list[tuple[Path, mf.Manifest]]:
     orphans = []
     for path in sorted(TREES.glob("*.tree.json")):
         language = json.loads(path.read_text())["language"]
-        if language in manifests:
+        if language in manifests and manifests[language].package:
             out.append((path, manifests[language]))
+        elif language in manifests:
+            # Stage-A ground truth can land before its doc-rules package. Gate
+            # 3 still checks it; scoring starts when the manifest opts in.
+            continue
         else:
             orphans.append((path.name, language))
     if orphans and len(manifests) == len(mf.load_all()):

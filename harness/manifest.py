@@ -38,7 +38,7 @@ _BOOTSTRAPPED = "EDITOR_TOOLS_GRAMMARS_READY"
 _REQUIRED = ("name", "extensions", "grammar", "grammar_module", "reference",
              "reference_version", "widths", "reference_width", "gate3")
 _KNOWN = set(_REQUIRED) | {"grammar_symbol", "gate3_requires",
-                           "transparent_wrappers", "equivalent_kinds"}
+                           "transparent_wrappers", "equivalent_kinds", "package"}
 
 
 class ManifestError(Exception):
@@ -60,6 +60,7 @@ class Manifest:
     gate3_requires: tuple[str, ...]
     transparent_wrappers: frozenset[str]
     equivalent_kinds: tuple[frozenset[str], ...]
+    package: bool           # whether a doc-rules package is ready to score
     path: Path
 
     @property
@@ -148,6 +149,11 @@ def parse(path: Path) -> Manifest:
             )
         equiv.append(frozenset(group))
 
+    package = raw.get("package", True)
+    if not isinstance(package, bool):
+        raise ManifestError(f"{path.name}: `package` must be bool, got "
+                            f"{type(package).__name__}")
+
     return Manifest(
         name=name,
         extensions=extensions,
@@ -162,6 +168,7 @@ def parse(path: Path) -> Manifest:
         gate3_requires=tuple(raw.get("gate3_requires", [])),
         transparent_wrappers=frozenset(raw.get("transparent_wrappers", [])),
         equivalent_kinds=tuple(equiv),
+        package=package,
         path=path,
     )
 

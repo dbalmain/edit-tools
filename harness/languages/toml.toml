@@ -14,7 +14,10 @@ reference_width = "flag"
 
 widths = [88, 60]
 
+# This slice lands ground truth before the doc-rules package. The generic
+# scorer skips these trees until the package stage opts in with `true`.
+package = false
+
 # Python's stdlib TOML loader compares the data model, while gate3.py's
 # universal layer still checks comments and parse errors independently.
 gate3 = "toml"
-

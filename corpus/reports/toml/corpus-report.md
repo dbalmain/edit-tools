@@ -34,6 +34,11 @@ wrappers or equivalent node kinds were declared.
 `gen_reference.py --check` reports that all 28 committed outputs match the
 pinned formatter.
 
+The manifest sets `package = false` because this is the ground-truth slice and
+does not write a doc-rules package. The generic scorer now skips only manifests
+with that flag while gate 3 continues to check their references; existing
+manifests default to package-ready.
+
 ## Corpus
 
 - `arrays-of-tables.toml` — repeated `[[products]]` entries, nested tables, and child arrays of tables; these are TOML's characteristic repeated-record shape.
@@ -85,4 +90,11 @@ None.
 
 ## Template delta
 
-None.
+The brief requires `./test.sh` to be green while explicitly forbidding a package
+in this slice. Before this change, `score.py` treated every manifest as
+package-ready, so the correct TOML refusals failed coverage. The missing schema
+field was package readiness; the new generic `package` flag resolves that
+stage-ordering gap without a TOML-specific branch. The brief's request that
+`gen_reference.py --check` be literally silent also differs from the existing
+script, which prints normal status and success lines; the check itself passed
+with no drift.
