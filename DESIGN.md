@@ -169,11 +169,22 @@ Python package moved from 7,994 to 7,409 raw bytes (down 7%), but from 1,603 to
 1,693 gzipped bytes (up 6%, or 90 bytes, using the scorer's compressor). gzip's
 LZ77 window had already deduplicated the repeated expressions; `defs` adds a
 name layer it must also encode. Across the scored JavaScript runtime and both
-packages, the change is larger: 8,272 to 9,988 gzipped bytes (up 21%, or 1,716
-bytes). The packages account for 93 of those bytes; the other 1,623 are the
+packages, the change is larger: 8,272 to 10,196 gzipped bytes (up 23%, or 1,924
+bytes). The packages account for 93 of those bytes; the other 1,831 are the
 JavaScript load-time expander and operand validator that keep its refusals
 aligned with Rust's eager parser. The compressed-size cost buys both that
 agreement and a package that states its recurring language shapes directly.
+
+Expansion is memoised on the package object, and that is not a
+micro-optimisation — it corrects the _shape_ of the cost. Rust expands once in
+`Package::load` and formats against a reference, while the JS entry point takes
+a raw parsed package, so without memoisation every `format` call re-expanded and
+re-validated all 77 rules. That is work proportional to the package, charged per
+file: measured, it doubled the per-call cost of the smallest corpus tree (0.060
+→ 0.137 ms) and added 63% across the twelve Python trees. Memoised, the same
+runs sit at 0.067 ms and +14%, and what remains is the `verbatim` subtree walk
+rather than the macro layer. A throw is never cached, so a malformed package
+refuses on every call and not only the first.
 
 ## The three mechanisms that carry the design
 
@@ -361,11 +372,11 @@ Named precisely, because a limit you can name is cheaper than one you can't.
 [PASS] 3-nondestruction 30/30   meaning and comments preserved
 
 overflow lines     6            (black's own, at 88: 0)
-size (gzip)        9988 B = 7872 runtime + 2116 packages
+size (gzip)        10196 B = 8080 runtime + 2116 packages
 black agreement    11/12        (strings.py, on quote style alone)
 ```
 
-Against the 25 KB budget that is 10.0 KB, and I will repeat the proposal's
+Against the 25 KB budget that is 10.2 KB, and I will repeat the proposal's
 claim: **size is not the binding constraint** for any design in this space.
 Every serious entry will fit. The axis that matters is whether the rules stay
 readable, and the honest test of that is whether you could have written

@@ -216,7 +216,21 @@ function validateExpr(value) {
   }
 }
 
+/** Expansion is work proportional to the package, not the tree, and Rust does
+ *  it once in `Package::load`. Memoising keeps the same shape here without
+ *  changing an entry point that takes a raw package. A throw is never cached,
+ *  so a malformed package refuses every call. */
+const loaded = new WeakMap();
+
 function loadPackage(pkg) {
+  const hit = loaded.get(pkg);
+  if (hit !== undefined) return hit;
+  const ready = buildPackage(pkg);
+  loaded.set(pkg, ready);
+  return ready;
+}
+
+function buildPackage(pkg) {
   validatePackageFormat(pkg);
   const defs = pkg.defs === undefined ? {} : pkg.defs;
   if (!isObject(defs)) throw new Refusal("`defs` must be an object");

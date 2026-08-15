@@ -448,3 +448,39 @@ test("blank without a type list is still only a cap", () => {
   };
   assert.equal(runOn(pkg, source, root, 80), "x = 1\ndef f\n");
 });
+
+// Expansion is memoised on the package object, because it is work proportional
+// to the package rather than the tree. These pin the two ways that can go wrong.
+
+test("a malformed package refuses every call, not just the first", () => {
+  const pkg = {
+    format: "et-doc-rules/1",
+    indent: 2,
+    tokens: ["="],
+    rules: { file: ["use", "no_such_def"] },
+  };
+  const root = { type: "file", start: 0, end: 0, children: [] };
+  for (const attempt of [1, 2, 3]) {
+    assert.throws(
+      () => runOn(pkg, "", root, 80),
+      /unknown definition `no_such_def`/,
+      `attempt ${attempt}`,
+    );
+  }
+});
+
+test("two packages with the same shape do not share an expansion", () => {
+  const pkgWith = (open, close) => ({
+    format: "et-doc-rules/1",
+    indent: 2,
+    tokens: [open, close],
+    defs: { brackets: ["seq", ["tok", ["$", 0]], ["tok", ["$", 1]]] },
+    rules: { file: ["use", "brackets", open, close] },
+  });
+  const root = (open, close) => ({
+    type: "file", start: 0, end: 2,
+    children: [leaf(open, open), leaf(close, close)],
+  });
+  assert.equal(runOn(pkgWith("[", "]"), "[]", root("[", "]"), 80), "[]\n");
+  assert.equal(runOn(pkgWith("{", "}"), "{}", root("{", "}"), 80), "{}\n");
+});
