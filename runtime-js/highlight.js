@@ -108,6 +108,8 @@ function highlight(tree, pkg) {
     for (const child of children) visit(child, node);
     ancestors.pop();
 
+    // An interior default is a background whose direct children refine it.
+    // Python uses this for string_content around escape_sequence children.
     const background = node.type === "ERROR" ? "error" : pkg.leaf[node.type];
     if (background !== undefined && node.start < node.end) {
       const covered = children

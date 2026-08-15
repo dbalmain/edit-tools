@@ -1,4 +1,4 @@
-//! Error-tolerant tree walk from CST leaves to highlight spans.
+//! Error-tolerant tree walk from CST defaults and contextual leaves to spans.
 
 use serde::Serialize;
 
@@ -56,6 +56,8 @@ fn walk<'a>(
     if node.kind == "ERROR" {
         backfill(node, "error", spans);
     } else if let Some(scope) = package.leaf.get(&node.kind) {
+        // An interior default is a background whose direct children refine it.
+        // Python uses this for string_content around escape_sequence children.
         backfill(node, scope, spans);
     }
 }
