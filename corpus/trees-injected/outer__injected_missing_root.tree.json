@@ -1,0 +1,44 @@
+{
+  "language": "outer",
+  "source": "\"key\" x true",
+  "root": {
+    "type": "document",
+    "start": 0,
+    "end": 12,
+    "children": [
+      {
+        "type": "string",
+        "language": "json",
+        "start": 0,
+        "end": 5,
+        "field": "key",
+        "children": [
+          { "type": "\"", "start": 0, "end": 1, "text": "\"" },
+          {
+            "type": "string_content",
+            "start": 1,
+            "end": 4,
+            "text": "key"
+          },
+          { "type": "\"", "start": 4, "end": 5, "text": "\"" }
+        ]
+      },
+      {
+        "type": "foreign_block",
+        "language": "unknown",
+        "start": 6,
+        "end": 12,
+        "children": [
+          { "type": "identifier", "start": 6, "end": 7, "text": "x" },
+          {
+            "type": "true",
+            "language": "json",
+            "start": 8,
+            "end": 12,
+            "text": "true"
+          }
+        ]
+      }
+    ]
+  }
+}

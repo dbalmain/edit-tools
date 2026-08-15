@@ -16,6 +16,10 @@ pub struct TreeDoc {
 pub struct Node {
     #[serde(rename = "type")]
     pub kind: String,
+    // Read by the highlighter; formatter binaries deserialize the same tree.
+    #[allow(dead_code)]
+    #[serde(default)]
+    pub language: Option<String>,
     pub start: usize,
     pub end: usize,
     #[serde(default)]

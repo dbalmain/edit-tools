@@ -93,15 +93,20 @@ function loadPackage(raw) {
   return { scopes, leaf, background, context };
 }
 
-function highlight(tree, pkg) {
+const EMPTY = {
+  leaf: Object.create(null),
+  background: Object.create(null),
+  context: [],
+};
+
+function highlight(tree, packages) {
   const spans = [];
-  const ancestors = [];
 
   const emit = (start, end, scope) => {
     if (start < end) spans.push({ start, end, scope });
   };
 
-  const matches = (rule, node, parent) => {
+  const matches = (rule, node, parent, ancestors) => {
     if (rule.parent !== undefined && rule.parent !== parent?.type) return false;
     if (rule.field !== undefined && rule.field !== node.field) return false;
     if (rule.parent_field !== undefined && rule.parent_field !== parent?.field) return false;
@@ -109,21 +114,24 @@ function highlight(tree, pkg) {
     return rule.ancestor === undefined || ancestors.some((item) => item.type === rule.ancestor);
   };
 
-  const visit = (node, parent) => {
+  const visit = (node, parent, inheritedPackage, inheritedAncestors) => {
+    const boundary = node.language !== undefined;
+    const pkg = boundary ? (packages.get(node.language) ?? EMPTY) : inheritedPackage;
+    const ancestors = boundary ? [] : inheritedAncestors;
     const children = Array.isArray(node.children) ? node.children : [];
     if (children.length === 0) {
       if (node.type === "ERROR" || node.type === "MISSING") {
         emit(node.start, node.end, "error");
         return;
       }
-      const contextual = pkg.context.find((rule) => matches(rule, node, parent));
+      const contextual = pkg.context.find((rule) => matches(rule, node, parent, ancestors));
       const scope = contextual?.scope ?? pkg.leaf[node.type] ?? pkg.background[node.type];
       if (scope !== undefined) emit(node.start, node.end, scope);
       return;
     }
 
     ancestors.push(node);
-    for (const child of children) visit(child, node);
+    for (const child of children) visit(child, node, pkg, ancestors);
     ancestors.pop();
 
     const backgroundScope = node.type === "ERROR" ? "error" : pkg.background[node.type];
@@ -141,7 +149,7 @@ function highlight(tree, pkg) {
     }
   };
 
-  visit(tree.root, undefined);
+  visit(tree.root, undefined, packages.get(tree.language) ?? EMPTY, []);
   spans.sort((left, right) => left.start - right.start || left.end - right.end);
   const merged = [];
   for (const span of spans) {

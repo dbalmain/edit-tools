@@ -128,6 +128,15 @@ impl Package {
     pub fn load(raw: &str) -> Result<Self, LoadError> {
         serde_json::from_str(raw).map_err(|error| LoadError(error.to_string()))
     }
+
+    pub(crate) fn empty() -> Self {
+        Self {
+            scopes: HashSet::new(),
+            leaf: HashMap::new(),
+            background: HashMap::new(),
+            context: Vec::new(),
+        }
+    }
 }
 
 #[cfg(test)]

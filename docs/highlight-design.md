@@ -494,7 +494,7 @@ the **leaf** and its **immediate parent**, except `ancestor`:
 | `field`        | `node.field` (the leaf's field)                             |
 | `parent_field` | `parent.field`                                              |
 | `type`         | `node.type`                                                 |
-| `ancestor`     | some node on the inclusive path `parent…root` has that type |
+| `ancestor`     | some node on the inclusive path `parent…language-region-root` has that type |
 
 Omitted keys are wildcards. A rule matches when every key it names agrees.
 **First listed rule whose entire conjunction holds wins.** A hit paints this
@@ -508,6 +508,15 @@ Include `parent` on that path: `: int` in `python__defs.tree.json` (`int`
 `[275, 278]`) has immediate parent `type`, and the `ancestor: "type"` row must
 fire.
 
+A `language` stamp starts a new language region, so it also starts a new
+`ancestor` chain. The boundary node is an ancestor of its descendants, but
+nodes above it are not. A language stamped directly on a leaf therefore gives
+that leaf an empty ancestor chain. This prevents an inner package from matching
+an outer grammar's coincidentally named type. The exact `parent` and
+`parent_field` keys remain structural facts and may inspect the boundary node's
+immediate outer parent; unlike `ancestor`, they do not search arbitrarily far
+through another grammar.
+
 ```
 load package
   refuse if format != "et-highlight/1"
@@ -515,14 +524,18 @@ load package
     (later list overwrites)
   refuse any leaf, background, or context scope not in scopes
   index context in listed order
-walk(node, parent, pkg):
+root_pkg = packages[tree.language] or EMPTY
+walk(tree.root, none, root_pkg, [])
+
+walk(node, parent, pkg, ancestors):
   if node.language is set:
       pkg = packages[node.language] or EMPTY   # still walk children
+      ancestors = []                          # new language region
   if node.type in {ERROR, MISSING} and node has no children:
       if node.start < node.end: emit {start, end, error}
       return
   if node has children:
-      for child in children: walk(child, node, pkg)
+      for child in children: walk(child, node, pkg, ancestors + [node])
       if node.type == "ERROR":
           leftover = [node.start, node.end) minus each child's [start, end)
           emit one error span per contiguous leftover run
@@ -543,6 +556,11 @@ merge adjacent same-scope spans
 `EMPTY` is a package with empty `leaf`, `background`, and `context`. Walking it
 still sees a descendant `language` stamp and can switch. A missing highlight
 package does not refuse the document.
+
+Both CLIs expose only that map:
+`hl-rust|hl-js <tree.json> [<language>=<package.highlight.json> ...]`. There is
+no positional root-package form. The root's `tree.language` and every node
+stamp use the same lookup, and an empty map is valid.
 
 ### JSON, as a builder would write it
 
@@ -1227,8 +1245,9 @@ recommendations above.
    `error`; zero-width is a no-op. After the walk: sort, then merge.
 5. **A different walker from the formatter.** No cursor, no consumption, no
    comment pass. Context matches only at leaves, against the leaf and its
-   immediate parent (`ancestor` is existence on `parent…root`). The output
-   invariant is a merged, ordered, non-overlapping span list.
+   immediate parent (`ancestor` is existence on
+   `parent…language-region-root`). The output invariant is a merged, ordered,
+   non-overlapping span list.
 6. **Injection uses the same `language` field and the opposite missing-package
    policy.** Missing highlight package: walk children with empty tables so a
    nested stamp can still switch. Formatter generation stays strict; highlight
@@ -1253,6 +1272,13 @@ recommendations above.
     could merge that mistake into a legitimate span. Separate tables make the
     package author state the wrapping relationship explicitly. Added
     2026-08-16 after the PR 4 golden review.
+11. **`ancestor` stops at a language boundary.** A stamp starts a new region;
+    the stamped node belongs to that region and is visible to its descendants,
+    while nodes above it are not. Package node-type vocabulary belongs to one
+    grammar, so permitting an inner rule to match an unrelated outer type name
+    would be accidental coupling. Immediate `parent` keys keep their exact
+    structural meaning; only the unbounded ancestor search is region-scoped.
+    Added 2026-08-16 with PR 5.
 
 ## PR Plan
 
@@ -1311,13 +1337,16 @@ Pilot only. JSON and Python, already merged. No roster language. No parser.
 ### PR 5 — injection degrade, still a toy
 
 - **Title:** highlight package map, missing language is unpainted
-- **Affects:** both walkers (package map + `node.language`), one toy fixture: a
-  hand-built outer tree with a `language: "json"` child and a second child
-  naming a language that is not in the map
+- **Affects:** both walkers (package map + `node.language`), two hand-built
+  fixtures under `corpus/trees-injected/`: one with a missing root package and
+  one with a loaded root package
 - **Depends on:** PR 4
 - **Does:** prove the field is shared and the policy is not. A missing package
-  still walks children. No markdown, no change to `gen_trees.py`. That stays
-  `docs/injection.md`'s sequence.
+  still walks children. The missing-root fixture paints JSON, leaves an unknown
+  sibling unpainted, then resumes JSON beneath it. The loaded-root fixture
+  switches Python → JSON → Python and proves the resumed Python leaf cannot see
+  a same-named Python ancestor above the JSON boundary. No markdown package, no
+  change to `gen_trees.py`. That stays `docs/injection.md`'s sequence.
 
 Stop there. If PR 2 fails its falsification cases, stop before PR 4 and rewrite
 the context key. Do not "just add a predicate" in the same PR that discovered

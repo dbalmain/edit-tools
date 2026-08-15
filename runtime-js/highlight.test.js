@@ -15,6 +15,9 @@ const rust = path.join(root, "rust", "target", "release", "hl-rust");
 const pythonPackage = JSON.parse(
   fs.readFileSync(path.join(root, "packages", "python.highlight.json"), "utf8"),
 );
+const jsonPackage = JSON.parse(
+  fs.readFileSync(path.join(root, "packages", "json.highlight.json"), "utf8"),
+);
 
 const pkg = loadPackage(pythonPackage);
 
@@ -22,6 +25,7 @@ const readTreeIn = (directory, name) =>
   JSON.parse(fs.readFileSync(path.join(root, "corpus", directory, name), "utf8"));
 const readTree = (name) => readTreeIn("trees", name);
 const readDirtyTree = (name) => readTreeIn("trees-dirty", name);
+const readInjectedTree = (name) => readTreeIn("trees-injected", name);
 
 function spanScope(spans, start, end) {
   const span = spans.find((item) => item.start === start && item.end === end);
@@ -53,22 +57,40 @@ function assertPartition(tree, package_, spans) {
   }
 }
 
-function rustBytes(tree, package_) {
+function assertMapPartition(tree, packages_, spans) {
+  const scopes = new Set(["error"]);
+  for (const package_ of packages_.values()) {
+    for (const scope of package_.scopes) scopes.add(scope);
+  }
+  assertPartition(tree, { scopes }, spans);
+}
+
+function rustBytes(tree, rawPackages) {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "hl-identity-"));
   const treePath = path.join(temporary, "tree.json");
-  const packagePath = path.join(temporary, "package.json");
   try {
     fs.writeFileSync(treePath, JSON.stringify(tree));
-    fs.writeFileSync(packagePath, JSON.stringify(package_));
-    return execFileSync(rust, [treePath, packagePath], { encoding: "utf8" });
+    const mappings = Object.entries(rawPackages).map(([language, package_]) => {
+      const packagePath = path.join(temporary, `${language}.json`);
+      fs.writeFileSync(packagePath, JSON.stringify(package_));
+      return `${language}=${packagePath}`;
+    });
+    return execFileSync(rust, [treePath, ...mappings], { encoding: "utf8" });
   } finally {
     fs.rmSync(temporary, { recursive: true });
   }
 }
 
-function assertIdentity(tree, rawPackage = pythonPackage) {
-  const spans = highlight(tree, loadPackage(rawPackage));
-  assert.equal(rustBytes(tree, rawPackage), `${JSON.stringify(spans)}\n`);
+function loadPackages(rawPackages) {
+  return new Map(
+    Object.entries(rawPackages).map(([language, package_]) => [language, loadPackage(package_)]),
+  );
+}
+
+function assertIdentity(tree, rawPackages = { python: pythonPackage }) {
+  const loaded = loadPackages(rawPackages);
+  const spans = highlight(tree, loaded);
+  assert.equal(rustBytes(tree, rawPackages), `${JSON.stringify(spans)}\n`);
   return spans;
 }
 
@@ -180,7 +202,7 @@ test("an interior leaf default does not paint around children", () => {
       }],
     },
   };
-  const spans = assertIdentity(tree, rawPackage);
+  const spans = assertIdentity(tree, { toy: rawPackage });
   assert.deepEqual(spans, [
     { start: 0, end: 6, scope: "keyword" },
     { start: 7, end: 8, scope: "parameter" },
@@ -247,7 +269,33 @@ test("ancestor matching is inclusive of the immediate parent and listed order wi
     },
   };
   const package_ = loadPackage(rawPackage);
-  const spans = assertIdentity(tree, rawPackage);
+  const spans = assertIdentity(tree, { toy: rawPackage });
   assert.deepEqual(spans, [{ start: 0, end: 4, scope: "outer" }]);
   assertPartition(tree, package_, spans);
+});
+
+test("a missing root package stays empty while nested known languages resume painting", () => {
+  const tree = readInjectedTree("outer__injected_missing_root.tree.json");
+  const rawPackages = { json: jsonPackage, python: pythonPackage };
+  const spans = assertIdentity(tree, rawPackages);
+  assert.deepEqual(spans, [
+    { start: 0, end: 5, scope: "property" },
+    { start: 8, end: 12, scope: "constant" },
+  ]);
+  assertMapPartition(tree, loadPackages(rawPackages), spans);
+});
+
+test("nested switches reset ancestor context at each language boundary", () => {
+  const tree = readInjectedTree("python__injected_json.tree.json");
+  const rawPackages = { json: jsonPackage, python: pythonPackage };
+  const spans = assertIdentity(tree, rawPackages);
+  assert.deepEqual(spans, [
+    { start: 0, end: 5, scope: "type" },
+    { start: 6, end: 7, scope: "punctuation" },
+    { start: 7, end: 11, scope: "constant" },
+    { start: 12, end: 17, scope: "variable" },
+    { start: 17, end: 18, scope: "punctuation" },
+    { start: 19, end: 23, scope: "type" },
+  ]);
+  assertMapPartition(tree, loadPackages(rawPackages), spans);
 });

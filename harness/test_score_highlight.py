@@ -8,6 +8,23 @@ import score_highlight as scorer
 
 
 class PartitionTests(unittest.TestCase):
+    def test_collects_root_and_nested_languages(self):
+        tree = {
+            "language": "outer",
+            "root": {
+                "type": "document",
+                "language": "middle",
+                "children": [
+                    {"type": "leaf", "language": "inner"},
+                    {"type": "leaf"},
+                ],
+            },
+        }
+
+        self.assertEqual(
+            scorer.tree_languages(tree), {"outer", "middle", "inner"}
+        )
+
     def test_accepts_utf8_byte_offsets_and_whitespace_gaps(self):
         spans = [{"start": 0, "end": 4, "scope": "string"}]
 
@@ -139,6 +156,37 @@ class ScoreTests(unittest.TestCase):
         self.assertFalse(report.failed)
         self.assertEqual(report.updated, [golden.name])
         self.assertEqual(json.loads(golden.read_text()), json.loads(output))
+
+    def test_missing_root_package_uses_a_known_nested_package(self):
+        self.tree.write_text(
+            json.dumps(
+                {
+                    "language": "outer",
+                    "source": "x",
+                    "root": {
+                        "type": "identifier",
+                        "language": "toy",
+                        "start": 0,
+                        "end": 1,
+                    },
+                }
+            )
+        )
+        package = self.submission / "packages" / "toy.highlight.json"
+        package.write_text(json.dumps({"scopes": ["variable"]}))
+        output = b'[{"start":0,"end":1,"scope":"variable"}]\n'
+        run = scorer.Run(ok=True, output=output)
+        with (
+            self.globals[0],
+            self.globals[1],
+            mock.patch.object(scorer, "invoke", side_effect=[run, run]) as invoke,
+        ):
+            report = scorer.score(self.submission, None, update=True, verbose=True)
+
+        self.assertFalse(report.failed)
+        self.assertEqual(report.trees["highlighted"], 1)
+        self.assertEqual(report.trees["unhighlighted"], [])
+        self.assertEqual(invoke.call_args_list[0].args[2], {"toy": package})
 
     def test_identity_failure_does_not_bless_a_golden(self):
         package = self.submission / "packages" / "toy.highlight.json"

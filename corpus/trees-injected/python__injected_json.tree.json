@@ -1,0 +1,38 @@
+{
+  "language": "python",
+  "source": "outer {true inner} tail",
+  "root": {
+    "type": "type",
+    "start": 0,
+    "end": 23,
+    "children": [
+      { "type": "identifier", "start": 0, "end": 5, "text": "outer" },
+      {
+        "type": "object",
+        "language": "json",
+        "start": 6,
+        "end": 18,
+        "children": [
+          { "type": "{", "start": 6, "end": 7, "text": "{" },
+          { "type": "true", "start": 7, "end": 11, "text": "true" },
+          {
+            "type": "injection_slot",
+            "start": 12,
+            "end": 17,
+            "children": [
+              {
+                "type": "identifier",
+                "language": "python",
+                "start": 12,
+                "end": 17,
+                "text": "inner"
+              }
+            ]
+          },
+          { "type": "}", "start": 17, "end": 18, "text": "}" }
+        ]
+      },
+      { "type": "identifier", "start": 19, "end": 23, "text": "tail" }
+    ]
+  }
+}
