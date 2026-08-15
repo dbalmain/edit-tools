@@ -8,6 +8,7 @@ const assert = require("node:assert");
 const { format, Refusal } = require("./bundle.js");
 
 const toy = (rules) => ({
+  format: "et-doc-rules/1",
   indent: 2,
   tokens: ["(", ")", ",", "+"],
   precedence: { "+": 5, "*": 4 },
@@ -88,6 +89,28 @@ test("a rule that ignores a child refuses rather than dropping it", () => {
 
 test("an unknown node type refuses rather than guessing", () => {
   assert.throws(() => run(toy({}), list(["a"], false), 80), /no rule for node type `list`/);
+});
+
+test("the current package format is required", () => {
+  const pkg = toy({ list: listRule });
+  delete pkg.format;
+  assert.throws(
+    () => run(pkg, list(["a"], false), 80),
+    (e) =>
+      e instanceof Refusal &&
+      /unknown package format undefined; expected "et-doc-rules\/1"/.test(e.message),
+  );
+});
+
+test("an unknown package format names the value found and expected", () => {
+  const pkg = toy({ list: listRule });
+  pkg.format = "et-doc-rules/2";
+  assert.throws(
+    () => run(pkg, list(["a"], false), 80),
+    (e) =>
+      e instanceof Refusal &&
+      /unknown package format "et-doc-rules\/2"; expected "et-doc-rules\/1"/.test(e.message),
+  );
 });
 
 test("a trailing separator is added only when the bracket holds a list", () => {
@@ -220,6 +243,7 @@ test("both runtimes refuse the same corrupt verbatim tree", () => {
 
 function stmtsPkg(around) {
   return {
+    format: "et-doc-rules/1",
     indent: 2,
     tokens: ["(", ")", ",", "+", "def", "="],
     comments: ["comment"],
@@ -335,6 +359,7 @@ test("blank does not move a gap that sits between a comment and a def", () => {
 
 test("blank without a type list is still only a cap", () => {
   const pkg = {
+    format: "et-doc-rules/1",
     indent: 2,
     tokens: ["def", "="],
     rules: {

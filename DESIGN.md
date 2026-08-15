@@ -80,6 +80,7 @@ ever needed anything but arity.
 
 ```json
 {
+  "format": "et-doc-rules/1",
   "indent": 4,
   "tokens": ["(", ")", ",", ":", "and", "or", "def", …],
   "comments": ["comment"],
@@ -89,6 +90,10 @@ ever needed anything but arity.
   "rules": { … }
 }
 ```
+
+`format` is required. Both runtimes refuse any value other than
+`et-doc-rules/1`, naming the value they found and the one they expected, so a
+future package cannot be silently misread by an older runtime.
 
 `tokens` is the one language fact the runtime cannot guess: which node types are
 punctuation and keywords rather than content. `named` is defined as "not one of

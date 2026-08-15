@@ -492,6 +492,7 @@ mod tests {
     /// A toy language, so the machinery is exercised without Python's bulk.
     fn toy(rules: serde_json::Value) -> Package {
         serde_json::from_value(json!({
+            "format": "et-doc-rules/1",
             "indent": 2,
             "tokens": ["(", ")", ",", "+"],
             "precedence": { "+": 5, "*": 4 },
@@ -762,6 +763,7 @@ mod tests {
     #[test]
     fn both_runtimes_refuse_the_same_corrupt_verbatim_tree() {
         let pkg_json = json!({
+            "format": "et-doc-rules/1",
             "indent": 2,
             "tokens": ["(", ")", ",", "+"],
             "precedence": { "+": 5, "*": 4 },
@@ -820,6 +822,7 @@ try {{
 
     fn stmts_pkg(around: serde_json::Value) -> Package {
         serde_json::from_value(json!({
+            "format": "et-doc-rules/1",
             "indent": 2,
             "tokens": ["(", ")", ",", "+", "def", "="],
             "comments": ["comment"],
@@ -979,6 +982,7 @@ try {{
     #[test]
     fn blank_without_a_type_list_is_still_only_a_cap() {
         let pkg: Package = serde_json::from_value(json!({
+            "format": "et-doc-rules/1",
             "indent": 2,
             "tokens": ["def", "="],
             "rules": {

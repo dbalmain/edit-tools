@@ -7,6 +7,16 @@
 
 class Refusal extends Error {}
 
+const PACKAGE_FORMAT = "et-doc-rules/1";
+
+function validatePackageFormat(pkg) {
+  if (pkg.format !== PACKAGE_FORMAT) {
+    throw new Refusal(
+      `unknown package format ${JSON.stringify(pkg.format)}; expected ${JSON.stringify(PACKAGE_FORMAT)}`,
+    );
+  }
+}
+
 // ---------------------------------------------------------------- the Doc IR
 
 // Each node caches `brk`: does it force enclosing groups to break? A line
@@ -550,6 +560,7 @@ function checkVerbatim(fmt, node) {
 
 class Formatter {
   constructor(pkg, source) {
+    validatePackageFormat(pkg);
     this.pkg = pkg;
     this.bytes = new TextEncoder().encode(source ?? "");
     this.decoder = new TextDecoder();

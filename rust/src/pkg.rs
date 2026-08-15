@@ -11,8 +11,30 @@ use serde_json::Value;
 
 use crate::Refusal;
 
+const FORMAT: &str = "et-doc-rules/1";
+
+#[derive(Deserialize)]
+#[serde(try_from = "String")]
+struct PackageFormat;
+
+impl TryFrom<String> for PackageFormat {
+    type Error = String;
+
+    fn try_from(found: String) -> Result<Self, Self::Error> {
+        if found == FORMAT {
+            Ok(Self)
+        } else {
+            Err(format!(
+                "unknown package format `{found}`; expected `{FORMAT}`"
+            ))
+        }
+    }
+}
+
 #[derive(Deserialize)]
 pub struct Package {
+    #[serde(rename = "format")]
+    _format: PackageFormat,
     pub indent: usize,
     /// Node types that are punctuation or keywords; `named` skips them.
     #[serde(default)]
@@ -230,5 +252,36 @@ fn predicate(value: &Value) -> Result<Pred, String> {
             Ok(Pred::Count(selector(&parts[1])?, count(&parts[2])?))
         }
         _ => Err(format!("unknown predicate {value}")),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    fn package(format: &str) -> Value {
+        json!({
+            "format": format,
+            "indent": 2,
+            "rules": {},
+        })
+    }
+
+    #[test]
+    fn accepts_the_current_package_format() {
+        serde_json::from_value::<Package>(package(FORMAT)).expect("current format parses");
+    }
+
+    #[test]
+    fn refuses_an_unknown_package_format() {
+        let err = serde_json::from_value::<Package>(package("et-doc-rules/2"))
+            .err()
+            .expect("future format must be refused");
+        assert!(
+            err.to_string()
+                .contains("unknown package format `et-doc-rules/2`; expected `et-doc-rules/1`"),
+            "{err}"
+        );
     }
 }
