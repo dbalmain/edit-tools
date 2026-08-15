@@ -1,0 +1,21 @@
+# The same shapes appear through dotted headers, nested headers, and inline tables.
+[dotted.header]
+name = "dotted"
+enabled = true
+
+[split]
+
+[split.header]
+name = "split"
+enabled = true
+
+inline = { header = { name = "inline", enabled = true } }
+
+[array.header]
+values = [1, 2, 3]
+
+[[array.header.items]]
+name = "one"
+
+[[array.header.items]]
+name = "two"

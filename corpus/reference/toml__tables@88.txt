@@ -1,0 +1,19 @@
+title = "table headers"
+
+[server]
+host = "127.0.0.1"
+ports = [8080, 8443]
+
+[server.http]
+keep_alive = true
+timeout_seconds = 30
+
+[server.http.headers]
+cache_control = "no-store"
+content_type = "application/toml"
+
+[database]
+engine = "sqlite"
+
+[database.pool]
+size = 8

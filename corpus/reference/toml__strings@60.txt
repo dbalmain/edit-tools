@@ -1,0 +1,16 @@
+basic = "quoted \"text\" with a newline\n and a tab\t"
+literal = 'C:\\Users\\toml\\literal'
+unicode = "caf\u00e9 and \U0001F642"
+
+multiline_basic = """
+  A multiline basic string keeps its line breaks,
+  while interpreting \"escapes\" and \u03bb.
+  """
+
+multiline_literal = '''
+  A multiline literal string keeps backslashes like \n
+  and quotes like " without interpreting them.
+  '''
+
+empty_basic = ""
+empty_literal = ''

@@ -1,0 +1,475 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/keys.toml",
+ "source": "bare_key = \"bare\"\n\"quoted key\" = \"basic quoted key\"\n'literal key' = \"literal quoted key\"\n\nsite.\"google.com\" = { owner = \"search\", active = true }\n\"127.0.0.1\".port = 8080\n\"unicode π\" = \"unicode quoted key\"\n\n[\"quoted table\"]\nvalue = \"table with a quoted header\"\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 261,
+  "children": [
+   {
+    "type": "pair",
+    "start": 0,
+    "end": 17,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 0,
+      "end": 8,
+      "text": "bare_key"
+     },
+     {
+      "type": "=",
+      "start": 9,
+      "end": 10,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 11,
+      "end": 17,
+      "children": [
+       {
+        "type": "\"",
+        "start": 11,
+        "end": 12,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 16,
+        "end": 17,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 18,
+    "end": 51,
+    "children": [
+     {
+      "type": "quoted_key",
+      "start": 18,
+      "end": 30,
+      "children": [
+       {
+        "type": "\"",
+        "start": 18,
+        "end": 19,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 29,
+        "end": 30,
+        "text": "\""
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 31,
+      "end": 32,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 33,
+      "end": 51,
+      "children": [
+       {
+        "type": "\"",
+        "start": 33,
+        "end": 34,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 50,
+        "end": 51,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 52,
+    "end": 88,
+    "children": [
+     {
+      "type": "quoted_key",
+      "start": 52,
+      "end": 65,
+      "children": [
+       {
+        "type": "'",
+        "start": 52,
+        "end": 53,
+        "text": "'"
+       },
+       {
+        "type": "'",
+        "start": 64,
+        "end": 65,
+        "text": "'"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 66,
+      "end": 67,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 68,
+      "end": 88,
+      "children": [
+       {
+        "type": "\"",
+        "start": 68,
+        "end": 69,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 87,
+        "end": 88,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 90,
+    "end": 145,
+    "children": [
+     {
+      "type": "dotted_key",
+      "start": 90,
+      "end": 107,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 90,
+        "end": 94,
+        "text": "site"
+       },
+       {
+        "type": ".",
+        "start": 94,
+        "end": 95,
+        "text": "."
+       },
+       {
+        "type": "quoted_key",
+        "start": 95,
+        "end": 107,
+        "children": [
+         {
+          "type": "\"",
+          "start": 95,
+          "end": 96,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 106,
+          "end": 107,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 108,
+      "end": 109,
+      "text": "="
+     },
+     {
+      "type": "inline_table",
+      "start": 110,
+      "end": 145,
+      "children": [
+       {
+        "type": "{",
+        "start": 110,
+        "end": 111,
+        "text": "{"
+       },
+       {
+        "type": "pair",
+        "start": 112,
+        "end": 128,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 112,
+          "end": 117,
+          "text": "owner"
+         },
+         {
+          "type": "=",
+          "start": 118,
+          "end": 119,
+          "text": "="
+         },
+         {
+          "type": "string",
+          "start": 120,
+          "end": 128,
+          "children": [
+           {
+            "type": "\"",
+            "start": 120,
+            "end": 121,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 127,
+            "end": 128,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 128,
+        "end": 129,
+        "text": ","
+       },
+       {
+        "type": "pair",
+        "start": 130,
+        "end": 143,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 130,
+          "end": 136,
+          "text": "active"
+         },
+         {
+          "type": "=",
+          "start": 137,
+          "end": 138,
+          "text": "="
+         },
+         {
+          "type": "boolean",
+          "start": 139,
+          "end": 143,
+          "text": "true"
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 144,
+        "end": 145,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 146,
+    "end": 169,
+    "children": [
+     {
+      "type": "dotted_key",
+      "start": 146,
+      "end": 162,
+      "children": [
+       {
+        "type": "quoted_key",
+        "start": 146,
+        "end": 157,
+        "children": [
+         {
+          "type": "\"",
+          "start": 146,
+          "end": 147,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 156,
+          "end": 157,
+          "text": "\""
+         }
+        ]
+       },
+       {
+        "type": ".",
+        "start": 157,
+        "end": 158,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 158,
+        "end": 162,
+        "text": "port"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 163,
+      "end": 164,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 165,
+      "end": 169,
+      "text": "8080"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 170,
+    "end": 205,
+    "children": [
+     {
+      "type": "quoted_key",
+      "start": 170,
+      "end": 182,
+      "children": [
+       {
+        "type": "\"",
+        "start": 170,
+        "end": 171,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 181,
+        "end": 182,
+        "text": "\""
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 183,
+      "end": 184,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 185,
+      "end": 205,
+      "children": [
+       {
+        "type": "\"",
+        "start": 185,
+        "end": 186,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 204,
+        "end": 205,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table",
+    "start": 207,
+    "end": 261,
+    "children": [
+     {
+      "type": "[",
+      "start": 207,
+      "end": 208,
+      "text": "["
+     },
+     {
+      "type": "quoted_key",
+      "start": 208,
+      "end": 222,
+      "children": [
+       {
+        "type": "\"",
+        "start": 208,
+        "end": 209,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 221,
+        "end": 222,
+        "text": "\""
+       }
+      ]
+     },
+     {
+      "type": "]",
+      "start": 222,
+      "end": 223,
+      "text": "]"
+     },
+     {
+      "type": "pair",
+      "start": 224,
+      "end": 260,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 224,
+        "end": 229,
+        "text": "value"
+       },
+       {
+        "type": "=",
+        "start": 230,
+        "end": 231,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 232,
+        "end": 260,
+        "children": [
+         {
+          "type": "\"",
+          "start": 232,
+          "end": 233,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 259,
+          "end": 260,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -1,0 +1,347 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/multiline.toml",
+ "source": "description = \"\"\"\n  This value spans several lines and has a deliberately long sentence so the\n  formatter must preserve the literal's content rather than reflowing it.\n  \"\"\"\n\nitems = [\n  \"first item\",\n  \"second item\",\n  \"third item\",\n]\n\n[[entries]]\nname = \"first\"\nnotes = '''\nline one\nline two\n'''\n\n[[entries]]\nname = \"second\"\nnotes = '''literal\\\\ntext'''\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 357,
+  "children": [
+   {
+    "type": "pair",
+    "start": 0,
+    "end": 174,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 0,
+      "end": 11,
+      "text": "description"
+     },
+     {
+      "type": "=",
+      "start": 12,
+      "end": 13,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 14,
+      "end": 174,
+      "children": [
+       {
+        "type": "\"\"\"",
+        "start": 14,
+        "end": 17,
+        "text": "\"\"\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 176,
+    "end": 236,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 176,
+      "end": 181,
+      "text": "items"
+     },
+     {
+      "type": "=",
+      "start": 182,
+      "end": 183,
+      "text": "="
+     },
+     {
+      "type": "array",
+      "start": 184,
+      "end": 236,
+      "children": [
+       {
+        "type": "[",
+        "start": 184,
+        "end": 185,
+        "text": "["
+       },
+       {
+        "type": "string",
+        "start": 188,
+        "end": 200,
+        "children": [
+         {
+          "type": "\"",
+          "start": 188,
+          "end": 189,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 199,
+          "end": 200,
+          "text": "\""
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 200,
+        "end": 201,
+        "text": ","
+       },
+       {
+        "type": "string",
+        "start": 204,
+        "end": 217,
+        "children": [
+         {
+          "type": "\"",
+          "start": 204,
+          "end": 205,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 216,
+          "end": 217,
+          "text": "\""
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 217,
+        "end": 218,
+        "text": ","
+       },
+       {
+        "type": "string",
+        "start": 221,
+        "end": 233,
+        "children": [
+         {
+          "type": "\"",
+          "start": 221,
+          "end": 222,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 232,
+          "end": 233,
+          "text": "\""
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 233,
+        "end": 234,
+        "text": ","
+       },
+       {
+        "type": "]",
+        "start": 235,
+        "end": 236,
+        "text": "]"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table_array_element",
+    "start": 238,
+    "end": 300,
+    "children": [
+     {
+      "type": "[[",
+      "start": 238,
+      "end": 240,
+      "text": "[["
+     },
+     {
+      "type": "bare_key",
+      "start": 240,
+      "end": 247,
+      "text": "entries"
+     },
+     {
+      "type": "]]",
+      "start": 247,
+      "end": 249,
+      "text": "]]"
+     },
+     {
+      "type": "pair",
+      "start": 250,
+      "end": 264,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 250,
+        "end": 254,
+        "text": "name"
+       },
+       {
+        "type": "=",
+        "start": 255,
+        "end": 256,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 257,
+        "end": 264,
+        "children": [
+         {
+          "type": "\"",
+          "start": 257,
+          "end": 258,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 263,
+          "end": 264,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 265,
+      "end": 298,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 265,
+        "end": 270,
+        "text": "notes"
+       },
+       {
+        "type": "=",
+        "start": 271,
+        "end": 272,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 273,
+        "end": 298,
+        "children": [
+         {
+          "type": "'''",
+          "start": 273,
+          "end": 276,
+          "text": "'''"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table_array_element",
+    "start": 300,
+    "end": 357,
+    "children": [
+     {
+      "type": "[[",
+      "start": 300,
+      "end": 302,
+      "text": "[["
+     },
+     {
+      "type": "bare_key",
+      "start": 302,
+      "end": 309,
+      "text": "entries"
+     },
+     {
+      "type": "]]",
+      "start": 309,
+      "end": 311,
+      "text": "]]"
+     },
+     {
+      "type": "pair",
+      "start": 312,
+      "end": 327,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 312,
+        "end": 316,
+        "text": "name"
+       },
+       {
+        "type": "=",
+        "start": 317,
+        "end": 318,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 319,
+        "end": 327,
+        "children": [
+         {
+          "type": "\"",
+          "start": 319,
+          "end": 320,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 326,
+          "end": 327,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 328,
+      "end": 356,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 328,
+        "end": 333,
+        "text": "notes"
+       },
+       {
+        "type": "=",
+        "start": 334,
+        "end": 335,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 336,
+        "end": 356,
+        "children": [
+         {
+          "type": "'''",
+          "start": 336,
+          "end": 339,
+          "text": "'''"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

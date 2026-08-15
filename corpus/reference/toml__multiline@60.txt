@@ -1,0 +1,17 @@
+description = """
+  This value spans several lines and has a deliberately long sentence so the
+  formatter must preserve the literal's content rather than reflowing it.
+  """
+
+items = ["first item", "second item", "third item"]
+
+[[entries]]
+name = "first"
+notes = '''
+line one
+line two
+'''
+
+[[entries]]
+name = "second"
+notes = '''literal\\ntext'''

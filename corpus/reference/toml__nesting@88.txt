@@ -1,0 +1,22 @@
+# Tables and values nested several levels deep.
+[application]
+name = "worker"
+
+[application.runtime]
+retries = 3
+backoff = { initial = 0.5, maximum = 30.0, jitter = { enabled = true, ratio = 0.2 } }
+
+[application.runtime.network]
+endpoints = [
+  { host = "primary.example.test", ports = [
+    443,
+    8443,
+  ] },
+  { host = "backup.example.test", ports = [
+    443,
+    9443,
+  ] },
+]
+
+[application.runtime.network.tls]
+certificates = { ca = { file = "ca.pem", required = true }, client = { enabled = false } }

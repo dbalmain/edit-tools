@@ -1,0 +1,33 @@
+# Several TOML constructs interacting in one intentionally untidy probe.
+title="kitchen"
+version = 1_000
+
+[project]
+name = "formatter"
+authors=["Ada Lovelace", "Grace Hopper", "Edsger Dijkstra"]
+license={name="MIT", file="LICENSE"}
+
+[project.build]
+command = "tool --input src --output dist"
+flags = ["--release", "--offline", "--verbose"]
+
+[[project.targets]]
+name="library"
+sources=["src/lib.toml", "src/parser.toml"]
+
+[project.targets.options]
+warnings = { unused = true, style = false }
+
+[[project.targets]]
+name="binary"
+sources=["src/main.toml"]
+
+[project.targets.options]
+warnings = { unused = false, style = true }
+
+[deploy]
+regions = [
+  "ap-southeast-2", # Sydney
+  "us-east-1", # Virginia
+]
+environment = { production = true, preview = false }

@@ -1,0 +1,581 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/dotted-keys.toml",
+ "source": "fruit.apple.color = \"red\"\nfruit.apple.taste = \"sweet\"\nfruit.banana.color = \"yellow\"\n\n[fruit.apple.origin]\ncountry = \"Kazakhstan\"\nregion = \"Almaty\"\n\n[[fruit.banana.varieties]]\nname = \"cavendish\"\n\n[[fruit.banana.varieties]]\nname = \"plantain\"\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 240,
+  "children": [
+   {
+    "type": "pair",
+    "start": 0,
+    "end": 25,
+    "children": [
+     {
+      "type": "dotted_key",
+      "start": 0,
+      "end": 17,
+      "children": [
+       {
+        "type": "dotted_key",
+        "start": 0,
+        "end": 11,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 0,
+          "end": 5,
+          "text": "fruit"
+         },
+         {
+          "type": ".",
+          "start": 5,
+          "end": 6,
+          "text": "."
+         },
+         {
+          "type": "bare_key",
+          "start": 6,
+          "end": 11,
+          "text": "apple"
+         }
+        ]
+       },
+       {
+        "type": ".",
+        "start": 11,
+        "end": 12,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 12,
+        "end": 17,
+        "text": "color"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 18,
+      "end": 19,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 20,
+      "end": 25,
+      "children": [
+       {
+        "type": "\"",
+        "start": 20,
+        "end": 21,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 24,
+        "end": 25,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 26,
+    "end": 53,
+    "children": [
+     {
+      "type": "dotted_key",
+      "start": 26,
+      "end": 43,
+      "children": [
+       {
+        "type": "dotted_key",
+        "start": 26,
+        "end": 37,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 26,
+          "end": 31,
+          "text": "fruit"
+         },
+         {
+          "type": ".",
+          "start": 31,
+          "end": 32,
+          "text": "."
+         },
+         {
+          "type": "bare_key",
+          "start": 32,
+          "end": 37,
+          "text": "apple"
+         }
+        ]
+       },
+       {
+        "type": ".",
+        "start": 37,
+        "end": 38,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 38,
+        "end": 43,
+        "text": "taste"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 44,
+      "end": 45,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 46,
+      "end": 53,
+      "children": [
+       {
+        "type": "\"",
+        "start": 46,
+        "end": 47,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 52,
+        "end": 53,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 54,
+    "end": 83,
+    "children": [
+     {
+      "type": "dotted_key",
+      "start": 54,
+      "end": 72,
+      "children": [
+       {
+        "type": "dotted_key",
+        "start": 54,
+        "end": 66,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 54,
+          "end": 59,
+          "text": "fruit"
+         },
+         {
+          "type": ".",
+          "start": 59,
+          "end": 60,
+          "text": "."
+         },
+         {
+          "type": "bare_key",
+          "start": 60,
+          "end": 66,
+          "text": "banana"
+         }
+        ]
+       },
+       {
+        "type": ".",
+        "start": 66,
+        "end": 67,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 67,
+        "end": 72,
+        "text": "color"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 73,
+      "end": 74,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 75,
+      "end": 83,
+      "children": [
+       {
+        "type": "\"",
+        "start": 75,
+        "end": 76,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 82,
+        "end": 83,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table",
+    "start": 85,
+    "end": 148,
+    "children": [
+     {
+      "type": "[",
+      "start": 85,
+      "end": 86,
+      "text": "["
+     },
+     {
+      "type": "dotted_key",
+      "start": 86,
+      "end": 104,
+      "children": [
+       {
+        "type": "dotted_key",
+        "start": 86,
+        "end": 97,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 86,
+          "end": 91,
+          "text": "fruit"
+         },
+         {
+          "type": ".",
+          "start": 91,
+          "end": 92,
+          "text": "."
+         },
+         {
+          "type": "bare_key",
+          "start": 92,
+          "end": 97,
+          "text": "apple"
+         }
+        ]
+       },
+       {
+        "type": ".",
+        "start": 97,
+        "end": 98,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 98,
+        "end": 104,
+        "text": "origin"
+       }
+      ]
+     },
+     {
+      "type": "]",
+      "start": 104,
+      "end": 105,
+      "text": "]"
+     },
+     {
+      "type": "pair",
+      "start": 106,
+      "end": 128,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 106,
+        "end": 113,
+        "text": "country"
+       },
+       {
+        "type": "=",
+        "start": 114,
+        "end": 115,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 116,
+        "end": 128,
+        "children": [
+         {
+          "type": "\"",
+          "start": 116,
+          "end": 117,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 127,
+          "end": 128,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 129,
+      "end": 146,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 129,
+        "end": 135,
+        "text": "region"
+       },
+       {
+        "type": "=",
+        "start": 136,
+        "end": 137,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 138,
+        "end": 146,
+        "children": [
+         {
+          "type": "\"",
+          "start": 138,
+          "end": 139,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 145,
+          "end": 146,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table_array_element",
+    "start": 148,
+    "end": 195,
+    "children": [
+     {
+      "type": "[[",
+      "start": 148,
+      "end": 150,
+      "text": "[["
+     },
+     {
+      "type": "dotted_key",
+      "start": 150,
+      "end": 172,
+      "children": [
+       {
+        "type": "dotted_key",
+        "start": 150,
+        "end": 162,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 150,
+          "end": 155,
+          "text": "fruit"
+         },
+         {
+          "type": ".",
+          "start": 155,
+          "end": 156,
+          "text": "."
+         },
+         {
+          "type": "bare_key",
+          "start": 156,
+          "end": 162,
+          "text": "banana"
+         }
+        ]
+       },
+       {
+        "type": ".",
+        "start": 162,
+        "end": 163,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 163,
+        "end": 172,
+        "text": "varieties"
+       }
+      ]
+     },
+     {
+      "type": "]]",
+      "start": 172,
+      "end": 174,
+      "text": "]]"
+     },
+     {
+      "type": "pair",
+      "start": 175,
+      "end": 193,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 175,
+        "end": 179,
+        "text": "name"
+       },
+       {
+        "type": "=",
+        "start": 180,
+        "end": 181,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 182,
+        "end": 193,
+        "children": [
+         {
+          "type": "\"",
+          "start": 182,
+          "end": 183,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 192,
+          "end": 193,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table_array_element",
+    "start": 195,
+    "end": 240,
+    "children": [
+     {
+      "type": "[[",
+      "start": 195,
+      "end": 197,
+      "text": "[["
+     },
+     {
+      "type": "dotted_key",
+      "start": 197,
+      "end": 219,
+      "children": [
+       {
+        "type": "dotted_key",
+        "start": 197,
+        "end": 209,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 197,
+          "end": 202,
+          "text": "fruit"
+         },
+         {
+          "type": ".",
+          "start": 202,
+          "end": 203,
+          "text": "."
+         },
+         {
+          "type": "bare_key",
+          "start": 203,
+          "end": 209,
+          "text": "banana"
+         }
+        ]
+       },
+       {
+        "type": ".",
+        "start": 209,
+        "end": 210,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 210,
+        "end": 219,
+        "text": "varieties"
+       }
+      ]
+     },
+     {
+      "type": "]]",
+      "start": 219,
+      "end": 221,
+      "text": "]]"
+     },
+     {
+      "type": "pair",
+      "start": 222,
+      "end": 239,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 222,
+        "end": 226,
+        "text": "name"
+       },
+       {
+        "type": "=",
+        "start": 227,
+        "end": 228,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 229,
+        "end": 239,
+        "children": [
+         {
+          "type": "\"",
+          "start": 229,
+          "end": 230,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 238,
+          "end": 239,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

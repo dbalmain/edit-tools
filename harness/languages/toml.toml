@@ -1,0 +1,20 @@
+# TOML. Schema: docs/onboarding/WORKFLOW.md, "Stage 0".
+name = "toml"
+extensions = [".toml"]
+
+grammar = "tree-sitter-toml==0.7.0"
+grammar_module = "tree_sitter_toml"
+grammar_symbol = "language"
+
+# taplo reads configuration files from the working tree unless this switch is
+# present. stdin still needs a filename so taplo selects its TOML parser.
+reference = "nix run nixpkgs#taplo -- fmt --no-auto-config -o column_width={width} --stdin-filepath x.toml -"
+reference_version = "taplo 0.10.0"
+reference_width = "flag"
+
+widths = [88, 60]
+
+# Python's stdlib TOML loader compares the data model, while gate3.py's
+# universal layer still checks comments and parse errors independently.
+gate3 = "toml"
+

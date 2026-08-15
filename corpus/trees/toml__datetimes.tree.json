@@ -1,0 +1,212 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/datetimes.toml",
+ "source": "published_at = 1979-05-27T07:32:00Z\nupdated_at = 1979-05-27T00:32:00-07:00\nmeeting = 1979-05-27T07:32:00\nrelease_date = 1979-05-27\nrelease_time = 07:32:00\n\n[schedule]\nstarts = 1979-05-27T07:32:00.999999Z\nends = 1979-05-27T08:45:30.123456Z\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 239,
+  "children": [
+   {
+    "type": "pair",
+    "start": 0,
+    "end": 35,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 0,
+      "end": 12,
+      "text": "published_at"
+     },
+     {
+      "type": "=",
+      "start": 13,
+      "end": 14,
+      "text": "="
+     },
+     {
+      "type": "offset_date_time",
+      "start": 15,
+      "end": 35,
+      "text": "1979-05-27T07:32:00Z"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 36,
+    "end": 74,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 36,
+      "end": 46,
+      "text": "updated_at"
+     },
+     {
+      "type": "=",
+      "start": 47,
+      "end": 48,
+      "text": "="
+     },
+     {
+      "type": "offset_date_time",
+      "start": 49,
+      "end": 74,
+      "text": "1979-05-27T00:32:00-07:00"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 75,
+    "end": 104,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 75,
+      "end": 82,
+      "text": "meeting"
+     },
+     {
+      "type": "=",
+      "start": 83,
+      "end": 84,
+      "text": "="
+     },
+     {
+      "type": "local_date_time",
+      "start": 85,
+      "end": 104,
+      "text": "1979-05-27T07:32:00"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 105,
+    "end": 130,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 105,
+      "end": 117,
+      "text": "release_date"
+     },
+     {
+      "type": "=",
+      "start": 118,
+      "end": 119,
+      "text": "="
+     },
+     {
+      "type": "local_date",
+      "start": 120,
+      "end": 130,
+      "text": "1979-05-27"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 131,
+    "end": 154,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 131,
+      "end": 143,
+      "text": "release_time"
+     },
+     {
+      "type": "=",
+      "start": 144,
+      "end": 145,
+      "text": "="
+     },
+     {
+      "type": "local_time",
+      "start": 146,
+      "end": 154,
+      "text": "07:32:00"
+     }
+    ]
+   },
+   {
+    "type": "table",
+    "start": 156,
+    "end": 239,
+    "children": [
+     {
+      "type": "[",
+      "start": 156,
+      "end": 157,
+      "text": "["
+     },
+     {
+      "type": "bare_key",
+      "start": 157,
+      "end": 165,
+      "text": "schedule"
+     },
+     {
+      "type": "]",
+      "start": 165,
+      "end": 166,
+      "text": "]"
+     },
+     {
+      "type": "pair",
+      "start": 167,
+      "end": 203,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 167,
+        "end": 173,
+        "text": "starts"
+       },
+       {
+        "type": "=",
+        "start": 174,
+        "end": 175,
+        "text": "="
+       },
+       {
+        "type": "offset_date_time",
+        "start": 176,
+        "end": 203,
+        "text": "1979-05-27T07:32:00.999999Z"
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 204,
+      "end": 238,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 204,
+        "end": 208,
+        "text": "ends"
+       },
+       {
+        "type": "=",
+        "start": 209,
+        "end": 210,
+        "text": "="
+       },
+       {
+        "type": "offset_date_time",
+        "start": 211,
+        "end": 238,
+        "text": "1979-05-27T08:45:30.123456Z"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -1,0 +1,15 @@
+# Own-line comment before the first key.
+title = "comment attachment" # trailing comment on a key-value pair
+
+values = [
+  # Own-line comment inside an array.
+  "first", # trailing comment after an array item
+  "second",
+  # Comment immediately before the closing delimiter.
+]
+
+[service]
+# Own-line comment inside a table.
+enabled = true # trailing comment inside a table
+
+# Comment at end of file.

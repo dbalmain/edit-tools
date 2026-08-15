@@ -1,0 +1,991 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/nesting.toml",
+ "source": "# Tables and values nested several levels deep.\n[application]\nname = \"worker\"\n\n[application.runtime]\nretries = 3\nbackoff = { initial = 0.5, maximum = 30.0, jitter = { enabled = true, ratio = 0.2 } }\n\n[application.runtime.network]\nendpoints = [\n  { host = \"primary.example.test\", ports = [443, 8443] },\n  { host = \"backup.example.test\", ports = [443, 9443] },\n]\n\n[application.runtime.network.tls]\ncertificates = { ca = { file = \"ca.pem\", required = true }, client = { enabled = false } }\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 487,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 47,
+    "text": "# Tables and values nested several levels deep."
+   },
+   {
+    "type": "table",
+    "start": 48,
+    "end": 79,
+    "children": [
+     {
+      "type": "[",
+      "start": 48,
+      "end": 49,
+      "text": "["
+     },
+     {
+      "type": "bare_key",
+      "start": 49,
+      "end": 60,
+      "text": "application"
+     },
+     {
+      "type": "]",
+      "start": 60,
+      "end": 61,
+      "text": "]"
+     },
+     {
+      "type": "pair",
+      "start": 62,
+      "end": 77,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 62,
+        "end": 66,
+        "text": "name"
+       },
+       {
+        "type": "=",
+        "start": 67,
+        "end": 68,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 69,
+        "end": 77,
+        "children": [
+         {
+          "type": "\"",
+          "start": 69,
+          "end": 70,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 76,
+          "end": 77,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table",
+    "start": 79,
+    "end": 200,
+    "children": [
+     {
+      "type": "[",
+      "start": 79,
+      "end": 80,
+      "text": "["
+     },
+     {
+      "type": "dotted_key",
+      "start": 80,
+      "end": 99,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 80,
+        "end": 91,
+        "text": "application"
+       },
+       {
+        "type": ".",
+        "start": 91,
+        "end": 92,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 92,
+        "end": 99,
+        "text": "runtime"
+       }
+      ]
+     },
+     {
+      "type": "]",
+      "start": 99,
+      "end": 100,
+      "text": "]"
+     },
+     {
+      "type": "pair",
+      "start": 101,
+      "end": 112,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 101,
+        "end": 108,
+        "text": "retries"
+       },
+       {
+        "type": "=",
+        "start": 109,
+        "end": 110,
+        "text": "="
+       },
+       {
+        "type": "integer",
+        "start": 111,
+        "end": 112,
+        "text": "3"
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 113,
+      "end": 198,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 113,
+        "end": 120,
+        "text": "backoff"
+       },
+       {
+        "type": "=",
+        "start": 121,
+        "end": 122,
+        "text": "="
+       },
+       {
+        "type": "inline_table",
+        "start": 123,
+        "end": 198,
+        "children": [
+         {
+          "type": "{",
+          "start": 123,
+          "end": 124,
+          "text": "{"
+         },
+         {
+          "type": "pair",
+          "start": 125,
+          "end": 138,
+          "children": [
+           {
+            "type": "bare_key",
+            "start": 125,
+            "end": 132,
+            "text": "initial"
+           },
+           {
+            "type": "=",
+            "start": 133,
+            "end": 134,
+            "text": "="
+           },
+           {
+            "type": "float",
+            "start": 135,
+            "end": 138,
+            "text": "0.5"
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 138,
+          "end": 139,
+          "text": ","
+         },
+         {
+          "type": "pair",
+          "start": 140,
+          "end": 154,
+          "children": [
+           {
+            "type": "bare_key",
+            "start": 140,
+            "end": 147,
+            "text": "maximum"
+           },
+           {
+            "type": "=",
+            "start": 148,
+            "end": 149,
+            "text": "="
+           },
+           {
+            "type": "float",
+            "start": 150,
+            "end": 154,
+            "text": "30.0"
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 154,
+          "end": 155,
+          "text": ","
+         },
+         {
+          "type": "pair",
+          "start": 156,
+          "end": 196,
+          "children": [
+           {
+            "type": "bare_key",
+            "start": 156,
+            "end": 162,
+            "text": "jitter"
+           },
+           {
+            "type": "=",
+            "start": 163,
+            "end": 164,
+            "text": "="
+           },
+           {
+            "type": "inline_table",
+            "start": 165,
+            "end": 196,
+            "children": [
+             {
+              "type": "{",
+              "start": 165,
+              "end": 166,
+              "text": "{"
+             },
+             {
+              "type": "pair",
+              "start": 167,
+              "end": 181,
+              "children": [
+               {
+                "type": "bare_key",
+                "start": 167,
+                "end": 174,
+                "text": "enabled"
+               },
+               {
+                "type": "=",
+                "start": 175,
+                "end": 176,
+                "text": "="
+               },
+               {
+                "type": "boolean",
+                "start": 177,
+                "end": 181,
+                "text": "true"
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 181,
+              "end": 182,
+              "text": ","
+             },
+             {
+              "type": "pair",
+              "start": 183,
+              "end": 194,
+              "children": [
+               {
+                "type": "bare_key",
+                "start": 183,
+                "end": 188,
+                "text": "ratio"
+               },
+               {
+                "type": "=",
+                "start": 189,
+                "end": 190,
+                "text": "="
+               },
+               {
+                "type": "float",
+                "start": 191,
+                "end": 194,
+                "text": "0.2"
+               }
+              ]
+             },
+             {
+              "type": "}",
+              "start": 195,
+              "end": 196,
+              "text": "}"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "}",
+          "start": 197,
+          "end": 198,
+          "text": "}"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table",
+    "start": 200,
+    "end": 362,
+    "children": [
+     {
+      "type": "[",
+      "start": 200,
+      "end": 201,
+      "text": "["
+     },
+     {
+      "type": "dotted_key",
+      "start": 201,
+      "end": 228,
+      "children": [
+       {
+        "type": "dotted_key",
+        "start": 201,
+        "end": 220,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 201,
+          "end": 212,
+          "text": "application"
+         },
+         {
+          "type": ".",
+          "start": 212,
+          "end": 213,
+          "text": "."
+         },
+         {
+          "type": "bare_key",
+          "start": 213,
+          "end": 220,
+          "text": "runtime"
+         }
+        ]
+       },
+       {
+        "type": ".",
+        "start": 220,
+        "end": 221,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 221,
+        "end": 228,
+        "text": "network"
+       }
+      ]
+     },
+     {
+      "type": "]",
+      "start": 228,
+      "end": 229,
+      "text": "]"
+     },
+     {
+      "type": "pair",
+      "start": 230,
+      "end": 360,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 230,
+        "end": 239,
+        "text": "endpoints"
+       },
+       {
+        "type": "=",
+        "start": 240,
+        "end": 241,
+        "text": "="
+       },
+       {
+        "type": "array",
+        "start": 242,
+        "end": 360,
+        "children": [
+         {
+          "type": "[",
+          "start": 242,
+          "end": 243,
+          "text": "["
+         },
+         {
+          "type": "inline_table",
+          "start": 246,
+          "end": 300,
+          "children": [
+           {
+            "type": "{",
+            "start": 246,
+            "end": 247,
+            "text": "{"
+           },
+           {
+            "type": "pair",
+            "start": 248,
+            "end": 277,
+            "children": [
+             {
+              "type": "bare_key",
+              "start": 248,
+              "end": 252,
+              "text": "host"
+             },
+             {
+              "type": "=",
+              "start": 253,
+              "end": 254,
+              "text": "="
+             },
+             {
+              "type": "string",
+              "start": 255,
+              "end": 277,
+              "children": [
+               {
+                "type": "\"",
+                "start": 255,
+                "end": 256,
+                "text": "\""
+               },
+               {
+                "type": "\"",
+                "start": 276,
+                "end": 277,
+                "text": "\""
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 277,
+            "end": 278,
+            "text": ","
+           },
+           {
+            "type": "pair",
+            "start": 279,
+            "end": 298,
+            "children": [
+             {
+              "type": "bare_key",
+              "start": 279,
+              "end": 284,
+              "text": "ports"
+             },
+             {
+              "type": "=",
+              "start": 285,
+              "end": 286,
+              "text": "="
+             },
+             {
+              "type": "array",
+              "start": 287,
+              "end": 298,
+              "children": [
+               {
+                "type": "[",
+                "start": 287,
+                "end": 288,
+                "text": "["
+               },
+               {
+                "type": "integer",
+                "start": 288,
+                "end": 291,
+                "text": "443"
+               },
+               {
+                "type": ",",
+                "start": 291,
+                "end": 292,
+                "text": ","
+               },
+               {
+                "type": "integer",
+                "start": 293,
+                "end": 297,
+                "text": "8443"
+               },
+               {
+                "type": "]",
+                "start": 297,
+                "end": 298,
+                "text": "]"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 299,
+            "end": 300,
+            "text": "}"
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 300,
+          "end": 301,
+          "text": ","
+         },
+         {
+          "type": "inline_table",
+          "start": 304,
+          "end": 357,
+          "children": [
+           {
+            "type": "{",
+            "start": 304,
+            "end": 305,
+            "text": "{"
+           },
+           {
+            "type": "pair",
+            "start": 306,
+            "end": 334,
+            "children": [
+             {
+              "type": "bare_key",
+              "start": 306,
+              "end": 310,
+              "text": "host"
+             },
+             {
+              "type": "=",
+              "start": 311,
+              "end": 312,
+              "text": "="
+             },
+             {
+              "type": "string",
+              "start": 313,
+              "end": 334,
+              "children": [
+               {
+                "type": "\"",
+                "start": 313,
+                "end": 314,
+                "text": "\""
+               },
+               {
+                "type": "\"",
+                "start": 333,
+                "end": 334,
+                "text": "\""
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 334,
+            "end": 335,
+            "text": ","
+           },
+           {
+            "type": "pair",
+            "start": 336,
+            "end": 355,
+            "children": [
+             {
+              "type": "bare_key",
+              "start": 336,
+              "end": 341,
+              "text": "ports"
+             },
+             {
+              "type": "=",
+              "start": 342,
+              "end": 343,
+              "text": "="
+             },
+             {
+              "type": "array",
+              "start": 344,
+              "end": 355,
+              "children": [
+               {
+                "type": "[",
+                "start": 344,
+                "end": 345,
+                "text": "["
+               },
+               {
+                "type": "integer",
+                "start": 345,
+                "end": 348,
+                "text": "443"
+               },
+               {
+                "type": ",",
+                "start": 348,
+                "end": 349,
+                "text": ","
+               },
+               {
+                "type": "integer",
+                "start": 350,
+                "end": 354,
+                "text": "9443"
+               },
+               {
+                "type": "]",
+                "start": 354,
+                "end": 355,
+                "text": "]"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 356,
+            "end": 357,
+            "text": "}"
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 357,
+          "end": 358,
+          "text": ","
+         },
+         {
+          "type": "]",
+          "start": 359,
+          "end": 360,
+          "text": "]"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table",
+    "start": 362,
+    "end": 487,
+    "children": [
+     {
+      "type": "[",
+      "start": 362,
+      "end": 363,
+      "text": "["
+     },
+     {
+      "type": "dotted_key",
+      "start": 363,
+      "end": 394,
+      "children": [
+       {
+        "type": "dotted_key",
+        "start": 363,
+        "end": 390,
+        "children": [
+         {
+          "type": "dotted_key",
+          "start": 363,
+          "end": 382,
+          "children": [
+           {
+            "type": "bare_key",
+            "start": 363,
+            "end": 374,
+            "text": "application"
+           },
+           {
+            "type": ".",
+            "start": 374,
+            "end": 375,
+            "text": "."
+           },
+           {
+            "type": "bare_key",
+            "start": 375,
+            "end": 382,
+            "text": "runtime"
+           }
+          ]
+         },
+         {
+          "type": ".",
+          "start": 382,
+          "end": 383,
+          "text": "."
+         },
+         {
+          "type": "bare_key",
+          "start": 383,
+          "end": 390,
+          "text": "network"
+         }
+        ]
+       },
+       {
+        "type": ".",
+        "start": 390,
+        "end": 391,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 391,
+        "end": 394,
+        "text": "tls"
+       }
+      ]
+     },
+     {
+      "type": "]",
+      "start": 394,
+      "end": 395,
+      "text": "]"
+     },
+     {
+      "type": "pair",
+      "start": 396,
+      "end": 486,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 396,
+        "end": 408,
+        "text": "certificates"
+       },
+       {
+        "type": "=",
+        "start": 409,
+        "end": 410,
+        "text": "="
+       },
+       {
+        "type": "inline_table",
+        "start": 411,
+        "end": 486,
+        "children": [
+         {
+          "type": "{",
+          "start": 411,
+          "end": 412,
+          "text": "{"
+         },
+         {
+          "type": "pair",
+          "start": 413,
+          "end": 454,
+          "children": [
+           {
+            "type": "bare_key",
+            "start": 413,
+            "end": 415,
+            "text": "ca"
+           },
+           {
+            "type": "=",
+            "start": 416,
+            "end": 417,
+            "text": "="
+           },
+           {
+            "type": "inline_table",
+            "start": 418,
+            "end": 454,
+            "children": [
+             {
+              "type": "{",
+              "start": 418,
+              "end": 419,
+              "text": "{"
+             },
+             {
+              "type": "pair",
+              "start": 420,
+              "end": 435,
+              "children": [
+               {
+                "type": "bare_key",
+                "start": 420,
+                "end": 424,
+                "text": "file"
+               },
+               {
+                "type": "=",
+                "start": 425,
+                "end": 426,
+                "text": "="
+               },
+               {
+                "type": "string",
+                "start": 427,
+                "end": 435,
+                "children": [
+                 {
+                  "type": "\"",
+                  "start": 427,
+                  "end": 428,
+                  "text": "\""
+                 },
+                 {
+                  "type": "\"",
+                  "start": 434,
+                  "end": 435,
+                  "text": "\""
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 435,
+              "end": 436,
+              "text": ","
+             },
+             {
+              "type": "pair",
+              "start": 437,
+              "end": 452,
+              "children": [
+               {
+                "type": "bare_key",
+                "start": 437,
+                "end": 445,
+                "text": "required"
+               },
+               {
+                "type": "=",
+                "start": 446,
+                "end": 447,
+                "text": "="
+               },
+               {
+                "type": "boolean",
+                "start": 448,
+                "end": 452,
+                "text": "true"
+               }
+              ]
+             },
+             {
+              "type": "}",
+              "start": 453,
+              "end": 454,
+              "text": "}"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 454,
+          "end": 455,
+          "text": ","
+         },
+         {
+          "type": "pair",
+          "start": 456,
+          "end": 484,
+          "children": [
+           {
+            "type": "bare_key",
+            "start": 456,
+            "end": 462,
+            "text": "client"
+           },
+           {
+            "type": "=",
+            "start": 463,
+            "end": 464,
+            "text": "="
+           },
+           {
+            "type": "inline_table",
+            "start": 465,
+            "end": 484,
+            "children": [
+             {
+              "type": "{",
+              "start": 465,
+              "end": 466,
+              "text": "{"
+             },
+             {
+              "type": "pair",
+              "start": 467,
+              "end": 482,
+              "children": [
+               {
+                "type": "bare_key",
+                "start": 467,
+                "end": 474,
+                "text": "enabled"
+               },
+               {
+                "type": "=",
+                "start": 475,
+                "end": 476,
+                "text": "="
+               },
+               {
+                "type": "boolean",
+                "start": 477,
+                "end": 482,
+                "text": "false"
+               }
+              ]
+             },
+             {
+              "type": "}",
+              "start": 483,
+              "end": 484,
+              "text": "}"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "}",
+          "start": 485,
+          "end": 486,
+          "text": "}"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

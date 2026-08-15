@@ -1,0 +1,10 @@
+bare_key = "bare"
+"quoted key" = "basic quoted key"
+'literal key' = "literal quoted key"
+
+site."google.com" = { owner = "search", active = true }
+"127.0.0.1".port = 8080
+"unicode π" = "unicode quoted key"
+
+["quoted table"]
+value = "table with a quoted header"

@@ -1,0 +1,1396 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/kitchen.toml",
+ "source": "# Several TOML constructs interacting in one intentionally untidy probe.\ntitle=\"kitchen\"\nversion = 1_000\n\n[project]\nname = \"formatter\"\nauthors=[\"Ada Lovelace\", \"Grace Hopper\", \"Edsger Dijkstra\"]\nlicense={name=\"MIT\", file=\"LICENSE\"}\n\n[project.build]\ncommand = \"tool --input src --output dist\"\nflags = [\"--release\", \"--offline\", \"--verbose\"]\n\n[[project.targets]]\nname=\"library\"\nsources=[\"src/lib.toml\", \"src/parser.toml\"]\n\n[project.targets.options]\nwarnings = { unused = true, style = false }\n\n[[project.targets]]\nname=\"binary\"\nsources=[\"src/main.toml\"]\n\n[project.targets.options]\nwarnings = { unused = false, style = true }\n\n[deploy]\nregions = [\n  \"ap-southeast-2\", # Sydney\n  \"us-east-1\", # Virginia\n]\nenvironment = { production = true, preview = false }\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 755,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 72,
+    "text": "# Several TOML constructs interacting in one intentionally untidy probe."
+   },
+   {
+    "type": "pair",
+    "start": 73,
+    "end": 88,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 73,
+      "end": 78,
+      "text": "title"
+     },
+     {
+      "type": "=",
+      "start": 78,
+      "end": 79,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 79,
+      "end": 88,
+      "children": [
+       {
+        "type": "\"",
+        "start": 79,
+        "end": 80,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 87,
+        "end": 88,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 89,
+    "end": 104,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 89,
+      "end": 96,
+      "text": "version"
+     },
+     {
+      "type": "=",
+      "start": 97,
+      "end": 98,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 99,
+      "end": 104,
+      "text": "1_000"
+     }
+    ]
+   },
+   {
+    "type": "table",
+    "start": 106,
+    "end": 233,
+    "children": [
+     {
+      "type": "[",
+      "start": 106,
+      "end": 107,
+      "text": "["
+     },
+     {
+      "type": "bare_key",
+      "start": 107,
+      "end": 114,
+      "text": "project"
+     },
+     {
+      "type": "]",
+      "start": 114,
+      "end": 115,
+      "text": "]"
+     },
+     {
+      "type": "pair",
+      "start": 116,
+      "end": 134,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 116,
+        "end": 120,
+        "text": "name"
+       },
+       {
+        "type": "=",
+        "start": 121,
+        "end": 122,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 123,
+        "end": 134,
+        "children": [
+         {
+          "type": "\"",
+          "start": 123,
+          "end": 124,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 133,
+          "end": 134,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 135,
+      "end": 194,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 135,
+        "end": 142,
+        "text": "authors"
+       },
+       {
+        "type": "=",
+        "start": 142,
+        "end": 143,
+        "text": "="
+       },
+       {
+        "type": "array",
+        "start": 143,
+        "end": 194,
+        "children": [
+         {
+          "type": "[",
+          "start": 143,
+          "end": 144,
+          "text": "["
+         },
+         {
+          "type": "string",
+          "start": 144,
+          "end": 158,
+          "children": [
+           {
+            "type": "\"",
+            "start": 144,
+            "end": 145,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 157,
+            "end": 158,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 158,
+          "end": 159,
+          "text": ","
+         },
+         {
+          "type": "string",
+          "start": 160,
+          "end": 174,
+          "children": [
+           {
+            "type": "\"",
+            "start": 160,
+            "end": 161,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 173,
+            "end": 174,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 174,
+          "end": 175,
+          "text": ","
+         },
+         {
+          "type": "string",
+          "start": 176,
+          "end": 193,
+          "children": [
+           {
+            "type": "\"",
+            "start": 176,
+            "end": 177,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 192,
+            "end": 193,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": "]",
+          "start": 193,
+          "end": 194,
+          "text": "]"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 195,
+      "end": 231,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 195,
+        "end": 202,
+        "text": "license"
+       },
+       {
+        "type": "=",
+        "start": 202,
+        "end": 203,
+        "text": "="
+       },
+       {
+        "type": "inline_table",
+        "start": 203,
+        "end": 231,
+        "children": [
+         {
+          "type": "{",
+          "start": 203,
+          "end": 204,
+          "text": "{"
+         },
+         {
+          "type": "pair",
+          "start": 204,
+          "end": 214,
+          "children": [
+           {
+            "type": "bare_key",
+            "start": 204,
+            "end": 208,
+            "text": "name"
+           },
+           {
+            "type": "=",
+            "start": 208,
+            "end": 209,
+            "text": "="
+           },
+           {
+            "type": "string",
+            "start": 209,
+            "end": 214,
+            "children": [
+             {
+              "type": "\"",
+              "start": 209,
+              "end": 210,
+              "text": "\""
+             },
+             {
+              "type": "\"",
+              "start": 213,
+              "end": 214,
+              "text": "\""
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 214,
+          "end": 215,
+          "text": ","
+         },
+         {
+          "type": "pair",
+          "start": 216,
+          "end": 230,
+          "children": [
+           {
+            "type": "bare_key",
+            "start": 216,
+            "end": 220,
+            "text": "file"
+           },
+           {
+            "type": "=",
+            "start": 220,
+            "end": 221,
+            "text": "="
+           },
+           {
+            "type": "string",
+            "start": 221,
+            "end": 230,
+            "children": [
+             {
+              "type": "\"",
+              "start": 221,
+              "end": 222,
+              "text": "\""
+             },
+             {
+              "type": "\"",
+              "start": 229,
+              "end": 230,
+              "text": "\""
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "}",
+          "start": 230,
+          "end": 231,
+          "text": "}"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table",
+    "start": 233,
+    "end": 341,
+    "children": [
+     {
+      "type": "[",
+      "start": 233,
+      "end": 234,
+      "text": "["
+     },
+     {
+      "type": "dotted_key",
+      "start": 234,
+      "end": 247,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 234,
+        "end": 241,
+        "text": "project"
+       },
+       {
+        "type": ".",
+        "start": 241,
+        "end": 242,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 242,
+        "end": 247,
+        "text": "build"
+       }
+      ]
+     },
+     {
+      "type": "]",
+      "start": 247,
+      "end": 248,
+      "text": "]"
+     },
+     {
+      "type": "pair",
+      "start": 249,
+      "end": 291,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 249,
+        "end": 256,
+        "text": "command"
+       },
+       {
+        "type": "=",
+        "start": 257,
+        "end": 258,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 259,
+        "end": 291,
+        "children": [
+         {
+          "type": "\"",
+          "start": 259,
+          "end": 260,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 290,
+          "end": 291,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 292,
+      "end": 339,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 292,
+        "end": 297,
+        "text": "flags"
+       },
+       {
+        "type": "=",
+        "start": 298,
+        "end": 299,
+        "text": "="
+       },
+       {
+        "type": "array",
+        "start": 300,
+        "end": 339,
+        "children": [
+         {
+          "type": "[",
+          "start": 300,
+          "end": 301,
+          "text": "["
+         },
+         {
+          "type": "string",
+          "start": 301,
+          "end": 312,
+          "children": [
+           {
+            "type": "\"",
+            "start": 301,
+            "end": 302,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 311,
+            "end": 312,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 312,
+          "end": 313,
+          "text": ","
+         },
+         {
+          "type": "string",
+          "start": 314,
+          "end": 325,
+          "children": [
+           {
+            "type": "\"",
+            "start": 314,
+            "end": 315,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 324,
+            "end": 325,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 325,
+          "end": 326,
+          "text": ","
+         },
+         {
+          "type": "string",
+          "start": 327,
+          "end": 338,
+          "children": [
+           {
+            "type": "\"",
+            "start": 327,
+            "end": 328,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 337,
+            "end": 338,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": "]",
+          "start": 338,
+          "end": 339,
+          "text": "]"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table_array_element",
+    "start": 341,
+    "end": 421,
+    "children": [
+     {
+      "type": "[[",
+      "start": 341,
+      "end": 343,
+      "text": "[["
+     },
+     {
+      "type": "dotted_key",
+      "start": 343,
+      "end": 358,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 343,
+        "end": 350,
+        "text": "project"
+       },
+       {
+        "type": ".",
+        "start": 350,
+        "end": 351,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 351,
+        "end": 358,
+        "text": "targets"
+       }
+      ]
+     },
+     {
+      "type": "]]",
+      "start": 358,
+      "end": 360,
+      "text": "]]"
+     },
+     {
+      "type": "pair",
+      "start": 361,
+      "end": 375,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 361,
+        "end": 365,
+        "text": "name"
+       },
+       {
+        "type": "=",
+        "start": 365,
+        "end": 366,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 366,
+        "end": 375,
+        "children": [
+         {
+          "type": "\"",
+          "start": 366,
+          "end": 367,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 374,
+          "end": 375,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 376,
+      "end": 419,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 376,
+        "end": 383,
+        "text": "sources"
+       },
+       {
+        "type": "=",
+        "start": 383,
+        "end": 384,
+        "text": "="
+       },
+       {
+        "type": "array",
+        "start": 384,
+        "end": 419,
+        "children": [
+         {
+          "type": "[",
+          "start": 384,
+          "end": 385,
+          "text": "["
+         },
+         {
+          "type": "string",
+          "start": 385,
+          "end": 399,
+          "children": [
+           {
+            "type": "\"",
+            "start": 385,
+            "end": 386,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 398,
+            "end": 399,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 399,
+          "end": 400,
+          "text": ","
+         },
+         {
+          "type": "string",
+          "start": 401,
+          "end": 418,
+          "children": [
+           {
+            "type": "\"",
+            "start": 401,
+            "end": 402,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 417,
+            "end": 418,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": "]",
+          "start": 418,
+          "end": 419,
+          "text": "]"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table",
+    "start": 421,
+    "end": 492,
+    "children": [
+     {
+      "type": "[",
+      "start": 421,
+      "end": 422,
+      "text": "["
+     },
+     {
+      "type": "dotted_key",
+      "start": 422,
+      "end": 445,
+      "children": [
+       {
+        "type": "dotted_key",
+        "start": 422,
+        "end": 437,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 422,
+          "end": 429,
+          "text": "project"
+         },
+         {
+          "type": ".",
+          "start": 429,
+          "end": 430,
+          "text": "."
+         },
+         {
+          "type": "bare_key",
+          "start": 430,
+          "end": 437,
+          "text": "targets"
+         }
+        ]
+       },
+       {
+        "type": ".",
+        "start": 437,
+        "end": 438,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 438,
+        "end": 445,
+        "text": "options"
+       }
+      ]
+     },
+     {
+      "type": "]",
+      "start": 445,
+      "end": 446,
+      "text": "]"
+     },
+     {
+      "type": "pair",
+      "start": 447,
+      "end": 490,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 447,
+        "end": 455,
+        "text": "warnings"
+       },
+       {
+        "type": "=",
+        "start": 456,
+        "end": 457,
+        "text": "="
+       },
+       {
+        "type": "inline_table",
+        "start": 458,
+        "end": 490,
+        "children": [
+         {
+          "type": "{",
+          "start": 458,
+          "end": 459,
+          "text": "{"
+         },
+         {
+          "type": "pair",
+          "start": 460,
+          "end": 473,
+          "children": [
+           {
+            "type": "bare_key",
+            "start": 460,
+            "end": 466,
+            "text": "unused"
+           },
+           {
+            "type": "=",
+            "start": 467,
+            "end": 468,
+            "text": "="
+           },
+           {
+            "type": "boolean",
+            "start": 469,
+            "end": 473,
+            "text": "true"
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 473,
+          "end": 474,
+          "text": ","
+         },
+         {
+          "type": "pair",
+          "start": 475,
+          "end": 488,
+          "children": [
+           {
+            "type": "bare_key",
+            "start": 475,
+            "end": 480,
+            "text": "style"
+           },
+           {
+            "type": "=",
+            "start": 481,
+            "end": 482,
+            "text": "="
+           },
+           {
+            "type": "boolean",
+            "start": 483,
+            "end": 488,
+            "text": "false"
+           }
+          ]
+         },
+         {
+          "type": "}",
+          "start": 489,
+          "end": 490,
+          "text": "}"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table_array_element",
+    "start": 492,
+    "end": 553,
+    "children": [
+     {
+      "type": "[[",
+      "start": 492,
+      "end": 494,
+      "text": "[["
+     },
+     {
+      "type": "dotted_key",
+      "start": 494,
+      "end": 509,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 494,
+        "end": 501,
+        "text": "project"
+       },
+       {
+        "type": ".",
+        "start": 501,
+        "end": 502,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 502,
+        "end": 509,
+        "text": "targets"
+       }
+      ]
+     },
+     {
+      "type": "]]",
+      "start": 509,
+      "end": 511,
+      "text": "]]"
+     },
+     {
+      "type": "pair",
+      "start": 512,
+      "end": 525,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 512,
+        "end": 516,
+        "text": "name"
+       },
+       {
+        "type": "=",
+        "start": 516,
+        "end": 517,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 517,
+        "end": 525,
+        "children": [
+         {
+          "type": "\"",
+          "start": 517,
+          "end": 518,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 524,
+          "end": 525,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 526,
+      "end": 551,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 526,
+        "end": 533,
+        "text": "sources"
+       },
+       {
+        "type": "=",
+        "start": 533,
+        "end": 534,
+        "text": "="
+       },
+       {
+        "type": "array",
+        "start": 534,
+        "end": 551,
+        "children": [
+         {
+          "type": "[",
+          "start": 534,
+          "end": 535,
+          "text": "["
+         },
+         {
+          "type": "string",
+          "start": 535,
+          "end": 550,
+          "children": [
+           {
+            "type": "\"",
+            "start": 535,
+            "end": 536,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 549,
+            "end": 550,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": "]",
+          "start": 550,
+          "end": 551,
+          "text": "]"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table",
+    "start": 553,
+    "end": 624,
+    "children": [
+     {
+      "type": "[",
+      "start": 553,
+      "end": 554,
+      "text": "["
+     },
+     {
+      "type": "dotted_key",
+      "start": 554,
+      "end": 577,
+      "children": [
+       {
+        "type": "dotted_key",
+        "start": 554,
+        "end": 569,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 554,
+          "end": 561,
+          "text": "project"
+         },
+         {
+          "type": ".",
+          "start": 561,
+          "end": 562,
+          "text": "."
+         },
+         {
+          "type": "bare_key",
+          "start": 562,
+          "end": 569,
+          "text": "targets"
+         }
+        ]
+       },
+       {
+        "type": ".",
+        "start": 569,
+        "end": 570,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 570,
+        "end": 577,
+        "text": "options"
+       }
+      ]
+     },
+     {
+      "type": "]",
+      "start": 577,
+      "end": 578,
+      "text": "]"
+     },
+     {
+      "type": "pair",
+      "start": 579,
+      "end": 622,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 579,
+        "end": 587,
+        "text": "warnings"
+       },
+       {
+        "type": "=",
+        "start": 588,
+        "end": 589,
+        "text": "="
+       },
+       {
+        "type": "inline_table",
+        "start": 590,
+        "end": 622,
+        "children": [
+         {
+          "type": "{",
+          "start": 590,
+          "end": 591,
+          "text": "{"
+         },
+         {
+          "type": "pair",
+          "start": 592,
+          "end": 606,
+          "children": [
+           {
+            "type": "bare_key",
+            "start": 592,
+            "end": 598,
+            "text": "unused"
+           },
+           {
+            "type": "=",
+            "start": 599,
+            "end": 600,
+            "text": "="
+           },
+           {
+            "type": "boolean",
+            "start": 601,
+            "end": 606,
+            "text": "false"
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 606,
+          "end": 607,
+          "text": ","
+         },
+         {
+          "type": "pair",
+          "start": 608,
+          "end": 620,
+          "children": [
+           {
+            "type": "bare_key",
+            "start": 608,
+            "end": 613,
+            "text": "style"
+           },
+           {
+            "type": "=",
+            "start": 614,
+            "end": 615,
+            "text": "="
+           },
+           {
+            "type": "boolean",
+            "start": 616,
+            "end": 620,
+            "text": "true"
+           }
+          ]
+         },
+         {
+          "type": "}",
+          "start": 621,
+          "end": 622,
+          "text": "}"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table",
+    "start": 624,
+    "end": 755,
+    "children": [
+     {
+      "type": "[",
+      "start": 624,
+      "end": 625,
+      "text": "["
+     },
+     {
+      "type": "bare_key",
+      "start": 625,
+      "end": 631,
+      "text": "deploy"
+     },
+     {
+      "type": "]",
+      "start": 631,
+      "end": 632,
+      "text": "]"
+     },
+     {
+      "type": "pair",
+      "start": 633,
+      "end": 701,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 633,
+        "end": 640,
+        "text": "regions"
+       },
+       {
+        "type": "=",
+        "start": 641,
+        "end": 642,
+        "text": "="
+       },
+       {
+        "type": "array",
+        "start": 643,
+        "end": 701,
+        "children": [
+         {
+          "type": "[",
+          "start": 643,
+          "end": 644,
+          "text": "["
+         },
+         {
+          "type": "string",
+          "start": 647,
+          "end": 663,
+          "children": [
+           {
+            "type": "\"",
+            "start": 647,
+            "end": 648,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 662,
+            "end": 663,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 663,
+          "end": 664,
+          "text": ","
+         },
+         {
+          "type": "comment",
+          "start": 665,
+          "end": 673,
+          "text": "# Sydney"
+         },
+         {
+          "type": "string",
+          "start": 676,
+          "end": 687,
+          "children": [
+           {
+            "type": "\"",
+            "start": 676,
+            "end": 677,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 686,
+            "end": 687,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 687,
+          "end": 688,
+          "text": ","
+         },
+         {
+          "type": "comment",
+          "start": 689,
+          "end": 699,
+          "text": "# Virginia"
+         },
+         {
+          "type": "]",
+          "start": 700,
+          "end": 701,
+          "text": "]"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 702,
+      "end": 754,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 702,
+        "end": 713,
+        "text": "environment"
+       },
+       {
+        "type": "=",
+        "start": 714,
+        "end": 715,
+        "text": "="
+       },
+       {
+        "type": "inline_table",
+        "start": 716,
+        "end": 754,
+        "children": [
+         {
+          "type": "{",
+          "start": 716,
+          "end": 717,
+          "text": "{"
+         },
+         {
+          "type": "pair",
+          "start": 718,
+          "end": 735,
+          "children": [
+           {
+            "type": "bare_key",
+            "start": 718,
+            "end": 728,
+            "text": "production"
+           },
+           {
+            "type": "=",
+            "start": 729,
+            "end": 730,
+            "text": "="
+           },
+           {
+            "type": "boolean",
+            "start": 731,
+            "end": 735,
+            "text": "true"
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 735,
+          "end": 736,
+          "text": ","
+         },
+         {
+          "type": "pair",
+          "start": 737,
+          "end": 752,
+          "children": [
+           {
+            "type": "bare_key",
+            "start": 737,
+            "end": 744,
+            "text": "preview"
+           },
+           {
+            "type": "=",
+            "start": 745,
+            "end": 746,
+            "text": "="
+           },
+           {
+            "type": "boolean",
+            "start": 747,
+            "end": 752,
+            "text": "false"
+           }
+          ]
+         },
+         {
+          "type": "}",
+          "start": 753,
+          "end": 754,
+          "text": "}"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

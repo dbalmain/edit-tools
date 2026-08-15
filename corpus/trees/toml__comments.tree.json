@@ -1,0 +1,236 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/comments.toml",
+ "source": "# Own-line comment before the first key.\ntitle = \"comment attachment\" # trailing comment on a key-value pair\n\nvalues = [\n  # Own-line comment inside an array.\n  \"first\", # trailing comment after an array item\n  \"second\",\n  # Comment immediately before the closing delimiter.\n]\n\n[service]\n# Own-line comment inside a table.\nenabled = true # trailing comment inside a table\n\n# Comment at end of file.\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 399,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 40,
+    "text": "# Own-line comment before the first key."
+   },
+   {
+    "type": "pair",
+    "start": 41,
+    "end": 108,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 41,
+      "end": 46,
+      "text": "title"
+     },
+     {
+      "type": "=",
+      "start": 47,
+      "end": 48,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 49,
+      "end": 69,
+      "children": [
+       {
+        "type": "\"",
+        "start": 49,
+        "end": 50,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 68,
+        "end": 69,
+        "text": "\""
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 70,
+      "end": 108,
+      "text": "# trailing comment on a key-value pair"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 110,
+    "end": 276,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 110,
+      "end": 116,
+      "text": "values"
+     },
+     {
+      "type": "=",
+      "start": 117,
+      "end": 118,
+      "text": "="
+     },
+     {
+      "type": "array",
+      "start": 119,
+      "end": 276,
+      "children": [
+       {
+        "type": "[",
+        "start": 119,
+        "end": 120,
+        "text": "["
+       },
+       {
+        "type": "comment",
+        "start": 123,
+        "end": 158,
+        "text": "# Own-line comment inside an array."
+       },
+       {
+        "type": "string",
+        "start": 161,
+        "end": 168,
+        "children": [
+         {
+          "type": "\"",
+          "start": 161,
+          "end": 162,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 167,
+          "end": 168,
+          "text": "\""
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 168,
+        "end": 169,
+        "text": ","
+       },
+       {
+        "type": "comment",
+        "start": 170,
+        "end": 208,
+        "text": "# trailing comment after an array item"
+       },
+       {
+        "type": "string",
+        "start": 211,
+        "end": 219,
+        "children": [
+         {
+          "type": "\"",
+          "start": 211,
+          "end": 212,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 218,
+          "end": 219,
+          "text": "\""
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 219,
+        "end": 220,
+        "text": ","
+       },
+       {
+        "type": "comment",
+        "start": 223,
+        "end": 274,
+        "text": "# Comment immediately before the closing delimiter."
+       },
+       {
+        "type": "]",
+        "start": 275,
+        "end": 276,
+        "text": "]"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table",
+    "start": 278,
+    "end": 399,
+    "children": [
+     {
+      "type": "[",
+      "start": 278,
+      "end": 279,
+      "text": "["
+     },
+     {
+      "type": "bare_key",
+      "start": 279,
+      "end": 286,
+      "text": "service"
+     },
+     {
+      "type": "]",
+      "start": 286,
+      "end": 287,
+      "text": "]"
+     },
+     {
+      "type": "comment",
+      "start": 288,
+      "end": 322,
+      "text": "# Own-line comment inside a table."
+     },
+     {
+      "type": "pair",
+      "start": 323,
+      "end": 371,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 323,
+        "end": 330,
+        "text": "enabled"
+       },
+       {
+        "type": "=",
+        "start": 331,
+        "end": 332,
+        "text": "="
+       },
+       {
+        "type": "boolean",
+        "start": 333,
+        "end": 337,
+        "text": "true"
+       },
+       {
+        "type": "comment",
+        "start": 338,
+        "end": 371,
+        "text": "# trailing comment inside a table"
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 373,
+      "end": 398,
+      "text": "# Comment at end of file."
+     }
+    ]
+   }
+  ]
+ }
+}
