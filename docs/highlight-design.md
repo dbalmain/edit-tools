@@ -250,7 +250,7 @@ because:
    bake a bundle into v1 so a CDN can save one round trip.
 
 JSON's format package is 353 gzip. Its highlight package, as
-proposed below, is 269 gzip. The wasted-bytes argument is
+proposed below, is 274 gzip. The wasted-bytes argument is
 real for Python and will get more real as format packages
 grow policies; it is already the wrong way around for a
 read-only viewer.
@@ -287,6 +287,8 @@ above:
 | `: int`            | `type`                  | —           | identifier       | type       |
 | `def f(a, b)`      | `parameters`            | —           | identifier       | parameter  |
 | `method="POST"`    | `keyword_argument`      | `name`      | identifier       | parameter  |
+| `*args`            | `list_splat_pattern`    | —           | identifier       | parameter  |
+| `**kwargs`         | `dictionary_splat_pattern` | —        | identifier       | parameter  |
 | `obj.attr`         | `attribute`             | `attribute` | identifier       | property   |
 | `query.filter(`    | `attribute` (and that   | `attribute` | identifier       | function   |
 |                    | attribute's field is    |             |                  |            |
@@ -294,7 +296,10 @@ above:
 
 `corpus/trees/python__calls.tree.json` is the first row and
 the second, in one assignment. `python__defs.tree.json` is
-the def-name / parameter / `int` annotation rows.
+the def-name / parameter / splat / `int` annotation rows
+(`first` under `parameters`, `args` under
+`list_splat_pattern` at `[383, 387]`, `kwargs` under
+`dictionary_splat_pattern` at `[410, 416]`).
 `python__chains.tree.json` is `query.filter`: the callee is
 an `attribute` whose own `field` is `function`, and the
 identifier `filter` has `field: "attribute"`. That last case
@@ -312,30 +317,40 @@ What we do **not** need for the cases that break:
 - `locals.scm`. tree-sitter-python does not ship one.
   nvim-treesitter does not use one for colour.
 - `#match?` on identifier text. PascalCase constructors and
-  `SCREAMING` constants are taste, and the grammar-repo
-  query is the only prior-art file that treats them as
-  load-bearing. Out of v1.
+  `SCREAMING` constants are taste. The grammar-repo query
+  is the smallest prior-art file that treats those
+  predicates as load-bearing (two `#match?` on
+  `identifier`); Helix adds `#match?` for `^[A-Z]` /
+  `^_*[A-Z][A-Z\\d_]*$`, and nvim-treesitter piles on
+  nine `#lua-match?`. Out of v1 anyway.
 - `#any-of?` builtin lists. Same. The first policy I would
   add *after* the pilot, if the corpus looks naked without
   `print` / `len` / `self`. A word table is still not a
   query engine.
 
 The smallest mechanism that covers what actually breaks:
-**an ordered context list, first match wins, matching
-`parent.type` / `node.field` / `parent.field` / `node.type`
-/ an optional `ancestor` type, then a leaf-type default.**
+**an ordered context list, first listed match wins, matching
+the leaf and its immediate parent (see the key table
+below), then a leaf-type default.**
 
-`ancestor` is for `list[int]` under a `type` node, where
-`int` is a `subscript` child, not a direct child of `type`.
-Helix writes four nested `_` levels for this. Walking toward
-the root for one ancestor type is cheaper than a query
-language and matches how Aven already overrides lexical
-defaults from an AST walk.
+`ancestor` is for type annotations that wrap the identifier
+in extra nodes. In `python__defs.tree.json` the annotation
+is `type / generic_type / type_parameter / type /
+identifier` — `list` `[299, 303]` sits under `generic_type`
+under `type`; `int` `[304, 307]` sits under an inner
+`type`. There is no `subscript` under any `type` in the
+twelve corpus trees (`subscript` is a value, e.g.
+`registry["handlers"]`). Helix writes four nested `_`
+levels for `[]` / `.` / `|` nesting; `ancestor: "type"`
+covers `list`, `int`, `dict`, `str`, and `bool` on this
+file if the path **includes** the immediate parent. That is
+cheaper than a query language and matches how Aven already
+overrides lexical defaults from an AST walk.
 
 **Recommendation: not a capture-query table, and not
 type-only. A leaf table plus an ordered context list.
-First match wins, so both runtimes agree without a
-specificity algorithm.**
+First listed match wins, so both runtimes agree without
+a specificity algorithm.**
 
 ### 3. What is the differential-testing story?
 
@@ -430,19 +445,30 @@ The rule, as data, is:
    golden review. That is the opposite of the formatter,
    and it is right: ugly colour is the failure mode, not
    a blank editor.
-3. **`ERROR` is walked, then backfilled.** Children of
-   `ERROR` are highlighted by the ordinary rules — a
-   recovered `identifier` is still an identifier. After
-   the children, every byte in `[error.start, error.end)`
-   that no child span covered is emitted as `error`.
-   That is the "degrade" half: we colour what we
-   recognise and stain the rest.
-4. **`MISSING` is skipped.** Zero-width in the trees
-   tree-sitter actually produces. If a `MISSING` node
-   ever carries a span, treat it as `error`.
+3. **`ERROR` is walked, then backfilled by child
+   range.** Children of `ERROR` are highlighted by the
+   ordinary rules — a recovered `identifier` is still an
+   identifier, a recovered `call` is still a call.
+   After the children, every byte in
+   `[error.start, error.end)` that no **child's
+   `[start, end)`** covers is emitted as `error`, one
+   span per contiguous leftover run. Gaps *inside* a
+   recovered child stay ordinary gaps (unpainted
+   whitespace). That is the "degrade" half: we colour
+   what we recognise and stain the rest of the ERROR
+   node, not the insides of what it recovered.
+4. **Leaf `ERROR` / `MISSING`.** No children and
+   `start < end`: emit `{start, end, error}`.
+   Zero-width `MISSING` (and zero-width `ERROR`) is a
+   no-op. The two special types share this sentence.
 5. **Unconsumed children are not a concept.** There is
    no cursor and no consumption. Every child is visited.
    Linearity-as-consumption does not transfer.
+6. **Sort, then merge.** Children emit first; leftover
+   runs emit after. The stream is not yet ordered.
+   After the walk: sort by `(start, end)`, then merge
+   adjacent same-scope spans. The invariant is on that
+   finished list.
 
 This is why the highlighter walker and the formatter
 walker must not be the same function. A shared `walk`
@@ -460,13 +486,18 @@ subtree if the harness can produce it — a broken
 JavaScript fence should still colour its strings and
 stain the rest. "Degrading is the harness's job,
 refusing is the runtime's" is the formatter's rule. The
-highlighter's is: **degrading is the walker's job;
-the harness should pass the tree it has.**
+highlighter's is: **degrading is the walker's job.**
+Formatter generation stays strict (unstamp / refuse).
+Highlight generation, when it exists, keeps `language`
+on dirty subtrees and writes them under
+`corpus/trees-dirty/`. Until then the claim is a
+hand-built fixture (PR 5), not a change to
+`gen_trees.py`.
 
 **Recommendation: never refuse a tree; skip unknown
-types; walk ERROR children and backfill uncovered bytes
-as `error`. Different walker. Different degrade policy
-from injection.md's formatter half.**
+types; walk ERROR children and backfill leftover of
+child ranges as `error`. Different walker. Different
+degrade policy from injection.md's formatter half.**
 
 ## Proposed package shape
 
@@ -481,35 +512,76 @@ A highlight package is JSON. Dispatch is a lookup, not a
 match. The runtime expands `keyword` / `operator` /
 `punctuation` lists into the leaf table at load, the way
 it expands `defs` today — the evaluator never sees the
-sugar.
+sugar. Expansion is in that order; **later list wins**
+on a shared spelling (`@` is only in `operator` today).
+Every scope a package can emit — `leaf` values, sugar
+targets, context `scope` — must be in `scopes`, or load
+refuses.
+
+Context matching runs **only at leaves**. Every named
+key is evaluated against the **leaf** and its
+**immediate parent**, except `ancestor`:
+
+| key            | CST fact                                              |
+| -------------- | ----------------------------------------------------- |
+| `parent`       | `parent.type`                                         |
+| `field`        | `node.field` (the leaf's field)                       |
+| `parent_field` | `parent.field`                                        |
+| `type`         | `node.type`                                           |
+| `ancestor`     | some node on the inclusive path `parent…root` has that type |
+
+Omitted keys are wildcards. A rule matches when every
+key it names agrees. **First listed rule whose entire
+conjunction holds wins.** A hit paints this leaf only;
+it does not recolour siblings or other descendants.
+
+`ancestor` is existence, not a walk that rebinds
+`parent`/`field` at each step. Listed order is not
+closest-ancestor. On a `bar > foo > leaf` tree,
+`{"ancestor": "foo"}` then `{"ancestor": "bar"}` paints
+`foo`'s scope; reverse the rows and it paints `bar`'s.
+Closest-ancestor would always pick `foo`. Include
+`parent` on that path: `: int` in
+`python__defs.tree.json` (`int` `[275, 278]`) has
+immediate parent `type`, and the `ancestor: "type"` row
+must fire.
 
 ```
 load package
   refuse if format != "et-highlight/1"
-  expand keyword/operator/punctuation into leaf
+  expand keyword, then operator, then punctuation into leaf
+    (later list overwrites)
+  refuse any leaf or context scope not in scopes
   index context in listed order
-walk(node, parent):
-  if node has children:
-      for child in children: walk(child, node)
-      if node.type == "ERROR":
-          emit error over uncovered bytes in [start, end)
+walk(node, parent, pkg):
+  if node.language is set:
+      pkg = packages[node.language] or EMPTY   # still walk children
+  if node.type in {ERROR, MISSING} and node has no children:
+      if node.start < node.end: emit {start, end, error}
       return
-  # leaf
-  scope = first context rule that matches (parent, node)
+  if node has children:
+      for child in children: walk(child, node, pkg)
+      if node.type == "ERROR":
+          leftover = [node.start, node.end) minus each child's [start, end)
+          emit one error span per contiguous leftover run
+      return
+  # ordinary leaf
+  scope = first context rule whose entire conjunction holds
           else leaf[node.type]
           else none
   if scope: emit {start, end, scope}
+sort spans by (start, end)
 merge adjacent same-scope spans
 ```
 
-A context rule matches when every field it names agrees.
-Omitted fields are wildcards. `ancestor: "type"` means
-"some node on the path from parent to root has that
-type". First listed match wins.
+`EMPTY` is a package with empty `leaf` and `context`.
+Walking it still sees a descendant `language` stamp and
+can switch. A missing highlight package does not
+refuse the document.
 
 ### JSON, as a builder would write it
 
-Measured 673 raw / 269 gzip (`gzip.compress(..., 9)`),
+Measured 714 raw / 274 gzip (`gzip.compress(..., 9)`),
 pretty-printed to match the shipped format packages.
 
 ```json
@@ -536,26 +608,51 @@ pretty-printed to match the shipped format packages.
     "\"": "punctuation"
   },
   "context": [
-    {"parent": "pair", "field": "key", "scope": "property"}
+    {"parent": "string", "parent_field": "key", "type": "string_content", "scope": "property"}
   ]
 }
 ```
 
-The one context row is the JSON equivalent of
-`(pair key: (_) @string.special.key)`. It fires when the
-walk reaches `string_content` under a `string` whose
-`field` is `key` and whose parent is `pair` — the rule
-matches at the `string` step of the ancestor walk, and
-first-match means the leaf default `string` loses. Value
-strings never see that row.
+The one context row is the leaf-only equivalent of
+`(pair key: (_) @string.special.key)`. In
+`json__basic.tree.json` a key is an interior `string`
+with `field: "key"`; its children are `"`,
+`string_content`, `"`. When the walk reaches
+`string_content` `"string"` at `[5, 11]`,
+`parent.type` is `"string"`, `parent.field` is `"key"`,
+`node.field` is unset. The row matches; the leaf
+default `string` loses. The value `"value"` at
+`[15, 20]` sits under a `string` whose field is
+`value`, so it stays `string`. Quotes stay
+`punctuation` — we are not painting the interior
+`string` node.
+
+Expected spans for the first pair
+(`"string": "value"` at `[4, 21]`):
+
+```json
+[
+  {"start": 4, "end": 5, "scope": "punctuation"},
+  {"start": 5, "end": 11, "scope": "property"},
+  {"start": 11, "end": 12, "scope": "punctuation"},
+  {"start": 12, "end": 13, "scope": "punctuation"},
+  {"start": 14, "end": 15, "scope": "punctuation"},
+  {"start": 15, "end": 20, "scope": "string"},
+  {"start": 20, "end": 21, "scope": "punctuation"}
+]
+```
 
 ### Python, as a builder would write it
 
-Measured 3,007 raw / 708 gzip. Context rows are the
+Measured 3,245 raw / 735 gzip. Context rows are the
 identifier cases in the table above; lists are the
 grammar-repo keyword / operator sets, trimmed to what
 tree-sitter-python actually emits as node types (type
 equals spelling, same convention as the formatter).
+`ellipsis` is a named kind (`node-types.json`:
+`{"type": "ellipsis", "named": true}`), not a `...`
+token, and no corpus tree contains one — it lives in
+`leaf`, not in the punctuation sugar.
 
 ```json
 {
@@ -579,7 +676,7 @@ equals spelling, same convention as the formatter).
     "and", "or", "not", "in", "is", "is not", "not in"
   ],
   "punctuation": [
-    "(", ")", "[", "]", "{", "}", ",", ":", ".", ";", "..."
+    "(", ")", "[", "]", "{", "}", ",", ":", ".", ";"
   ],
   "leaf": {
     "identifier": "variable",
@@ -592,7 +689,8 @@ equals spelling, same convention as the formatter).
     "float": "number",
     "true": "constant",
     "false": "constant",
-    "none": "constant"
+    "none": "constant",
+    "ellipsis": "punctuation"
   },
   "context": [
     {"parent": "call", "field": "function", "type": "identifier", "scope": "function"},
@@ -605,6 +703,8 @@ equals spelling, same convention as the formatter).
     {"parent": "lambda_parameters", "type": "identifier", "scope": "parameter"},
     {"parent": "typed_parameter", "type": "identifier", "scope": "parameter"},
     {"parent": "default_parameter", "field": "name", "type": "identifier", "scope": "parameter"},
+    {"parent": "list_splat_pattern", "type": "identifier", "scope": "parameter"},
+    {"parent": "dictionary_splat_pattern", "type": "identifier", "scope": "parameter"},
     {"parent": "keyword_argument", "field": "name", "type": "identifier", "scope": "parameter"},
     {"parent": "attribute", "field": "attribute", "type": "identifier", "scope": "property"}
   ]
@@ -626,15 +726,21 @@ later.
 
 ```mermaid
 flowchart TD
-  A[leaf node] --> B{context rule<br/>first match?}
+  A[leaf node] --> S{ERROR or MISSING<br/>and start less than end?}
+  S -->|yes| R[emit error]
+  S -->|no| B{context rule<br/>first listed match?}
   B -->|yes| C[emit scope]
   B -->|no| D{leaf type<br/>in table?}
   D -->|yes| C
   D -->|no| E[unpainted]
   F[interior node] --> G[walk every child]
   G --> H{type is ERROR?}
-  H -->|yes| I[backfill uncovered bytes as error]
+  H -->|yes| I[backfill leftover of<br/>child ranges as error]
   H -->|no| J[done]
+  I --> K[sort by start, end<br/>then merge adjacent]
+  C --> K
+  R --> K
+  E --> K
 ```
 
 Output is a flat span stream, not tree-sitter's nested
@@ -664,7 +770,8 @@ The invariant that replaces linearity: **the spans are
 an ordered, non-overlapping, optionally-gapped
 partition of a subset of `[0, source.len)`.** Adjacent
 same-scope spans merge, so the representation is unique.
-Whitespace stays a gap, as it is in the tree. Two
+Whitespace stays a gap, as it is in the tree — including
+whitespace inside a recovered child of `ERROR`. Two
 runtimes that both obey this, given the same package
 and tree, have exactly one correct stream.
 
@@ -673,10 +780,78 @@ sequenceDiagram
   participant H as highlighter
   participant T as ERROR node
   H->>T: walk each child with ordinary rules
-  T-->>H: spans for recovered leaves
-  H->>H: bytes in [start,end) with no child span
-  H->>H: emit those as error
+  T-->>H: spans from recovered leaves
+  H->>H: leftover = ERROR range minus child ranges
+  H->>H: one error span per contiguous leftover run
+  H->>H: sort by start, end then merge
 ```
+
+Worked ERROR fixture (`foo( 1 +`, eight nodes). Child
+of `ERROR` is a recovered `call` that covers `foo( 1`
+including the internal space, then a leftover `+`.
+Coverage is **child ranges**, so `[4, 5]` (the space
+inside the call) stays unpainted and `[6, 7]` (the
+space between the call and `+`) is `error`.
+
+```json
+{
+  "language": "python",
+  "source": "foo( 1 +",
+  "root": {
+    "type": "module",
+    "start": 0,
+    "end": 8,
+    "children": [
+      {
+        "type": "ERROR",
+        "start": 0,
+        "end": 8,
+        "children": [
+          {
+            "type": "call",
+            "start": 0,
+            "end": 6,
+            "children": [
+              {
+                "type": "identifier",
+                "start": 0,
+                "end": 3,
+                "field": "function",
+                "text": "foo"
+              },
+              {
+                "type": "argument_list",
+                "start": 3,
+                "end": 6,
+                "field": "arguments",
+                "children": [
+                  {"type": "(", "start": 3, "end": 4, "text": "("},
+                  {"type": "integer", "start": 5, "end": 6, "text": "1"}
+                ]
+              }
+            ]
+          },
+          {"type": "+", "start": 7, "end": 8, "text": "+"}
+        ]
+      }
+    ]
+  }
+}
+```
+
+```json
+[
+  {"start": 0, "end": 3, "scope": "function"},
+  {"start": 3, "end": 4, "scope": "punctuation"},
+  {"start": 5, "end": 6, "scope": "number"},
+  {"start": 6, "end": 7, "scope": "error"},
+  {"start": 7, "end": 8, "scope": "operator"}
+]
+```
+
+A leaf `ERROR` with `text` and `start < end` takes the
+no-children branch and emits `error` for its whole
+span. A zero-width `MISSING` emits nothing.
 
 Unknown types, `MISSING`, and comments: comments are
 ordinary leaves (`type: "comment"`). They do not need a
@@ -690,14 +865,17 @@ Injection at highlight time:
 ```mermaid
 flowchart LR
   N[node] --> L{node.language set?}
-  L -->|yes, package present| P[walk subtree with that package]
-  L -->|yes, package missing| U[walk with no package: unpainted]
+  L -->|yes, package present| P[walk children with that package]
+  L -->|yes, package missing| U[walk children with empty tables]
   L -->|no| C[continue with current package]
 ```
 
 A missing highlight package does not refuse the
-document. The formatter refuses a missing format
-package, and that is still right over there.
+document: empty tables leave this subtree's leaves
+unpainted, but a descendant that carries its own
+`language` still switches. The formatter refuses a
+missing format package, and that is still right over
+there.
 
 ## Size estimate
 
@@ -725,9 +903,9 @@ section, measured after writing them:
 
 | Artifact                         | raw    | gzip |
 | -------------------------------- | ------ | ---- |
-| `json.highlight.json` (pretty)   | 673    | 269  |
-| `python.highlight.json` (pretty) | 3,007  | 708  |
-| both concatenated                | 3,680  | 780  |
+| `json.highlight.json` (pretty)   | 714    | 274  |
+| `python.highlight.json` (pretty) | 3,245  | 735  |
+| both concatenated                | 3,959  | 810  |
 
 Prior-art highlight *data*, same compressor, fetched
 today:
@@ -762,8 +940,8 @@ Proposed highlighter budget, same units:
 | Component                     | Budget  | Evidence |
 | ----------------------------- | ------- | -------- |
 | Highlight walker              | ≤ 2 KB  | not measured; see below |
-| Python highlight package      | ≤ 2 KB  | 708 B measured |
-| JSON highlight package        | ≤ 0.5 KB | 269 B measured |
+| Python highlight package      | ≤ 2 KB  | 735 B measured |
+| JSON highlight package        | ≤ 0.5 KB | 274 B measured |
 
 The package half of that budget is a measurement. The
 walker half is not. I will not invent a gzip number for
@@ -793,11 +971,12 @@ Copy these. They are why the formatter worked.
    `et-doc-rules/1`.
 2. **Hash lookup, no query engine.** The formatter's bet
    was that dispatch on type is enough *for layout*. It
-   mostly was: 77 rules, one `when`, and I count that
-   `when` once in the live `packages/python.json` (the
-   tuple arity guard in `defs.parenthesized_tuple`;
-   `DESIGN.md` said two). Highlighting needs a wider
-   key, not a different kind of machine.
+   mostly was: 77 rules, one `when` opcode, two use
+   sites (`tuple` and `tuple_pattern` both
+   `["use", "parenthesized_tuple"]`). That matches
+   `DESIGN.md` ("appears twice … both times an arity
+   check"). Highlighting needs a wider key, not a
+   different kind of machine.
 3. **Policies, not predicates.** The formatter grew
    `trail`, `paren`, `verbatim`, `blank` rather than
    growing `when`. The highlight equivalent is the
@@ -850,8 +1029,9 @@ one you cannot.
   a language arrives whose highlighting is considered
   wrong without it, and I do not expect that from the
   roster.
-- **Nested scopes on one character.** Flat stream,
-  innermost (first-match, closest context) wins.
+- **Nested scopes on one character.** Flat stream.
+  First listed rule whose whole conjunction holds
+  wins, not the closest ancestor.
 - **Refuse a dirty tree.** By construction.
 - **Highlight a buffer that has not been parsed.**
   There is no parser. The 1 ms budget is not this
@@ -866,30 +1046,33 @@ one you cannot.
 The smallest pilot that would *falsify* the design,
 not confirm it:
 
-One walker, one language, three trees.
+One walker, one language, four trees.
 
 - Walker in Rust only, against `et-highlight/1`.
 - Package: the Python fragment above.
 - Trees: `python__calls.tree.json` (callee vs argument
   vs assignment left), `python__defs.tree.json` (def
-  name, parameter, `int` annotation), and one
-  hand-built `foo(` tree whose root contains an
-  `ERROR` child.
+  name, parameter, splat, `int` annotation),
+  `python__chains.tree.json` (`query.filter` vs
+  `obj.attr`), and the hand-built `foo( 1 +` ERROR
+  fixture above.
 
 It falsifies if any of these happen:
 
 1. Callee / argument / def-name / type / parameter
-   cannot be distinguished without a predicate on
-   identifier text or a sibling walk.
+   (including `*args` / `**kwargs`) cannot be
+   distinguished without a predicate on identifier
+   text or a sibling walk.
 2. `query.filter` in `python__chains.tree.json` cannot
    be distinguished from `obj.attr` without a real
    query path language (if `parent_field` is not
-   enough, that is the finding).
-3. The ERROR tree cannot be coloured without
+   enough, that is the finding). PR 2 must run this.
+3. The ERROR fixture cannot be coloured without
    inventing a refuse-or-skip knob that looks like
-   the formatter's cursor.
-4. The span stream is not unique given the merge
-   rule — two plausible walks, two goldens.
+   the formatter's cursor, or the leftover space
+   inside the recovered `call` gets stained.
+4. The span stream is not unique given sort-then-merge
+   — two plausible walks, two goldens.
 
 If it holds, add JSON (should be boring), add the JS
 walker, assert identity, commit goldens. That is the
@@ -979,22 +1162,28 @@ nested events. Those have recommendations above.
    disagree; picking one is picking a taste.
 4. **The highlighter never refuses a tree.** Unknown
    types are unpainted. `ERROR` children are walked;
-   uncovered bytes inside an `ERROR` span become
-   `error`. `MISSING` is skipped.
+   leftover of **child ranges** becomes `error`, one
+   span per contiguous run. Leaf `ERROR`/`MISSING`
+   with `start < end` emit `error`; zero-width is a
+   no-op. After the walk: sort, then merge.
 5. **A different walker from the formatter.** No
-   cursor, no consumption, no comment pass. The
-   output invariant is a merged, ordered,
-   non-overlapping span list, not a child partition.
+   cursor, no consumption, no comment pass. Context
+   matches only at leaves, against the leaf and its
+   immediate parent (`ancestor` is existence on
+   `parent…root`). The output invariant is a merged,
+   ordered, non-overlapping span list.
 6. **Injection uses the same `language` field and the
    opposite missing-package policy.** Missing highlight
-   package: unpainted subtree, not a refusal. The
-   harness should pass dirty injected trees through.
+   package: walk children with empty tables so a
+   nested stamp can still switch. Formatter generation
+   stays strict; highlight dirty trees, when they
+   exist, live under `corpus/trees-dirty/`.
 7. **No `#match?`, no word lists, no locals in v1.**
    The next policy, if the corpus demands it, is a
    word table. Not a predicate.
 8. **Walker budget ≤ 2 KB gzip is a target, not a
-   measurement.** Package sizes are measured (269 /
-   708). The walker is measured when it exists.
+   measurement.** Package sizes are measured (274 /
+   735). The walker is measured when it exists.
 
 ## PR Plan
 
@@ -1008,12 +1197,13 @@ language. No parser.
   `rust/src/pkg.rs` only if format-string helpers are
   worth sharing, unit tests next to the loader
 - **Depends on:** nothing
-- **Does:** parse the header, expand
-  keyword/operator/punctuation into the leaf table,
-  index context in listed order, refuse unknown
-  `format`, unknown scopes, and context rows that
-  name a scope not in `scopes`. No walker. Fixture:
-  the JSON package from this document.
+- **Does:** parse the header, expand keyword then
+  operator then punctuation into the leaf table
+  (later list wins), index context in listed order,
+  refuse unknown `format` and any emitted scope not
+  in `scopes` (leaf values, sugar targets, context
+  rows). No walker. Fixture: the JSON package from
+  this document.
 
 ### PR 2 — Rust walker + ERROR rule
 
@@ -1021,13 +1211,18 @@ language. No parser.
 - **Affects:** `rust/src/hl_eval.rs` (new),
   `rust/src/bin/hl-rust.rs` (new), toy-tree unit tests
 - **Depends on:** PR 1
-- **Does:** preorder walk, first-match context, leaf
-  default, ERROR backfill, MISSING skip, adjacent
-  merge. Tests include a hand-built `ERROR` tree and
-  the `compute(alpha)` fragment from
-  `python__calls.tree.json`. Asserts the partition
-  invariant. This is the PR that can falsify
-  `parent_field`.
+- **Does:** preorder walk, first-listed context, leaf
+  default, ERROR child-range backfill, leaf
+  ERROR/MISSING, sort-then-merge. Tests:
+  `compute(alpha)` from `python__calls.tree.json`;
+  `filter` / `order_by` / `limit` / `offset` / `all`
+  as `function` and `obj.attr`'s `attr` as `property`
+  from `python__chains.tree.json`; splat `args` /
+  `kwargs` as `parameter` from
+  `python__defs.tree.json`; the `foo( 1 +` ERROR
+  fixture. Asserts the partition invariant. This is
+  the PR that can falsify `parent_field` — it has
+  to run the chains walk, not only `compute`.
 
 ### PR 3 — JS walker, identity on toys
 
@@ -1048,7 +1243,8 @@ language. No parser.
 - **Affects:** `packages/json.highlight.json`,
   `packages/python.highlight.json`,
   `corpus/highlight/*.spans.json`,
-  `corpus/trees-dirty/*` (hand-built ERROR trees),
+  `corpus/trees-dirty/*` (hand-built ERROR trees,
+  including the `foo( 1 +` fixture),
   `harness/score_highlight.py` (new)
 - **Depends on:** PR 3
 - **Does:** the two packages from this document.
@@ -1071,7 +1267,8 @@ language. No parser.
   map
 - **Depends on:** PR 4
 - **Does:** prove the field is shared and the policy
-  is not. No markdown, no harness splicing. That
+  is not. A missing package still walks children.
+  No markdown, no change to `gen_trees.py`. That
   stays `docs/injection.md`'s sequence.
 
 Stop there. If PR 2 fails its falsification cases,
@@ -1160,6 +1357,8 @@ package key.
   — highlights / locals / injections; caret tests.
 - [tree-sitter-python `queries/highlights.scm`](https://github.com/tree-sitter/tree-sitter-python/blob/master/queries/highlights.scm)
   — 3 `#match?`, no `locals.scm`.
+- [tree-sitter-python `src/node-types.json`](https://github.com/tree-sitter/tree-sitter-python/blob/master/src/node-types.json)
+  — named kind `ellipsis`, not `...`.
 - [tree-sitter-json `queries/highlights.scm`](https://github.com/tree-sitter/tree-sitter-json/blob/master/queries/highlights.scm).
 - [tree-sitter `crates/highlight/src/highlight.rs`](https://github.com/tree-sitter/tree-sitter/blob/master/crates/highlight/src/highlight.rs)
   — `HighlightEvent`, `HighlightConfiguration`.
