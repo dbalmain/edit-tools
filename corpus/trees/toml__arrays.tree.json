@@ -1,11 +1,11 @@
 {
  "language": "toml",
  "source_file": "corpus/src/toml/arrays.toml",
- "source": "# Arrays in their several shapes: empty, nested, heterogeneous, trailing-comma, and\n# already-multiline. The formatter must decide single-line vs one-per-line for each\n# independently, and must not invent or drop a trailing comma on a flat array.\n\nempty = []\n\nheterogeneous = [1, \"two\", 3.0, true, 1979-05-27]\n\nmatrix = [[1, 2], [3, 4], [5, 6], [7, 8], [9, 10], [11, 12]]\n\ntrailing_comma = [\n    1,\n    2,\n    3,\n]\n\nmultiline = [\n    \"first\",\n    \"second\",\n    \"third\",\n]\n\ninline_tables = [{ a = 1 }, { a = 2 }, { a = 3 }]\n\narrays_of_arrays = [[[1], [2]], [[3], [4]], [[5], [6]]]\n",
+ "source": "# Arrays in their several shapes: empty, nested, heterogeneous, trailing-comma, and\n# already-multiline. The formatter decides single-line vs one-per-line, and must not\n# invent or drop a trailing comma on a flat array. NB the decision is NOT per array:\n# taplo propagates a break into every nested array, fitting or not — see nesting.toml.\n\nempty = []\n\nheterogeneous = [1, \"two\", 3.0, true, 1979-05-27]\n\nmatrix = [[1, 2], [3, 4], [5, 6], [7, 8], [9, 10], [11, 12]]\n\ntrailing_comma = [\n    1,\n    2,\n    3,\n]\n\nmultiline = [\n    \"first\",\n    \"second\",\n    \"third\",\n]\n\ninline_tables = [{ a = 1 }, { a = 2 }, { a = 3 }]\n\narrays_of_arrays = [[[1], [2]], [[3], [4]], [[5], [6]]]\n",
  "root": {
   "type": "document",
   "start": 0,
-  "end": 580,
+  "end": 676,
   "children": [
    {
     "type": "comment",
@@ -16,47 +16,53 @@
    {
     "type": "comment",
     "start": 84,
-    "end": 167,
-    "text": "# already-multiline. The formatter must decide single-line vs one-per-line for each"
+    "end": 168,
+    "text": "# already-multiline. The formatter decides single-line vs one-per-line, and must not"
    },
    {
     "type": "comment",
-    "start": 168,
-    "end": 246,
-    "text": "# independently, and must not invent or drop a trailing comma on a flat array."
+    "start": 169,
+    "end": 253,
+    "text": "# invent or drop a trailing comma on a flat array. NB the decision is NOT per array:"
+   },
+   {
+    "type": "comment",
+    "start": 254,
+    "end": 342,
+    "text": "# taplo propagates a break into every nested array, fitting or not — see nesting.toml."
    },
    {
     "type": "pair",
-    "start": 248,
-    "end": 258,
+    "start": 344,
+    "end": 354,
     "children": [
      {
       "type": "bare_key",
-      "start": 248,
-      "end": 253,
+      "start": 344,
+      "end": 349,
       "text": "empty"
      },
      {
       "type": "=",
-      "start": 254,
-      "end": 255,
+      "start": 350,
+      "end": 351,
       "text": "="
      },
      {
       "type": "array",
-      "start": 256,
-      "end": 258,
+      "start": 352,
+      "end": 354,
       "children": [
        {
         "type": "[",
-        "start": 256,
-        "end": 257,
+        "start": 352,
+        "end": 353,
         "text": "["
        },
        {
         "type": "]",
-        "start": 257,
-        "end": 258,
+        "start": 353,
+        "end": 354,
         "text": "]"
        }
       ]
@@ -65,103 +71,103 @@
    },
    {
     "type": "pair",
-    "start": 260,
-    "end": 309,
+    "start": 356,
+    "end": 405,
     "children": [
      {
       "type": "bare_key",
-      "start": 260,
-      "end": 273,
+      "start": 356,
+      "end": 369,
       "text": "heterogeneous"
      },
      {
       "type": "=",
-      "start": 274,
-      "end": 275,
+      "start": 370,
+      "end": 371,
       "text": "="
      },
      {
       "type": "array",
-      "start": 276,
-      "end": 309,
+      "start": 372,
+      "end": 405,
       "children": [
        {
         "type": "[",
-        "start": 276,
-        "end": 277,
+        "start": 372,
+        "end": 373,
         "text": "["
        },
        {
         "type": "integer",
-        "start": 277,
-        "end": 278,
+        "start": 373,
+        "end": 374,
         "text": "1"
        },
        {
         "type": ",",
-        "start": 278,
-        "end": 279,
+        "start": 374,
+        "end": 375,
         "text": ","
        },
        {
         "type": "string",
-        "start": 280,
-        "end": 285,
+        "start": 376,
+        "end": 381,
         "children": [
          {
           "type": "\"",
-          "start": 280,
-          "end": 281,
+          "start": 376,
+          "end": 377,
           "text": "\""
          },
          {
           "type": "\"",
-          "start": 284,
-          "end": 285,
+          "start": 380,
+          "end": 381,
           "text": "\""
          }
         ]
        },
        {
         "type": ",",
-        "start": 285,
-        "end": 286,
+        "start": 381,
+        "end": 382,
         "text": ","
        },
        {
         "type": "float",
-        "start": 287,
-        "end": 290,
+        "start": 383,
+        "end": 386,
         "text": "3.0"
        },
        {
         "type": ",",
-        "start": 290,
-        "end": 291,
+        "start": 386,
+        "end": 387,
         "text": ","
        },
        {
         "type": "boolean",
-        "start": 292,
-        "end": 296,
+        "start": 388,
+        "end": 392,
         "text": "true"
        },
        {
         "type": ",",
-        "start": 296,
-        "end": 297,
+        "start": 392,
+        "end": 393,
         "text": ","
        },
        {
         "type": "local_date",
-        "start": 298,
-        "end": 308,
+        "start": 394,
+        "end": 404,
         "text": "1979-05-27"
        },
        {
         "type": "]",
-        "start": 308,
-        "end": 309,
+        "start": 404,
+        "end": 405,
         "text": "]"
        }
       ]
@@ -170,288 +176,288 @@
    },
    {
     "type": "pair",
-    "start": 311,
-    "end": 371,
+    "start": 407,
+    "end": 467,
     "children": [
      {
       "type": "bare_key",
-      "start": 311,
-      "end": 317,
+      "start": 407,
+      "end": 413,
       "text": "matrix"
      },
      {
       "type": "=",
-      "start": 318,
-      "end": 319,
+      "start": 414,
+      "end": 415,
       "text": "="
      },
      {
       "type": "array",
-      "start": 320,
-      "end": 371,
+      "start": 416,
+      "end": 467,
       "children": [
        {
         "type": "[",
-        "start": 320,
-        "end": 321,
+        "start": 416,
+        "end": 417,
         "text": "["
        },
        {
         "type": "array",
-        "start": 321,
-        "end": 327,
+        "start": 417,
+        "end": 423,
         "children": [
          {
           "type": "[",
-          "start": 321,
-          "end": 322,
+          "start": 417,
+          "end": 418,
           "text": "["
          },
          {
           "type": "integer",
-          "start": 322,
-          "end": 323,
+          "start": 418,
+          "end": 419,
           "text": "1"
          },
          {
           "type": ",",
-          "start": 323,
-          "end": 324,
+          "start": 419,
+          "end": 420,
           "text": ","
          },
          {
           "type": "integer",
-          "start": 325,
-          "end": 326,
+          "start": 421,
+          "end": 422,
           "text": "2"
          },
          {
           "type": "]",
-          "start": 326,
-          "end": 327,
+          "start": 422,
+          "end": 423,
           "text": "]"
          }
         ]
        },
        {
         "type": ",",
-        "start": 327,
-        "end": 328,
+        "start": 423,
+        "end": 424,
         "text": ","
        },
        {
         "type": "array",
-        "start": 329,
-        "end": 335,
+        "start": 425,
+        "end": 431,
         "children": [
          {
           "type": "[",
-          "start": 329,
-          "end": 330,
+          "start": 425,
+          "end": 426,
           "text": "["
          },
          {
           "type": "integer",
-          "start": 330,
-          "end": 331,
+          "start": 426,
+          "end": 427,
           "text": "3"
          },
          {
           "type": ",",
-          "start": 331,
-          "end": 332,
+          "start": 427,
+          "end": 428,
           "text": ","
          },
          {
           "type": "integer",
-          "start": 333,
-          "end": 334,
+          "start": 429,
+          "end": 430,
           "text": "4"
          },
          {
           "type": "]",
-          "start": 334,
-          "end": 335,
+          "start": 430,
+          "end": 431,
           "text": "]"
          }
         ]
        },
        {
         "type": ",",
-        "start": 335,
-        "end": 336,
+        "start": 431,
+        "end": 432,
         "text": ","
        },
        {
         "type": "array",
-        "start": 337,
-        "end": 343,
+        "start": 433,
+        "end": 439,
         "children": [
          {
           "type": "[",
-          "start": 337,
-          "end": 338,
+          "start": 433,
+          "end": 434,
           "text": "["
          },
          {
           "type": "integer",
-          "start": 338,
-          "end": 339,
+          "start": 434,
+          "end": 435,
           "text": "5"
          },
          {
           "type": ",",
-          "start": 339,
-          "end": 340,
+          "start": 435,
+          "end": 436,
           "text": ","
          },
          {
           "type": "integer",
-          "start": 341,
-          "end": 342,
+          "start": 437,
+          "end": 438,
           "text": "6"
          },
          {
           "type": "]",
-          "start": 342,
-          "end": 343,
+          "start": 438,
+          "end": 439,
           "text": "]"
          }
         ]
        },
        {
         "type": ",",
-        "start": 343,
-        "end": 344,
+        "start": 439,
+        "end": 440,
         "text": ","
        },
        {
         "type": "array",
-        "start": 345,
-        "end": 351,
+        "start": 441,
+        "end": 447,
         "children": [
          {
           "type": "[",
-          "start": 345,
-          "end": 346,
+          "start": 441,
+          "end": 442,
           "text": "["
          },
          {
           "type": "integer",
-          "start": 346,
-          "end": 347,
+          "start": 442,
+          "end": 443,
           "text": "7"
          },
          {
           "type": ",",
-          "start": 347,
-          "end": 348,
+          "start": 443,
+          "end": 444,
           "text": ","
          },
          {
           "type": "integer",
-          "start": 349,
-          "end": 350,
+          "start": 445,
+          "end": 446,
           "text": "8"
          },
          {
           "type": "]",
-          "start": 350,
-          "end": 351,
+          "start": 446,
+          "end": 447,
           "text": "]"
          }
         ]
        },
        {
         "type": ",",
-        "start": 351,
-        "end": 352,
+        "start": 447,
+        "end": 448,
         "text": ","
        },
        {
         "type": "array",
-        "start": 353,
-        "end": 360,
+        "start": 449,
+        "end": 456,
         "children": [
          {
           "type": "[",
-          "start": 353,
-          "end": 354,
+          "start": 449,
+          "end": 450,
           "text": "["
          },
          {
           "type": "integer",
-          "start": 354,
-          "end": 355,
+          "start": 450,
+          "end": 451,
           "text": "9"
          },
          {
           "type": ",",
-          "start": 355,
-          "end": 356,
+          "start": 451,
+          "end": 452,
           "text": ","
          },
          {
           "type": "integer",
-          "start": 357,
-          "end": 359,
+          "start": 453,
+          "end": 455,
           "text": "10"
          },
          {
           "type": "]",
-          "start": 359,
-          "end": 360,
+          "start": 455,
+          "end": 456,
           "text": "]"
          }
         ]
        },
        {
         "type": ",",
-        "start": 360,
-        "end": 361,
+        "start": 456,
+        "end": 457,
         "text": ","
        },
        {
         "type": "array",
-        "start": 362,
-        "end": 370,
+        "start": 458,
+        "end": 466,
         "children": [
          {
           "type": "[",
-          "start": 362,
-          "end": 363,
+          "start": 458,
+          "end": 459,
           "text": "["
          },
          {
           "type": "integer",
-          "start": 363,
-          "end": 365,
+          "start": 459,
+          "end": 461,
           "text": "11"
          },
          {
           "type": ",",
-          "start": 365,
-          "end": 366,
+          "start": 461,
+          "end": 462,
           "text": ","
          },
          {
           "type": "integer",
-          "start": 367,
-          "end": 369,
+          "start": 463,
+          "end": 465,
           "text": "12"
          },
          {
           "type": "]",
-          "start": 369,
-          "end": 370,
+          "start": 465,
+          "end": 466,
           "text": "]"
          }
         ]
        },
        {
         "type": "]",
-        "start": 370,
-        "end": 371,
+        "start": 466,
+        "end": 467,
         "text": "]"
        }
       ]
@@ -460,72 +466,72 @@
    },
    {
     "type": "pair",
-    "start": 373,
-    "end": 414,
+    "start": 469,
+    "end": 510,
     "children": [
      {
       "type": "bare_key",
-      "start": 373,
-      "end": 387,
+      "start": 469,
+      "end": 483,
       "text": "trailing_comma"
      },
      {
       "type": "=",
-      "start": 388,
-      "end": 389,
+      "start": 484,
+      "end": 485,
       "text": "="
      },
      {
       "type": "array",
-      "start": 390,
-      "end": 414,
+      "start": 486,
+      "end": 510,
       "children": [
        {
         "type": "[",
-        "start": 390,
-        "end": 391,
+        "start": 486,
+        "end": 487,
         "text": "["
        },
        {
         "type": "integer",
-        "start": 396,
-        "end": 397,
+        "start": 492,
+        "end": 493,
         "text": "1"
        },
        {
         "type": ",",
-        "start": 397,
-        "end": 398,
+        "start": 493,
+        "end": 494,
         "text": ","
        },
        {
         "type": "integer",
-        "start": 403,
-        "end": 404,
+        "start": 499,
+        "end": 500,
         "text": "2"
        },
        {
         "type": ",",
-        "start": 404,
-        "end": 405,
+        "start": 500,
+        "end": 501,
         "text": ","
        },
        {
         "type": "integer",
-        "start": 410,
-        "end": 411,
+        "start": 506,
+        "end": 507,
         "text": "3"
        },
        {
         "type": ",",
-        "start": 411,
-        "end": 412,
+        "start": 507,
+        "end": 508,
         "text": ","
        },
        {
         "type": "]",
-        "start": 413,
-        "end": 414,
+        "start": 509,
+        "end": 510,
         "text": "]"
        }
       ]
@@ -534,111 +540,111 @@
    },
    {
     "type": "pair",
-    "start": 416,
-    "end": 471,
+    "start": 512,
+    "end": 567,
     "children": [
      {
       "type": "bare_key",
-      "start": 416,
-      "end": 425,
+      "start": 512,
+      "end": 521,
       "text": "multiline"
      },
      {
       "type": "=",
-      "start": 426,
-      "end": 427,
+      "start": 522,
+      "end": 523,
       "text": "="
      },
      {
       "type": "array",
-      "start": 428,
-      "end": 471,
+      "start": 524,
+      "end": 567,
       "children": [
        {
         "type": "[",
-        "start": 428,
-        "end": 429,
+        "start": 524,
+        "end": 525,
         "text": "["
        },
        {
         "type": "string",
-        "start": 434,
-        "end": 441,
+        "start": 530,
+        "end": 537,
         "children": [
          {
           "type": "\"",
-          "start": 434,
-          "end": 435,
+          "start": 530,
+          "end": 531,
           "text": "\""
          },
          {
           "type": "\"",
-          "start": 440,
-          "end": 441,
+          "start": 536,
+          "end": 537,
           "text": "\""
          }
         ]
        },
        {
         "type": ",",
-        "start": 441,
-        "end": 442,
+        "start": 537,
+        "end": 538,
         "text": ","
        },
        {
         "type": "string",
-        "start": 447,
-        "end": 455,
+        "start": 543,
+        "end": 551,
         "children": [
          {
           "type": "\"",
-          "start": 447,
-          "end": 448,
+          "start": 543,
+          "end": 544,
           "text": "\""
          },
          {
           "type": "\"",
-          "start": 454,
-          "end": 455,
+          "start": 550,
+          "end": 551,
           "text": "\""
          }
         ]
        },
        {
         "type": ",",
-        "start": 455,
-        "end": 456,
+        "start": 551,
+        "end": 552,
         "text": ","
        },
        {
         "type": "string",
-        "start": 461,
-        "end": 468,
+        "start": 557,
+        "end": 564,
         "children": [
          {
           "type": "\"",
-          "start": 461,
-          "end": 462,
+          "start": 557,
+          "end": 558,
           "text": "\""
          },
          {
           "type": "\"",
-          "start": 467,
-          "end": 468,
+          "start": 563,
+          "end": 564,
           "text": "\""
          }
         ]
        },
        {
         "type": ",",
-        "start": 468,
-        "end": 469,
+        "start": 564,
+        "end": 565,
         "text": ","
        },
        {
         "type": "]",
-        "start": 470,
-        "end": 471,
+        "start": 566,
+        "end": 567,
         "text": "]"
        }
       ]
@@ -647,180 +653,180 @@
    },
    {
     "type": "pair",
-    "start": 473,
-    "end": 522,
+    "start": 569,
+    "end": 618,
     "children": [
      {
       "type": "bare_key",
-      "start": 473,
-      "end": 486,
+      "start": 569,
+      "end": 582,
       "text": "inline_tables"
      },
      {
       "type": "=",
-      "start": 487,
-      "end": 488,
+      "start": 583,
+      "end": 584,
       "text": "="
      },
      {
       "type": "array",
-      "start": 489,
-      "end": 522,
+      "start": 585,
+      "end": 618,
       "children": [
        {
         "type": "[",
-        "start": 489,
-        "end": 490,
+        "start": 585,
+        "end": 586,
         "text": "["
        },
        {
         "type": "inline_table",
-        "start": 490,
-        "end": 499,
+        "start": 586,
+        "end": 595,
         "children": [
          {
           "type": "{",
-          "start": 490,
-          "end": 491,
+          "start": 586,
+          "end": 587,
           "text": "{"
          },
          {
           "type": "pair",
-          "start": 492,
-          "end": 497,
+          "start": 588,
+          "end": 593,
           "children": [
            {
             "type": "bare_key",
-            "start": 492,
-            "end": 493,
+            "start": 588,
+            "end": 589,
             "text": "a"
            },
            {
             "type": "=",
-            "start": 494,
-            "end": 495,
+            "start": 590,
+            "end": 591,
             "text": "="
            },
            {
             "type": "integer",
-            "start": 496,
-            "end": 497,
+            "start": 592,
+            "end": 593,
             "text": "1"
            }
           ]
          },
          {
           "type": "}",
-          "start": 498,
-          "end": 499,
+          "start": 594,
+          "end": 595,
           "text": "}"
          }
         ]
        },
        {
         "type": ",",
-        "start": 499,
-        "end": 500,
+        "start": 595,
+        "end": 596,
         "text": ","
        },
        {
         "type": "inline_table",
-        "start": 501,
-        "end": 510,
+        "start": 597,
+        "end": 606,
         "children": [
          {
           "type": "{",
-          "start": 501,
-          "end": 502,
+          "start": 597,
+          "end": 598,
           "text": "{"
          },
          {
           "type": "pair",
-          "start": 503,
-          "end": 508,
+          "start": 599,
+          "end": 604,
           "children": [
            {
             "type": "bare_key",
-            "start": 503,
-            "end": 504,
+            "start": 599,
+            "end": 600,
             "text": "a"
            },
            {
             "type": "=",
-            "start": 505,
-            "end": 506,
+            "start": 601,
+            "end": 602,
             "text": "="
            },
            {
             "type": "integer",
-            "start": 507,
-            "end": 508,
+            "start": 603,
+            "end": 604,
             "text": "2"
            }
           ]
          },
          {
           "type": "}",
-          "start": 509,
-          "end": 510,
+          "start": 605,
+          "end": 606,
           "text": "}"
          }
         ]
        },
        {
         "type": ",",
-        "start": 510,
-        "end": 511,
+        "start": 606,
+        "end": 607,
         "text": ","
        },
        {
         "type": "inline_table",
-        "start": 512,
-        "end": 521,
+        "start": 608,
+        "end": 617,
         "children": [
          {
           "type": "{",
-          "start": 512,
-          "end": 513,
+          "start": 608,
+          "end": 609,
           "text": "{"
          },
          {
           "type": "pair",
-          "start": 514,
-          "end": 519,
+          "start": 610,
+          "end": 615,
           "children": [
            {
             "type": "bare_key",
-            "start": 514,
-            "end": 515,
+            "start": 610,
+            "end": 611,
             "text": "a"
            },
            {
             "type": "=",
-            "start": 516,
-            "end": 517,
+            "start": 612,
+            "end": 613,
             "text": "="
            },
            {
             "type": "integer",
-            "start": 518,
-            "end": 519,
+            "start": 614,
+            "end": 615,
             "text": "3"
            }
           ]
          },
          {
           "type": "}",
-          "start": 520,
-          "end": 521,
+          "start": 616,
+          "end": 617,
           "text": "}"
          }
         ]
        },
        {
         "type": "]",
-        "start": 521,
-        "end": 522,
+        "start": 617,
+        "end": 618,
         "text": "]"
        }
       ]
@@ -829,273 +835,273 @@
    },
    {
     "type": "pair",
-    "start": 524,
-    "end": 579,
+    "start": 620,
+    "end": 675,
     "children": [
      {
       "type": "bare_key",
-      "start": 524,
-      "end": 540,
+      "start": 620,
+      "end": 636,
       "text": "arrays_of_arrays"
      },
      {
       "type": "=",
-      "start": 541,
-      "end": 542,
+      "start": 637,
+      "end": 638,
       "text": "="
      },
      {
       "type": "array",
-      "start": 543,
-      "end": 579,
+      "start": 639,
+      "end": 675,
       "children": [
        {
         "type": "[",
-        "start": 543,
-        "end": 544,
+        "start": 639,
+        "end": 640,
         "text": "["
        },
        {
         "type": "array",
-        "start": 544,
-        "end": 554,
+        "start": 640,
+        "end": 650,
         "children": [
          {
           "type": "[",
-          "start": 544,
-          "end": 545,
+          "start": 640,
+          "end": 641,
           "text": "["
          },
          {
           "type": "array",
-          "start": 545,
-          "end": 548,
+          "start": 641,
+          "end": 644,
           "children": [
            {
             "type": "[",
-            "start": 545,
-            "end": 546,
+            "start": 641,
+            "end": 642,
             "text": "["
            },
            {
             "type": "integer",
-            "start": 546,
-            "end": 547,
+            "start": 642,
+            "end": 643,
             "text": "1"
            },
            {
             "type": "]",
-            "start": 547,
-            "end": 548,
+            "start": 643,
+            "end": 644,
             "text": "]"
            }
           ]
          },
          {
           "type": ",",
-          "start": 548,
-          "end": 549,
+          "start": 644,
+          "end": 645,
           "text": ","
          },
          {
           "type": "array",
-          "start": 550,
-          "end": 553,
+          "start": 646,
+          "end": 649,
           "children": [
            {
             "type": "[",
-            "start": 550,
-            "end": 551,
+            "start": 646,
+            "end": 647,
             "text": "["
            },
            {
             "type": "integer",
-            "start": 551,
-            "end": 552,
+            "start": 647,
+            "end": 648,
             "text": "2"
            },
            {
             "type": "]",
-            "start": 552,
-            "end": 553,
+            "start": 648,
+            "end": 649,
             "text": "]"
            }
           ]
          },
          {
           "type": "]",
-          "start": 553,
-          "end": 554,
+          "start": 649,
+          "end": 650,
           "text": "]"
          }
         ]
        },
        {
         "type": ",",
-        "start": 554,
-        "end": 555,
+        "start": 650,
+        "end": 651,
         "text": ","
        },
        {
         "type": "array",
-        "start": 556,
-        "end": 566,
+        "start": 652,
+        "end": 662,
         "children": [
          {
           "type": "[",
-          "start": 556,
-          "end": 557,
+          "start": 652,
+          "end": 653,
           "text": "["
          },
          {
           "type": "array",
-          "start": 557,
-          "end": 560,
+          "start": 653,
+          "end": 656,
           "children": [
            {
             "type": "[",
-            "start": 557,
-            "end": 558,
+            "start": 653,
+            "end": 654,
             "text": "["
            },
            {
             "type": "integer",
-            "start": 558,
-            "end": 559,
+            "start": 654,
+            "end": 655,
             "text": "3"
            },
            {
             "type": "]",
-            "start": 559,
-            "end": 560,
+            "start": 655,
+            "end": 656,
             "text": "]"
            }
           ]
          },
          {
           "type": ",",
-          "start": 560,
-          "end": 561,
+          "start": 656,
+          "end": 657,
           "text": ","
          },
          {
           "type": "array",
-          "start": 562,
-          "end": 565,
+          "start": 658,
+          "end": 661,
           "children": [
            {
             "type": "[",
-            "start": 562,
-            "end": 563,
+            "start": 658,
+            "end": 659,
             "text": "["
            },
            {
             "type": "integer",
-            "start": 563,
-            "end": 564,
+            "start": 659,
+            "end": 660,
             "text": "4"
            },
            {
             "type": "]",
-            "start": 564,
-            "end": 565,
+            "start": 660,
+            "end": 661,
             "text": "]"
            }
           ]
          },
          {
           "type": "]",
-          "start": 565,
-          "end": 566,
+          "start": 661,
+          "end": 662,
           "text": "]"
          }
         ]
        },
        {
         "type": ",",
-        "start": 566,
-        "end": 567,
+        "start": 662,
+        "end": 663,
         "text": ","
        },
        {
         "type": "array",
-        "start": 568,
-        "end": 578,
+        "start": 664,
+        "end": 674,
         "children": [
          {
           "type": "[",
-          "start": 568,
-          "end": 569,
+          "start": 664,
+          "end": 665,
           "text": "["
          },
          {
           "type": "array",
-          "start": 569,
-          "end": 572,
+          "start": 665,
+          "end": 668,
           "children": [
            {
             "type": "[",
-            "start": 569,
-            "end": 570,
+            "start": 665,
+            "end": 666,
             "text": "["
            },
            {
             "type": "integer",
-            "start": 570,
-            "end": 571,
+            "start": 666,
+            "end": 667,
             "text": "5"
            },
            {
             "type": "]",
-            "start": 571,
-            "end": 572,
+            "start": 667,
+            "end": 668,
             "text": "]"
            }
           ]
          },
          {
           "type": ",",
-          "start": 572,
-          "end": 573,
+          "start": 668,
+          "end": 669,
           "text": ","
          },
          {
           "type": "array",
-          "start": 574,
-          "end": 577,
+          "start": 670,
+          "end": 673,
           "children": [
            {
             "type": "[",
-            "start": 574,
-            "end": 575,
+            "start": 670,
+            "end": 671,
             "text": "["
            },
            {
             "type": "integer",
-            "start": 575,
-            "end": 576,
+            "start": 671,
+            "end": 672,
             "text": "6"
            },
            {
             "type": "]",
-            "start": 576,
-            "end": 577,
+            "start": 672,
+            "end": 673,
             "text": "]"
            }
           ]
          },
          {
           "type": "]",
-          "start": 577,
-          "end": 578,
+          "start": 673,
+          "end": 674,
           "text": "]"
          }
         ]
        },
        {
         "type": "]",
-        "start": 578,
-        "end": 579,
+        "start": 674,
+        "end": 675,
         "text": "]"
        }
       ]

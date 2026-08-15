@@ -6,12 +6,22 @@ grammar = "tree-sitter-toml==0.7.0"
 grammar_module = "tree_sitter_toml"
 grammar_symbol = "language"
 
-# taplo reads `.taplo.toml` / `taplo.toml` from the filesystem if it finds one,
-# even for stdin input, and the config it finds changes the output. `--no-auto-config`
-# makes the committed reference output depend only on the input and the width, so
-# it is reproducible on another machine. The width knob is `-o column_width=N`,
-# not `{width}` in a `--column-width` flag. Both were established by running the
-# tool, not by reading `--help`.
+# taplo searches cwd and every ancestor for `.taplo.toml` / `taplo.toml`, even for
+# stdin input. `-o` wins over the config file for the *same* key, so `column_width`
+# is safe -- but every formatting option the command line does NOT set is taken
+# from whatever config was found: a `.taplo.toml` with `indent_string` and
+# `array_trailing_comma` changes the output verbatim. So `--no-auto-config` is
+# load-bearing and the reference output would otherwise depend on where on the
+# filesystem it was generated. (Reviewer-verified, 2026-08.)
+#
+# The width knob is `-o column_width=N`, not a `--column-width` flag. Established
+# by running the tool, not by reading `--help`.
+#
+# `--stdin-filepath` is NOT needed for taplo: with `--no-auto-config` there is no
+# config whose `include` globs could consult the name, and `taplo fmt` parses TOML
+# unconditionally. All 30 committed reference outputs regenerate byte-identically
+# without it. It is kept only because it costs nothing; do not copy it into a
+# manifest for a reference that has not been shown to need it. (prettier does.)
 reference = "nix run nixpkgs#taplo -- fmt --no-auto-config -o column_width={width} --stdin-filepath x.toml -"
 reference_version = "taplo 0.10.0"
 reference_width = "flag"

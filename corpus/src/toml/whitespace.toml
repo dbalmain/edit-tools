@@ -1,0 +1,39 @@
+# Hand-written TOML that nobody ran a formatter over: the token-level whitespace
+# taplo normalises, as opposed to the line-breaking decisions the rest of the
+# corpus probes. Spacing around `=`, padding inside `[` and `{`, spacing around
+# `,` and `.`, indentation under a table header, and the run of spaces before a
+# trailing `#` are each written wrong here on purpose.
+
+name    =    "spaced out"
+compact="no spaces at all"
+mixed = "one side"
+	tabbed_key = "leading tab"
+
+padded_array = [ 1, 2, 3 ]
+comma_spacing = [1 ,2 , 3,4]
+tight_array = [1,2,3]
+padded_and_tight = [ {a=1}, {b = 2} ]
+
+tight_table = {host="localhost",port=5432}
+padded_table = {  host = "remote" ,  port = 5433  }
+
+dotted . key . chain = "spaces around the dots"
+
+[  section  ]
+    indented = true
+    also_indented = "four spaces under the header"
+	tab_indented = "one tab under the header"
+
+[ outer . inner ]
+value    = 1    #    a trailing comment behind a run of spaces
+other = 2	# behind a tab
+
+# NB: `[[  items  ]]` — an array-of-tables header padded inside the double
+# brackets — is legal TOML but taplo 0.10.0 *rejects* it ("expected identifier"),
+# while tree-sitter-toml parses it without an ERROR node. It is therefore kept
+# out of the corpus deliberately; see the report.
+[[items]]
+id=1
+
+[[items]]
+id   =   2

@@ -1,6 +1,7 @@
 # Arrays in their several shapes: empty, nested, heterogeneous, trailing-comma, and
-# already-multiline. The formatter must decide single-line vs one-per-line for each
-# independently, and must not invent or drop a trailing comma on a flat array.
+# already-multiline. The formatter decides single-line vs one-per-line, and must not
+# invent or drop a trailing comma on a flat array. NB the decision is NOT per array:
+# taplo propagates a break into every nested array, fitting or not — see nesting.toml.
 
 empty = []
 

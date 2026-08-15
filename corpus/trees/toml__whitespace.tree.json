@@ -1,0 +1,1188 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/whitespace.toml",
+ "source": "# Hand-written TOML that nobody ran a formatter over: the token-level whitespace\n# taplo normalises, as opposed to the line-breaking decisions the rest of the\n# corpus probes. Spacing around `=`, padding inside `[` and `{`, spacing around\n# `,` and `.`, indentation under a table header, and the run of spaces before a\n# trailing `#` are each written wrong here on purpose.\n\nname    =    \"spaced out\"\ncompact=\"no spaces at all\"\nmixed = \"one side\"\n\ttabbed_key = \"leading tab\"\n\npadded_array = [ 1, 2, 3 ]\ncomma_spacing = [1 ,2 , 3,4]\ntight_array = [1,2,3]\npadded_and_tight = [ {a=1}, {b = 2} ]\n\ntight_table = {host=\"localhost\",port=5432}\npadded_table = {  host = \"remote\" ,  port = 5433  }\n\ndotted . key . chain = \"spaces around the dots\"\n\n[  section  ]\n    indented = true\n    also_indented = \"four spaces under the header\"\n\ttab_indented = \"one tab under the header\"\n\n[ outer . inner ]\nvalue    = 1    #    a trailing comment behind a run of spaces\nother = 2\t# behind a tab\n\n# NB: `[[  items  ]]` — an array-of-tables header padded inside the double\n# brackets — is legal TOML but taplo 0.10.0 *rejects* it (\"expected identifier\"),\n# while tree-sitter-toml parses it without an ERROR node. It is therefore kept\n# out of the corpus deliberately; see the report.\n[[items]]\nid=1\n\n[[items]]\nid   =   2\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 1301,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 80,
+    "text": "# Hand-written TOML that nobody ran a formatter over: the token-level whitespace"
+   },
+   {
+    "type": "comment",
+    "start": 81,
+    "end": 158,
+    "text": "# taplo normalises, as opposed to the line-breaking decisions the rest of the"
+   },
+   {
+    "type": "comment",
+    "start": 159,
+    "end": 238,
+    "text": "# corpus probes. Spacing around `=`, padding inside `[` and `{`, spacing around"
+   },
+   {
+    "type": "comment",
+    "start": 239,
+    "end": 318,
+    "text": "# `,` and `.`, indentation under a table header, and the run of spaces before a"
+   },
+   {
+    "type": "comment",
+    "start": 319,
+    "end": 373,
+    "text": "# trailing `#` are each written wrong here on purpose."
+   },
+   {
+    "type": "pair",
+    "start": 375,
+    "end": 400,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 375,
+      "end": 379,
+      "text": "name"
+     },
+     {
+      "type": "=",
+      "start": 383,
+      "end": 384,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 388,
+      "end": 400,
+      "children": [
+       {
+        "type": "\"",
+        "start": 388,
+        "end": 389,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 399,
+        "end": 400,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 401,
+    "end": 427,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 401,
+      "end": 408,
+      "text": "compact"
+     },
+     {
+      "type": "=",
+      "start": 408,
+      "end": 409,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 409,
+      "end": 427,
+      "children": [
+       {
+        "type": "\"",
+        "start": 409,
+        "end": 410,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 426,
+        "end": 427,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 428,
+    "end": 446,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 428,
+      "end": 433,
+      "text": "mixed"
+     },
+     {
+      "type": "=",
+      "start": 434,
+      "end": 435,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 436,
+      "end": 446,
+      "children": [
+       {
+        "type": "\"",
+        "start": 436,
+        "end": 437,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 445,
+        "end": 446,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 448,
+    "end": 474,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 448,
+      "end": 458,
+      "text": "tabbed_key"
+     },
+     {
+      "type": "=",
+      "start": 459,
+      "end": 460,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 461,
+      "end": 474,
+      "children": [
+       {
+        "type": "\"",
+        "start": 461,
+        "end": 462,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 473,
+        "end": 474,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 476,
+    "end": 502,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 476,
+      "end": 488,
+      "text": "padded_array"
+     },
+     {
+      "type": "=",
+      "start": 489,
+      "end": 490,
+      "text": "="
+     },
+     {
+      "type": "array",
+      "start": 491,
+      "end": 502,
+      "children": [
+       {
+        "type": "[",
+        "start": 491,
+        "end": 492,
+        "text": "["
+       },
+       {
+        "type": "integer",
+        "start": 493,
+        "end": 494,
+        "text": "1"
+       },
+       {
+        "type": ",",
+        "start": 494,
+        "end": 495,
+        "text": ","
+       },
+       {
+        "type": "integer",
+        "start": 496,
+        "end": 497,
+        "text": "2"
+       },
+       {
+        "type": ",",
+        "start": 497,
+        "end": 498,
+        "text": ","
+       },
+       {
+        "type": "integer",
+        "start": 499,
+        "end": 500,
+        "text": "3"
+       },
+       {
+        "type": "]",
+        "start": 501,
+        "end": 502,
+        "text": "]"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 503,
+    "end": 531,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 503,
+      "end": 516,
+      "text": "comma_spacing"
+     },
+     {
+      "type": "=",
+      "start": 517,
+      "end": 518,
+      "text": "="
+     },
+     {
+      "type": "array",
+      "start": 519,
+      "end": 531,
+      "children": [
+       {
+        "type": "[",
+        "start": 519,
+        "end": 520,
+        "text": "["
+       },
+       {
+        "type": "integer",
+        "start": 520,
+        "end": 521,
+        "text": "1"
+       },
+       {
+        "type": ",",
+        "start": 522,
+        "end": 523,
+        "text": ","
+       },
+       {
+        "type": "integer",
+        "start": 523,
+        "end": 524,
+        "text": "2"
+       },
+       {
+        "type": ",",
+        "start": 525,
+        "end": 526,
+        "text": ","
+       },
+       {
+        "type": "integer",
+        "start": 527,
+        "end": 528,
+        "text": "3"
+       },
+       {
+        "type": ",",
+        "start": 528,
+        "end": 529,
+        "text": ","
+       },
+       {
+        "type": "integer",
+        "start": 529,
+        "end": 530,
+        "text": "4"
+       },
+       {
+        "type": "]",
+        "start": 530,
+        "end": 531,
+        "text": "]"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 532,
+    "end": 553,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 532,
+      "end": 543,
+      "text": "tight_array"
+     },
+     {
+      "type": "=",
+      "start": 544,
+      "end": 545,
+      "text": "="
+     },
+     {
+      "type": "array",
+      "start": 546,
+      "end": 553,
+      "children": [
+       {
+        "type": "[",
+        "start": 546,
+        "end": 547,
+        "text": "["
+       },
+       {
+        "type": "integer",
+        "start": 547,
+        "end": 548,
+        "text": "1"
+       },
+       {
+        "type": ",",
+        "start": 548,
+        "end": 549,
+        "text": ","
+       },
+       {
+        "type": "integer",
+        "start": 549,
+        "end": 550,
+        "text": "2"
+       },
+       {
+        "type": ",",
+        "start": 550,
+        "end": 551,
+        "text": ","
+       },
+       {
+        "type": "integer",
+        "start": 551,
+        "end": 552,
+        "text": "3"
+       },
+       {
+        "type": "]",
+        "start": 552,
+        "end": 553,
+        "text": "]"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 554,
+    "end": 591,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 554,
+      "end": 570,
+      "text": "padded_and_tight"
+     },
+     {
+      "type": "=",
+      "start": 571,
+      "end": 572,
+      "text": "="
+     },
+     {
+      "type": "array",
+      "start": 573,
+      "end": 591,
+      "children": [
+       {
+        "type": "[",
+        "start": 573,
+        "end": 574,
+        "text": "["
+       },
+       {
+        "type": "inline_table",
+        "start": 575,
+        "end": 580,
+        "children": [
+         {
+          "type": "{",
+          "start": 575,
+          "end": 576,
+          "text": "{"
+         },
+         {
+          "type": "pair",
+          "start": 576,
+          "end": 579,
+          "children": [
+           {
+            "type": "bare_key",
+            "start": 576,
+            "end": 577,
+            "text": "a"
+           },
+           {
+            "type": "=",
+            "start": 577,
+            "end": 578,
+            "text": "="
+           },
+           {
+            "type": "integer",
+            "start": 578,
+            "end": 579,
+            "text": "1"
+           }
+          ]
+         },
+         {
+          "type": "}",
+          "start": 579,
+          "end": 580,
+          "text": "}"
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 580,
+        "end": 581,
+        "text": ","
+       },
+       {
+        "type": "inline_table",
+        "start": 582,
+        "end": 589,
+        "children": [
+         {
+          "type": "{",
+          "start": 582,
+          "end": 583,
+          "text": "{"
+         },
+         {
+          "type": "pair",
+          "start": 583,
+          "end": 588,
+          "children": [
+           {
+            "type": "bare_key",
+            "start": 583,
+            "end": 584,
+            "text": "b"
+           },
+           {
+            "type": "=",
+            "start": 585,
+            "end": 586,
+            "text": "="
+           },
+           {
+            "type": "integer",
+            "start": 587,
+            "end": 588,
+            "text": "2"
+           }
+          ]
+         },
+         {
+          "type": "}",
+          "start": 588,
+          "end": 589,
+          "text": "}"
+         }
+        ]
+       },
+       {
+        "type": "]",
+        "start": 590,
+        "end": 591,
+        "text": "]"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 593,
+    "end": 635,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 593,
+      "end": 604,
+      "text": "tight_table"
+     },
+     {
+      "type": "=",
+      "start": 605,
+      "end": 606,
+      "text": "="
+     },
+     {
+      "type": "inline_table",
+      "start": 607,
+      "end": 635,
+      "children": [
+       {
+        "type": "{",
+        "start": 607,
+        "end": 608,
+        "text": "{"
+       },
+       {
+        "type": "pair",
+        "start": 608,
+        "end": 624,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 608,
+          "end": 612,
+          "text": "host"
+         },
+         {
+          "type": "=",
+          "start": 612,
+          "end": 613,
+          "text": "="
+         },
+         {
+          "type": "string",
+          "start": 613,
+          "end": 624,
+          "children": [
+           {
+            "type": "\"",
+            "start": 613,
+            "end": 614,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 623,
+            "end": 624,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 624,
+        "end": 625,
+        "text": ","
+       },
+       {
+        "type": "pair",
+        "start": 625,
+        "end": 634,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 625,
+          "end": 629,
+          "text": "port"
+         },
+         {
+          "type": "=",
+          "start": 629,
+          "end": 630,
+          "text": "="
+         },
+         {
+          "type": "integer",
+          "start": 630,
+          "end": 634,
+          "text": "5432"
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 634,
+        "end": 635,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 636,
+    "end": 687,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 636,
+      "end": 648,
+      "text": "padded_table"
+     },
+     {
+      "type": "=",
+      "start": 649,
+      "end": 650,
+      "text": "="
+     },
+     {
+      "type": "inline_table",
+      "start": 651,
+      "end": 687,
+      "children": [
+       {
+        "type": "{",
+        "start": 651,
+        "end": 652,
+        "text": "{"
+       },
+       {
+        "type": "pair",
+        "start": 654,
+        "end": 669,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 654,
+          "end": 658,
+          "text": "host"
+         },
+         {
+          "type": "=",
+          "start": 659,
+          "end": 660,
+          "text": "="
+         },
+         {
+          "type": "string",
+          "start": 661,
+          "end": 669,
+          "children": [
+           {
+            "type": "\"",
+            "start": 661,
+            "end": 662,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 668,
+            "end": 669,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 670,
+        "end": 671,
+        "text": ","
+       },
+       {
+        "type": "pair",
+        "start": 673,
+        "end": 684,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 673,
+          "end": 677,
+          "text": "port"
+         },
+         {
+          "type": "=",
+          "start": 678,
+          "end": 679,
+          "text": "="
+         },
+         {
+          "type": "integer",
+          "start": 680,
+          "end": 684,
+          "text": "5433"
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 686,
+        "end": 687,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 689,
+    "end": 736,
+    "children": [
+     {
+      "type": "dotted_key",
+      "start": 689,
+      "end": 709,
+      "children": [
+       {
+        "type": "dotted_key",
+        "start": 689,
+        "end": 701,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 689,
+          "end": 695,
+          "text": "dotted"
+         },
+         {
+          "type": ".",
+          "start": 696,
+          "end": 697,
+          "text": "."
+         },
+         {
+          "type": "bare_key",
+          "start": 698,
+          "end": 701,
+          "text": "key"
+         }
+        ]
+       },
+       {
+        "type": ".",
+        "start": 702,
+        "end": 703,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 704,
+        "end": 709,
+        "text": "chain"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 710,
+      "end": 711,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 712,
+      "end": 736,
+      "children": [
+       {
+        "type": "\"",
+        "start": 712,
+        "end": 713,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 735,
+        "end": 736,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table",
+    "start": 738,
+    "end": 867,
+    "children": [
+     {
+      "type": "[",
+      "start": 738,
+      "end": 739,
+      "text": "["
+     },
+     {
+      "type": "bare_key",
+      "start": 741,
+      "end": 748,
+      "text": "section"
+     },
+     {
+      "type": "]",
+      "start": 750,
+      "end": 751,
+      "text": "]"
+     },
+     {
+      "type": "pair",
+      "start": 756,
+      "end": 771,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 756,
+        "end": 764,
+        "text": "indented"
+       },
+       {
+        "type": "=",
+        "start": 765,
+        "end": 766,
+        "text": "="
+       },
+       {
+        "type": "boolean",
+        "start": 767,
+        "end": 771,
+        "text": "true"
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 776,
+      "end": 822,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 776,
+        "end": 789,
+        "text": "also_indented"
+       },
+       {
+        "type": "=",
+        "start": 790,
+        "end": 791,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 792,
+        "end": 822,
+        "children": [
+         {
+          "type": "\"",
+          "start": 792,
+          "end": 793,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 821,
+          "end": 822,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 824,
+      "end": 865,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 824,
+        "end": 836,
+        "text": "tab_indented"
+       },
+       {
+        "type": "=",
+        "start": 837,
+        "end": 838,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 839,
+        "end": 865,
+        "children": [
+         {
+          "type": "\"",
+          "start": 839,
+          "end": 840,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 864,
+          "end": 865,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table",
+    "start": 867,
+    "end": 1264,
+    "children": [
+     {
+      "type": "[",
+      "start": 867,
+      "end": 868,
+      "text": "["
+     },
+     {
+      "type": "dotted_key",
+      "start": 869,
+      "end": 882,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 869,
+        "end": 874,
+        "text": "outer"
+       },
+       {
+        "type": ".",
+        "start": 875,
+        "end": 876,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 877,
+        "end": 882,
+        "text": "inner"
+       }
+      ]
+     },
+     {
+      "type": "]",
+      "start": 883,
+      "end": 884,
+      "text": "]"
+     },
+     {
+      "type": "pair",
+      "start": 885,
+      "end": 947,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 885,
+        "end": 890,
+        "text": "value"
+       },
+       {
+        "type": "=",
+        "start": 894,
+        "end": 895,
+        "text": "="
+       },
+       {
+        "type": "integer",
+        "start": 896,
+        "end": 897,
+        "text": "1"
+       },
+       {
+        "type": "comment",
+        "start": 901,
+        "end": 947,
+        "text": "#    a trailing comment behind a run of spaces"
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 948,
+      "end": 972,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 948,
+        "end": 953,
+        "text": "other"
+       },
+       {
+        "type": "=",
+        "start": 954,
+        "end": 955,
+        "text": "="
+       },
+       {
+        "type": "integer",
+        "start": 956,
+        "end": 957,
+        "text": "2"
+       },
+       {
+        "type": "comment",
+        "start": 958,
+        "end": 972,
+        "text": "# behind a tab"
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 974,
+      "end": 1050,
+      "text": "# NB: `[[  items  ]]` — an array-of-tables header padded inside the double"
+     },
+     {
+      "type": "comment",
+      "start": 1051,
+      "end": 1134,
+      "text": "# brackets — is legal TOML but taplo 0.10.0 *rejects* it (\"expected identifier\"),"
+     },
+     {
+      "type": "comment",
+      "start": 1135,
+      "end": 1213,
+      "text": "# while tree-sitter-toml parses it without an ERROR node. It is therefore kept"
+     },
+     {
+      "type": "comment",
+      "start": 1214,
+      "end": 1263,
+      "text": "# out of the corpus deliberately; see the report."
+     }
+    ]
+   },
+   {
+    "type": "table_array_element",
+    "start": 1264,
+    "end": 1280,
+    "children": [
+     {
+      "type": "[[",
+      "start": 1264,
+      "end": 1266,
+      "text": "[["
+     },
+     {
+      "type": "bare_key",
+      "start": 1266,
+      "end": 1271,
+      "text": "items"
+     },
+     {
+      "type": "]]",
+      "start": 1271,
+      "end": 1273,
+      "text": "]]"
+     },
+     {
+      "type": "pair",
+      "start": 1274,
+      "end": 1278,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 1274,
+        "end": 1276,
+        "text": "id"
+       },
+       {
+        "type": "=",
+        "start": 1276,
+        "end": 1277,
+        "text": "="
+       },
+       {
+        "type": "integer",
+        "start": 1277,
+        "end": 1278,
+        "text": "1"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table_array_element",
+    "start": 1280,
+    "end": 1301,
+    "children": [
+     {
+      "type": "[[",
+      "start": 1280,
+      "end": 1282,
+      "text": "[["
+     },
+     {
+      "type": "bare_key",
+      "start": 1282,
+      "end": 1287,
+      "text": "items"
+     },
+     {
+      "type": "]]",
+      "start": 1287,
+      "end": 1289,
+      "text": "]]"
+     },
+     {
+      "type": "pair",
+      "start": 1290,
+      "end": 1300,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 1290,
+        "end": 1292,
+        "text": "id"
+       },
+       {
+        "type": "=",
+        "start": 1295,
+        "end": 1296,
+        "text": "="
+       },
+       {
+        "type": "integer",
+        "start": 1299,
+        "end": 1300,
+        "text": "2"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}
