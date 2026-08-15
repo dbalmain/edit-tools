@@ -156,12 +156,21 @@ mod tests {
         serde_json::from_str(raw).expect("test tree parses")
     }
 
-    fn corpus(name: &str) -> TreeDoc {
+    fn corpus_in(directory: &str, name: &str) -> TreeDoc {
         let path = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../corpus/trees")
+            .join("../corpus")
+            .join(directory)
             .join(name);
         let raw = std::fs::read_to_string(path).expect("corpus tree exists");
         tree(&raw)
+    }
+
+    fn corpus(name: &str) -> TreeDoc {
+        corpus_in("trees", name)
+    }
+
+    fn dirty_corpus(name: &str) -> TreeDoc {
+        corpus_in("trees-dirty", name)
     }
 
     fn span_scope(spans: &[Span], start: usize, end: usize) -> &str {
@@ -260,23 +269,7 @@ mod tests {
 
     #[test]
     fn error_children_are_walked_and_only_child_range_leftovers_are_backfilled() {
-        let tree = tree(
-            r#"{
-              "language":"python", "source":"foo( 1 +",
-              "root":{"type":"module","start":0,"end":8,"children":[
-                {"type":"ERROR","start":0,"end":8,"children":[
-                  {"type":"call","start":0,"end":6,"children":[
-                    {"type":"identifier","start":0,"end":3,"field":"function","text":"foo"},
-                    {"type":"argument_list","start":3,"end":6,"field":"arguments","children":[
-                      {"type":"(","start":3,"end":4,"text":"("},
-                      {"type":"integer","start":5,"end":6,"text":"1"}
-                    ]}
-                  ]},
-                  {"type":"+","start":7,"end":8,"text":"+"}
-                ]}
-              ]}
-            }"#,
-        );
+        let tree = dirty_corpus("python__dirty_error_recovery.tree.json");
         let package = package();
         let spans = highlight(&tree, &package);
         assert_eq!(
@@ -294,15 +287,7 @@ mod tests {
 
     #[test]
     fn unknown_nodes_are_unpainted_and_never_stop_the_walk() {
-        let tree = tree(
-            r#"{
-              "language":"toy", "source":"a??",
-              "root":{"type":"unknown-interior","start":0,"end":3,"children":[
-                {"type":"identifier","start":0,"end":1,"text":"a"},
-                {"type":"unknown-leaf","start":1,"end":3,"text":"??"}
-              ]}
-            }"#,
-        );
+        let tree = dirty_corpus("python__dirty_unknown_interior.tree.json");
         let package = package();
         let spans = highlight(&tree, &package);
         assert_eq!(spans, vec![Span::new(0, 1, "variable")]);
@@ -311,18 +296,26 @@ mod tests {
 
     #[test]
     fn leaf_errors_are_painted_and_zero_width_missing_nodes_are_ignored() {
-        let tree = tree(
-            r#"{
-              "language":"toy", "source":"bad",
-              "root":{"type":"file","start":0,"end":3,"children":[
-                {"type":"ERROR","start":0,"end":3,"text":"bad"},
-                {"type":"MISSING","start":3,"end":3,"text":""}
-              ]}
-            }"#,
-        );
+        let tree = dirty_corpus("python__dirty_leaf_error_missing.tree.json");
         let package = package();
         let spans = highlight(&tree, &package);
         assert_eq!(spans, vec![Span::new(0, 3, "error")]);
+        assert_partition(&tree, &package, &spans);
+    }
+
+    #[test]
+    fn error_backfill_keeps_separated_leftover_runs_separate() {
+        let tree = dirty_corpus("python__dirty_error_two_runs.tree.json");
+        let package = package();
+        let spans = highlight(&tree, &package);
+        assert_eq!(
+            spans,
+            vec![
+                Span::new(0, 1, "error"),
+                Span::new(1, 2, "variable"),
+                Span::new(2, 3, "error"),
+            ]
+        );
         assert_partition(&tree, &package, &spans);
     }
 

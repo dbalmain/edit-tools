@@ -18,8 +18,10 @@ const pythonPackage = JSON.parse(
 
 const pkg = loadPackage(pythonPackage);
 
-const readTree = (name) =>
-  JSON.parse(fs.readFileSync(path.join(root, "corpus", "trees", name), "utf8"));
+const readTreeIn = (directory, name) =>
+  JSON.parse(fs.readFileSync(path.join(root, "corpus", directory, name), "utf8"));
+const readTree = (name) => readTreeIn("trees", name);
+const readDirtyTree = (name) => readTreeIn("trees-dirty", name);
 
 function spanScope(spans, start, end) {
   const span = spans.find((item) => item.start === start && item.end === end);
@@ -70,28 +72,7 @@ function assertIdentity(tree, rawPackage = pythonPackage) {
   return spans;
 }
 
-const errorTree = {
-  language: "python",
-  source: "foo( 1 +",
-  root: {
-    type: "module", start: 0, end: 8, children: [{
-      type: "ERROR", start: 0, end: 8, children: [
-        {
-          type: "call", start: 0, end: 6, children: [
-            { type: "identifier", start: 0, end: 3, field: "function", text: "foo" },
-            {
-              type: "argument_list", start: 3, end: 6, field: "arguments", children: [
-                { type: "(", start: 3, end: 4, text: "(" },
-                { type: "integer", start: 5, end: 6, text: "1" },
-              ],
-            },
-          ],
-        },
-        { type: "+", start: 7, end: 8, text: "+" },
-      ],
-    }],
-  },
-};
+const errorTree = readDirtyTree("python__dirty_error_recovery.tree.json");
 
 test("package loading expands sugar and refuses invalid scope vocabularies", () => {
   const expanded = loadPackage({
@@ -161,19 +142,26 @@ test("Rust and JS agree on ERROR child-range backfill", () => {
 });
 
 test("unknown nodes stay unpainted while known descendants survive", () => {
-  const tree = {
-    language: "toy",
-    source: "a??",
-    root: {
-      type: "unknown-interior", start: 0, end: 3, children: [
-        { type: "identifier", start: 0, end: 1, text: "a" },
-        { type: "unknown-leaf", start: 1, end: 3, text: "??" },
-      ],
-    },
-  };
+  const tree = readDirtyTree("python__dirty_unknown_interior.tree.json");
   const spans = assertIdentity(tree);
   assert.deepEqual(spans, [{ start: 0, end: 1, scope: "variable" }]);
   assertPartition(tree, pkg, spans);
+});
+
+test("leaf errors, missing nodes, and separated leftovers agree", () => {
+  const leaf = readDirtyTree("python__dirty_leaf_error_missing.tree.json");
+  const leafSpans = assertIdentity(leaf);
+  assert.deepEqual(leafSpans, [{ start: 0, end: 3, scope: "error" }]);
+  assertPartition(leaf, pkg, leafSpans);
+
+  const runs = readDirtyTree("python__dirty_error_two_runs.tree.json");
+  const runSpans = assertIdentity(runs);
+  assert.deepEqual(runSpans, [
+    { start: 0, end: 1, scope: "error" },
+    { start: 1, end: 2, scope: "variable" },
+    { start: 2, end: 3, scope: "error" },
+  ]);
+  assertPartition(runs, pkg, runSpans);
 });
 
 test("ancestor matching is inclusive of the immediate parent and listed order wins", () => {
