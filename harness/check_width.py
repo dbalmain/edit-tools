@@ -26,7 +26,12 @@ width-measurement defect. Sweeping the width instead makes the property hold for
 every boundary the corpus can express. Cross-runtime agreement is cheap; run it
 at 100 widths rather than 2.
 
-Usage: check_width.py <submission-dir> [lo] [hi]
+Usage: check_width.py <submission-dir> [lo] [hi] [--language NAME]
+
+`--language` matters more than it looks. The sweep is (hi - lo + 1) x trees x 2
+runtime invocations: 3,030 today, and roughly 45,000 once fifteen languages are
+merged. A builder in a worktree should sweep their own language; the whole-corpus
+sweep is the orchestrator's, between rounds.
 """
 
 import subprocess
@@ -44,11 +49,21 @@ def run(exe: Path, tree: Path, width: int) -> tuple[int, bytes]:
 
 
 def main() -> int:
-    sub = Path(sys.argv[1]).resolve()
-    lo = int(sys.argv[2]) if len(sys.argv) > 2 else DEFAULT_LO
-    hi = int(sys.argv[3]) if len(sys.argv) > 3 else DEFAULT_HI
+    argv = sys.argv[1:]
+    language = None
+    if "--language" in argv:
+        i = argv.index("--language")
+        language = argv[i + 1]
+        del argv[i : i + 2]
 
-    trees = sorted((Path(__file__).parent.parent / "corpus" / "trees").glob("*.tree.json"))
+    sub = Path(argv[0]).resolve()
+    lo = int(argv[1]) if len(argv) > 1 else DEFAULT_LO
+    hi = int(argv[2]) if len(argv) > 2 else DEFAULT_HI
+
+    pattern = f"{language}__*.tree.json" if language else "*.tree.json"
+    trees = sorted((Path(__file__).parent.parent / "corpus" / "trees").glob(pattern))
+    if not trees:
+        sys.exit(f"no trees matching {pattern}")
     rust, js = sub / "fmt-rust", sub / "fmt-js"
 
     disagreements = []

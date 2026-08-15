@@ -1,37 +1,44 @@
 #!/usr/bin/env -S uv run --quiet --script
 # /// script
 # requires-python = ">=3.11"
-# dependencies = ["tree-sitter", "tree-sitter-python", "tree-sitter-json"]
+# dependencies = ["tree-sitter"]
 # ///
 """Generate the frozen tree corpus from corpus/src/.
 
+    ./harness/gen_trees.py [--language NAME]
+
 Emits one .tree.json per source file into corpus/trees/. Submissions read
 these; they never parse anything themselves.
+
+Which languages exist, which grammar parses each, and which file extensions
+belong to it all come from `harness/languages/*.toml`. There is no list in this
+file on purpose -- fifteen languages are onboarded in parallel worktrees, and a
+map here would be a three-way merge conflict every round.
+
+Note the inline `dependencies` above names only `tree-sitter`. The grammars are
+installed by `manifest.bootstrap()`, which re-execs this script under
+`uv run --with <pinned grammar>` for every manifest. A grammar listed here would
+be the same shared-file conflict wearing a different hat.
 
 Refuses to emit a tree containing ERROR or MISSING nodes -- a corpus file that
 does not parse cleanly would silently hand every submission a different
 problem than the one we meant to pose.
 """
 
+import argparse
 import json
 import sys
 from pathlib import Path
 
-import tree_sitter_json
-import tree_sitter_python
-from tree_sitter import Language, Node, Parser
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import manifest as mf  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "corpus" / "src"
 OUT = ROOT / "corpus" / "trees"
 
-LANGUAGES = {
-    "python": (tree_sitter_python.language, ".py"),
-    "json": (tree_sitter_json.language, ".json"),
-}
 
-
-def convert(node: Node, source: bytes, field: str | None) -> dict:
+def convert(node, source: bytes, field: str | None) -> dict:
     """tree-sitter node -> our boring JSON shape.
 
     Anonymous nodes (punctuation, keywords) are kept: a formatter needs to know
@@ -52,7 +59,7 @@ def convert(node: Node, source: bytes, field: str | None) -> dict:
     return out
 
 
-def check_clean(node: Node, path: Path) -> list[str]:
+def check_clean(node, path: Path) -> list[str]:
     problems = []
     stack = [node]
     while stack:
@@ -64,17 +71,41 @@ def check_clean(node: Node, path: Path) -> list[str]:
     return problems
 
 
-def main() -> int:
-    OUT.mkdir(parents=True, exist_ok=True)
-    failures = []
-    written = 0
+def sources(m: mf.Manifest) -> list[Path]:
+    src_dir = SRC / m.name
+    if not src_dir.is_dir():
+        return []
+    found: list[Path] = []
+    for ext in m.extensions:
+        found.extend(src_dir.glob(f"*{ext}"))
+    return sorted(found)
 
-    for lang, (lang_fn, suffix) in LANGUAGES.items():
-        parser = Parser(Language(lang_fn()))
-        src_dir = SRC / lang
-        if not src_dir.is_dir():
-            continue
-        for path in sorted(src_dir.glob(f"*{suffix}")):
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--language", help="regenerate only this language's trees")
+    args = ap.parse_args()
+
+    manifests = mf.bootstrap()
+    manifests = mf.selected(manifests, args.language)
+
+    OUT.mkdir(parents=True, exist_ok=True)
+    failures: list[str] = []
+    written = 0
+    seen: dict[str, Path] = {}
+
+    for name, m in manifests.items():
+        parser = mf.parser_for(m)
+        for path in sources(m):
+            # Two extensions can share a stem (`app.ts` / `app.tsx`); the tree
+            # name has no room for both, so say so rather than overwrite.
+            key = f"{name}__{path.stem}"
+            if key in seen:
+                failures.append(f"{path.name}: tree name {key} already taken by "
+                                f"{seen[key].name}; rename one")
+                continue
+            seen[key] = path
+
             source = path.read_bytes()
             tree = parser.parse(source)
             problems = check_clean(tree.root_node, path)
@@ -82,7 +113,7 @@ def main() -> int:
                 failures.extend(problems)
                 continue
             doc = {
-                "language": lang,
+                "language": name,
                 "source_file": str(path.relative_to(ROOT)),
                 # Submissions need the original text: byte offsets alone cannot
                 # tell two spaces from two newlines, so blank-line preservation
@@ -91,7 +122,7 @@ def main() -> int:
                 "source": source.decode("utf-8"),
                 "root": convert(tree.root_node, source, None),
             }
-            dest = OUT / f"{lang}__{path.stem}.tree.json"
+            dest = OUT / f"{key}.tree.json"
             dest.write_text(json.dumps(doc, indent=1, ensure_ascii=False) + "\n")
             written += 1
             print(f"  {dest.relative_to(ROOT)}")
@@ -107,4 +138,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    mf.cli(main)

@@ -1,0 +1,32 @@
+result = compute(alpha, beta, gamma)
+
+value = compute_the_weighted_average(
+    first_operand, second_operand, third_operand, fourth
+)
+
+nested = outer(inner(deeply_nested(a, b, c), other_argument), final_argument, last)
+
+kwargs_call = build_request(
+    method="POST", url=endpoint, headers=default_headers, timeout=30
+)
+
+mixed = transform(
+    positional_one, positional_two, keyword_one=1, keyword_two=2, keyword_three=3
+)
+
+starred = dispatch(*positional_arguments, **keyword_arguments)
+
+single_long_argument = wrap(
+    this_is_one_very_long_identifier_that_will_not_fit_on_a_line
+)
+
+trailing = configure(
+    host,
+    port,
+)
+
+no_args = reset()
+
+chained_call_args = merge(
+    first(a, b), second(c, d), third(e, f), fourth(g, h), fifth(i)
+)

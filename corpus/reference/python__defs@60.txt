@@ -1,0 +1,57 @@
+def short(a, b):
+    return a
+
+
+def with_long_parameter_list(
+    first_param,
+    second_param,
+    third_param,
+    fourth_param,
+    fifth,
+):
+    return first_param
+
+
+def with_defaults(
+    host="localhost",
+    port=8080,
+    timeout=30.0,
+    retries=3,
+    verbose=False,
+):
+    return host
+
+
+def annotated(
+    count: int,
+    name: str,
+    values: list[int],
+    mapping: dict[str, int],
+) -> bool:
+    return True
+
+
+def variadic(first, *args, keyword_only=None, **kwargs):
+    return first
+
+
+@decorator
+def decorated(a):
+    return a
+
+
+@decorator_with_arguments(
+    option_one=True, option_two=False, option_three="value"
+)
+@another_decorator
+def multiply_decorated(a, b):
+    return a * b
+
+
+def nested_defaults(
+    callback=lambda x: x + 1,
+    factory=dict,
+    items=(1, 2, 3),
+    flag=True,
+):
+    return callback

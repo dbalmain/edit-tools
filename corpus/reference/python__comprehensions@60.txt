@@ -1,0 +1,49 @@
+squares = [x * x for x in range(10)]
+
+filtered = [
+    element
+    for element in collection_of_elements
+    if element.is_valid_entry
+]
+
+transformed = [
+    transform(item)
+    for item in source_items
+    if predicate(item) and item
+]
+
+nested_loops = [
+    (x, y)
+    for x in first_range
+    for y in second_range
+    if x != y and x > 0
+]
+
+dict_comp = {
+    key: value
+    for key, value in mapping.items()
+    if value is not None
+}
+
+dict_transform = {
+    normalise(k): compute(v)
+    for k, v in source_mapping.items()
+    if k
+}
+
+set_comp = {
+    element.identifier
+    for element in collection
+    if element.is_active_now
+}
+
+generator = sum(
+    value.amount
+    for value in transactions
+    if value.currency == "USD"
+)
+
+long_body = [
+    build_the_result_object(element, context, options)
+    for element in all_elements
+]

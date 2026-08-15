@@ -1,0 +1,39 @@
+short = "hello"
+
+single = 'single quoted'
+
+long_string = "this is a very long string literal that must never be reflowed by the formatter"
+
+formatted = f"user {name} has {count} items in {container_name} as of {timestamp}"
+
+nested_quotes = f"outer {inner['key']} value"
+
+raw = r"\d+\.\d+"
+
+byte_string = b"raw bytes"
+
+triple = """a triple quoted string
+that spans several lines
+and must be preserved exactly
+"""
+
+concatenated = (
+    "first part of the string "
+    "second part of the string "
+    "third part"
+)
+
+in_call = log_message(
+    "a fairly long message passed directly as a call argument here"
+)
+
+escape = "line one\nline two\ttabbed"
+
+unicode_literal = "café"
+
+# astral characters: width must be counted in scalar values, not UTF-16 units
+astral = "🙂🙂🙂🙂🙂🙂 a string whose width differs between JS and Rust naively"
+
+astral_call = render(
+    "🙂🙂🙂🙂", alignment_option, padding_option, width_hint
+)
