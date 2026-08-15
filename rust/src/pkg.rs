@@ -12,6 +12,8 @@ use serde_json::Value;
 use crate::Refusal;
 
 const FORMAT: &str = "et-doc-rules/1";
+const MAX_MACRO_DEPTH: usize = 32;
+const MAX_JSON_INTEGER: f64 = 9_007_199_254_740_991.0;
 
 #[derive(Deserialize)]
 #[serde(try_from = "String")]
@@ -32,9 +34,8 @@ impl TryFrom<String> for PackageFormat {
 }
 
 #[derive(Deserialize)]
+#[serde(try_from = "RawPackage")]
 pub struct Package {
-    #[serde(rename = "format")]
-    _format: PackageFormat,
     pub indent: usize,
     /// Node types that are punctuation or keywords; `named` skips them.
     #[serde(default)]
@@ -54,6 +55,239 @@ pub struct Package {
     #[serde(default)]
     pub precedence: HashMap<String, i64>,
     pub rules: HashMap<String, Expr>,
+}
+
+#[derive(Deserialize)]
+struct RawPackage {
+    #[serde(rename = "format")]
+    _format: PackageFormat,
+    indent: usize,
+    #[serde(default)]
+    tokens: HashSet<String>,
+    #[serde(default)]
+    comments: HashSet<String>,
+    #[serde(default)]
+    descend: HashSet<String>,
+    #[serde(default)]
+    optional_parens: HashSet<String>,
+    #[serde(default)]
+    precedence: HashMap<String, i64>,
+    #[serde(default)]
+    defs: HashMap<String, Value>,
+    rules: HashMap<String, Value>,
+}
+
+impl TryFrom<RawPackage> for Package {
+    type Error = String;
+
+    fn try_from(raw: RawPackage) -> Result<Self, Self::Error> {
+        let rules = expand_rules(&raw.defs, raw.rules)?
+            .into_iter()
+            .map(|(name, value)| Ok((name, Expr::try_from(value)?)))
+            .collect::<Result<_, String>>()?;
+        Ok(Self {
+            indent: raw.indent,
+            tokens: raw.tokens,
+            comments: raw.comments,
+            descend: raw.descend,
+            optional_parens: raw.optional_parens,
+            precedence: raw.precedence,
+            rules,
+        })
+    }
+}
+
+fn expand_rules(
+    defs: &HashMap<String, Value>,
+    rules: HashMap<String, Value>,
+) -> Result<HashMap<String, Value>, String> {
+    let mut arities = HashMap::new();
+    for (name, body) in defs {
+        if !body.is_array() {
+            return Err(format!("definition `{name}` body must be an array"));
+        }
+        arities.insert(name.as_str(), macro_arity(body, true)?);
+    }
+    for rule in rules.values() {
+        macro_arity(rule, false)?;
+    }
+    for body in defs.values().chain(rules.values()) {
+        validate_uses(body, &arities)?;
+    }
+    for name in defs.keys() {
+        validate_macro_path(name, defs, &mut Vec::new())?;
+    }
+
+    rules
+        .into_iter()
+        .map(|(name, rule)| {
+            expand_value(&rule, defs, &arities, &mut Vec::new(), None)
+                .map(|expanded| (name, expanded))
+        })
+        .collect()
+}
+
+fn macro_arity(value: &Value, holes_allowed: bool) -> Result<usize, String> {
+    let Value::Array(parts) = value else {
+        return Ok(0);
+    };
+    if parts.first().and_then(Value::as_str) == Some("$") {
+        if !holes_allowed {
+            return Err("`$` hole is only valid inside a `defs` body".to_owned());
+        }
+        if parts.len() != 2 {
+            return Err(format!(
+                "`$` hole takes 1 operand, got {}",
+                parts.len().saturating_sub(1)
+            ));
+        }
+        return macro_index(&parts[1])?
+            .checked_add(1)
+            .ok_or_else(|| "`$` hole index is too large".to_owned());
+    }
+    parts.iter().try_fold(0, |arity, part| {
+        macro_arity(part, holes_allowed).map(|nested| arity.max(nested))
+    })
+}
+
+fn macro_index(value: &Value) -> Result<usize, String> {
+    json_integer(value)
+        .ok_or_else(|| format!("`$` hole index must be a non-negative integer, got {value}"))
+}
+
+fn json_integer(value: &Value) -> Option<usize> {
+    let number = value.as_f64()?;
+    (number >= 0.0 && number.fract() == 0.0 && number <= MAX_JSON_INTEGER)
+        .then_some(number as usize)
+}
+
+fn use_name(parts: &[Value]) -> Result<&str, String> {
+    parts
+        .get(1)
+        .and_then(Value::as_str)
+        .ok_or_else(|| "`use` requires a definition name as its first operand".to_owned())
+}
+
+fn validate_uses(value: &Value, arities: &HashMap<&str, usize>) -> Result<(), String> {
+    let Value::Array(parts) = value else {
+        return Ok(());
+    };
+    if parts.first().and_then(Value::as_str) == Some("use") {
+        let name = use_name(parts)?;
+        let Some(&expected) = arities.get(name) else {
+            return Err(format!("unknown definition `{name}`"));
+        };
+        let actual = parts.len().saturating_sub(2);
+        if actual < expected {
+            return Err(format!(
+                "`$` hole {} in definition `{name}` is out of range for {actual} arguments",
+                expected - 1
+            ));
+        }
+        if actual > expected {
+            return Err(format!(
+                "definition `{name}` expects {expected} arguments, got {actual}"
+            ));
+        }
+    }
+    for part in parts {
+        validate_uses(part, arities)?;
+    }
+    Ok(())
+}
+
+fn direct_uses<'a>(value: &'a Value, names: &mut Vec<&'a str>) {
+    let Value::Array(parts) = value else {
+        return;
+    };
+    if parts.first().and_then(Value::as_str) == Some("use") {
+        if let Some(name) = parts.get(1).and_then(Value::as_str) {
+            names.push(name);
+        }
+    }
+    for part in parts {
+        direct_uses(part, names);
+    }
+}
+
+fn validate_macro_path<'a>(
+    name: &'a str,
+    defs: &'a HashMap<String, Value>,
+    stack: &mut Vec<&'a str>,
+) -> Result<(), String> {
+    if let Some(at) = stack.iter().position(|item| *item == name) {
+        let mut cycle = stack[at..].to_vec();
+        cycle.push(name);
+        return Err(format!("definition cycle: {}", cycle.join(" -> ")));
+    }
+    if stack.len() >= MAX_MACRO_DEPTH {
+        return Err(format!(
+            "definition nesting exceeds the maximum depth of {MAX_MACRO_DEPTH}"
+        ));
+    }
+    stack.push(name);
+    let mut nested = Vec::new();
+    direct_uses(&defs[name], &mut nested);
+    for next in nested {
+        validate_macro_path(next, defs, stack)?;
+    }
+    stack.pop();
+    Ok(())
+}
+
+fn expand_value<'a>(
+    value: &Value,
+    defs: &'a HashMap<String, Value>,
+    arities: &HashMap<&'a str, usize>,
+    stack: &mut Vec<String>,
+    args: Option<&[Value]>,
+) -> Result<Value, String> {
+    let Value::Array(parts) = value else {
+        return Ok(value.clone());
+    };
+    match parts.first().and_then(Value::as_str) {
+        Some("$") => {
+            let index = macro_index(&parts[1])?;
+            args.and_then(|values| values.get(index))
+                .cloned()
+                .ok_or_else(|| {
+                    format!("`$` hole {index} is out of range outside a definition expansion")
+                })
+        }
+        Some("use") => {
+            let name = use_name(parts)?;
+            let expanded_args = parts[2..]
+                .iter()
+                .map(|arg| expand_value(arg, defs, arities, stack, args))
+                .collect::<Result<Vec<_>, _>>()?;
+            let expected = arities[name];
+            if expanded_args.len() != expected {
+                return Err(format!(
+                    "definition `{name}` expects {expected} arguments, got {}",
+                    expanded_args.len()
+                ));
+            }
+            if let Some(at) = stack.iter().position(|item| item == name) {
+                let mut cycle = stack[at..].to_vec();
+                cycle.push(name.to_owned());
+                return Err(format!("definition cycle: {}", cycle.join(" -> ")));
+            }
+            if stack.len() >= MAX_MACRO_DEPTH {
+                return Err(format!(
+                    "definition nesting exceeds the maximum depth of {MAX_MACRO_DEPTH}"
+                ));
+            }
+            stack.push(name.to_owned());
+            let expanded = expand_value(&defs[name], defs, arities, stack, Some(&expanded_args));
+            stack.pop();
+            expanded
+        }
+        _ => parts
+            .iter()
+            .map(|part| expand_value(part, defs, arities, stack, args))
+            .collect::<Result<Vec<_>, _>>()
+            .map(Value::Array),
+    }
 }
 
 impl Package {
@@ -226,10 +460,7 @@ fn node_types(value: &Value) -> Result<Vec<String>, String> {
 }
 
 fn count(value: &Value) -> Result<usize, String> {
-    value
-        .as_u64()
-        .map(|n| n as usize)
-        .ok_or_else(|| format!("expected a non-negative integer, got {value}"))
+    json_integer(value).ok_or_else(|| format!("expected a non-negative integer, got {value}"))
 }
 
 fn selector(value: &Value) -> Result<Sel, String> {
@@ -268,6 +499,15 @@ mod tests {
         })
     }
 
+    fn macro_package(defs: Value, rules: Value) -> Result<Package, serde_json::Error> {
+        serde_json::from_value(json!({
+            "format": FORMAT,
+            "indent": 2,
+            "defs": defs,
+            "rules": rules,
+        }))
+    }
+
     #[test]
     fn accepts_the_current_package_format() {
         serde_json::from_value::<Package>(package(FORMAT)).expect("current format parses");
@@ -281,6 +521,102 @@ mod tests {
         assert!(
             err.to_string()
                 .contains("unknown package format `et-doc-rules/2`; expected `et-doc-rules/1`"),
+            "{err}"
+        );
+    }
+
+    #[test]
+    fn expands_nested_definitions_with_json_values_as_arguments() {
+        let pkg = macro_package(
+            json!({
+                "emit": ["seq", ["tok", ["$", 0]], ["child", ["$", 1]], ["$", 2]],
+                "wrapped": ["use", "emit", ["$", 0], "named", ["line"]],
+            }),
+            json!({ "list": ["use", "wrapped", "("] }),
+        )
+        .expect("macros expand");
+        let Expr::Seq(parts) = &pkg.rules["list"] else {
+            panic!("macro should expand to seq");
+        };
+        assert!(
+            matches!(parts.as_slice(), [Expr::Tok(s), Expr::Child(Sel::Named), Expr::Line] if s == "(")
+        );
+    }
+
+    fn refusal(defs: Value, rules: Value) -> String {
+        macro_package(defs, rules)
+            .err()
+            .expect("package must be refused")
+            .to_string()
+    }
+
+    #[test]
+    fn refuses_unknown_definitions_and_bad_argument_counts() {
+        assert!(refusal(json!({}), json!({ "x": ["use", "missing"] }))
+            .contains("unknown definition `missing`"));
+        assert!(refusal(
+            json!({ "one": ["tok", ["$", 0]] }),
+            json!({ "x": ["use", "one", "a", "b"] })
+        )
+        .contains("definition `one` expects 1 arguments, got 2"));
+    }
+
+    #[test]
+    fn refuses_out_of_range_and_out_of_body_holes() {
+        assert!(refusal(
+            json!({ "one": ["tok", ["$", 0]] }),
+            json!({ "x": ["use", "one"] })
+        )
+        .contains("`$` hole 0 in definition `one` is out of range for 0 arguments"));
+        assert!(refusal(json!({}), json!({ "x": ["tok", ["$", 0]] }))
+            .contains("`$` hole is only valid inside a `defs` body"));
+    }
+
+    #[test]
+    fn refuses_definition_cycles() {
+        let err = refusal(
+            json!({
+                "a": ["use", "b"],
+                "b": ["use", "a"],
+            }),
+            json!({ "x": ["line"] }),
+        );
+        assert!(err.contains("definition cycle:"), "{err}");
+        assert!(
+            err.contains("a -> b -> a") || err.contains("b -> a -> b"),
+            "{err}"
+        );
+    }
+
+    #[test]
+    fn refuses_definition_nesting_beyond_the_fixed_limit() {
+        let mut defs = serde_json::Map::new();
+        for index in 0..=MAX_MACRO_DEPTH {
+            let body = if index == MAX_MACRO_DEPTH {
+                json!(["line"])
+            } else {
+                json!(["use", format!("d{}", index + 1)])
+            };
+            defs.insert(format!("d{index}"), body);
+        }
+        let err = refusal(Value::Object(defs), json!({ "x": ["use", "d0"] }));
+        assert!(
+            err.contains("definition nesting exceeds the maximum depth of 32"),
+            "{err}"
+        );
+    }
+
+    #[test]
+    fn validates_every_expanded_rule_at_load_time() {
+        let err = refusal(
+            json!({}),
+            json!({
+                "used": ["line"],
+                "unreachable": ["blank", 2, "notalist"],
+            }),
+        );
+        assert!(
+            err.contains("expected a list of node types, got \"notalist\""),
             "{err}"
         );
     }

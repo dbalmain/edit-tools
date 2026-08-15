@@ -30,6 +30,31 @@ seventy-seven do.
 An expression is a JSON array whose first element is the opcode. Eighteen
 opcodes, four selectors, one predicate. That is all of it.
 
+Repeated rule shapes can be named in `defs` and instantiated with `use`:
+
+```json
+"defs": {
+  "bracketed_list": [
+    "group", ["tok", ["$", 0]],
+    ["indent", ["soft"],
+      ["each", "named", ["seq", ["tok", ["$", 1]], ["line"]]],
+      ["trail", ["$", 1], "named"]],
+    ["soft"], ["tok", ["$", 2]]
+  ]
+},
+"rules": {
+  "list": ["use", "bracketed_list", "[", ",", "]"]
+}
+```
+
+`["$", n]` is a positional hole for an arbitrary JSON value, so it can stand
+for a token, a selector or a whole expression. Both runtimes expand `use` on
+the raw JSON at package load, before checking the resulting expressions. The
+evaluator therefore knows nothing about macros: expansion can only produce the
+same eighteen opcodes it could already evaluate. Definitions may use other
+definitions, but cycles and nesting beyond 32 definitions are refused, as are
+unknown names, bad argument counts and holes outside a definition body.
+
 ### Layout
 
 | Opcode           | Meaning                                                  |

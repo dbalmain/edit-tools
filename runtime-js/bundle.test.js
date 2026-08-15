@@ -113,6 +113,78 @@ test("an unknown package format names the value found and expected", () => {
   );
 });
 
+test("defs expand recursively and accept arbitrary JSON arguments", () => {
+  const pkg = toy({
+    list: ["use", "wrapped", "(", ")"],
+  });
+  pkg.defs = {
+    emit: ["seq", ["tok", ["$", 0]], ["each", "named", ["$", 1]], ["tok", ["$", 2]]],
+    wrapped: ["use", "emit", ["$", 0], ["seq", ["line"]], ["$", 1]],
+  };
+  const tree = list(["a", "b"], false);
+  tree.children = tree.children.filter((child) => child.type !== ",");
+  assert.equal(run(pkg, tree, 80), "(a\nb)\n");
+});
+
+test("unknown definitions and extra arguments refuse at load time", () => {
+  const unknown = toy({ unused: ["use", "missing"] });
+  assert.throws(() => run(unknown, list(["a"], false), 80), /unknown definition `missing`/);
+
+  const extra = toy({ unused: ["use", "one", "a", "b"] });
+  extra.defs = { one: ["tok", ["$", 0]] };
+  assert.throws(
+    () => run(extra, list(["a"], false), 80),
+    /definition `one` expects 1 arguments, got 2/,
+  );
+});
+
+test("out-of-range and out-of-body holes refuse at load time", () => {
+  const missing = toy({ unused: ["use", "one"] });
+  missing.defs = { one: ["tok", ["$", 0]] };
+  assert.throws(
+    () => run(missing, list(["a"], false), 80),
+    /`\$` hole 0 in definition `one` is out of range for 0 arguments/,
+  );
+
+  const outside = toy({ unused: ["tok", ["$", 0]] });
+  assert.throws(
+    () => run(outside, list(["a"], false), 80),
+    /`\$` hole is only valid inside a `defs` body/,
+  );
+});
+
+test("definition cycles refuse at load time", () => {
+  const pkg = toy({ unused: ["line"] });
+  pkg.defs = { a: ["use", "b"], b: ["use", "a"] };
+  assert.throws(
+    () => run(pkg, list(["a"], false), 80),
+    (e) => e instanceof Refusal && /definition cycle: (a -> b -> a|b -> a -> b)/.test(e.message),
+  );
+});
+
+test("definition nesting has a fixed load-time limit", () => {
+  const pkg = toy({ unused: ["use", "d0"] });
+  pkg.defs = {};
+  for (let i = 0; i <= 32; i++) {
+    pkg.defs[`d${i}`] = i === 32 ? ["line"] : ["use", `d${i + 1}`];
+  }
+  assert.throws(
+    () => run(pkg, list(["a"], false), 80),
+    /definition nesting exceeds the maximum depth of 32/,
+  );
+});
+
+test("every rule is operand-checked at load time", () => {
+  const pkg = toy({
+    list: listRule,
+    unreachable: ["blank", 2, "notalist"],
+  });
+  assert.throws(
+    () => run(pkg, list(["a"], false), 80),
+    /expected a list of node types, got "notalist"/,
+  );
+});
+
 test("a trailing separator is added only when the bracket holds a list", () => {
   const pkg = toy({ list: listRule });
   assert.equal(run(pkg, list(["aaa", "bbb"], false), 4), "(\n  aaa,\n  bbb,\n)\n");

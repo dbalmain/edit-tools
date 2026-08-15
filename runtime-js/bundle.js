@@ -8,6 +8,7 @@
 class Refusal extends Error {}
 
 const PACKAGE_FORMAT = "et-doc-rules/1";
+const MAX_MACRO_DEPTH = 32;
 
 function validatePackageFormat(pkg) {
   if (pkg.format !== PACKAGE_FORMAT) {
@@ -15,6 +16,231 @@ function validatePackageFormat(pkg) {
       `unknown package format ${JSON.stringify(pkg.format)}; expected ${JSON.stringify(PACKAGE_FORMAT)}`,
     );
   }
+}
+
+const isObject = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+
+function macroIndex(value) {
+  if (!Number.isSafeInteger(value) || value < 0) {
+    throw new Refusal(`\`$\` hole index must be a non-negative integer, got ${JSON.stringify(value)}`);
+  }
+  return value;
+}
+
+function macroArity(value, holesAllowed) {
+  if (!Array.isArray(value)) return 0;
+  if (value[0] === "$") {
+    if (!holesAllowed) throw new Refusal("`$` hole is only valid inside a `defs` body");
+    if (value.length !== 2) {
+      throw new Refusal(`\`$\` hole takes 1 operand, got ${Math.max(value.length - 1, 0)}`);
+    }
+    return macroIndex(value[1]) + 1;
+  }
+  return value.reduce((arity, part) => Math.max(arity, macroArity(part, holesAllowed)), 0);
+}
+
+function useName(value) {
+  if (typeof value[1] !== "string") {
+    throw new Refusal("`use` requires a definition name as its first operand");
+  }
+  return value[1];
+}
+
+function validateUses(value, arities) {
+  if (!Array.isArray(value)) return;
+  if (value[0] === "use") {
+    const name = useName(value);
+    if (!arities.has(name)) throw new Refusal(`unknown definition \`${name}\``);
+    const expected = arities.get(name);
+    const actual = Math.max(value.length - 2, 0);
+    if (actual < expected) {
+      throw new Refusal(
+        `\`$\` hole ${expected - 1} in definition \`${name}\` is out of range for ${actual} arguments`,
+      );
+    }
+    if (actual > expected) {
+      throw new Refusal(`definition \`${name}\` expects ${expected} arguments, got ${actual}`);
+    }
+  }
+  value.forEach((part) => validateUses(part, arities));
+}
+
+function directUses(value, names) {
+  if (!Array.isArray(value)) return;
+  if (value[0] === "use" && typeof value[1] === "string") names.push(value[1]);
+  value.forEach((part) => directUses(part, names));
+}
+
+function validateMacroPath(name, defs, stack) {
+  const at = stack.indexOf(name);
+  if (at >= 0) {
+    throw new Refusal(`definition cycle: ${[...stack.slice(at), name].join(" -> ")}`);
+  }
+  if (stack.length >= MAX_MACRO_DEPTH) {
+    throw new Refusal(`definition nesting exceeds the maximum depth of ${MAX_MACRO_DEPTH}`);
+  }
+  stack.push(name);
+  const nested = [];
+  directUses(defs[name], nested);
+  nested.forEach((next) => validateMacroPath(next, defs, stack));
+  stack.pop();
+}
+
+function expandValue(value, defs, arities, stack, args) {
+  if (!Array.isArray(value)) return value;
+  if (value[0] === "$") {
+    const index = macroIndex(value[1]);
+    if (!args || index >= args.length) {
+      throw new Refusal(`\`$\` hole ${index} is out of range outside a definition expansion`);
+    }
+    return args[index];
+  }
+  if (value[0] === "use") {
+    const name = useName(value);
+    const expandedArgs = value.slice(2).map((arg) => expandValue(arg, defs, arities, stack, args));
+    const expected = arities.get(name);
+    if (expandedArgs.length !== expected) {
+      throw new Refusal(`definition \`${name}\` expects ${expected} arguments, got ${expandedArgs.length}`);
+    }
+    const at = stack.indexOf(name);
+    if (at >= 0) {
+      throw new Refusal(`definition cycle: ${[...stack.slice(at), name].join(" -> ")}`);
+    }
+    if (stack.length >= MAX_MACRO_DEPTH) {
+      throw new Refusal(`definition nesting exceeds the maximum depth of ${MAX_MACRO_DEPTH}`);
+    }
+    stack.push(name);
+    const expanded = expandValue(defs[name], defs, arities, stack, expandedArgs);
+    stack.pop();
+    return expanded;
+  }
+  return value.map((part) => expandValue(part, defs, arities, stack, args));
+}
+
+function literal(value) {
+  if (typeof value !== "string") {
+    throw new Refusal(`expected a string, got ${JSON.stringify(value)}`);
+  }
+}
+
+function count(value) {
+  if (!Number.isSafeInteger(value) || value < 0) {
+    throw new Refusal(`expected a non-negative integer, got ${JSON.stringify(value)}`);
+  }
+}
+
+function nodeTypes(value) {
+  if (!Array.isArray(value)) {
+    throw new Refusal(`expected a list of node types, got ${JSON.stringify(value)}`);
+  }
+  value.forEach(literal);
+}
+
+function validatePredicate(value) {
+  if (!Array.isArray(value)) {
+    throw new Refusal(`predicate must be an array, got ${JSON.stringify(value)}`);
+  }
+  if (value.length !== 3 || value[0] !== "count") {
+    throw new Refusal(`unknown predicate ${JSON.stringify(value)}`);
+  }
+  parseSelector(value[1]);
+  count(value[2]);
+}
+
+function validateExpr(value) {
+  if (!Array.isArray(value)) {
+    throw new Refusal(`expression must be an array, got ${JSON.stringify(value)}`);
+  }
+  if (value.length === 0) return;
+  const [op, ...rest] = value;
+  if (typeof op !== "string") {
+    throw new Refusal(`opcode must be a string, got ${JSON.stringify(op)}`);
+  }
+  const arity = (n) => {
+    if (rest.length !== n) throw new Refusal(`\`${op}\` takes ${n} operands, got ${rest.length}`);
+  };
+  switch (op) {
+    case "seq":
+    case "group":
+    case "indent":
+    case "paren":
+      rest.forEach(validateExpr);
+      return;
+    case "line":
+    case "soft":
+    case "hard":
+    case "sp":
+    case "verbatim":
+      arity(0);
+      return;
+    case "child":
+    case "autoparen":
+      arity(1);
+      parseSelector(rest[0]);
+      return;
+    case "tok":
+      arity(1);
+      literal(rest[0]);
+      return;
+    case "trail":
+      arity(2);
+      literal(rest[0]);
+      parseSelector(rest[1]);
+      return;
+    case "blank":
+      if (rest.length < 1 || rest.length > 2) {
+        throw new Refusal(`\`blank\` takes 1 or 2 operands, got ${rest.length}`);
+      }
+      count(rest[0]);
+      if (rest.length === 2) nodeTypes(rest[1]);
+      return;
+    case "each":
+    case "opt":
+      arity(2);
+      parseSelector(rest[0]);
+      validateExpr(rest[1]);
+      return;
+    case "flatten":
+      arity(2);
+      literal(rest[0]);
+      validateExpr(rest[1]);
+      return;
+    case "when":
+      arity(3);
+      validatePredicate(rest[0]);
+      validateExpr(rest[1]);
+      validateExpr(rest[2]);
+      return;
+    default:
+      throw new Refusal(`unknown opcode \`${op}\``);
+  }
+}
+
+function loadPackage(pkg) {
+  validatePackageFormat(pkg);
+  const defs = pkg.defs === undefined ? {} : pkg.defs;
+  if (!isObject(defs)) throw new Refusal("`defs` must be an object");
+  if (!isObject(pkg.rules)) throw new Refusal("`rules` must be an object");
+
+  const arities = new Map();
+  Object.entries(defs).forEach(([name, body]) => {
+    if (!Array.isArray(body)) throw new Refusal(`definition \`${name}\` body must be an array`);
+    arities.set(name, macroArity(body, true));
+  });
+  Object.values(pkg.rules).forEach((rule) => macroArity(rule, false));
+  [...Object.values(defs), ...Object.values(pkg.rules)].forEach((body) =>
+    validateUses(body, arities),
+  );
+  Object.keys(defs).forEach((name) => validateMacroPath(name, defs, []));
+
+  const rules = Object.fromEntries(
+    Object.entries(pkg.rules).map(([name, rule]) => {
+      const expanded = expandValue(rule, defs, arities, [], undefined);
+      validateExpr(expanded);
+      return [name, expanded];
+    }),
+  );
+  return { ...pkg, rules };
 }
 
 // ---------------------------------------------------------------- the Doc IR
@@ -560,15 +786,14 @@ function checkVerbatim(fmt, node) {
 
 class Formatter {
   constructor(pkg, source) {
-    validatePackageFormat(pkg);
-    this.pkg = pkg;
+    this.pkg = loadPackage(pkg);
     this.bytes = new TextEncoder().encode(source ?? "");
     this.decoder = new TextDecoder();
-    this.tokens = new Set(pkg.tokens ?? []);
-    this.comments = new Set(pkg.comments ?? []);
-    this.descend = new Set(pkg.descend ?? []);
-    this.optionalParens = new Set(pkg.optional_parens ?? []);
-    this.precedence = pkg.precedence ?? {};
+    this.tokens = new Set(this.pkg.tokens ?? []);
+    this.comments = new Set(this.pkg.comments ?? []);
+    this.descend = new Set(this.pkg.descend ?? []);
+    this.optionalParens = new Set(this.pkg.optional_parens ?? []);
+    this.precedence = this.pkg.precedence ?? {};
   }
 
   tightness(node) {
@@ -606,7 +831,7 @@ class Formatter {
 /** Format a corpus tree. Throws `Refusal` rather than guessing. */
 function format(tree, cols, pkg) {
   const fmt = new Formatter(pkg, tree.source);
-  const out = print(fmt.node(tree.root), cols, pkg.indent);
+  const out = print(fmt.node(tree.root), cols, fmt.pkg.indent);
   return `${out.replace(/\n+$/, "")}\n`;
 }
 
