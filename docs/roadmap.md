@@ -218,7 +218,7 @@ Deliberately **not** applied by the probe agent, which was right: a central
 change has to be re-decided against the whole roster anyway, and a precise
 description costs nothing to apply.
 
-## 8. The highlighter is 0% derisked — **next**
+## 8. The highlighter is 0% derisked — **now, pilot in flight**
 
 The project is named for two halves and only one exists. Everything built, and
 everything the fifteen-language exercise measures, is the formatter.
@@ -284,6 +284,22 @@ The 1 ms/keystroke budget was rejected as a package-format concern at all: there
 is no parser and trees are frozen, so designing for incrementality now is how
 this slice quietly becomes a parser project. That is a real fifth question, for
 later.
+
+### Pilot status
+
+**PRs 1–3 launched 2026-08-16** on `wt/hl-runtime`: the `et-highlight/1` loader,
+the Rust walker, and the JS walker, taken as one slice because Rust/JS **span
+identity** is the hard requirement and one agent holding both runtimes is how
+that gets held. PRs 4 and 5 wait for it.
+
+The slice carries an explicit **falsification gate**, and it is the reason PR 2
+exists rather than being folded into PR 4. The design bets that `parent` +
+`field` + `parent_field` + `ancestor` is enough context to colour Python. If the
+`python__chains` walk cannot express `filter` / `order_by` as `function` and
+`obj.attr`'s `attr` as `property` with those keys, **the bet has failed and that
+is a successful result** — stop, report the case, do not invent a key in the PR
+that found the hole. A design that names the experiment which would kill it is
+worth more than one that does not.
 
 ### Both open questions are now answered
 
