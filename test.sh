@@ -1,5 +1,6 @@
 #!/bin/sh
-# Both unit suites, then the harness's own checks, then the scorer.
+# Both unit suites, then the harness's own checks, then the scorer,
+# then the tree-interface probe (a hand-rolled JSON parser, no tree-sitter).
 #
 # check_gate3.py runs before the scorer on purpose: it establishes that gate 3
 # still accepts every reference formatter and still rejects destruction. A
@@ -15,3 +16,4 @@ cargo clippy --manifest-path rust/Cargo.toml --all-targets -- -D warnings
 node --test runtime-js/bundle.test.js
 ./harness/check_gate3.py
 ./harness/score.py .
+./harness/probe_tree_interface.py
