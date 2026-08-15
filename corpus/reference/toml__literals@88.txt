@@ -1,0 +1,13 @@
+basic = "quotes: \"; slash: \\; tab: \t; snowman: \u2603"
+literal = 'C:\Users\toml\config.toml'
+
+multiline_basic = """
+first line \
+  continues without its indentation
+second line with \n escaped newline text
+"""
+
+multiline_literal = '''
+first literal line
+  preserves indentation and backslashes: C:\temp\file
+'''

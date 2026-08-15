@@ -1,0 +1,24 @@
+title = "deployment"
+owners = [
+  "ops",
+  "platform",
+  "release",
+] # deployment contacts
+
+[database]
+host = "db.internal.example"
+ports = [5432, 6432]
+credentials = { user = "service", password_file = "/run/secrets/db" }
+
+[[workers]]
+name = "ingest"
+schedule = 2025-04-01T08:30:00Z
+tags = ["critical", "batch", "customer-facing"]
+
+[[workers]]
+# This worker intentionally uses a multi-line string.
+name = "reconcile"
+script = """
+reconcile --all \\
+  --dry-run
+"""
