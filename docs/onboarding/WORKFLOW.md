@@ -256,7 +256,7 @@ Mechanically that means:
 
 ### Size accounting
 
-Current: 10,196 B gzip = 8,080 runtime + 2,116 packages (python + json), against
+Current: 10,441 B gzip = 8,312 runtime + 2,129 packages (python + json), against
 a 20 KB budget.
 
 Fifteen packages will dominate a single total, and that would punish language

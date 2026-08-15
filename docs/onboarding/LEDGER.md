@@ -7,17 +7,19 @@ Three running records. The orchestrator writes all of them.
 Dave's rule: builders may edit `rust/` and `runtime-js/` freely; the reviewer
 judges after the fact and may recommend a freeze. Every edit lands here.
 
-| #   | Language | Agent | Change | Case made | Reviewer verdict | gzip Δ | Merged |
-| --- | -------- | ----- | ------ | --------- | ---------------- | ------ | ------ |
-|     |          |       |        |           |                  |        |        |
+| #   | Language | Agent     | Change                                                                       | Case made                                                                                                                                                                            | Reviewer verdict | gzip Δ | Merged     |
+| --- | -------- | --------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------- | ------ | ---------- |
+| 1   | (all)    | codex-Sol | `comment_gap` + `blank_cap` header fields; runtime reads them, not constants | Trailing-comment spacing (2) and the blank-line ceiling (2) were black's, hardcoded where no package could reach them. 7 of 16 roster languages use prettier, which wants 1 of each. | warranted        | +245 B | 2026-08-15 |
 
 **Freeze status:** open. _(A stage-D reviewer may recommend closing this. If it
 does, record the recommendation, the language that prompted it, and Dave's
 decision.)_
 
 Baseline at the start of the exercise: **10,196 B gzip = 8,080 runtime + 2,116
-packages** (python + json), against a 20 KB budget. After any runtime change
-merges, re-score every already-merged language before the next round launches.
+packages** (python + json), against a 20 KB budget. **Now 10,441 B** after row 1
+above — the first entry in this table, and a reminder that it is per-edit and
+must name a construct rather than a slice. After any runtime change merges,
+re-score every already-merged language before the next round launches.
 
 `score.py` now reports the per-language breakdown this table is filled in from —
 **python 1,983 B, json 353 B**, and "runtime + this language's own package" for
@@ -39,12 +41,13 @@ Every stage-B and stage-D review ends with a template delta. Applied deltas go
 here, so the templates have a history and a repeated complaint is visible as a
 pattern.
 
-| Date       | Template                              | Change                                                                                                                                                                                                                               | Prompted by                                                          |
-| ---------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------- |
-| 2026-08-15 | `WORKFLOW.md`                         | Manifest schema rewritten: `gate2` → `reference_width` (`"flag"`/`"fixed"`), `grammar_pin` → pinned PEP 508 `grammar` plus `grammar_module` and `grammar_symbol`, added `gate3_requires`, `transparent_wrappers`, `equivalent_kinds` | Stage 0                                                              |
-| 2026-08-15 | `corpus-brief.md`                     | Deliverable 3 no longer asks the builder to extend the tree generator; names `gen_trees.py --language` and `gen_reference.py --check`; adds the "never edit a shared file" list and the gate commands                                | Stage 0                                                              |
-| 2026-08-15 | `package-brief.md`, `review-brief.md` | `gate2 = "waive"` → `reference_width = "fixed"`                                                                                                                                                                                      | Stage 0 (name collided with score.py's gate 2, which is idempotence) |
-| 2026-08-15 | `WORKFLOW.md` (Launching)             | Strip the template's leading `---` before launching; anchor the branch rewrite; head-to-head worktree naming `lang-<name>-<agent>`                                                                                                   | R1 launch — opencode printed usage and exited 0, having run nothing  |
+| Date       | Template                              | Change                                                                                                                                                                                                                               | Prompted by                                                           |
+| ---------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
+| 2026-08-15 | `WORKFLOW.md`                         | Manifest schema rewritten: `gate2` → `reference_width` (`"flag"`/`"fixed"`), `grammar_pin` → pinned PEP 508 `grammar` plus `grammar_module` and `grammar_symbol`, added `gate3_requires`, `transparent_wrappers`, `equivalent_kinds` | Stage 0                                                               |
+| 2026-08-15 | `corpus-brief.md`                     | Deliverable 3 no longer asks the builder to extend the tree generator; names `gen_trees.py --language` and `gen_reference.py --check`; adds the "never edit a shared file" list and the gate commands                                | Stage 0                                                               |
+| 2026-08-15 | `package-brief.md`, `review-brief.md` | `gate2 = "waive"` → `reference_width = "fixed"`                                                                                                                                                                                      | Stage 0 (name collided with score.py's gate 2, which is idempotence)  |
+| 2026-08-15 | `WORKFLOW.md` (Launching)             | Strip the template's leading `---` before launching; anchor the branch rewrite; head-to-head worktree naming `lang-<name>-<agent>`                                                                                                   | R1 launch — opencode printed usage and exited 0, having run nothing   |
+| 2026-08-15 | `package-brief.md`                    | Set `comment_gap`/`blank_cap` from the reference's observed behaviour rather than defaulting; and report any _second_ runtime constant that turns out to be house style                                                              | Design review — two of black's habits were unreachable from a package |
 
 ## 3. Model scorecard
 

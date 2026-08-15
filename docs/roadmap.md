@@ -27,7 +27,7 @@ test is: _could a package have wanted it different, and is it safe to let one?_
 Style is safe; anything that can drop or reorder a token is not, and stays in
 the runtime where the invariant can see it.
 
-## 2. `Doc::forced()` is recomputed in Rust and cached in JS — **now**
+## 2. `Doc::forced()` is recomputed in Rust and cached in JS — **closed**
 
 `DESIGN.md` described this as idiom. It is a complexity difference: `forced()`
 walks its whole subtree on every call, from both `print` and `fits`, once per
@@ -40,6 +40,25 @@ realistic sizes, the correct outcome is to fix the sentence and change no code.
 The general lesson is the one worth keeping: the corpus is fifteen small files
 per language, so **no performance claim in this project is currently backed by a
 measurement.** "Good performance" is an untested goal.
+
+**Answered, and the half that was wrong is the useful half.**
+`harness/bench_break_propagation.py` re-runs it. Flat size was already linear in
+both runtimes and did not move (8,192 nodes: Rust 7.97 → 8.11 ms). **Depth** was
+the axis: at depth 56 Rust went 1.060 → 0.186 ms, from 1.8× slower than JS to
+2.7× faster.
+
+Two things to keep from it. First, the guess named the right defect and the
+wrong axis, which is exactly why the brief demanded measurement before the fix.
+Second, **both runtimes are still superlinear in depth**, because `fits` rescans
+— the fix removed Rust's extra penalty, not the shared one. That is now a
+measured number rather than an assumption, and it is the thing to watch if a
+deeply-nested real file ever gets slow.
+
+The fix is a printer-local prepass rather than a cached field on the `Doc` enum:
+a field can be left stale by direct variant construction, and a prepass over the
+finished tree cannot be forged. Worth remembering as a pattern — it is the same
+instinct as the linearity invariant, which is enforced by making the wrong thing
+unreachable rather than by discipline.
 
 ## 3. Packages are silently coupled to a grammar version — **later**
 
@@ -149,7 +168,7 @@ than-guess rule intact.
 The one architectural change is `Indent` carrying its own amount, which is worth
 doing on its own merits and should land as an isolated, byte-identical diff.
 
-## 7. Is the tree interface actually independent of tree-sitter? — **now**
+## 7. Is the tree interface actually independent of tree-sitter? — **closed, yes**
 
 The plan of record for Aven (no tree-sitter grammar, round 6) is to have its own
 parser emit a tree the runtime consumes. That rests on an untested assumption,
@@ -163,6 +182,41 @@ require byte-identical output against the committed tree-sitter path. The
 deliverable is the report — specifically, the list of things the runtime
 requires that a parser author would not guess, which is a specification that
 does not currently exist anywhere.
+
+**Answered: yes.** [tree-interface-probe.md](tree-interface-probe.md) has the
+evidence, and `./harness/probe_tree_interface.py` re-runs it. A hand-rolled
+parser produced byte-identical trees and byte-identical output through both
+unmodified runtimes and the unmodified JSON package. **No runtime change was
+required**, and the runtime names no tree-sitter concept — `named` is the
+package's `tokens` list, not tree-sitter's flag.
+
+Three things leak, two of them harmlessly: punctuation whose type is its own
+spelling, and whitespace as gaps rather than child nodes. Both are conventions a
+bespoke parser can simply honour. Two guesses in the brief were wrong — children
+need **not** tile their parent (gaps are exactly how whitespace is represented),
+and field names elsewhere are package vocabulary rather than a runtime
+requirement.
+
+The silent one is worth remembering when Aven arrives: **a parser that carries
+comments as trivia rather than as children loses them, and the runtime does not
+complain.** Gate 3 catches it; nothing earlier does.
+
+### What the probe found on its way past: `flatten` hardcodes three field names — **next**
+
+`flatten` walks `left`, then consumes `left` / `operator` / `right`. Those three
+strings are in `rust/src/eval.rs` and `runtime-js/bundle.js`, not in the
+package. A grammar that calls them `lhs` / `rhs` / `op` is refused, and **no
+package can fix it** — the probe demonstrated both halves.
+
+This is the same defect class as point 1: a language fact living in the runtime
+where no package can reach it. It is worth doing before thirteen more languages
+land on the opcode, and the fix is the same shape — the names belong in the
+package header next to `precedence`, which is already the home of the other
+`flatten` input.
+
+Deliberately **not** applied by the probe agent, which was right: a central
+change has to be re-decided against the whole roster anyway, and a precise
+description costs nothing to apply.
 
 ## 8. The highlighter is 0% derisked — **next**
 

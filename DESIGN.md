@@ -132,8 +132,9 @@ these". `comments` and `descend` drive comment attachment; `optional_parens` and
 default to 1 because prettier is the reference for most languages on the roster;
 black is the outlier, so Python asks for 2 explicitly. They are bounded counts,
 not strings, because packages may choose whitespace quantities but may not emit
-arbitrary text. `blank_cap` applies only inside runtime-owned comment attachment;
-the `blank` opcode's operand still governs gaps between items visible to a rule.
+arbitrary text. `blank_cap` applies only inside runtime-owned comment
+attachment; the `blank` opcode's operand still governs gaps between items
+visible to a rule.
 
 ### A rule, read end to end
 
@@ -310,8 +311,7 @@ parses the package into a typed `Expr` enum with `TryFrom<Value>`, so a
 malformed package fails at load with a message; the JS one interprets the arrays
 directly and caches break-propagation on each Doc node at construction, which
 Rust computes once from the finished Doc tree before printing. Same algorithm,
-different idiom, byte-identical output
-on 30/30 corpus runs.
+different idiom, byte-identical output on 30/30 corpus runs.
 
 ## What changed from the proposal, and why
 
@@ -383,7 +383,7 @@ Named precisely, because a limit you can name is cheaper than one you can't.
 [PASS] 3-nondestruction 30/30   meaning and comments preserved
 
 overflow lines     6
-size (gzip)        10196 B = 8080 runtime + 2116 packages
+size (gzip)        10441 B = 8312 runtime + 2129 packages
 reference agreement 24/30
   json         4/6   vs prettier 3.6.2  (its own overflow: 1)
     diverges on:  nested@88, nested@60

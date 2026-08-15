@@ -26,6 +26,19 @@ expression. The opcode set, selectors and predicates are documented in
 `DESIGN.md`; `packages/python.json` is the worked example and
 `packages/json.json` is the small one. Read both.
 
+**Set the header's comment-style fields from what you observed the reference
+do**, rather than leaving them to default. `comment_gap` is the spaces before a
+trailing comment and `blank_cap` is the ceiling on blank lines the runtime keeps
+next to a comment. Both default to **1**, which is prettier's answer; black
+writes **2** of each, which is why `packages/python.json` sets them explicitly.
+They were runtime constants until a review pointed out that no package could
+reach them, so if your reference disagrees with the default, that is now your
+problem to fix and not a divergence to report.
+
+If you find a **second** such constant — a piece of the runtime's output that is
+your reference's house style rather than a safety property — that is a finding
+worth more than a rule. Say so; do not work around it in the package.
+
 The same package file drives **both** runtimes. There is no per-runtime package.
 If Rust and JS disagree on any corpus file at any width, that is a bug in one of
 the runtimes and it is a hard failure — report it rather than working around it
