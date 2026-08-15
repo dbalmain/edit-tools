@@ -47,11 +47,11 @@ Repeated rule shapes can be named in `defs` and instantiated with `use`:
 }
 ```
 
-`["$", n]` is a positional hole for an arbitrary JSON value, so it can stand
-for a token, a selector or a whole expression. Both runtimes expand `use` on
-the raw JSON at package load, before checking the resulting expressions. The
-evaluator therefore knows nothing about macros: expansion can only produce the
-same eighteen opcodes it could already evaluate. Definitions may use other
+`["$", n]` is a positional hole for an arbitrary JSON value, so it can stand for
+a token, a selector or a whole expression. Both runtimes expand `use` on the raw
+JSON at package load, before checking the resulting expressions. The evaluator
+therefore knows nothing about macros: expansion can only produce the same
+eighteen opcodes it could already evaluate. Definitions may use other
 definitions, but cycles and nesting beyond 32 definitions are refused, as are
 unknown names, bad argument counts and holes outside a definition body.
 
@@ -68,10 +68,10 @@ unknown names, bad argument counts and holes outside a definition body.
 | `["sp"]`         | a space, never a break                                   |
 | `["blank", n]`   | up to `n` blank lines, as the source had them; see below |
 
-`["blank", n]` takes an optional third operand, a list of node types. A gap
-next to one of those types opens to exactly `n` — the cap is also a floor,
-but only there. `module` passes the definition types at 2, `block` the same
-list at 1, which is black's depth rule with no extra concept.
+`["blank", n]` takes an optional third operand, a list of node types. A gap next
+to one of those types opens to exactly `n` — the cap is also a floor, but only
+there. `module` passes the definition types at 2, `block` the same list at 1,
+which is black's depth rule with no extra concept.
 
 ### Children
 
@@ -96,10 +96,10 @@ Every opcode that emits a child **consumes** it. See _linearity_ below.
 | `["autoparen", sel]`         | `paren` applied to a child, if its type asks for it |
 
 Selectors pick a child: `"f:name"` (tree-sitter field), `"t:identifier"` (node
-type), `"named"` (any type not listed in the package's `tokens`), `"*"`.
-The one predicate is `["count", sel, n]`, which describes the node, not the
-cursor. I wrote two more while building this and deleted them: neither package
-ever needed anything but arity.
+type), `"named"` (any type not listed in the package's `tokens`), `"*"`. The one
+predicate is `["count", sel, n]`, which describes the node, not the cursor. I
+wrote two more while building this and deleted them: neither package ever needed
+anything but arity.
 
 ### The package header
 
@@ -157,21 +157,21 @@ The list, set and dict rules instantiate `bracketed_list` with different
 brackets; the tuple definition reuses it behind the one-item arity guard.
 `parameters` and `argument_list` share `parenthesized_arguments`, whose extra
 inner group is exactly black's rule: a call or a `def` splits its brackets first
-and its arguments only if it must, while a collection literal that splits at
-all splits one element per line. That the distinction is expressible as "one
-group or two" — rather than as a flag — is still the strongest evidence I have
-that the IR is at the right altitude. Writing five copies of the one-group
-expression was not evidence of anything, though; naming the shape keeps the IR
-fact visible without making a contributor diff near-duplicates to discover it.
+and its arguments only if it must, while a collection literal that splits at all
+splits one element per line. That the distinction is expressible as "one group
+or two" — rather than as a flag — is still the strongest evidence I have that
+the IR is at the right altitude. Writing five copies of the one-group expression
+was not evidence of anything, though; naming the shape keeps the IR fact visible
+without making a contributor diff near-duplicates to discover it.
 
-Macros are deliberately not a size optimisation. Measured as compact JSON,
-the Python package moved from 7,994 to 7,409 raw bytes (down 7%), but from 1,603
-to 1,693 gzipped bytes (up 6%, or 90 bytes, using the scorer's compressor).
-gzip's LZ77 window had already deduplicated the repeated expressions; `defs`
-adds a name layer it must also encode. Across the scored JavaScript runtime and
-both packages, the change is larger: 8,272 to 9,988 gzipped bytes (up 21%, or
-1,716 bytes). The packages account for 93 of those bytes; the other 1,623 are
-the JavaScript load-time expander and operand validator that keep its refusals
+Macros are deliberately not a size optimisation. Measured as compact JSON, the
+Python package moved from 7,994 to 7,409 raw bytes (down 7%), but from 1,603 to
+1,693 gzipped bytes (up 6%, or 90 bytes, using the scorer's compressor). gzip's
+LZ77 window had already deduplicated the repeated expressions; `defs` adds a
+name layer it must also encode. Across the scored JavaScript runtime and both
+packages, the change is larger: 8,272 to 9,988 gzipped bytes (up 21%, or 1,716
+bytes). The packages account for 93 of those bytes; the other 1,623 are the
+JavaScript load-time expander and operand validator that keep its refusals
 aligned with Rust's eager parser. The compressed-size cost buys both that
 agreement and a package that states its recurring language shapes directly.
 
@@ -219,9 +219,9 @@ because the language cannot express anything else**:
   under the cursor; `child` recurses into a real child; `verbatim` emits the
   node's own source, but only after walking the subtree and refusing unless
   every range sits inside its parent, siblings are ordered and disjoint, and
-  every leaf's `text` equals `source[start..end]`. Stale offsets — the one
-  way this opcode can emit bytes the tree does not justify — are a refusal,
-  not a silent rewrite. Whitespace opcodes emit no tokens.
+  every leaf's `text` equals `source[start..end]`. Stale offsets — the one way
+  this opcode can emit bytes the tree does not justify — are a refusal, not a
+  silent rewrite. Whitespace opcodes emit no tokens.
 - A rule may only ever consume the child **under the cursor**. Skipping,
   revisiting and reordering are unreachable, not merely discouraged.
 - At the end of a rule the cursor must be at the end of the children, or the
@@ -348,9 +348,9 @@ Named precisely, because a limit you can name is cheaper than one you can't.
   preserved and capped: two assignments with no blank between them stay packed.
   A comment sitting immediately before a `def` gets the blanks before the
   comment, because that is where the gap already lives. A blank the source put
-  *between* the comment and the `def` is not moved — that would need the
-  attachment pass to know about definitions, which I judged more mechanism
-  than the case is worth.
+  _between_ the comment and the `def` is not moved — that would need the
+  attachment pass to know about definitions, which I judged more mechanism than
+  the case is worth.
 
 ## Scores, as measured
 
@@ -361,12 +361,12 @@ Named precisely, because a limit you can name is cheaper than one you can't.
 [PASS] 3-nondestruction 30/30   meaning and comments preserved
 
 overflow lines     6            (black's own, at 88: 0)
-size (gzip)        8272 B = 6249 runtime + 2023 packages
+size (gzip)        9988 B = 7872 runtime + 2116 packages
 black agreement    11/12        (strings.py, on quote style alone)
 ```
 
-Against the 25 KB budget that is 8.3 KB, and I will repeat the proposal's claim:
-**size is not the binding constraint** for any design in this space. Every
-serious entry will fit. The axis that matters is whether the rules stay
+Against the 25 KB budget that is 10.0 KB, and I will repeat the proposal's
+claim: **size is not the binding constraint** for any design in this space.
+Every serious entry will fit. The axis that matters is whether the rules stay
 readable, and the honest test of that is whether you could have written
 `packages/python.json` from this document.
