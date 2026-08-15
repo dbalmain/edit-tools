@@ -127,6 +127,19 @@ ordinary:
 than broken-if-it-does-not-fit. No printer change, no new opcode class, and the
 predicate is as inspectable as `count`.
 
+**Deferred, deliberately, as of 2026-08-16.** Cheap is not the same as worth
+doing. Adding this predicate to match prettier on `matrix` buys **nothing
+measurable** — `matrix` and `deep` share a file and we currently match prettier
+on `deep`, so agreement stays 4/6 either way. And two languages cannot tell
+"this reads better everywhere" from "this suits JSON". See
+[house-style.md](house-style.md): the trigger is a corpus spanning YAML, CSS,
+TOML and Go, at which point the rule can be measured across every language at
+once rather than argued from one file.
+
+Pile A remains the right _classification_ — these limits are cheap to lift when
+we want them lifted. What changed is the assumption that cheap therefore means
+now.
+
 ### Pile B — `fill`
 
 A printer primitive, well understood, linear cost, and the thing prettier uses
@@ -227,20 +240,31 @@ _Raised 2026-08-16 by the house-style decision, not by the review._
 across languages, because the product is a snippet in a box rather than a CI
 formatter. That is a goals-level change and the harness cannot express it.
 
+**The common case is not a house rule — it is declining to chase an edge case.**
+`house-style.md`'s operative instruction is that a package should not grow
+special cases to match a reference's quirks, because every rule costs bytes, a
+concept, and a place for a bug. That decision produces divergence, and the
+divergence is correct.
+
 Today the scorer reports one agreement number and `review-brief.md` sets a 70%
 floor with an instruction to be suspicious of a package that beats its
-reference. So a package that follows the house style **scores worse for being
-right**, and a stage-D reviewer following the brief would file the house rule as
-a defect and drive it back toward the reference. Nothing records why a
-divergence was intended, so the next agent re-litigates it.
+reference. **So the scoreboard actively pressures a stage-C builder toward
+exactly the edge-case rules we are telling them not to write**, a stage-D
+reviewer following the brief would file that restraint as a defect, and nothing
+records the reasoning, so the next agent re-litigates it.
 
-Needed: intentional divergence declared per language with a reason, reported
-separately by `score.py`, with the 70% floor applying to unexplained divergence
-only. Until then the JSON numbers are provisional, and nobody should drive them
-up by removing house style.
+Needed: divergence declared per language with a reason, reported separately by
+`score.py`, with the 70% floor applying to unexplained divergence only — plus a
+staleness check, so a declaration that has quietly become true fails loudly
+rather than rotting into a suppression list.
 
-This is a central change, so it belongs on `main` before round 2 opens — every
-language after this one will have house rules.
+**"Not worth the bytes" must be a first-class, respectable reason there.** It
+will be the most common one.
+
+This is a central change and it belongs on `main` before round 2 opens — not
+because every language will have house rules (they will not; the container rule
+is deferred) but because every language will have places where matching the
+reference costs more than it is worth, and there is currently nowhere to say so.
 
 ## 8. The highlighter is 0% derisked — **now, pilot in flight**
 

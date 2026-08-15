@@ -61,6 +61,26 @@ in the package.
 
 Plus, always: **Rust and JS byte-identical on every file at every width.**
 
+### Do not over-weight edge cases
+
+Read [`docs/house-style.md`](../../house-style.md) before you start closing
+divergences. The short version, because it cuts against what the scoreboard
+rewards:
+
+**A rule that fires on one construct in one corpus file is a bad trade, even
+when it buys a point of agreement.** Every rule costs bytes, costs a concept the
+next reader must hold, and costs a place for a bug to live. Small packages are
+this project's actual differentiator; agreement is only a proxy for readability.
+
+So gate 4's 70% floor is a floor, not a target. Prefer the general rule that is
+right most of the time over the specific rule that is right always. If you find
+yourself encoding a reference formatter's one-off behaviour faithfully, stop and
+ask what else the rule buys — and if the answer is "one file", write it up as a
+divergence you **chose** instead.
+
+A divergence you chose and argued is a finding. A divergence you did not notice
+is a bug. Say which.
+
 ### Classifying a divergence
 
 Each divergence goes in the report as exactly one of:

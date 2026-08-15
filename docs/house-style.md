@@ -1,8 +1,8 @@
 # House style: what we optimise for when we differ
 
-Stated by Dave on 2026-08-16. This is a **goals-level** document: it changes
-what a stage-C package should do, and it changes what the scorer should count as
-a failure.
+Stated by Dave on 2026-08-16. This is a **goals-level** document. It changes
+what a stage-C package should spend its complexity on, and what the scorer
+should count as a failure.
 
 ## The product this is for
 
@@ -11,149 +11,116 @@ looking at a snippet in a box.
 
 It is **not** a drop-in replacement for the standard formatter a project runs in
 CI, and it is not a replacement for the formatter in your editor. Those tools
-are judged by whether they leave a clean diff against what the team already
-agreed. We are judged by whether the thing in the box is readable.
-
-That difference licenses everything below.
+are judged on whether they leave a clean diff against what a team already
+agreed. We are judged on whether the thing in the box reads well.
 
 ## Matching the reference is a means, not the end
 
 We measure agreement with black, prettier, taplo and the rest because a
 canonical formatter is a **cheap, honest, external standard of readability**
-that we did not get to invent. A high agreement score means we are producing
-something a practitioner would recognise as well-formatted. That is worth a lot,
-and it stays the default.
+that we did not get to invent. High agreement means we are producing something a
+practitioner would recognise as well-formatted. That stays the default, and it
+is right far more often than not.
 
-But when we differ, **the tie-break is readability, not fidelity** — and after
-readability, **consistency across languages**.
+But when we differ, the tie-break is **readability first, fidelity second** —
+and after readability, **consistency across languages**. If keeping the runtime
+small means JavaScript comes out looking a bit more like Kotlin than a JS
+developer expects, that is a good outcome. A person editing a snippet benefits
+more from one predictable layout discipline across every language than from
+fifteen faithful reproductions of fifteen communities' historical arguments.
 
-If keeping the runtime small means JavaScript comes out looking a bit more like
-Kotlin than a JS developer expects, that is a **good** outcome. A person editing
-a snippet in a text box benefits more from one predictable layout discipline
-across every language than from fifteen faithful reproductions of fifteen
-communities' historical arguments.
+## The operative rule: do not over-weight edge cases
 
-This inverts the usual instinct. A divergence is not automatically a defect to
-be driven to zero. Some divergences are the design working.
+This is the part that changes day-to-day decisions.
 
-## The first house rule: containers do not share a line
+**A package should not grow special cases to chase a reference formatter's
+quirks.** Every rule costs bytes, costs a concept the next reader has to hold,
+and costs a place for a bug to live. A rule that fires on one construct in one
+corpus file is a bad trade even when it buys a point of agreement.
 
-**Never put a data structure on one line with another data structure inside
-it.** If a container has a container among its children, it breaks.
+Small packages are this project's actual differentiator — that is the whole
+argument in `design.md`'s size budget. Agreement is a proxy for readability;
+package economy is a goal in itself. When they conflict, prefer the general rule
+that is right most of the time over the specific rule that is right always.
 
-The candidate exception, deliberately narrow: **an object whose only container
-children are arrays of scalars may stay flat** —
-`{"one": [1, 2, 3], "two": [8, 3]}`. Dave's stated position is that he would be
-happy to drop even this and break those too, so treat the exception as the thing
-to remove first if it ever causes trouble, never as something to widen.
+The failure mode to watch for is a stage-C builder discovering a reference's
+one-off behaviour and encoding it faithfully, because the scoreboard rewards
+that and nothing currently pushes back. **The 70% agreement floor actively
+pressures builders toward exactly the edge-case rules this document is telling
+them not to write.** That tension is real and it is why the scorer needs the
+change described below.
 
-### What that does to the JSON corpus
+## Candidate rules, deliberately not implemented yet
 
-`nested.json` is the whole picture, and every container in it was classified to
-produce this.
+These are readability opinions worth testing, **not decisions**. They are
+recorded so they are not lost and not re-derived, and deferred because the
+evidence to evaluate them does not exist yet.
 
-Prettier's actual rule — confirmed against its output, not assumed — is narrower
-than ours in one way and wider in another. It applies to **arrays only**, needs
-**at least two elements**, and needs **every element** to be a multi-element
-container. Objects are never broken by kind, only by width.
+### Containers do not share a line
 
-| Container                                            | Prettier  | House rule           |
-| ---------------------------------------------------- | --------- | -------------------- |
-| `["primary", "us-east"]` — all scalars               | flat      | flat                 |
-| `{ "alpha": "^1.0.0", … }` — all scalars             | flat      | flat                 |
-| `[[1,2,3], [4,5,6], [7,8,9]]` — all arrays, 46 chars | **break** | **break**            |
-| `[{host…}, {host…}]` — all objects                   | break     | break                |
-| `{ "host": …, "tags": [...] }` — holds one array     | flat      | flat _via exception_ |
-| `{ "a": { "b": { "c": … } } }` — objects in objects  | **flat**  | **break**            |
+The idea: never put a data structure on one line with another data structure
+inside it. Possibly with a narrow exception for an object whose only container
+children are arrays of scalars — `{"one": [1, 2, 3], "two": [8, 3]}`.
 
-So with the exception in place, **the only place the house rule disagrees with
-prettier on this corpus is the `deep` chain** — and that is prettier at its
-least readable, five levels of nested object on one line:
+**Why it is deferred.** It was going to be implemented immediately, on the
+strength of an argument that it fixes `matrix` in `corpus/src/json/nested.json`
+and therefore improves the score. **That argument was wrong.** `matrix` and
+`deep` are in the same file, and we currently match prettier on `deep` byte for
+byte. The rule trades one divergence for another inside one file, so agreement
+stays at 4/6 and the change buys nothing measurable today.
 
-```json
-  "deep": {
-    "a": { "b": { "c": { "d": { "e": ["leaf value one", "leaf value two"] } } } }
-  },
-```
+Two things worth keeping from that:
 
-against the house rule's:
+- **Scoring is per file, not per construct.** A rule that is right in every
+  individual case can register as zero improvement, or as a regression, purely
+  because of which file the affected constructs share. Never argue for a layout
+  rule from a score delta without checking what else lives in the file.
+- **Two languages is not enough evidence to change a layout rule for fifteen.**
+  JSON and Python is a sample that cannot distinguish "this reads better
+  everywhere" from "this happens to suit JSON".
 
-```json
-  "deep": {
-    "a": {
-      "b": {
-        "c": {
-          "d": { "e": ["leaf value one", "leaf value two"] }
-        }
-      }
-    }
-  },
-```
+**The trigger to revisit:** a corpus spanning enough languages to actually test
+it — YAML, CSS, TOML and Go at minimum, since they are container-heavy and use
+three different references between them. At that point the question is
+answerable with evidence rather than taste: implement it behind the intentional-
+divergence machinery, measure the cost across every language at once, and keep
+or drop it on the numbers.
 
-### It does not improve the score, and that is the point
+Cost when it is time: one predicate. `roadmap.md` point 5 calls this "pile A" —
+a static test on the children needing no printer change and no layout
+backtracking. Prettier's own rule is the same predicate with a different
+quantifier (`all children are containers`, where this would be `any`), which is
+itself a useful datum: the reference already thinks in this shape.
 
-An earlier draft of this document claimed the house rule lifts JSON from 4/6 to
-5/6 because it fixes `matrix`. **That was wrong**, and the mistake is
-instructive enough to leave recorded.
+## What the scorer has to learn
 
-The rule does fix `matrix`. But `matrix` and `deep` are **in the same file**,
-and we currently match prettier on `deep` byte for byte. Adopting the house rule
-trades one divergence for another inside `nested.json`, so the file still
-differs at both widths and the score stays **4/6**.
+Under this document some divergences are **deliberate** — either a house
+readability rule, or, far more often, a decision that matching the reference is
+not worth the package complexity. The harness cannot say either.
 
-Scoring is per file, not per construct. A readability rule that is right in
-every individual case can therefore show up as **zero improvement**, or as a
-regression, depending only on which file the affected constructs happen to
-share.
+Today `score.py` reports one agreement number and `review-brief.md` sets a 70%
+floor. So a package that correctly declines to chase an edge case **scores worse
+for being right**, a stage-D reviewer would file that restraint as a defect, and
+nothing records the reasoning, so the next agent re-litigates it.
 
-This is the strongest argument for doing roadmap point 10 first. Without a way
-to declare a divergence intentional, the house rule looks like work that
-achieved nothing, and the very next agent to read the scoreboard has a
-documented reason to revert it.
+Needed: divergence declared per language with a reason, reported separately from
+unexplained divergence, with the floor applying to the unexplained kind only —
+and a staleness check, so a declaration that has quietly become true fails
+loudly instead of rotting into a suppression list. That is `roadmap.md` point
+10, in flight.
 
-### Cost
-
-One predicate. `docs/roadmap.md` point 5 called this "pile A" — a static test on
-the children with a static answer, needing no printer change and no layout
-backtracking. The house rule is `any child is a container`, where prettier's is
-`all children are containers`, so it is the same predicate with a different
-quantifier.
-
-## Consequences for the scorer, which are not yet built
-
-This is the part that needs work before round 2, because it changes a merge bar
-that thirteen more languages will be judged against.
-
-Today `score.py` reports reference agreement as a single number, and
-`review-brief.md` sets a **70% floor** with the instruction to be "suspicious of
-a package that beats the reference". Under this document, some divergences are
-**intentional**, and the current machinery cannot tell them from mistakes:
-
-- The scorer counts an intentional divergence as a failure, so a package gets
-  worse the more it follows the house style.
-- A stage-D reviewer, following the brief, would file the house rule as a defect
-  and "fix" it back toward the reference.
-- Nothing records _why_ a divergence is intended, so the next agent re-litigates
-  it.
-
-**What is needed:** intentional divergence must become first-class — declared
-per language, with a reason, and reported by the scorer separately from
-unexplained divergence. The 70% floor should then apply to the unexplained kind
-only.
-
-Until that exists, treat the JSON numbers as provisional and do not let anyone
-drive them up by removing house style.
+**"Not worth the bytes" must be a first-class, respectable reason there.** It is
+the most common one this document will generate.
 
 ## How to apply this at stage C
 
-- **Default to the reference.** It is right far more often than not, and
-  agreement is still the primary signal.
-- **When you diverge, say which rule you are following and why it reads
-  better.** A divergence with an argument is a finding; a divergence without one
-  is a bug.
+- **Default to the reference.** It is right far more often than not.
+- **Weigh every divergence-closing rule against its cost.** Ask what else the
+  rule buys. One construct in one file is not enough.
 - **Prefer the rule that generalises across languages** over the one that
-  matches this language's reference most exactly. Every language-specific
-  special case is a byte in the runtime and a surprise for a reader.
-- **Never trade away a safety property for readability.** The linearity
-  invariant, refusal-rather-than-guess, and non-destruction are not style. This
-  document is about layout only.
+  matches this language's reference most exactly.
+- **A divergence you chose is a finding; a divergence you did not notice is a
+  bug.** Say which one it is.
+- **Never trade away a safety property.** The linearity invariant,
+  refusal-rather-than-guess, and non-destruction are not style. This document is
+  about layout only.
