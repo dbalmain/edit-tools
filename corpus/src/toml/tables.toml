@@ -1,0 +1,25 @@
+# Table headers: the several legal spellings of nested tables. `[a.b]` and `[a]` + `[b]`
+# mean the same thing; a formatter must lay each out without collapsing one into the other.
+
+[a]
+x = 1
+
+[a.b]
+y = 2
+
+[outer.inner.deep]
+value = "reached by a dotted header"
+
+[outer]
+top = true
+
+[outer.inner]
+middle = true
+
+[separate]
+[separate.child]
+[separate.child.grandchild]
+leaf = 0
+
+[deeply.nested.header.chain.with.many.segments]
+reached = "the end"

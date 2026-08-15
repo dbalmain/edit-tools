@@ -1,0 +1,25 @@
+# Blank lines and vertical spacing: the presence of a blank line between pairs and
+# before a table header is significant grouping the formatter must keep. taplo
+# preserves up to two blank lines and collapses longer runs to two; the runs here
+# are the input's, not noise.
+
+title = "spacing"
+
+first = 1
+
+
+second = 2
+
+[section]
+
+alpha = 1
+
+
+beta = 2
+
+
+
+gamma = 3
+
+[section.more]
+only = true

@@ -1,0 +1,34 @@
+# TOML. Schema: docs/onboarding/WORKFLOW.md, "Stage 0".
+name = "toml"
+extensions = [".toml"]
+
+grammar = "tree-sitter-toml==0.7.0"
+grammar_module = "tree_sitter_toml"
+grammar_symbol = "language"
+
+# taplo reads `.taplo.toml` / `taplo.toml` from the filesystem if it finds one,
+# even for stdin input, and the config it finds changes the output. `--no-auto-config`
+# makes the committed reference output depend only on the input and the width, so
+# it is reproducible on another machine. The width knob is `-o column_width=N`,
+# not `{width}` in a `--column-width` flag. Both were established by running the
+# tool, not by reading `--help`.
+reference = "nix run nixpkgs#taplo -- fmt --no-auto-config -o column_width={width} --stdin-filepath x.toml -"
+reference_version = "taplo 0.10.0"
+reference_width = "flag"
+
+# 88 and 60 both honoured: a flat array that fits at 88 breaks one-per-line at 60.
+widths = [88, 60]
+
+# No semantic checker stronger than the generic named-node comparison. `tomllib`
+# round-trips the *value* but normalises `1_000` -> 1000, `[a.b]` -> `[a][b]`,
+# and compares `nan != nan`, so it is weaker than the generic tree comparison in
+# exactly the places a formatter could hide a token rewrite. The generic default
+# already catches key reordering and every spelling-preserving change; taplo
+# preserves spelling, so it passes as-is.
+gate3 = "default"
+
+# Both empty to start: add a kind only when the gate rejects correct output and
+# names it. taplo moves no parentheses and renames no nodes, so nothing is
+# transparent or equivalent yet.
+transparent_wrappers = []
+equivalent_kinds = []

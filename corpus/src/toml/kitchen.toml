@@ -1,0 +1,30 @@
+# A small project manifest exercising tables, arrays, inline tables, dotted keys
+# and comments together. The one file allowed to be messy.
+
+[package]
+name = "example"
+version = "0.1.0"
+description = "An example project for exercising the formatter on many constructs at once"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }  # derive is the important bit
+tokio = { version = "1", features = ["full"] }
+thiserror = "1.0"
+
+[features]
+default = ["std", "alloc"]
+std = []
+alloc = ["dep:libc"]
+
+[[bin]]
+name = "example"
+path = "src/main.rs"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+debug = false
+
+# A dotted key that belongs to the profile.release table.
+profile.release.panic = "abort"

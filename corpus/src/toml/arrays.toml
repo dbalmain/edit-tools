@@ -1,0 +1,25 @@
+# Arrays in their several shapes: empty, nested, heterogeneous, trailing-comma, and
+# already-multiline. The formatter must decide single-line vs one-per-line for each
+# independently, and must not invent or drop a trailing comma on a flat array.
+
+empty = []
+
+heterogeneous = [1, "two", 3.0, true, 1979-05-27]
+
+matrix = [[1, 2], [3, 4], [5, 6], [7, 8], [9, 10], [11, 12]]
+
+trailing_comma = [
+    1,
+    2,
+    3,
+]
+
+multiline = [
+    "first",
+    "second",
+    "third",
+]
+
+inline_tables = [{ a = 1 }, { a = 2 }, { a = 3 }]
+
+arrays_of_arrays = [[[1], [2]], [[3], [4]], [[5], [6]]]

@@ -1,0 +1,20 @@
+# Containers inside containers: tables in tables, arrays of inline tables, arrays of
+# arrays. Deep enough that the narrow width must break the innermost levels first.
+
+[build]
+targets = [
+    { name = "linux", arch = "x86_64", features = ["default", "serde", "async"] },
+    { name = "macos", arch = "arm64", features = ["default", "tls", "async"] },
+    { name = "windows", arch = "x86_64", features = ["default", "win32", "unicode"] },
+]
+
+[build.matrix]
+dimensions = [[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12], [13, 14, 15], [16, 17, 18]]
+
+[build.matrix.servers]
+primary = { host = "db.internal", port = 5432, replicas = ["replica-a", "replica-b"] }
+standby = { host = "db.standby", port = 5432, replicas = ["replica-c", "replica-d"] }
+
+[build.matrix.servers.health]
+endpoints = [["/health", "/ready"], ["/live", "/metrics"], ["/status", "/version"]]
+timeouts = [[1, 2], [3, 4], [5, 6], [7, 8], [9, 10]]
