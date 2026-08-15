@@ -525,6 +525,26 @@ mod tests {
         format(&tree, pkg, width)
     }
 
+    fn comments_pkg(comment_gap: Option<usize>, blank_cap: Option<usize>) -> Package {
+        let mut raw = json!({
+            "format": "et-doc-rules/1",
+            "indent": 2,
+            "comments": ["comment"],
+            "rules": { "file": ["each", "named", ["seq"]] },
+        });
+        if let Some(value) = comment_gap {
+            raw["comment_gap"] = json!(value);
+        }
+        if let Some(value) = blank_cap {
+            raw["blank_cap"] = json!(value);
+        }
+        serde_json::from_value(raw).expect("comments package parses")
+    }
+
+    fn commented_file(children: serde_json::Value, end: usize) -> serde_json::Value {
+        json!({ "type": "file", "start": 0, "end": end, "children": children })
+    }
+
     fn span(kind: &str, start: usize, end: usize, text: &str) -> serde_json::Value {
         json!({ "type": kind, "start": start, "end": end, "text": text })
     }
@@ -602,6 +622,99 @@ mod tests {
         let pkg = toy(json!({ "list": ["seq", ["tok", "["], ["each", "*", ["seq"]]] }));
         let err = run(&pkg, list(&["a"], false), 80).expect_err("must refuse");
         assert!(err.0.contains("the token `[`"), "{}", err.0);
+    }
+
+    #[test]
+    fn comment_fields_default_to_one() {
+        let source = "x# one\n\n\n# two";
+        let root = commented_file(
+            json!([
+                { "type": "name", "start": 0, "end": 1, "text": "x" },
+                { "type": "comment", "start": 1, "end": 6, "text": "# one" },
+                { "type": "comment", "start": 9, "end": 14, "text": "# two" },
+            ]),
+            14,
+        );
+        assert_eq!(
+            run_on(&comments_pkg(None, None), source, root, 80).expect("ok"),
+            "x # one\n\n# two\n"
+        );
+    }
+
+    #[test]
+    fn comment_gap_controls_trailing_comment_spacing() {
+        let source = "x# c";
+        let root = commented_file(
+            json!([
+                { "type": "name", "start": 0, "end": 1, "text": "x" },
+                { "type": "comment", "start": 1, "end": 4, "text": "# c" },
+            ]),
+            4,
+        );
+        assert_eq!(
+            run_on(&comments_pkg(Some(4), None), source, root, 80).expect("ok"),
+            "x    # c\n"
+        );
+    }
+
+    #[test]
+    fn blank_cap_limits_blank_lines_next_to_a_comment() {
+        let source = "x\n\n\n\n\n# c";
+        let root = commented_file(
+            json!([
+                { "type": "name", "start": 0, "end": 1, "text": "x" },
+                { "type": "comment", "start": 6, "end": 9, "text": "# c" },
+            ]),
+            9,
+        );
+        assert_eq!(
+            run_on(&comments_pkg(None, Some(3)), source, root, 80).expect("ok"),
+            "x\n\n\n\n# c\n"
+        );
+    }
+
+    #[test]
+    fn both_runtimes_refuse_the_same_out_of_range_comment_gap() {
+        let pkg_json = json!({
+            "format": "et-doc-rules/1",
+            "indent": 2,
+            "comment_gap": 9,
+            "rules": { "file": ["each", "*", ["seq"]] },
+        });
+        let rust_err = serde_json::from_value::<Package>(pkg_json.clone())
+            .err()
+            .expect("rust must refuse")
+            .to_string();
+        assert!(
+            rust_err.contains("`comment_gap` is 9; the most allowed is 8"),
+            "rust: {rust_err}"
+        );
+
+        let bundle = concat!(env!("CARGO_MANIFEST_DIR"), "/../runtime-js/bundle.js");
+        let script = format!(
+            r#"
+const {{ format }} = require({bundle:?});
+const tree = {{ language: "toy", source: "", root: {{ type: "file", start: 0, end: 0 }} }};
+try {{
+  format(tree, 80, {pkg});
+  console.error("js accepted an out-of-range comment gap");
+  process.exit(2);
+}} catch (e) {{
+  if (!/`comment_gap` is 9; the most allowed is 8/.test(e.message)) {{
+    console.error(e.message);
+    process.exit(3);
+  }}
+}}
+"#,
+            bundle = bundle,
+            pkg = pkg_json,
+        );
+        let status = std::process::Command::new("node")
+            .arg("-e")
+            .arg(script)
+            .status()
+            .expect("spawn node");
+        assert!(status.success(), "js runtime disagreed (exit {status})");
     }
 
     #[test]

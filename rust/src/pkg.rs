@@ -108,7 +108,9 @@ impl TryFrom<RawPackage> for Package {
             ("blank_cap", raw.blank_cap),
         ] {
             if value > MAX_GAP {
-                return Err(format!("`{name}` is {value}; the most allowed is {MAX_GAP}"));
+                return Err(format!(
+                    "`{name}` is {value}; the most allowed is {MAX_GAP}"
+                ));
             }
         }
         let rules = expand_rules(&raw.defs, raw.rules)?
