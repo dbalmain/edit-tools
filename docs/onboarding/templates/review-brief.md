@@ -32,7 +32,8 @@ Check, in roughly this order of importance:
 5. **Is `gate3` right for this language?** If the builder took the default when
    a real semantic checker was available, say so. If it declared an override, is
    the override actually stronger?
-6. **Is `gate2 = "waive"` honest** where used — does the reference genuinely not
+6. **Is `reference_width = "fixed"` honest** where used — does the reference
+   genuinely not
    honour a width, or did the builder waive a gate it found inconvenient?
 7. **What did the builder change outside `corpus/` and `harness/languages/`?**
    Every such edit needs a reason. Edits to `rust/` or `runtime-js/` at stage A

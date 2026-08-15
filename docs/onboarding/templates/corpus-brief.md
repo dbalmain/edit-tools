@@ -35,23 +35,63 @@ will later be measured against.
 
 ### 1. `harness/languages/{{LANG}}.toml`
 
-The manifest. Schema is in `WORKFLOW.md`. Fields you must establish rather than
-guess:
+The manifest. The full annotated schema is in `WORKFLOW.md`, under "Stage 0";
+`harness/languages/python.toml` and `json.toml` are the worked examples and
+carry the reasoning for every field they set. Every field is validated on load,
+so a typo is a one-line error naming the file and the field, not a traceback.
 
-- `grammar` — the tree-sitter grammar package. The orchestrator's guess is
-  `{{GRAMMAR}}`; **verify it, and correct it if wrong.** Pin the version.
-- `reference` — the exact command that runs the canonical formatter, and
-  `reference_version` — the version string you actually observed. Nothing is
-  installed globally on this machine; use the pinned-runner pattern
-  (`npx --yes pkg@ver`, `uvx pkg==ver`, `nix run nixpkgs#pkg`) that the python
-  manifest already demonstrates. Record the command that worked, not the one you
-  hoped would.
-- `widths` — `{{WIDTHS}}`. If the reference formatter has no width setting, or
-  ignores it, **say so and set `gate2 = "waive"`** rather than inventing a width
-  it does not honour.
+Fields you must establish rather than guess:
+
+- `grammar` — a **pinned** PEP 508 requirement, e.g.
+  `"tree-sitter-{{LANG}}==0.7.0"`. The orchestrator's guess at the distribution
+  is `{{GRAMMAR}}`; **verify it, and correct it if wrong.** An unpinned grammar
+  is rejected: the committed trees are ground truth and a silent grammar bump
+  rewrites them.
+- `grammar_module` — the **importable module name**, which is a separate fact
+  from the distribution name and is not always the hyphen-to-underscore swap.
+  Import it and check.
+- `grammar_symbol` — the function on that module returning the language.
+  Defaults to `"language"` and that is usually right, but not always:
+  `tree_sitter_typescript` exposes `language_typescript()` and `language_tsx()`,
+  `tree_sitter_xml` exposes `language_xml()` and `language_dtd()`. If you get it
+  wrong the loader tells you which names the module actually exports.
+- `reference` — the exact shell command that runs the canonical formatter:
+  source on **stdin**, formatted source on **stdout**, with `{width}` where the
+  width goes. Nothing is installed globally on this machine; use the
+  pinned-runner pattern (`npx --yes pkg@ver`, `uvx pkg@ver`,
+  `nix run nixpkgs#pkg`) that the python and json manifests demonstrate. Several
+  formatters infer the language from the filename and need a fake one for stdin
+  (`--stdin-filepath x.{{LANG}}`). Record the command that worked, not the one
+  you hoped would.
+- `reference_version` — the version string you **observed the tool print**. A
+  version that was assumed rather than observed is a defect the stage-B reviewer
+  is told to look for.
+- `reference_width` — `"flag"` if the reference honours `{width}`, `"fixed"` if
+  it has no width setting at all (gofmt, ormolu). `"fixed"` requires exactly one
+  entry in `widths`, and forbids `{width}` in the command. **Establish this by
+  running the tool at two widths and diffing**, not by reading its `--help`:
+  taplo's width knob is `-o column_width=N`, which is not where anyone looks
+  first.
+- `widths` — `{{WIDTHS}}`. If the reference ignores width, say so in the report
+  and set `reference_width = "fixed"` rather than inventing a width it does not
+  honour.
 - `gate3` — `"default"` unless {{LANG}} has a real semantic checker available (a
-  loader that round-trips, an AST dumper). If it does, use it and say why it is
-  stronger than the default.
+  loader that round-trips, an AST dumper). If it does, put it in
+  `harness/languages/{{LANG}}_gate3.py` as `signature(text) -> object | None`,
+  set `gate3 = "{{LANG}}"`, and say in the report why it is stronger than the
+  default. Comments are **not** your override's problem: gate3.py compares the
+  grammar's extras for every language, override or not.
+- `transparent_wrappers` — used only by `gate3 = "default"`. The node kinds your
+  formatter may legitimately **add or remove** around a single child, which in
+  most languages means the parenthesised-expression node. Leave it empty to
+  start and add a kind only when the gate rejects correct output and names it.
+  **Do not add a kind whose parentheses are structural** — in a Lisp, `(f)` is a
+  call and `f` is not, and declaring that node transparent would let the
+  formatter destroy code and still pass.
+- `equivalent_kinds` — also default-only. Groups of node kinds that are the same
+  construct under a different name, which is what happens when parenthesising
+  something renames its node (`pattern_list` → `tuple_pattern` in Python). Same
+  rule: add one only when the gate names it.
 
 ### 2. `corpus/src/{{LANG}}/` — 12 to 16 source files
 
@@ -78,23 +118,42 @@ in one line each in the report.
 **Corpus files must be valid, meaningful {{LANG}}** and must parse with no
 `ERROR` node. Check that before committing them.
 
-### 3. `corpus/trees/{{LANG}}/` and reference outputs
+### 3. Generated ground truth — trees and reference output
 
-Generated, not hand-written. Extend the tree generator to read manifests, and
-generate:
+Both are generated, never hand-written, and both are committed. Once the
+manifest and the corpus are in place:
 
-- the parse tree for each corpus file
-- the reference formatter's output for each corpus file at each width in
-  `widths`
+```sh
+./harness/gen_trees.py     --language {{LANG}}   # -> corpus/trees/{{LANG}}__<stem>.tree.json
+./harness/gen_reference.py --language {{LANG}}   # -> corpus/reference/{{LANG}}__<stem>@<width>.txt
+```
 
-Commit both. They are the ground truth; if regenerating them is not
-deterministic, that is a finding — report it.
+Neither script needs extending — they read your manifest, including installing
+your pinned grammar. If either needs a change to work for {{LANG}}, that is a
+finding: say so in the report rather than patching around it.
+
+Then check the ground truth is actually reproducible:
+
+```sh
+./harness/gen_reference.py --language {{LANG}} --check   # must be silent and exit 0
+```
+
+A reference formatter whose output is not deterministic — or that depends on a
+config file it found somewhere on this machine — is a finding, and an important
+one. Report it; do not paper over it by committing one of the outputs.
 
 ### 4. Whatever harness change this needs
 
 You may change anything in `harness/`. Prefer adding a file over editing a
 shared one — other agents are onboarding other languages in parallel worktrees
-right now, and a shared-file edit becomes a merge conflict.
+right now, and a shared-file edit becomes a merge conflict. In particular:
+
+- **do not** add your grammar to any script's inline `dependencies` block; it
+  goes in your manifest's `grammar` field and the scripts install it from there
+- **do not** add a branch on `{{LANG}}` to `score.py`, `gen_trees.py` or
+  `gate3.py`. If you find yourself wanting to, the manifest schema is missing a
+  field — say which, and why, in the report. That is a template delta and it is
+  worth more than the workaround.
 
 You may also change `rust/` and `runtime-js/`, but you almost certainly should
 not need to for _this_ slice. If you do, every such edit must appear in your
@@ -103,8 +162,21 @@ report with the case for it.
 ## Gates
 
 Run the project's gates and get them green with zero warnings before you claim
-anything: `./build.sh`, `./test.sh`, and the harness's own checks. Fix until
-green. Do not claim a gate for code you have not run.
+anything. Fix until green. Do not claim a gate for code you have not run.
+
+```sh
+./build.sh
+./test.sh                                    # includes check_gate3.py and score.py
+./harness/check_gate3.py --language {{LANG}}
+./harness/check_width.py . 20 120 --language {{LANG}}
+```
+
+`check_gate3.py` is the one to read the output of rather than just the exit
+code. It asserts that your reference formatter passes gate 3, that the gate
+still rejects a dropped comment and a dropped token, and — if you declared an
+override — that the generic default reaches the same verdict as your override on
+every file. A disagreement there is a real finding about {{LANG}} and belongs in
+the report even when you fix it.
 
 ## Report
 

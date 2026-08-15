@@ -38,7 +38,8 @@ They are spread across rounds so the template hardens against one class at a
 time rather than all at once.
 
 - **Go (R2)** — gofmt has no width knob and does not reflow. First test of
-  `gate2 = "waive"` and of a reference with exactly one correct output.
+  `reference_width = "fixed"` and of a reference with exactly one correct
+  output.
 - **YAML (R2)** — whitespace is semantic; block vs flow style; the reference
   makes choices our Doc IR may have no way to express.
 - **HTML/XML (R4)** — inline vs block elements, and whitespace significance that

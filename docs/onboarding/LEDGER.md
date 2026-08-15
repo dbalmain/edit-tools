@@ -32,9 +32,11 @@ Every stage-B and stage-D review ends with a template delta. Applied deltas go
 here, so the templates have a history and a repeated complaint is visible as a
 pattern.
 
-| Date | Template | Change | Prompted by |
-| ---- | -------- | ------ | ----------- |
-|      |          |        |             |
+| Date       | Template                              | Change                                                                                                                                                                                                                               | Prompted by                                                          |
+| ---------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------- |
+| 2026-08-15 | `WORKFLOW.md`                         | Manifest schema rewritten: `gate2` → `reference_width` (`"flag"`/`"fixed"`), `grammar_pin` → pinned PEP 508 `grammar` plus `grammar_module` and `grammar_symbol`, added `gate3_requires`, `transparent_wrappers`, `equivalent_kinds` | Stage 0                                                              |
+| 2026-08-15 | `corpus-brief.md`                     | Deliverable 3 no longer asks the builder to extend the tree generator; names `gen_trees.py --language` and `gen_reference.py --check`; adds the "never edit a shared file" list and the gate commands                                | Stage 0                                                              |
+| 2026-08-15 | `package-brief.md`, `review-brief.md` | `gate2 = "waive"` → `reference_width = "fixed"`                                                                                                                                                                                      | Stage 0 (name collided with score.py's gate 2, which is idempotence) |
 
 ## 3. Model scorecard
 

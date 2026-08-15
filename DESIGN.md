@@ -371,10 +371,25 @@ Named precisely, because a limit you can name is cheaper than one you can't.
 [PASS] 2-idempotence    30/30   fmt(fmt(x)) == fmt(x)
 [PASS] 3-nondestruction 30/30   meaning and comments preserved
 
-overflow lines     6            (black's own: 4)
+overflow lines     6
 size (gzip)        10196 B = 8080 runtime + 2116 packages
-black agreement    20/24        (chains@60, kitchen@60, operators@60, strings@88)
+reference agreement 24/30
+  json         4/6   vs prettier 3.6.2  (its own overflow: 1)
+    diverges on:  nested@88, nested@60
+  python      20/24  vs black 25.9.0    (its own overflow: 4)
+    diverges on:  chains@60, kitchen@60, operators@60, strings@88
 ```
+
+JSON is measured against prettier only since Stage 0 generalised the reference
+comparison, and both divergences are `nested.json`. Prettier has a rule this IR
+has no way to express: an array whose elements are **all** arrays or objects is
+always printed one element per line, whatever the width, so `"matrix"` explodes
+at 88 where we keep it flat and it fits. At 60 prettier additionally fills
+`long_flat_array` several numbers to a line rather than one per line. Both are
+the same missing capability — a group whose break decision depends on the
+_kinds_ of its children rather than on measured width — and it is a fifth entry
+for "What this design cannot do". Recorded, not fixed; it postdates this
+document.
 
 The black-agreement figure is worse than this document used to claim, and the
 reason is worth keeping. The submission scored it at width 88 only, where

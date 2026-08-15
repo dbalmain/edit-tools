@@ -190,9 +190,11 @@ are correctness properties, not preferences.
 3. **Non-destruction.** The output parses, means the same thing as the input,
    and drops no comment. This is the "does not corrupt code" property.
 
-   Meaning is compared via the language's own parser —
-   `ast.dump(ast.parse(...))` for Python, ordered `json.loads` for JSON — with
-   comments compared separately via `tokenize`, since `ast` cannot see them.
+   Comments are compared for every language as the grammar's **extra** nodes, in
+   order. Meaning is compared by whatever the language's manifest declares in
+   `gate3`: `ast.dump(ast.parse(...))` for Python, ordered `json.loads` for
+   JSON, and for a language with no semantic checker of its own, the generic
+   named-node comparison in `harness/gate3.py`.
 
    That choice matters, and an earlier token-stream version of this gate was
    wrong. **Black inserts parentheses when it wraps a long expression**, and
@@ -201,9 +203,16 @@ are correctness properties, not preferences.
    `ast` draws the line where it belongs: **parenthesisation, quote style,
    trailing commas and line breaks are yours to change; anything else is not.**
 
-   `harness/check_gate3.py` pins this by running black over the whole corpus at
-   both widths and asserting it passes — if a real formatter would fail the
-   gate, the gate is wrong. Re-run it after touching the comparison.
+   The generic default has to draw that same line without an `ast`, and it does
+   it by declaration rather than by heuristic — see `harness/gate3.py`, which
+   explains why "elide anything wrapped in parentheses" is unsound for a Lisp.
+
+   `harness/check_gate3.py` pins all of this by running every language's
+   reference formatter over the whole corpus at every width and asserting it
+   passes — if a real formatter would fail the gate, the gate is wrong. It also
+   asserts the gate still **rejects** a dropped comment and a dropped token, so
+   the gate cannot rot into a no-op while reporting PASS. Re-run it after
+   touching the comparison; `./test.sh` runs it before the scorer.
 
 Then, measured:
 
@@ -212,9 +221,15 @@ Then, measured:
 5. **Size.** Gzipped bytes: JS runtime bundle + Python package. Against the
    [budget](design.md#size-budget). This is the project's differentiator and
    carries real weight.
-6. **Black agreement.** Percentage of Python corpus files whose output at width
-   88 matches `black`. Not a requirement — a submission may justify differing —
-   but a useful proxy for "reflows the way a human expects".
+6. **Reference agreement.** Percentage of corpus files whose output matches the
+   language's reference formatter, at every width in the manifest, reported per
+   language. Not a requirement — a submission may justify differing — but a
+   useful proxy for "reflows the way a human expects".
+
+   The reference output is generated once by `harness/gen_reference.py` and
+   committed to `corpus/reference/`; the scorer never runs a formatter itself,
+   so `./test.sh` stays hermetic and a reference version bump shows up as a
+   diff.
 
 Then, judged (this is where the blind evaluation earns its keep):
 

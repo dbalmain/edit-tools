@@ -37,7 +37,7 @@ in the package.
    requirement.
 2. **Width compliance** — no line exceeds the target width unless the package
    provably cannot break it. Hard requirement, unless your manifest set
-   `gate2 = "waive"`.
+   `reference_width = "fixed"`.
 3. **Non-destruction** — the formatted output must mean the same thing. Method
    is whatever your manifest's `gate3` declares. Hard requirement. A formatter
    that loses code is not a formatter.

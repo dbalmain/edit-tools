@@ -50,47 +50,131 @@ carried forward is the reviewer's **diagnosis and list of disproved
 approaches**, pasted into the escalation prompt — not the failed diff. A cold
 start with a good diagnosis beats a warm start with a wrong frame.
 
-## Stage 0 — prerequisites (must land before round 1)
+## Stage 0 — prerequisites (landed)
 
-Two things in the current harness make fifteen languages impossible, and both
-are the orchestrator's to fix (via an Opus subagent) before any builder runs:
+Two things in the harness made fifteen languages impossible. Both are fixed;
+this section is now the description of what a builder is working against.
 
-1. **`harness/gen_trees.py` hardcodes a `LANGUAGES` map.** Three builders each
-   appending to one dict is a three-way conflict every round. Replace it with
-   one declarative file per language, `harness/languages/<lang>.toml`, so a
-   builder **adds a file** and never edits a shared one.
+1. **One file per language.** `gen_trees.py`'s `LANGUAGES` dict is gone, and so
+   are `score.py`'s `PARSERS`, its global `WIDTHS`, its `semantics()` and its
+   `black_agreement()`. Every per-language fact lives in
+   `harness/languages/<lang>.toml`. A builder **adds a file** and never edits a
+   shared one.
 
-2. **`harness/check_gate3.py` is Python- and JSON-specific.** It compares
-   meaning via `ast.dump(ast.parse(...))` and ordered `json.loads`. Neither
-   generalises. Stage 0 must add a **generic default** that works for any
-   tree-sitter grammar:
+   The same rule had a second half that was easy to miss. The harness scripts
+   are `uv run --script` files, and their grammar dependencies used to live in
+   an inline `dependencies = [...]` block — which is _also_ a shared file. The
+   scripts now declare only `tree-sitter` and re-exec themselves under
+   `uv run --with <pinned grammar>` computed from the manifests. Adding a
+   grammar is a line in the new language's own manifest.
 
-   - reparse the formatted output with the same grammar
-   - the tree of **named** nodes — kind plus leaf text, ignoring anonymous
-     punctuation and extras — must be identical to the original's
-   - the reparse must contain no `ERROR` or `MISSING` node
-   - the **multiset of comment texts** must be unchanged (position may move,
-     content may not)
+2. **A generic gate 3**, in `harness/gate3.py`, in two layers.
 
-   A language may override this with something stronger when a real semantic
-   checker exists — Python `ast.dump`, JSON/YAML/TOML round-trip through their
-   own loaders. The override is declared in the language's manifest. The default
-   is what lets fifteen languages start at once.
+   **Universal, no opt-out, every language:** the reparse must contain no
+   `ERROR` and no `MISSING` node, and the sequence of the grammar's **extra**
+   nodes — which is where `comment` lives in every grammar checked so far — must
+   be unchanged. Order is compared, not just the multiset; the ordered check is
+   strictly stronger and black passes it on the whole corpus, so there was no
+   reason to accept the weaker one. This layer sits _underneath_ any override,
+   which closes a real hole: ordered `json.loads` cannot see a comment at all,
+   so JSON could previously drop every comment in a file and pass gate 3.
 
-Stage 0 also freezes the manifest schema the templates depend on:
+   **Structural, per language:** either the generic default — the tree of
+   **named** nodes, kind plus leaf text, ignoring anonymous punctuation and
+   extras — or a stronger checker the manifest names. `gate3 = "python"` loads
+   `harness/languages/python_gate3.py`, which must define
+   `signature(text) -> object | None`. An override is a file of its own, so
+   declaring one is still adding a file.
+
+   **The naive named-node comparison does not work, and this is the important
+   part.** Black — a correct formatter, therefore the oracle — parenthesises an
+   expression when it wraps it, and the raw comparison rejects black on **7 of
+   the 26** python corpus runs for exactly that reason. This project's own
+   contract sanctions the same move ("a balanced parenthesis pair around one
+   layout region when its group breaks"), so a gate that rejects it is not
+   strict, it is wrong.
+
+   Eliding paren-wrappers by heuristic is worse: in Scheme parentheses _are_ the
+   structure, `(f)` is a list containing `f`, and the heuristic would let a
+   formatter turn a call into a bare symbol and pass. So paren transparency is
+   **declared per language, by node kind**, and the default is the strict end. A
+   language that declares nothing gets a gate that rejects its own correct
+   output the first time the formatter wraps something — loudly, with the node
+   kind named. Over-strict is a message; under-strict is corrupted source.
+
+   `harness/check_gate3.py` pins all of this as a gate rather than a claim, and
+   runs in `./test.sh`. It proves three things: the reference formatter passes
+   for every language; the generic default reaches the **same verdict** as every
+   stronger override on the same input; and the gate still **rejects** a dropped
+   comment and a dropped token. The third matters most — a gate that accepts
+   everything passes the first two perfectly.
+
+   As measured today: 0 disagreements between the generic default and both
+   `ast.dump` and ordered `json.loads`, over 30 reference outputs, with 36
+   destructive mutations rejected.
+
+### The manifest schema
 
 ```toml
-# harness/languages/<lang>.toml
-name        = "toml"
-extensions  = [".toml"]
-grammar     = "tree_sitter_toml"        # PyPI package
-grammar_pin = "0.7.0"
-reference   = "nix run nixpkgs#taplo -- fmt --stdin-filepath x.toml -"
-reference_version = "taplo 0.9.3"       # observed, recorded for reproducibility
-widths      = [60, 80]                  # narrow, and the reference's own default
-gate2       = "measure"                 # or "waive" — see Go, below
-gate3       = "default"                 # or a named override
+# harness/languages/toml.toml   —   the filename must match `name`
+name = "toml"
+extensions = [".toml"]
+
+# A pinned PEP 508 requirement, not a bare name: the committed trees are ground
+# truth and a silent grammar bump rewrites them. An unpinned `grammar` is a load
+# error. Non-PyPI grammars go here too: `tree-sitter-x @ git+https://…`.
+grammar = "tree-sitter-toml==0.7.0"
+grammar_module = "tree_sitter_toml"   # importable module — NOT derived from the above
+grammar_symbol = "language"           # optional, defaults to "language"
+
+# Shell command. Source on stdin, formatted source on stdout. `{width}` is
+# substituted. Note that some references need a fake filename to infer the
+# language from stdin (`--stdin-filepath x.toml`), and that nothing is installed
+# globally — use a pinned runner.
+reference = "nix run nixpkgs#taplo -- fmt -o column_width={width} --stdin-filepath x.toml -"
+reference_version = "taplo 0.10.0"    # observed, not assumed
+reference_width = "flag"              # "flag" honours {width} · "fixed" has no width knob
+
+widths = [60, 80]                     # narrow, and the reference's own default
+
+gate3 = "default"                     # or a named override → languages/<name>_gate3.py
+gate3_requires = []                   # extra pins the override needs, e.g. ["pyyaml==6.0.2"]
+
+# Used only by gate3 = "default". Both default to empty, which is the strict end.
+transparent_wrappers = []             # node kinds the formatter may add or remove
+                                      # around one child, e.g. parenthesized_expression
+equivalent_kinds = []                 # kinds that are the same thing under a different
+                                      # name, e.g. [["pattern_list", "tuple_pattern"]]
 ```
+
+`harness/languages/python.toml` and `json.toml` are the two worked examples and
+carry the reasoning for each field they set. Every field is validated on load:
+an unknown key, an unpinned grammar, a `name` that does not match the filename,
+a `{width}` placeholder that a `"fixed"` reference would never use, and a
+`"fixed"` reference with more than one width are all one-line errors naming the
+file and the field.
+
+### Field names that changed from the first sketch of this doc
+
+- **`gate2` is now `reference_width`, with values `"flag"` / `"fixed"`.** The
+  old name collided head-on with `score.py`, where gate **2 is idempotence** and
+  has nothing to do with widths. Three numbering schemes for "gate N" already
+  exist in this repo; the manifest now describes the reference formatter instead
+  of pointing at one of them.
+- **`grammar` / `grammar_module` / `grammar_symbol` replace `grammar` +
+  `grammar_pin`.** The distribution name, the importable module and the accessor
+  are three independent facts. `tree-sitter-typescript` exposes
+  `language_typescript()` and `language_tsx()`; `tree-sitter-xml` exposes
+  `language_xml()` and `language_dtd()`. Both are on the roster, and neither
+  works with a hardcoded `.language()`.
+- **Reference output is generated once and committed** to
+  `corpus/reference/<lang>__<stem>@<width>.txt` by `harness/gen_reference.py`.
+  The scorer reads those files; it never runs a reference formatter. Running
+  fifteen references live would put a network fetch and a few hundred process
+  spawns inside `./test.sh`, and `build.sh` promises to be hermetic.
+  `gen_reference.py --check` reports drift when a reference changes under us.
+- **Trees stay flat**, `corpus/trees/<lang>__<stem>.tree.json`. The name already
+  namespaces by language, so there is no shared file and no conflict.
 
 ## Reference formatters
 
@@ -116,7 +200,8 @@ Three of these need a note in the brief, because they break the "reference
 reflows to a width" assumption the python corpus was built on:
 
 - **gofmt has no width setting.** Go is tab-indented and does not reflow. Its
-  manifest sets `gate2 = "waive"` and a single width; gate 4 is agreement with
+  manifest sets `reference_width = "fixed"` and a single width; gate 4 is
+  agreement with
   gofmt's one fixed output. This is the first real stress on the template and is
   deliberately placed early.
 - **ormolu has a fixed style**, similarly non-negotiable.
