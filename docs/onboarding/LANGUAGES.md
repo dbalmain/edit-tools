@@ -19,6 +19,7 @@ building · `D` package review · `E`/`F` escalated · **merged** · **blocked**
 | Rust       | T2   | 3     | tbd     | -      | tree_sitter_rust       | rustfmt                           |
 | Kotlin     | T2   | 3     | tbd     | -      | tree_sitter_kotlin     | ktfmt                             |
 | JavaScript | T2   | 3     | tbd     | -      | tree_sitter_javascript | prettier                          |
+| Markdown   | T2   | 4     | tbd     | -      | tree_sitter_markdown   | prettier                          |
 | TypeScript | T2   | 4     | tbd     | -      | tree_sitter_typescript | prettier                          |
 | XML        | T3   | 4     | tbd     | -      | tree_sitter_xml        | prettier (`@prettier/plugin-xml`) |
 | HTML       | T3   | 4     | tbd     | -      | tree_sitter_html       | prettier                          |
@@ -42,6 +43,16 @@ time rather than all at once.
   output.
 - **YAML (R2)** — whitespace is semantic; block vs flow style; the reference
   makes choices our Doc IR may have no way to express.
+- **Markdown (R4)** — the only language on the roster whose defining feature is
+  that it **contains other languages**. Dave's headline requirement is that
+  JavaScript inside a ` ```javascript ` fence is formatted and highlighted as
+  JavaScript, which is why it sits with JavaScript in R4 rather than earlier.
+  Designed in [../injection.md](../injection.md); it needs runtime work (a
+  package map, `indent` carrying its own column count) that must land before the
+  round opens. **The injection machinery can be proved before R4 without waiting
+  for it** — markdown containing ` ```json ` needs only the JSON package, which
+  merged in stage 0. Markdown is also the language where refusing is the wrong
+  default: a document with one unparseable snippet must still format.
 - **HTML/XML (R4)** — inline vs block elements, and whitespace significance that
   depends on the element. The clearest test of whether a node-type →
   Doc-expression table is expressive enough for markup.

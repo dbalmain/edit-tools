@@ -114,17 +114,25 @@ Columns worth being precise about:
 
 ### Agents under comparison
 
-| Agent           | CLI        | Model                         | Lane                |
-| --------------- | ---------- | ----------------------------- | ------------------- |
-| grok            | `grok`     | `grok-4.6` (default)          | builder             |
-| codex-Luna      | `codex`    | `gpt-5.6-luna`                | builder             |
-| DeepSeek V4 Pro | `opencode` | `opencode-go/deepseek-v4-pro` | builder             |
-| codex-Sol       | `codex`    | `gpt-5.6-sol`, effort `high`  | escalation (step 5) |
-| Opus subagent   | Agent tool | Opus                          | escalation (step 6) |
+| Agent           | CLI        | Model                          | Lane                       |
+| --------------- | ---------- | ------------------------------ | -------------------------- |
+| grok            | `grok`     | `grok-4.6` (default)           | builder                    |
+| DeepSeek V4 Pro | `opencode` | `opencode-go/deepseek-v4-pro`  | builder                    |
+| codex-Terra     | `codex`    | `gpt-5.6-terra`                | builder (replaced Luna)    |
+| agy             | `agy`      | Gemini Flash 3.7, effort `med` | builder (from R2)          |
+| codex-Sol       | `codex`    | `gpt-5.6-sol`, effort `high`   | reviewer (B/D), escalation |
+| Opus subagent   | Agent tool | Opus                           | central fixes, final sweep |
+
+`codex-Luna` was dropped after round 1 — not for the `tomllib` gate, which was a
+brief defect and is forgiven, but for reporting "no changes outside corpus"
+against a diff that edited two shared harness scripts.
 
 Only grok has prior calibration data, and it is on `grok-4.5`, not the `4.6`
-default. Luna and DeepSeek are uncalibrated. Round 1 is a deliberate
-head-to-head on TOML precisely because of that.
+default. Everyone else is uncalibrated; agy has not yet built anything. Round 1
+was a deliberate head-to-head on TOML precisely because of that.
+
+**A reviewer must never be the same family as the builder.** Sol does not review
+codex-built slices; Terra's work goes to grok or Opus.
 
 ### Where the findings go at the end
 
