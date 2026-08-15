@@ -2,13 +2,16 @@
 
 Date: 2026-08-15 Status: Draft
 
+Follow-up: 2026-08-16
+
 A highlight package is a second, smaller data file per language: a leaf-type
-table plus an ordered context list that matches parent type and field. Type-only
-dispatch — the formatter's whole bet — cannot tell a Python identifier that is a
-callee from one that is a value. There is no black for highlighting; honesty is
-rust/js span-stream identity plus goldens we write ourselves. The highlighter
-never refuses a tree. The walker is a different function from the formatter's,
-and the 1 ms/keystroke budget is a parse claim this slice does not answer.
+table, an opt-in background table, and an ordered context list that matches
+parent type and field. Type-only dispatch — the formatter's whole bet — cannot
+tell a Python identifier that is a callee from one that is a value. There is no
+black for highlighting; honesty is rust/js span-stream identity plus goldens we
+write ourselves. The highlighter never refuses a tree. The walker is a different
+function from the formatter's, and the 1 ms/keystroke budget is a parse claim
+this slice does not answer.
 
 ## Background
 
@@ -316,6 +319,9 @@ already overrides lexical defaults from an AST walk.
 plus an ordered context list. First listed match wins, so both runtimes agree
 without a specificity algorithm.**
 
+The 2026-08-16 follow-up keeps that context decision and adds the separate
+background table recorded in Key Decision 10.
+
 ### 3. What is the differential-testing story?
 
 There is no reference highlighter.
@@ -444,8 +450,40 @@ A highlight package is JSON. Dispatch is a lookup, not a match. The runtime
 expands `keyword` / `operator` / `punctuation` lists into the leaf table at
 load, the way it expands `defs` today — the evaluator never sees the sugar.
 Expansion is in that order; **later list wins** on a shared spelling (`@` is
-only in `operator` today). Every scope a package can emit — `leaf` values, sugar
-targets, context `scope` — must be in `scopes`, or load refuses.
+only in `operator` today). Every scope a package can emit — `leaf` and
+`background` values, sugar targets, context `scope` — must be in `scopes`, or
+load refuses.
+
+### Leaf defaults and opt-in backgrounds (follow-up, 2026-08-16)
+
+The original proposal used `leaf` only at nodes with no children. PR 4 then
+generalised the `ERROR` child-range backfill mechanism: any interior type found
+in `leaf` painted its own extent minus its direct children's extents. That fixed
+Python `string_content`, where escape children refine a string, and the compound
+operators `is not` and `not in`, whose interior spaces should carry the operator
+scope. The mechanism was useful; inferring its trigger from `leaf` was not.
+
+Tree-sitter Python uses `lambda` both for a named interior node and for the
+anonymous `lambda` token inside it. Because the token spelling is in the keyword
+sugar list, the inferred interior default painted the gaps in `lambda x: x` as
+`keyword`: the first gap merged into the real keyword span and the gap after `:`
+became a whitespace-only keyword span. A package author cannot see that hazard
+from a token list, and another grammar can make the same kind collision.
+
+The follow-up makes the two declarations separate:
+
+- `leaf[type]` applies only when the node has no children.
+- `background[type]` paints `[node.start, node.end)` minus the ranges of its
+  direct children, one span per contiguous leftover run. With no children, the
+  leftover is the whole node, so `background` strictly generalises `leaf`.
+- At a childless node, a context match wins first, then `leaf`, then
+  `background`. This permits one kind to declare a token scope and, if genuinely
+  needed, a different interior background scope.
+- `ERROR` remains a built-in background. Packages never declare it.
+
+Python opts in `string_content`, `is not`, and `not in`. `lambda` remains only a
+keyword leaf. JSON declares no backgrounds: its quote behaviour is expressed by
+leaf context on the `"` tokens.
 
 Context matching runs **only at leaves**. Every named key is evaluated against
 the **leaf** and its **immediate parent**, except `ancestor`:
@@ -475,7 +513,7 @@ load package
   refuse if format != "et-highlight/1"
   expand keyword, then operator, then punctuation into leaf
     (later list overwrites)
-  refuse any leaf or context scope not in scopes
+  refuse any leaf, background, or context scope not in scopes
   index context in listed order
 walk(node, parent, pkg):
   if node.language is set:
@@ -488,24 +526,29 @@ walk(node, parent, pkg):
       if node.type == "ERROR":
           leftover = [node.start, node.end) minus each child's [start, end)
           emit one error span per contiguous leftover run
+      else if background[node.type] exists:
+          leftover = [node.start, node.end) minus each child's [start, end)
+          emit one background span per contiguous leftover run
       return
   # ordinary leaf
   scope = first context rule whose entire conjunction holds
           else leaf[node.type]
+          else background[node.type]
           else none
   if scope: emit {start, end, scope}
 sort spans by (start, end)
 merge adjacent same-scope spans
 ```
 
-`EMPTY` is a package with empty `leaf` and `context`. Walking it still sees a
-descendant `language` stamp and can switch. A missing highlight package does not
-refuse the document.
+`EMPTY` is a package with empty `leaf`, `background`, and `context`. Walking it
+still sees a descendant `language` stamp and can switch. A missing highlight
+package does not refuse the document.
 
 ### JSON, as a builder would write it
 
-Measured 714 raw / 274 gzip (`gzip.compress(..., 9)`), pretty-printed to match
-the shipped format packages.
+The original proposal measured 714 raw / 274 gzip. The shipped package below is
+817 raw / 285 gzip (`gzip.compress(..., 9)`), pretty-printed to match the format
+packages. The difference includes the quote context row added during PR 4.
 
 ```json
 {
@@ -533,7 +576,7 @@ the shipped format packages.
     "]": "punctuation",
     ",": "punctuation",
     ":": "punctuation",
-    "\"": "punctuation"
+    "\"": "string"
   },
   "context": [
     {
@@ -541,38 +584,46 @@ the shipped format packages.
       "parent_field": "key",
       "type": "string_content",
       "scope": "property"
+    },
+    {
+      "parent": "string",
+      "parent_field": "key",
+      "type": "\"",
+      "scope": "property"
     }
   ]
 }
 ```
 
-The one context row is the leaf-only equivalent of
+The two context rows are the leaf-only equivalent of
 `(pair key: (_) @string.special.key)`. In `json__basic.tree.json` a key is an
 interior `string` with `field: "key"`; its children are `"`, `string_content`,
-`"`. When the walk reaches `string_content` `"string"` at `[5, 11]`,
+`"`. When the walk reaches those three leaves,
 `parent.type` is `"string"`, `parent.field` is `"key"`, `node.field` is unset.
-The row matches; the leaf default `string` loses. The value `"value"` at
-`[15, 20]` sits under a `string` whose field is `value`, so it stays `string`.
-Quotes stay `punctuation` — we are not painting the interior `string` node.
+The rows match, and adjacent same-scope spans merge into one `property` span
+covering `"string"`, quotes included. This is preferable to punctuation-coloured
+quotes framing a property name, and it is how editors conventionally present a
+JSON key. The value `"value"` sits under a `string` whose field is `value`, so
+its quote and content leaves keep the `string` default and merge in the same
+way. No interior `string` node is painted and JSON needs no background entry.
 
-Expected spans for the first pair (`"string": "value"` at `[4, 21]`):
+Expected spans for the first pair and its following comma (`"string": "value",`
+at `[4, 22)`):
 
 ```json
 [
-  { "start": 4, "end": 5, "scope": "punctuation" },
-  { "start": 5, "end": 11, "scope": "property" },
-  { "start": 11, "end": 12, "scope": "punctuation" },
+  { "start": 4, "end": 12, "scope": "property" },
   { "start": 12, "end": 13, "scope": "punctuation" },
-  { "start": 14, "end": 15, "scope": "punctuation" },
-  { "start": 15, "end": 20, "scope": "string" },
-  { "start": 20, "end": 21, "scope": "punctuation" }
+  { "start": 14, "end": 21, "scope": "string" },
+  { "start": 21, "end": 22, "scope": "punctuation" }
 ]
 ```
 
 ### Python, as a builder would write it
 
-Measured 3,245 raw / 735 gzip. Context rows are the identifier cases in the
-table above; lists are the grammar-repo keyword / operator sets, trimmed to what
+The original proposal measured 3,245 raw / 735 gzip. The shipped follow-up is
+3,188 raw / 795 gzip. Context rows are the identifier cases in the table above;
+lists are the grammar-repo keyword / operator sets, trimmed to what
 tree-sitter-python actually emits as node types (type equals spelling, same
 convention as the formatter). `ellipsis` is a named kind (`node-types.json`:
 `{"type": "ellipsis", "named": true}`), not a `...` token, and no corpus tree
@@ -668,15 +719,12 @@ contains one — it lives in `leaf`, not in the punctuation sugar.
     "or",
     "not",
     "in",
-    "is",
-    "is not",
-    "not in"
+    "is"
   ],
   "punctuation": ["(", ")", "[", "]", "{", "}", ",", ":", ".", ";"],
   "leaf": {
     "identifier": "variable",
     "comment": "comment",
-    "string_content": "string",
     "string_start": "string",
     "string_end": "string",
     "escape_sequence": "string.escape",
@@ -685,7 +733,13 @@ contains one — it lives in `leaf`, not in the punctuation sugar.
     "true": "constant",
     "false": "constant",
     "none": "constant",
-    "ellipsis": "punctuation"
+    "ellipsis": "punctuation",
+    "type_conversion": "operator"
+  },
+  "background": {
+    "string_content": "string",
+    "is not": "operator",
+    "not in": "operator"
   },
   "context": [
     {
@@ -772,12 +826,17 @@ flowchart TD
   B -->|yes| C[emit scope]
   B -->|no| D{leaf type<br/>in table?}
   D -->|yes| C
-  D -->|no| E[unpainted]
+  D -->|no| L{background type<br/>in table?}
+  L -->|yes| C
+  L -->|no| E[unpainted]
   F[interior node] --> G[walk every child]
   G --> H{type is ERROR?}
   H -->|yes| I[backfill leftover of<br/>child ranges as error]
-  H -->|no| J[done]
+  H -->|no| M{background type<br/>in table?}
+  M -->|yes| N[backfill leftover of<br/>child ranges with scope]
+  M -->|no| J[done]
   I --> K[sort by start, end<br/>then merge adjacent]
+  N --> K
   C --> K
   R --> K
   E --> K
@@ -925,14 +984,22 @@ Shipped formatter, measured today:
 format package has grown since the macro paragraph in `DESIGN.md` (that
 paragraph's 7,409 / 1,693); the live file is what the table says.
 
-Proposed highlight packages, the JSON in the previous section, measured after
-writing them:
+Original proposed highlight packages, measured after writing the 2026-08-15
+draft:
 
 | Artifact                         | raw   | gzip |
 | -------------------------------- | ----- | ---- |
 | `json.highlight.json` (pretty)   | 714   | 274  |
 | `python.highlight.json` (pretty) | 3,245 | 735  |
 | both concatenated                | 3,959 | 810  |
+
+Shipped packages after the 2026-08-16 background follow-up:
+
+| Artifact                         | raw   | gzip |
+| -------------------------------- | ----- | ---- |
+| `json.highlight.json` (pretty)   | 817   | 285  |
+| `python.highlight.json` (pretty) | 3,188 | 795  |
+| both concatenated                | 4,005 | 873  |
 
 Prior-art highlight _data_, same compressor, fetched today:
 
@@ -967,8 +1034,9 @@ Proposed highlighter budget, same units:
 | Python highlight package | ≤ 2 KB   | 735 B measured          |
 | JSON highlight package   | ≤ 0.5 KB | 274 B measured          |
 
-The package half of that budget is a measurement. The walker half is not. I will
-not invent a gzip number for code that does not exist. `@lezer/highlight` is
+At proposal time, the package half of that budget was a measurement and the
+walker half was not. I would not invent a gzip number for code that did not yet
+exist. `@lezer/highlight` is
 8,122 gzip and includes a closed tag ontology plus `styleTags` path matching; we
 are not building that. The formatter JS runtime is 8,312 gzip for printer +
 evaluator + macros + comment attachment + `fits`. A highlight walker is a
@@ -1148,7 +1216,8 @@ recommendations above.
    rules. Injection already fixed the tree.
 2. **`et-highlight/1` is a leaf table plus an ordered context list, not a query
    language and not type-only dispatch.** The Python CST has one `identifier`
-   type; context lives in `field` and parent. First match wins.
+   type; context lives in `field` and parent. First match wins. Decision 10
+   later adds a separate opt-in background table without changing this choice.
 3. **No reference highlighter.** Honesty is rust/js span identity, committed
    goldens, and a partition invariant. Helix/nvim/grammar-repo/Lezer already
    disagree; picking one is picking a taste.
@@ -1167,7 +1236,8 @@ recommendations above.
 7. **No `#match?`, no word lists, no locals in v1.** The next policy, if the
    corpus demands it, is a word table. Not a predicate.
 8. **Walker budget ≤ 2 KB gzip is a target, not a measurement.** Package sizes
-   are measured (274 / 735). The walker is measured when it exists.
+   were measured at 274 / 735 in the proposal and are 285 / 795 after the
+   follow-up. The walker target remains; this follow-up did not remeasure it.
 9. **Scope names are LSP semantic token types wherever one exists**, with
    `punctuation`, `error` and `constant` as documented extensions, and a dotted
    scope legal only as a prefix-refinement of a scope in the same list. Aven's
@@ -1175,6 +1245,14 @@ recommendations above.
    the rule makes that deliberate, and gives a host truncation-at-the-dot as a
    total degradation path instead of an unknown-tag cliff. Added 2026-08-16,
    after Dave closed the open questions.
+10. **Interior backgrounds are opt-in, never inferred from `leaf`.** A leaf
+    declaration applies only to childless nodes. A background declaration
+    paints the node extent minus direct-child ranges; `ERROR` is the sole
+    built-in background. Python's named `lambda` node shares a type with its
+    keyword token, so inference painted inter-child spaces as `keyword` and
+    could merge that mistake into a legitimate span. Separate tables make the
+    package author state the wrapping relationship explicitly. Added
+    2026-08-16 after the PR 4 golden review.
 
 ## PR Plan
 
@@ -1321,7 +1399,11 @@ package key.
 - `~/w/clex/aven-lang/crates/aven-lsp/src/semantic_tokens.rs` — AST overrides on
   a lexical default, not TextMate.
 
-## Done-note
+## Original done-note (2026-08-15)
+
+This is retained as the proposal's conclusion, including what was unknown
+before implementation; the dated follow-up and Key Decision 10 above record
+what changed afterward.
 
 I would ship two packages, write `et-highlight/1` as a leaf table plus an
 ordered context list, test it with rust/js identity and goldens, and give the

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Both unit suites, then the harness's own checks, then the scorer,
+# Runtime and harness unit suites, then the harness's own checks and scorers,
 # then the tree-interface probe (a hand-rolled JSON parser, no tree-sitter).
 #
 # check_gate3.py runs before the scorer on purpose: it establishes that gate 3
@@ -15,6 +15,8 @@ cargo test --manifest-path rust/Cargo.toml
 cargo clippy --manifest-path rust/Cargo.toml --all-targets -- -D warnings
 node --test runtime-js/bundle.test.js
 node --test runtime-js/highlight.test.js
+python3 -m unittest discover -s harness
 ./harness/check_gate3.py
 ./harness/score.py .
+./harness/score_highlight.py .
 ./harness/probe_tree_interface.py

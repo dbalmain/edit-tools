@@ -12,36 +12,16 @@ const { highlight, loadPackage, Refusal } = require("./highlight.js");
 const root = path.join(__dirname, "..");
 const rust = path.join(root, "rust", "target", "release", "hl-rust");
 
-const pythonPackage = {
-  format: "et-highlight/1",
-  scopes: [
-    "string", "number", "keyword", "operator", "function", "type",
-    "variable", "parameter", "property", "punctuation", "error",
-  ],
-  operator: ["+", "*", "**", "="],
-  punctuation: ["(", ")", "[", "]", "{", "}", ",", ":", "."],
-  leaf: { identifier: "variable", integer: "number", string_content: "string" },
-  context: [
-    { parent: "call", field: "function", type: "identifier", scope: "function" },
-    {
-      parent: "attribute", field: "attribute", parent_field: "function",
-      type: "identifier", scope: "function",
-    },
-    {
-      parent: "function_definition", field: "name", type: "identifier", scope: "function",
-    },
-    { ancestor: "type", type: "identifier", scope: "type" },
-    { parent: "parameters", type: "identifier", scope: "parameter" },
-    { parent: "list_splat_pattern", type: "identifier", scope: "parameter" },
-    { parent: "dictionary_splat_pattern", type: "identifier", scope: "parameter" },
-    { parent: "attribute", field: "attribute", type: "identifier", scope: "property" },
-  ],
-};
+const pythonPackage = JSON.parse(
+  fs.readFileSync(path.join(root, "packages", "python.highlight.json"), "utf8"),
+);
 
 const pkg = loadPackage(pythonPackage);
 
-const readTree = (name) =>
-  JSON.parse(fs.readFileSync(path.join(root, "corpus", "trees", name), "utf8"));
+const readTreeIn = (directory, name) =>
+  JSON.parse(fs.readFileSync(path.join(root, "corpus", directory, name), "utf8"));
+const readTree = (name) => readTreeIn("trees", name);
+const readDirtyTree = (name) => readTreeIn("trees-dirty", name);
 
 function spanScope(spans, start, end) {
   const span = spans.find((item) => item.start === start && item.end === end);
@@ -92,39 +72,20 @@ function assertIdentity(tree, rawPackage = pythonPackage) {
   return spans;
 }
 
-const errorTree = {
-  language: "python",
-  source: "foo( 1 +",
-  root: {
-    type: "module", start: 0, end: 8, children: [{
-      type: "ERROR", start: 0, end: 8, children: [
-        {
-          type: "call", start: 0, end: 6, children: [
-            { type: "identifier", start: 0, end: 3, field: "function", text: "foo" },
-            {
-              type: "argument_list", start: 3, end: 6, field: "arguments", children: [
-                { type: "(", start: 3, end: 4, text: "(" },
-                { type: "integer", start: 5, end: 6, text: "1" },
-              ],
-            },
-          ],
-        },
-        { type: "+", start: 7, end: 8, text: "+" },
-      ],
-    }],
-  },
-};
+const errorTree = readDirtyTree("python__dirty_error_recovery.tree.json");
 
 test("package loading expands sugar and refuses invalid scope vocabularies", () => {
   const expanded = loadPackage({
     format: "et-highlight/1",
     scopes: ["base", "keyword", "operator", "punctuation", "error"],
     leaf: { shared: "base" },
+    background: { wrapper: "base" },
     keyword: ["shared"],
     operator: ["shared"],
     punctuation: ["shared"],
   });
   assert.equal(expanded.leaf.shared, "punctuation");
+  assert.equal(expanded.background.wrapper, "base");
   assert.throws(
     () => loadPackage({ format: "et-highlight/2", scopes: [] }),
     (error) => error instanceof Refusal && /expected "et-highlight\/1"/.test(error.message),
@@ -138,6 +99,12 @@ test("package loading expands sugar and refuses invalid scope vocabularies", () 
       format: "et-highlight/1", scopes: ["string", "string.escape.unicode"],
     }),
     /requires prefix `string.escape` in `scopes`/,
+  );
+  assert.throws(
+    () => loadPackage({
+      format: "et-highlight/1", scopes: ["base"], background: { wrapper: "missing" },
+    }),
+    /emitted scope `missing` is not in `scopes`/,
   );
 });
 
@@ -170,6 +137,59 @@ test("Rust and JS agree on splat parameters", () => {
   assertPartition(tree, pkg, spans);
 });
 
+test("interior backgrounds paint around refined children", () => {
+  const tree = readTree("python__strings.tree.json");
+  const spans = assertIdentity(tree);
+  const lineOne = byteOffset(tree.source, "line one");
+  const newline = byteOffset(tree.source, "\\n", lineOne);
+  const lineTwo = newline + 2;
+  const tab = byteOffset(tree.source, "\\t", lineTwo);
+  const closingQuote = byteOffset(tree.source, '"', tab + 2) + 1;
+  assert.equal(spanScope(spans, lineOne - 1, newline), "string");
+  assert.equal(spanScope(spans, newline, lineTwo), "string.escape");
+  assert.equal(spanScope(spans, lineTwo, tab), "string");
+  assert.equal(spanScope(spans, tab, tab + 2), "string.escape");
+  assert.equal(spanScope(spans, tab + 2, closingQuote), "string");
+  assertPartition(tree, pkg, spans);
+});
+
+test("an interior leaf default does not paint around children", () => {
+  const rawPackage = {
+    format: "et-highlight/1",
+    scopes: ["keyword", "parameter", "punctuation", "variable"],
+    leaf: { lambda: "keyword", ":": "punctuation", identifier: "variable" },
+    context: [
+      { parent: "lambda_parameters", type: "identifier", scope: "parameter" },
+    ],
+  };
+  const tree = {
+    language: "toy",
+    source: "lambda x: x",
+    root: {
+      type: "module", start: 0, end: 11, children: [{
+        type: "lambda", start: 0, end: 11, children: [
+          { type: "lambda", start: 0, end: 6, text: "lambda" },
+          {
+            type: "lambda_parameters", start: 7, end: 8, children: [
+              { type: "identifier", start: 7, end: 8, text: "x" },
+            ],
+          },
+          { type: ":", start: 8, end: 9, text: ":" },
+          { type: "identifier", start: 10, end: 11, text: "x" },
+        ],
+      }],
+    },
+  };
+  const spans = assertIdentity(tree, rawPackage);
+  assert.deepEqual(spans, [
+    { start: 0, end: 6, scope: "keyword" },
+    { start: 7, end: 8, scope: "parameter" },
+    { start: 8, end: 9, scope: "punctuation" },
+    { start: 10, end: 11, scope: "variable" },
+  ]);
+  assertPartition(tree, loadPackage(rawPackage), spans);
+});
+
 test("Rust and JS agree on ERROR child-range backfill", () => {
   const spans = assertIdentity(errorTree);
   assert.deepEqual(spans, [
@@ -183,19 +203,26 @@ test("Rust and JS agree on ERROR child-range backfill", () => {
 });
 
 test("unknown nodes stay unpainted while known descendants survive", () => {
-  const tree = {
-    language: "toy",
-    source: "a??",
-    root: {
-      type: "unknown-interior", start: 0, end: 3, children: [
-        { type: "identifier", start: 0, end: 1, text: "a" },
-        { type: "unknown-leaf", start: 1, end: 3, text: "??" },
-      ],
-    },
-  };
+  const tree = readDirtyTree("python__dirty_unknown_interior.tree.json");
   const spans = assertIdentity(tree);
   assert.deepEqual(spans, [{ start: 0, end: 1, scope: "variable" }]);
   assertPartition(tree, pkg, spans);
+});
+
+test("leaf errors, missing nodes, and separated leftovers agree", () => {
+  const leaf = readDirtyTree("python__dirty_leaf_error_missing.tree.json");
+  const leafSpans = assertIdentity(leaf);
+  assert.deepEqual(leafSpans, [{ start: 0, end: 3, scope: "error" }]);
+  assertPartition(leaf, pkg, leafSpans);
+
+  const runs = readDirtyTree("python__dirty_error_two_runs.tree.json");
+  const runSpans = assertIdentity(runs);
+  assert.deepEqual(runSpans, [
+    { start: 0, end: 1, scope: "error" },
+    { start: 1, end: 2, scope: "variable" },
+    { start: 2, end: 3, scope: "error" },
+  ]);
+  assertPartition(runs, pkg, runSpans);
 });
 
 test("ancestor matching is inclusive of the immediate parent and listed order wins", () => {

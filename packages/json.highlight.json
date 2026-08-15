@@ -1,0 +1,42 @@
+{
+  "format": "et-highlight/1",
+  "grammar": { "name": "tree-sitter-json" },
+  "scopes": [
+    "string",
+    "string.escape",
+    "number",
+    "constant",
+    "property",
+    "punctuation",
+    "error"
+  ],
+  "leaf": {
+    "string_content": "string",
+    "escape_sequence": "string.escape",
+    "number": "number",
+    "true": "constant",
+    "false": "constant",
+    "null": "constant",
+    "{": "punctuation",
+    "}": "punctuation",
+    "[": "punctuation",
+    "]": "punctuation",
+    ",": "punctuation",
+    ":": "punctuation",
+    "\"": "string"
+  },
+  "context": [
+    {
+      "parent": "string",
+      "parent_field": "key",
+      "type": "string_content",
+      "scope": "property"
+    },
+    {
+      "parent": "string",
+      "parent_field": "key",
+      "type": "\"",
+      "scope": "property"
+    }
+  ]
+}

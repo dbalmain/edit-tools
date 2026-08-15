@@ -121,5 +121,27 @@ class IntentionalDivergenceScoreTests(unittest.TestCase):
             )
 
 
+class SizeScoreTests(unittest.TestCase):
+    def test_highlight_packages_are_not_formatter_download_bytes(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        submission = Path(tmp.name)
+        runtime = submission / "runtime-js"
+        packages = submission / "packages"
+        runtime.mkdir()
+        packages.mkdir()
+        (runtime / "bundle.js").write_bytes(b"runtime")
+        format_package = packages / "json.json"
+        format_package.write_bytes(b"format")
+        (packages / "json.highlight.json").write_bytes(b"highlight")
+
+        measured = score.sizes(submission, {"json": object()})
+
+        self.assertEqual(measured["packages"], score.gzipped(format_package))
+        self.assertEqual(
+            measured["total"], measured["js-runtime"] + measured["packages"]
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

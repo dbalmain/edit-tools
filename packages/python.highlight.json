@@ -1,0 +1,176 @@
+{
+  "format": "et-highlight/1",
+  "grammar": { "name": "tree-sitter-python" },
+  "scopes": [
+    "comment",
+    "string",
+    "string.escape",
+    "number",
+    "constant",
+    "keyword",
+    "operator",
+    "function",
+    "type",
+    "variable",
+    "parameter",
+    "property",
+    "punctuation",
+    "error"
+  ],
+  "keyword": [
+    "as",
+    "assert",
+    "async",
+    "await",
+    "break",
+    "class",
+    "continue",
+    "def",
+    "del",
+    "elif",
+    "else",
+    "except",
+    "finally",
+    "for",
+    "from",
+    "global",
+    "if",
+    "import",
+    "lambda",
+    "match",
+    "case",
+    "nonlocal",
+    "pass",
+    "raise",
+    "return",
+    "try",
+    "while",
+    "with",
+    "yield"
+  ],
+  "operator": [
+    "+",
+    "-",
+    "*",
+    "**",
+    "/",
+    "//",
+    "%",
+    "@",
+    "<<",
+    ">>",
+    "&",
+    "|",
+    "^",
+    "~",
+    "=",
+    "+=",
+    "-=",
+    "*=",
+    "/=",
+    "//=",
+    "%=",
+    "&=",
+    "|=",
+    "^=",
+    "<<=",
+    ">>=",
+    "==",
+    "!=",
+    "<",
+    ">",
+    "<=",
+    ">=",
+    ":=",
+    "->",
+    "and",
+    "or",
+    "not",
+    "in",
+    "is"
+  ],
+  "punctuation": ["(", ")", "[", "]", "{", "}", ",", ":", ".", ";"],
+  "leaf": {
+    "identifier": "variable",
+    "comment": "comment",
+    "string_start": "string",
+    "string_end": "string",
+    "escape_sequence": "string.escape",
+    "integer": "number",
+    "float": "number",
+    "true": "constant",
+    "false": "constant",
+    "none": "constant",
+    "ellipsis": "punctuation",
+    "type_conversion": "operator"
+  },
+  "background": {
+    "string_content": "string",
+    "is not": "operator",
+    "not in": "operator"
+  },
+  "context": [
+    {
+      "parent": "call",
+      "field": "function",
+      "type": "identifier",
+      "scope": "function"
+    },
+    {
+      "parent": "attribute",
+      "field": "attribute",
+      "parent_field": "function",
+      "type": "identifier",
+      "scope": "function"
+    },
+    {
+      "parent": "function_definition",
+      "field": "name",
+      "type": "identifier",
+      "scope": "function"
+    },
+    {
+      "parent": "class_definition",
+      "field": "name",
+      "type": "identifier",
+      "scope": "type"
+    },
+    { "parent": "decorator", "type": "identifier", "scope": "function" },
+    { "ancestor": "type", "type": "identifier", "scope": "type" },
+    { "parent": "parameters", "type": "identifier", "scope": "parameter" },
+    {
+      "parent": "lambda_parameters",
+      "type": "identifier",
+      "scope": "parameter"
+    },
+    { "parent": "typed_parameter", "type": "identifier", "scope": "parameter" },
+    {
+      "parent": "default_parameter",
+      "field": "name",
+      "type": "identifier",
+      "scope": "parameter"
+    },
+    {
+      "parent": "list_splat_pattern",
+      "type": "identifier",
+      "scope": "parameter"
+    },
+    {
+      "parent": "dictionary_splat_pattern",
+      "type": "identifier",
+      "scope": "parameter"
+    },
+    {
+      "parent": "keyword_argument",
+      "field": "name",
+      "type": "identifier",
+      "scope": "parameter"
+    },
+    {
+      "parent": "attribute",
+      "field": "attribute",
+      "type": "identifier",
+      "scope": "property"
+    }
+  ]
+}

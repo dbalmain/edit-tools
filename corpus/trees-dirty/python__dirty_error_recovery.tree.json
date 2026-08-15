@@ -1,0 +1,43 @@
+{
+  "language": "python",
+  "source": "foo( 1 +",
+  "root": {
+    "type": "module",
+    "start": 0,
+    "end": 8,
+    "children": [
+      {
+        "type": "ERROR",
+        "start": 0,
+        "end": 8,
+        "children": [
+          {
+            "type": "call",
+            "start": 0,
+            "end": 6,
+            "children": [
+              {
+                "type": "identifier",
+                "start": 0,
+                "end": 3,
+                "field": "function",
+                "text": "foo"
+              },
+              {
+                "type": "argument_list",
+                "start": 3,
+                "end": 6,
+                "field": "arguments",
+                "children": [
+                  { "type": "(", "start": 3, "end": 4, "text": "(" },
+                  { "type": "integer", "start": 5, "end": 6, "text": "1" }
+                ]
+              }
+            ]
+          },
+          { "type": "+", "start": 7, "end": 8, "text": "+" }
+        ]
+      }
+    ]
+  }
+}

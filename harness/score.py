@@ -290,7 +290,13 @@ def sizes(submission: Path, manifests: dict[str, mf.Manifest]) -> dict:
                 "package": gzipped(path),
                 "with_runtime": js_bytes + gzipped(path),
             }
-    all_packages = gzipped_tree(submission / "packages")
+    package_paths = [
+        submission / "packages" / f"{name}.json" for name in sorted(manifests)
+    ]
+    package_blob = b"".join(
+        path.read_bytes() for path in package_paths if path.is_file()
+    )
+    all_packages = len(gzip.compress(package_blob, 9)) if package_blob else 0
     return {
         "js-runtime": js_bytes,
         "packages": all_packages,

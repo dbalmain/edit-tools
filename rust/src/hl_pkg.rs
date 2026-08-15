@@ -1,4 +1,4 @@
-//! The highlight package: leaf defaults plus ordered context overrides.
+//! The highlight package: leaf defaults, opt-in backgrounds, and context overrides.
 
 use std::collections::{HashMap, HashSet};
 use std::fmt;
@@ -52,6 +52,7 @@ pub struct ContextRule {
 pub struct Package {
     pub scopes: HashSet<String>,
     pub leaf: HashMap<String, String>,
+    pub background: HashMap<String, String>,
     pub context: Vec<ContextRule>,
 }
 
@@ -68,6 +69,8 @@ struct RawPackage {
     punctuation: Vec<String>,
     #[serde(default)]
     leaf: HashMap<String, String>,
+    #[serde(default)]
+    background: HashMap<String, String>,
     #[serde(default)]
     context: Vec<ContextRule>,
 }
@@ -91,6 +94,7 @@ impl TryFrom<RawPackage> for Package {
 
         for scope in leaf
             .values()
+            .chain(raw.background.values())
             .chain(raw.context.iter().map(|rule| &rule.scope))
         {
             if !raw.scopes.contains(scope) {
@@ -101,6 +105,7 @@ impl TryFrom<RawPackage> for Package {
         Ok(Self {
             scopes: raw.scopes,
             leaf,
+            background: raw.background,
             context: raw.context,
         })
     }
@@ -129,60 +134,24 @@ impl Package {
 mod tests {
     use super::*;
 
-    const JSON_PACKAGE: &str = r#"
-        {
-          "format": "et-highlight/1",
-          "grammar": { "name": "tree-sitter-json" },
-          "scopes": [
-            "string",
-            "string.escape",
-            "number",
-            "constant",
-            "property",
-            "punctuation",
-            "error"
-          ],
-          "leaf": {
-            "string_content": "string",
-            "escape_sequence": "string.escape",
-            "number": "number",
-            "true": "constant",
-            "false": "constant",
-            "null": "constant",
-            "{": "punctuation",
-            "}": "punctuation",
-            "[": "punctuation",
-            "]": "punctuation",
-            ",": "punctuation",
-            ":": "punctuation",
-            "\"": "punctuation"
-          },
-          "context": [
-            {
-              "parent": "string",
-              "parent_field": "key",
-              "type": "string_content",
-              "scope": "property"
-            }
-          ]
-        }
-    "#;
-
     fn load(raw: serde_json::Value) -> Result<Package, LoadError> {
         Package::load(&raw.to_string())
     }
 
     #[test]
     fn loads_the_json_package_from_the_design() {
-        let package = Package::load(JSON_PACKAGE).expect("documented package loads");
+        let raw = include_str!("../../packages/json.highlight.json");
+        let package = Package::load(raw).expect("shipped JSON package loads");
         assert!(package.scopes.contains("string.escape"));
         assert_eq!(package.leaf["string_content"], "string");
-        assert_eq!(package.context.len(), 1);
+        assert_eq!(package.context.len(), 2);
         assert_eq!(package.context[0].parent.as_deref(), Some("string"));
         assert_eq!(package.context[0].field, None);
         assert_eq!(package.context[0].parent_field.as_deref(), Some("key"));
         assert_eq!(package.context[0].kind.as_deref(), Some("string_content"));
         assert_eq!(package.context[0].ancestor, None);
+        assert_eq!(package.context[1].kind.as_deref(), Some("\""));
+        assert_eq!(package.context[1].scope, "property");
     }
 
     #[test]
@@ -228,19 +197,27 @@ mod tests {
 
     #[test]
     fn refuses_every_kind_of_unlisted_emitted_scope() {
-        for field in ["leaf", "keyword", "operator", "punctuation", "context"] {
+        for field in [
+            "leaf",
+            "background",
+            "keyword",
+            "operator",
+            "punctuation",
+            "context",
+        ] {
             let mut raw = serde_json::json!({
                 "format": FORMAT,
                 "scopes": ["listed"]
             });
             raw[field] = match field {
                 "leaf" => serde_json::json!({ "name": "missing" }),
+                "background" => serde_json::json!({ "wrapper": "missing" }),
                 "context" => serde_json::json!([{ "type": "name", "scope": "missing" }]),
                 _ => serde_json::json!(["name"]),
             };
             let error = load(raw).expect_err("unlisted emitted scope must be refused");
             let missing = match field {
-                "leaf" | "context" => "missing",
+                "leaf" | "background" | "context" => "missing",
                 other => other,
             };
             assert!(

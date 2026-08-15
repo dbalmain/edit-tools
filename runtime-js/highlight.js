@@ -46,6 +46,20 @@ function loadPackage(raw) {
     for (const kind of strings(raw[name], name)) leaf[kind] = scope;
   }
 
+  if (
+    raw.background !== undefined &&
+    (!raw.background || typeof raw.background !== "object" || Array.isArray(raw.background))
+  ) {
+    throw new Refusal("`background` must be an object");
+  }
+  const background = Object.create(null);
+  for (const [kind, scope] of Object.entries(raw.background || {})) {
+    if (typeof scope !== "string") {
+      throw new Refusal(`scope for background \`${kind}\` must be a string`);
+    }
+    background[kind] = scope;
+  }
+
   if (raw.context !== undefined && !Array.isArray(raw.context)) {
     throw new Refusal("`context` must be a list");
   }
@@ -69,10 +83,14 @@ function loadPackage(raw) {
     return rule;
   });
 
-  for (const scope of [...Object.values(leaf), ...context.map((rule) => rule.scope)]) {
+  for (const scope of [
+    ...Object.values(leaf),
+    ...Object.values(background),
+    ...context.map((rule) => rule.scope),
+  ]) {
     if (!scopes.has(scope)) throw new Refusal(`emitted scope \`${scope}\` is not in \`scopes\``);
   }
-  return { scopes, leaf, context };
+  return { scopes, leaf, background, context };
 }
 
 function highlight(tree, pkg) {
@@ -99,7 +117,7 @@ function highlight(tree, pkg) {
         return;
       }
       const contextual = pkg.context.find((rule) => matches(rule, node, parent));
-      const scope = contextual?.scope ?? pkg.leaf[node.type];
+      const scope = contextual?.scope ?? pkg.leaf[node.type] ?? pkg.background[node.type];
       if (scope !== undefined) emit(node.start, node.end, scope);
       return;
     }
@@ -108,17 +126,18 @@ function highlight(tree, pkg) {
     for (const child of children) visit(child, node);
     ancestors.pop();
 
-    if (node.type === "ERROR" && node.start < node.end) {
+    const backgroundScope = node.type === "ERROR" ? "error" : pkg.background[node.type];
+    if (backgroundScope !== undefined && node.start < node.end) {
       const covered = children
         .map((child) => [Math.max(child.start, node.start), Math.min(child.end, node.end)])
         .filter(([start, end]) => start < end)
         .sort((left, right) => left[0] - right[0] || left[1] - right[1]);
       let cursor = node.start;
       for (const [start, end] of covered) {
-        emit(cursor, start, "error");
+        emit(cursor, start, backgroundScope);
         cursor = Math.max(cursor, end);
       }
-      emit(cursor, node.end, "error");
+      emit(cursor, node.end, backgroundScope);
     }
   };
 
