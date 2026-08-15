@@ -277,6 +277,23 @@ class Ctx {
     return new Refusal(`rule for \`${this.node.type}\` wants ${what} but found ${found}`);
   }
 
+  blanks() {
+    const item = this.items[this.cursor];
+    return item ? item.blanks : 0;
+  }
+
+  /** The separator in `each` runs *between* items and `blanks` reads the
+   *  item at the cursor (the following one). A listed type on either side
+   *  of the gap must open it — `def f` followed by `x = 1` needs the
+   *  blanks too. */
+  forcesBlank(kinds) {
+    if (!kinds || kinds.length === 0 || this.cursor === 0) return false;
+    const next = this.items[this.cursor];
+    if (!next) return false;
+    const prev = this.items[this.cursor - 1];
+    return kinds.includes(prev.node.type) || kinds.includes(next.node.type);
+  }
+
   /** Predicates describe the node, not the cursor: count over every child. */
   tally(sel) {
     let n = 0;
@@ -325,8 +342,12 @@ class Ctx {
       case "flatten":
         return this.flatten(rest[0], rest[1]);
       case "blank": {
-        const item = this.items[this.cursor];
-        const n = Math.min(item ? item.blanks : 0, rest[0]);
+        const cap = rest[0];
+        const around = rest[1];
+        if (around !== undefined && !Array.isArray(around)) {
+          throw new Refusal(`expected a list of node types, got ${around}`);
+        }
+        const n = this.forcesBlank(around) ? cap : Math.min(this.blanks(), cap);
         return concat(Array.from({ length: n }, () => hard));
       }
       default:

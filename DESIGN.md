@@ -41,7 +41,12 @@ opcodes, four selectors, one predicate. That is all of it.
 | `["soft"]`       | nothing when flat, a newline when broken                 |
 | `["hard"]`       | always a newline; forces every enclosing group open      |
 | `["sp"]`         | a space, never a break                                   |
-| `["blank", n]`   | up to `n` blank lines, as the source had them            |
+| `["blank", n]`   | up to `n` blank lines, as the source had them; see below |
+
+`["blank", n]` takes an optional third operand, a list of node types. A gap
+next to one of those types opens to exactly `n` — the cap is also a floor,
+but only there. `module` passes the definition types at 2, `block` the same
+list at 1, which is black's depth rule with no extra concept.
 
 ### Children
 
@@ -292,10 +297,15 @@ Named precisely, because a limit you can name is cheaper than one you can't.
 - **Unknown node types.** A node type with no rule is a refusal, not a guess.
   This makes an incomplete package loud instead of silently wrong, but it means
   a package must cover its language before it is useful at all.
-- **Blank lines are preserved and capped (2 at module level, 1 inside a block),
-  not normalised.** Black enforces two blank lines around top-level definitions;
-  I do not. On this corpus, whose sources are already black-clean, the two agree
-  — a corpus with sloppy blank lines would show the difference.
+- **Normalising every blank-line run.** Gaps next to a definition now open to
+  the local cap (2 at module level, 1 inside a block), which is black's depth
+  rule with no extra concept. Gaps that are not next to a definition are still
+  preserved and capped: two assignments with no blank between them stay packed.
+  A comment sitting immediately before a `def` gets the blanks before the
+  comment, because that is where the gap already lives. A blank the source put
+  *between* the comment and the `def` is not moved — that would need the
+  attachment pass to know about definitions, which I judged more mechanism
+  than the case is worth.
 
 ## Scores, as measured
 
@@ -306,11 +316,11 @@ Named precisely, because a limit you can name is cheaper than one you can't.
 [PASS] 3-nondestruction 30/30   meaning and comments preserved
 
 overflow lines     6            (black's own, at 88: 0)
-size (gzip)        7571 B = 5563 runtime + 2008 packages
+size (gzip)        8272 B = 6249 runtime + 2023 packages
 black agreement    11/12        (strings.py, on quote style alone)
 ```
 
-Against the 25 KB budget that is 7.6 KB, and I will repeat the proposal's claim:
+Against the 25 KB budget that is 8.3 KB, and I will repeat the proposal's claim:
 **size is not the binding constraint** for any design in this space. Every
 serious entry will fit. The axis that matters is whether the rules stay
 readable, and the honest test of that is whether you could have written

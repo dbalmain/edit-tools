@@ -195,11 +195,16 @@ impl<'a> Ctx<'a> {
                 self.eval(if hit { then } else { alt }, f)
             }
             Expr::Flatten(kind, sep) => self.flatten(kind, sep, f),
-            Expr::Blank(cap) => Ok(Doc::Concat(
-                std::iter::repeat_with(|| Doc::Hard)
-                    .take(self.blanks().min(*cap))
-                    .collect(),
-            )),
+            Expr::Blank(cap, around) => {
+                let n = if self.forces_blank(around) {
+                    *cap
+                } else {
+                    self.blanks().min(*cap)
+                };
+                Ok(Doc::Concat(
+                    std::iter::repeat_with(|| Doc::Hard).take(n).collect(),
+                ))
+            }
         }
     }
 
@@ -209,6 +214,23 @@ impl<'a> Ctx<'a> {
 
     fn blanks(&self) -> usize {
         self.items.get(self.cursor).map_or(0, |i| i.blanks)
+    }
+
+    /// The separator in `each` runs *between* items and `blanks` reads the
+    /// item at the cursor (the following one). A listed type on either side
+    /// of the gap must open it — `def f` followed by `x = 1` needs the
+    /// blanks too.
+    fn forces_blank(&self, kinds: &[String]) -> bool {
+        if kinds.is_empty() || self.cursor == 0 {
+            return false;
+        }
+        let Some(next) = self.items.get(self.cursor) else {
+            return false;
+        };
+        let prev = &self.items[self.cursor - 1];
+        kinds
+            .iter()
+            .any(|k| k == &prev.node.kind || k == &next.node.kind)
     }
 
     fn take(&mut self, sel: &Sel, f: &Fmt<'a>) -> Result<usize, Refusal> {
@@ -794,5 +816,187 @@ try {{
             .status()
             .expect("spawn node");
         assert!(status.success(), "js runtime disagreed (exit {status})");
+    }
+
+    fn stmts_pkg(around: serde_json::Value) -> Package {
+        serde_json::from_value(json!({
+            "indent": 2,
+            "tokens": ["(", ")", ",", "+", "def", "="],
+            "comments": ["comment"],
+            "rules": {
+                "file": ["each", "named", ["seq", ["hard"], ["blank", 2, around]]],
+                "fn": ["seq", ["tok", "def"], ["sp"], ["child", "t:name"],
+                       ["opt", "t:body", ["child", "t:body"]]],
+                "body": ["indent", ["hard"],
+                         ["each", "named", ["seq", ["hard"], ["blank", 1, around]]]],
+                "assign": ["seq", ["child", "t:name"], ["sp"], ["tok", "="], ["sp"],
+                           ["child", "t:num"]],
+            },
+        }))
+        .expect("stmts package parses")
+    }
+
+    /// `x = 1` starting at `at`.
+    fn assign_at(at: usize, name: &str, num: &str) -> serde_json::Value {
+        let n1 = at + name.len();
+        let eq = n1 + 1;
+        let v0 = eq + 2;
+        let v1 = v0 + num.len();
+        json!({
+            "type": "assign", "start": at, "end": v1,
+            "children": [
+                { "type": "name", "start": at, "end": n1, "text": name },
+                { "type": "=", "start": eq, "end": eq + 1, "text": "=" },
+                { "type": "num", "start": v0, "end": v1, "text": num },
+            ]
+        })
+    }
+
+    /// `def f` starting at `at`, optionally followed by a `body` child.
+    fn fn_at(at: usize, name: &str, body: Option<serde_json::Value>) -> serde_json::Value {
+        let n0 = at + 4;
+        let n1 = n0 + name.len();
+        let mut children = vec![
+            json!({ "type": "def", "start": at, "end": at + 3, "text": "def" }),
+            json!({ "type": "name", "start": n0, "end": n1, "text": name }),
+        ];
+        let end = match body {
+            Some(b) => {
+                let end = b["end"].as_u64().expect("body end") as usize;
+                children.push(b);
+                end
+            }
+            None => n1,
+        };
+        json!({ "type": "fn", "start": at, "end": end, "children": children })
+    }
+
+    #[test]
+    fn blank_opens_to_the_cap_on_either_side_of_a_listed_type() {
+        // x = 1\ndef f\ny = 2\n  — packed in the source; the def must open
+        // the gap *after* itself as well as before, or we have grok's bug.
+        let source = "x = 1\ndef f\ny = 2\n";
+        let root = json!({
+            "type": "file", "start": 0, "end": 18,
+            "children": [
+                assign_at(0, "x", "1"),
+                fn_at(6, "f", None),
+                assign_at(12, "y", "2"),
+            ]
+        });
+        assert_eq!(
+            run_on(&stmts_pkg(json!(["fn"])), source, root, 80).expect("ok"),
+            "x = 1\n\n\ndef f\n\n\ny = 2\n"
+        );
+    }
+
+    #[test]
+    fn blank_inside_a_block_uses_the_block_cap_as_the_floor() {
+        // Nested defs must open to 1, not 2: the cap is the floor, so depth
+        // comes free and we do not hardcode 2 the way the sibling did.
+        let source = "def f\n  x = 1\n  def g\n  y = 2\n";
+        let root = json!({
+            "type": "file", "start": 0, "end": 30,
+            "children": [fn_at(0, "f", Some(json!({
+                "type": "body", "start": 8, "end": 29,
+                "children": [
+                    assign_at(8, "x", "1"),
+                    fn_at(16, "g", None),
+                    assign_at(24, "y", "2"),
+                ]
+            })))]
+        });
+        assert_eq!(
+            run_on(&stmts_pkg(json!(["fn"])), source, root, 80).expect("ok"),
+            "def f\n  x = 1\n\n  def g\n\n  y = 2\n"
+        );
+    }
+
+    #[test]
+    fn blank_does_not_open_a_gap_between_unlisted_types() {
+        let source = "x = 1\ny = 2\n";
+        let root = json!({
+            "type": "file", "start": 0, "end": 12,
+            "children": [assign_at(0, "x", "1"), assign_at(6, "y", "2")]
+        });
+        assert_eq!(
+            run_on(&stmts_pkg(json!(["fn"])), source, root, 80).expect("ok"),
+            "x = 1\ny = 2\n"
+        );
+    }
+
+    #[test]
+    fn blank_still_caps_a_run_longer_than_n() {
+        let source = "x = 1\n\n\n\ndef f\n";
+        let root = json!({
+            "type": "file", "start": 0, "end": 15,
+            "children": [assign_at(0, "x", "1"), fn_at(9, "f", None)]
+        });
+        assert_eq!(
+            run_on(&stmts_pkg(json!(["fn"])), source, root, 80).expect("ok"),
+            "x = 1\n\n\ndef f\n"
+        );
+    }
+
+    #[test]
+    fn blank_opens_before_a_comment_that_leads_a_listed_type() {
+        // The gap lives on the item, counted from its first leading comment,
+        // so forcing it open puts the blanks *before* the comment.
+        let source = "x = 1\n# c\ndef f\n";
+        let root = json!({
+            "type": "file", "start": 0, "end": 16,
+            "children": [
+                assign_at(0, "x", "1"),
+                { "type": "comment", "start": 6, "end": 9, "text": "# c" },
+                fn_at(10, "f", None),
+            ]
+        });
+        assert_eq!(
+            run_on(&stmts_pkg(json!(["fn"])), source, root, 80).expect("ok"),
+            "x = 1\n\n\n# c\ndef f\n"
+        );
+    }
+
+    #[test]
+    fn blank_does_not_move_a_gap_that_sits_between_a_comment_and_a_def() {
+        // The floor opens before the comment. A blank the source put
+        // between the comment and the def is still just capped by decorate.
+        let source = "x = 1\n# c\n\ndef f\n";
+        let root = json!({
+            "type": "file", "start": 0, "end": 17,
+            "children": [
+                assign_at(0, "x", "1"),
+                { "type": "comment", "start": 6, "end": 9, "text": "# c" },
+                fn_at(11, "f", None),
+            ]
+        });
+        assert_eq!(
+            run_on(&stmts_pkg(json!(["fn"])), source, root, 80).expect("ok"),
+            "x = 1\n\n\n# c\n\ndef f\n"
+        );
+    }
+
+    #[test]
+    fn blank_without_a_type_list_is_still_only_a_cap() {
+        let pkg: Package = serde_json::from_value(json!({
+            "indent": 2,
+            "tokens": ["def", "="],
+            "rules": {
+                "file": ["each", "named", ["seq", ["hard"], ["blank", 2]]],
+                "fn": ["seq", ["tok", "def"], ["sp"], ["child", "t:name"]],
+                "assign": ["seq", ["child", "t:name"], ["sp"], ["tok", "="], ["sp"],
+                           ["child", "t:num"]],
+            },
+        }))
+        .expect("cap-only package parses");
+        let source = "x = 1\ndef f\n";
+        let root = json!({
+            "type": "file", "start": 0, "end": 12,
+            "children": [assign_at(0, "x", "1"), fn_at(6, "f", None)]
+        });
+        assert_eq!(
+            run_on(&pkg, source, root, 80).expect("ok"),
+            "x = 1\ndef f\n"
+        );
     }
 }

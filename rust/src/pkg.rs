@@ -88,7 +88,9 @@ pub enum Expr {
     AutoParen(Sel),
     When(Pred, Box<Expr>, Box<Expr>),
     Flatten(String, Box<Expr>),
-    Blank(usize),
+    /// Up to `n` blank lines from the source; the list, if any, is the types
+    /// that force the gap open to exactly `n`.
+    Blank(usize, Vec<String>),
 }
 
 impl TryFrom<Value> for Expr {
@@ -143,8 +145,19 @@ impl TryFrom<Value> for Expr {
                 Ok(Expr::Trail(literal(&parts[0])?, selector(&parts[1])?))
             }
             "blank" => {
-                arity(1)?;
-                Ok(Expr::Blank(count(&parts[0])?))
+                if parts.is_empty() || parts.len() > 2 {
+                    return Err(format!(
+                        "`blank` takes 1 or 2 operands, got {}",
+                        parts.len()
+                    ));
+                }
+                let cap = count(&parts[0])?;
+                let around = if parts.len() == 2 {
+                    node_types(&parts[1])?
+                } else {
+                    Vec::new()
+                };
+                Ok(Expr::Blank(cap, around))
             }
             "each" | "opt" => {
                 arity(2)?;
@@ -181,6 +194,13 @@ fn literal(value: &Value) -> Result<String, String> {
         .as_str()
         .map(str::to_owned)
         .ok_or_else(|| format!("expected a string, got {value}"))
+}
+
+fn node_types(value: &Value) -> Result<Vec<String>, String> {
+    let Value::Array(items) = value else {
+        return Err(format!("expected a list of node types, got {value}"));
+    };
+    items.iter().map(literal).collect()
 }
 
 fn count(value: &Value) -> Result<usize, String> {

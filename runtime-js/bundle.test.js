@@ -217,3 +217,137 @@ test("both runtimes refuse the same corrupt verbatim tree", () => {
   assert.match(result.stderr, /verbatim `quote`/);
   assert.match(result.stderr, /leaf whose text does not match the source/);
 });
+
+function stmtsPkg(around) {
+  return {
+    indent: 2,
+    tokens: ["(", ")", ",", "+", "def", "="],
+    comments: ["comment"],
+    rules: {
+      file: ["each", "named", ["seq", ["hard"], ["blank", 2, around]]],
+      fn: ["seq", ["tok", "def"], ["sp"], ["child", "t:name"],
+           ["opt", "t:body", ["child", "t:body"]]],
+      body: ["indent", ["hard"],
+             ["each", "named", ["seq", ["hard"], ["blank", 1, around]]]],
+      assign: ["seq", ["child", "t:name"], ["sp"], ["tok", "="], ["sp"],
+               ["child", "t:num"]],
+    },
+  };
+}
+
+/** `x = 1` starting at `at`. */
+function assignAt(at, name, num) {
+  const n1 = at + name.length;
+  const eq = n1 + 1;
+  const v0 = eq + 2;
+  const v1 = v0 + num.length;
+  return {
+    type: "assign", start: at, end: v1,
+    children: [
+      { type: "name", start: at, end: n1, text: name },
+      { type: "=", start: eq, end: eq + 1, text: "=" },
+      { type: "num", start: v0, end: v1, text: num },
+    ],
+  };
+}
+
+/** `def f` starting at `at`, optionally followed by a `body` child. */
+function fnAt(at, name, body) {
+  const n0 = at + 4;
+  const n1 = n0 + name.length;
+  const children = [
+    { type: "def", start: at, end: at + 3, text: "def" },
+    { type: "name", start: n0, end: n1, text: name },
+  ];
+  if (body) children.push(body);
+  return { type: "fn", start: at, end: body ? body.end : n1, children };
+}
+
+test("blank opens to the cap on either side of a listed type", () => {
+  // x = 1\ndef f\ny = 2\n  — packed in the source; the def must open
+  // the gap *after* itself as well as before, or we have grok's bug.
+  const source = "x = 1\ndef f\ny = 2\n";
+  const root = {
+    type: "file", start: 0, end: 18,
+    children: [assignAt(0, "x", "1"), fnAt(6, "f"), assignAt(12, "y", "2")],
+  };
+  assert.equal(runOn(stmtsPkg(["fn"]), source, root, 80), "x = 1\n\n\ndef f\n\n\ny = 2\n");
+});
+
+test("blank inside a block uses the block cap as the floor", () => {
+  const source = "def f\n  x = 1\n  def g\n  y = 2\n";
+  const root = {
+    type: "file", start: 0, end: 30,
+    children: [fnAt(0, "f", {
+      type: "body", start: 8, end: 29,
+      children: [assignAt(8, "x", "1"), fnAt(16, "g"), assignAt(24, "y", "2")],
+    })],
+  };
+  assert.equal(
+    runOn(stmtsPkg(["fn"]), source, root, 80),
+    "def f\n  x = 1\n\n  def g\n\n  y = 2\n",
+  );
+});
+
+test("blank does not open a gap between unlisted types", () => {
+  const source = "x = 1\ny = 2\n";
+  const root = {
+    type: "file", start: 0, end: 12,
+    children: [assignAt(0, "x", "1"), assignAt(6, "y", "2")],
+  };
+  assert.equal(runOn(stmtsPkg(["fn"]), source, root, 80), "x = 1\ny = 2\n");
+});
+
+test("blank still caps a run longer than n", () => {
+  const source = "x = 1\n\n\n\ndef f\n";
+  const root = {
+    type: "file", start: 0, end: 15,
+    children: [assignAt(0, "x", "1"), fnAt(9, "f")],
+  };
+  assert.equal(runOn(stmtsPkg(["fn"]), source, root, 80), "x = 1\n\n\ndef f\n");
+});
+
+test("blank opens before a comment that leads a listed type", () => {
+  const source = "x = 1\n# c\ndef f\n";
+  const root = {
+    type: "file", start: 0, end: 16,
+    children: [
+      assignAt(0, "x", "1"),
+      { type: "comment", start: 6, end: 9, text: "# c" },
+      fnAt(10, "f"),
+    ],
+  };
+  assert.equal(runOn(stmtsPkg(["fn"]), source, root, 80), "x = 1\n\n\n# c\ndef f\n");
+});
+
+test("blank does not move a gap that sits between a comment and a def", () => {
+  const source = "x = 1\n# c\n\ndef f\n";
+  const root = {
+    type: "file", start: 0, end: 17,
+    children: [
+      assignAt(0, "x", "1"),
+      { type: "comment", start: 6, end: 9, text: "# c" },
+      fnAt(11, "f"),
+    ],
+  };
+  assert.equal(runOn(stmtsPkg(["fn"]), source, root, 80), "x = 1\n\n\n# c\n\ndef f\n");
+});
+
+test("blank without a type list is still only a cap", () => {
+  const pkg = {
+    indent: 2,
+    tokens: ["def", "="],
+    rules: {
+      file: ["each", "named", ["seq", ["hard"], ["blank", 2]]],
+      fn: ["seq", ["tok", "def"], ["sp"], ["child", "t:name"]],
+      assign: ["seq", ["child", "t:name"], ["sp"], ["tok", "="], ["sp"],
+               ["child", "t:num"]],
+    },
+  };
+  const source = "x = 1\ndef f\n";
+  const root = {
+    type: "file", start: 0, end: 12,
+    children: [assignAt(0, "x", "1"), fnAt(6, "f")],
+  };
+  assert.equal(runOn(pkg, source, root, 80), "x = 1\ndef f\n");
+});

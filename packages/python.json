@@ -33,11 +33,11 @@
   },
 
   "rules": {
-    "module": ["each", "named", ["seq", ["hard"], ["blank", 2]]],
+    "module": ["each", "named", ["seq", ["hard"], ["blank", 2, ["function_definition", "class_definition", "decorated_definition"]]]],
     "block": [
       "indent",
       ["hard"],
-      ["each", "named", ["seq", ["hard"], ["blank", 1]]]
+      ["each", "named", ["seq", ["hard"], ["blank", 1, ["function_definition", "class_definition", "decorated_definition"]]]]
     ],
 
     "expression_statement": ["child", "named"],
