@@ -55,9 +55,7 @@ fn walk<'a>(
 
     if node.kind == "ERROR" {
         backfill(node, "error", spans);
-    } else if let Some(scope) = package.leaf.get(&node.kind) {
-        // An interior default is a background whose direct children refine it.
-        // Python uses this for string_content around escape_sequence children.
+    } else if let Some(scope) = package.background.get(&node.kind) {
         backfill(node, scope, spans);
     }
 }
@@ -74,6 +72,7 @@ fn leaf_scope<'a>(
         .find(|rule| context_matches(rule, node, parent, ancestors))
         .map(|rule| rule.scope.as_str())
         .or_else(|| package.leaf.get(&node.kind).map(String::as_str))
+        .or_else(|| package.background.get(&node.kind).map(String::as_str))
 }
 
 fn context_matches(
@@ -254,7 +253,7 @@ mod tests {
     }
 
     #[test]
-    fn an_interior_leaf_default_paints_around_refined_children() {
+    fn an_interior_background_paints_around_refined_children() {
         let tree = corpus("python__strings.tree.json");
         let package = package();
         let spans = highlight(&tree, &package);
@@ -277,6 +276,47 @@ mod tests {
         assert_eq!(span_scope(&spans, line_two, tab), "string");
         assert_eq!(span_scope(&spans, tab, tab + 2), "string.escape");
         assert_eq!(span_scope(&spans, tab + 2, closing_quote), "string");
+        assert_partition(&tree, &package, &spans);
+    }
+
+    #[test]
+    fn an_interior_leaf_default_does_not_paint_around_children() {
+        let package = Package::load(
+            r#"{
+              "format":"et-highlight/1",
+              "scopes":["keyword","parameter","punctuation","variable"],
+              "leaf":{"lambda":"keyword",":":"punctuation","identifier":"variable"},
+              "context":[
+                {"parent":"lambda_parameters","type":"identifier","scope":"parameter"}
+              ]
+            }"#,
+        )
+        .expect("package loads");
+        let tree = tree(
+            r#"{
+              "language":"toy", "source":"lambda x: x",
+              "root":{"type":"module","start":0,"end":11,"children":[
+                {"type":"lambda","start":0,"end":11,"children":[
+                  {"type":"lambda","start":0,"end":6,"text":"lambda"},
+                  {"type":"lambda_parameters","start":7,"end":8,"children":[
+                    {"type":"identifier","start":7,"end":8,"text":"x"}
+                  ]},
+                  {"type":":","start":8,"end":9,"text":":"},
+                  {"type":"identifier","start":10,"end":11,"text":"x"}
+                ]}
+              ]}
+            }"#,
+        );
+        let spans = highlight(&tree, &package);
+        assert_eq!(
+            spans,
+            vec![
+                Span::new(0, 6, "keyword"),
+                Span::new(7, 8, "parameter"),
+                Span::new(8, 9, "punctuation"),
+                Span::new(10, 11, "variable"),
+            ]
+        );
         assert_partition(&tree, &package, &spans);
     }
 

@@ -87,15 +87,12 @@
     "or",
     "not",
     "in",
-    "is",
-    "is not",
-    "not in"
+    "is"
   ],
   "punctuation": ["(", ")", "[", "]", "{", "}", ",", ":", ".", ";"],
   "leaf": {
     "identifier": "variable",
     "comment": "comment",
-    "string_content": "string",
     "string_start": "string",
     "string_end": "string",
     "escape_sequence": "string.escape",
@@ -106,6 +103,11 @@
     "none": "constant",
     "ellipsis": "punctuation",
     "type_conversion": "operator"
+  },
+  "background": {
+    "string_content": "string",
+    "is not": "operator",
+    "not in": "operator"
   },
   "context": [
     {

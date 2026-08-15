@@ -79,11 +79,13 @@ test("package loading expands sugar and refuses invalid scope vocabularies", () 
     format: "et-highlight/1",
     scopes: ["base", "keyword", "operator", "punctuation", "error"],
     leaf: { shared: "base" },
+    background: { wrapper: "base" },
     keyword: ["shared"],
     operator: ["shared"],
     punctuation: ["shared"],
   });
   assert.equal(expanded.leaf.shared, "punctuation");
+  assert.equal(expanded.background.wrapper, "base");
   assert.throws(
     () => loadPackage({ format: "et-highlight/2", scopes: [] }),
     (error) => error instanceof Refusal && /expected "et-highlight\/1"/.test(error.message),
@@ -97,6 +99,12 @@ test("package loading expands sugar and refuses invalid scope vocabularies", () 
       format: "et-highlight/1", scopes: ["string", "string.escape.unicode"],
     }),
     /requires prefix `string.escape` in `scopes`/,
+  );
+  assert.throws(
+    () => loadPackage({
+      format: "et-highlight/1", scopes: ["base"], background: { wrapper: "missing" },
+    }),
+    /emitted scope `missing` is not in `scopes`/,
   );
 });
 
@@ -129,7 +137,7 @@ test("Rust and JS agree on splat parameters", () => {
   assertPartition(tree, pkg, spans);
 });
 
-test("interior leaf defaults paint around refined children", () => {
+test("interior backgrounds paint around refined children", () => {
   const tree = readTree("python__strings.tree.json");
   const spans = assertIdentity(tree);
   const lineOne = byteOffset(tree.source, "line one");
@@ -143,6 +151,43 @@ test("interior leaf defaults paint around refined children", () => {
   assert.equal(spanScope(spans, tab, tab + 2), "string.escape");
   assert.equal(spanScope(spans, tab + 2, closingQuote), "string");
   assertPartition(tree, pkg, spans);
+});
+
+test("an interior leaf default does not paint around children", () => {
+  const rawPackage = {
+    format: "et-highlight/1",
+    scopes: ["keyword", "parameter", "punctuation", "variable"],
+    leaf: { lambda: "keyword", ":": "punctuation", identifier: "variable" },
+    context: [
+      { parent: "lambda_parameters", type: "identifier", scope: "parameter" },
+    ],
+  };
+  const tree = {
+    language: "toy",
+    source: "lambda x: x",
+    root: {
+      type: "module", start: 0, end: 11, children: [{
+        type: "lambda", start: 0, end: 11, children: [
+          { type: "lambda", start: 0, end: 6, text: "lambda" },
+          {
+            type: "lambda_parameters", start: 7, end: 8, children: [
+              { type: "identifier", start: 7, end: 8, text: "x" },
+            ],
+          },
+          { type: ":", start: 8, end: 9, text: ":" },
+          { type: "identifier", start: 10, end: 11, text: "x" },
+        ],
+      }],
+    },
+  };
+  const spans = assertIdentity(tree, rawPackage);
+  assert.deepEqual(spans, [
+    { start: 0, end: 6, scope: "keyword" },
+    { start: 7, end: 8, scope: "parameter" },
+    { start: 8, end: 9, scope: "punctuation" },
+    { start: 10, end: 11, scope: "variable" },
+  ]);
+  assertPartition(tree, loadPackage(rawPackage), spans);
 });
 
 test("Rust and JS agree on ERROR child-range backfill", () => {
