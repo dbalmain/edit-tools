@@ -62,7 +62,24 @@ Fields you must establish rather than guess:
   `nix run nixpkgs#pkg`) that the python and json manifests demonstrate. Several
   formatters infer the language from the filename and need a fake one for stdin
   (`--stdin-filepath x.{{LANG}}`). Record the command that worked, not the one
-  you hoped would.
+  you hoped would — and **verify every flag actually changes something before
+  keeping it.** `--stdin-filepath` is genuinely required for prettier and does
+  nothing at all for taplo, where it was kept anyway and would have been copied
+  into fourteen more manifests unexamined. A flag that does nothing is noise
+  that outlives you.
+
+  **Establish whether the reference reads ambient config**, and disable it. The
+  method matters: plant a config file that sets an option your command line does
+  **not** pass, then diff — testing with the option you already pass is exactly
+  what hides the effect. taplo searches cwd _and every ancestor_ for
+  `.taplo.toml`. Record three things: which options a discovered config can
+  still supply, whether your command-line options override it or merely fill
+  gaps it leaves (for taplo, `-o` wins per key and the config fills the rest —
+  two round-1 builders got this backwards), and any channel the disable flag
+  leaves open (`--no-auto-config` suppresses the _search_; `TAPLO_CONFIG` still
+  applies). A reference whose output depends on where it was run is not ground
+  truth.
+
 - `reference_version` — the version string you **observed the tool print**. A
   version that was assumed rather than observed is a defect the stage-B reviewer
   is told to look for.
@@ -72,15 +89,50 @@ Fields you must establish rather than guess:
   running the tool at two widths and diffing**, not by reading its `--help`:
   taplo's width knob is `-o column_width=N`, which is not where anyone looks
   first.
-- `widths` — `{{WIDTHS}}`. If the reference ignores width, say so in the report
-  and set `reference_width = "fixed"` rather than inventing a width it does not
+- `widths` — a narrow width, and **the reference's own default**, which you
+  **establish by bisection**: find the line length at which the reference's
+  unprompted output (no width flag) starts breaking. Report the number.
+  `{{WIDTHS}}` is the orchestrator's guess and is only a fallback if you cannot
+  determine the default. Round 1 shows why: every TOML builder inherited `88`,
+  which is **black's** default carried over from the python manifest, while
+  taplo's is **80** — so agreement was being measured at a width no taplo user
+  ever sees. If the reference ignores width entirely, say so in the report and
+  set `reference_width = "fixed"` rather than inventing a width it does not
   honour.
-- `gate3` — `"default"` unless {{LANG}} has a real semantic checker available (a
-  loader that round-trips, an AST dumper). If it does, put it in
-  `harness/languages/{{LANG}}_gate3.py` as `signature(text) -> object | None`,
-  set `gate3 = "{{LANG}}"`, and say in the report why it is stronger than the
-  default. Comments are **not** your override's problem: gate3.py compares the
-  grammar's extras for every language, override or not.
+- `gate3` — **start at `"default"`, and expect to stay there.** An override must
+  be **strictly stronger** than the generic default, and you must _prove_ it
+  before declaring one.
+
+  Agreeing with the default on reference output proves nothing: both accept a
+  correct formatter, which is what reference output is. The proof is
+  adversarial. Take a committed reference output, rewrite it so the **loaded
+  data is unchanged but the document is not** — respell a number (`1_000` →
+  `1000`, `0xdead` → `57005`), swap quote styles, convert a dotted key to a
+  header, reorder sibling entries — and show your override **rejects** it. If
+  you cannot make the override reject something the default rejects, the default
+  is stronger and you are done.
+
+  **Data-model loaders are almost always the wrong choice.** `tomllib`,
+  `yaml.safe_load`, `json.loads` and friends collapse exactly the spelling
+  distinctions a formatter must preserve — that is their job as loaders and it
+  is fatal here. Two of the four builders in round 1 reached for `tomllib`; a
+  reviewer then found **11 of 11** data-preserving rewrites that the override
+  accepted and the generic default rejected, including every literal spelling in
+  the file the builder's own report described as "TOML's literal spellings must
+  survive formatting". Neither builder was careless; the bar simply was not
+  written down. It is now.
+
+  A related trap: if a loader forces you to add a canonicaliser (NaN handling is
+  the usual one), notice that the default had no such problem — it compares leaf
+  text, and `"nan" == "nan"`. Solving a problem your own override created is not
+  evidence of strength.
+
+  If you do declare one, put it in `harness/languages/{{LANG}}_gate3.py` as
+  `signature(text) -> object | None`, set `gate3 = "{{LANG}}"`, and put the
+  adversarial evidence in the report. Comments are **not** your override's
+  problem: `gate3.py` compares the grammar's extras for every language, override
+  or not — the exposure is structural rewriting that survives a data-level load.
+
 - `transparent_wrappers` — used only by `gate3 = "default"`. The node kinds your
   formatter may legitimately **add or remove** around a single child, which in
   most languages means the parenthesised-expression node. Leave it empty to
@@ -108,8 +160,29 @@ Every corpus must include, adapted to {{LANG}}'s actual syntax:
   trailing, inside a delimited construct, before a closing delimiter
 - a string/literal probe — including whatever escaping or multi-line form the
   language has
+- a **normalisation probe** — input written the way a person writes it and a
+  formatter does not: wrong spacing around operators and delimiters, padding
+  inside brackets, wrong or absent indentation, runs of spaces before a trailing
+  comment. Every other probe here is structural and tests what the reference
+  **breaks**; this one tests what it **rewrites**. Round 1 shows why it is
+  mandatory: one builder wrote all fourteen files already in the reference's own
+  spacing, so **7 of 14 were byte-identical input to output** and the corpus
+  probed token-level normalisation not at all.
 - a `kitchen` probe — several constructs interacting, the one file allowed to be
   messy
+
+Two properties the whole corpus must have, not any single file:
+
+- **At least a third of files must produce different reference output at the two
+  widths.** Constructs the reference cannot break — comments, string interiors,
+  and whatever else it refuses to split — do not count toward this. One round-1
+  corpus had **1 of 14** files that could tell the two widths apart, because
+  every line in the discriminating band was unbreakable. If you cannot reach a
+  third, that is a finding about the reference and belongs in the report.
+- **Most files should carry a comment**, not one dedicated comments probe. The
+  universal extras layer of gate 3 has comments as its _only_ input, so a file
+  with no comment is a file where that layer is inert. In one round-1 corpus, 9
+  of 14 files had no comment at all.
 
 Plus 7–11 files covering what is _characteristic_ of {{LANG}} — the constructs a
 person would notice were formatted wrongly. Choose these yourself; justify them
@@ -155,6 +228,15 @@ right now, and a shared-file edit becomes a merge conflict. In particular:
   field — say which, and why, in the report. That is a template delta and it is
   worth more than the workaround.
 
+If a missing field or a harness defect **blocks one of the required gates**,
+report it as a finding _and_ state the exact patch you would apply — field name,
+type, default, and the shared-file lines — **without applying it**. A precise
+proposal scores exactly as high here as a fix would, and it is the one thing
+that survives three agents working in parallel. All four round-1 builders hit
+the same harness defect; the two who described it precisely were more useful
+than the one who fixed it, because the fix had to be re-decided centrally
+anyway.
+
 You may also change `rust/` and `runtime-js/`, but you almost certainly should
 not need to for _this_ slice. If you do, every such edit must appear in your
 report with the case for it.
@@ -185,12 +267,45 @@ Write `corpus/reports/{{LANG}}/corpus-report.md`:
 - the manifest, and how you established each field you had to discover
 - the corpus file list, one line each: what it stresses and why it is
   characteristic of {{LANG}}
+- **two counts, from two `cmp` loops**: how many corpus files the reference
+  changes at all, and how many differ between your two widths. A corpus where
+  most files are byte-identical input to output is not probing anything; report
+  the number rather than making the reviewer compute it.
+- **the reference's own overflow count** — `score.py` prints it as "its own
+  overflow: N" — with the causes broken out. **The reference is allowed to
+  overrun its own target width, and they all do.** taplo overruns on 8 line-runs
+  across the TOML corpus, one of which it _manufactures_: it pads a 66-character
+  line out to 107 in order to align a comment. Without this number in the
+  report, a stage-C agent reads a 107-character line at width 88 as a corpus bug
+  and either "fixes" it away from the reference or files it as a package
+  failure.
 - **anything the reference formatter does that surprised you** — this is the
   most valuable section. Cases where it does not reflow, where its output
   depends on something other than the input line, where two inputs format the
   same, where it makes a choice a node-type table could not express.
-- every file outside `corpus/` and `harness/languages/` that you changed, and
-  why
+
+  Three questions you must answer **explicitly**, because round-1 builders wrote
+  good surprise lists and still missed these:
+
+  - **When a container breaks, do the containers _inside_ it break too — even
+    ones that would fit?** Construct a case where a child fits with room to
+    spare and check. taplo: yes, unconditionally, and it crosses inline-table
+    boundaries. A package that models each container as an independent group
+    diverges on every nested one, so getting this wrong costs the whole stage-C
+    design.
+  - **Does a trailing comment count toward its line's width?** taplo: yes, and
+    it will destroy a perfectly good flat array in a futile attempt to fit a
+    comment it cannot move.
+  - **What does the reference normalise at _token_ level** — spacing, delimiter
+    padding, indentation — as opposed to line level?
+
+- **everything you changed outside `corpus/` and `harness/languages/`.** Paste
+  the output of
+  `git diff --stat <base> -- . ':(exclude)corpus' ':(exclude)harness/languages'`
+  verbatim, even when it is empty. The reviewer runs the same command and
+  compares. A round-1 builder wrote "None" here while the slice edited two
+  shared harness scripts; a mismatch is treated as a more serious defect than
+  whatever edit it concealed.
 - **template delta** — what in this brief misled you, what was missing, what was
   noise. If nothing, say nothing.
 
