@@ -1,0 +1,57 @@
+{
+  "format": "et-doc-rules/1",
+  "indent": 2,
+  "tokens": ["{", "}", "[", "]", ",", ":"],
+  "comments": [],
+  "descend": [],
+  "optional_parens": [],
+  "precedence": {},
+
+  "rules": {
+    "document": ["child", "named"],
+
+    "object": [
+      "when",
+      ["count", "t:pair", 0],
+      ["seq", ["tok", "{"], ["tok", "}"]],
+      [
+        "group",
+        ["tok", "{"],
+        [
+          "indent",
+          ["line"],
+          ["each", "t:pair", ["seq", ["tok", ","], ["line"]]]
+        ],
+        ["line"],
+        ["tok", "}"]
+      ]
+    ],
+
+    "array": [
+      "when",
+      ["count", "named", 0],
+      ["seq", ["tok", "["], ["tok", "]"]],
+      [
+        "group",
+        ["tok", "["],
+        [
+          "indent",
+          ["soft"],
+          ["each", "named", ["seq", ["tok", ","], ["line"]]]
+        ],
+        ["soft"],
+        ["tok", "]"]
+      ]
+    ],
+
+    "pair": [
+      "seq",
+      ["child", "f:key"],
+      ["tok", ":"],
+      ["sp"],
+      ["child", "f:value"]
+    ],
+
+    "string": ["verbatim"]
+  }
+}

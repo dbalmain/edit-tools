@@ -1,0 +1,3 @@
+#!/bin/sh
+here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+FMT_PACKAGES="$here/packages" exec "$here/rust/target/release/docfmt" "$@"

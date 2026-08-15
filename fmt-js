@@ -1,0 +1,16 @@
+#!/usr/bin/env node
+"use strict";
+const fs = require("fs");
+const path = require("path");
+const { format } = require(path.join(__dirname, "runtime-js", "bundle.js"));
+
+const [treePath, width] = process.argv.slice(2);
+try {
+  const tree = JSON.parse(fs.readFileSync(treePath, "utf8"));
+  const dir = process.env.FMT_PACKAGES || path.join(__dirname, "packages");
+  const pkg = JSON.parse(fs.readFileSync(path.join(dir, `${tree.language}.json`), "utf8"));
+  process.stdout.write(format(tree, Number(width), pkg));
+} catch (e) {
+  console.error(e.message);
+  process.exit(1);
+}
