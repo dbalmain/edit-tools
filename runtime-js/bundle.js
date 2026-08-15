@@ -365,6 +365,7 @@ class Ctx {
       throw this.refuse("to be the whole rule (`verbatim` takes every child)");
     }
     if (this.items.some(decorated)) throw this.refuse("no comments inside an opaque node");
+    checkVerbatim(this.fmt, this.node);
     this.cursor = this.items.length;
     return this.fmt.slice(this.node);
   }
@@ -490,6 +491,40 @@ class Ctx {
       throw this.refuse("no comment on an operand of a flattened chain");
     }
   }
+}
+
+/** `verbatim` is the one opcode that emits source bytes nobody compared
+ *  against the tree. Every other path reaches text through a real child, so
+ *  the linearity invariant protects it; this walk is the equivalent for a
+ *  node whose offsets may be stale. */
+function checkVerbatim(fmt, node) {
+  const root = node.type;
+  const fail = (why) => new Refusal(`verbatim \`${root}\` ${why}`);
+  const walk = (n, parent) => {
+    if (n.start > n.end) throw fail("has inverted range");
+    if (parent == null) {
+      if (n.end > fmt.bytes.length) throw fail("runs past the source");
+    } else if (n.start < parent.start || n.end > parent.end) {
+      throw fail("has a descendant outside its parent");
+    }
+    if (n.text !== undefined) {
+      const got = fmt.bytes.subarray(n.start, n.end);
+      const want = new TextEncoder().encode(n.text);
+      if (got.length !== want.length || !got.every((b, i) => b === want[i])) {
+        throw fail("has a leaf whose text does not match the source");
+      }
+    }
+    const kids = n.children ?? [];
+    let prevEnd;
+    for (const child of kids) {
+      if (prevEnd !== undefined && prevEnd > child.start) {
+        throw fail("has overlapping siblings");
+      }
+      prevEnd = child.end;
+      walk(child, n);
+    }
+  };
+  walk(node, null);
 }
 
 class Formatter {

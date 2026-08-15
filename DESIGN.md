@@ -53,7 +53,7 @@ Every opcode that emits a child **consumes** it. See _linearity_ below.
 | `["each", sel, sep]`     | format every `sel` child in turn, evaluating `sep` between them — `sep` consumes whatever punctuation lies between |
 | `["tok", "s"]`           | the child under the cursor is the token `s`; emit it                                                               |
 | `["opt", sel, e]`        | evaluate `e` only if the child under the cursor matches `sel`                                                      |
-| `["verbatim"]`           | take every child and emit the node's original source text, exactly                                                 |
+| `["verbatim"]`           | take every child and emit the node's original source text, exactly — after the subtree's offsets check out         |
 | `["flatten", type, sep]` | collect a left-nested operator chain and join it — see below                                                       |
 
 ### Choice
@@ -167,7 +167,11 @@ because the language cannot express anything else**:
 
 - There is no opcode that emits arbitrary text. `tok` names a token it must find
   under the cursor; `child` recurses into a real child; `verbatim` emits the
-  node's own source. Whitespace opcodes emit no tokens.
+  node's own source, but only after walking the subtree and refusing unless
+  every range sits inside its parent, siblings are ordered and disjoint, and
+  every leaf's `text` equals `source[start..end]`. Stale offsets — the one
+  way this opcode can emit bytes the tree does not justify — are a refusal,
+  not a silent rewrite. Whitespace opcodes emit no tokens.
 - A rule may only ever consume the child **under the cursor**. Skipping,
   revisiting and reordering are unreachable, not merely discouraged.
 - At the end of a rule the cursor must be at the end of the children, or the

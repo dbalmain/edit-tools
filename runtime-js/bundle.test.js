@@ -16,7 +16,26 @@ const toy = (rules) => ({
 
 const leaf = (type, text) => ({ type, start: 0, end: 0, text });
 
-const run = (pkg, root, width) => format({ language: "toy", source: "", root }, width, pkg);
+const run = (pkg, root, width) => runOn(pkg, "", root, width);
+const runOn = (pkg, source, root, width) => format({ language: "toy", source, root }, width, pkg);
+
+const span = (type, start, end, text) => ({ type, start, end, text });
+
+/** `"hi"` as a three-child `quote` node — the shape `verbatim` actually sees. */
+function quote(start, end, children) {
+  return {
+    source: '"hi"',
+    root: { type: "quote", start, end, children },
+  };
+}
+
+function quoteOk() {
+  return quote(0, 4, [
+    span("open", 0, 1, '"'),
+    span("body", 1, 3, "hi"),
+    span("close", 3, 4, '"'),
+  ]);
+}
 
 function list(items, trailing) {
   const children = [leaf("(", "(")];
@@ -96,4 +115,105 @@ test("flatten stops where the operator binds tighter", () => {
     sum: ["group", ["flatten", "sum", ["seq", ["line"], ["child", "f:operator"], ["sp"]]]],
   });
   assert.equal(run(pkg, chain([["*", "bbb"], ["+", "ccc"]], "aaa"), 9), "aaa * bbb\n+ ccc\n");
+});
+
+const quotePkg = () => toy({ quote: ["verbatim"] });
+
+test("verbatim emits the source slice when the subtree checks out", () => {
+  const { source, root } = quoteOk();
+  assert.equal(runOn(quotePkg(), source, root, 80), '"hi"\n');
+});
+
+test("verbatim refuses when a leaf's text does not match the source", () => {
+  const { source, root } = quote(0, 4, [
+    span("open", 0, 1, '"'),
+    span("body", 1, 3, "HI"),
+    span("close", 3, 4, '"'),
+  ]);
+  assert.throws(
+    () => runOn(quotePkg(), source, root, 80),
+    (e) =>
+      e instanceof Refusal &&
+      /verbatim `quote`/.test(e.message) &&
+      /leaf whose text does not match the source/.test(e.message),
+  );
+});
+
+test("verbatim refuses when a descendant is outside its parent", () => {
+  const { source, root } = quote(0, 4, [
+    span("open", 0, 1, '"'),
+    span("body", 1, 10, "hi"),
+    span("close", 3, 4, '"'),
+  ]);
+  assert.throws(
+    () => runOn(quotePkg(), source, root, 80),
+    (e) =>
+      e instanceof Refusal &&
+      /verbatim `quote`/.test(e.message) &&
+      /outside its parent/.test(e.message),
+  );
+});
+
+test("verbatim refuses when siblings overlap", () => {
+  // Each leaf matches its own slice; the ranges themselves overlap.
+  const { source, root } = quote(0, 4, [
+    span("open", 0, 2, '"h'),
+    span("body", 1, 3, "hi"),
+    span("close", 3, 4, '"'),
+  ]);
+  assert.throws(
+    () => runOn(quotePkg(), source, root, 80),
+    (e) =>
+      e instanceof Refusal &&
+      /verbatim `quote`/.test(e.message) &&
+      /overlapping siblings/.test(e.message),
+  );
+});
+
+test("verbatim refuses when a range is inverted", () => {
+  const { source, root } = quoteOk();
+  root.start = 4;
+  root.end = 0;
+  assert.throws(
+    () => runOn(quotePkg(), source, root, 80),
+    (e) =>
+      e instanceof Refusal &&
+      /verbatim `quote`/.test(e.message) &&
+      /inverted range/.test(e.message),
+  );
+});
+
+test("both runtimes refuse the same corrupt verbatim tree", () => {
+  const { source, root } = quote(0, 4, [
+    span("open", 0, 1, '"'),
+    span("body", 1, 3, "HI"),
+    span("close", 3, 4, '"'),
+  ]);
+  const pkg = quotePkg();
+  assert.throws(
+    () => runOn(pkg, source, root, 80),
+    (e) =>
+      e instanceof Refusal &&
+      /verbatim `quote`/.test(e.message) &&
+      /leaf whose text does not match the source/.test(e.message),
+  );
+
+  const fs = require("node:fs");
+  const os = require("node:os");
+  const path = require("node:path");
+  const { spawnSync } = require("node:child_process");
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "verbatim-"));
+  const treePath = path.join(dir, "tree.json");
+  const pkgDir = path.join(dir, "packages");
+  fs.mkdirSync(pkgDir);
+  fs.writeFileSync(treePath, JSON.stringify({ language: "toy", source, root }));
+  fs.writeFileSync(path.join(pkgDir, "toy.json"), JSON.stringify(pkg));
+  const rust = path.join(__dirname, "..", "rust", "target", "release", "docfmt");
+  const result = spawnSync(rust, [treePath, "80"], {
+    env: { ...process.env, FMT_PACKAGES: pkgDir },
+    encoding: "utf8",
+  });
+  assert.notEqual(result.status, 0, "rust must refuse");
+  assert.match(result.stderr, /verbatim `quote`/);
+  assert.match(result.stderr, /leaf whose text does not match the source/);
 });

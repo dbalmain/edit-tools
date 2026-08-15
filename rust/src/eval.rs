@@ -242,6 +242,7 @@ impl<'a> Ctx<'a> {
         if self.items.iter().any(Item::decorated) {
             return Err(self.refuse("no comments inside an opaque node"));
         }
+        check_verbatim(self.node, f.src)?;
         self.cursor = self.items.len();
         f.slice(self.node)
     }
@@ -414,6 +415,53 @@ fn tightness(pkg: &Package, node: &Node) -> i64 {
         .map_or(0, |op| pkg.tightness(op))
 }
 
+/// `verbatim` is the one opcode that emits source bytes nobody compared
+/// against the tree. Every other path reaches text through a real child, so
+/// the linearity invariant protects it; this walk is the equivalent for a
+/// node whose offsets may be stale.
+fn check_verbatim(node: &Node, src: &[u8]) -> Result<(), Refusal> {
+    check_verbatim_node(node, src, None, &node.kind)
+}
+
+fn check_verbatim_node(
+    node: &Node,
+    src: &[u8],
+    parent: Option<&Node>,
+    root_kind: &str,
+) -> Result<(), Refusal> {
+    let fail = |why: &str| Refusal(format!("verbatim `{root_kind}` {why}"));
+
+    if node.start > node.end {
+        return Err(fail("has inverted range"));
+    }
+    match parent {
+        None if node.end > src.len() => return Err(fail("runs past the source")),
+        Some(p) if node.start < p.start || node.end > p.end => {
+            return Err(fail("has a descendant outside its parent"));
+        }
+        _ => {}
+    }
+    if let Some(text) = &node.text {
+        let bytes = src
+            .get(node.start..node.end)
+            .ok_or_else(|| fail("runs past the source"))?;
+        if text.as_bytes() != bytes {
+            return Err(fail("has a leaf whose text does not match the source"));
+        }
+    }
+    let mut prev_end = None;
+    for child in &node.children {
+        if let Some(end) = prev_end {
+            if end > child.start {
+                return Err(fail("has overlapping siblings"));
+            }
+        }
+        prev_end = Some(child.end);
+        check_verbatim_node(child, src, Some(node), root_kind)?;
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -435,13 +483,50 @@ mod tests {
     }
 
     fn run(pkg: &Package, root: serde_json::Value, width: usize) -> Result<String, Refusal> {
+        run_on(pkg, "", root, width)
+    }
+
+    fn run_on(
+        pkg: &Package,
+        source: &str,
+        root: serde_json::Value,
+        width: usize,
+    ) -> Result<String, Refusal> {
         let tree: TreeDoc = serde_json::from_value(json!({
             "language": "toy",
-            "source": "",
+            "source": source,
             "root": root,
         }))
         .expect("toy tree parses");
         format(&tree, pkg, width)
+    }
+
+    fn span(kind: &str, start: usize, end: usize, text: &str) -> serde_json::Value {
+        json!({ "type": kind, "start": start, "end": end, "text": text })
+    }
+
+    /// `"hi"` as a three-child `quote` node — the shape `verbatim` actually sees.
+    fn quote(
+        start: usize,
+        end: usize,
+        children: Vec<serde_json::Value>,
+    ) -> (String, serde_json::Value) {
+        (
+            "\"hi\"".to_owned(),
+            json!({ "type": "quote", "start": start, "end": end, "children": children }),
+        )
+    }
+
+    fn quote_ok() -> (String, serde_json::Value) {
+        quote(
+            0,
+            4,
+            vec![
+                span("open", 0, 1, "\""),
+                span("body", 1, 3, "hi"),
+                span("close", 3, 4, "\""),
+            ],
+        )
     }
 
     fn list(items: &[&str], trailing: bool) -> serde_json::Value {
@@ -564,5 +649,150 @@ mod tests {
         // that recursion is how a chain of mixed precedence splits.
         let tree = chain(&[("*", "bbb"), ("+", "ccc")], "aaa");
         assert_eq!(run(&pkg, tree, 9).expect("ok"), "aaa * bbb\n+ ccc\n");
+    }
+
+    fn quote_pkg() -> Package {
+        toy(json!({ "quote": ["verbatim"] }))
+    }
+
+    #[test]
+    fn verbatim_emits_the_source_slice_when_the_subtree_checks_out() {
+        let (source, root) = quote_ok();
+        assert_eq!(
+            run_on(&quote_pkg(), &source, root, 80).expect("ok"),
+            "\"hi\"\n"
+        );
+    }
+
+    #[test]
+    fn verbatim_refuses_when_a_leafs_text_does_not_match_the_source() {
+        let (source, root) = quote(
+            0,
+            4,
+            vec![
+                span("open", 0, 1, "\""),
+                span("body", 1, 3, "HI"),
+                span("close", 3, 4, "\""),
+            ],
+        );
+        let err = run_on(&quote_pkg(), &source, root, 80).expect_err("must refuse");
+        assert!(
+            err.0.contains("verbatim `quote`")
+                && err.0.contains("leaf whose text does not match the source"),
+            "{}",
+            err.0
+        );
+    }
+
+    #[test]
+    fn verbatim_refuses_when_a_descendant_is_outside_its_parent() {
+        let (source, root) = quote(
+            0,
+            4,
+            vec![
+                span("open", 0, 1, "\""),
+                span("body", 1, 10, "hi"),
+                span("close", 3, 4, "\""),
+            ],
+        );
+        let err = run_on(&quote_pkg(), &source, root, 80).expect_err("must refuse");
+        assert!(
+            err.0.contains("verbatim `quote`") && err.0.contains("outside its parent"),
+            "{}",
+            err.0
+        );
+    }
+
+    #[test]
+    fn verbatim_refuses_when_siblings_overlap() {
+        // Each leaf matches its own slice; the ranges themselves overlap.
+        let (source, root) = quote(
+            0,
+            4,
+            vec![
+                span("open", 0, 2, "\"h"),
+                span("body", 1, 3, "hi"),
+                span("close", 3, 4, "\""),
+            ],
+        );
+        let err = run_on(&quote_pkg(), &source, root, 80).expect_err("must refuse");
+        assert!(
+            err.0.contains("verbatim `quote`") && err.0.contains("overlapping siblings"),
+            "{}",
+            err.0
+        );
+    }
+
+    #[test]
+    fn verbatim_refuses_when_a_range_is_inverted() {
+        let (source, root) = quote_ok();
+        let mut root = root;
+        root["start"] = json!(4);
+        root["end"] = json!(0);
+        let err = run_on(&quote_pkg(), &source, root, 80).expect_err("must refuse");
+        assert!(
+            err.0.contains("verbatim `quote`") && err.0.contains("inverted range"),
+            "{}",
+            err.0
+        );
+    }
+
+    #[test]
+    fn both_runtimes_refuse_the_same_corrupt_verbatim_tree() {
+        let pkg_json = json!({
+            "indent": 2,
+            "tokens": ["(", ")", ",", "+"],
+            "precedence": { "+": 5, "*": 4 },
+            "rules": { "quote": ["verbatim"] },
+        });
+        let pkg: Package = serde_json::from_value(pkg_json.clone()).expect("toy package parses");
+        let (source, root) = quote(
+            0,
+            4,
+            vec![
+                span("open", 0, 1, "\""),
+                span("body", 1, 3, "HI"),
+                span("close", 3, 4, "\""),
+            ],
+        );
+
+        let rust_err = run_on(&pkg, &source, root.clone(), 80).expect_err("rust must refuse");
+        assert!(
+            rust_err
+                .0
+                .contains("leaf whose text does not match the source"),
+            "rust: {}",
+            rust_err.0
+        );
+
+        let bundle = concat!(env!("CARGO_MANIFEST_DIR"), "/../runtime-js/bundle.js");
+        let script = format!(
+            r#"
+const {{ format }} = require({bundle:?});
+const tree = {{ language: "toy", source: {source}, root: {root} }};
+const pkg = {pkg};
+try {{
+  format(tree, 80, pkg);
+  console.error("js accepted a corrupt verbatim tree");
+  process.exit(2);
+}} catch (e) {{
+  if (!/verbatim `quote`/.test(e.message) ||
+      !/leaf whose text does not match the source/.test(e.message)) {{
+    console.error(e.message);
+    process.exit(3);
+  }}
+}}
+"#,
+            bundle = bundle,
+            source = serde_json::to_string(&source).expect("source json"),
+            root = root,
+            pkg = pkg_json,
+        );
+        let status = std::process::Command::new("node")
+            .arg("-e")
+            .arg(script)
+            .status()
+            .expect("spawn node");
+        assert!(status.success(), "js runtime disagreed (exit {status})");
     }
 }
