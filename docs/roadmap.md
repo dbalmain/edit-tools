@@ -285,9 +285,50 @@ is no parser and trees are frozen, so designing for incrementality now is how
 this slice quietly becomes a parser project. That is a real fifth question, for
 later.
 
-**Open, and genuinely for Dave:** whether dirty trees live in-tree or in a side
-directory, and whether `vici` already has a scope vocabulary the tag list should
-rhyme with.
+### Both open questions are now answered
+
+**Dirty trees live in `corpus/trees-dirty/`.** Dave's call, and it matches what
+the paper proposed. Keeping them out of `corpus/trees/` means `gen_trees.py` can
+stay strict — a tree with an `ERROR` node is still a generation failure for the
+formatter — while the highlighter gets the fixtures it needs to prove it never
+refuses. The two halves want opposite things from the same directory, so they
+should not share one.
+
+**`vici` has no scope vocabulary, and deliberately never will.** Checked: no tag
+list, no theme names, no styles. Its README is explicit that it "owns the buffer
+and nothing else. It has no rendering, no terminal", and every type in its own
+table lists rendering as a non-concern. So there is nothing to rhyme with, and
+that is the correct answer rather than a gap — spans are for the host, and vici
+is not the host.
+
+But the question has a better target, because **a vocabulary already exists one
+repo over**. Aven's LSP legend (`crates/aven-lsp/src/semantic_tokens.rs`) is
+eleven standard **LSP semantic token types**: `comment`, `string`, `number`,
+`regexp`, `operator`, `variable`, `type`, `function`, `parameter`, `property`,
+`keyword`.
+
+Ten of those eleven are already in the paper's proposed Python scope list,
+independently. That convergence is worth making deliberate:
+
+- **Align on LSP semantic token type names wherever one exists.** Every modern
+  editor already maps them, Aven already emits them, and it costs us nothing —
+  we had picked the same words by accident.
+- **`punctuation` and `error` are documented extensions.** LSP deliberately
+  leaves punctuation to the grammar layer and has no analogue for `error`. Both
+  are load-bearing here, so they stay, named as extensions rather than smuggled
+  in.
+- **`constant` is an extension too.** LSP would express it as `variable` plus a
+  `readonly` modifier. Every other highlighting system in the prior art has
+  `constant`, so keep the word, but record that it is ours.
+- **Dotted scopes must be prefix-refinements of a scope in the same list** —
+  `string.escape` is only legal because `string` is also there. That gives a
+  host a total degradation rule (truncate at the dot until something is
+  recognised) instead of an unknown-tag cliff, and it is checkable at package
+  load, next to the existing "every emitted scope must be in `scopes`" check.
+
+The last point is the only one that adds a rule rather than a note, and it is
+the kind of rule this project likes: it makes the bad state unrepresentable at
+load rather than asking package authors to be careful.
 
 ---
 
