@@ -214,7 +214,7 @@ The silent one is worth remembering when Aven arrives: **a parser that carries
 comments as trivia rather than as children loses them, and the runtime does not
 complain.** Gate 3 catches it; nothing earlier does.
 
-### What the probe found on its way past: `flatten` hardcodes three field names — **now**
+### What the probe found on its way past: `flatten` hardcodes three field names — **closed**
 
 `flatten` walks `left`, then consumes `left` / `operator` / `right`. Those three
 strings are in `rust/src/eval.rs` and `runtime-js/bundle.js`, not in the
@@ -231,7 +231,25 @@ Deliberately **not** applied by the probe agent, which was right: a central
 change has to be re-decided against the whole roster anyway, and a precise
 description costs nothing to apply.
 
-## 10. Intentional divergence is not representable — **now, and it blocks round 2**
+**Done.** `flatten_fields` sits in the package header next to `precedence`,
+defaulting to today's names, so `packages/python.json` is unchanged.
+
+The build agent rejected the more expressive alternative — three operands on the
+`flatten` opcode — and the argument is worth keeping: operands only pay for
+themselves if one package has **two left-nested spines with different labels**,
+and nothing on the roster does. Python's `comparison_operator` looks like the
+second shape and is not one; it is a flat operands list that `each` already
+formats. The general rule it illustrates is that expressiveness nobody on the
+roster needs is a cost, not a hedge.
+
+`harness/probe_tree_interface.py` grew a third arm: the renamed `lhs`/`op`/`rhs`
+tree is still refused by a package that stays silent, and formats identically in
+both runtimes once the package declares the names. That arm is what
+distinguishes "the runtime cannot express this" from "this package did not ask
+for it", and it is the independent check that the fix works rather than merely
+compiles.
+
+## 10. Intentional divergence is not representable — **closed**
 
 _Raised 2026-08-16 by the house-style decision, not by the review._
 
@@ -260,6 +278,27 @@ rather than rotting into a suppression list.
 
 **"Not worth the bytes" must be a first-class, respectable reason there.** It
 will be the most common one.
+
+**Built.** `intentional_divergences` in the language manifest, at
+**file-and-width** granularity — so a divergence at one width cannot hide
+agreement at the other — with a mandatory non-empty reason. `score.py` now
+reports three numbers: agreement, intentional, and unexplained. The merge bar in
+`review-brief.md` applies to unexplained only, and stage-D reviewers are
+directed to judge an intentional divergence on its stated reason.
+
+Reasons stayed **free text**. A controlled vocabulary was rejected because
+house-style rules have no stable identifiers yet, and minting them inside the
+harness would create a second rule registry competing with
+[house-style.md](house-style.md). Revisit if reasons start degrading into
+"matches our style".
+
+I tested the staleness guard in both directions rather than trusting it, because
+this is the first mechanism here whose purpose is to make a number look better:
+declaring a file that actually agrees fails with
+`declaration for basic.json@88 is stale: output now agrees with the reference`
+and exit 1; declaring the real `nested.json@88` moves it to intentional and the
+per-width split tracks the two widths separately. Nothing is declared for the
+current corpus — 0 intentional, 6 unexplained, agreement unchanged.
 
 This is a central change and it belongs on `main` before round 2 opens — not
 because every language will have house rules (they will not; the container rule

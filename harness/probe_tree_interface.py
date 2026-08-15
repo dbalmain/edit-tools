@@ -242,11 +242,17 @@ def _sum_chain(leaves: list[tuple[str, int, int]], ops: list[tuple[int, int]]) -
 
 
 def experiment_flatten() -> None:
-    """`flatten` walks `field == "left"` / `"right"` / `"operator"`.
+    """`flatten` walks three field names, which are now the package's to choose.
 
-    A well-formed left-nested chain with those three names formats. The same
-    chain with the fields renamed to `lhs`/`rhs`/`op` is refused, and there
-    is no package rewrite that saves it: the names live in the opcode.
+    A well-formed left-nested chain with the default names formats. The same
+    chain renamed to `lhs`/`rhs`/`op` is refused *by a package that did not say
+    so* -- and formats once the package declares `flatten_fields`.
+
+    When this probe was written the refusal was the end of the story: the three
+    names lived in both evaluators and no package could reach them, which was
+    the one genuine tree-sitter leak it found. That is fixed, so the refusal
+    below is now the default-header path rather than a limit, and the third arm
+    is what proves it.
     """
     source = "aaa + bbb + ccc"
     # aaa(0-3) +(4-5) bbb(6-9) +(10-11) ccc(12-15)
@@ -303,7 +309,36 @@ def experiment_flatten() -> None:
         why = refuse(alt_tree, 80, pkgs)
         if "left" not in why:
             raise Failed(f"flatten rename refused for the wrong reason: {why}")
-        print(f"  exp   flatten with lhs/rhs/op: refused ({why})")
+        print(f"  exp   flatten with lhs/rhs/op, package silent: refused ({why})")
+
+        # The same renamed tree, with a package that declares the names. This
+        # is the arm that distinguishes "the runtime cannot express this" from
+        # "this package did not ask for it".
+        named = tmp_path / "pkgs-named"
+        named.mkdir()
+        renamed_pkg = dict(pkg)
+        renamed_pkg["flatten_fields"] = {
+            "left": "lhs",
+            "operator": "op",
+            "right": "rhs",
+        }
+        renamed_pkg["rules"] = {
+            "sum": [
+                "group",
+                ["flatten", "sum", ["seq", ["line"], ["child", "f:op"], ["sp"]]],
+            ]
+        }
+        write_pkg(named, "toy", renamed_pkg)
+        r_alt = invoke(alt_tree, 80, named)
+        j_alt = invoke(alt_tree, 80, named, rust=False)
+        if r_alt != j_alt:
+            raise Failed("flatten_fields: rust and js disagree on the renamed chain")
+        if r_alt != "aaa + bbb + ccc\n":
+            raise Failed(f"flatten_fields: unexpected flat output {r_alt!r}")
+        alt_broken = invoke(alt_tree, 4, named)
+        if alt_broken != "aaa\n+ bbb\n+ ccc\n":
+            raise Failed(f"flatten_fields: unexpected broken output {alt_broken!r}")
+        print("  exp   flatten with lhs/rhs/op, package declares them: rust=js at 80 and 4")
 
 
 def experiment_comments() -> None:

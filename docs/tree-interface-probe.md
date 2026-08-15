@@ -134,7 +134,16 @@ newline in the corpus is a gap, not a child.
 Non-`verbatim` rules never look at coverage either. They walk the child list.
 Uncovered bytes are simply not tokens.
 
-### `flatten` hardcodes three field names
+### `flatten` hardcodes three field names — **fixed 2026-08-16**
+
+> This section is left as written, because it is the finding that prompted the
+> fix. `flatten` now reads the names from a `flatten_fields` header field next
+> to `precedence`, defaulting to `left` / `operator` / `right`, so a package
+> whose parser uses other names says so. The probe grew a third arm that formats
+> the renamed tree once the package declares them — that arm is the proof, and
+> the refusal described below is now the default-header path rather than a
+> limit. The report's recommendation was taken, including its judgement that the
+> header was the right home.
 
 The opcode walks `field == "left"` to build the spine, then consumes `f:left`,
 `f:operator`, `f:right`. Those strings live in `rust/src/eval.rs` and
@@ -190,7 +199,7 @@ The leaks that exist are conventions, and one hardcoded opcode:
 | Punctuation type equals its spelling                       | **leak** — tree-sitter anonymous nodes. `tok` vs `named` make it load-bearing |
 | Whitespace is a gap, never a child                         | **leak** — tree-sitter extras. A parser that reifies layout nodes refuses     |
 | Comments are in-order children of listed types             | **leak** — tree-sitter named extras. Roslyn-style trivia is silently lost     |
-| `flatten` looks up `left` / `right` / `operator`           | **leak** — tree-sitter-python's field names, baked into both runtimes         |
+| `flatten` looks up `left` / `right` / `operator`           | **was a leak, fixed** — now `flatten_fields` in the package header            |
 | Other `f:…` selectors                                      | package vocabulary, not a runtime leak                                        |
 | `document` / `pair` / `string_content` / `escape_sequence` | package vocabulary. The probe wore it; Aven will not                          |
 
