@@ -398,8 +398,29 @@ package against a **JSON** tree emits 49 spans and exits 0. That is the
 never-refuse rule holding under a deliberately wrong package, and it is the
 behaviour that makes a highlighter safe to point at anything.
 
-**Next: PR 4** (packages, goldens, `corpus/trees-dirty/`, highlight scorer) and
-**PR 5** (injection degrade). Neither is started.
+### PR 4 merged — and the golden review earned its keep
+
+Two real packages, four hand-built dirty trees, 19 goldens, and
+`harness/score_highlight.py` gating span identity, the partition invariant, and
+golden equality. The package test constants are gone; both runtimes read the
+shipped files, so there is one source of truth rather than two that agree today.
+
+Two rules changed under review. JSON quotes now **inherit their content's
+scope**, so a key is one `property` span instead of three spans disagreeing
+about their own delimiters — done with leaf context rows on the `"` token, so
+context matching stays leaf-only and Decision 5 holds. And an interior node can
+act as a **background**, painting its extent minus its children's, without which
+a Python string containing an escape painted only the escape.
+
+The background rule shipped unconditioned and was wrong. It fired on any
+leaf-table entry, and tree-sitter lets a named interior node share its spelling
+with a token — Python's `lambda` node does, so it painted a bare space as
+`keyword`, four times, in goldens that every gate reported green. Backgrounds
+are now opt-in: a package author _stating_ that a type wraps its children,
+rather than inheriting the claim from a keyword list. See point 11, which this
+episode is the evidence for.
+
+**Next: PR 5** (injection degrade). Not started.
 
 ### Original plan
 
@@ -461,6 +482,135 @@ independently. That convergence is worth making deliberate:
 The last point is the only one that adds a rule rather than a note, and it is
 the kind of rule this project likes: it makes the bad state unrepresentable at
 load rather than asking package authors to be careful.
+
+## 11. A difference nobody has looked at is not a decision — **next**
+
+Both halves of this project produce differences that need a human verdict, and
+neither currently records that the verdict happened.
+
+**The formatter** has a reference, so a difference is measurable. Point 10 gave
+it `intentional_divergences`: a file-and-width declaration with a mandatory
+reason, three-number reporting, and a staleness check. That check has one hole.
+It fires on exactly one transition — a declared divergence that now **agrees**
+(`harness/score.py`, the `run.text == expected` arm). It does not fire when a
+divergence _changes into a different divergence_. Our output can shift to
+something new and the old reason keeps covering it, describing a layout that no
+longer exists.
+
+**The highlighter** has no reference by design (Decision 3 — Helix, nvim, the
+grammar repo and Lezer already disagree, so picking one is picking a taste). The
+golden _is_ the record. Its first draft is the walker's own output, which means
+a golden approves whatever produced it.
+
+### The evidence that this is not theoretical
+
+Highlight PR 4 shipped goldens in which Python's `lambda` painted a bare space
+as `keyword`, four times, because the interior-background rule fired on a named
+node that shares its spelling with a keyword token. Every gate was green.
+Identity, partition and golden match all reported 19/19 — the goldens matched
+because they were generated from the walker that had the bug.
+
+Two details make it worth remembering rather than just fixing:
+
+- One of the four stray runs **merged into the adjacent legitimate keyword
+  span** (`'lambda '`, with the trailing space), so it did not look like a stray
+  span in the golden at all. Reviewing the span list against nothing but itself
+  could not have found it.
+- What did find it was an ad-hoc script comparing spans against the source text
+  and printing any span that was entirely whitespace. Nobody had written that
+  check. It cost about ten lines.
+
+### The mechanism: a review ledger keyed by content hash
+
+One record per reviewable item:
+
+```
+{ id, hash, verdict, reason, reviewed_by, reviewed_at }
+```
+
+- **Formatter divergence** — `id = language/file@width`,
+  `hash = sha256(our_output + reference_output)`. Hashing **both** sides is the
+  point: the judgement was about the pair, so a black or prettier version bump
+  must invalidate it rather than silently carrying the old approval forward.
+- **Highlight golden** — `id = tree name`, `hash = sha256(spans)`.
+
+Each item is then in one of three states, the same triple both scorers already
+report:
+
+- **accepted** — the hash matches a recorded review
+- **stale** — a review exists but the hash moved; re-evaluation required
+- **unreviewed** — no review at all
+
+Re-evaluation cost becomes proportional to change, which is the requirement. A
+run that alters nothing reviews nothing.
+
+**Gating: stale is a hard failure; unreviewed is a threshold**, mirroring the
+30% unexplained merge bar. Stale is the dangerous state — it is approval
+silently transferred to something nobody looked at, which is precisely what
+happened above.
+
+### `reviewed_by` is load-bearing, not bookkeeping
+
+If the same agent generates a change and approves it, the ledger faithfully
+records the model agreeing with itself. The hash makes that **auditable**; it
+does not make it **true**. The `lambda` goldens would have carried a valid
+signature from the author of the bug.
+
+Recording the reviewer costs one field and lets a later rule say that reviews
+signed by the agent that produced the diff do not count as coverage. Carry the
+field from the start even while nothing enforces it.
+
+### Three elements, not one
+
+The ledger alone repeats the mistake at a higher level — it records that someone
+looked, not that looking was capable of finding anything. The working shape is:
+
+1. **The hash** says _what changed_.
+2. **Mechanical suspicion reports** say _where to look_: whitespace-only spans,
+   spans ending in whitespace, unpainted runs inside code, scopes that fire
+   nowhere, divergences whose shape changed category. Advisory, never gates —
+   `error` backfill legitimately stains whitespace and Python's `is not`
+   legitimately contains it, so there is no invariant here, only attention
+   direction.
+3. **The reason** records _what was concluded_.
+
+### The human surface: HTML, syntax-highlighted, with the ledger visible
+
+Reading span JSON and unified diffs is why this went unreviewed. The review
+surface should be a generated HTML page per run:
+
+- **Formatter**: ours against the reference, side by side, diff-marked and
+  syntax-highlighted.
+- **Highlighter**: the source rendered _with our spans applied_, which is the
+  only sane way to review a span stream.
+- Each item carries its state (accepted / stale / unreviewed), and for anything
+  previously reviewed, the prior verdict, reason, reviewer and date.
+
+Approval writes to the ledger, and the ledger stays in git so a verdict arrives
+as a reviewable diff rather than as state in a browser. Whether the page emits a
+pasteable fragment for batch review or approval goes through a small CLI is
+open; the page being a _review_ surface rather than a _storage_ surface is not.
+
+**One constraint the `lambda` bug already proved.** A colourised rendering would
+**not** have caught it: a space painted `keyword` shows no colour in a
+foreground-only theme. The highlight view must make span _boundaries_ visible —
+backgrounds, underlines, or a gutter — and not rely on foreground colour alone.
+A review tool that renders the output beautifully is the easiest place to hide a
+defect in the output.
+
+**And note what this page is made of.** Rendering syntax-highlighted code in
+HTML is the product. The review surface is the first real consumer of the
+highlighter, which is good — it is dogfooding — and is also why the constraint
+above matters: the tool inherits the bugs of the thing it is reviewing, and
+renders them as though they were intended.
+
+### Sequencing
+
+After highlight PR 4 merges — it is the substrate, since the golden-match gate
+is what the ledger attaches to. The ledger and the suspicion reports come first
+and are worth having on their own; the HTML surface follows and is where the
+human-review question gets answered properly. Do not build the page before the
+ledger it is meant to display.
 
 ---
 
