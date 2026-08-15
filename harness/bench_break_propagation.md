@@ -46,3 +46,25 @@ Rust overtakes JavaScript by depth 32 and is 1.8x slower at depth 56, despite
 remaining substantially faster on every flat-size case. This supports fixing
 the extra recursive break-propagation scans in Rust; it does not establish that
 the JavaScript printer as a whole is linear in nesting depth.
+
+## After precomputing
+
+Same host, toolchain, command, and generated inputs. Rust now computes forced
+group bodies in one pass immediately before printing and uses constant-time
+lookups during `print` and `fits`.
+
+| axis | value | tree nodes | tree bytes | iterations | Rust ms | JS ms | Rust/JS |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| size | 32 | 163 | 8,236 | 8,192 | 0.035 | 0.114 | 0.30x |
+| size | 256 | 1,283 | 66,542 | 1,024 | 0.248 | 0.910 | 0.27x |
+| size | 2,048 | 10,243 | 550,382 | 128 | 2.023 | 7.633 | 0.27x |
+| size | 8,192 | 40,963 | 2,266,188 | 32 | 8.107 | 32.563 | 0.25x |
+| depth | 4 | 17 | 828 | 32,768 | 0.006 | 0.015 | 0.41x |
+| depth | 16 | 53 | 2,506 | 8,192 | 0.032 | 0.062 | 0.52x |
+| depth | 32 | 101 | 4,746 | 2,048 | 0.082 | 0.194 | 0.42x |
+| depth | 56 | 173 | 8,154 | 1,024 | 0.186 | 0.511 | 0.36x |
+
+At depth 56, Rust is 5.7x faster than before (1.060 to 0.186 ms) and moves from
+1.8x slower than JavaScript to 2.7x faster. The four flat-size results remain
+within 5% of their before measurements, which is run-to-run noise at this
+sampling level rather than evidence of a size-axis regression.

@@ -4,6 +4,8 @@
 //! written lazily so that a blank line is genuinely empty rather than a run of
 //! spaces.
 
+use std::collections::HashSet;
+
 #[derive(Debug)]
 pub enum Doc {
     Text(String),
@@ -39,18 +41,46 @@ impl Doc {
     pub fn indent(d: Doc) -> Doc {
         Doc::Indent(Box::new(d))
     }
+}
 
-    /// Does this doc force a break? Propagates out of nested groups, but not
-    /// out of a line suffix -- a trailing comment breaks its parent through an
-    /// explicit `BreakParent` instead, so the two can be reasoned about apart.
-    fn forced(&self) -> bool {
-        match self {
-            Doc::Hard | Doc::BreakParent => true,
-            Doc::Concat(ds) => ds.iter().any(Doc::forced),
-            Doc::Group(d) | Doc::Indent(d) => d.forced(),
-            _ => false,
+type Forced = HashSet<*const Doc>;
+
+/// Record each group body that forces its group to break. Propagation stops at
+/// a line suffix and `IfBreak`, but their children still need visiting because
+/// a group inside either boundary makes its own layout decision later.
+fn collect_forced(doc: &Doc, forced: &mut Forced) -> bool {
+    match doc {
+        Doc::Hard | Doc::BreakParent => true,
+        Doc::Concat(docs) => {
+            let mut any = false;
+            for doc in docs {
+                any |= collect_forced(doc, forced);
+            }
+            any
         }
+        Doc::Group(inner) => {
+            let inner_forced = collect_forced(inner, forced);
+            if inner_forced {
+                forced.insert(std::ptr::from_ref(inner.as_ref()));
+            }
+            inner_forced
+        }
+        Doc::Indent(inner) => collect_forced(inner, forced),
+        Doc::IfBreak(broken, flat) => {
+            collect_forced(broken, forced);
+            collect_forced(flat, forced);
+            false
+        }
+        Doc::Suffix(inner) => {
+            collect_forced(inner, forced);
+            false
+        }
+        Doc::Text(_) | Doc::Line | Doc::Soft => false,
     }
+}
+
+fn forces_break(doc: &Doc, forced: &Forced) -> bool {
+    forced.contains(&std::ptr::from_ref(doc))
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -76,7 +106,7 @@ fn first_line(s: &str) -> (isize, bool) {
 /// Does `next` fit in `rem` columns, given the work still on the printer's
 /// stack? Measuring the rest of the line -- not just the group -- is what
 /// makes a trailing `)` or a trailing comment count against the budget.
-fn fits(next: Cmd<'_>, rest: &[Cmd<'_>], mut rem: isize, tab: usize) -> bool {
+fn fits(next: Cmd<'_>, rest: &[Cmd<'_>], mut rem: isize, tab: usize, forced: &Forced) -> bool {
     let mut stack = vec![next];
     let mut rest_at = rest.len();
     loop {
@@ -103,7 +133,11 @@ fn fits(next: Cmd<'_>, rest: &[Cmd<'_>], mut rem: isize, tab: usize) -> bool {
             }
             Doc::Concat(ds) => stack.extend(ds.iter().rev().map(|d| (ind, mode, d))),
             Doc::Group(inner) => {
-                let m = if inner.forced() { Mode::Break } else { mode };
+                let m = if forces_break(inner, forced) {
+                    Mode::Break
+                } else {
+                    mode
+                };
                 stack.push((ind, m, inner));
             }
             Doc::Indent(inner) => stack.push((ind + tab, mode, inner)),
@@ -132,6 +166,8 @@ fn fits(next: Cmd<'_>, rest: &[Cmd<'_>], mut rem: isize, tab: usize) -> bool {
 }
 
 pub fn print(doc: &Doc, width: usize, tab: usize) -> String {
+    let mut forced = Forced::new();
+    collect_forced(doc, &mut forced);
     let mut out = String::new();
     let mut pos = 0usize;
     let mut pending = 0usize;
@@ -156,7 +192,8 @@ pub fn print(doc: &Doc, width: usize, tab: usize) -> String {
                 Doc::Indent(inner) => stack.push((ind + tab, mode, inner)),
                 Doc::Group(inner) => {
                     let rem = width as isize - pos as isize;
-                    let flat = !inner.forced() && fits((ind, Mode::Flat, inner), &stack, rem, tab);
+                    let flat = !forces_break(inner, &forced)
+                        && fits((ind, Mode::Flat, inner), &stack, rem, tab, &forced);
                     stack.push((ind, if flat { Mode::Flat } else { Mode::Break }, inner));
                 }
                 Doc::Line | Doc::Soft | Doc::Hard => {
@@ -260,6 +297,18 @@ mod tests {
             Doc::Hard,
         ]));
         assert_eq!(print(&doc, 80, 2), "a\nb\n");
+    }
+
+    #[test]
+    fn a_group_inside_a_nonpropagating_branch_keeps_its_own_forced_state() {
+        let inner = Doc::group(seq(vec![
+            Doc::text("a"),
+            Doc::Line,
+            Doc::text("b"),
+            Doc::BreakParent,
+        ]));
+        let doc = Doc::IfBreak(Box::new(inner), Box::new(Doc::nil()));
+        assert_eq!(print(&doc, 80, 2), "a\nb");
     }
 
     #[test]

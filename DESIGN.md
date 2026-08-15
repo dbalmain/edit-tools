@@ -299,7 +299,8 @@ The two implementations are independent, not transliterations. The Rust one
 parses the package into a typed `Expr` enum with `TryFrom<Value>`, so a
 malformed package fails at load with a message; the JS one interprets the arrays
 directly and caches break-propagation on each Doc node at construction, which
-the Rust one recomputes. Same algorithm, different idiom, byte-identical output
+Rust computes once from the finished Doc tree before printing. Same algorithm,
+different idiom, byte-identical output
 on 30/30 corpus runs.
 
 ## What changed from the proposal, and why
