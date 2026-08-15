@@ -14,6 +14,7 @@ cd "$(dirname "$0")"
 cargo test --manifest-path rust/Cargo.toml
 cargo clippy --manifest-path rust/Cargo.toml --all-targets -- -D warnings
 node --test runtime-js/bundle.test.js
+node --test runtime-js/highlight.test.js
 ./harness/check_gate3.py
 ./harness/score.py .
 ./harness/probe_tree_interface.py
