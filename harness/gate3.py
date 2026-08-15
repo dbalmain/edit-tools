@@ -10,10 +10,35 @@ different parent; losing or duplicating one is real destruction. The old JSON
 checker compared `json.loads` output, which cannot see a comment at all, so
 dropping every comment in a JSON file passed gate 3. That hole is closed here.
 
-**Structural, per language.** Either the generic default below, or a stronger
-checker the language's manifest names (`gate3 = "python"` loads
-`harness/languages/python_gate3.py`). An override is a file of its own so a
-builder never edits a shared one.
+**Structural, per language.** The generic default below, *and* -- if the
+language's manifest names one -- a second checker of its own (`gate3 = "python"`
+loads `harness/languages/python_gate3.py`). An override is a file of its own so
+a builder never edits a shared one.
+
+**An override adds a conjunct; it never replaces the default.** It used to
+replace it, and that was wrong in the one direction that matters. `check_gate3.py`
+compared the two only on committed reference output -- which both accept, because
+the reference formatter is correct -- so it reported perfect agreement while an
+override was strictly weaker than the gate it had displaced. Driven adversarially
+(see that file's check 2b), `ast.dump` accepts `8080` becoming `8_080` and
+`"POST"` becoming `\"\"\"POST\"\"\"`, and ordered `json.loads` accepts `3.14159`
+becoming `3.141590`. Every one of those rewrites a token's text, which this
+project's linearity invariant forbids outright -- python's reference is run with
+`--skip-string-normalization` for exactly that reason.
+
+That is not a flaw in `ast`; it is a flaw in "instead of". A data-model loader
+answers "is this the same *data*", and a formatter gate asks "is this the same
+*document*". Conjunction gets both: the generic default holds the document line,
+the override adds what only a real parser for the language can know -- that the
+output is valid by more than tree-sitter's reading, and that two spellings the
+default would call different really are the same program. An override that turns
+out to be weaker everywhere still costs nothing.
+
+The consequence for a builder: if the generic default rejects your reference
+formatter's own correct output, an override will not rescue you and is not meant
+to. Declare `transparent_wrappers` / `equivalent_kinds` instead -- that is the
+mechanism for relaxing the default, and it is declarative, per node kind, and
+visible in review.
 
 ## Why the generic default is not just "the named-node tree must match"
 
@@ -172,15 +197,15 @@ def signature(text: str, manifest, parser) -> tuple | None:
     if root is None:
         return None
     extras = tuple(_extras(root, source, []))
+    structural = _generic(
+        root, source, manifest.transparent_wrappers, _canon_map(manifest)
+    )
 
-    if manifest.gate3 == "default":
-        structural = _generic(
-            root, source, manifest.transparent_wrappers, _canon_map(manifest)
-        )
-    else:
-        structural = _override(manifest.gate3).signature(text)
-        if structural is None:
+    if manifest.gate3 != "default":
+        extra = _override(manifest.gate3).signature(text)
+        if extra is None:
             return None
+        structural = (structural, extra)
     return (manifest.name, structural, extras)
 
 
@@ -200,6 +225,17 @@ def generic_signature(text: str, manifest, parser) -> tuple | None:
     )
 
 
+def override_signature(text: str, manifest) -> object | None:
+    """What the manifest's own checker says, without the generic conjunct.
+
+    Only `check_gate3.py` wants this: it reports how much of the gate an override
+    is actually carrying. Nothing scores against it -- `signature` is the gate.
+    """
+    if manifest.gate3 == "default":
+        return None
+    return _override(manifest.gate3).signature(text)
+
+
 def describe(before: tuple | None, after: tuple | None, manifest) -> str:
     if after is None:
         return "output does not parse"
@@ -214,9 +250,12 @@ def describe(before: tuple | None, after: tuple | None, manifest) -> str:
             return f"comments invented: {gained[:3]}"
         return "comments reordered"
     if manifest.gate3 != "default":
+        (gen_b, own_b), (gen_a, own_a) = before[1], after[1]
+        if gen_b != gen_a:
+            return _describe_generic(gen_b, gen_a)
         mod = _override(manifest.gate3)
         if hasattr(mod, "describe"):
-            return mod.describe(before[1], after[1])
+            return mod.describe(own_b, own_a)
         return "parse tree differs"
     return _describe_generic(before[1], after[1])
 
