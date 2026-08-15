@@ -201,7 +201,7 @@ The silent one is worth remembering when Aven arrives: **a parser that carries
 comments as trivia rather than as children loses them, and the runtime does not
 complain.** Gate 3 catches it; nothing earlier does.
 
-### What the probe found on its way past: `flatten` hardcodes three field names — **next**
+### What the probe found on its way past: `flatten` hardcodes three field names — **now**
 
 `flatten` walks `left`, then consumes `left` / `operator` / `right`. Those three
 strings are in `rust/src/eval.rs` and `runtime-js/bundle.js`, not in the
@@ -218,7 +218,7 @@ Deliberately **not** applied by the probe agent, which was right: a central
 change has to be re-decided against the whole roster anyway, and a precise
 description costs nothing to apply.
 
-## 10. Intentional divergence is not representable — **next, and it blocks round 2**
+## 10. Intentional divergence is not representable — **now, and it blocks round 2**
 
 _Raised 2026-08-16 by the house-style decision, not by the review._
 
