@@ -378,12 +378,13 @@ impl<'a> Ctx<'a> {
     /// one flat list, so the whole chain breaks together instead of
     /// staircasing. This is the opcode a per-node fold cannot do without.
     fn flatten(&mut self, kind: &str, sep: &Expr, f: &Fmt<'a>) -> Result<Doc, Refusal> {
-        let left = Sel::Field("left".to_owned());
-        let right = Sel::Field("right".to_owned());
+        let fields = &f.pkg.flatten_fields;
+        let left = Sel::Field(fields.left.clone());
+        let right = Sel::Field(fields.right.clone());
 
         let mut spine = Vec::new();
         let mut cur = self.node;
-        while let Some(next) = cur.child_with_field("left") {
+        while let Some(next) = cur.child_with_field(&fields.left) {
             if next.kind != kind || tightness(f.pkg, cur) != tightness(f.pkg, next) {
                 break;
             }
@@ -433,7 +434,7 @@ impl<'a> Ctx<'a> {
 }
 
 fn tightness(pkg: &Package, node: &Node) -> i64 {
-    node.child_with_field("operator")
+    node.child_with_field(&pkg.flatten_fields.operator)
         .and_then(|op| op.text.as_deref())
         .map_or(0, |op| pkg.tightness(op))
 }
@@ -747,14 +748,25 @@ try {{
     }
 
     fn chain(ops: &[(&str, &str)], base: &str) -> serde_json::Value {
+        chain_fields(ops, base, "left", "operator", "right")
+    }
+
+    /// The probe's renamed spine: same shape as `chain`, different field names.
+    fn chain_fields(
+        ops: &[(&str, &str)],
+        base: &str,
+        left_field: &str,
+        operator_field: &str,
+        right_field: &str,
+    ) -> serde_json::Value {
         let mut node = leaf("name", base);
         for (op, rhs) in ops {
             let mut left = node;
-            left["field"] = json!("left");
+            left["field"] = json!(left_field);
             let mut right = leaf("name", rhs);
-            right["field"] = json!("right");
+            right["field"] = json!(right_field);
             let mut operator = leaf(op, op);
-            operator["field"] = json!("operator");
+            operator["field"] = json!(operator_field);
             node = json!({
                 "type": "sum", "start": 0, "end": 0,
                 "children": [left, operator, right],
@@ -786,6 +798,110 @@ try {{
         // that recursion is how a chain of mixed precedence splits.
         let tree = chain(&[("*", "bbb"), ("+", "ccc")], "aaa");
         assert_eq!(run(&pkg, tree, 9).expect("ok"), "aaa * bbb\n+ ccc\n");
+    }
+
+    #[test]
+    fn flatten_uses_the_packages_field_names() {
+        // The defect: these three strings used to live in both evaluators, so
+        // a grammar that called them lhs/op/rhs was refused and no package
+        // rewrite could save it. The probe built exactly this tree.
+        let pkg: Package = serde_json::from_value(json!({
+            "format": "et-doc-rules/1",
+            "indent": 2,
+            "tokens": ["+", "*"],
+            "precedence": { "+": 5, "*": 4 },
+            "flatten_fields": { "left": "lhs", "operator": "op", "right": "rhs" },
+            "rules": {
+                "sum": ["group", ["flatten", "sum",
+                    ["seq", ["line"], ["child", "f:op"], ["sp"]]]]
+            },
+        }))
+        .expect("renamed package parses");
+        let tree = chain_fields(&[("+", "bbb"), ("+", "ccc")], "aaa", "lhs", "op", "rhs");
+        assert_eq!(
+            run(&pkg, tree.clone(), 80).expect("ok"),
+            "aaa + bbb + ccc\n"
+        );
+        assert_eq!(run(&pkg, tree, 4).expect("ok"), "aaa\n+ bbb\n+ ccc\n");
+        // Tightness must read `op` too, or mixed precedence would not split.
+        let mixed = chain_fields(&[("*", "bbb"), ("+", "ccc")], "aaa", "lhs", "op", "rhs");
+        assert_eq!(run(&pkg, mixed, 9).expect("ok"), "aaa * bbb\n+ ccc\n");
+    }
+
+    #[test]
+    fn both_runtimes_refuse_the_same_bad_flatten_header() {
+        let cases = [
+            (
+                json!(["left", "operator", "right"]),
+                "`flatten_fields` must be an object, got [\"left\",\"operator\",\"right\"]",
+            ),
+            (
+                json!({"left": "lhs", "operator": "op"}),
+                "`flatten_fields` is missing `right`",
+            ),
+            (
+                json!({"left": "lhs", "operator": "op", "right": "rhs", "mid": "x"}),
+                "`flatten_fields` has unknown field `mid`",
+            ),
+            (
+                json!({"left": "", "operator": "op", "right": "rhs"}),
+                "`flatten_fields.left` must be a non-empty string, got \"\"",
+            ),
+            (
+                json!({"left": 1, "operator": "op", "right": "rhs"}),
+                "`flatten_fields.left` must be a non-empty string, got 1",
+            ),
+            (
+                json!({"left": "lhs", "operator": "lhs", "right": "rhs"}),
+                "`flatten_fields` field names must be distinct",
+            ),
+        ];
+        let bundle = concat!(env!("CARGO_MANIFEST_DIR"), "/../runtime-js/bundle.js");
+        for (value, want) in cases {
+            let pkg_json = json!({
+                "format": "et-doc-rules/1",
+                "indent": 2,
+                "flatten_fields": value,
+                "rules": { "file": ["each", "*", ["seq"]] },
+            });
+            let rust_err = serde_json::from_value::<Package>(pkg_json.clone())
+                .err()
+                .expect("rust must refuse")
+                .to_string();
+            assert!(
+                rust_err.contains(want),
+                "rust wanted {want:?} in {rust_err}"
+            );
+
+            let script = format!(
+                r#"
+const {{ format }} = require({bundle:?});
+const tree = {{ language: "toy", source: "", root: {{ type: "file", start: 0, end: 0 }} }};
+try {{
+  format(tree, 80, {pkg});
+  console.error("js accepted a bad flatten_fields header");
+  process.exit(2);
+}} catch (e) {{
+  if (!e.message.includes({want})) {{
+    console.error(e.message);
+    process.exit(3);
+  }}
+}}
+"#,
+                bundle = bundle,
+                pkg = pkg_json,
+                want = serde_json::to_string(want).expect("want json"),
+            );
+            let status = std::process::Command::new("node")
+                .arg("-e")
+                .arg(script)
+                .status()
+                .expect("spawn node");
+            assert!(
+                status.success(),
+                "js runtime disagreed on {want} (exit {status})"
+            );
+        }
     }
 
     fn quote_pkg() -> Package {
