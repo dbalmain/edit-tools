@@ -19,6 +19,13 @@ Baseline at the start of the exercise: **10,196 B gzip = 8,080 runtime + 2,116
 packages** (python + json), against a 20 KB budget. After any runtime change
 merges, re-score every already-merged language before the next round launches.
 
+The 20 KB figure is **soft**. Dave's rule: if we go over, the question is which
+language features cost the bytes — so the `gzip Δ` column above must be per-edit
+and attributable to a named construct, never a per-slice lump. That attribution
+is the whole value of this table; a row reading "Scheme, +900 B, head-position
+dispatch" answers the question, and one reading "Scheme, +900 B, runtime
+changes" does not.
+
 ## 2. Template revisions
 
 Every stage-B and stage-D review ends with a template delta. Applied deltas go

@@ -176,10 +176,23 @@ Current: 10,196 B gzip = 8,080 runtime + 2,116 packages (python + json), against
 a 20 KB budget.
 
 Fifteen packages will dominate a single total, and that would punish language
-# 15 for arriving late. So the reported number is **runtime + this language's own
-package**, measured against 20 KB. The all-languages total is reported too, as
-information. _(Orchestrator assumption — flag to Dave if the budget was meant as
-a single hard total.)_
+
+# 15 for arriving late. So the reported number is \*\*runtime + this language's own
+
+package\*\*, measured against 20 KB. The all-languages total is reported too, as
+information.
+
+**20 KB is a soft budget, not a gate.** Dave's rule: going over is not a
+failure, it is a question — _which language features cost the extra bytes?_ So
+the accounting must be **attributable**, and that is the real requirement here.
+Every runtime edit records its own gzip delta in `LEDGER.md` against the
+language and the construct that forced it, so that when the total crosses 20 KB
+we can answer "Scheme's head-position dispatch cost 900 bytes, Ruby's block-form
+selection cost 400" rather than "it got bigger".
+
+A builder must therefore report the size delta of each runtime edit separately,
+not one lump figure for the slice. A lumped figure is a stage-D fix, not a
+reject — but it makes the ledger useless, so ask for it every time.
 
 ## Merge bar (stage D)
 

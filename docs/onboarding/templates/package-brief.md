@@ -77,9 +77,15 @@ are working in parallel worktrees.
 
 If {{LANG}} genuinely needs something the runtime does not have, add it — and
 put the full case in the report: what you tried first, what the package could
-not express, the size cost in gzip bytes, and why a package-level workaround is
-worse. A reviewer will judge each edit as warranted / unnecessary /
-needs-redesign, and will push back on the ones that were not needed.
+not express, and why a package-level workaround is worse.
+
+Measure the **gzip size delta of each runtime edit separately**, and name the
+{{LANG}} construct that forced it. Not one lump figure for the whole slice. The
+20 KB budget is soft — going over is a question ("which language features cost
+the bytes?"), not a failure — but that question is only answerable if each edit
+carries its own number and its own cause. A reviewer will judge each edit as
+warranted / unnecessary / needs-redesign, and will push back on the ones that
+were not needed.
 
 Adding an opcode because it makes your table tidier is not warranted. Adding one
 because the language is structurally beyond the current IR is exactly what this

@@ -8,24 +8,24 @@ building · `D` package review · `E`/`F` escalated · **merged** · **blocked**
 
 ## Board
 
-| Language   | Tier | Round | Builder | Status | Grammar                 | Reference                         |
-| ---------- | ---- | ----- | ------- | ------ | ----------------------- | --------------------------------- |
-| JSON       | T1   | —     | —       | merged | tree_sitter_json        | prettier                          |
-| Python     | T2   | —     | —       | merged | tree_sitter_python      | black                             |
-| TOML       | T1   | 1     | all 3   | -      | tree_sitter_toml        | taplo                             |
-| YAML       | T1   | 2     | tbd     | -      | tree_sitter_yaml        | prettier                          |
-| CSS        | T1   | 2     | tbd     | -      | tree_sitter_css         | prettier                          |
-| Go         | T2   | 2     | tbd     | -      | tree_sitter_go          | gofmt                             |
-| Rust       | T2   | 3     | tbd     | -      | tree_sitter_rust        | rustfmt                           |
-| Kotlin     | T2   | 3     | tbd     | -      | tree_sitter_kotlin      | ktfmt                             |
-| JavaScript | T2   | 3     | tbd     | -      | tree_sitter_javascript  | prettier                          |
-| TypeScript | T2   | 4     | tbd     | -      | tree_sitter_typescript  | prettier                          |
-| XML        | T3   | 4     | tbd     | -      | tree_sitter_xml         | prettier (`@prettier/plugin-xml`) |
-| HTML       | T3   | 4     | tbd     | -      | tree_sitter_html        | prettier                          |
-| Ruby       | T4   | 5     | tbd     | -      | tree_sitter_ruby        | syntax_tree                       |
-| Scheme     | T4   | 5     | tbd     | -      | tree_sitter_scheme      | emacs `scheme-mode`               |
-| Haskell    | T4   | 5     | tbd     | -      | tree_sitter_haskell     | ormolu                            |
-| Aven       | T4   | 6     | tbd     | -      | **unknown — see below** | `aven fmt`                        |
+| Language   | Tier | Round | Builder | Status | Grammar                | Reference                         |
+| ---------- | ---- | ----- | ------- | ------ | ---------------------- | --------------------------------- |
+| JSON       | T1   | —     | —       | merged | tree_sitter_json       | prettier                          |
+| Python     | T2   | —     | —       | merged | tree_sitter_python     | black                             |
+| TOML       | T1   | 1     | all 3   | -      | tree_sitter_toml       | taplo                             |
+| YAML       | T1   | 2     | tbd     | -      | tree_sitter_yaml       | prettier                          |
+| CSS        | T1   | 2     | tbd     | -      | tree_sitter_css        | prettier                          |
+| Go         | T2   | 2     | tbd     | -      | tree_sitter_go         | gofmt                             |
+| Rust       | T2   | 3     | tbd     | -      | tree_sitter_rust       | rustfmt                           |
+| Kotlin     | T2   | 3     | tbd     | -      | tree_sitter_kotlin     | ktfmt                             |
+| JavaScript | T2   | 3     | tbd     | -      | tree_sitter_javascript | prettier                          |
+| TypeScript | T2   | 4     | tbd     | -      | tree_sitter_typescript | prettier                          |
+| XML        | T3   | 4     | tbd     | -      | tree_sitter_xml        | prettier (`@prettier/plugin-xml`) |
+| HTML       | T3   | 4     | tbd     | -      | tree_sitter_html       | prettier                          |
+| Ruby       | T4   | 5     | tbd     | -      | tree_sitter_ruby       | syntax_tree                       |
+| Scheme     | T4   | 5     | tbd     | -      | tree_sitter_scheme     | emacs `scheme-mode`               |
+| Haskell    | T4   | 5     | tbd     | -      | tree_sitter_haskell    | ormolu                            |
+| Aven       | T4   | 6     | tbd     | -      | **none — see below**   | `aven fmt`                        |
 
 Grammar package names are the orchestrator's guess from PyPI naming convention.
 Stage A confirms or corrects each one and records the pin in the manifest; a
@@ -51,19 +51,39 @@ time rather than all at once.
   test of that. Expect a runtime-change request; judge it carefully.
 - **Haskell (R5)** — layout rule, operator sections, `where` clauses. Ormolu's
   style is fixed, so agreement is all-or-nothing per construct.
-- **Aven (R6)** — layout-sensitive _and_ supports user-declared custom operators
-  (`aven fmt --operator TOKEN:ANCHOR:ASSOCIATIVITY`). A formatter whose correct
-  output depends on a declaration elsewhere in the file is outside anything the
-  design has faced. Placed last for that reason.
+- **Aven (R6)** — no tree-sitter grammar, layout-sensitive, and user-declared
+  custom operators. Three separate problems at once; it gets its own section
+  below.
 
-## Aven — extra stage-A work
+## Aven — a different shape of slice
 
-Aven is the only language with no assured tree-sitter grammar. Stage A must
-first establish which of these is true, and report it before building anything:
+**Aven has no tree-sitter grammar.** Confirmed by Dave, so stage A does not need
+to go looking. It does have syntax highlighting in
+`~/w/clex/aven-lang/editors/`, but that is very likely a token-level
+regex/TextMate-style definition rather than anything with tree structure — a
+highlighter tells you _what a token is_, and a formatter needs _what contains
+what_. Assume it does not carry us and be pleased if it does.
 
-1. a grammar exists in `~/w/clex/aven-lang/editors/` and can be built,
-2. a grammar exists elsewhere in that repo under another name, or
-3. no grammar exists, and one must be written or the language deferred.
+So Aven's stage A is not "build a corpus against a grammar" but "establish
+whether there is a usable CST at all". Two routes, in order of preference:
 
-If (3), stop and report. Writing a tree-sitter grammar is a different project
-and is not in scope for a language-onboarding slice.
+1. **Emit a CST from the aven project itself.** `aven-lang` has a real parser —
+   `aven check`, `aven fmt`, `aven lsp` and `aven layout` all imply a tree and a
+   layout pass. If that parser can be made to emit a tree in the shape the
+   runtime consumes, Aven onboards without tree-sitter at all. Dave's stated
+   fallback: _"we'll develop the package from the aven project."_
+2. **Write a tree-sitter grammar.** A separate project, not a
+   language-onboarding slice. If route 1 fails, stop and report rather than
+   starting this.
+
+Route 1 is the more interesting result either way. It answers a question none of
+the other fourteen languages touch: **is the runtime's tree interface actually
+independent of tree-sitter, or has tree-sitter's node model leaked into the
+design?** If a hand-rolled parser can feed the runtime, that is a real finding
+about the architecture. If it cannot, that is a bigger one.
+
+Note also that Aven is layout-sensitive and supports user-declared custom
+operators (`aven fmt --operator TOKEN:ANCHOR:ASSOCIATIVITY`), so its correct
+output depends on a declaration elsewhere in the file. Nothing in the design
+addresses that. Aven is last on the roster for the accumulation of all three
+reasons.
