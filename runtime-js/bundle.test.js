@@ -67,7 +67,7 @@ const listRule = [
   ["soft"], ["tok", ")"],
 ];
 
-function chain(ops, base) {
+function chain(ops, base, fields = { left: "left", operator: "operator", right: "right" }) {
   let node = leaf("name", base);
   for (const [op, rhs] of ops) {
     node = {
@@ -75,9 +75,9 @@ function chain(ops, base) {
       start: 0,
       end: 0,
       children: [
-        { ...node, field: "left" },
-        { ...leaf(op, op), field: "operator" },
-        { ...leaf("name", rhs), field: "right" },
+        { ...node, field: fields.left },
+        { ...leaf(op, op), field: fields.operator },
+        { ...leaf("name", rhs), field: fields.right },
       ],
     };
   }
@@ -261,6 +261,46 @@ test("flatten stops where the operator binds tighter", () => {
     sum: ["group", ["flatten", "sum", ["seq", ["line"], ["child", "f:operator"], ["sp"]]]],
   });
   assert.equal(run(pkg, chain([["*", "bbb"], ["+", "ccc"]], "aaa"), 9), "aaa * bbb\n+ ccc\n");
+});
+
+test("flatten uses the package's field names", () => {
+  // The defect: these three strings used to live in both evaluators, so a
+  // grammar that called them lhs/op/rhs was refused and no package rewrite
+  // could save it. The probe built exactly this tree.
+  const fields = { left: "lhs", operator: "op", right: "rhs" };
+  const pkg = {
+    format: "et-doc-rules/1",
+    indent: 2,
+    tokens: ["+", "*"],
+    precedence: { "+": 5, "*": 4 },
+    flatten_fields: fields,
+    rules: {
+      sum: ["group", ["flatten", "sum", ["seq", ["line"], ["child", "f:op"], ["sp"]]]],
+    },
+  };
+  const tree = chain([["+", "bbb"], ["+", "ccc"]], "aaa", fields);
+  assert.equal(run(pkg, tree, 80), "aaa + bbb + ccc\n");
+  assert.equal(run(pkg, tree, 4), "aaa\n+ bbb\n+ ccc\n");
+  // Tightness must read `op` too, or mixed precedence would not split.
+  assert.equal(run(pkg, chain([["*", "bbb"], ["+", "ccc"]], "aaa", fields), 9), "aaa * bbb\n+ ccc\n");
+});
+
+test("flatten_fields refuses a bad header", () => {
+  for (const [value, message] of [
+    [["left", "operator", "right"], /`flatten_fields` must be an object, got \["left","operator","right"\]/],
+    [{ left: "lhs", operator: "op" }, /`flatten_fields` is missing `right`/],
+    [{ left: "lhs", operator: "op", right: "rhs", mid: "x" }, /`flatten_fields` has unknown field `mid`/],
+    [{ left: "", operator: "op", right: "rhs" }, /`flatten_fields\.left` must be a non-empty string, got ""/],
+    [{ left: 1, operator: "op", right: "rhs" }, /`flatten_fields\.left` must be a non-empty string, got 1/],
+    [{ left: "lhs", operator: "lhs", right: "rhs" }, /`flatten_fields` field names must be distinct/],
+  ]) {
+    const pkg = toy({ file: ["each", "*", ["seq"]] });
+    pkg.flatten_fields = value;
+    assert.throws(
+      () => run(pkg, { type: "file", start: 0, end: 0 }, 80),
+      (e) => e instanceof Refusal && message.test(e.message),
+    );
+  }
 });
 
 const quotePkg = () => toy({ quote: ["verbatim"] });

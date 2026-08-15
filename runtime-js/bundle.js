@@ -245,10 +245,48 @@ function gapField(pkg, name) {
   return value;
 }
 
+// Field names of a left-nested operator spine. A package that says nothing
+// gets tree-sitter's usual three, which is today's behaviour exactly.
+const FLATTEN_FIELD_KEYS = ["left", "operator", "right"];
+
+function flattenFields(pkg) {
+  const value = pkg.flatten_fields;
+  if (value === undefined) {
+    return { left: "left", operator: "operator", right: "right" };
+  }
+  if (!isObject(value)) {
+    throw new Refusal(`\`flatten_fields\` must be an object, got ${JSON.stringify(value)}`);
+  }
+  const unknown = Object.keys(value)
+    .filter((key) => !FLATTEN_FIELD_KEYS.includes(key))
+    .sort();
+  if (unknown.length > 0) {
+    throw new Refusal(`\`flatten_fields\` has unknown field \`${unknown[0]}\``);
+  }
+  const names = {};
+  for (const key of FLATTEN_FIELD_KEYS) {
+    if (!Object.hasOwn(value, key)) {
+      throw new Refusal(`\`flatten_fields\` is missing \`${key}\``);
+    }
+    const raw = value[key];
+    if (typeof raw !== "string" || raw.length === 0) {
+      throw new Refusal(
+        `\`flatten_fields.${key}\` must be a non-empty string, got ${JSON.stringify(raw)}`,
+      );
+    }
+    names[key] = raw;
+  }
+  if (names.left === names.operator || names.left === names.right || names.operator === names.right) {
+    throw new Refusal("`flatten_fields` field names must be distinct");
+  }
+  return names;
+}
+
 function buildPackage(pkg) {
   validatePackageFormat(pkg);
   const comment_gap = gapField(pkg, "comment_gap");
   const blank_cap = gapField(pkg, "blank_cap");
+  const flatten_fields = flattenFields(pkg);
   const defs = pkg.defs === undefined ? {} : pkg.defs;
   if (!isObject(defs)) throw new Refusal("`defs` must be an object");
   if (!isObject(pkg.rules)) throw new Refusal("`rules` must be an object");
@@ -271,7 +309,7 @@ function buildPackage(pkg) {
       return [name, expanded];
     }),
   );
-  return { ...pkg, comment_gap, blank_cap, rules };
+  return { ...pkg, comment_gap, blank_cap, flatten_fields, rules };
 }
 
 // ---------------------------------------------------------------- the Doc IR
@@ -737,12 +775,13 @@ class Ctx {
    *  flat list, so the whole chain breaks together instead of staircasing.
    *  This is the opcode a per-node fold cannot do without. */
   flatten(kind, sep) {
-    const left = { field: "left" };
-    const right = { field: "right" };
+    const fields = this.fmt.flatten;
+    const left = { field: fields.left };
+    const right = { field: fields.right };
 
     const spine = [];
     for (let cur = this.node; ; ) {
-      const next = (cur.children ?? []).find((c) => c.field === "left");
+      const next = (cur.children ?? []).find((c) => c.field === fields.left);
       if (!next || next.type !== kind || this.fmt.tightness(cur) !== this.fmt.tightness(next)) {
         break;
       }
@@ -828,10 +867,11 @@ class Formatter {
     this.precedence = this.pkg.precedence ?? {};
     this.commentGap = this.pkg.comment_gap;
     this.blankCap = this.pkg.blank_cap;
+    this.flatten = this.pkg.flatten_fields;
   }
 
   tightness(node) {
-    const op = (node.children ?? []).find((c) => c.field === "operator");
+    const op = (node.children ?? []).find((c) => c.field === this.flatten.operator);
     return (op && this.precedence[op.text]) ?? 0;
   }
 

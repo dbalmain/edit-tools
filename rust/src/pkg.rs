@@ -2,7 +2,8 @@
 //!
 //! A package is a table from node type to a Doc-building expression, plus the
 //! handful of language facts the runtime needs (which node types are
-//! punctuation, which are comments, operator precedence for chain flattening).
+//! punctuation, which are comments, operator precedence and the field names
+//! of a flattened chain).
 
 use std::collections::{HashMap, HashSet};
 
@@ -63,6 +64,10 @@ pub struct Package {
     /// stops descending when the tightness changes.
     #[serde(default)]
     pub precedence: HashMap<String, i64>,
+    /// Field names of a left-nested operator spine. Defaults are
+    /// tree-sitter-python's `left` / `operator` / `right`; a parser that
+    /// uses different ones says so here, next to `precedence`.
+    pub flatten_fields: FlattenFields,
     /// Spaces between code and a trailing comment on the same line. Black
     /// writes two, prettier writes one. A count rather than a string on
     /// purpose: no package may put arbitrary text in the output.
@@ -90,6 +95,8 @@ struct RawPackage {
     optional_parens: HashSet<String>,
     #[serde(default)]
     precedence: HashMap<String, i64>,
+    #[serde(default)]
+    flatten_fields: Option<Value>,
     #[serde(default = "one")]
     comment_gap: usize,
     #[serde(default = "one")]
@@ -113,6 +120,7 @@ impl TryFrom<RawPackage> for Package {
                 ));
             }
         }
+        let flatten_fields = flatten_fields(raw.flatten_fields)?;
         let rules = expand_rules(&raw.defs, raw.rules)?
             .into_iter()
             .map(|(name, value)| Ok((name, Expr::try_from(value)?)))
@@ -124,11 +132,73 @@ impl TryFrom<RawPackage> for Package {
             descend: raw.descend,
             optional_parens: raw.optional_parens,
             precedence: raw.precedence,
+            flatten_fields,
             comment_gap: raw.comment_gap,
             blank_cap: raw.blank_cap,
             rules,
         })
     }
+}
+
+/// The three labels `flatten` walks. A package that says nothing gets
+/// tree-sitter's usual names, which is today's behaviour exactly.
+#[derive(Debug, Clone)]
+pub struct FlattenFields {
+    pub left: String,
+    pub operator: String,
+    pub right: String,
+}
+
+impl Default for FlattenFields {
+    fn default() -> Self {
+        Self {
+            left: "left".to_owned(),
+            operator: "operator".to_owned(),
+            right: "right".to_owned(),
+        }
+    }
+}
+
+const FLATTEN_FIELD_KEYS: [&str; 3] = ["left", "operator", "right"];
+
+fn flatten_fields(value: Option<Value>) -> Result<FlattenFields, String> {
+    let Some(value) = value else {
+        return Ok(FlattenFields::default());
+    };
+    let Value::Object(map) = value else {
+        return Err(format!("`flatten_fields` must be an object, got {value}"));
+    };
+    let mut unknown: Vec<String> = map
+        .keys()
+        .filter(|key| !FLATTEN_FIELD_KEYS.contains(&key.as_str()))
+        .cloned()
+        .collect();
+    unknown.sort_unstable();
+    if let Some(key) = unknown.first() {
+        return Err(format!("`flatten_fields` has unknown field `{key}`"));
+    }
+    let name = |key: &str| -> Result<String, String> {
+        let Some(raw) = map.get(key) else {
+            return Err(format!("`flatten_fields` is missing `{key}`"));
+        };
+        match raw.as_str() {
+            Some(s) if !s.is_empty() => Ok(s.to_owned()),
+            _ => Err(format!(
+                "`flatten_fields.{key}` must be a non-empty string, got {raw}"
+            )),
+        }
+    };
+    let left = name("left")?;
+    let operator = name("operator")?;
+    let right = name("right")?;
+    if left == operator || left == right || operator == right {
+        return Err("`flatten_fields` field names must be distinct".to_owned());
+    }
+    Ok(FlattenFields {
+        left,
+        operator,
+        right,
+    })
 }
 
 fn expand_rules(
@@ -638,6 +708,63 @@ mod tests {
             err.contains("definition nesting exceeds the maximum depth of 32"),
             "{err}"
         );
+    }
+
+    #[test]
+    fn flatten_fields_default_to_tree_sitters_usual_names() {
+        let pkg: Package = serde_json::from_value(package(FORMAT)).expect("parses");
+        assert_eq!(pkg.flatten_fields.left, "left");
+        assert_eq!(pkg.flatten_fields.operator, "operator");
+        assert_eq!(pkg.flatten_fields.right, "right");
+    }
+
+    #[test]
+    fn flatten_fields_accepts_a_renamed_spine() {
+        let mut raw = package(FORMAT);
+        raw["flatten_fields"] = json!({
+            "left": "lhs",
+            "operator": "op",
+            "right": "rhs",
+        });
+        let pkg: Package = serde_json::from_value(raw).expect("parses");
+        assert_eq!(pkg.flatten_fields.left, "lhs");
+        assert_eq!(pkg.flatten_fields.operator, "op");
+        assert_eq!(pkg.flatten_fields.right, "rhs");
+    }
+
+    #[test]
+    fn flatten_fields_refuses_a_bad_header() {
+        let cases = [
+            (
+                json!(["left", "operator", "right"]),
+                "`flatten_fields` must be an object, got [\"left\",\"operator\",\"right\"]",
+            ),
+            (
+                json!({"left": "lhs", "operator": "op"}),
+                "`flatten_fields` is missing `right`",
+            ),
+            (
+                json!({"left": "lhs", "operator": "op", "right": "rhs", "mid": "x"}),
+                "`flatten_fields` has unknown field `mid`",
+            ),
+            (
+                json!({"left": "", "operator": "op", "right": "rhs"}),
+                "`flatten_fields.left` must be a non-empty string, got \"\"",
+            ),
+            (
+                json!({"left": "lhs", "operator": "lhs", "right": "rhs"}),
+                "`flatten_fields` field names must be distinct",
+            ),
+        ];
+        for (value, want) in cases {
+            let mut raw = package(FORMAT);
+            raw["flatten_fields"] = value;
+            let err = serde_json::from_value::<Package>(raw)
+                .err()
+                .expect("must refuse")
+                .to_string();
+            assert!(err.contains(want), "wanted {want:?} in {err}");
+        }
     }
 
     #[test]

@@ -125,7 +125,9 @@ future package cannot be silently misread by an older runtime.
 `tokens` is the one language fact the runtime cannot guess: which node types are
 punctuation and keywords rather than content. `named` is defined as "not one of
 these". `comments` and `descend` drive comment attachment; `optional_parens` and
-`precedence` drive `autoparen` and `flatten`.
+`precedence` drive `autoparen` and `flatten`. The field names `flatten` walks
+default to `left` / `operator` / `right`; a package whose parser uses different
+ones says so in `flatten_fields`, next to `precedence`.
 
 `comment_gap` chooses how many spaces precede a trailing comment, and
 `blank_cap` limits the source blank lines preserved next to a comment. Both
@@ -205,7 +207,7 @@ refuses on every call and not only the first.
 groups, so the innermost breaks first and you get a staircase. Black instead
 breaks every operator in a chain together.
 
-`["flatten", "boolean_operator", sep]` walks the `left` spine collecting
+`["flatten", "boolean_operator", sep]` walks the left-hand spine collecting
 same-type nodes into one flat list, then joins them with `sep` — which is itself
 an expression, so it emits each node's own operator:
 
@@ -229,6 +231,23 @@ Two refinements the proposal did not have:
   precedence breaks at the _same_ column as its parent. That single decision is
   what reproduces black's recursive `delimiter_split`: the outer chain breaks,
   the resulting line is still too long, the inner chain breaks into it.
+
+The spine's field names are the other input `flatten` cannot guess, and they
+belong next to `precedence`, not in the evaluators. They default to `left` /
+`operator` / `right` — tree-sitter-python's names, and what a package that
+says nothing already gets. A parser that says `lhs` / `op` / `rhs` writes
+
+```json
+"flatten_fields": { "left": "lhs", "operator": "op", "right": "rhs" }
+```
+
+and the opcode walks those. They are not operands of `flatten`. Putting them
+on the opcode would let one package flatten two differently-labelled spines,
+but the construct that looks like a second shape — Python's
+`comparison_operator` — is a flat operands/operators list, not a left-nested
+spine, and `each` already formats it. The header is the same kind of fact as
+`precedence`: one vocabulary per language. Adding three operands to every
+`flatten` call would have made the IR louder for a need nobody has.
 
 ### 2. Two policies, and nothing else, may touch tokens
 
