@@ -1,0 +1,42 @@
+# TOML. Schema: docs/onboarding/WORKFLOW.md, "Stage 0".
+name = "toml"
+extensions = [".toml"]
+
+# PyPI name and 0.7.0 pin confirmed against the live index (latest as of
+# 2026-08-15). Imported as tree_sitter_toml; the only language() export is
+# language(), which returns a tree_sitter.Language capsule.
+grammar = "tree-sitter-toml==0.7.0"
+grammar_module = "tree_sitter_toml"
+grammar_symbol = "language"
+
+# taplo 0.10.0 observed from `nix run nixpkgs#taplo -- --version`.
+# `--no-auto-config` is load-bearing: taplo walks from cwd (and ancestors) for
+# `.taplo.toml` / `taplo.toml` and a found file silently overrides -o flags,
+# including column_width and reorder_keys. Established by planting a config
+# that reordered keys; without the flag, committed reference output would
+# depend on whatever this machine (or a reviewer's) has in an ancestor
+# directory. `--stdin-filepath` is not required -- taplo formats stdin as TOML
+# with just `-` -- so it is omitted rather than invented.
+# column_width honours {width} for arrays only; established by diffing 88 vs 60
+# rather than by reading --help. Inline tables, strings, keys and table headers
+# never reflow.
+reference = "nix run nixpkgs#taplo -- fmt --no-auto-config -o column_width={width} -"
+reference_version = "taplo 0.10.0"
+reference_width = "flag"
+
+# 88 matches the other languages; 60 forces the array expand/collapse the 88
+# budget lets a package dodge. taplo's own default is 80, not 88 -- both
+# scored widths still produce different array layouts on this corpus.
+widths = [88, 60]
+
+# tomllib is in the stdlib and is a real loader, but it is weaker than the
+# generic named-node comparison for the reason that matters in TOML: the same
+# data has several legal spellings ([a.b] vs [a][b], inline table vs header,
+# dotted key vs table, [[x]] vs array of inline tables) and tomllib.loads
+# collapses all of them. A package that rewrote spelling would pass tomllib
+# and fail the tree comparison. The tree comparison is the right oracle;
+# extras still cover comments. Leave wrappers/equivalences empty until the
+# gate names a kind -- TOML has no parenthesised-expression node.
+gate3 = "default"
+transparent_wrappers = []
+equivalent_kinds = []
