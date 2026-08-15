@@ -1,0 +1,207 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/table-spellings.toml",
+ "source": "[header_form]\nhost = \"localhost\"\nport = 8080\n\ninline_form = { host = \"localhost\", port = 8080 }\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 96,
+  "children": [
+   {
+    "type": "table",
+    "start": 0,
+    "end": 96,
+    "children": [
+     {
+      "type": "[",
+      "start": 0,
+      "end": 1,
+      "text": "["
+     },
+     {
+      "type": "bare_key",
+      "start": 1,
+      "end": 12,
+      "text": "header_form"
+     },
+     {
+      "type": "]",
+      "start": 12,
+      "end": 13,
+      "text": "]"
+     },
+     {
+      "type": "pair",
+      "start": 14,
+      "end": 32,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 14,
+        "end": 18,
+        "text": "host"
+       },
+       {
+        "type": "=",
+        "start": 19,
+        "end": 20,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 21,
+        "end": 32,
+        "children": [
+         {
+          "type": "\"",
+          "start": 21,
+          "end": 22,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 31,
+          "end": 32,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 33,
+      "end": 44,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 33,
+        "end": 37,
+        "text": "port"
+       },
+       {
+        "type": "=",
+        "start": 38,
+        "end": 39,
+        "text": "="
+       },
+       {
+        "type": "integer",
+        "start": 40,
+        "end": 44,
+        "text": "8080"
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 46,
+      "end": 95,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 46,
+        "end": 57,
+        "text": "inline_form"
+       },
+       {
+        "type": "=",
+        "start": 58,
+        "end": 59,
+        "text": "="
+       },
+       {
+        "type": "inline_table",
+        "start": 60,
+        "end": 95,
+        "children": [
+         {
+          "type": "{",
+          "start": 60,
+          "end": 61,
+          "text": "{"
+         },
+         {
+          "type": "pair",
+          "start": 62,
+          "end": 80,
+          "children": [
+           {
+            "type": "bare_key",
+            "start": 62,
+            "end": 66,
+            "text": "host"
+           },
+           {
+            "type": "=",
+            "start": 67,
+            "end": 68,
+            "text": "="
+           },
+           {
+            "type": "string",
+            "start": 69,
+            "end": 80,
+            "children": [
+             {
+              "type": "\"",
+              "start": 69,
+              "end": 70,
+              "text": "\""
+             },
+             {
+              "type": "\"",
+              "start": 79,
+              "end": 80,
+              "text": "\""
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 80,
+          "end": 81,
+          "text": ","
+         },
+         {
+          "type": "pair",
+          "start": 82,
+          "end": 93,
+          "children": [
+           {
+            "type": "bare_key",
+            "start": 82,
+            "end": 86,
+            "text": "port"
+           },
+           {
+            "type": "=",
+            "start": 87,
+            "end": 88,
+            "text": "="
+           },
+           {
+            "type": "integer",
+            "start": 89,
+            "end": 93,
+            "text": "8080"
+           }
+          ]
+         },
+         {
+          "type": "}",
+          "start": 94,
+          "end": 95,
+          "text": "}"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -1,0 +1,708 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/nesting.toml",
+ "source": "pipeline = { stages = [{ name = \"build\", targets = [\"linux\", \"macos\", \"windows\"], retry = { attempts = [1, 2, 3], enabled = true } }, { name = \"test\", targets = [\"unit\", \"integration\", \"smoke\"], retry = { attempts = [1, 2], enabled = false } }] }\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 247,
+  "children": [
+   {
+    "type": "pair",
+    "start": 0,
+    "end": 246,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 0,
+      "end": 8,
+      "text": "pipeline"
+     },
+     {
+      "type": "=",
+      "start": 9,
+      "end": 10,
+      "text": "="
+     },
+     {
+      "type": "inline_table",
+      "start": 11,
+      "end": 246,
+      "children": [
+       {
+        "type": "{",
+        "start": 11,
+        "end": 12,
+        "text": "{"
+       },
+       {
+        "type": "pair",
+        "start": 13,
+        "end": 244,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 13,
+          "end": 19,
+          "text": "stages"
+         },
+         {
+          "type": "=",
+          "start": 20,
+          "end": 21,
+          "text": "="
+         },
+         {
+          "type": "array",
+          "start": 22,
+          "end": 244,
+          "children": [
+           {
+            "type": "[",
+            "start": 22,
+            "end": 23,
+            "text": "["
+           },
+           {
+            "type": "inline_table",
+            "start": 23,
+            "end": 132,
+            "children": [
+             {
+              "type": "{",
+              "start": 23,
+              "end": 24,
+              "text": "{"
+             },
+             {
+              "type": "pair",
+              "start": 25,
+              "end": 39,
+              "children": [
+               {
+                "type": "bare_key",
+                "start": 25,
+                "end": 29,
+                "text": "name"
+               },
+               {
+                "type": "=",
+                "start": 30,
+                "end": 31,
+                "text": "="
+               },
+               {
+                "type": "string",
+                "start": 32,
+                "end": 39,
+                "children": [
+                 {
+                  "type": "\"",
+                  "start": 32,
+                  "end": 33,
+                  "text": "\""
+                 },
+                 {
+                  "type": "\"",
+                  "start": 38,
+                  "end": 39,
+                  "text": "\""
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 39,
+              "end": 40,
+              "text": ","
+             },
+             {
+              "type": "pair",
+              "start": 41,
+              "end": 80,
+              "children": [
+               {
+                "type": "bare_key",
+                "start": 41,
+                "end": 48,
+                "text": "targets"
+               },
+               {
+                "type": "=",
+                "start": 49,
+                "end": 50,
+                "text": "="
+               },
+               {
+                "type": "array",
+                "start": 51,
+                "end": 80,
+                "children": [
+                 {
+                  "type": "[",
+                  "start": 51,
+                  "end": 52,
+                  "text": "["
+                 },
+                 {
+                  "type": "string",
+                  "start": 52,
+                  "end": 59,
+                  "children": [
+                   {
+                    "type": "\"",
+                    "start": 52,
+                    "end": 53,
+                    "text": "\""
+                   },
+                   {
+                    "type": "\"",
+                    "start": 58,
+                    "end": 59,
+                    "text": "\""
+                   }
+                  ]
+                 },
+                 {
+                  "type": ",",
+                  "start": 59,
+                  "end": 60,
+                  "text": ","
+                 },
+                 {
+                  "type": "string",
+                  "start": 61,
+                  "end": 68,
+                  "children": [
+                   {
+                    "type": "\"",
+                    "start": 61,
+                    "end": 62,
+                    "text": "\""
+                   },
+                   {
+                    "type": "\"",
+                    "start": 67,
+                    "end": 68,
+                    "text": "\""
+                   }
+                  ]
+                 },
+                 {
+                  "type": ",",
+                  "start": 68,
+                  "end": 69,
+                  "text": ","
+                 },
+                 {
+                  "type": "string",
+                  "start": 70,
+                  "end": 79,
+                  "children": [
+                   {
+                    "type": "\"",
+                    "start": 70,
+                    "end": 71,
+                    "text": "\""
+                   },
+                   {
+                    "type": "\"",
+                    "start": 78,
+                    "end": 79,
+                    "text": "\""
+                   }
+                  ]
+                 },
+                 {
+                  "type": "]",
+                  "start": 79,
+                  "end": 80,
+                  "text": "]"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 80,
+              "end": 81,
+              "text": ","
+             },
+             {
+              "type": "pair",
+              "start": 82,
+              "end": 130,
+              "children": [
+               {
+                "type": "bare_key",
+                "start": 82,
+                "end": 87,
+                "text": "retry"
+               },
+               {
+                "type": "=",
+                "start": 88,
+                "end": 89,
+                "text": "="
+               },
+               {
+                "type": "inline_table",
+                "start": 90,
+                "end": 130,
+                "children": [
+                 {
+                  "type": "{",
+                  "start": 90,
+                  "end": 91,
+                  "text": "{"
+                 },
+                 {
+                  "type": "pair",
+                  "start": 92,
+                  "end": 112,
+                  "children": [
+                   {
+                    "type": "bare_key",
+                    "start": 92,
+                    "end": 100,
+                    "text": "attempts"
+                   },
+                   {
+                    "type": "=",
+                    "start": 101,
+                    "end": 102,
+                    "text": "="
+                   },
+                   {
+                    "type": "array",
+                    "start": 103,
+                    "end": 112,
+                    "children": [
+                     {
+                      "type": "[",
+                      "start": 103,
+                      "end": 104,
+                      "text": "["
+                     },
+                     {
+                      "type": "integer",
+                      "start": 104,
+                      "end": 105,
+                      "text": "1"
+                     },
+                     {
+                      "type": ",",
+                      "start": 105,
+                      "end": 106,
+                      "text": ","
+                     },
+                     {
+                      "type": "integer",
+                      "start": 107,
+                      "end": 108,
+                      "text": "2"
+                     },
+                     {
+                      "type": ",",
+                      "start": 108,
+                      "end": 109,
+                      "text": ","
+                     },
+                     {
+                      "type": "integer",
+                      "start": 110,
+                      "end": 111,
+                      "text": "3"
+                     },
+                     {
+                      "type": "]",
+                      "start": 111,
+                      "end": 112,
+                      "text": "]"
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 {
+                  "type": ",",
+                  "start": 112,
+                  "end": 113,
+                  "text": ","
+                 },
+                 {
+                  "type": "pair",
+                  "start": 114,
+                  "end": 128,
+                  "children": [
+                   {
+                    "type": "bare_key",
+                    "start": 114,
+                    "end": 121,
+                    "text": "enabled"
+                   },
+                   {
+                    "type": "=",
+                    "start": 122,
+                    "end": 123,
+                    "text": "="
+                   },
+                   {
+                    "type": "boolean",
+                    "start": 124,
+                    "end": 128,
+                    "text": "true"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "}",
+                  "start": 129,
+                  "end": 130,
+                  "text": "}"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": "}",
+              "start": 131,
+              "end": 132,
+              "text": "}"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 132,
+            "end": 133,
+            "text": ","
+           },
+           {
+            "type": "inline_table",
+            "start": 134,
+            "end": 243,
+            "children": [
+             {
+              "type": "{",
+              "start": 134,
+              "end": 135,
+              "text": "{"
+             },
+             {
+              "type": "pair",
+              "start": 136,
+              "end": 149,
+              "children": [
+               {
+                "type": "bare_key",
+                "start": 136,
+                "end": 140,
+                "text": "name"
+               },
+               {
+                "type": "=",
+                "start": 141,
+                "end": 142,
+                "text": "="
+               },
+               {
+                "type": "string",
+                "start": 143,
+                "end": 149,
+                "children": [
+                 {
+                  "type": "\"",
+                  "start": 143,
+                  "end": 144,
+                  "text": "\""
+                 },
+                 {
+                  "type": "\"",
+                  "start": 148,
+                  "end": 149,
+                  "text": "\""
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 149,
+              "end": 150,
+              "text": ","
+             },
+             {
+              "type": "pair",
+              "start": 151,
+              "end": 193,
+              "children": [
+               {
+                "type": "bare_key",
+                "start": 151,
+                "end": 158,
+                "text": "targets"
+               },
+               {
+                "type": "=",
+                "start": 159,
+                "end": 160,
+                "text": "="
+               },
+               {
+                "type": "array",
+                "start": 161,
+                "end": 193,
+                "children": [
+                 {
+                  "type": "[",
+                  "start": 161,
+                  "end": 162,
+                  "text": "["
+                 },
+                 {
+                  "type": "string",
+                  "start": 162,
+                  "end": 168,
+                  "children": [
+                   {
+                    "type": "\"",
+                    "start": 162,
+                    "end": 163,
+                    "text": "\""
+                   },
+                   {
+                    "type": "\"",
+                    "start": 167,
+                    "end": 168,
+                    "text": "\""
+                   }
+                  ]
+                 },
+                 {
+                  "type": ",",
+                  "start": 168,
+                  "end": 169,
+                  "text": ","
+                 },
+                 {
+                  "type": "string",
+                  "start": 170,
+                  "end": 183,
+                  "children": [
+                   {
+                    "type": "\"",
+                    "start": 170,
+                    "end": 171,
+                    "text": "\""
+                   },
+                   {
+                    "type": "\"",
+                    "start": 182,
+                    "end": 183,
+                    "text": "\""
+                   }
+                  ]
+                 },
+                 {
+                  "type": ",",
+                  "start": 183,
+                  "end": 184,
+                  "text": ","
+                 },
+                 {
+                  "type": "string",
+                  "start": 185,
+                  "end": 192,
+                  "children": [
+                   {
+                    "type": "\"",
+                    "start": 185,
+                    "end": 186,
+                    "text": "\""
+                   },
+                   {
+                    "type": "\"",
+                    "start": 191,
+                    "end": 192,
+                    "text": "\""
+                   }
+                  ]
+                 },
+                 {
+                  "type": "]",
+                  "start": 192,
+                  "end": 193,
+                  "text": "]"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 193,
+              "end": 194,
+              "text": ","
+             },
+             {
+              "type": "pair",
+              "start": 195,
+              "end": 241,
+              "children": [
+               {
+                "type": "bare_key",
+                "start": 195,
+                "end": 200,
+                "text": "retry"
+               },
+               {
+                "type": "=",
+                "start": 201,
+                "end": 202,
+                "text": "="
+               },
+               {
+                "type": "inline_table",
+                "start": 203,
+                "end": 241,
+                "children": [
+                 {
+                  "type": "{",
+                  "start": 203,
+                  "end": 204,
+                  "text": "{"
+                 },
+                 {
+                  "type": "pair",
+                  "start": 205,
+                  "end": 222,
+                  "children": [
+                   {
+                    "type": "bare_key",
+                    "start": 205,
+                    "end": 213,
+                    "text": "attempts"
+                   },
+                   {
+                    "type": "=",
+                    "start": 214,
+                    "end": 215,
+                    "text": "="
+                   },
+                   {
+                    "type": "array",
+                    "start": 216,
+                    "end": 222,
+                    "children": [
+                     {
+                      "type": "[",
+                      "start": 216,
+                      "end": 217,
+                      "text": "["
+                     },
+                     {
+                      "type": "integer",
+                      "start": 217,
+                      "end": 218,
+                      "text": "1"
+                     },
+                     {
+                      "type": ",",
+                      "start": 218,
+                      "end": 219,
+                      "text": ","
+                     },
+                     {
+                      "type": "integer",
+                      "start": 220,
+                      "end": 221,
+                      "text": "2"
+                     },
+                     {
+                      "type": "]",
+                      "start": 221,
+                      "end": 222,
+                      "text": "]"
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 {
+                  "type": ",",
+                  "start": 222,
+                  "end": 223,
+                  "text": ","
+                 },
+                 {
+                  "type": "pair",
+                  "start": 224,
+                  "end": 239,
+                  "children": [
+                   {
+                    "type": "bare_key",
+                    "start": 224,
+                    "end": 231,
+                    "text": "enabled"
+                   },
+                   {
+                    "type": "=",
+                    "start": 232,
+                    "end": 233,
+                    "text": "="
+                   },
+                   {
+                    "type": "boolean",
+                    "start": 234,
+                    "end": 239,
+                    "text": "false"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "}",
+                  "start": 240,
+                  "end": 241,
+                  "text": "}"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": "}",
+              "start": 242,
+              "end": 243,
+              "text": "}"
+             }
+            ]
+           },
+           {
+            "type": "]",
+            "start": 243,
+            "end": 244,
+            "text": "]"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 245,
+        "end": 246,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

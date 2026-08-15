@@ -1,0 +1,24 @@
+# TOML. Schema: docs/onboarding/WORKFLOW.md, "Stage 0".
+name = "toml"
+extensions = [".toml"]
+
+# Verified in an isolated `uv run --with` environment: the PyPI distribution
+# imports as `tree_sitter_toml` and exports `language()`.
+grammar = "tree-sitter-toml==0.7.0"
+grammar_module = "tree_sitter_toml"
+grammar_symbol = "language"
+
+# Taplo reads configuration from the filesystem unless auto-discovery is
+# disabled. The explicit flag makes committed output independent of a caller's
+# `.taplo.toml`; `column_width` changes array layout between 88 and 60 columns.
+reference = "nix run nixpkgs#taplo -- fmt --no-auto-config -o column_width={width} --stdin-filepath x.toml -"
+reference_version = "taplo 0.10.0"
+reference_width = "flag"
+
+widths = [88, 60]
+
+# The default named-tree comparison preserves TOML's spelling-sensitive syntax;
+# tree-sitter's universal extras check separately preserves comment order.
+gate3 = "default"
+transparent_wrappers = []
+equivalent_kinds = []

@@ -1,0 +1,188 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/literals.toml",
+ "source": "basic = \"quotes: \\\"; slash: \\\\; tab: \\t; snowman: \\u2603\"\nliteral = 'C:\\Users\\toml\\config.toml'\n\nmultiline_basic = \"\"\"\nfirst line \\\n  continues without its indentation\nsecond line with \\n escaped newline text\n\"\"\"\n\nmultiline_literal = '''\nfirst literal line\n  preserves indentation and backslashes: C:\\temp\\file\n'''\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 315,
+  "children": [
+   {
+    "type": "pair",
+    "start": 0,
+    "end": 57,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 0,
+      "end": 5,
+      "text": "basic"
+     },
+     {
+      "type": "=",
+      "start": 6,
+      "end": 7,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 8,
+      "end": 57,
+      "children": [
+       {
+        "type": "\"",
+        "start": 8,
+        "end": 9,
+        "text": "\""
+       },
+       {
+        "type": "escape_sequence",
+        "start": 17,
+        "end": 19,
+        "text": "\\\""
+       },
+       {
+        "type": "escape_sequence",
+        "start": 28,
+        "end": 30,
+        "text": "\\\\"
+       },
+       {
+        "type": "escape_sequence",
+        "start": 37,
+        "end": 39,
+        "text": "\\t"
+       },
+       {
+        "type": "escape_sequence",
+        "start": 50,
+        "end": 56,
+        "text": "\\u2603"
+       },
+       {
+        "type": "\"",
+        "start": 56,
+        "end": 57,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 58,
+    "end": 95,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 58,
+      "end": 65,
+      "text": "literal"
+     },
+     {
+      "type": "=",
+      "start": 66,
+      "end": 67,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 68,
+      "end": 95,
+      "children": [
+       {
+        "type": "'",
+        "start": 68,
+        "end": 69,
+        "text": "'"
+       },
+       {
+        "type": "'",
+        "start": 94,
+        "end": 95,
+        "text": "'"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 97,
+    "end": 212,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 97,
+      "end": 112,
+      "text": "multiline_basic"
+     },
+     {
+      "type": "=",
+      "start": 113,
+      "end": 114,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 115,
+      "end": 212,
+      "children": [
+       {
+        "type": "\"\"\"",
+        "start": 115,
+        "end": 118,
+        "text": "\"\"\""
+       },
+       {
+        "type": "escape_sequence",
+        "start": 130,
+        "end": 132,
+        "text": "\\\n"
+       },
+       {
+        "type": "escape_sequence",
+        "start": 185,
+        "end": 187,
+        "text": "\\n"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 214,
+    "end": 314,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 214,
+      "end": 231,
+      "text": "multiline_literal"
+     },
+     {
+      "type": "=",
+      "start": 232,
+      "end": 233,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 234,
+      "end": 314,
+      "children": [
+       {
+        "type": "'''",
+        "start": 234,
+        "end": 237,
+        "text": "'''"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -1,0 +1,269 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/value-types.toml",
+ "source": "enabled = true\ndisabled = false\nmessage = \"hello\"\nitems = [1, \"two\", true, 1979-05-27]\nempty_array = []\nempty_inline_table = {}\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 128,
+  "children": [
+   {
+    "type": "pair",
+    "start": 0,
+    "end": 14,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 0,
+      "end": 7,
+      "text": "enabled"
+     },
+     {
+      "type": "=",
+      "start": 8,
+      "end": 9,
+      "text": "="
+     },
+     {
+      "type": "boolean",
+      "start": 10,
+      "end": 14,
+      "text": "true"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 15,
+    "end": 31,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 15,
+      "end": 23,
+      "text": "disabled"
+     },
+     {
+      "type": "=",
+      "start": 24,
+      "end": 25,
+      "text": "="
+     },
+     {
+      "type": "boolean",
+      "start": 26,
+      "end": 31,
+      "text": "false"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 32,
+    "end": 49,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 32,
+      "end": 39,
+      "text": "message"
+     },
+     {
+      "type": "=",
+      "start": 40,
+      "end": 41,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 42,
+      "end": 49,
+      "children": [
+       {
+        "type": "\"",
+        "start": 42,
+        "end": 43,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 48,
+        "end": 49,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 50,
+    "end": 86,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 50,
+      "end": 55,
+      "text": "items"
+     },
+     {
+      "type": "=",
+      "start": 56,
+      "end": 57,
+      "text": "="
+     },
+     {
+      "type": "array",
+      "start": 58,
+      "end": 86,
+      "children": [
+       {
+        "type": "[",
+        "start": 58,
+        "end": 59,
+        "text": "["
+       },
+       {
+        "type": "integer",
+        "start": 59,
+        "end": 60,
+        "text": "1"
+       },
+       {
+        "type": ",",
+        "start": 60,
+        "end": 61,
+        "text": ","
+       },
+       {
+        "type": "string",
+        "start": 62,
+        "end": 67,
+        "children": [
+         {
+          "type": "\"",
+          "start": 62,
+          "end": 63,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 66,
+          "end": 67,
+          "text": "\""
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 67,
+        "end": 68,
+        "text": ","
+       },
+       {
+        "type": "boolean",
+        "start": 69,
+        "end": 73,
+        "text": "true"
+       },
+       {
+        "type": ",",
+        "start": 73,
+        "end": 74,
+        "text": ","
+       },
+       {
+        "type": "local_date",
+        "start": 75,
+        "end": 85,
+        "text": "1979-05-27"
+       },
+       {
+        "type": "]",
+        "start": 85,
+        "end": 86,
+        "text": "]"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 87,
+    "end": 103,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 87,
+      "end": 98,
+      "text": "empty_array"
+     },
+     {
+      "type": "=",
+      "start": 99,
+      "end": 100,
+      "text": "="
+     },
+     {
+      "type": "array",
+      "start": 101,
+      "end": 103,
+      "children": [
+       {
+        "type": "[",
+        "start": 101,
+        "end": 102,
+        "text": "["
+       },
+       {
+        "type": "]",
+        "start": 102,
+        "end": 103,
+        "text": "]"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 104,
+    "end": 127,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 104,
+      "end": 122,
+      "text": "empty_inline_table"
+     },
+     {
+      "type": "=",
+      "start": 123,
+      "end": 124,
+      "text": "="
+     },
+     {
+      "type": "inline_table",
+      "start": 125,
+      "end": 127,
+      "children": [
+       {
+        "type": "{",
+        "start": 125,
+        "end": 126,
+        "text": "{"
+       },
+       {
+        "type": "}",
+        "start": 126,
+        "end": 127,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

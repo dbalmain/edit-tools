@@ -1,0 +1,704 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/kitchen.toml",
+ "source": "title = \"deployment\"\nowners = [\"ops\", \"platform\", \"release\"] # deployment contacts\n\n[database]\nhost = \"db.internal.example\"\nports = [5432, 6432]\ncredentials = { user = \"service\", password_file = \"/run/secrets/db\" }\n\n[[workers]]\nname = \"ingest\"\nschedule = 2025-04-01T08:30:00Z\ntags = [\"critical\", \"batch\", \"customer-facing\"]\n\n[[workers]]\n# This worker intentionally uses a multi-line string.\nname = \"reconcile\"\nscript = \"\"\"\nreconcile --all \\\\\n  --dry-run\n\"\"\"\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 458,
+  "children": [
+   {
+    "type": "pair",
+    "start": 0,
+    "end": 20,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 0,
+      "end": 5,
+      "text": "title"
+     },
+     {
+      "type": "=",
+      "start": 6,
+      "end": 7,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 8,
+      "end": 20,
+      "children": [
+       {
+        "type": "\"",
+        "start": 8,
+        "end": 9,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 19,
+        "end": 20,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 21,
+    "end": 82,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 21,
+      "end": 27,
+      "text": "owners"
+     },
+     {
+      "type": "=",
+      "start": 28,
+      "end": 29,
+      "text": "="
+     },
+     {
+      "type": "array",
+      "start": 30,
+      "end": 60,
+      "children": [
+       {
+        "type": "[",
+        "start": 30,
+        "end": 31,
+        "text": "["
+       },
+       {
+        "type": "string",
+        "start": 31,
+        "end": 36,
+        "children": [
+         {
+          "type": "\"",
+          "start": 31,
+          "end": 32,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 35,
+          "end": 36,
+          "text": "\""
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 36,
+        "end": 37,
+        "text": ","
+       },
+       {
+        "type": "string",
+        "start": 38,
+        "end": 48,
+        "children": [
+         {
+          "type": "\"",
+          "start": 38,
+          "end": 39,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 47,
+          "end": 48,
+          "text": "\""
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 48,
+        "end": 49,
+        "text": ","
+       },
+       {
+        "type": "string",
+        "start": 50,
+        "end": 59,
+        "children": [
+         {
+          "type": "\"",
+          "start": 50,
+          "end": 51,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 58,
+          "end": 59,
+          "text": "\""
+         }
+        ]
+       },
+       {
+        "type": "]",
+        "start": 59,
+        "end": 60,
+        "text": "]"
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 61,
+      "end": 82,
+      "text": "# deployment contacts"
+     }
+    ]
+   },
+   {
+    "type": "table",
+    "start": 84,
+    "end": 216,
+    "children": [
+     {
+      "type": "[",
+      "start": 84,
+      "end": 85,
+      "text": "["
+     },
+     {
+      "type": "bare_key",
+      "start": 85,
+      "end": 93,
+      "text": "database"
+     },
+     {
+      "type": "]",
+      "start": 93,
+      "end": 94,
+      "text": "]"
+     },
+     {
+      "type": "pair",
+      "start": 95,
+      "end": 123,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 95,
+        "end": 99,
+        "text": "host"
+       },
+       {
+        "type": "=",
+        "start": 100,
+        "end": 101,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 102,
+        "end": 123,
+        "children": [
+         {
+          "type": "\"",
+          "start": 102,
+          "end": 103,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 122,
+          "end": 123,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 124,
+      "end": 144,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 124,
+        "end": 129,
+        "text": "ports"
+       },
+       {
+        "type": "=",
+        "start": 130,
+        "end": 131,
+        "text": "="
+       },
+       {
+        "type": "array",
+        "start": 132,
+        "end": 144,
+        "children": [
+         {
+          "type": "[",
+          "start": 132,
+          "end": 133,
+          "text": "["
+         },
+         {
+          "type": "integer",
+          "start": 133,
+          "end": 137,
+          "text": "5432"
+         },
+         {
+          "type": ",",
+          "start": 137,
+          "end": 138,
+          "text": ","
+         },
+         {
+          "type": "integer",
+          "start": 139,
+          "end": 143,
+          "text": "6432"
+         },
+         {
+          "type": "]",
+          "start": 143,
+          "end": 144,
+          "text": "]"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 145,
+      "end": 214,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 145,
+        "end": 156,
+        "text": "credentials"
+       },
+       {
+        "type": "=",
+        "start": 157,
+        "end": 158,
+        "text": "="
+       },
+       {
+        "type": "inline_table",
+        "start": 159,
+        "end": 214,
+        "children": [
+         {
+          "type": "{",
+          "start": 159,
+          "end": 160,
+          "text": "{"
+         },
+         {
+          "type": "pair",
+          "start": 161,
+          "end": 177,
+          "children": [
+           {
+            "type": "bare_key",
+            "start": 161,
+            "end": 165,
+            "text": "user"
+           },
+           {
+            "type": "=",
+            "start": 166,
+            "end": 167,
+            "text": "="
+           },
+           {
+            "type": "string",
+            "start": 168,
+            "end": 177,
+            "children": [
+             {
+              "type": "\"",
+              "start": 168,
+              "end": 169,
+              "text": "\""
+             },
+             {
+              "type": "\"",
+              "start": 176,
+              "end": 177,
+              "text": "\""
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 177,
+          "end": 178,
+          "text": ","
+         },
+         {
+          "type": "pair",
+          "start": 179,
+          "end": 212,
+          "children": [
+           {
+            "type": "bare_key",
+            "start": 179,
+            "end": 192,
+            "text": "password_file"
+           },
+           {
+            "type": "=",
+            "start": 193,
+            "end": 194,
+            "text": "="
+           },
+           {
+            "type": "string",
+            "start": 195,
+            "end": 212,
+            "children": [
+             {
+              "type": "\"",
+              "start": 195,
+              "end": 196,
+              "text": "\""
+             },
+             {
+              "type": "\"",
+              "start": 211,
+              "end": 212,
+              "text": "\""
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "}",
+          "start": 213,
+          "end": 214,
+          "text": "}"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table_array_element",
+    "start": 216,
+    "end": 325,
+    "children": [
+     {
+      "type": "[[",
+      "start": 216,
+      "end": 218,
+      "text": "[["
+     },
+     {
+      "type": "bare_key",
+      "start": 218,
+      "end": 225,
+      "text": "workers"
+     },
+     {
+      "type": "]]",
+      "start": 225,
+      "end": 227,
+      "text": "]]"
+     },
+     {
+      "type": "pair",
+      "start": 228,
+      "end": 243,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 228,
+        "end": 232,
+        "text": "name"
+       },
+       {
+        "type": "=",
+        "start": 233,
+        "end": 234,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 235,
+        "end": 243,
+        "children": [
+         {
+          "type": "\"",
+          "start": 235,
+          "end": 236,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 242,
+          "end": 243,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 244,
+      "end": 275,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 244,
+        "end": 252,
+        "text": "schedule"
+       },
+       {
+        "type": "=",
+        "start": 253,
+        "end": 254,
+        "text": "="
+       },
+       {
+        "type": "offset_date_time",
+        "start": 255,
+        "end": 275,
+        "text": "2025-04-01T08:30:00Z"
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 276,
+      "end": 323,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 276,
+        "end": 280,
+        "text": "tags"
+       },
+       {
+        "type": "=",
+        "start": 281,
+        "end": 282,
+        "text": "="
+       },
+       {
+        "type": "array",
+        "start": 283,
+        "end": 323,
+        "children": [
+         {
+          "type": "[",
+          "start": 283,
+          "end": 284,
+          "text": "["
+         },
+         {
+          "type": "string",
+          "start": 284,
+          "end": 294,
+          "children": [
+           {
+            "type": "\"",
+            "start": 284,
+            "end": 285,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 293,
+            "end": 294,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 294,
+          "end": 295,
+          "text": ","
+         },
+         {
+          "type": "string",
+          "start": 296,
+          "end": 303,
+          "children": [
+           {
+            "type": "\"",
+            "start": 296,
+            "end": 297,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 302,
+            "end": 303,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 303,
+          "end": 304,
+          "text": ","
+         },
+         {
+          "type": "string",
+          "start": 305,
+          "end": 322,
+          "children": [
+           {
+            "type": "\"",
+            "start": 305,
+            "end": 306,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 321,
+            "end": 322,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": "]",
+          "start": 322,
+          "end": 323,
+          "text": "]"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table_array_element",
+    "start": 325,
+    "end": 458,
+    "children": [
+     {
+      "type": "[[",
+      "start": 325,
+      "end": 327,
+      "text": "[["
+     },
+     {
+      "type": "bare_key",
+      "start": 327,
+      "end": 334,
+      "text": "workers"
+     },
+     {
+      "type": "]]",
+      "start": 334,
+      "end": 336,
+      "text": "]]"
+     },
+     {
+      "type": "comment",
+      "start": 337,
+      "end": 390,
+      "text": "# This worker intentionally uses a multi-line string."
+     },
+     {
+      "type": "pair",
+      "start": 391,
+      "end": 409,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 391,
+        "end": 395,
+        "text": "name"
+       },
+       {
+        "type": "=",
+        "start": 396,
+        "end": 397,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 398,
+        "end": 409,
+        "children": [
+         {
+          "type": "\"",
+          "start": 398,
+          "end": 399,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 408,
+          "end": 409,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 410,
+      "end": 457,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 410,
+        "end": 416,
+        "text": "script"
+       },
+       {
+        "type": "=",
+        "start": 417,
+        "end": 418,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 419,
+        "end": 457,
+        "children": [
+         {
+          "type": "\"\"\"",
+          "start": 419,
+          "end": 422,
+          "text": "\"\"\""
+         },
+         {
+          "type": "escape_sequence",
+          "start": 439,
+          "end": 441,
+          "text": "\\\\"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

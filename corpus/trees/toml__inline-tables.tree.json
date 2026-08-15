@@ -1,0 +1,489 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/inline-tables.toml",
+ "source": "name = { first = \"Tom\", last = \"Preston-Werner\" }\npoint = { x = 1, y = { z = 2, label = \"origin\" } }\nservice = { host = \"localhost\", ports = [8000, 8001, 8002], tls = false }\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 175,
+  "children": [
+   {
+    "type": "pair",
+    "start": 0,
+    "end": 49,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 0,
+      "end": 4,
+      "text": "name"
+     },
+     {
+      "type": "=",
+      "start": 5,
+      "end": 6,
+      "text": "="
+     },
+     {
+      "type": "inline_table",
+      "start": 7,
+      "end": 49,
+      "children": [
+       {
+        "type": "{",
+        "start": 7,
+        "end": 8,
+        "text": "{"
+       },
+       {
+        "type": "pair",
+        "start": 9,
+        "end": 22,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 9,
+          "end": 14,
+          "text": "first"
+         },
+         {
+          "type": "=",
+          "start": 15,
+          "end": 16,
+          "text": "="
+         },
+         {
+          "type": "string",
+          "start": 17,
+          "end": 22,
+          "children": [
+           {
+            "type": "\"",
+            "start": 17,
+            "end": 18,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 21,
+            "end": 22,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 22,
+        "end": 23,
+        "text": ","
+       },
+       {
+        "type": "pair",
+        "start": 24,
+        "end": 47,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 24,
+          "end": 28,
+          "text": "last"
+         },
+         {
+          "type": "=",
+          "start": 29,
+          "end": 30,
+          "text": "="
+         },
+         {
+          "type": "string",
+          "start": 31,
+          "end": 47,
+          "children": [
+           {
+            "type": "\"",
+            "start": 31,
+            "end": 32,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 46,
+            "end": 47,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 48,
+        "end": 49,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 50,
+    "end": 100,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 50,
+      "end": 55,
+      "text": "point"
+     },
+     {
+      "type": "=",
+      "start": 56,
+      "end": 57,
+      "text": "="
+     },
+     {
+      "type": "inline_table",
+      "start": 58,
+      "end": 100,
+      "children": [
+       {
+        "type": "{",
+        "start": 58,
+        "end": 59,
+        "text": "{"
+       },
+       {
+        "type": "pair",
+        "start": 60,
+        "end": 65,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 60,
+          "end": 61,
+          "text": "x"
+         },
+         {
+          "type": "=",
+          "start": 62,
+          "end": 63,
+          "text": "="
+         },
+         {
+          "type": "integer",
+          "start": 64,
+          "end": 65,
+          "text": "1"
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 65,
+        "end": 66,
+        "text": ","
+       },
+       {
+        "type": "pair",
+        "start": 67,
+        "end": 98,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 67,
+          "end": 68,
+          "text": "y"
+         },
+         {
+          "type": "=",
+          "start": 69,
+          "end": 70,
+          "text": "="
+         },
+         {
+          "type": "inline_table",
+          "start": 71,
+          "end": 98,
+          "children": [
+           {
+            "type": "{",
+            "start": 71,
+            "end": 72,
+            "text": "{"
+           },
+           {
+            "type": "pair",
+            "start": 73,
+            "end": 78,
+            "children": [
+             {
+              "type": "bare_key",
+              "start": 73,
+              "end": 74,
+              "text": "z"
+             },
+             {
+              "type": "=",
+              "start": 75,
+              "end": 76,
+              "text": "="
+             },
+             {
+              "type": "integer",
+              "start": 77,
+              "end": 78,
+              "text": "2"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 78,
+            "end": 79,
+            "text": ","
+           },
+           {
+            "type": "pair",
+            "start": 80,
+            "end": 96,
+            "children": [
+             {
+              "type": "bare_key",
+              "start": 80,
+              "end": 85,
+              "text": "label"
+             },
+             {
+              "type": "=",
+              "start": 86,
+              "end": 87,
+              "text": "="
+             },
+             {
+              "type": "string",
+              "start": 88,
+              "end": 96,
+              "children": [
+               {
+                "type": "\"",
+                "start": 88,
+                "end": 89,
+                "text": "\""
+               },
+               {
+                "type": "\"",
+                "start": 95,
+                "end": 96,
+                "text": "\""
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 97,
+            "end": 98,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 99,
+        "end": 100,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 101,
+    "end": 174,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 101,
+      "end": 108,
+      "text": "service"
+     },
+     {
+      "type": "=",
+      "start": 109,
+      "end": 110,
+      "text": "="
+     },
+     {
+      "type": "inline_table",
+      "start": 111,
+      "end": 174,
+      "children": [
+       {
+        "type": "{",
+        "start": 111,
+        "end": 112,
+        "text": "{"
+       },
+       {
+        "type": "pair",
+        "start": 113,
+        "end": 131,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 113,
+          "end": 117,
+          "text": "host"
+         },
+         {
+          "type": "=",
+          "start": 118,
+          "end": 119,
+          "text": "="
+         },
+         {
+          "type": "string",
+          "start": 120,
+          "end": 131,
+          "children": [
+           {
+            "type": "\"",
+            "start": 120,
+            "end": 121,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 130,
+            "end": 131,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 131,
+        "end": 132,
+        "text": ","
+       },
+       {
+        "type": "pair",
+        "start": 133,
+        "end": 159,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 133,
+          "end": 138,
+          "text": "ports"
+         },
+         {
+          "type": "=",
+          "start": 139,
+          "end": 140,
+          "text": "="
+         },
+         {
+          "type": "array",
+          "start": 141,
+          "end": 159,
+          "children": [
+           {
+            "type": "[",
+            "start": 141,
+            "end": 142,
+            "text": "["
+           },
+           {
+            "type": "integer",
+            "start": 142,
+            "end": 146,
+            "text": "8000"
+           },
+           {
+            "type": ",",
+            "start": 146,
+            "end": 147,
+            "text": ","
+           },
+           {
+            "type": "integer",
+            "start": 148,
+            "end": 152,
+            "text": "8001"
+           },
+           {
+            "type": ",",
+            "start": 152,
+            "end": 153,
+            "text": ","
+           },
+           {
+            "type": "integer",
+            "start": 154,
+            "end": 158,
+            "text": "8002"
+           },
+           {
+            "type": "]",
+            "start": 158,
+            "end": 159,
+            "text": "]"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 159,
+        "end": 160,
+        "text": ","
+       },
+       {
+        "type": "pair",
+        "start": 161,
+        "end": 172,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 161,
+          "end": 164,
+          "text": "tls"
+         },
+         {
+          "type": "=",
+          "start": 165,
+          "end": 166,
+          "text": "="
+         },
+         {
+          "type": "boolean",
+          "start": 167,
+          "end": 172,
+          "text": "false"
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 173,
+        "end": 174,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -1,0 +1,241 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/keys.toml",
+ "source": "bare = \"plain\"\nbare-key = \"hyphenated\"\n\"quoted key\" = \"basic quoted\"\n'literal key' = \"literal quoted\"\n\"127.0.0.1\" = \"not a dotted key\"\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 135,
+  "children": [
+   {
+    "type": "pair",
+    "start": 0,
+    "end": 14,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 0,
+      "end": 4,
+      "text": "bare"
+     },
+     {
+      "type": "=",
+      "start": 5,
+      "end": 6,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 7,
+      "end": 14,
+      "children": [
+       {
+        "type": "\"",
+        "start": 7,
+        "end": 8,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 13,
+        "end": 14,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 15,
+    "end": 38,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 15,
+      "end": 23,
+      "text": "bare-key"
+     },
+     {
+      "type": "=",
+      "start": 24,
+      "end": 25,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 26,
+      "end": 38,
+      "children": [
+       {
+        "type": "\"",
+        "start": 26,
+        "end": 27,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 37,
+        "end": 38,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 39,
+    "end": 68,
+    "children": [
+     {
+      "type": "quoted_key",
+      "start": 39,
+      "end": 51,
+      "children": [
+       {
+        "type": "\"",
+        "start": 39,
+        "end": 40,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 50,
+        "end": 51,
+        "text": "\""
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 52,
+      "end": 53,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 54,
+      "end": 68,
+      "children": [
+       {
+        "type": "\"",
+        "start": 54,
+        "end": 55,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 67,
+        "end": 68,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 69,
+    "end": 101,
+    "children": [
+     {
+      "type": "quoted_key",
+      "start": 69,
+      "end": 82,
+      "children": [
+       {
+        "type": "'",
+        "start": 69,
+        "end": 70,
+        "text": "'"
+       },
+       {
+        "type": "'",
+        "start": 81,
+        "end": 82,
+        "text": "'"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 83,
+      "end": 84,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 85,
+      "end": 101,
+      "children": [
+       {
+        "type": "\"",
+        "start": 85,
+        "end": 86,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 100,
+        "end": 101,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 102,
+    "end": 134,
+    "children": [
+     {
+      "type": "quoted_key",
+      "start": 102,
+      "end": 113,
+      "children": [
+       {
+        "type": "\"",
+        "start": 102,
+        "end": 103,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 112,
+        "end": 113,
+        "text": "\""
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 114,
+      "end": 115,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 116,
+      "end": 134,
+      "children": [
+       {
+        "type": "\"",
+        "start": 116,
+        "end": 117,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 133,
+        "end": 134,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -1,0 +1,262 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/numbers.toml",
+ "source": "decimal = 42\nnegative = -17\nunderscored = 1_000_000\nhexadecimal = 0xDEADBEEF\noctal = 0o755\nbinary = 0b1101_0010\nfloat = 3.141_592_653_589\nscientific = 5e+22\npositive_infinity = inf\nnot_a_number = nan\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 200,
+  "children": [
+   {
+    "type": "pair",
+    "start": 0,
+    "end": 12,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 0,
+      "end": 7,
+      "text": "decimal"
+     },
+     {
+      "type": "=",
+      "start": 8,
+      "end": 9,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 10,
+      "end": 12,
+      "text": "42"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 13,
+    "end": 27,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 13,
+      "end": 21,
+      "text": "negative"
+     },
+     {
+      "type": "=",
+      "start": 22,
+      "end": 23,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 24,
+      "end": 27,
+      "text": "-17"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 28,
+    "end": 51,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 28,
+      "end": 39,
+      "text": "underscored"
+     },
+     {
+      "type": "=",
+      "start": 40,
+      "end": 41,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 42,
+      "end": 51,
+      "text": "1_000_000"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 52,
+    "end": 76,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 52,
+      "end": 63,
+      "text": "hexadecimal"
+     },
+     {
+      "type": "=",
+      "start": 64,
+      "end": 65,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 66,
+      "end": 76,
+      "text": "0xDEADBEEF"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 77,
+    "end": 90,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 77,
+      "end": 82,
+      "text": "octal"
+     },
+     {
+      "type": "=",
+      "start": 83,
+      "end": 84,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 85,
+      "end": 90,
+      "text": "0o755"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 91,
+    "end": 111,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 91,
+      "end": 97,
+      "text": "binary"
+     },
+     {
+      "type": "=",
+      "start": 98,
+      "end": 99,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 100,
+      "end": 111,
+      "text": "0b1101_0010"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 112,
+    "end": 137,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 112,
+      "end": 117,
+      "text": "float"
+     },
+     {
+      "type": "=",
+      "start": 118,
+      "end": 119,
+      "text": "="
+     },
+     {
+      "type": "float",
+      "start": 120,
+      "end": 137,
+      "text": "3.141_592_653_589"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 138,
+    "end": 156,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 138,
+      "end": 148,
+      "text": "scientific"
+     },
+     {
+      "type": "=",
+      "start": 149,
+      "end": 150,
+      "text": "="
+     },
+     {
+      "type": "float",
+      "start": 151,
+      "end": 156,
+      "text": "5e+22"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 157,
+    "end": 180,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 157,
+      "end": 174,
+      "text": "positive_infinity"
+     },
+     {
+      "type": "=",
+      "start": 175,
+      "end": 176,
+      "text": "="
+     },
+     {
+      "type": "float",
+      "start": 177,
+      "end": 180,
+      "text": "inf"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 181,
+    "end": 199,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 181,
+      "end": 193,
+      "text": "not_a_number"
+     },
+     {
+      "type": "=",
+      "start": 194,
+      "end": 195,
+      "text": "="
+     },
+     {
+      "type": "float",
+      "start": 196,
+      "end": 199,
+      "text": "nan"
+     }
+    ]
+   }
+  ]
+ }
+}

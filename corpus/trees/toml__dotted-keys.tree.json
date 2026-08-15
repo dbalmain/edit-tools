@@ -1,0 +1,354 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/dotted-keys.toml",
+ "source": "fruit.name = \"banana\"\nfruit.color = \"yellow\"\nfruit.variety.name = \"plantain\"\nfruit.variety.origin = \"Central America\"\n\nsite.\"example.com\".enabled = true\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 153,
+  "children": [
+   {
+    "type": "pair",
+    "start": 0,
+    "end": 21,
+    "children": [
+     {
+      "type": "dotted_key",
+      "start": 0,
+      "end": 10,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 0,
+        "end": 5,
+        "text": "fruit"
+       },
+       {
+        "type": ".",
+        "start": 5,
+        "end": 6,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 6,
+        "end": 10,
+        "text": "name"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 11,
+      "end": 12,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 13,
+      "end": 21,
+      "children": [
+       {
+        "type": "\"",
+        "start": 13,
+        "end": 14,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 20,
+        "end": 21,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 22,
+    "end": 44,
+    "children": [
+     {
+      "type": "dotted_key",
+      "start": 22,
+      "end": 33,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 22,
+        "end": 27,
+        "text": "fruit"
+       },
+       {
+        "type": ".",
+        "start": 27,
+        "end": 28,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 28,
+        "end": 33,
+        "text": "color"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 34,
+      "end": 35,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 36,
+      "end": 44,
+      "children": [
+       {
+        "type": "\"",
+        "start": 36,
+        "end": 37,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 43,
+        "end": 44,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 45,
+    "end": 76,
+    "children": [
+     {
+      "type": "dotted_key",
+      "start": 45,
+      "end": 63,
+      "children": [
+       {
+        "type": "dotted_key",
+        "start": 45,
+        "end": 58,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 45,
+          "end": 50,
+          "text": "fruit"
+         },
+         {
+          "type": ".",
+          "start": 50,
+          "end": 51,
+          "text": "."
+         },
+         {
+          "type": "bare_key",
+          "start": 51,
+          "end": 58,
+          "text": "variety"
+         }
+        ]
+       },
+       {
+        "type": ".",
+        "start": 58,
+        "end": 59,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 59,
+        "end": 63,
+        "text": "name"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 64,
+      "end": 65,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 66,
+      "end": 76,
+      "children": [
+       {
+        "type": "\"",
+        "start": 66,
+        "end": 67,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 75,
+        "end": 76,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 77,
+    "end": 117,
+    "children": [
+     {
+      "type": "dotted_key",
+      "start": 77,
+      "end": 97,
+      "children": [
+       {
+        "type": "dotted_key",
+        "start": 77,
+        "end": 90,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 77,
+          "end": 82,
+          "text": "fruit"
+         },
+         {
+          "type": ".",
+          "start": 82,
+          "end": 83,
+          "text": "."
+         },
+         {
+          "type": "bare_key",
+          "start": 83,
+          "end": 90,
+          "text": "variety"
+         }
+        ]
+       },
+       {
+        "type": ".",
+        "start": 90,
+        "end": 91,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 91,
+        "end": 97,
+        "text": "origin"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 98,
+      "end": 99,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 100,
+      "end": 117,
+      "children": [
+       {
+        "type": "\"",
+        "start": 100,
+        "end": 101,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 116,
+        "end": 117,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 119,
+    "end": 152,
+    "children": [
+     {
+      "type": "dotted_key",
+      "start": 119,
+      "end": 145,
+      "children": [
+       {
+        "type": "dotted_key",
+        "start": 119,
+        "end": 137,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 119,
+          "end": 123,
+          "text": "site"
+         },
+         {
+          "type": ".",
+          "start": 123,
+          "end": 124,
+          "text": "."
+         },
+         {
+          "type": "quoted_key",
+          "start": 124,
+          "end": 137,
+          "children": [
+           {
+            "type": "\"",
+            "start": 124,
+            "end": 125,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 136,
+            "end": 137,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ".",
+        "start": 137,
+        "end": 138,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 138,
+        "end": 145,
+        "text": "enabled"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 146,
+      "end": 147,
+      "text": "="
+     },
+     {
+      "type": "boolean",
+      "start": 148,
+      "end": 152,
+      "text": "true"
+     }
+    ]
+   }
+  ]
+ }
+}

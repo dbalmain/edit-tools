@@ -1,0 +1,137 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/temporal.toml",
+ "source": "offset_datetime = 1979-05-27T07:32:00Z\noffset_with_fraction = 1979-05-27T00:32:00.999999-07:00\nlocal_datetime = 1979-05-27 07:32:00\nlocal_date = 1979-05-27\nlocal_time = 07:32:00.123\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 182,
+  "children": [
+   {
+    "type": "pair",
+    "start": 0,
+    "end": 38,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 0,
+      "end": 15,
+      "text": "offset_datetime"
+     },
+     {
+      "type": "=",
+      "start": 16,
+      "end": 17,
+      "text": "="
+     },
+     {
+      "type": "offset_date_time",
+      "start": 18,
+      "end": 38,
+      "text": "1979-05-27T07:32:00Z"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 39,
+    "end": 94,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 39,
+      "end": 59,
+      "text": "offset_with_fraction"
+     },
+     {
+      "type": "=",
+      "start": 60,
+      "end": 61,
+      "text": "="
+     },
+     {
+      "type": "offset_date_time",
+      "start": 62,
+      "end": 94,
+      "text": "1979-05-27T00:32:00.999999-07:00"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 95,
+    "end": 131,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 95,
+      "end": 109,
+      "text": "local_datetime"
+     },
+     {
+      "type": "=",
+      "start": 110,
+      "end": 111,
+      "text": "="
+     },
+     {
+      "type": "local_date_time",
+      "start": 112,
+      "end": 131,
+      "text": "1979-05-27 07:32:00"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 132,
+    "end": 155,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 132,
+      "end": 142,
+      "text": "local_date"
+     },
+     {
+      "type": "=",
+      "start": 143,
+      "end": 144,
+      "text": "="
+     },
+     {
+      "type": "local_date",
+      "start": 145,
+      "end": 155,
+      "text": "1979-05-27"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 156,
+    "end": 181,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 156,
+      "end": 166,
+      "text": "local_time"
+     },
+     {
+      "type": "=",
+      "start": 167,
+      "end": 168,
+      "text": "="
+     },
+     {
+      "type": "local_time",
+      "start": 169,
+      "end": 181,
+      "text": "07:32:00.123"
+     }
+    ]
+   }
+  ]
+ }
+}

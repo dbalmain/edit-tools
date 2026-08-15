@@ -1,0 +1,390 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/array-tables.toml",
+ "source": "[[products]]\nname = \"Hammer\"\nsku = 738594937\n\n[[products]]\nname = \"Nail\"\nsku = 284758393\ncolor = \"gray\"\n\n[[products.features]]\nname = \"forged\"\n\n[[products.features]]\nname = \"balanced\"\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 184,
+  "children": [
+   {
+    "type": "table_array_element",
+    "start": 0,
+    "end": 46,
+    "children": [
+     {
+      "type": "[[",
+      "start": 0,
+      "end": 2,
+      "text": "[["
+     },
+     {
+      "type": "bare_key",
+      "start": 2,
+      "end": 10,
+      "text": "products"
+     },
+     {
+      "type": "]]",
+      "start": 10,
+      "end": 12,
+      "text": "]]"
+     },
+     {
+      "type": "pair",
+      "start": 13,
+      "end": 28,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 13,
+        "end": 17,
+        "text": "name"
+       },
+       {
+        "type": "=",
+        "start": 18,
+        "end": 19,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 20,
+        "end": 28,
+        "children": [
+         {
+          "type": "\"",
+          "start": 20,
+          "end": 21,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 27,
+          "end": 28,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 29,
+      "end": 44,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 29,
+        "end": 32,
+        "text": "sku"
+       },
+       {
+        "type": "=",
+        "start": 33,
+        "end": 34,
+        "text": "="
+       },
+       {
+        "type": "integer",
+        "start": 35,
+        "end": 44,
+        "text": "738594937"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table_array_element",
+    "start": 46,
+    "end": 105,
+    "children": [
+     {
+      "type": "[[",
+      "start": 46,
+      "end": 48,
+      "text": "[["
+     },
+     {
+      "type": "bare_key",
+      "start": 48,
+      "end": 56,
+      "text": "products"
+     },
+     {
+      "type": "]]",
+      "start": 56,
+      "end": 58,
+      "text": "]]"
+     },
+     {
+      "type": "pair",
+      "start": 59,
+      "end": 72,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 59,
+        "end": 63,
+        "text": "name"
+       },
+       {
+        "type": "=",
+        "start": 64,
+        "end": 65,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 66,
+        "end": 72,
+        "children": [
+         {
+          "type": "\"",
+          "start": 66,
+          "end": 67,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 71,
+          "end": 72,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 73,
+      "end": 88,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 73,
+        "end": 76,
+        "text": "sku"
+       },
+       {
+        "type": "=",
+        "start": 77,
+        "end": 78,
+        "text": "="
+       },
+       {
+        "type": "integer",
+        "start": 79,
+        "end": 88,
+        "text": "284758393"
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 89,
+      "end": 103,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 89,
+        "end": 94,
+        "text": "color"
+       },
+       {
+        "type": "=",
+        "start": 95,
+        "end": 96,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 97,
+        "end": 103,
+        "children": [
+         {
+          "type": "\"",
+          "start": 97,
+          "end": 98,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 102,
+          "end": 103,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table_array_element",
+    "start": 105,
+    "end": 144,
+    "children": [
+     {
+      "type": "[[",
+      "start": 105,
+      "end": 107,
+      "text": "[["
+     },
+     {
+      "type": "dotted_key",
+      "start": 107,
+      "end": 124,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 107,
+        "end": 115,
+        "text": "products"
+       },
+       {
+        "type": ".",
+        "start": 115,
+        "end": 116,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 116,
+        "end": 124,
+        "text": "features"
+       }
+      ]
+     },
+     {
+      "type": "]]",
+      "start": 124,
+      "end": 126,
+      "text": "]]"
+     },
+     {
+      "type": "pair",
+      "start": 127,
+      "end": 142,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 127,
+        "end": 131,
+        "text": "name"
+       },
+       {
+        "type": "=",
+        "start": 132,
+        "end": 133,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 134,
+        "end": 142,
+        "children": [
+         {
+          "type": "\"",
+          "start": 134,
+          "end": 135,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 141,
+          "end": 142,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table_array_element",
+    "start": 144,
+    "end": 184,
+    "children": [
+     {
+      "type": "[[",
+      "start": 144,
+      "end": 146,
+      "text": "[["
+     },
+     {
+      "type": "dotted_key",
+      "start": 146,
+      "end": 163,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 146,
+        "end": 154,
+        "text": "products"
+       },
+       {
+        "type": ".",
+        "start": 154,
+        "end": 155,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 155,
+        "end": 163,
+        "text": "features"
+       }
+      ]
+     },
+     {
+      "type": "]]",
+      "start": 163,
+      "end": 165,
+      "text": "]]"
+     },
+     {
+      "type": "pair",
+      "start": 166,
+      "end": 183,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 166,
+        "end": 170,
+        "text": "name"
+       },
+       {
+        "type": "=",
+        "start": 171,
+        "end": 172,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 173,
+        "end": 183,
+        "children": [
+         {
+          "type": "\"",
+          "start": 173,
+          "end": 174,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 182,
+          "end": 183,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

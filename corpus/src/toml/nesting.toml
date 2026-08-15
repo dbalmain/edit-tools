@@ -1,0 +1,1 @@
+pipeline = { stages = [{ name = "build", targets = ["linux", "macos", "windows"], retry = { attempts = [1, 2, 3], enabled = true } }, { name = "test", targets = ["unit", "integration", "smoke"], retry = { attempts = [1, 2], enabled = false } }] }
