@@ -11,12 +11,15 @@ grammar_symbol = "language"
 
 # taplo 0.10.0 observed from `nix run nixpkgs#taplo -- --version`.
 # `--no-auto-config` is load-bearing: taplo walks from cwd (and ancestors) for
-# `.taplo.toml` / `taplo.toml` and a found file silently overrides -o flags,
-# including column_width and reorder_keys. Established by planting a config
-# that reordered keys; without the flag, committed reference output would
+# `.taplo.toml` / `taplo.toml`, and every formatter option the command line does
+# not name -- reorder_keys, allowed_blank_lines, align_comments, indent_string --
+# is taken from a file it finds. Options passed with -o do win over the file
+# (checked: -o column_width=88 beats a planted column_width=20), so it is the
+# *unset* options that leak. Without the flag, committed reference output would
 # depend on whatever this machine (or a reviewer's) has in an ancestor
-# directory. `--stdin-filepath` is not required -- taplo formats stdin as TOML
-# with just `-` -- so it is omitted rather than invented.
+# directory. The flag disables only the search: an explicit -c or TAPLO_CONFIG
+# is still honoured. `--stdin-filepath` is not required -- taplo formats stdin
+# as TOML with just `-` -- so it is omitted rather than invented.
 # column_width honours {width} for arrays only; established by diffing 88 vs 60
 # rather than by reading --help. Inline tables, strings, keys and table headers
 # never reflow.
