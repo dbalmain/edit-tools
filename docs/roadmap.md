@@ -285,7 +285,36 @@ is no parser and trees are frozen, so designing for incrementality now is how
 this slice quietly becomes a parser project. That is a real fifth question, for
 later.
 
-### Pilot status
+### Pilot status — PRs 1–3 merged, the bet held
+
+**The design's central bet survived its own falsification test.** `parent` +
+`field` + `parent_field` is enough context to colour Python, with no new keys
+and no per-name special-casing. The pair that does the work, resolved
+first-match-wins:
+
+```
+{parent: attribute, field: attribute, parent_field: function} -> function
+{parent: attribute, field: attribute}                         -> property
+```
+
+A called attribute and a plain one separate **structurally**, which is exactly
+what a query engine was supposed to be needed for.
+
+Verified independently of the builder's tests: both CLIs across all 15 corpus
+trees, byte-identical spans, 15/15. `python__chains` yields 132 spans, 8
+`function` and 10 `property`, and an independent partition check finds no
+ordering or overlap violations. `highlight.js` is **1,576 B gzip** against the 2
+KB budget — the first measured number for the walker, replacing an estimate.
+
+One case nobody had specified turned out to matter: running the **Python**
+package against a **JSON** tree emits 49 spans and exits 0. That is the
+never-refuse rule holding under a deliberately wrong package, and it is the
+behaviour that makes a highlighter safe to point at anything.
+
+**Next: PR 4** (packages, goldens, `corpus/trees-dirty/`, highlight scorer) and
+**PR 5** (injection degrade). Neither is started.
+
+### Original plan
 
 **PRs 1–3 launched 2026-08-16** on `wt/hl-runtime`: the `et-highlight/1` loader,
 the Rust walker, and the JS walker, taken as one slice because Rust/JS **span
