@@ -1,0 +1,21 @@
+# Blank lines are the only grouping TOML has between pairs. taplo caps
+# consecutive blanks at 2 (allowed_blank_lines) and leaves 0 and 1 alone.
+
+packed = 1
+also_packed = 2
+
+one_blank = 3
+
+two_blanks = 4
+
+
+three_should_become_two = 5
+
+
+
+after_three = 6
+
+[next]
+
+
+still_capped = 7
