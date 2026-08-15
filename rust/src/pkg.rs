@@ -14,6 +14,15 @@ use crate::Refusal;
 const FORMAT: &str = "et-doc-rules/1";
 const MAX_MACRO_DEPTH: usize = 32;
 const MAX_JSON_INTEGER: f64 = 9_007_199_254_740_991.0;
+/// Ceiling on the two whitespace-shaped header fields. Neither can allocate
+/// unboundedly -- `blank_cap` is clamped by the source's own newlines and
+/// `comment_gap` is one string -- so this exists to make a typo a named error
+/// rather than a silently strange package.
+const MAX_GAP: usize = 8;
+
+fn one() -> usize {
+    1
+}
 
 #[derive(Deserialize)]
 #[serde(try_from = "String")]
@@ -54,6 +63,15 @@ pub struct Package {
     /// stops descending when the tightness changes.
     #[serde(default)]
     pub precedence: HashMap<String, i64>,
+    /// Spaces between code and a trailing comment on the same line. Black
+    /// writes two, prettier writes one. A count rather than a string on
+    /// purpose: no package may put arbitrary text in the output.
+    pub comment_gap: usize,
+    /// Ceiling on blank lines the runtime preserves next to a comment. Black
+    /// keeps two, prettier keeps one. The `blank` opcode carries its own cap
+    /// for gaps *between* items; this one governs the gaps the package never
+    /// sees, because the runtime owns comment attachment.
+    pub blank_cap: usize,
     pub rules: HashMap<String, Expr>,
 }
 
@@ -72,6 +90,10 @@ struct RawPackage {
     optional_parens: HashSet<String>,
     #[serde(default)]
     precedence: HashMap<String, i64>,
+    #[serde(default = "one")]
+    comment_gap: usize,
+    #[serde(default = "one")]
+    blank_cap: usize,
     #[serde(default)]
     defs: HashMap<String, Value>,
     rules: HashMap<String, Value>,
@@ -81,6 +103,14 @@ impl TryFrom<RawPackage> for Package {
     type Error = String;
 
     fn try_from(raw: RawPackage) -> Result<Self, Self::Error> {
+        for (name, value) in [
+            ("comment_gap", raw.comment_gap),
+            ("blank_cap", raw.blank_cap),
+        ] {
+            if value > MAX_GAP {
+                return Err(format!("`{name}` is {value}; the most allowed is {MAX_GAP}"));
+            }
+        }
         let rules = expand_rules(&raw.defs, raw.rules)?
             .into_iter()
             .map(|(name, value)| Ok((name, Expr::try_from(value)?)))
@@ -92,6 +122,8 @@ impl TryFrom<RawPackage> for Package {
             descend: raw.descend,
             optional_parens: raw.optional_parens,
             precedence: raw.precedence,
+            comment_gap: raw.comment_gap,
+            blank_cap: raw.blank_cap,
             rules,
         })
     }

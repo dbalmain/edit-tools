@@ -42,7 +42,7 @@ impl<'a> Fmt<'a> {
         let mut ctx = Ctx::new(node, self);
         let mut doc = ctx.eval(rule, self)?;
         if !ctx.dangling.is_empty() {
-            doc = Doc::Concat(dangling(&ctx.dangling, doc));
+            doc = Doc::Concat(dangling(self.pkg, &ctx.dangling, doc));
         }
         if ctx.cursor != ctx.items.len() {
             let left = &ctx.items[ctx.cursor];
@@ -86,7 +86,7 @@ fn decorate(pkg: &Package, item: &Item<'_>, inner: Doc) -> Doc {
         }
     }
     if !sink {
-        for _ in 0..item.gap.min(2) {
+        for _ in 0..item.gap.min(pkg.blank_cap) {
             parts.push(Doc::Hard);
         }
     }
@@ -94,12 +94,13 @@ fn decorate(pkg: &Package, item: &Item<'_>, inner: Doc) -> Doc {
         parts = vec![Doc::indent(Doc::Concat(parts))];
     }
     parts.push(inner);
+    let gap = " ".repeat(pkg.comment_gap);
     for text in &item.suffix {
-        parts.push(Doc::Suffix(Box::new(Doc::text(format!("  {text}")))));
+        parts.push(Doc::Suffix(Box::new(Doc::text(format!("{gap}{text}")))));
     }
     for comment in &item.after {
         parts.push(Doc::Hard);
-        for _ in 0..comment.blanks.min(2) {
+        for _ in 0..comment.blanks.min(pkg.blank_cap) {
             parts.push(Doc::Hard);
         }
         parts.push(Doc::text(comment.text.as_str()));
@@ -109,11 +110,11 @@ fn decorate(pkg: &Package, item: &Item<'_>, inner: Doc) -> Doc {
 }
 
 /// Comments held by a node with no child to attach them to.
-fn dangling(comments: &[Comment], inner: Doc) -> Vec<Doc> {
+fn dangling(pkg: &Package, comments: &[Comment], inner: Doc) -> Vec<Doc> {
     let mut parts = Vec::new();
     for (i, comment) in comments.iter().enumerate() {
         if i > 0 {
-            for _ in 0..comment.blanks.min(2) {
+            for _ in 0..comment.blanks.min(pkg.blank_cap) {
                 parts.push(Doc::Hard);
             }
         }

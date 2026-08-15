@@ -230,8 +230,25 @@ function loadPackage(pkg) {
   return ready;
 }
 
+// Whitespace-shaped header fields: a count, never a string, so no package can
+// put arbitrary text in the output. `MAX_GAP` makes a typo a named error.
+const MAX_GAP = 8;
+
+function gapField(pkg, name) {
+  const value = pkg[name] === undefined ? 1 : pkg[name];
+  if (!Number.isInteger(value) || value < 0) {
+    throw new Refusal(`\`${name}\` must be a non-negative integer, got ${value}`);
+  }
+  if (value > MAX_GAP) {
+    throw new Refusal(`\`${name}\` is ${value}; the most allowed is ${MAX_GAP}`);
+  }
+  return value;
+}
+
 function buildPackage(pkg) {
   validatePackageFormat(pkg);
+  const comment_gap = gapField(pkg, "comment_gap");
+  const blank_cap = gapField(pkg, "blank_cap");
   const defs = pkg.defs === undefined ? {} : pkg.defs;
   if (!isObject(defs)) throw new Refusal("`defs` must be an object");
   if (!isObject(pkg.rules)) throw new Refusal("`rules` must be an object");
@@ -254,7 +271,7 @@ function buildPackage(pkg) {
       return [name, expanded];
     }),
   );
-  return { ...pkg, rules };
+  return { ...pkg, comment_gap, blank_cap, rules };
 }
 
 // ---------------------------------------------------------------- the Doc IR
@@ -477,14 +494,15 @@ function decorate(fmt, item, inner) {
     if (!sink) parts.push(hard);
   });
   if (!sink) {
-    for (let i = 0; i < Math.min(item.gap, 2); i++) parts.push(hard);
+    for (let i = 0; i < Math.min(item.gap, fmt.blankCap); i++) parts.push(hard);
   }
   if (sink && parts.length > 0) parts = [indent(concat(parts))];
   parts.push(inner);
-  for (const s of item.suffix) parts.push(suffix(text(`  ${s}`)));
+  const gap = " ".repeat(fmt.commentGap);
+  for (const s of item.suffix) parts.push(suffix(text(`${gap}${s}`)));
   for (const comment of item.after) {
     parts.push(hard);
-    for (let i = 0; i < Math.min(comment.blanks, 2); i++) parts.push(hard);
+    for (let i = 0; i < Math.min(comment.blanks, fmt.blankCap); i++) parts.push(hard);
     parts.push(text(comment.text));
   }
   parts.push(breakParent);
@@ -808,6 +826,8 @@ class Formatter {
     this.descend = new Set(this.pkg.descend ?? []);
     this.optionalParens = new Set(this.pkg.optional_parens ?? []);
     this.precedence = this.pkg.precedence ?? {};
+    this.commentGap = this.pkg.comment_gap;
+    this.blankCap = this.pkg.blank_cap;
   }
 
   tightness(node) {
@@ -828,7 +848,7 @@ class Formatter {
     if (ctx.dangling.length > 0) {
       const parts = [];
       ctx.dangling.forEach((comment, i) => {
-        if (i > 0) for (let n = 0; n < Math.min(comment.blanks, 2); n++) parts.push(hard);
+        if (i > 0) for (let n = 0; n < Math.min(comment.blanks, this.blankCap); n++) parts.push(hard);
         parts.push(text(comment.text), hard);
       });
       doc = concat([...parts, doc]);
