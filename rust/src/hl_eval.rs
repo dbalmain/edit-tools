@@ -1,5 +1,7 @@
 //! Error-tolerant tree walk from CST defaults and contextual leaves to spans.
 
+use std::collections::HashMap;
+
 use serde::Serialize;
 
 use crate::hl_pkg::{ContextRule, Package};
@@ -22,11 +24,27 @@ impl Span {
     }
 }
 
-pub fn highlight(tree: &TreeDoc, package: &Package) -> Vec<Span> {
+pub type PackageMap = HashMap<String, Package>;
+
+pub fn highlight(tree: &TreeDoc, packages: &PackageMap) -> Vec<Span> {
     let mut spans = Vec::new();
-    walk(&tree.root, None, &mut Vec::new(), package, &mut spans);
+    let empty = Package::empty();
+    let package = package_for(&tree.language, packages, &empty);
+    walk(
+        &tree.root,
+        None,
+        &mut Vec::new(),
+        package,
+        packages,
+        &empty,
+        &mut spans,
+    );
     spans.sort_by_key(|span| (span.start, span.end));
     merge_adjacent(spans)
+}
+
+fn package_for<'a>(language: &str, packages: &'a PackageMap, empty: &'a Package) -> &'a Package {
+    packages.get(language).unwrap_or(empty)
 }
 
 fn walk<'a>(
@@ -34,6 +52,32 @@ fn walk<'a>(
     parent: Option<&'a Node>,
     ancestors: &mut Vec<&'a Node>,
     package: &Package,
+    packages: &PackageMap,
+    empty: &Package,
+    spans: &mut Vec<Span>,
+) {
+    if let Some(language) = node.language.as_deref() {
+        walk_current(
+            node,
+            parent,
+            &mut Vec::new(),
+            package_for(language, packages, empty),
+            packages,
+            empty,
+            spans,
+        );
+    } else {
+        walk_current(node, parent, ancestors, package, packages, empty, spans);
+    }
+}
+
+fn walk_current<'a>(
+    node: &'a Node,
+    parent: Option<&'a Node>,
+    ancestors: &mut Vec<&'a Node>,
+    package: &Package,
+    packages: &PackageMap,
+    empty: &Package,
     spans: &mut Vec<Span>,
 ) {
     if node.children.is_empty() {
@@ -49,7 +93,15 @@ fn walk<'a>(
 
     ancestors.push(node);
     for child in &node.children {
-        walk(child, Some(node), ancestors, package, spans);
+        walk(
+            child,
+            Some(node),
+            ancestors,
+            package,
+            packages,
+            empty,
+            spans,
+        );
     }
     ancestors.pop();
 
@@ -150,9 +202,19 @@ mod tests {
 
     use super::*;
 
-    fn package() -> Package {
-        let raw = include_str!("../../packages/python.highlight.json");
-        Package::load(raw).expect("shipped Python package loads")
+    fn packages() -> PackageMap {
+        HashMap::from([
+            (
+                "json".to_owned(),
+                Package::load(include_str!("../../packages/json.highlight.json"))
+                    .expect("shipped JSON package loads"),
+            ),
+            (
+                "python".to_owned(),
+                Package::load(include_str!("../../packages/python.highlight.json"))
+                    .expect("shipped Python package loads"),
+            ),
+        ])
     }
 
     fn tree(raw: &str) -> TreeDoc {
@@ -174,6 +236,10 @@ mod tests {
 
     fn dirty_corpus(name: &str) -> TreeDoc {
         corpus_in("trees-dirty", name)
+    }
+
+    fn injected_corpus(name: &str) -> TreeDoc {
+        corpus_in("trees-injected", name)
     }
 
     fn span_scope(spans: &[Span], start: usize, end: usize) -> &str {
@@ -213,21 +279,40 @@ mod tests {
         }
     }
 
+    fn assert_map_partition(tree: &TreeDoc, packages: &PackageMap, spans: &[Span]) {
+        for span in spans {
+            assert!(
+                span.scope == "error"
+                    || packages
+                        .values()
+                        .any(|package| package.scopes.contains(&span.scope)),
+                "scope missing from package map: {span:?}"
+            );
+        }
+        for pair in spans.windows(2) {
+            assert!(pair[0].end <= pair[1].start, "overlapping spans: {pair:?}");
+        }
+        assert!(
+            spans.iter().all(|span| span.end <= tree.source.len()),
+            "span outside source"
+        );
+    }
+
     #[test]
     fn compute_is_a_function_and_alpha_is_a_variable() {
         let tree = corpus("python__calls.tree.json");
-        let package = package();
-        let spans = highlight(&tree, &package);
+        let packages = packages();
+        let spans = highlight(&tree, &packages);
         assert_eq!(span_scope(&spans, 9, 16), "function");
         assert_eq!(span_scope(&spans, 17, 22), "variable");
-        assert_partition(&tree, &package, &spans);
+        assert_partition(&tree, &packages["python"], &spans);
     }
 
     #[test]
     fn parent_field_distinguishes_chain_calls_from_plain_properties() {
         let tree = corpus("python__chains.tree.json");
-        let package = package();
-        let spans = highlight(&tree, &package);
+        let packages = packages();
+        let spans = highlight(&tree, &packages);
         let chain = tree.source.find("method_chain =").expect("method chain");
         for name in ["filter", "order_by", "limit", "offset", "all"] {
             assert_eq!(
@@ -237,26 +322,26 @@ mod tests {
             );
         }
         assert_eq!(scope_of_after(&tree, &spans, "attr", 0), "property");
-        assert_partition(&tree, &package, &spans);
+        assert_partition(&tree, &packages["python"], &spans);
     }
 
     #[test]
     fn splat_names_are_parameters() {
         let tree = corpus("python__defs.tree.json");
-        let package = package();
-        let spans = highlight(&tree, &package);
+        let packages = packages();
+        let spans = highlight(&tree, &packages);
         let args = tree.source.find("*args").expect("args splat") + 1;
         let kwargs = tree.source.find("**kwargs").expect("kwargs splat") + 2;
         assert_eq!(span_scope(&spans, args, args + 4), "parameter");
         assert_eq!(span_scope(&spans, kwargs, kwargs + 6), "parameter");
-        assert_partition(&tree, &package, &spans);
+        assert_partition(&tree, &packages["python"], &spans);
     }
 
     #[test]
     fn an_interior_background_paints_around_refined_children() {
         let tree = corpus("python__strings.tree.json");
-        let package = package();
-        let spans = highlight(&tree, &package);
+        let packages = packages();
+        let spans = highlight(&tree, &packages);
         let line_one = tree.source.find("line one").expect("escaped string");
         let newline = tree.source[line_one..]
             .find("\\n")
@@ -276,7 +361,7 @@ mod tests {
         assert_eq!(span_scope(&spans, line_two, tab), "string");
         assert_eq!(span_scope(&spans, tab, tab + 2), "string.escape");
         assert_eq!(span_scope(&spans, tab + 2, closing_quote), "string");
-        assert_partition(&tree, &package, &spans);
+        assert_partition(&tree, &packages["python"], &spans);
     }
 
     #[test]
@@ -307,7 +392,8 @@ mod tests {
               ]}
             }"#,
         );
-        let spans = highlight(&tree, &package);
+        let packages = HashMap::from([("toy".to_owned(), package)]);
+        let spans = highlight(&tree, &packages);
         assert_eq!(
             spans,
             vec![
@@ -317,14 +403,14 @@ mod tests {
                 Span::new(10, 11, "variable"),
             ]
         );
-        assert_partition(&tree, &package, &spans);
+        assert_partition(&tree, &packages["toy"], &spans);
     }
 
     #[test]
     fn ancestor_is_existential_on_the_inclusive_parent_to_root_path() {
         let tree = tree(
             r#"{
-              "language":"toy", "source":"name",
+              "language":"python", "source":"name",
               "root":{"type":"type","start":0,"end":4,"children":[
                 {"type":"wrapper","start":0,"end":4,"children":[
                   {"type":"identifier","start":0,"end":4,"text":"name"}
@@ -332,17 +418,48 @@ mod tests {
               ]}
             }"#,
         );
-        let package = package();
-        let spans = highlight(&tree, &package);
+        let packages = packages();
+        let spans = highlight(&tree, &packages);
         assert_eq!(span_scope(&spans, 0, 4), "type");
-        assert_partition(&tree, &package, &spans);
+        assert_partition(&tree, &packages["python"], &spans);
+    }
+
+    #[test]
+    fn a_missing_root_package_still_reaches_known_nested_languages() {
+        let tree = injected_corpus("outer__injected_missing_root.tree.json");
+        let packages = packages();
+        let spans = highlight(&tree, &packages);
+        assert_eq!(
+            spans,
+            vec![Span::new(0, 5, "property"), Span::new(8, 12, "constant"),]
+        );
+        assert_map_partition(&tree, &packages, &spans);
+    }
+
+    #[test]
+    fn package_switches_are_nested_and_ancestor_stays_in_its_language_region() {
+        let tree = injected_corpus("python__injected_json.tree.json");
+        let packages = packages();
+        let spans = highlight(&tree, &packages);
+        assert_eq!(
+            spans,
+            vec![
+                Span::new(0, 5, "type"),
+                Span::new(6, 7, "punctuation"),
+                Span::new(7, 11, "constant"),
+                Span::new(12, 17, "variable"),
+                Span::new(17, 18, "punctuation"),
+                Span::new(19, 23, "type"),
+            ]
+        );
+        assert_map_partition(&tree, &packages, &spans);
     }
 
     #[test]
     fn error_children_are_walked_and_only_child_range_leftovers_are_backfilled() {
         let tree = dirty_corpus("python__dirty_error_recovery.tree.json");
-        let package = package();
-        let spans = highlight(&tree, &package);
+        let packages = packages();
+        let spans = highlight(&tree, &packages);
         assert_eq!(
             spans,
             vec![
@@ -353,32 +470,32 @@ mod tests {
                 Span::new(7, 8, "operator"),
             ]
         );
-        assert_partition(&tree, &package, &spans);
+        assert_partition(&tree, &packages["python"], &spans);
     }
 
     #[test]
     fn unknown_nodes_are_unpainted_and_never_stop_the_walk() {
         let tree = dirty_corpus("python__dirty_unknown_interior.tree.json");
-        let package = package();
-        let spans = highlight(&tree, &package);
+        let packages = packages();
+        let spans = highlight(&tree, &packages);
         assert_eq!(spans, vec![Span::new(0, 1, "variable")]);
-        assert_partition(&tree, &package, &spans);
+        assert_partition(&tree, &packages["python"], &spans);
     }
 
     #[test]
     fn leaf_errors_are_painted_and_zero_width_missing_nodes_are_ignored() {
         let tree = dirty_corpus("python__dirty_leaf_error_missing.tree.json");
-        let package = package();
-        let spans = highlight(&tree, &package);
+        let packages = packages();
+        let spans = highlight(&tree, &packages);
         assert_eq!(spans, vec![Span::new(0, 3, "error")]);
-        assert_partition(&tree, &package, &spans);
+        assert_partition(&tree, &packages["python"], &spans);
     }
 
     #[test]
     fn error_backfill_keeps_separated_leftover_runs_separate() {
         let tree = dirty_corpus("python__dirty_error_two_runs.tree.json");
-        let package = package();
-        let spans = highlight(&tree, &package);
+        let packages = packages();
+        let spans = highlight(&tree, &packages);
         assert_eq!(
             spans,
             vec![
@@ -387,7 +504,7 @@ mod tests {
                 Span::new(2, 3, "error"),
             ]
         );
-        assert_partition(&tree, &package, &spans);
+        assert_partition(&tree, &packages["python"], &spans);
     }
 
     #[test]
@@ -412,8 +529,9 @@ mod tests {
               ]}
             }"#,
         );
-        let spans = highlight(&tree, &package);
+        let packages = HashMap::from([("toy".to_owned(), package)]);
+        let spans = highlight(&tree, &packages);
         assert_eq!(spans, vec![Span::new(0, 2, "first")]);
-        assert_partition(&tree, &package, &spans);
+        assert_partition(&tree, &packages["toy"], &spans);
     }
 }

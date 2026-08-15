@@ -5,16 +5,31 @@ const fs = require("fs");
 const path = require("path");
 const { highlight, loadPackage } = require(path.join(__dirname, "runtime-js", "highlight.js"));
 
-const [treePath, packagePath, extra] = process.argv.slice(2);
-if (!treePath || !packagePath || extra) {
-  console.error("usage: hl-js <tree.json> <package.highlight.json>");
+const [treePath, ...mappings] = process.argv.slice(2);
+if (!treePath) {
+  console.error("usage: hl-js <tree.json> [<language>=<package.highlight.json> ...]");
   process.exit(1);
 }
 
 try {
   const tree = JSON.parse(fs.readFileSync(treePath, "utf8"));
-  const rawPackage = JSON.parse(fs.readFileSync(packagePath, "utf8"));
-  process.stdout.write(`${JSON.stringify(highlight(tree, loadPackage(rawPackage)))}\n`);
+  const packages = new Map();
+  for (const mapping of mappings) {
+    const separator = mapping.indexOf("=");
+    if (separator <= 0 || separator === mapping.length - 1) {
+      throw new Error(
+        `invalid package mapping ${JSON.stringify(mapping)}; expected <language>=<package.highlight.json>`,
+      );
+    }
+    const language = mapping.slice(0, separator);
+    const packagePath = mapping.slice(separator + 1);
+    if (packages.has(language)) {
+      throw new Error(`duplicate highlight package for language ${JSON.stringify(language)}`);
+    }
+    const rawPackage = JSON.parse(fs.readFileSync(packagePath, "utf8"));
+    packages.set(language, loadPackage(rawPackage));
+  }
+  process.stdout.write(`${JSON.stringify(highlight(tree, packages))}\n`);
 } catch (error) {
   console.error(error.message);
   process.exit(1);

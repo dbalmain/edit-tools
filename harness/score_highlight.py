@@ -9,8 +9,8 @@
         [--language NAME] [--update]
 
 Unlike the formatter scorer, this has no reference implementation and no
-idempotence or non-destruction gates. Trees whose language has no highlight
-package are reported as unhighlighted and are not failures.
+idempotence or non-destruction gates. Trees with no available package in any
+language region are reported as unhighlighted and are not failures.
 """
 
 import argparse
@@ -22,7 +22,11 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-TREE_DIRS = (ROOT / "corpus" / "trees", ROOT / "corpus" / "trees-dirty")
+TREE_DIRS = (
+    ROOT / "corpus" / "trees",
+    ROOT / "corpus" / "trees-dirty",
+    ROOT / "corpus" / "trees-injected",
+)
 GOLDENS = ROOT / "corpus" / "highlight"
 
 
@@ -48,10 +52,14 @@ class Report:
         return not all(gate["pass"] for gate in self.gates.values())
 
 
-def invoke(executable: Path, tree: Path, package: Path) -> Run:
+def invoke(executable: Path, tree: Path, packages: dict[str, Path]) -> Run:
     try:
         proc = subprocess.run(
-            [str(executable), str(tree), str(package)],
+            [
+                str(executable),
+                str(tree),
+                *(f"{language}={path}" for language, path in sorted(packages.items())),
+            ],
             capture_output=True,
             timeout=60,
         )
@@ -103,6 +111,22 @@ def package_scopes(path: Path) -> set[str]:
     ):
         raise ValueError("malformed package: `scopes` must be a list of strings")
     return set(scopes)
+
+
+def tree_languages(tree: dict) -> set[str]:
+    languages = {tree["language"]}
+    pending = [tree.get("root")]
+    while pending:
+        node = pending.pop()
+        if not isinstance(node, dict):
+            continue
+        language = node.get("language")
+        if isinstance(language, str) and language:
+            languages.add(language)
+        children = node.get("children")
+        if isinstance(children, list):
+            pending.extend(children)
+    return languages
 
 
 def partition_error(spans: object, scopes: set[str], source: str) -> str | None:
@@ -193,12 +217,20 @@ def score(submission: Path, only: str | None, update: bool, verbose: bool) -> Re
     scopes_by_language = {}
     notes = []
     whitespace = {"entirely": {}, "trailing": {}}
+    package_paths = {
+        path.name.removesuffix(".highlight.json"): path
+        for path in (submission / "packages").glob("*.highlight.json")
+    }
 
     destinations = {}
     for tree_path, tree in all_trees:
         language = tree["language"]
-        package = submission / "packages" / f"{language}.highlight.json"
-        if not package.is_file():
+        packages = {
+            name: package_paths[name]
+            for name in tree_languages(tree)
+            if name in package_paths
+        }
+        if not packages:
             unhighlighted.append({"tree": tree_path.name, "language": language})
             continue
         destination = golden_path(tree_path)
@@ -208,22 +240,23 @@ def score(submission: Path, only: str | None, update: bool, verbose: bool) -> Re
                 f"both map to {destination.name}"
             )
         destinations[destination] = tree_path
-        highlighted.append((tree_path, tree, package, destination))
+        highlighted.append((tree_path, tree, packages, destination))
 
     identity = partition = golden = 0
-    for tree_path, tree, package, destination in highlighted:
+    for tree_path, tree, packages, destination in highlighted:
         tag = tree_path.name
-        language = tree["language"]
         try:
-            if language not in scopes_by_language:
-                scopes_by_language[language] = package_scopes(package)
-            scopes = scopes_by_language[language]
+            scopes = {"error"}
+            for language, package in packages.items():
+                if language not in scopes_by_language:
+                    scopes_by_language[language] = package_scopes(package)
+                scopes.update(scopes_by_language[language])
         except ValueError as exc:
             notes.append(f"{tag}: {exc}")
             continue
 
-        rust_run = invoke(rust, tree_path, package)
-        js_run = invoke(js, tree_path, package)
+        rust_run = invoke(rust, tree_path, packages)
+        js_run = invoke(js, tree_path, packages)
         if not rust_run.ok or not js_run.ok:
             which, error = (
                 ("rust", rust_run.error) if not rust_run.ok else ("js", js_run.error)

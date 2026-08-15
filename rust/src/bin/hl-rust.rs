@@ -1,4 +1,4 @@
-//! `hl-rust <tree.json> <package.highlight.json>`: write highlight spans as JSON.
+//! `hl-rust <tree.json> [<language>=<package.highlight.json> ...]`: write spans.
 
 #![forbid(unsafe_code)]
 
@@ -15,6 +15,7 @@ mod tree;
 use std::fmt;
 use std::process::ExitCode;
 
+use hl_eval::PackageMap;
 use hl_pkg::Package;
 use tree::TreeDoc;
 
@@ -42,21 +43,38 @@ fn main() -> ExitCode {
 
 fn run() -> Result<String, CliError> {
     let mut args = std::env::args().skip(1);
-    let (Some(tree_path), Some(package_path), None) = (args.next(), args.next(), args.next())
-    else {
+    let Some(tree_path) = args.next() else {
         return Err(CliError(
-            "usage: hl-rust <tree.json> <package.highlight.json>".to_owned(),
+            "usage: hl-rust <tree.json> [<language>=<package.highlight.json> ...]".to_owned(),
         ));
     };
 
-    let package_raw = std::fs::read_to_string(&package_path)
-        .map_err(|error| CliError(format!("{package_path}: {error}")))?;
-    let package = Package::load(&package_raw)
-        .map_err(|error| CliError(format!("malformed package {package_path}: {error}")))?;
+    let mut packages = PackageMap::new();
+    for argument in args {
+        let Some((language, package_path)) = argument.split_once('=') else {
+            return Err(CliError(format!(
+                "invalid package mapping `{argument}`; expected <language>=<package.highlight.json>"
+            )));
+        };
+        if language.is_empty() || package_path.is_empty() {
+            return Err(CliError(format!(
+                "invalid package mapping `{argument}`; language and path must be non-empty"
+            )));
+        }
+        let package_raw = std::fs::read_to_string(package_path)
+            .map_err(|error| CliError(format!("{package_path}: {error}")))?;
+        let package = Package::load(&package_raw)
+            .map_err(|error| CliError(format!("malformed package {package_path}: {error}")))?;
+        if packages.insert(language.to_owned(), package).is_some() {
+            return Err(CliError(format!(
+                "duplicate highlight package for language `{language}`"
+            )));
+        }
+    }
     let tree_raw = std::fs::read_to_string(&tree_path)
         .map_err(|error| CliError(format!("{tree_path}: {error}")))?;
     let tree: TreeDoc = serde_json::from_str(&tree_raw)
         .map_err(|error| CliError(format!("malformed tree: {error}")))?;
-    let spans = hl_eval::highlight(&tree, &package);
+    let spans = hl_eval::highlight(&tree, &packages);
     serde_json::to_string(&spans).map_err(|error| CliError(error.to_string()))
 }
