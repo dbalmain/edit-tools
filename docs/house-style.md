@@ -90,9 +90,26 @@ against the house rule's:
   },
 ```
 
-The house rule also fixes `matrix`, which is one of the two JSON divergences on
-record — so adopting it **improves** measured agreement while being stated as a
-readability rule rather than a compatibility fix. That is the shape to look for.
+### It does not improve the score, and that is the point
+
+An earlier draft of this document claimed the house rule lifts JSON from 4/6 to
+5/6 because it fixes `matrix`. **That was wrong**, and the mistake is
+instructive enough to leave recorded.
+
+The rule does fix `matrix`. But `matrix` and `deep` are **in the same file**,
+and we currently match prettier on `deep` byte for byte. Adopting the house rule
+trades one divergence for another inside `nested.json`, so the file still
+differs at both widths and the score stays **4/6**.
+
+Scoring is per file, not per construct. A readability rule that is right in
+every individual case can therefore show up as **zero improvement**, or as a
+regression, depending only on which file the affected constructs happen to
+share.
+
+This is the strongest argument for doing roadmap point 10 first. Without a way
+to declare a divergence intentional, the house rule looks like work that
+achieved nothing, and the very next agent to read the scoreboard has a
+documented reason to revert it.
 
 ### Cost
 
