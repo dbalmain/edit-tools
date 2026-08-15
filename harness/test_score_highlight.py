@@ -60,6 +60,25 @@ class PartitionTests(unittest.TestCase):
                 problem = scorer.partition_error(spans, {"a", "b"}, source)
                 self.assertIn(expected, problem)
 
+    def test_whitespace_advisory_groups_bare_and_trailing_runs_by_scope(self):
+        spans = [
+            {"start": 0, "end": 1, "scope": "error"},
+            {"start": 1, "end": 3, "scope": "keyword"},
+            {"start": 3, "end": 4, "scope": "variable"},
+        ]
+
+        self.assertEqual(
+            scorer.whitespace_spans(spans, " x y"),
+            {
+                "entirely": {
+                    "error": [{"start": 0, "end": 1, "text": " "}]
+                },
+                "trailing": {
+                    "keyword": [{"start": 1, "end": 3, "text": "x "}]
+                },
+            },
+        )
+
 
 class ScoreTests(unittest.TestCase):
     def setUp(self):
@@ -135,6 +154,40 @@ class ScoreTests(unittest.TestCase):
 
         self.assertTrue(report.failed)
         self.assertFalse(self.goldens.exists())
+
+    def test_whitespace_findings_are_advisory_not_a_gate(self):
+        self.tree.write_text(
+            json.dumps(
+                {
+                    "language": "toy",
+                    "source": "x ",
+                    "root": {"type": "identifier", "start": 0, "end": 2},
+                }
+            )
+        )
+        package = self.submission / "packages" / "toy.highlight.json"
+        package.write_text(json.dumps({"scopes": ["variable"]}))
+        output = b'[{"start":0,"end":2,"scope":"variable"}]\n'
+        run = scorer.Run(ok=True, output=output)
+        with (
+            self.globals[0],
+            self.globals[1],
+            mock.patch.object(scorer, "invoke", side_effect=[run, run]),
+        ):
+            report = scorer.score(self.submission, None, update=True, verbose=True)
+
+        self.assertFalse(report.failed)
+        self.assertEqual(
+            report.advisory["whitespace"]["trailing"]["variable"],
+            [
+                {
+                    "tree": self.tree.name,
+                    "start": 0,
+                    "end": 2,
+                    "text": "x ",
+                }
+            ],
+        )
 
 
 if __name__ == "__main__":

@@ -41,6 +41,7 @@ class Report:
     sizes: dict = field(default_factory=dict)
     updated: list[str] = field(default_factory=list)
     detail: list[str] = field(default_factory=list)
+    advisory: dict = field(default_factory=dict)
 
     @property
     def failed(self) -> bool:
@@ -132,6 +133,25 @@ def partition_error(spans: object, scopes: set[str], source: str) -> str | None:
     return None
 
 
+def whitespace_spans(spans: list[dict], source: str) -> dict[str, dict[str, list]]:
+    source_bytes = source.encode("utf-8")
+    groups = {"entirely": {}, "trailing": {}}
+    for span in spans:
+        text = source_bytes[span["start"] : span["end"]].decode(
+            "utf-8", errors="replace"
+        )
+        category = None
+        if text and text.isspace():
+            category = "entirely"
+        elif text and text[-1].isspace():
+            category = "trailing"
+        if category is not None:
+            groups[category].setdefault(span["scope"], []).append(
+                {"start": span["start"], "end": span["end"], "text": text}
+            )
+    return groups
+
+
 def golden_path(tree_path: Path) -> Path:
     stem = tree_path.name.removesuffix(".tree.json")
     return GOLDENS / f"{stem}.spans.json"
@@ -172,6 +192,7 @@ def score(submission: Path, only: str | None, update: bool, verbose: bool) -> Re
     unhighlighted = []
     scopes_by_language = {}
     notes = []
+    whitespace = {"entirely": {}, "trailing": {}}
 
     destinations = {}
     for tree_path, tree in all_trees:
@@ -225,6 +246,13 @@ def score(submission: Path, only: str | None, update: bool, verbose: bool) -> Re
             continue
         partition += 1
 
+        for category, scopes_with_spans in whitespace_spans(
+            spans, tree.get("source", "")
+        ).items():
+            for scope, items in scopes_with_spans.items():
+                destination_group = whitespace[category].setdefault(scope, [])
+                destination_group.extend({"tree": tag, **item} for item in items)
+
         if update:
             destination.parent.mkdir(parents=True, exist_ok=True)
             destination.write_text(json.dumps(spans, indent=2) + "\n", encoding="utf-8")
@@ -255,6 +283,13 @@ def score(submission: Path, only: str | None, update: bool, verbose: bool) -> Re
     }
     report.sizes = package_sizes(submission, only)
     report.detail = notes if verbose else notes[:20]
+    report.advisory = {
+        "note": "advisory only; whitespace spans do not affect gates",
+        "whitespace": {
+            category: dict(sorted(scopes_with_spans.items()))
+            for category, scopes_with_spans in whitespace.items()
+        },
+    }
     return report
 
 
@@ -290,6 +325,26 @@ def main() -> int:
         f"    {'all':10} {report.sizes['raw']:>6} B raw  "
         f"{report.sizes['gzip']:>6} B gzip"
     )
+    print("\n  advisory: whitespace spans (does not affect gates)")
+    labels = {
+        "entirely": "entirely whitespace",
+        "trailing": "non-whitespace ending in whitespace",
+    }
+    whitespace = report.advisory["whitespace"]
+    if not any(whitespace.values()):
+        print("    none")
+    for category, label in labels.items():
+        if not whitespace[category]:
+            continue
+        print(f"    {label}")
+        for scope, items in whitespace[category].items():
+            print(f"      {scope} ({len(items)})")
+            for item in items:
+                rendered = json.dumps(item["text"])
+                print(
+                    f"        {item['tree']} [{item['start']}, {item['end']}) "
+                    f"{rendered}"
+                )
     if report.updated:
         print(f"\n  updated {len(report.updated)} golden(s)")
     if report.detail:
