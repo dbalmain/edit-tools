@@ -1,0 +1,455 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/values.toml",
+ "source": "# Every scalar value type and its alternate spellings: integers in base 2/8/10/16\n# with and without underscores, floats in fixed, exponent, inf and nan forms, and\n# booleans. A formatter must preserve the exact spelling of each.\n\ndecimal = 42\nnegative = -17\nzero = 0\nunderscored = 1_000_000\nhex = 0xDEADBEEF\noctal = 0o755\nbinary = 0b1101\n\nfloat = 3.14\nnegative_float = -0.01\nexponent = 5e6\nexponent_negative = 6.022e23\nfractional_exponent = -2.5E-4\ninfinity = inf\nnegative_infinity = -inf\nnot_a_number = nan\n\ntrue_value = true\nfalse_value = false\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 548,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 81,
+    "text": "# Every scalar value type and its alternate spellings: integers in base 2/8/10/16"
+   },
+   {
+    "type": "comment",
+    "start": 82,
+    "end": 163,
+    "text": "# with and without underscores, floats in fixed, exponent, inf and nan forms, and"
+   },
+   {
+    "type": "comment",
+    "start": 164,
+    "end": 229,
+    "text": "# booleans. A formatter must preserve the exact spelling of each."
+   },
+   {
+    "type": "pair",
+    "start": 231,
+    "end": 243,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 231,
+      "end": 238,
+      "text": "decimal"
+     },
+     {
+      "type": "=",
+      "start": 239,
+      "end": 240,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 241,
+      "end": 243,
+      "text": "42"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 244,
+    "end": 258,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 244,
+      "end": 252,
+      "text": "negative"
+     },
+     {
+      "type": "=",
+      "start": 253,
+      "end": 254,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 255,
+      "end": 258,
+      "text": "-17"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 259,
+    "end": 267,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 259,
+      "end": 263,
+      "text": "zero"
+     },
+     {
+      "type": "=",
+      "start": 264,
+      "end": 265,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 266,
+      "end": 267,
+      "text": "0"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 268,
+    "end": 291,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 268,
+      "end": 279,
+      "text": "underscored"
+     },
+     {
+      "type": "=",
+      "start": 280,
+      "end": 281,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 282,
+      "end": 291,
+      "text": "1_000_000"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 292,
+    "end": 308,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 292,
+      "end": 295,
+      "text": "hex"
+     },
+     {
+      "type": "=",
+      "start": 296,
+      "end": 297,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 298,
+      "end": 308,
+      "text": "0xDEADBEEF"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 309,
+    "end": 322,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 309,
+      "end": 314,
+      "text": "octal"
+     },
+     {
+      "type": "=",
+      "start": 315,
+      "end": 316,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 317,
+      "end": 322,
+      "text": "0o755"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 323,
+    "end": 338,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 323,
+      "end": 329,
+      "text": "binary"
+     },
+     {
+      "type": "=",
+      "start": 330,
+      "end": 331,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 332,
+      "end": 338,
+      "text": "0b1101"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 340,
+    "end": 352,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 340,
+      "end": 345,
+      "text": "float"
+     },
+     {
+      "type": "=",
+      "start": 346,
+      "end": 347,
+      "text": "="
+     },
+     {
+      "type": "float",
+      "start": 348,
+      "end": 352,
+      "text": "3.14"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 353,
+    "end": 375,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 353,
+      "end": 367,
+      "text": "negative_float"
+     },
+     {
+      "type": "=",
+      "start": 368,
+      "end": 369,
+      "text": "="
+     },
+     {
+      "type": "float",
+      "start": 370,
+      "end": 375,
+      "text": "-0.01"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 376,
+    "end": 390,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 376,
+      "end": 384,
+      "text": "exponent"
+     },
+     {
+      "type": "=",
+      "start": 385,
+      "end": 386,
+      "text": "="
+     },
+     {
+      "type": "float",
+      "start": 387,
+      "end": 390,
+      "text": "5e6"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 391,
+    "end": 419,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 391,
+      "end": 408,
+      "text": "exponent_negative"
+     },
+     {
+      "type": "=",
+      "start": 409,
+      "end": 410,
+      "text": "="
+     },
+     {
+      "type": "float",
+      "start": 411,
+      "end": 419,
+      "text": "6.022e23"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 420,
+    "end": 449,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 420,
+      "end": 439,
+      "text": "fractional_exponent"
+     },
+     {
+      "type": "=",
+      "start": 440,
+      "end": 441,
+      "text": "="
+     },
+     {
+      "type": "float",
+      "start": 442,
+      "end": 449,
+      "text": "-2.5E-4"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 450,
+    "end": 464,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 450,
+      "end": 458,
+      "text": "infinity"
+     },
+     {
+      "type": "=",
+      "start": 459,
+      "end": 460,
+      "text": "="
+     },
+     {
+      "type": "float",
+      "start": 461,
+      "end": 464,
+      "text": "inf"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 465,
+    "end": 489,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 465,
+      "end": 482,
+      "text": "negative_infinity"
+     },
+     {
+      "type": "=",
+      "start": 483,
+      "end": 484,
+      "text": "="
+     },
+     {
+      "type": "float",
+      "start": 485,
+      "end": 489,
+      "text": "-inf"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 490,
+    "end": 508,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 490,
+      "end": 502,
+      "text": "not_a_number"
+     },
+     {
+      "type": "=",
+      "start": 503,
+      "end": 504,
+      "text": "="
+     },
+     {
+      "type": "float",
+      "start": 505,
+      "end": 508,
+      "text": "nan"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 510,
+    "end": 527,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 510,
+      "end": 520,
+      "text": "true_value"
+     },
+     {
+      "type": "=",
+      "start": 521,
+      "end": 522,
+      "text": "="
+     },
+     {
+      "type": "boolean",
+      "start": 523,
+      "end": 527,
+      "text": "true"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 528,
+    "end": 547,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 528,
+      "end": 539,
+      "text": "false_value"
+     },
+     {
+      "type": "=",
+      "start": 540,
+      "end": 541,
+      "text": "="
+     },
+     {
+      "type": "boolean",
+      "start": 542,
+      "end": 547,
+      "text": "false"
+     }
+    ]
+   }
+  ]
+ }
+}

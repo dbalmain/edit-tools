@@ -1,0 +1,29 @@
+# Comments in every position TOML allows: own-line at the top, trailing on a pair,
+# own-line before a pair, inside a delimited array, before a closing bracket, and
+# after a table header.
+
+# A file-leading comment.
+
+title = "comments" # trailing on a pair
+
+# An own-line comment before the next key-value pair.
+author = "someone"
+
+[section]
+# A comment after a table header, before its first pair.
+enabled = true
+
+numbers = [
+  1, # trailing on an array element
+  2, # trailing on another element
+  # An own-line comment inside the array.
+  3,
+  # A comment before the closing bracket.
+]
+
+flags = [ # a comment just after the opening bracket
+  "a",
+  "b",
+]
+
+# A trailing comment after the last pair of the file.

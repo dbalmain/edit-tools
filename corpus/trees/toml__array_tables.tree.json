@@ -1,0 +1,677 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/array_tables.toml",
+ "source": "# Arrays of tables: `[[x]]` opens a list element, repeated headers open more. The\n# empty element (a bare `[[x]]` with no keys) is legal and must survive.\n\n[[products]]\nname = \"Hammer\"\nsku = 738594937\n\n[[products]]\n\n[[products]]\nname = \"Nail\"\nsku = 284758393\ncolor = \"gray\"\n\n[[products.dimensions]]\nwidth = 4.0\nheight = 2.0\n\n[[products.dimensions]]\nwidth = 6.0\nheight = 3.5\ndepth = 1.0\n\n[[servers]]\nhost = \"primary\"\nports = [8000, 8001]\nroles = [\"web\", \"api\"]\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 460,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 81,
+    "text": "# Arrays of tables: `[[x]]` opens a list element, repeated headers open more. The"
+   },
+   {
+    "type": "comment",
+    "start": 82,
+    "end": 154,
+    "text": "# empty element (a bare `[[x]]` with no keys) is legal and must survive."
+   },
+   {
+    "type": "table_array_element",
+    "start": 156,
+    "end": 202,
+    "children": [
+     {
+      "type": "[[",
+      "start": 156,
+      "end": 158,
+      "text": "[["
+     },
+     {
+      "type": "bare_key",
+      "start": 158,
+      "end": 166,
+      "text": "products"
+     },
+     {
+      "type": "]]",
+      "start": 166,
+      "end": 168,
+      "text": "]]"
+     },
+     {
+      "type": "pair",
+      "start": 169,
+      "end": 184,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 169,
+        "end": 173,
+        "text": "name"
+       },
+       {
+        "type": "=",
+        "start": 174,
+        "end": 175,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 176,
+        "end": 184,
+        "children": [
+         {
+          "type": "\"",
+          "start": 176,
+          "end": 177,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 183,
+          "end": 184,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 185,
+      "end": 200,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 185,
+        "end": 188,
+        "text": "sku"
+       },
+       {
+        "type": "=",
+        "start": 189,
+        "end": 190,
+        "text": "="
+       },
+       {
+        "type": "integer",
+        "start": 191,
+        "end": 200,
+        "text": "738594937"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table_array_element",
+    "start": 202,
+    "end": 216,
+    "children": [
+     {
+      "type": "[[",
+      "start": 202,
+      "end": 204,
+      "text": "[["
+     },
+     {
+      "type": "bare_key",
+      "start": 204,
+      "end": 212,
+      "text": "products"
+     },
+     {
+      "type": "]]",
+      "start": 212,
+      "end": 214,
+      "text": "]]"
+     }
+    ]
+   },
+   {
+    "type": "table_array_element",
+    "start": 216,
+    "end": 275,
+    "children": [
+     {
+      "type": "[[",
+      "start": 216,
+      "end": 218,
+      "text": "[["
+     },
+     {
+      "type": "bare_key",
+      "start": 218,
+      "end": 226,
+      "text": "products"
+     },
+     {
+      "type": "]]",
+      "start": 226,
+      "end": 228,
+      "text": "]]"
+     },
+     {
+      "type": "pair",
+      "start": 229,
+      "end": 242,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 229,
+        "end": 233,
+        "text": "name"
+       },
+       {
+        "type": "=",
+        "start": 234,
+        "end": 235,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 236,
+        "end": 242,
+        "children": [
+         {
+          "type": "\"",
+          "start": 236,
+          "end": 237,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 241,
+          "end": 242,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 243,
+      "end": 258,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 243,
+        "end": 246,
+        "text": "sku"
+       },
+       {
+        "type": "=",
+        "start": 247,
+        "end": 248,
+        "text": "="
+       },
+       {
+        "type": "integer",
+        "start": 249,
+        "end": 258,
+        "text": "284758393"
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 259,
+      "end": 273,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 259,
+        "end": 264,
+        "text": "color"
+       },
+       {
+        "type": "=",
+        "start": 265,
+        "end": 266,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 267,
+        "end": 273,
+        "children": [
+         {
+          "type": "\"",
+          "start": 267,
+          "end": 268,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 272,
+          "end": 273,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table_array_element",
+    "start": 275,
+    "end": 325,
+    "children": [
+     {
+      "type": "[[",
+      "start": 275,
+      "end": 277,
+      "text": "[["
+     },
+     {
+      "type": "dotted_key",
+      "start": 277,
+      "end": 296,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 277,
+        "end": 285,
+        "text": "products"
+       },
+       {
+        "type": ".",
+        "start": 285,
+        "end": 286,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 286,
+        "end": 296,
+        "text": "dimensions"
+       }
+      ]
+     },
+     {
+      "type": "]]",
+      "start": 296,
+      "end": 298,
+      "text": "]]"
+     },
+     {
+      "type": "pair",
+      "start": 299,
+      "end": 310,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 299,
+        "end": 304,
+        "text": "width"
+       },
+       {
+        "type": "=",
+        "start": 305,
+        "end": 306,
+        "text": "="
+       },
+       {
+        "type": "float",
+        "start": 307,
+        "end": 310,
+        "text": "4.0"
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 311,
+      "end": 323,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 311,
+        "end": 317,
+        "text": "height"
+       },
+       {
+        "type": "=",
+        "start": 318,
+        "end": 319,
+        "text": "="
+       },
+       {
+        "type": "float",
+        "start": 320,
+        "end": 323,
+        "text": "2.0"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table_array_element",
+    "start": 325,
+    "end": 387,
+    "children": [
+     {
+      "type": "[[",
+      "start": 325,
+      "end": 327,
+      "text": "[["
+     },
+     {
+      "type": "dotted_key",
+      "start": 327,
+      "end": 346,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 327,
+        "end": 335,
+        "text": "products"
+       },
+       {
+        "type": ".",
+        "start": 335,
+        "end": 336,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 336,
+        "end": 346,
+        "text": "dimensions"
+       }
+      ]
+     },
+     {
+      "type": "]]",
+      "start": 346,
+      "end": 348,
+      "text": "]]"
+     },
+     {
+      "type": "pair",
+      "start": 349,
+      "end": 360,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 349,
+        "end": 354,
+        "text": "width"
+       },
+       {
+        "type": "=",
+        "start": 355,
+        "end": 356,
+        "text": "="
+       },
+       {
+        "type": "float",
+        "start": 357,
+        "end": 360,
+        "text": "6.0"
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 361,
+      "end": 373,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 361,
+        "end": 367,
+        "text": "height"
+       },
+       {
+        "type": "=",
+        "start": 368,
+        "end": 369,
+        "text": "="
+       },
+       {
+        "type": "float",
+        "start": 370,
+        "end": 373,
+        "text": "3.5"
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 374,
+      "end": 385,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 374,
+        "end": 379,
+        "text": "depth"
+       },
+       {
+        "type": "=",
+        "start": 380,
+        "end": 381,
+        "text": "="
+       },
+       {
+        "type": "float",
+        "start": 382,
+        "end": 385,
+        "text": "1.0"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table_array_element",
+    "start": 387,
+    "end": 460,
+    "children": [
+     {
+      "type": "[[",
+      "start": 387,
+      "end": 389,
+      "text": "[["
+     },
+     {
+      "type": "bare_key",
+      "start": 389,
+      "end": 396,
+      "text": "servers"
+     },
+     {
+      "type": "]]",
+      "start": 396,
+      "end": 398,
+      "text": "]]"
+     },
+     {
+      "type": "pair",
+      "start": 399,
+      "end": 415,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 399,
+        "end": 403,
+        "text": "host"
+       },
+       {
+        "type": "=",
+        "start": 404,
+        "end": 405,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 406,
+        "end": 415,
+        "children": [
+         {
+          "type": "\"",
+          "start": 406,
+          "end": 407,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 414,
+          "end": 415,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 416,
+      "end": 436,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 416,
+        "end": 421,
+        "text": "ports"
+       },
+       {
+        "type": "=",
+        "start": 422,
+        "end": 423,
+        "text": "="
+       },
+       {
+        "type": "array",
+        "start": 424,
+        "end": 436,
+        "children": [
+         {
+          "type": "[",
+          "start": 424,
+          "end": 425,
+          "text": "["
+         },
+         {
+          "type": "integer",
+          "start": 425,
+          "end": 429,
+          "text": "8000"
+         },
+         {
+          "type": ",",
+          "start": 429,
+          "end": 430,
+          "text": ","
+         },
+         {
+          "type": "integer",
+          "start": 431,
+          "end": 435,
+          "text": "8001"
+         },
+         {
+          "type": "]",
+          "start": 435,
+          "end": 436,
+          "text": "]"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 437,
+      "end": 459,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 437,
+        "end": 442,
+        "text": "roles"
+       },
+       {
+        "type": "=",
+        "start": 443,
+        "end": 444,
+        "text": "="
+       },
+       {
+        "type": "array",
+        "start": 445,
+        "end": 459,
+        "children": [
+         {
+          "type": "[",
+          "start": 445,
+          "end": 446,
+          "text": "["
+         },
+         {
+          "type": "string",
+          "start": 446,
+          "end": 451,
+          "children": [
+           {
+            "type": "\"",
+            "start": 446,
+            "end": 447,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 450,
+            "end": 451,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 451,
+          "end": 452,
+          "text": ","
+         },
+         {
+          "type": "string",
+          "start": 453,
+          "end": 458,
+          "children": [
+           {
+            "type": "\"",
+            "start": 453,
+            "end": 454,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 457,
+            "end": 458,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": "]",
+          "start": 458,
+          "end": 459,
+          "text": "]"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

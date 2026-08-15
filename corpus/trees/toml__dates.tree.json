@@ -1,0 +1,230 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/dates.toml",
+ "source": "# Date and time values in all four forms: local date, local time, local date-time,\n# and offset date-time. The space in a local date-time and the precision of a\n# fractional second must be preserved exactly.\n\nlocal_date = 1979-05-27\n\nlocal_time = 07:32:00\n\nlocal_time_fraction = 00:32:00.999999\n\nlocal_date_time = 1979-05-27T07:32:00\n\nlocal_date_time_space = 1979-05-27 07:32:00\n\noffset_date_time = 1979-05-27T07:32:00Z\n\noffset_date_time_fraction = 1979-05-27T00:32:00.999999-07:00\n\noffset_positive = 1979-05-27T07:32:00+02:30\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 527,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 82,
+    "text": "# Date and time values in all four forms: local date, local time, local date-time,"
+   },
+   {
+    "type": "comment",
+    "start": 83,
+    "end": 160,
+    "text": "# and offset date-time. The space in a local date-time and the precision of a"
+   },
+   {
+    "type": "comment",
+    "start": 161,
+    "end": 207,
+    "text": "# fractional second must be preserved exactly."
+   },
+   {
+    "type": "pair",
+    "start": 209,
+    "end": 232,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 209,
+      "end": 219,
+      "text": "local_date"
+     },
+     {
+      "type": "=",
+      "start": 220,
+      "end": 221,
+      "text": "="
+     },
+     {
+      "type": "local_date",
+      "start": 222,
+      "end": 232,
+      "text": "1979-05-27"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 234,
+    "end": 255,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 234,
+      "end": 244,
+      "text": "local_time"
+     },
+     {
+      "type": "=",
+      "start": 245,
+      "end": 246,
+      "text": "="
+     },
+     {
+      "type": "local_time",
+      "start": 247,
+      "end": 255,
+      "text": "07:32:00"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 257,
+    "end": 294,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 257,
+      "end": 276,
+      "text": "local_time_fraction"
+     },
+     {
+      "type": "=",
+      "start": 277,
+      "end": 278,
+      "text": "="
+     },
+     {
+      "type": "local_time",
+      "start": 279,
+      "end": 294,
+      "text": "00:32:00.999999"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 296,
+    "end": 333,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 296,
+      "end": 311,
+      "text": "local_date_time"
+     },
+     {
+      "type": "=",
+      "start": 312,
+      "end": 313,
+      "text": "="
+     },
+     {
+      "type": "local_date_time",
+      "start": 314,
+      "end": 333,
+      "text": "1979-05-27T07:32:00"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 335,
+    "end": 378,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 335,
+      "end": 356,
+      "text": "local_date_time_space"
+     },
+     {
+      "type": "=",
+      "start": 357,
+      "end": 358,
+      "text": "="
+     },
+     {
+      "type": "local_date_time",
+      "start": 359,
+      "end": 378,
+      "text": "1979-05-27 07:32:00"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 380,
+    "end": 419,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 380,
+      "end": 396,
+      "text": "offset_date_time"
+     },
+     {
+      "type": "=",
+      "start": 397,
+      "end": 398,
+      "text": "="
+     },
+     {
+      "type": "offset_date_time",
+      "start": 399,
+      "end": 419,
+      "text": "1979-05-27T07:32:00Z"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 421,
+    "end": 481,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 421,
+      "end": 446,
+      "text": "offset_date_time_fraction"
+     },
+     {
+      "type": "=",
+      "start": 447,
+      "end": 448,
+      "text": "="
+     },
+     {
+      "type": "offset_date_time",
+      "start": 449,
+      "end": 481,
+      "text": "1979-05-27T00:32:00.999999-07:00"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 483,
+    "end": 526,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 483,
+      "end": 498,
+      "text": "offset_positive"
+     },
+     {
+      "type": "=",
+      "start": 499,
+      "end": 500,
+      "text": "="
+     },
+     {
+      "type": "offset_date_time",
+      "start": 501,
+      "end": 526,
+      "text": "1979-05-27T07:32:00+02:30"
+     }
+    ]
+   }
+  ]
+ }
+}

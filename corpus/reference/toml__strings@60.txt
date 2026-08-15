@@ -1,0 +1,23 @@
+# Strings and literals: basic, literal, multiline basic, multiline literal, and
+# the escaping each one does or does not perform. Multiline strings must be
+# preserved byte-for-byte; a formatter that reindents them corrupts the value.
+
+basic = "a basic string with \"escaped quotes\" and \\ backslashes"
+
+literal = 'a literal string: backslash \n is literal, "quotes" are fine'
+
+escaped = "line one\nline two\ttabbed\u00e9\U0001F600"
+
+multiline_basic = """first line
+second line with "quotes"
+third line"""
+
+multiline_literal = '''first line
+\ backslash stays literal here
+third line'''
+
+nested_quotes = "outer \"inner 'single'\" done"
+
+empty = ""
+
+single = 'lonely'

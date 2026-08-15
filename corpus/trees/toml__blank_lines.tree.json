@@ -1,0 +1,293 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/blank_lines.toml",
+ "source": "# Blank lines and vertical spacing: the presence of a blank line between pairs and\n# before a table header is significant grouping the formatter must keep. taplo\n# preserves up to two blank lines and collapses longer runs to two; the runs here\n# are the input's, not noise.\n\ntitle = \"spacing\"\n\nfirst = 1\n\n\nsecond = 2\n\n[section]\n\nalpha = 1\n\n\nbeta = 2\n\n\n\ngamma = 3\n\n[section.more]\nonly = true\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 391,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 82,
+    "text": "# Blank lines and vertical spacing: the presence of a blank line between pairs and"
+   },
+   {
+    "type": "comment",
+    "start": 83,
+    "end": 161,
+    "text": "# before a table header is significant grouping the formatter must keep. taplo"
+   },
+   {
+    "type": "comment",
+    "start": 162,
+    "end": 243,
+    "text": "# preserves up to two blank lines and collapses longer runs to two; the runs here"
+   },
+   {
+    "type": "comment",
+    "start": 244,
+    "end": 273,
+    "text": "# are the input's, not noise."
+   },
+   {
+    "type": "pair",
+    "start": 275,
+    "end": 292,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 275,
+      "end": 280,
+      "text": "title"
+     },
+     {
+      "type": "=",
+      "start": 281,
+      "end": 282,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 283,
+      "end": 292,
+      "children": [
+       {
+        "type": "\"",
+        "start": 283,
+        "end": 284,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 291,
+        "end": 292,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 294,
+    "end": 303,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 294,
+      "end": 299,
+      "text": "first"
+     },
+     {
+      "type": "=",
+      "start": 300,
+      "end": 301,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 302,
+      "end": 303,
+      "text": "1"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 306,
+    "end": 316,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 306,
+      "end": 312,
+      "text": "second"
+     },
+     {
+      "type": "=",
+      "start": 313,
+      "end": 314,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 315,
+      "end": 316,
+      "text": "2"
+     }
+    ]
+   },
+   {
+    "type": "table",
+    "start": 318,
+    "end": 364,
+    "children": [
+     {
+      "type": "[",
+      "start": 318,
+      "end": 319,
+      "text": "["
+     },
+     {
+      "type": "bare_key",
+      "start": 319,
+      "end": 326,
+      "text": "section"
+     },
+     {
+      "type": "]",
+      "start": 326,
+      "end": 327,
+      "text": "]"
+     },
+     {
+      "type": "pair",
+      "start": 329,
+      "end": 338,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 329,
+        "end": 334,
+        "text": "alpha"
+       },
+       {
+        "type": "=",
+        "start": 335,
+        "end": 336,
+        "text": "="
+       },
+       {
+        "type": "integer",
+        "start": 337,
+        "end": 338,
+        "text": "1"
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 341,
+      "end": 349,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 341,
+        "end": 345,
+        "text": "beta"
+       },
+       {
+        "type": "=",
+        "start": 346,
+        "end": 347,
+        "text": "="
+       },
+       {
+        "type": "integer",
+        "start": 348,
+        "end": 349,
+        "text": "2"
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 353,
+      "end": 362,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 353,
+        "end": 358,
+        "text": "gamma"
+       },
+       {
+        "type": "=",
+        "start": 359,
+        "end": 360,
+        "text": "="
+       },
+       {
+        "type": "integer",
+        "start": 361,
+        "end": 362,
+        "text": "3"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table",
+    "start": 364,
+    "end": 391,
+    "children": [
+     {
+      "type": "[",
+      "start": 364,
+      "end": 365,
+      "text": "["
+     },
+     {
+      "type": "dotted_key",
+      "start": 365,
+      "end": 377,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 365,
+        "end": 372,
+        "text": "section"
+       },
+       {
+        "type": ".",
+        "start": 372,
+        "end": 373,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 373,
+        "end": 377,
+        "text": "more"
+       }
+      ]
+     },
+     {
+      "type": "]",
+      "start": 377,
+      "end": 378,
+      "text": "]"
+     },
+     {
+      "type": "pair",
+      "start": 379,
+      "end": 390,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 379,
+        "end": 383,
+        "text": "only"
+       },
+       {
+        "type": "=",
+        "start": 384,
+        "end": 385,
+        "text": "="
+       },
+       {
+        "type": "boolean",
+        "start": 386,
+        "end": 390,
+        "text": "true"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

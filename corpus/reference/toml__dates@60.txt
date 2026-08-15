@@ -1,0 +1,19 @@
+# Date and time values in all four forms: local date, local time, local date-time,
+# and offset date-time. The space in a local date-time and the precision of a
+# fractional second must be preserved exactly.
+
+local_date = 1979-05-27
+
+local_time = 07:32:00
+
+local_time_fraction = 00:32:00.999999
+
+local_date_time = 1979-05-27T07:32:00
+
+local_date_time_space = 1979-05-27 07:32:00
+
+offset_date_time = 1979-05-27T07:32:00Z
+
+offset_date_time_fraction = 1979-05-27T00:32:00.999999-07:00
+
+offset_positive = 1979-05-27T07:32:00+02:30

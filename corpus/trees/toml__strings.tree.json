@@ -1,0 +1,376 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/strings.toml",
+ "source": "# Strings and literals: basic, literal, multiline basic, multiline literal, and\n# the escaping each one does or does not perform. Multiline strings must be\n# preserved byte-for-byte; a formatter that reindents them corrupts the value.\n\nbasic = \"a basic string with \\\"escaped quotes\\\" and \\\\ backslashes\"\n\nliteral = 'a literal string: backslash \\n is literal, \"quotes\" are fine'\n\nescaped = \"line one\\nline two\\ttabbed\\u00e9\\U0001F600\"\n\nmultiline_basic = \"\"\"first line\nsecond line with \"quotes\"\nthird line\"\"\"\n\nmultiline_literal = '''first line\n\\ backslash stays literal here\nthird line'''\n\nnested_quotes = \"outer \\\"inner 'single'\\\" done\"\n\nempty = \"\"\n\nsingle = 'lonely'\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 667,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 79,
+    "text": "# Strings and literals: basic, literal, multiline basic, multiline literal, and"
+   },
+   {
+    "type": "comment",
+    "start": 80,
+    "end": 155,
+    "text": "# the escaping each one does or does not perform. Multiline strings must be"
+   },
+   {
+    "type": "comment",
+    "start": 156,
+    "end": 234,
+    "text": "# preserved byte-for-byte; a formatter that reindents them corrupts the value."
+   },
+   {
+    "type": "pair",
+    "start": 236,
+    "end": 303,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 236,
+      "end": 241,
+      "text": "basic"
+     },
+     {
+      "type": "=",
+      "start": 242,
+      "end": 243,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 244,
+      "end": 303,
+      "children": [
+       {
+        "type": "\"",
+        "start": 244,
+        "end": 245,
+        "text": "\""
+       },
+       {
+        "type": "escape_sequence",
+        "start": 265,
+        "end": 267,
+        "text": "\\\""
+       },
+       {
+        "type": "escape_sequence",
+        "start": 281,
+        "end": 283,
+        "text": "\\\""
+       },
+       {
+        "type": "escape_sequence",
+        "start": 288,
+        "end": 290,
+        "text": "\\\\"
+       },
+       {
+        "type": "\"",
+        "start": 302,
+        "end": 303,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 305,
+    "end": 377,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 305,
+      "end": 312,
+      "text": "literal"
+     },
+     {
+      "type": "=",
+      "start": 313,
+      "end": 314,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 315,
+      "end": 377,
+      "children": [
+       {
+        "type": "'",
+        "start": 315,
+        "end": 316,
+        "text": "'"
+       },
+       {
+        "type": "'",
+        "start": 376,
+        "end": 377,
+        "text": "'"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 379,
+    "end": 433,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 379,
+      "end": 386,
+      "text": "escaped"
+     },
+     {
+      "type": "=",
+      "start": 387,
+      "end": 388,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 389,
+      "end": 433,
+      "children": [
+       {
+        "type": "\"",
+        "start": 389,
+        "end": 390,
+        "text": "\""
+       },
+       {
+        "type": "escape_sequence",
+        "start": 398,
+        "end": 400,
+        "text": "\\n"
+       },
+       {
+        "type": "escape_sequence",
+        "start": 408,
+        "end": 410,
+        "text": "\\t"
+       },
+       {
+        "type": "escape_sequence",
+        "start": 416,
+        "end": 422,
+        "text": "\\u00e9"
+       },
+       {
+        "type": "escape_sequence",
+        "start": 422,
+        "end": 432,
+        "text": "\\U0001F600"
+       },
+       {
+        "type": "\"",
+        "start": 432,
+        "end": 433,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 435,
+    "end": 506,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 435,
+      "end": 450,
+      "text": "multiline_basic"
+     },
+     {
+      "type": "=",
+      "start": 451,
+      "end": 452,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 453,
+      "end": 506,
+      "children": [
+       {
+        "type": "\"\"\"",
+        "start": 453,
+        "end": 456,
+        "text": "\"\"\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 508,
+    "end": 586,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 508,
+      "end": 525,
+      "text": "multiline_literal"
+     },
+     {
+      "type": "=",
+      "start": 526,
+      "end": 527,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 528,
+      "end": 586,
+      "children": [
+       {
+        "type": "'''",
+        "start": 528,
+        "end": 531,
+        "text": "'''"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 588,
+    "end": 635,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 588,
+      "end": 601,
+      "text": "nested_quotes"
+     },
+     {
+      "type": "=",
+      "start": 602,
+      "end": 603,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 604,
+      "end": 635,
+      "children": [
+       {
+        "type": "\"",
+        "start": 604,
+        "end": 605,
+        "text": "\""
+       },
+       {
+        "type": "escape_sequence",
+        "start": 611,
+        "end": 613,
+        "text": "\\\""
+       },
+       {
+        "type": "escape_sequence",
+        "start": 627,
+        "end": 629,
+        "text": "\\\""
+       },
+       {
+        "type": "\"",
+        "start": 634,
+        "end": 635,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 637,
+    "end": 647,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 637,
+      "end": 642,
+      "text": "empty"
+     },
+     {
+      "type": "=",
+      "start": 643,
+      "end": 644,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 645,
+      "end": 647,
+      "children": [
+       {
+        "type": "\"",
+        "start": 645,
+        "end": 646,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 646,
+        "end": 647,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 649,
+    "end": 666,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 649,
+      "end": 655,
+      "text": "single"
+     },
+     {
+      "type": "=",
+      "start": 656,
+      "end": 657,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 658,
+      "end": 666,
+      "children": [
+       {
+        "type": "'",
+        "start": 658,
+        "end": 659,
+        "text": "'"
+       },
+       {
+        "type": "'",
+        "start": 665,
+        "end": 666,
+        "text": "'"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -1,0 +1,21 @@
+# Inline tables: `{ key = value, ... }`. taplo never breaks between the key-value
+# pairs — it only breaks an *array value* inside one. A long inline table of pure
+# scalars stays on one line even when it overflows. Nested inline tables exercise
+# the brace matching.
+
+point = { x = 1, y = 2 }
+
+metadata = { name = "example", version = "1.0.0", authors = [
+  "a",
+  "b",
+], license = "MIT" }
+
+long_inline = { host = "db.example.com", port = 5432, ssl = true, timeout = 30, retries = 3 }
+
+nested = { outer = { inner = { deep = "value" } }, sibling = 2 }
+
+mixed = { array = [
+  1,
+  2,
+  3,
+], table = { key = "value" }, scalar = 42 }

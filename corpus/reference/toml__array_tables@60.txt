@@ -1,0 +1,27 @@
+# Arrays of tables: `[[x]]` opens a list element, repeated headers open more. The
+# empty element (a bare `[[x]]` with no keys) is legal and must survive.
+
+[[products]]
+name = "Hammer"
+sku = 738594937
+
+[[products]]
+
+[[products]]
+name = "Nail"
+sku = 284758393
+color = "gray"
+
+[[products.dimensions]]
+width = 4.0
+height = 2.0
+
+[[products.dimensions]]
+width = 6.0
+height = 3.5
+depth = 1.0
+
+[[servers]]
+host = "primary"
+ports = [8000, 8001]
+roles = ["web", "api"]

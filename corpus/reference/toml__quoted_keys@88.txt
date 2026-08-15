@@ -1,0 +1,20 @@
+# Quoted keys: a key that is not a bare identifier needs quotes. Keys with spaces,
+# dots that are part of the name, and empty keys all appear, in both pair and table
+# header positions.
+
+"key with spaces" = 1
+
+"key.with.dot" = 2
+
+"" = "empty key"
+
+"unicode-k\u00e9y" = 3
+
+["table name"]
+value = 1
+
+["quoted"."sub.key"]
+leaf = true
+
+[a."b.c".d]
+reached = "yes"

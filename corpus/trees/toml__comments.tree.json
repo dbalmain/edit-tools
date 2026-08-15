@@ -1,0 +1,378 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/comments.toml",
+ "source": "# Comments in every position TOML allows: own-line at the top, trailing on a pair,\n# own-line before a pair, inside a delimited array, before a closing bracket, and\n# after a table header.\n\n# A file-leading comment.\n\ntitle = \"comments\"  # trailing on a pair\n\n# An own-line comment before the next key-value pair.\nauthor = \"someone\"\n\n[section]\n# A comment after a table header, before its first pair.\nenabled = true\n\nnumbers = [\n    1,  # trailing on an array element\n    2,  # trailing on another element\n    # An own-line comment inside the array.\n    3,\n    # A comment before the closing bracket.\n]\n\nflags = [  # a comment just after the opening bracket\n    \"a\",\n    \"b\",\n]\n\n# A trailing comment after the last pair of the file.\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 732,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 82,
+    "text": "# Comments in every position TOML allows: own-line at the top, trailing on a pair,"
+   },
+   {
+    "type": "comment",
+    "start": 83,
+    "end": 164,
+    "text": "# own-line before a pair, inside a delimited array, before a closing bracket, and"
+   },
+   {
+    "type": "comment",
+    "start": 165,
+    "end": 188,
+    "text": "# after a table header."
+   },
+   {
+    "type": "comment",
+    "start": 190,
+    "end": 215,
+    "text": "# A file-leading comment."
+   },
+   {
+    "type": "pair",
+    "start": 217,
+    "end": 257,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 217,
+      "end": 222,
+      "text": "title"
+     },
+     {
+      "type": "=",
+      "start": 223,
+      "end": 224,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 225,
+      "end": 235,
+      "children": [
+       {
+        "type": "\"",
+        "start": 225,
+        "end": 226,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 234,
+        "end": 235,
+        "text": "\""
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 237,
+      "end": 257,
+      "text": "# trailing on a pair"
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 259,
+    "end": 312,
+    "text": "# An own-line comment before the next key-value pair."
+   },
+   {
+    "type": "pair",
+    "start": 313,
+    "end": 331,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 313,
+      "end": 319,
+      "text": "author"
+     },
+     {
+      "type": "=",
+      "start": 320,
+      "end": 321,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 322,
+      "end": 331,
+      "children": [
+       {
+        "type": "\"",
+        "start": 322,
+        "end": 323,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 330,
+        "end": 331,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table",
+    "start": 333,
+    "end": 732,
+    "children": [
+     {
+      "type": "[",
+      "start": 333,
+      "end": 334,
+      "text": "["
+     },
+     {
+      "type": "bare_key",
+      "start": 334,
+      "end": 341,
+      "text": "section"
+     },
+     {
+      "type": "]",
+      "start": 341,
+      "end": 342,
+      "text": "]"
+     },
+     {
+      "type": "comment",
+      "start": 343,
+      "end": 399,
+      "text": "# A comment after a table header, before its first pair."
+     },
+     {
+      "type": "pair",
+      "start": 400,
+      "end": 414,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 400,
+        "end": 407,
+        "text": "enabled"
+       },
+       {
+        "type": "=",
+        "start": 408,
+        "end": 409,
+        "text": "="
+       },
+       {
+        "type": "boolean",
+        "start": 410,
+        "end": 414,
+        "text": "true"
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 416,
+      "end": 601,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 416,
+        "end": 423,
+        "text": "numbers"
+       },
+       {
+        "type": "=",
+        "start": 424,
+        "end": 425,
+        "text": "="
+       },
+       {
+        "type": "array",
+        "start": 426,
+        "end": 601,
+        "children": [
+         {
+          "type": "[",
+          "start": 426,
+          "end": 427,
+          "text": "["
+         },
+         {
+          "type": "integer",
+          "start": 432,
+          "end": 433,
+          "text": "1"
+         },
+         {
+          "type": ",",
+          "start": 433,
+          "end": 434,
+          "text": ","
+         },
+         {
+          "type": "comment",
+          "start": 436,
+          "end": 466,
+          "text": "# trailing on an array element"
+         },
+         {
+          "type": "integer",
+          "start": 471,
+          "end": 472,
+          "text": "2"
+         },
+         {
+          "type": ",",
+          "start": 472,
+          "end": 473,
+          "text": ","
+         },
+         {
+          "type": "comment",
+          "start": 475,
+          "end": 504,
+          "text": "# trailing on another element"
+         },
+         {
+          "type": "comment",
+          "start": 509,
+          "end": 548,
+          "text": "# An own-line comment inside the array."
+         },
+         {
+          "type": "integer",
+          "start": 553,
+          "end": 554,
+          "text": "3"
+         },
+         {
+          "type": ",",
+          "start": 554,
+          "end": 555,
+          "text": ","
+         },
+         {
+          "type": "comment",
+          "start": 560,
+          "end": 599,
+          "text": "# A comment before the closing bracket."
+         },
+         {
+          "type": "]",
+          "start": 600,
+          "end": 601,
+          "text": "]"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 603,
+      "end": 676,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 603,
+        "end": 608,
+        "text": "flags"
+       },
+       {
+        "type": "=",
+        "start": 609,
+        "end": 610,
+        "text": "="
+       },
+       {
+        "type": "array",
+        "start": 611,
+        "end": 676,
+        "children": [
+         {
+          "type": "[",
+          "start": 611,
+          "end": 612,
+          "text": "["
+         },
+         {
+          "type": "comment",
+          "start": 614,
+          "end": 656,
+          "text": "# a comment just after the opening bracket"
+         },
+         {
+          "type": "string",
+          "start": 661,
+          "end": 664,
+          "children": [
+           {
+            "type": "\"",
+            "start": 661,
+            "end": 662,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 663,
+            "end": 664,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 664,
+          "end": 665,
+          "text": ","
+         },
+         {
+          "type": "string",
+          "start": 670,
+          "end": 673,
+          "children": [
+           {
+            "type": "\"",
+            "start": 670,
+            "end": 671,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 672,
+            "end": 673,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 673,
+          "end": 674,
+          "text": ","
+         },
+         {
+          "type": "]",
+          "start": 675,
+          "end": 676,
+          "text": "]"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 678,
+      "end": 731,
+      "text": "# A trailing comment after the last pair of the file."
+     }
+    ]
+   }
+  ]
+ }
+}

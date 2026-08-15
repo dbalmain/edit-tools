@@ -1,0 +1,23 @@
+# Every scalar value type and its alternate spellings: integers in base 2/8/10/16
+# with and without underscores, floats in fixed, exponent, inf and nan forms, and
+# booleans. A formatter must preserve the exact spelling of each.
+
+decimal = 42
+negative = -17
+zero = 0
+underscored = 1_000_000
+hex = 0xDEADBEEF
+octal = 0o755
+binary = 0b1101
+
+float = 3.14
+negative_float = -0.01
+exponent = 5e6
+exponent_negative = 6.022e23
+fractional_exponent = -2.5E-4
+infinity = inf
+negative_infinity = -inf
+not_a_number = nan
+
+true_value = true
+false_value = false

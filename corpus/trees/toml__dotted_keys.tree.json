@@ -1,0 +1,675 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/dotted_keys.toml",
+ "source": "# Dotted keys on the value side: `a.b.c = 1` sets a nested value without opening a\n# table header. Equivalent to `[a.b]` + `c = 1`, but a distinct spelling a formatter\n# must lay out (and must not rewrite).\n\nfruit.name = \"banana\"\nfruit.color = \"yellow\"\nfruit.flavor.taste = \"sweet\"\nfruit.flavor.intensity = 5\n\napp.databases.postgres.host = \"localhost\"\napp.databases.postgres.port = 5432\napp.databases.postgres.options.pool_size = 10\n\na.b.c.d.e = \"a long dotted chain reaching a leaf value\"\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 490,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 82,
+    "text": "# Dotted keys on the value side: `a.b.c = 1` sets a nested value without opening a"
+   },
+   {
+    "type": "comment",
+    "start": 83,
+    "end": 167,
+    "text": "# table header. Equivalent to `[a.b]` + `c = 1`, but a distinct spelling a formatter"
+   },
+   {
+    "type": "comment",
+    "start": 168,
+    "end": 206,
+    "text": "# must lay out (and must not rewrite)."
+   },
+   {
+    "type": "pair",
+    "start": 208,
+    "end": 229,
+    "children": [
+     {
+      "type": "dotted_key",
+      "start": 208,
+      "end": 218,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 208,
+        "end": 213,
+        "text": "fruit"
+       },
+       {
+        "type": ".",
+        "start": 213,
+        "end": 214,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 214,
+        "end": 218,
+        "text": "name"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 219,
+      "end": 220,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 221,
+      "end": 229,
+      "children": [
+       {
+        "type": "\"",
+        "start": 221,
+        "end": 222,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 228,
+        "end": 229,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 230,
+    "end": 252,
+    "children": [
+     {
+      "type": "dotted_key",
+      "start": 230,
+      "end": 241,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 230,
+        "end": 235,
+        "text": "fruit"
+       },
+       {
+        "type": ".",
+        "start": 235,
+        "end": 236,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 236,
+        "end": 241,
+        "text": "color"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 242,
+      "end": 243,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 244,
+      "end": 252,
+      "children": [
+       {
+        "type": "\"",
+        "start": 244,
+        "end": 245,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 251,
+        "end": 252,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 253,
+    "end": 281,
+    "children": [
+     {
+      "type": "dotted_key",
+      "start": 253,
+      "end": 271,
+      "children": [
+       {
+        "type": "dotted_key",
+        "start": 253,
+        "end": 265,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 253,
+          "end": 258,
+          "text": "fruit"
+         },
+         {
+          "type": ".",
+          "start": 258,
+          "end": 259,
+          "text": "."
+         },
+         {
+          "type": "bare_key",
+          "start": 259,
+          "end": 265,
+          "text": "flavor"
+         }
+        ]
+       },
+       {
+        "type": ".",
+        "start": 265,
+        "end": 266,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 266,
+        "end": 271,
+        "text": "taste"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 272,
+      "end": 273,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 274,
+      "end": 281,
+      "children": [
+       {
+        "type": "\"",
+        "start": 274,
+        "end": 275,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 280,
+        "end": 281,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 282,
+    "end": 308,
+    "children": [
+     {
+      "type": "dotted_key",
+      "start": 282,
+      "end": 304,
+      "children": [
+       {
+        "type": "dotted_key",
+        "start": 282,
+        "end": 294,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 282,
+          "end": 287,
+          "text": "fruit"
+         },
+         {
+          "type": ".",
+          "start": 287,
+          "end": 288,
+          "text": "."
+         },
+         {
+          "type": "bare_key",
+          "start": 288,
+          "end": 294,
+          "text": "flavor"
+         }
+        ]
+       },
+       {
+        "type": ".",
+        "start": 294,
+        "end": 295,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 295,
+        "end": 304,
+        "text": "intensity"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 305,
+      "end": 306,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 307,
+      "end": 308,
+      "text": "5"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 310,
+    "end": 351,
+    "children": [
+     {
+      "type": "dotted_key",
+      "start": 310,
+      "end": 337,
+      "children": [
+       {
+        "type": "dotted_key",
+        "start": 310,
+        "end": 332,
+        "children": [
+         {
+          "type": "dotted_key",
+          "start": 310,
+          "end": 323,
+          "children": [
+           {
+            "type": "bare_key",
+            "start": 310,
+            "end": 313,
+            "text": "app"
+           },
+           {
+            "type": ".",
+            "start": 313,
+            "end": 314,
+            "text": "."
+           },
+           {
+            "type": "bare_key",
+            "start": 314,
+            "end": 323,
+            "text": "databases"
+           }
+          ]
+         },
+         {
+          "type": ".",
+          "start": 323,
+          "end": 324,
+          "text": "."
+         },
+         {
+          "type": "bare_key",
+          "start": 324,
+          "end": 332,
+          "text": "postgres"
+         }
+        ]
+       },
+       {
+        "type": ".",
+        "start": 332,
+        "end": 333,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 333,
+        "end": 337,
+        "text": "host"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 338,
+      "end": 339,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 340,
+      "end": 351,
+      "children": [
+       {
+        "type": "\"",
+        "start": 340,
+        "end": 341,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 350,
+        "end": 351,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 352,
+    "end": 386,
+    "children": [
+     {
+      "type": "dotted_key",
+      "start": 352,
+      "end": 379,
+      "children": [
+       {
+        "type": "dotted_key",
+        "start": 352,
+        "end": 374,
+        "children": [
+         {
+          "type": "dotted_key",
+          "start": 352,
+          "end": 365,
+          "children": [
+           {
+            "type": "bare_key",
+            "start": 352,
+            "end": 355,
+            "text": "app"
+           },
+           {
+            "type": ".",
+            "start": 355,
+            "end": 356,
+            "text": "."
+           },
+           {
+            "type": "bare_key",
+            "start": 356,
+            "end": 365,
+            "text": "databases"
+           }
+          ]
+         },
+         {
+          "type": ".",
+          "start": 365,
+          "end": 366,
+          "text": "."
+         },
+         {
+          "type": "bare_key",
+          "start": 366,
+          "end": 374,
+          "text": "postgres"
+         }
+        ]
+       },
+       {
+        "type": ".",
+        "start": 374,
+        "end": 375,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 375,
+        "end": 379,
+        "text": "port"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 380,
+      "end": 381,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 382,
+      "end": 386,
+      "text": "5432"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 387,
+    "end": 432,
+    "children": [
+     {
+      "type": "dotted_key",
+      "start": 387,
+      "end": 427,
+      "children": [
+       {
+        "type": "dotted_key",
+        "start": 387,
+        "end": 417,
+        "children": [
+         {
+          "type": "dotted_key",
+          "start": 387,
+          "end": 409,
+          "children": [
+           {
+            "type": "dotted_key",
+            "start": 387,
+            "end": 400,
+            "children": [
+             {
+              "type": "bare_key",
+              "start": 387,
+              "end": 390,
+              "text": "app"
+             },
+             {
+              "type": ".",
+              "start": 390,
+              "end": 391,
+              "text": "."
+             },
+             {
+              "type": "bare_key",
+              "start": 391,
+              "end": 400,
+              "text": "databases"
+             }
+            ]
+           },
+           {
+            "type": ".",
+            "start": 400,
+            "end": 401,
+            "text": "."
+           },
+           {
+            "type": "bare_key",
+            "start": 401,
+            "end": 409,
+            "text": "postgres"
+           }
+          ]
+         },
+         {
+          "type": ".",
+          "start": 409,
+          "end": 410,
+          "text": "."
+         },
+         {
+          "type": "bare_key",
+          "start": 410,
+          "end": 417,
+          "text": "options"
+         }
+        ]
+       },
+       {
+        "type": ".",
+        "start": 417,
+        "end": 418,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 418,
+        "end": 427,
+        "text": "pool_size"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 428,
+      "end": 429,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 430,
+      "end": 432,
+      "text": "10"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 434,
+    "end": 489,
+    "children": [
+     {
+      "type": "dotted_key",
+      "start": 434,
+      "end": 443,
+      "children": [
+       {
+        "type": "dotted_key",
+        "start": 434,
+        "end": 441,
+        "children": [
+         {
+          "type": "dotted_key",
+          "start": 434,
+          "end": 439,
+          "children": [
+           {
+            "type": "dotted_key",
+            "start": 434,
+            "end": 437,
+            "children": [
+             {
+              "type": "bare_key",
+              "start": 434,
+              "end": 435,
+              "text": "a"
+             },
+             {
+              "type": ".",
+              "start": 435,
+              "end": 436,
+              "text": "."
+             },
+             {
+              "type": "bare_key",
+              "start": 436,
+              "end": 437,
+              "text": "b"
+             }
+            ]
+           },
+           {
+            "type": ".",
+            "start": 437,
+            "end": 438,
+            "text": "."
+           },
+           {
+            "type": "bare_key",
+            "start": 438,
+            "end": 439,
+            "text": "c"
+           }
+          ]
+         },
+         {
+          "type": ".",
+          "start": 439,
+          "end": 440,
+          "text": "."
+         },
+         {
+          "type": "bare_key",
+          "start": 440,
+          "end": 441,
+          "text": "d"
+         }
+        ]
+       },
+       {
+        "type": ".",
+        "start": 441,
+        "end": 442,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 442,
+        "end": 443,
+        "text": "e"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 444,
+      "end": 445,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 446,
+      "end": 489,
+      "children": [
+       {
+        "type": "\"",
+        "start": 446,
+        "end": 447,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 488,
+        "end": 489,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

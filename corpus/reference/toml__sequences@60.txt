@@ -1,0 +1,61 @@
+# Long sequences: the array is the one construct in TOML that overflows a line.
+# Flat arrays of scalars force the single-line-vs-broken decision at both widths.
+
+hosts = [
+  "alpha.example.com",
+  "beta.example.com",
+  "gamma.example.com",
+  "delta.example.com",
+  "epsilon.example.com",
+]
+
+ports = [
+  8080,
+  8081,
+  8082,
+  8083,
+  8084,
+  8085,
+  8086,
+  8087,
+  8088,
+  8089,
+]
+
+flags = [
+  "verbose",
+  "quiet",
+  "debug",
+  "trace",
+  "json",
+  "yaml",
+  "color",
+  "no-color",
+  "ansi",
+  "no-ansi",
+]
+
+regions = [
+  "us-east-1",
+  "us-west-2",
+  "eu-west-1",
+  "ap-southeast-1",
+  "sa-east-1",
+  "ap-northeast-1",
+  "eu-central-1",
+]
+
+keywords = [
+  "alpha",
+  "beta",
+  "gamma",
+  "delta",
+  "epsilon",
+  "zeta",
+  "eta",
+  "theta",
+  "iota",
+  "kappa",
+  "lambda",
+  "mu",
+]
