@@ -371,10 +371,26 @@ Named precisely, because a limit you can name is cheaper than one you can't.
 [PASS] 2-idempotence    30/30   fmt(fmt(x)) == fmt(x)
 [PASS] 3-nondestruction 30/30   meaning and comments preserved
 
-overflow lines     6            (black's own, at 88: 0)
+overflow lines     6            (black's own: 4)
 size (gzip)        10196 B = 8080 runtime + 2116 packages
-black agreement    11/12        (strings.py, on quote style alone)
+black agreement    20/24        (chains@60, kitchen@60, operators@60, strings@88)
 ```
+
+The black-agreement figure is worse than this document used to claim, and the
+reason is worth keeping. The submission scored it at width 88 only, where
+`strings.py` was the single miss and quote style was the whole story. main's
+scorer measures both widths, and at 60 three more files diverge. Each one is a
+limit already named under "What this design cannot do", and between them they
+cover three different ones: `chains` is the method spine breaking inside a
+call's brackets rather than at the dots; `operators` is tree-sitter's bitwise
+associativity putting the split somewhere black does not; and `kitchen` is the
+missing `conditionalGroup` — black breaks into a call's arguments where we
+parenthesise the whole condition, and choosing between those two layouts is
+exactly the thing this IR cannot do.
+
+Nothing regressed here. A narrower measurement had been flattering the result,
+and three of the four documented limits turn out to be reachable from a
+twelve-file corpus the moment the second width is scored.
 
 Against the 25 KB budget that is 10.2 KB, and I will repeat the proposal's
 claim: **size is not the binding constraint** for any design in this space.
