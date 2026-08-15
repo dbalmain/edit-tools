@@ -259,15 +259,9 @@ def score(
         "3-nondestruction": _gate(nondestructive, total, "meaning and comments preserved"),
     }
 
-    js_bytes = gzipped_tree(submission / "runtime-js" / "bundle.js")
-    pkg_bytes = gzipped_tree(submission / "packages")
     rep.measures = {
         "4-overflow-lines": overflow,
-        "5-size-gzip": {
-            "js-runtime": js_bytes,
-            "packages": pkg_bytes,
-            "total": js_bytes + pkg_bytes,
-        },
+        "5-size-gzip": sizes(submission, manifests),
         "6-reference-agreement": reference_agreement(submission, trees),
     }
     rep.detail = notes if verbose else notes[:20]
@@ -276,6 +270,33 @@ def score(
 
 def _gate(got: int, total: int, what: str) -> dict:
     return {"pass": got == total, "got": got, "of": total, "what": what}
+
+
+def sizes(submission: Path, manifests: dict[str, mf.Manifest]) -> dict:
+    """Gzipped bytes, broken down per language package.
+
+    Fifteen packages would dominate a single total and punish language 15 for
+    arriving late, so the number a language is judged on is **runtime + its own
+    package**. The all-languages total is reported alongside, as information.
+    `per_language` is what LEDGER.md's attribution column is filled in from; a
+    lump figure makes that table useless.
+    """
+    js_bytes = gzipped_tree(submission / "runtime-js" / "bundle.js")
+    per_language = {}
+    for name in sorted(manifests):
+        path = submission / "packages" / f"{name}.json"
+        if path.is_file():
+            per_language[name] = {
+                "package": gzipped(path),
+                "with_runtime": js_bytes + gzipped(path),
+            }
+    all_packages = gzipped_tree(submission / "packages")
+    return {
+        "js-runtime": js_bytes,
+        "packages": all_packages,
+        "total": js_bytes + all_packages,
+        "per_language": per_language,
+    }
 
 
 def reference_agreement(
@@ -363,6 +384,9 @@ def main() -> int:
     print(f"\n  overflow lines     {m['4-overflow-lines']}")
     print(f"  size (gzip)        {size['total']} B "
           f"= {size['js-runtime']} runtime + {size['packages']} packages")
+    for lang, s in size["per_language"].items():
+        print(f"    {lang:10} {s['package']:>6} B package"
+              f"  -> {s['with_runtime']} B with runtime")
     print(f"  reference agreement {ra['matched']}/{ra['of']}")
     for lang, e in sorted(ra["by_language"].items()):
         waived = "  [width waived]" if e["waived"] else ""

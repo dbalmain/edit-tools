@@ -19,6 +19,13 @@ Baseline at the start of the exercise: **10,196 B gzip = 8,080 runtime + 2,116
 packages** (python + json), against a 20 KB budget. After any runtime change
 merges, re-score every already-merged language before the next round launches.
 
+`score.py` now reports the per-language breakdown this table is filled in from —
+**python 1,983 B, json 353 B**, and "runtime + this language's own package" for
+each. Note those do not sum to 2,116: gzipping the packages together shares a
+dictionary between them, so the combined figure is smaller than the parts. Fill
+the `gzip Δ` column from the per-language number, and expect the all-languages
+total to drift below the sum as the packages start to look alike.
+
 The 20 KB figure is **soft**. Dave's rule: if we go over, the question is which
 language features cost the bytes — so the `gzip Δ` column above must be per-edit
 and attributable to a named construct, never a per-slice lump. That attribution
