@@ -51,9 +51,54 @@ pattern.
 The comparison Dave asked for. One row per attempt, not per language — an
 escalation adds a row.
 
-| Language | Agent | Stage | Wall-clock | Verdict | Gate 4 | Runtime edits | Gates honest? | Done-note | Notes |
-| -------- | ----- | ----- | ---------- | ------- | ------ | ------------- | ------------- | --------- | ----- |
-|          |       |       |            |         |        |               |               |           |       |
+| Language | Agent    | Stage | Wall-clock | Verdict         | Shared files | Gates honest?             | Done-note        | Notes                                                                                                                                                        |
+| -------- | -------- | ----- | ---------- | --------------- | ------------ | ------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| TOML     | grok     | A     | ~13 min    | pass with fixes | none         | yes                       | full, structured | 4 commits = 4 green boundaries. Found `--no-auto-config`; found the comment-alignment design limit. Reported the harness defect, refused to fix it.          |
+| TOML     | DeepSeek | A     | ~18 min    | pass with fixes | none         | yes                       | full, structured | Richest reference-behaviour list. Corpus written pre-formatted, so 7/14 files were a no-op. Proposed the harness fix precisely.                              |
+| TOML     | Luna     | A     | ~21 min    | **rework**      | 2            | yes, but **misdisclosed** | thin             | `tomllib` gate 3, strictly weaker (11/11 adversarial). Edited `manifest.py`+`score.py`, then reported "no changes outside corpus". Dropped after this round. |
+| TOML     | Terra    | A     | ~15 min    | (not reviewed)  | none         | yes                       | thin             | Also chose `tomllib`, 32 mutations vs 54/56. Same trap as Luna → treated as a brief defect and fixed in the template.                                        |
+
+Round 1 was a head-to-head: all four built TOML from the identical brief.
+
+**The single most useful result is that two of four independently chose a
+`tomllib` gate-3 override.** Both codex variants did; grok and DeepSeek both
+considered it and rejected it in writing. The reviewer then proved the override
+accepts 11 of 11 data-preserving document rewrites that the default rejects. It
+would be easy to score this as "the codex variants are weaker" — but the brief
+never stated that an override must be _strictly stronger_ than the default, and
+the harness's own `check_gate3.py` actively certified the weak override as
+equivalent. **Two independent agents falling into the same hole is evidence
+about the hole.** Scored as a brief defect, fixed in `corpus-brief.md`; the
+models are not penalised for it.
+
+What genuinely separates them, on one language and therefore weakly:
+
+- **Disclosure.** Luna's "no changes outside corpus" was false against its own
+  diff. That is the only entry here scored against the model rather than the
+  brief — it is a candour signal, not a capability one, and it is why the brief
+  now requires pasting `git diff --stat` verbatim rather than asserting a
+  negative.
+- **Done-note quality.** grok and DeepSeek reported their own findings and
+  divergences unprompted; both codex variants produced thin notes whose analysis
+  _was_ present in the committed report. That is a reporting defect rather than
+  an analysis defect, and the milder of the two.
+- **Cost.** Luna's log ran to 1 MB and Terra's to 543 KB, against grok's 4.5 KB,
+  for comparable or worse artefacts.
+
+### Reviewer lane
+
+From round 2, stage-B and stage-D reviews run on **codex-Sol** (`gpt-5.6-sol`,
+effort `high`) rather than Opus subagents. Round 1's three Opus reviews cost
+~280 K tokens and the projection over thirteen remaining languages was ~2.5 M,
+which does not fit. Reviews are not being cut back — every significant finding
+in round 1 came from a reviewer, not a builder — they are moving off Claude
+quota.
+
+Opus subagents are now reserved for **central changes to `main`** (a wrong fix
+there costs all fifteen languages) and a **final sweep before Fable**.
+
+A reviewer must never be the same family as the builder: Sol does not review
+codex-built slices. Terra's work goes to grok or Opus.
 
 Columns worth being precise about:
 
