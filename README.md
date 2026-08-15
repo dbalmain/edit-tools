@@ -21,6 +21,9 @@ either runtime. The highlighter is not started.
 
 - [DESIGN.md](DESIGN.md) — how the formatter works, what it cannot do, and the
   measured scores. Start here.
+- [docs/house-style.md](docs/house-style.md) — what we optimise for when we
+  differ from the canonical formatter, and why some divergences are the design
+  working rather than defects.
 - [docs/roadmap.md](docs/roadmap.md) — what is in flight, what is deferred, and
   the trigger that reopens each deferral.
 - [docs/injection.md](docs/injection.md) — one document, several languages

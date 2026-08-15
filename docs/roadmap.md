@@ -218,6 +218,30 @@ Deliberately **not** applied by the probe agent, which was right: a central
 change has to be re-decided against the whole roster anyway, and a precise
 description costs nothing to apply.
 
+## 10. Intentional divergence is not representable — **next, and it blocks round 2**
+
+_Raised 2026-08-16 by the house-style decision, not by the review._
+
+[house-style.md](house-style.md) makes some divergences from the reference
+**deliberate**: the tie-break when we differ is readability and then consistency
+across languages, because the product is a snippet in a box rather than a CI
+formatter. That is a goals-level change and the harness cannot express it.
+
+Today the scorer reports one agreement number and `review-brief.md` sets a 70%
+floor with an instruction to be suspicious of a package that beats its
+reference. So a package that follows the house style **scores worse for being
+right**, and a stage-D reviewer following the brief would file the house rule as
+a defect and drive it back toward the reference. Nothing records why a
+divergence was intended, so the next agent re-litigates it.
+
+Needed: intentional divergence declared per language with a reason, reported
+separately by `score.py`, with the 70% floor applying to unexplained divergence
+only. Until then the JSON numbers are provisional, and nobody should drive them
+up by removing house style.
+
+This is a central change, so it belongs on `main` before round 2 opens — every
+language after this one will have house rules.
+
 ## 8. The highlighter is 0% derisked — **now, pilot in flight**
 
 The project is named for two halves and only one exists. Everything built, and

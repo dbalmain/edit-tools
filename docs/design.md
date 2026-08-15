@@ -23,8 +23,22 @@ project is the thing on the other end of that shape.
    breaking against a width budget. This is a deliberate departure from Topiary
    — see [Why not Topiary's model](#why-not-topiarys-model).
 
+5. **Readable output first, faithful output second.** The target is a snippet in
+   a box — a blog editor on the web, an editing field in a TUI. Matching the
+   canonical formatter is how we get a cheap external standard of readability,
+   not the goal itself. Where we differ, the tie-break is readability and then
+   **consistency across languages**: JavaScript coming out looking a little more
+   like Kotlin than a JS developer expects is an acceptable price for a small
+   runtime and one predictable layout discipline. See
+   [house-style.md](house-style.md), which is where the concrete rules live.
+
 ## Non-goals
 
+- **A drop-in replacement for the formatter a project runs in CI**, or for the
+  one in your editor. Those are judged on leaving a clean diff against what a
+  team already agreed; we are judged on whether the thing in the box reads well.
+  This is why some divergences from the reference are the design working rather
+  than defects.
 - Being a general parser generator. If a language needs a bespoke parser, that
   is acceptable.
 - Supporting every language on day one.
@@ -196,14 +210,14 @@ exactly — the highest divergence risk and the best fuzz story.
 **Note on C (August 2026).** All three Phase 1 proposals rejected bytecode.
 Codex, asked directly afterwards, confirmed its rejection was **scoped to the
 competition, not the real system** — the frozen 15-file corpus rewarded rapid,
-inspectable coverage and gave no credit for a VM's verification and
-amortisation properties. Treat C as open, with the following corrections to how
-it is usually argued.
+inspectable coverage and gave no credit for a VM's verification and amortisation
+properties. Treat C as open, with the following corrections to how it is usually
+argued.
 
-**"A VM is the smallest runtime" is too strong.** A VM replaces only the *rule
-evaluator*. The Doc renderer, CST access, comment handling and token accounting
+**"A VM is the smallest runtime" is too strong.** A VM replaces only the _rule
+evaluator_. The Doc renderer, CST access, comment handling and token accounting
 remain either way, so a specialised schema walker can be smaller than a
-sufficiently *safe* general VM. What C actually costs is scope, not bytes: an
+sufficiently _safe_ general VM. What C actually costs is scope, not bytes: an
 authoring language and compiler, bytecode validation, diagnostics, resource
 bounds and versioning, identical stack and control-flow semantics defined twice,
 preserving the linearity invariant through arbitrary control flow, and testing
@@ -220,7 +234,7 @@ space.
 on characters, lexer state, lookahead and token emission; formatter programs on
 CST values, selectors, comments and Doc construction. The host operations and
 safety invariants genuinely differ, and the scanner instruction set should not
-be distorted to force sharing. What *can* be shared, if designed for
+be distorted to force sharing. What _can_ be shared, if designed for
 deliberately, is one small typed VM core: decoding, stack and control flow,
 validation, instruction budgeting, package versioning, and the two-runtime
 differential harness — with separate typed host-op sets on top. That makes a
@@ -229,7 +243,7 @@ committed, "same execution core, separate host operations" becomes the default
 candidate rather than a stretch.
 
 **Fuzzability is a real advantage, and narrower than claimed.** Randomly
-generated *well-typed* bytecode is excellent at finding interpreter divergence.
+generated _well-typed_ bytecode is excellent at finding interpreter divergence.
 Random bytes mostly exercise rejection paths, and interpreter agreement tests
 neither compiler correctness, formatting policy, semantic preservation, nor
 idempotence — so source-level differential and property tests remain necessary
@@ -239,15 +253,16 @@ regardless.
 
 1. the scanner VM is already committed;
 2. adding formatting costs no more than ~1 KB gzipped of additional runtime;
-3. across eight representative languages, compiled bytecode saves at least
-   0.5 KB gzipped per formatter package against schemas; and
+3. across eight representative languages, compiled bytecode saves at least 0.5
+   KB gzipped per formatter package against schemas; and
 4. CI differentially fuzzes well-typed bytecode in both interpreters, alongside
    end-to-end semantic-preservation and idempotence tests.
 
-The economic test is `language count x per-package saving > incremental shared
-runtime cost`, adjusted for how many packages a client actually downloads —
-supporting thirty languages does not mean any client fetches thirty, so client
-transfer cost depends on usage even though CDN aggregate size does not.
+The economic test is
+`language count x per-package saving > incremental shared runtime cost`,
+adjusted for how many packages a client actually downloads — supporting thirty
+languages does not mean any client fetches thirty, so client transfer cost
+depends on usage even though CDN aggregate size does not.
 
 **D. Constraint solver.** Encode layout as cost minimisation (Google's `rfmt`,
 or "A Pretty Expressive Printer", POPL 2023). Provably optimal output; `O(n·w)`
