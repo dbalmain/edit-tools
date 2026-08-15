@@ -147,54 +147,9 @@ mod tests {
 
     use super::*;
 
-    const PYTHON_PACKAGE: &str = r#"
-        {
-          "format": "et-highlight/1",
-          "scopes": [
-            "string", "number", "keyword", "operator", "function", "type",
-            "variable", "parameter", "property", "punctuation", "error"
-          ],
-          "operator": ["+", "*", "**", "="],
-          "punctuation": ["(", ")", "[", "]", "{", "}", ",", ":", "."],
-          "leaf": {
-            "identifier": "variable",
-            "integer": "number",
-            "string_content": "string"
-          },
-          "context": [
-            {
-              "parent": "call", "field": "function", "type": "identifier",
-              "scope": "function"
-            },
-            {
-              "parent": "attribute", "field": "attribute",
-              "parent_field": "function", "type": "identifier",
-              "scope": "function"
-            },
-            {
-              "parent": "function_definition", "field": "name",
-              "type": "identifier", "scope": "function"
-            },
-            { "ancestor": "type", "type": "identifier", "scope": "type" },
-            { "parent": "parameters", "type": "identifier", "scope": "parameter" },
-            {
-              "parent": "list_splat_pattern", "type": "identifier",
-              "scope": "parameter"
-            },
-            {
-              "parent": "dictionary_splat_pattern", "type": "identifier",
-              "scope": "parameter"
-            },
-            {
-              "parent": "attribute", "field": "attribute",
-              "type": "identifier", "scope": "property"
-            }
-          ]
-        }
-    "#;
-
     fn package() -> Package {
-        Package::load(PYTHON_PACKAGE).expect("test package loads")
+        let raw = include_str!("../../packages/python.highlight.json");
+        Package::load(raw).expect("shipped Python package loads")
     }
 
     fn tree(raw: &str) -> TreeDoc {

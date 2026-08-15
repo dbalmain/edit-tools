@@ -129,52 +129,14 @@ impl Package {
 mod tests {
     use super::*;
 
-    const JSON_PACKAGE: &str = r#"
-        {
-          "format": "et-highlight/1",
-          "grammar": { "name": "tree-sitter-json" },
-          "scopes": [
-            "string",
-            "string.escape",
-            "number",
-            "constant",
-            "property",
-            "punctuation",
-            "error"
-          ],
-          "leaf": {
-            "string_content": "string",
-            "escape_sequence": "string.escape",
-            "number": "number",
-            "true": "constant",
-            "false": "constant",
-            "null": "constant",
-            "{": "punctuation",
-            "}": "punctuation",
-            "[": "punctuation",
-            "]": "punctuation",
-            ",": "punctuation",
-            ":": "punctuation",
-            "\"": "punctuation"
-          },
-          "context": [
-            {
-              "parent": "string",
-              "parent_field": "key",
-              "type": "string_content",
-              "scope": "property"
-            }
-          ]
-        }
-    "#;
-
     fn load(raw: serde_json::Value) -> Result<Package, LoadError> {
         Package::load(&raw.to_string())
     }
 
     #[test]
     fn loads_the_json_package_from_the_design() {
-        let package = Package::load(JSON_PACKAGE).expect("documented package loads");
+        let raw = include_str!("../../packages/json.highlight.json");
+        let package = Package::load(raw).expect("shipped JSON package loads");
         assert!(package.scopes.contains("string.escape"));
         assert_eq!(package.leaf["string_content"], "string");
         assert_eq!(package.context.len(), 1);

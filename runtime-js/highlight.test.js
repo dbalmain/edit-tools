@@ -12,31 +12,9 @@ const { highlight, loadPackage, Refusal } = require("./highlight.js");
 const root = path.join(__dirname, "..");
 const rust = path.join(root, "rust", "target", "release", "hl-rust");
 
-const pythonPackage = {
-  format: "et-highlight/1",
-  scopes: [
-    "string", "number", "keyword", "operator", "function", "type",
-    "variable", "parameter", "property", "punctuation", "error",
-  ],
-  operator: ["+", "*", "**", "="],
-  punctuation: ["(", ")", "[", "]", "{", "}", ",", ":", "."],
-  leaf: { identifier: "variable", integer: "number", string_content: "string" },
-  context: [
-    { parent: "call", field: "function", type: "identifier", scope: "function" },
-    {
-      parent: "attribute", field: "attribute", parent_field: "function",
-      type: "identifier", scope: "function",
-    },
-    {
-      parent: "function_definition", field: "name", type: "identifier", scope: "function",
-    },
-    { ancestor: "type", type: "identifier", scope: "type" },
-    { parent: "parameters", type: "identifier", scope: "parameter" },
-    { parent: "list_splat_pattern", type: "identifier", scope: "parameter" },
-    { parent: "dictionary_splat_pattern", type: "identifier", scope: "parameter" },
-    { parent: "attribute", field: "attribute", type: "identifier", scope: "property" },
-  ],
-};
+const pythonPackage = JSON.parse(
+  fs.readFileSync(path.join(root, "packages", "python.highlight.json"), "utf8"),
+);
 
 const pkg = loadPackage(pythonPackage);
 
