@@ -107,6 +107,8 @@ anything but arity.
 {
   "format": "et-doc-rules/1",
   "indent": 4,
+  "comment_gap": 2,
+  "blank_cap": 2,
   "tokens": ["(", ")", ",", ":", "and", "or", "def", …],
   "comments": ["comment"],
   "descend": ["block"],
@@ -124,6 +126,14 @@ future package cannot be silently misread by an older runtime.
 punctuation and keywords rather than content. `named` is defined as "not one of
 these". `comments` and `descend` drive comment attachment; `optional_parens` and
 `precedence` drive `autoparen` and `flatten`.
+
+`comment_gap` chooses how many spaces precede a trailing comment, and
+`blank_cap` limits the source blank lines preserved next to a comment. Both
+default to 1 because prettier is the reference for most languages on the roster;
+black is the outlier, so Python asks for 2 explicitly. They are bounded counts,
+not strings, because packages may choose whitespace quantities but may not emit
+arbitrary text. `blank_cap` applies only inside runtime-owned comment attachment;
+the `blank` opcode's operand still governs gaps between items visible to a rule.
 
 ### A rule, read end to end
 
