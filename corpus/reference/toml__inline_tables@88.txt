@@ -1,0 +1,16 @@
+# Inline tables never reflow, even when they overflow the column. Arrays
+# *inside* them do, which is the only way an inline table becomes multi-line.
+
+empty = {}
+point = { x = 1, y = 2 }
+compact_was = { a = 1, b = 2 }
+pkg = { name = "foo", version = "1.0.0", edition = "2021" }
+overflows = { owner = "platform-engineering", contact = "ops@example.com", region = "us-east-1", replica = true }
+nested = { x = 1, y = 2, origin = { r = 0, theta = 0 } }
+with_array = { name = "primary-server", tags = [
+  "primary",
+  "us-east",
+  "canary",
+  "production",
+  "staging",
+] }

@@ -1,0 +1,224 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/blank_lines.toml",
+ "source": "# Blank lines are the only grouping TOML has between pairs. taplo caps\n# consecutive blanks at 2 (allowed_blank_lines) and leaves 0 and 1 alone.\n\npacked = 1\nalso_packed = 2\n\none_blank = 3\n\ntwo_blanks = 4\n\n\nthree_should_become_two = 5\n\n\n\nafter_three = 6\n\n[next]\n\n\nstill_capped = 7\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 280,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 70,
+    "text": "# Blank lines are the only grouping TOML has between pairs. taplo caps"
+   },
+   {
+    "type": "comment",
+    "start": 71,
+    "end": 144,
+    "text": "# consecutive blanks at 2 (allowed_blank_lines) and leaves 0 and 1 alone."
+   },
+   {
+    "type": "pair",
+    "start": 146,
+    "end": 156,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 146,
+      "end": 152,
+      "text": "packed"
+     },
+     {
+      "type": "=",
+      "start": 153,
+      "end": 154,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 155,
+      "end": 156,
+      "text": "1"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 157,
+    "end": 172,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 157,
+      "end": 168,
+      "text": "also_packed"
+     },
+     {
+      "type": "=",
+      "start": 169,
+      "end": 170,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 171,
+      "end": 172,
+      "text": "2"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 174,
+    "end": 187,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 174,
+      "end": 183,
+      "text": "one_blank"
+     },
+     {
+      "type": "=",
+      "start": 184,
+      "end": 185,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 186,
+      "end": 187,
+      "text": "3"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 189,
+    "end": 203,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 189,
+      "end": 199,
+      "text": "two_blanks"
+     },
+     {
+      "type": "=",
+      "start": 200,
+      "end": 201,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 202,
+      "end": 203,
+      "text": "4"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 206,
+    "end": 233,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 206,
+      "end": 229,
+      "text": "three_should_become_two"
+     },
+     {
+      "type": "=",
+      "start": 230,
+      "end": 231,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 232,
+      "end": 233,
+      "text": "5"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 237,
+    "end": 252,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 237,
+      "end": 248,
+      "text": "after_three"
+     },
+     {
+      "type": "=",
+      "start": 249,
+      "end": 250,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 251,
+      "end": 252,
+      "text": "6"
+     }
+    ]
+   },
+   {
+    "type": "table",
+    "start": 254,
+    "end": 280,
+    "children": [
+     {
+      "type": "[",
+      "start": 254,
+      "end": 255,
+      "text": "["
+     },
+     {
+      "type": "bare_key",
+      "start": 255,
+      "end": 259,
+      "text": "next"
+     },
+     {
+      "type": "]",
+      "start": 259,
+      "end": 260,
+      "text": "]"
+     },
+     {
+      "type": "pair",
+      "start": 263,
+      "end": 279,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 263,
+        "end": 275,
+        "text": "still_capped"
+       },
+       {
+        "type": "=",
+        "start": 276,
+        "end": 277,
+        "text": "="
+       },
+       {
+        "type": "integer",
+        "start": 278,
+        "end": 279,
+        "text": "7"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

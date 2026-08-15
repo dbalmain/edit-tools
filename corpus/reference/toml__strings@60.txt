@@ -1,0 +1,23 @@
+basic = "hello"
+literal = 'C:\Users\foo\file.toml'
+empty_basic = ""
+empty_literal = ''
+escaped = "quote \" backslash \\ newline \n tab \t"
+need_basic = "has 'single' quotes"
+need_literal = 'has "double" quotes'
+regex = '\d+\.\d+'
+hash_is_not_a_comment = "not a # comment"
+unicode = "café"
+astral = "🙂🙂🙂🙂🙂🙂 counted as scalar values, not UTF-16 code units"
+long_basic = "this is a very long string literal that must never be reflowed by the formatter"
+
+multiline_basic = """
+The quick brown fox
+  stays indented
+and a hash # is still a string
+"""
+
+multiline_literal = '''
+raw \n is not an escape
+a quote " is fine
+'''

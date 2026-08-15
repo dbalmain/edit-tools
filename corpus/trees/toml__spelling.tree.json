@@ -1,0 +1,1061 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/spelling.toml",
+ "source": "# The same data, written every legal way. taplo must not collapse these:\n# a formatter that turned [a.b] into [a][b] (or inline into a header)\n# would be making a semantic-ish choice the IR is not meant to make.\n\n# 1. dotted table header vs nested headers\n[spelling.dotted]\nx = 1\n\n[spelling.nested]\n[spelling.nested.child]\nx = 1\n\n# 2. inline table vs table header\ninline = { name = \"foo\", version = \"1.0.0\" }\n\n[as_table]\nname = \"foo\"\nversion = \"1.0.0\"\n\n# 3. array of tables vs array of inline tables\nas_inline_array = [{ host = \"a\", port = 1 }, { host = \"b\", port = 2 }]\n\n[[as_table_array]]\nhost = \"a\"\nport = 1\n\n[[as_table_array]]\nhost = \"b\"\nport = 2\n\n# 4. dotted keys vs a table of the same path\ndotted.host = \"localhost\"\ndotted.port = 8080\n\n[explicit]\nhost = \"localhost\"\nport = 8080\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 785,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 72,
+    "text": "# The same data, written every legal way. taplo must not collapse these:"
+   },
+   {
+    "type": "comment",
+    "start": 73,
+    "end": 142,
+    "text": "# a formatter that turned [a.b] into [a][b] (or inline into a header)"
+   },
+   {
+    "type": "comment",
+    "start": 143,
+    "end": 211,
+    "text": "# would be making a semantic-ish choice the IR is not meant to make."
+   },
+   {
+    "type": "comment",
+    "start": 213,
+    "end": 255,
+    "text": "# 1. dotted table header vs nested headers"
+   },
+   {
+    "type": "table",
+    "start": 256,
+    "end": 281,
+    "children": [
+     {
+      "type": "[",
+      "start": 256,
+      "end": 257,
+      "text": "["
+     },
+     {
+      "type": "dotted_key",
+      "start": 257,
+      "end": 272,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 257,
+        "end": 265,
+        "text": "spelling"
+       },
+       {
+        "type": ".",
+        "start": 265,
+        "end": 266,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 266,
+        "end": 272,
+        "text": "dotted"
+       }
+      ]
+     },
+     {
+      "type": "]",
+      "start": 272,
+      "end": 273,
+      "text": "]"
+     },
+     {
+      "type": "pair",
+      "start": 274,
+      "end": 279,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 274,
+        "end": 275,
+        "text": "x"
+       },
+       {
+        "type": "=",
+        "start": 276,
+        "end": 277,
+        "text": "="
+       },
+       {
+        "type": "integer",
+        "start": 278,
+        "end": 279,
+        "text": "1"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table",
+    "start": 281,
+    "end": 299,
+    "children": [
+     {
+      "type": "[",
+      "start": 281,
+      "end": 282,
+      "text": "["
+     },
+     {
+      "type": "dotted_key",
+      "start": 282,
+      "end": 297,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 282,
+        "end": 290,
+        "text": "spelling"
+       },
+       {
+        "type": ".",
+        "start": 290,
+        "end": 291,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 291,
+        "end": 297,
+        "text": "nested"
+       }
+      ]
+     },
+     {
+      "type": "]",
+      "start": 297,
+      "end": 298,
+      "text": "]"
+     }
+    ]
+   },
+   {
+    "type": "table",
+    "start": 299,
+    "end": 410,
+    "children": [
+     {
+      "type": "[",
+      "start": 299,
+      "end": 300,
+      "text": "["
+     },
+     {
+      "type": "dotted_key",
+      "start": 300,
+      "end": 321,
+      "children": [
+       {
+        "type": "dotted_key",
+        "start": 300,
+        "end": 315,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 300,
+          "end": 308,
+          "text": "spelling"
+         },
+         {
+          "type": ".",
+          "start": 308,
+          "end": 309,
+          "text": "."
+         },
+         {
+          "type": "bare_key",
+          "start": 309,
+          "end": 315,
+          "text": "nested"
+         }
+        ]
+       },
+       {
+        "type": ".",
+        "start": 315,
+        "end": 316,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 316,
+        "end": 321,
+        "text": "child"
+       }
+      ]
+     },
+     {
+      "type": "]",
+      "start": 321,
+      "end": 322,
+      "text": "]"
+     },
+     {
+      "type": "pair",
+      "start": 323,
+      "end": 328,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 323,
+        "end": 324,
+        "text": "x"
+       },
+       {
+        "type": "=",
+        "start": 325,
+        "end": 326,
+        "text": "="
+       },
+       {
+        "type": "integer",
+        "start": 327,
+        "end": 328,
+        "text": "1"
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 330,
+      "end": 363,
+      "text": "# 2. inline table vs table header"
+     },
+     {
+      "type": "pair",
+      "start": 364,
+      "end": 408,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 364,
+        "end": 370,
+        "text": "inline"
+       },
+       {
+        "type": "=",
+        "start": 371,
+        "end": 372,
+        "text": "="
+       },
+       {
+        "type": "inline_table",
+        "start": 373,
+        "end": 408,
+        "children": [
+         {
+          "type": "{",
+          "start": 373,
+          "end": 374,
+          "text": "{"
+         },
+         {
+          "type": "pair",
+          "start": 375,
+          "end": 387,
+          "children": [
+           {
+            "type": "bare_key",
+            "start": 375,
+            "end": 379,
+            "text": "name"
+           },
+           {
+            "type": "=",
+            "start": 380,
+            "end": 381,
+            "text": "="
+           },
+           {
+            "type": "string",
+            "start": 382,
+            "end": 387,
+            "children": [
+             {
+              "type": "\"",
+              "start": 382,
+              "end": 383,
+              "text": "\""
+             },
+             {
+              "type": "\"",
+              "start": 386,
+              "end": 387,
+              "text": "\""
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 387,
+          "end": 388,
+          "text": ","
+         },
+         {
+          "type": "pair",
+          "start": 389,
+          "end": 406,
+          "children": [
+           {
+            "type": "bare_key",
+            "start": 389,
+            "end": 396,
+            "text": "version"
+           },
+           {
+            "type": "=",
+            "start": 397,
+            "end": 398,
+            "text": "="
+           },
+           {
+            "type": "string",
+            "start": 399,
+            "end": 406,
+            "children": [
+             {
+              "type": "\"",
+              "start": 399,
+              "end": 400,
+              "text": "\""
+             },
+             {
+              "type": "\"",
+              "start": 405,
+              "end": 406,
+              "text": "\""
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "}",
+          "start": 407,
+          "end": 408,
+          "text": "}"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table",
+    "start": 410,
+    "end": 572,
+    "children": [
+     {
+      "type": "[",
+      "start": 410,
+      "end": 411,
+      "text": "["
+     },
+     {
+      "type": "bare_key",
+      "start": 411,
+      "end": 419,
+      "text": "as_table"
+     },
+     {
+      "type": "]",
+      "start": 419,
+      "end": 420,
+      "text": "]"
+     },
+     {
+      "type": "pair",
+      "start": 421,
+      "end": 433,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 421,
+        "end": 425,
+        "text": "name"
+       },
+       {
+        "type": "=",
+        "start": 426,
+        "end": 427,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 428,
+        "end": 433,
+        "children": [
+         {
+          "type": "\"",
+          "start": 428,
+          "end": 429,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 432,
+          "end": 433,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 434,
+      "end": 451,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 434,
+        "end": 441,
+        "text": "version"
+       },
+       {
+        "type": "=",
+        "start": 442,
+        "end": 443,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 444,
+        "end": 451,
+        "children": [
+         {
+          "type": "\"",
+          "start": 444,
+          "end": 445,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 450,
+          "end": 451,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 453,
+      "end": 499,
+      "text": "# 3. array of tables vs array of inline tables"
+     },
+     {
+      "type": "pair",
+      "start": 500,
+      "end": 570,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 500,
+        "end": 515,
+        "text": "as_inline_array"
+       },
+       {
+        "type": "=",
+        "start": 516,
+        "end": 517,
+        "text": "="
+       },
+       {
+        "type": "array",
+        "start": 518,
+        "end": 570,
+        "children": [
+         {
+          "type": "[",
+          "start": 518,
+          "end": 519,
+          "text": "["
+         },
+         {
+          "type": "inline_table",
+          "start": 519,
+          "end": 543,
+          "children": [
+           {
+            "type": "{",
+            "start": 519,
+            "end": 520,
+            "text": "{"
+           },
+           {
+            "type": "pair",
+            "start": 521,
+            "end": 531,
+            "children": [
+             {
+              "type": "bare_key",
+              "start": 521,
+              "end": 525,
+              "text": "host"
+             },
+             {
+              "type": "=",
+              "start": 526,
+              "end": 527,
+              "text": "="
+             },
+             {
+              "type": "string",
+              "start": 528,
+              "end": 531,
+              "children": [
+               {
+                "type": "\"",
+                "start": 528,
+                "end": 529,
+                "text": "\""
+               },
+               {
+                "type": "\"",
+                "start": 530,
+                "end": 531,
+                "text": "\""
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 531,
+            "end": 532,
+            "text": ","
+           },
+           {
+            "type": "pair",
+            "start": 533,
+            "end": 541,
+            "children": [
+             {
+              "type": "bare_key",
+              "start": 533,
+              "end": 537,
+              "text": "port"
+             },
+             {
+              "type": "=",
+              "start": 538,
+              "end": 539,
+              "text": "="
+             },
+             {
+              "type": "integer",
+              "start": 540,
+              "end": 541,
+              "text": "1"
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 542,
+            "end": 543,
+            "text": "}"
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 543,
+          "end": 544,
+          "text": ","
+         },
+         {
+          "type": "inline_table",
+          "start": 545,
+          "end": 569,
+          "children": [
+           {
+            "type": "{",
+            "start": 545,
+            "end": 546,
+            "text": "{"
+           },
+           {
+            "type": "pair",
+            "start": 547,
+            "end": 557,
+            "children": [
+             {
+              "type": "bare_key",
+              "start": 547,
+              "end": 551,
+              "text": "host"
+             },
+             {
+              "type": "=",
+              "start": 552,
+              "end": 553,
+              "text": "="
+             },
+             {
+              "type": "string",
+              "start": 554,
+              "end": 557,
+              "children": [
+               {
+                "type": "\"",
+                "start": 554,
+                "end": 555,
+                "text": "\""
+               },
+               {
+                "type": "\"",
+                "start": 556,
+                "end": 557,
+                "text": "\""
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 557,
+            "end": 558,
+            "text": ","
+           },
+           {
+            "type": "pair",
+            "start": 559,
+            "end": 567,
+            "children": [
+             {
+              "type": "bare_key",
+              "start": 559,
+              "end": 563,
+              "text": "port"
+             },
+             {
+              "type": "=",
+              "start": 564,
+              "end": 565,
+              "text": "="
+             },
+             {
+              "type": "integer",
+              "start": 566,
+              "end": 567,
+              "text": "2"
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 568,
+            "end": 569,
+            "text": "}"
+           }
+          ]
+         },
+         {
+          "type": "]",
+          "start": 569,
+          "end": 570,
+          "text": "]"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table_array_element",
+    "start": 572,
+    "end": 612,
+    "children": [
+     {
+      "type": "[[",
+      "start": 572,
+      "end": 574,
+      "text": "[["
+     },
+     {
+      "type": "bare_key",
+      "start": 574,
+      "end": 588,
+      "text": "as_table_array"
+     },
+     {
+      "type": "]]",
+      "start": 588,
+      "end": 590,
+      "text": "]]"
+     },
+     {
+      "type": "pair",
+      "start": 591,
+      "end": 601,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 591,
+        "end": 595,
+        "text": "host"
+       },
+       {
+        "type": "=",
+        "start": 596,
+        "end": 597,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 598,
+        "end": 601,
+        "children": [
+         {
+          "type": "\"",
+          "start": 598,
+          "end": 599,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 600,
+          "end": 601,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 602,
+      "end": 610,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 602,
+        "end": 606,
+        "text": "port"
+       },
+       {
+        "type": "=",
+        "start": 607,
+        "end": 608,
+        "text": "="
+       },
+       {
+        "type": "integer",
+        "start": 609,
+        "end": 610,
+        "text": "1"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table_array_element",
+    "start": 612,
+    "end": 743,
+    "children": [
+     {
+      "type": "[[",
+      "start": 612,
+      "end": 614,
+      "text": "[["
+     },
+     {
+      "type": "bare_key",
+      "start": 614,
+      "end": 628,
+      "text": "as_table_array"
+     },
+     {
+      "type": "]]",
+      "start": 628,
+      "end": 630,
+      "text": "]]"
+     },
+     {
+      "type": "pair",
+      "start": 631,
+      "end": 641,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 631,
+        "end": 635,
+        "text": "host"
+       },
+       {
+        "type": "=",
+        "start": 636,
+        "end": 637,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 638,
+        "end": 641,
+        "children": [
+         {
+          "type": "\"",
+          "start": 638,
+          "end": 639,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 640,
+          "end": 641,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 642,
+      "end": 650,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 642,
+        "end": 646,
+        "text": "port"
+       },
+       {
+        "type": "=",
+        "start": 647,
+        "end": 648,
+        "text": "="
+       },
+       {
+        "type": "integer",
+        "start": 649,
+        "end": 650,
+        "text": "2"
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 652,
+      "end": 696,
+      "text": "# 4. dotted keys vs a table of the same path"
+     },
+     {
+      "type": "pair",
+      "start": 697,
+      "end": 722,
+      "children": [
+       {
+        "type": "dotted_key",
+        "start": 697,
+        "end": 708,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 697,
+          "end": 703,
+          "text": "dotted"
+         },
+         {
+          "type": ".",
+          "start": 703,
+          "end": 704,
+          "text": "."
+         },
+         {
+          "type": "bare_key",
+          "start": 704,
+          "end": 708,
+          "text": "host"
+         }
+        ]
+       },
+       {
+        "type": "=",
+        "start": 709,
+        "end": 710,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 711,
+        "end": 722,
+        "children": [
+         {
+          "type": "\"",
+          "start": 711,
+          "end": 712,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 721,
+          "end": 722,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 723,
+      "end": 741,
+      "children": [
+       {
+        "type": "dotted_key",
+        "start": 723,
+        "end": 734,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 723,
+          "end": 729,
+          "text": "dotted"
+         },
+         {
+          "type": ".",
+          "start": 729,
+          "end": 730,
+          "text": "."
+         },
+         {
+          "type": "bare_key",
+          "start": 730,
+          "end": 734,
+          "text": "port"
+         }
+        ]
+       },
+       {
+        "type": "=",
+        "start": 735,
+        "end": 736,
+        "text": "="
+       },
+       {
+        "type": "integer",
+        "start": 737,
+        "end": 741,
+        "text": "8080"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table",
+    "start": 743,
+    "end": 785,
+    "children": [
+     {
+      "type": "[",
+      "start": 743,
+      "end": 744,
+      "text": "["
+     },
+     {
+      "type": "bare_key",
+      "start": 744,
+      "end": 752,
+      "text": "explicit"
+     },
+     {
+      "type": "]",
+      "start": 752,
+      "end": 753,
+      "text": "]"
+     },
+     {
+      "type": "pair",
+      "start": 754,
+      "end": 772,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 754,
+        "end": 758,
+        "text": "host"
+       },
+       {
+        "type": "=",
+        "start": 759,
+        "end": 760,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 761,
+        "end": 772,
+        "children": [
+         {
+          "type": "\"",
+          "start": 761,
+          "end": 762,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 771,
+          "end": 772,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 773,
+      "end": 784,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 773,
+        "end": 777,
+        "text": "port"
+       },
+       {
+        "type": "=",
+        "start": 778,
+        "end": 779,
+        "text": "="
+       },
+       {
+        "type": "integer",
+        "start": 780,
+        "end": 784,
+        "text": "8080"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

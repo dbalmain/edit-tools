@@ -1,0 +1,572 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/keys.toml",
+ "source": "# Every key spelling TOML distinguishes. \"a.b\" and a.b are different keys.\n\nbare = 1\nbare-with-dash = 2\nbare_with_underscore = 3\nbare123 = 4\n1234 = 5\ntrue = false\nfalse = true\ninf = 1\n\"quoted key\" = 6\n\"a.b\" = 7\na.b = 8\n'literal-key' = 9\n\"café\" = 10\n\"key with space\" = 11\n\"quoted\\nescape\" = 12\nsite.\"example.com\".enabled = true\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 328,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 74,
+    "text": "# Every key spelling TOML distinguishes. \"a.b\" and a.b are different keys."
+   },
+   {
+    "type": "pair",
+    "start": 76,
+    "end": 84,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 76,
+      "end": 80,
+      "text": "bare"
+     },
+     {
+      "type": "=",
+      "start": 81,
+      "end": 82,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 83,
+      "end": 84,
+      "text": "1"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 85,
+    "end": 103,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 85,
+      "end": 99,
+      "text": "bare-with-dash"
+     },
+     {
+      "type": "=",
+      "start": 100,
+      "end": 101,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 102,
+      "end": 103,
+      "text": "2"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 104,
+    "end": 128,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 104,
+      "end": 124,
+      "text": "bare_with_underscore"
+     },
+     {
+      "type": "=",
+      "start": 125,
+      "end": 126,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 127,
+      "end": 128,
+      "text": "3"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 129,
+    "end": 140,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 129,
+      "end": 136,
+      "text": "bare123"
+     },
+     {
+      "type": "=",
+      "start": 137,
+      "end": 138,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 139,
+      "end": 140,
+      "text": "4"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 141,
+    "end": 149,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 141,
+      "end": 145,
+      "text": "1234"
+     },
+     {
+      "type": "=",
+      "start": 146,
+      "end": 147,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 148,
+      "end": 149,
+      "text": "5"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 150,
+    "end": 162,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 150,
+      "end": 154,
+      "text": "true"
+     },
+     {
+      "type": "=",
+      "start": 155,
+      "end": 156,
+      "text": "="
+     },
+     {
+      "type": "boolean",
+      "start": 157,
+      "end": 162,
+      "text": "false"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 163,
+    "end": 175,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 163,
+      "end": 168,
+      "text": "false"
+     },
+     {
+      "type": "=",
+      "start": 169,
+      "end": 170,
+      "text": "="
+     },
+     {
+      "type": "boolean",
+      "start": 171,
+      "end": 175,
+      "text": "true"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 176,
+    "end": 183,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 176,
+      "end": 179,
+      "text": "inf"
+     },
+     {
+      "type": "=",
+      "start": 180,
+      "end": 181,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 182,
+      "end": 183,
+      "text": "1"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 184,
+    "end": 200,
+    "children": [
+     {
+      "type": "quoted_key",
+      "start": 184,
+      "end": 196,
+      "children": [
+       {
+        "type": "\"",
+        "start": 184,
+        "end": 185,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 195,
+        "end": 196,
+        "text": "\""
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 197,
+      "end": 198,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 199,
+      "end": 200,
+      "text": "6"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 201,
+    "end": 210,
+    "children": [
+     {
+      "type": "quoted_key",
+      "start": 201,
+      "end": 206,
+      "children": [
+       {
+        "type": "\"",
+        "start": 201,
+        "end": 202,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 205,
+        "end": 206,
+        "text": "\""
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 207,
+      "end": 208,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 209,
+      "end": 210,
+      "text": "7"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 211,
+    "end": 218,
+    "children": [
+     {
+      "type": "dotted_key",
+      "start": 211,
+      "end": 214,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 211,
+        "end": 212,
+        "text": "a"
+       },
+       {
+        "type": ".",
+        "start": 212,
+        "end": 213,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 213,
+        "end": 214,
+        "text": "b"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 215,
+      "end": 216,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 217,
+      "end": 218,
+      "text": "8"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 219,
+    "end": 236,
+    "children": [
+     {
+      "type": "quoted_key",
+      "start": 219,
+      "end": 232,
+      "children": [
+       {
+        "type": "'",
+        "start": 219,
+        "end": 220,
+        "text": "'"
+       },
+       {
+        "type": "'",
+        "start": 231,
+        "end": 232,
+        "text": "'"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 233,
+      "end": 234,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 235,
+      "end": 236,
+      "text": "9"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 237,
+    "end": 249,
+    "children": [
+     {
+      "type": "quoted_key",
+      "start": 237,
+      "end": 244,
+      "children": [
+       {
+        "type": "\"",
+        "start": 237,
+        "end": 238,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 243,
+        "end": 244,
+        "text": "\""
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 245,
+      "end": 246,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 247,
+      "end": 249,
+      "text": "10"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 250,
+    "end": 271,
+    "children": [
+     {
+      "type": "quoted_key",
+      "start": 250,
+      "end": 266,
+      "children": [
+       {
+        "type": "\"",
+        "start": 250,
+        "end": 251,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 265,
+        "end": 266,
+        "text": "\""
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 267,
+      "end": 268,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 269,
+      "end": 271,
+      "text": "11"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 272,
+    "end": 293,
+    "children": [
+     {
+      "type": "quoted_key",
+      "start": 272,
+      "end": 288,
+      "children": [
+       {
+        "type": "\"",
+        "start": 272,
+        "end": 273,
+        "text": "\""
+       },
+       {
+        "type": "escape_sequence",
+        "start": 279,
+        "end": 281,
+        "text": "\\n"
+       },
+       {
+        "type": "\"",
+        "start": 287,
+        "end": 288,
+        "text": "\""
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 289,
+      "end": 290,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 291,
+      "end": 293,
+      "text": "12"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 294,
+    "end": 327,
+    "children": [
+     {
+      "type": "dotted_key",
+      "start": 294,
+      "end": 320,
+      "children": [
+       {
+        "type": "dotted_key",
+        "start": 294,
+        "end": 312,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 294,
+          "end": 298,
+          "text": "site"
+         },
+         {
+          "type": ".",
+          "start": 298,
+          "end": 299,
+          "text": "."
+         },
+         {
+          "type": "quoted_key",
+          "start": 299,
+          "end": 312,
+          "children": [
+           {
+            "type": "\"",
+            "start": 299,
+            "end": 300,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 311,
+            "end": 312,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ".",
+        "start": 312,
+        "end": 313,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 313,
+        "end": 320,
+        "text": "enabled"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 321,
+      "end": 322,
+      "text": "="
+     },
+     {
+      "type": "boolean",
+      "start": 323,
+      "end": 327,
+      "text": "true"
+     }
+    ]
+   }
+  ]
+ }
+}
