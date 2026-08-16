@@ -320,7 +320,7 @@ function buildPackage(pkg) {
 const text = (s) => ({ k: "text", s, brk: false });
 const concat = (parts) => ({ k: "concat", parts, brk: parts.some((p) => p.brk) });
 const group = (d) => ({ k: "group", d, brk: d.brk });
-const indent = (n, d) => ({ k: "indent", n, d, brk: d.brk });
+const indent = (unit, d) => ({ k: "indent", unit, d, brk: d.brk });
 const line = { k: "line", brk: false };
 const soft = { k: "soft", brk: false };
 const hard = { k: "hard", brk: true };
@@ -364,7 +364,7 @@ function fits(next, rest, rem) {
         stack.push([ind, doc.brk ? BREAK : mode, doc.d]);
         break;
       case "indent":
-        stack.push([ind + doc.n, mode, doc.d]);
+        stack.push([ind + doc.unit, mode, doc.d]);
         break;
       case "line":
         if (mode === BREAK) return true;
@@ -390,14 +390,14 @@ function fits(next, rest, rem) {
 function print(doc, cols) {
   const out = [];
   let pos = 0;
-  let pending = 0;
+  let pending = "";
   let suffixes = [];
-  let stack = [[0, BREAK, doc]];
+  let stack = [["", BREAK, doc]];
 
   const write = (s) => {
-    if (pending > 0) {
-      out.push(" ".repeat(pending));
-      pending = 0;
+    if (pending.length > 0) {
+      out.push(pending);
+      pending = "";
     }
     out.push(s);
   };
@@ -418,7 +418,7 @@ function print(doc, cols) {
           for (let i = d.parts.length - 1; i >= 0; i--) stack.push([ind, mode, d.parts[i]]);
           break;
         case "indent":
-          stack.push([ind + d.n, mode, d.d]);
+          stack.push([ind + d.unit, mode, d.d]);
           break;
         case "group": {
           const flat = !d.brk && fits([ind, FLAT, d.d], stack, cols - pos);
@@ -437,7 +437,7 @@ function print(doc, cols) {
           if (breaking) {
             out.push("\n");
             pending = ind;
-            pos = ind;
+            pos = width(ind);
           } else if (d.k === "line") {
             write(" ");
             pos += 1;
@@ -539,7 +539,7 @@ function decorate(fmt, item, inner) {
   if (!sink) {
     for (let i = 0; i < Math.min(item.gap, fmt.blankCap); i++) parts.push(hard);
   }
-  if (sink && parts.length > 0) parts = [indent(fmt.pkg.indent, concat(parts))];
+  if (sink && parts.length > 0) parts = [indent(fmt.indentUnit, concat(parts))];
   parts.push(inner);
   const gap = " ".repeat(fmt.commentGap);
   for (const s of item.suffix) parts.push(suffix(text(`${gap}${s}`)));
@@ -644,7 +644,7 @@ class Ctx {
         return group(concat(rest.map((e) => this.eval(e))));
       case "indent":
         return indent(
-          this.fmt.pkg.indent,
+          this.fmt.indentUnit,
           concat([...rest.map((e) => this.eval(e)), this.flushAfter()]),
         );
       case "line":
@@ -779,7 +779,7 @@ class Ctx {
     } else {
       close = ifBreak(text(")"), nil);
     }
-    return group(concat([open, indent(this.fmt.pkg.indent, concat([soft, ...inner])), soft, close]));
+    return group(concat([open, indent(this.fmt.indentUnit, concat([soft, ...inner])), soft, close]));
   }
 
   /** Format a child, adding optional parentheses if its type is one the
@@ -790,7 +790,7 @@ class Ctx {
     const inner = this.child(sel);
     if (!wrap) return inner;
     return group(
-      concat([ifBreak(text("("), nil), indent(this.fmt.pkg.indent, concat([soft, inner])), soft, ifBreak(text(")"), nil)]),
+      concat([ifBreak(text("("), nil), indent(this.fmt.indentUnit, concat([soft, inner])), soft, ifBreak(text(")"), nil)]),
     );
   }
 
@@ -919,6 +919,7 @@ class Formatter {
     this.commentGap = this.pkg.comment_gap;
     this.blankCap = this.pkg.blank_cap;
     this.flatten = this.pkg.flatten_fields;
+    this.indentUnit = this.pkg.tab_indent ? "\t" : " ".repeat(this.pkg.indent ?? 0);
   }
 
   tightness(node) {

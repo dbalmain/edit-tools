@@ -47,6 +47,10 @@ impl TryFrom<String> for PackageFormat {
 #[serde(try_from = "RawPackage")]
 pub struct Package {
     pub indent: usize,
+    /// Whether one indent level is a tab rather than `indent` spaces. gofmt
+    /// is the first reference whose house style is tab-indented.
+    #[serde(default)]
+    pub tab_indent: bool,
     /// Node types that are punctuation or keywords; `named` skips them.
     #[serde(default)]
     pub tokens: HashSet<String>,
@@ -85,6 +89,8 @@ struct RawPackage {
     #[serde(rename = "format")]
     _format: PackageFormat,
     indent: usize,
+    #[serde(default)]
+    tab_indent: bool,
     #[serde(default)]
     tokens: HashSet<String>,
     #[serde(default)]
@@ -127,6 +133,7 @@ impl TryFrom<RawPackage> for Package {
             .collect::<Result<_, String>>()?;
         Ok(Self {
             indent: raw.indent,
+            tab_indent: raw.tab_indent,
             tokens: raw.tokens,
             comments: raw.comments,
             descend: raw.descend,
@@ -405,6 +412,17 @@ impl Package {
 
     pub fn is_token(&self, kind: &str) -> bool {
         self.tokens.contains(kind)
+    }
+
+    /// The string one indent level writes. Resolved once per package, so a
+    /// rule never picks between tab and space and nested language regions
+    /// concatenate their own units.
+    pub fn indent_unit(&self) -> String {
+        if self.tab_indent {
+            "\t".to_owned()
+        } else {
+            " ".repeat(self.indent)
+        }
     }
 
     pub fn tightness(&self, op: &str) -> i64 {

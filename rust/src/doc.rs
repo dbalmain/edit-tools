@@ -11,8 +11,11 @@ pub enum Doc {
     Text(String),
     Concat(Vec<Doc>),
     Group(Box<Doc>),
-    /// Relative indent of `n` columns for line breaks inside.
-    Indent(usize, Box<Doc>),
+    /// Relative indent of one level for line breaks inside. The unit is the
+    /// resolved string for that level -- spaces for most languages, a tab for
+    /// gofmt -- so nested indents concatenate and a language region can nest a
+    /// tab-indented body inside a space-indented one.
+    Indent(String, Box<Doc>),
     /// Space when flat, newline when broken.
     Line,
     /// Nothing when flat, newline when broken.
@@ -39,8 +42,13 @@ impl Doc {
         Doc::Group(Box::new(d))
     }
 
+    #[cfg(test)]
     pub fn indent(n: usize, d: Doc) -> Doc {
-        Doc::Indent(n, Box::new(d))
+        Doc::Indent(" ".repeat(n), Box::new(d))
+    }
+
+    pub fn indent_unit(unit: &str, d: Doc) -> Doc {
+        Doc::Indent(unit.to_owned(), Box::new(d))
     }
 }
 
@@ -90,7 +98,7 @@ enum Mode {
     Break,
 }
 
-type Cmd<'a> = (usize, Mode, &'a Doc);
+type Cmd<'a> = (String, Mode, &'a Doc);
 
 fn scalars(s: &str) -> isize {
     s.chars().count() as isize
@@ -119,7 +127,7 @@ fn fits(next: Cmd<'_>, rest: &[Cmd<'_>], mut rem: isize, forced: &Forced) -> boo
             None => match rest_at.checked_sub(1) {
                 Some(i) => {
                     rest_at = i;
-                    rest[i]
+                    rest[i].clone()
                 }
                 None => return true,
             },
@@ -132,7 +140,7 @@ fn fits(next: Cmd<'_>, rest: &[Cmd<'_>], mut rem: isize, forced: &Forced) -> boo
                     return rem >= 0;
                 }
             }
-            Doc::Concat(ds) => stack.extend(ds.iter().rev().map(|d| (ind, mode, d))),
+            Doc::Concat(ds) => stack.extend(ds.iter().rev().map(|d| (ind.clone(), mode, d))),
             Doc::Group(inner) => {
                 let m = if forces_break(inner, forced) {
                     Mode::Break
@@ -141,7 +149,7 @@ fn fits(next: Cmd<'_>, rest: &[Cmd<'_>], mut rem: isize, forced: &Forced) -> boo
                 };
                 stack.push((ind, m, inner));
             }
-            Doc::Indent(n, inner) => stack.push((ind + n, mode, inner)),
+            Doc::Indent(unit, inner) => stack.push((ind + unit.as_str(), mode, inner)),
             Doc::Line => {
                 if mode == Mode::Break {
                     return true;
@@ -171,17 +179,19 @@ pub fn print(doc: &Doc, width: usize) -> String {
     collect_forced(doc, &mut forced);
     let mut out = String::new();
     let mut pos = 0usize;
-    let mut pending = 0usize;
+    let mut pending = String::new();
     let mut suffixes: Vec<Cmd<'_>> = Vec::new();
-    let mut stack: Vec<Cmd<'_>> = vec![(0, Mode::Break, doc)];
+    let mut stack: Vec<Cmd<'_>> = vec![(String::new(), Mode::Break, doc)];
 
     loop {
         while let Some((ind, mode, doc)) = stack.pop() {
             match doc {
                 Doc::Text(s) => {
                     if !s.is_empty() {
-                        out.extend(std::iter::repeat_n(' ', pending));
-                        pending = 0;
+                        if !pending.is_empty() {
+                            out.push_str(&pending);
+                            pending.clear();
+                        }
                         out.push_str(s);
                         pos = match s.rsplit_once('\n') {
                             Some((_, tail)) => scalars(tail) as usize,
@@ -189,12 +199,12 @@ pub fn print(doc: &Doc, width: usize) -> String {
                         };
                     }
                 }
-                Doc::Concat(ds) => stack.extend(ds.iter().rev().map(|d| (ind, mode, d))),
-                Doc::Indent(n, inner) => stack.push((ind + n, mode, inner)),
+                Doc::Concat(ds) => stack.extend(ds.iter().rev().map(|d| (ind.clone(), mode, d))),
+                Doc::Indent(unit, inner) => stack.push((ind + unit.as_str(), mode, inner)),
                 Doc::Group(inner) => {
                     let rem = width as isize - pos as isize;
                     let flat = !forces_break(inner, &forced)
-                        && fits((ind, Mode::Flat, inner), &stack, rem, &forced);
+                        && fits((ind.clone(), Mode::Flat, inner), &stack, rem, &forced);
                     stack.push((ind, if flat { Mode::Flat } else { Mode::Break }, inner));
                 }
                 Doc::Line | Doc::Soft | Doc::Hard => {
@@ -206,11 +216,13 @@ pub fn print(doc: &Doc, width: usize) -> String {
                     }
                     if breaking {
                         out.push('\n');
+                        pos = scalars(&ind) as usize;
                         pending = ind;
-                        pos = ind;
                     } else if matches!(doc, Doc::Line) {
-                        out.extend(std::iter::repeat_n(' ', pending));
-                        pending = 0;
+                        if !pending.is_empty() {
+                            out.push_str(&pending);
+                            pending.clear();
+                        }
                         out.push(' ');
                         pos += 1;
                     }

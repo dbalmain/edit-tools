@@ -115,7 +115,7 @@ fn decorate(pkg: &Package, item: &Item<'_>, inner: Doc) -> Doc {
         }
     }
     if sink && !parts.is_empty() {
-        parts = vec![Doc::indent(pkg.indent, Doc::Concat(parts))];
+        parts = vec![Doc::indent_unit(&pkg.indent_unit(), Doc::Concat(parts))];
     }
     parts.push(inner);
     let gap = " ".repeat(pkg.comment_gap);
@@ -223,7 +223,7 @@ impl<'a> Ctx<'a> {
             Expr::Indent(es) => {
                 let mut parts = self.eval_all(es, f)?;
                 parts.push(self.flush_after(f));
-                Ok(Doc::indent(f.pkg.indent, Doc::Concat(parts)))
+                Ok(Doc::indent_unit(&f.pkg.indent_unit(), Doc::Concat(parts)))
             }
             Expr::Line => Ok(Doc::Line),
             Expr::Soft => Ok(Doc::Soft),
@@ -390,8 +390,8 @@ impl<'a> Ctx<'a> {
         };
         Ok(Doc::group(Doc::Concat(vec![
             open,
-            Doc::indent(
-                f.pkg.indent,
+            Doc::indent_unit(
+                &f.pkg.indent_unit(),
                 Doc::Concat(vec![Doc::Soft, Doc::Concat(inner)]),
             ),
             Doc::Soft,
@@ -415,7 +415,7 @@ impl<'a> Ctx<'a> {
         }
         Ok(Doc::group(Doc::Concat(vec![
             Doc::IfBreak(Box::new(Doc::text("(")), Box::new(Doc::nil())),
-            Doc::indent(f.pkg.indent, Doc::Concat(vec![Doc::Soft, inner])),
+            Doc::indent_unit(&f.pkg.indent_unit(), Doc::Concat(vec![Doc::Soft, inner])),
             Doc::Soft,
             Doc::IfBreak(Box::new(Doc::text(")")), Box::new(Doc::nil())),
         ])))
