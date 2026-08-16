@@ -278,6 +278,47 @@ test("the current package format is required", () => {
   );
 });
 
+test("opt else joins a mixed separator list", () => {
+  // CSS declarations and call arguments mix comma and space separators
+  // under one parent. `opt`'s else branch is the cursor test that picks
+  // between them; `when` cannot, because it describes the whole node.
+  const pkg = toy({
+    list: [
+      "group",
+      ["tok", "("],
+      [
+        "each",
+        "named",
+        ["opt", "t:,", ["seq", ["tok", ","], ["line"]], ["sp"]],
+      ],
+      ["tok", ")"],
+    ],
+  });
+  const root = {
+    type: "list",
+    start: 0,
+    end: 0,
+    children: [
+      leaf("(", "("),
+      leaf("name", "0"),
+      leaf("name", "1px"),
+      leaf(",", ","),
+      leaf("name", "2"),
+      leaf("name", "3px"),
+      leaf(")", ")"),
+    ],
+  };
+  assert.equal(run(pkg, root, 80), "(0 1px, 2 3px)\n");
+});
+
+test("opt refuses a one-operand form", () => {
+  const pkg = toy({ file: ["opt", "named"] });
+  assert.throws(
+    () => run(pkg, { type: "file", start: 0, end: 0 }, 80),
+    (e) => e instanceof Refusal && /`opt` takes 2 or 3 operands, got 1/.test(e.message),
+  );
+});
+
 test("an unknown package format names the value found and expected", () => {
   const pkg = toy({ list: listRule });
   pkg.format = "et-doc-rules/2";

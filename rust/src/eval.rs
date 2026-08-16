@@ -233,9 +233,11 @@ impl<'a> Ctx<'a> {
             Expr::Each(sel, sep) => self.each(sel, sep, f),
             Expr::Tok(s) => self.tok(s, f),
             Expr::Verbatim => self.verbatim(f),
-            Expr::Opt(sel, body) => {
+            Expr::Opt(sel, body, alt) => {
                 if self.matches(self.cursor, sel, f.pkg) {
                     self.eval(body, f)
+                } else if let Some(alt) = alt {
+                    self.eval(alt, f)
                 } else {
                     Ok(Doc::nil())
                 }
@@ -709,6 +711,92 @@ mod tests {
         let pkg = toy(json!({}));
         let err = run(&pkg, list(&["a"], false), 80).expect_err("must refuse");
         assert!(err.0.contains("no rule for node type `list`"), "{}", err.0);
+    }
+
+    /// CSS declarations and call arguments mix comma and space separators
+    /// under one parent. `opt`'s else branch is the cursor test that picks
+    /// between them; `when` cannot, because it describes the whole node.
+    #[test]
+    fn opt_else_joins_a_mixed_separator_list() {
+        let pkg = toy(json!({
+            "list": [
+                "group",
+                ["tok", "("],
+                [
+                    "each",
+                    "named",
+                    [
+                        "opt",
+                        "t:,",
+                        ["seq", ["tok", ","], ["line"]],
+                        ["sp"]
+                    ]
+                ],
+                ["tok", ")"]
+            ]
+        }));
+        // `(0 1px, 2 3px)` — space inside each pair, comma between pairs.
+        let root = json!({
+            "type": "list",
+            "start": 0,
+            "end": 0,
+            "children": [
+                leaf("(", "("),
+                leaf("name", "0"),
+                leaf("name", "1px"),
+                leaf(",", ","),
+                leaf("name", "2"),
+                leaf("name", "3px"),
+                leaf(")", ")")
+            ]
+        });
+        assert_eq!(run(&pkg, root, 80).expect("ok"), "(0 1px, 2 3px)\n");
+    }
+
+    #[test]
+    fn both_runtimes_refuse_opt_with_the_wrong_arity() {
+        let pkg_json = json!({
+            "format": "et-doc-rules/1",
+            "indent": 2,
+            "rules": { "file": ["opt", "named"] },
+        });
+        let rust_err = serde_json::from_value::<Package>(pkg_json.clone())
+            .err()
+            .expect("rust must refuse")
+            .to_string();
+        assert!(
+            rust_err.contains("`opt` takes 2 or 3 operands, got 1"),
+            "rust: {rust_err}"
+        );
+
+        let bundle = concat!(env!("CARGO_MANIFEST_DIR"), "/../runtime-js/bundle.js");
+        let script = format!(
+            r#"
+const {{ format }} = require({bundle:?});
+const tree = {{ language: "toy", source: "", root: {{ type: "file", start: 0, end: 0 }} }};
+try {{
+  format(tree, new Map([["toy", {pkg}]]), 80);
+  console.error("js accepted a one-operand opt");
+  process.exit(2);
+}} catch (e) {{
+  if (!/`opt` takes 2 or 3 operands, got 1/.test(e.message)) {{
+    console.error(e.message);
+    process.exit(3);
+  }}
+}}
+"#,
+            bundle = bundle,
+            pkg = pkg_json,
+        );
+        let status = std::process::Command::new("node")
+            .arg("-e")
+            .arg(script)
+            .status()
+            .expect("spawn node");
+        assert!(
+            status.success(),
+            "js runtime disagreed on opt arity (exit {status})"
+        );
     }
 
     #[test]
