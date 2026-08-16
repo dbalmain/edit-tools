@@ -1,4 +1,4 @@
-/* Selectors: lists, combinators, attributes, and the modern functional ones. */
+/* Selectors: lists, combinators, attributes, :is/:has. */
 
 /* Comma lists are always one selector per line, whatever the width. */
 .header,
@@ -8,12 +8,12 @@
   color: inherit;
 }
 
-/* Combinators, attributes, and a trailing comment on the rule. */
+/* Combinators, attributes, trailing comment. */
 nav > ul + p ~ a[href="https://example.com"][target="_blank"] {
   color: blue; /* external link */
 }
 
-/* :is / :where / :not / :has. The descendant after :is wraps at 40, not at 80. */
+/* :is descendant wraps at 40, not at 80. */
 :is(header, footer, aside) a:not(:hover, :focus) {
   color: navy;
 }

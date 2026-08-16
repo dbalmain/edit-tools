@@ -1,7 +1,7 @@
 /* File-level comment at the very top of the stylesheet. */
 
 .lead /* after a simple selector */ {
-  /* own-line inside the block, before the first declaration */
+  /* own-line before the first declaration */
   color: red; /* trailing on a declaration */
   /* own-line between declarations */
   margin: 1px /* inside a value list */ 2px;
@@ -13,7 +13,7 @@
     blue
     /* before the closing paren */
   );
-  /* own-line before the closing brace */
+  /* before the closing brace */
 }
 
 /* comment between two rules */

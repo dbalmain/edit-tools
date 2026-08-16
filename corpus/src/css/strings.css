@@ -1,8 +1,8 @@
-/* Strings, urls, and the escapes CSS actually has. Prettier does not wrap any of these. */
+/* Strings, urls, and CSS escapes. None of these wrap. */
 
 .quote {
   content: "hello";
-  content: "single"; /* written as double; prettier would rewrite a single-quoted twin */
+  content: 'single'; /* prettier double-quotes this */
   content: 'say "hi"';
   content: "line\A break";
   content: "tab\9 and slash\\";

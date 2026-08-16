@@ -1,5 +1,4 @@
-/* grid-template-areas: the internal line breaks are the layout. Prettier
-   preserves author breaks and will not wrap a single-line value at either width. */
+/* grid-template-areas: author line breaks are the layout. */
 
 .page {
   display: grid;
@@ -11,5 +10,6 @@
 }
 
 .compact {
-  grid-template-areas: "a b c" "d e f"; /* stays on one line at 40 and at 80 */
+  /* stays one line at both widths */
+  grid-template-areas: "a b c" "d e f";
 }

@@ -1,9 +1,9 @@
-/* Custom properties: values are nearly arbitrary token soup. */
+/* Custom properties: values are token soup. */
 
 :root {
   --space-sm: 0.5rem;
   --fg: #111111;
-  /* color-mix / var() fallbacks stay together until the line actually overflows. */
+  /* color-mix stays together until it overflows */
   --token-soup: 1px solid color-mix(in oklab, var(--fg) 80%, transparent);
   --list: 0 1px 2px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.08), 0 4px 8px rgba(0, 0, 0, 0.06);
 }
