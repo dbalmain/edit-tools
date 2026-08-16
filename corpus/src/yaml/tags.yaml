@@ -5,18 +5,18 @@
 %TAG !e! tag:example.com,2026:
 ---
 # Global tags on values that would otherwise be a different scalar kind.
-as_string: !!str 123 # still looks like a number
-as_int: !!int "456"
-as_float: !!float 1
-as_bool: !!bool "true"
-as_null: !!null ""
-as_map: !!map { a: 1 }
-as_seq: !!seq [1, 2]
+as_string:  !!str 123 # still looks like a number
+as_int : !!int "456"
+as_float:  !!float 1
+as_bool : !!bool "true"
+as_null:  !!null ""
+as_map: !!map {a: 1}
+as_seq: !!seq [1,2]
 
 # A local tag, and the handle declared above.
-local: !custom value
-kind: !e!widget
+local:  !custom value
+kind : !e!widget
 
 # A tag on a block node.
-tagged_block: !!str |
+tagged_block : !!str |
   still a string

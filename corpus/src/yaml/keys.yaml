@@ -5,16 +5,16 @@
 # Flow-collection keys first: a comment sitting between two plain pairs
 # and a flow-collection key is a prettier syntax error ("Map comment with
 # trailing content"), even though tree-sitter-yaml accepts it.
-[a, b]: pair-as-key
-{ k: v }: map-as-key
+[a,b]: pair-as-key
+{k: v}: map-as-key
 
-plain: 1
-dashed-key: 2 # YAML's favourite identifier shape
-underscored_key: 3
+plain:  1
+dashed-key : 2 # YAML's favourite identifier shape
+underscored_key:  3
 digit_start: 4
-"dotted.key": 5
+"dotted.key":  5
 "a:b": 6
-"with space": 7
-"true": 8 # quoted so it is not the boolean
+"with space" : 7
+"true":  8 # quoted so it is not the boolean
 "null": 9
-"server.host": localhost
+"server.host":  localhost

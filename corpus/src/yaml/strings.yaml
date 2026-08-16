@@ -2,17 +2,17 @@
 # that do not contain a double quote are rewritten to double quotes -- that
 # rewrite is a finding, not a corpus case, because gate 3 compares leaf text.
 
-plain: hello world # unquoted
-double: "hello world"
+plain:  hello world # unquoted
+double : "hello world"
 # Prettier prefers single quotes when the value contains a double quote.
-contains_double: 'say "hi"'
-empty: ""
-escaped: "quote \" backslash \\ newline \n tab \t"
-colon: "a: b"
-hash_is_not_a_comment: "not a # comment"
-unicode: "café"
-astral: "🙂🙂🙂🙂 counted as scalar values, not UTF-16 code units"
+contains_double:  'say "hi"'
+empty:  ""
+escaped : "quote \" backslash \\ newline \n tab \t"
+colon:  "a: b"
+hash_is_not_a_comment : "not a # comment"
+unicode:  "café"
+astral : "🙂🙂🙂🙂 counted as scalar values, not UTF-16 code units"
 # A long quoted string; prettier does not wrap these at either width.
-long_double: "this is a very long string literal that must never be reflowed by the formatter"
-needless_quotes: "plainish"
-folder: "C:\\Users\\foo\\file.yaml"
+long_double:  "this is a very long string literal that must never be reflowed by the formatter"
+needless_quotes : "plainish"
+folder:  "C:\\Users\\foo\\file.yaml"

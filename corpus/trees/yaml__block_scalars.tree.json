@@ -1,11 +1,11 @@
 {
  "language": "yaml",
  "source_file": "corpus/src/yaml/block_scalars.yaml",
- "source": "# Block scalars. Interior is content, not layout: prettier does not reflow\n# a `>` line that overruns the width, and a relative extra indent is data.\n\n# Literal: newlines kept. Already at prettier's 2-space block indent so a\n# reindent does not change the block_scalar leaf text gate 3 compares.\nscript: | # clip is the default\n  echo hello\n  echo world\n\n# Folded: newlines become spaces. Prettier leaves the source line-breaks.\ndesc: >\n  This is a fairly long folded description that would overflow forty columns if reflowed onto one line of the document.\n\n# Chomping indicators. strip / keep / clip are three different spellings.\nstrip: |-\n  no final newline\n\nkeep: |+\n  keep blanks\n\n\nclip: |\n  clip default\n\n# Indent indicator: the `2` is part of the token. Content starts two\n# columns past the parent, so four leading spaces are two of content.\nnote: |2\n    four spaces of content, two of them data\n\n# Relative extra indent inside a literal is content and must survive.\nindented: |\n  echo hello\n    nested\n  echo world\n\nfolded_strip: >-\n  Supercalifragilisticexpialidocious words go here to see if prettier wraps the folded content itself when the source line is long enough to overflow.\n",
+ "source": "# Block scalars. Interior is content, not layout: prettier does not reflow\n# a `>` line that overruns the width, and a relative extra indent is data.\n\n# Literal: newlines kept. Already at prettier's 2-space block indent so a\n# reindent does not change the block_scalar leaf text gate 3 compares.\nscript : | # clip is the default\n  echo hello\n  echo world\n\n# Folded: newlines become spaces. Prettier leaves the source line-breaks.\ndesc:  >\n  This is a fairly long folded description that would overflow forty columns if reflowed onto one line of the document.\n\n# Chomping indicators. strip / keep / clip are three different spellings.\nstrip : |-\n  no final newline\n\nkeep:  |+\n  keep blanks\n\n\nclip : |\n  clip default\n\n# Indent indicator: the `2` is part of the token. Content starts two\n# columns past the parent, so four leading spaces are two of content.\nnote:  |2\n    four spaces of content, two of them data\n\n# Relative extra indent inside a literal is content and must survive.\nindented : |\n  echo hello\n    nested\n  echo world\n\nfolded_strip:  >-\n  Supercalifragilisticexpialidocious words go here to see if prettier wraps the folded content itself when the source line is long enough to overflow.\n",
  "root": {
   "type": "stream",
   "start": 0,
-  "end": 1193,
+  "end": 1201,
   "children": [
    {
     "type": "comment",
@@ -34,22 +34,22 @@
    {
     "type": "document",
     "start": 296,
-    "end": 1193,
+    "end": 1201,
     "children": [
      {
       "type": "block_node",
       "start": 296,
-      "end": 1193,
+      "end": 1201,
       "children": [
        {
         "type": "block_mapping",
         "start": 296,
-        "end": 1193,
+        "end": 1201,
         "children": [
          {
           "type": "block_mapping_pair",
           "start": 296,
-          "end": 353,
+          "end": 354,
           "children": [
            {
             "type": "flow_node",
@@ -74,31 +74,31 @@
            },
            {
             "type": ":",
-            "start": 302,
-            "end": 303,
+            "start": 303,
+            "end": 304,
             "text": ":"
            },
            {
             "type": "block_node",
-            "start": 304,
-            "end": 353,
+            "start": 305,
+            "end": 354,
             "field": "value",
             "children": [
              {
               "type": "block_scalar",
-              "start": 304,
-              "end": 353,
+              "start": 305,
+              "end": 354,
               "children": [
                {
                 "type": "|",
-                "start": 304,
-                "end": 305,
+                "start": 305,
+                "end": 306,
                 "text": "|"
                },
                {
                 "type": "comment",
-                "start": 306,
-                "end": 327,
+                "start": 307,
+                "end": 328,
                 "text": "# clip is the default"
                }
               ]
@@ -109,30 +109,30 @@
          },
          {
           "type": "comment",
-          "start": 355,
-          "end": 428,
+          "start": 356,
+          "end": 429,
           "text": "# Folded: newlines become spaces. Prettier leaves the source line-breaks."
          },
          {
           "type": "block_mapping_pair",
-          "start": 429,
-          "end": 556,
+          "start": 430,
+          "end": 558,
           "children": [
            {
             "type": "flow_node",
-            "start": 429,
-            "end": 433,
+            "start": 430,
+            "end": 434,
             "field": "key",
             "children": [
              {
               "type": "plain_scalar",
-              "start": 429,
-              "end": 433,
+              "start": 430,
+              "end": 434,
               "children": [
                {
                 "type": "string_scalar",
-                "start": 429,
-                "end": 433,
+                "start": 430,
+                "end": 434,
                 "text": "desc"
                }
               ]
@@ -141,25 +141,25 @@
            },
            {
             "type": ":",
-            "start": 433,
-            "end": 434,
+            "start": 434,
+            "end": 435,
             "text": ":"
            },
            {
             "type": "block_node",
-            "start": 435,
-            "end": 556,
+            "start": 437,
+            "end": 558,
             "field": "value",
             "children": [
              {
               "type": "block_scalar",
-              "start": 435,
-              "end": 556,
+              "start": 437,
+              "end": 558,
               "children": [
                {
                 "type": ">",
-                "start": 435,
-                "end": 436,
+                "start": 437,
+                "end": 438,
                 "text": ">"
                }
               ]
@@ -170,30 +170,30 @@
          },
          {
           "type": "comment",
-          "start": 558,
-          "end": 631,
+          "start": 560,
+          "end": 633,
           "text": "# Chomping indicators. strip / keep / clip are three different spellings."
          },
          {
           "type": "block_mapping_pair",
-          "start": 632,
-          "end": 660,
+          "start": 634,
+          "end": 663,
           "children": [
            {
             "type": "flow_node",
-            "start": 632,
-            "end": 637,
+            "start": 634,
+            "end": 639,
             "field": "key",
             "children": [
              {
               "type": "plain_scalar",
-              "start": 632,
-              "end": 637,
+              "start": 634,
+              "end": 639,
               "children": [
                {
                 "type": "string_scalar",
-                "start": 632,
-                "end": 637,
+                "start": 634,
+                "end": 639,
                 "text": "strip"
                }
               ]
@@ -202,25 +202,25 @@
            },
            {
             "type": ":",
-            "start": 637,
-            "end": 638,
+            "start": 640,
+            "end": 641,
             "text": ":"
            },
            {
             "type": "block_node",
-            "start": 639,
-            "end": 660,
+            "start": 642,
+            "end": 663,
             "field": "value",
             "children": [
              {
               "type": "block_scalar",
-              "start": 639,
-              "end": 660,
+              "start": 642,
+              "end": 663,
               "children": [
                {
                 "type": "|",
-                "start": 639,
-                "end": 641,
+                "start": 642,
+                "end": 644,
                 "text": "|-"
                }
               ]
@@ -231,24 +231,24 @@
          },
          {
           "type": "block_mapping_pair",
-          "start": 662,
-          "end": 684,
+          "start": 665,
+          "end": 688,
           "children": [
            {
             "type": "flow_node",
-            "start": 662,
-            "end": 666,
+            "start": 665,
+            "end": 669,
             "field": "key",
             "children": [
              {
               "type": "plain_scalar",
-              "start": 662,
-              "end": 666,
+              "start": 665,
+              "end": 669,
               "children": [
                {
                 "type": "string_scalar",
-                "start": 662,
-                "end": 666,
+                "start": 665,
+                "end": 669,
                 "text": "keep"
                }
               ]
@@ -257,25 +257,25 @@
            },
            {
             "type": ":",
-            "start": 666,
-            "end": 667,
+            "start": 669,
+            "end": 670,
             "text": ":"
            },
            {
             "type": "block_node",
-            "start": 668,
-            "end": 684,
+            "start": 672,
+            "end": 688,
             "field": "value",
             "children": [
              {
               "type": "block_scalar",
-              "start": 668,
-              "end": 684,
+              "start": 672,
+              "end": 688,
               "children": [
                {
                 "type": "|",
-                "start": 668,
-                "end": 670,
+                "start": 672,
+                "end": 674,
                 "text": "|+"
                }
               ]
@@ -286,24 +286,24 @@
          },
          {
           "type": "block_mapping_pair",
-          "start": 687,
-          "end": 709,
+          "start": 691,
+          "end": 714,
           "children": [
            {
             "type": "flow_node",
-            "start": 687,
-            "end": 691,
+            "start": 691,
+            "end": 695,
             "field": "key",
             "children": [
              {
               "type": "plain_scalar",
-              "start": 687,
-              "end": 691,
+              "start": 691,
+              "end": 695,
               "children": [
                {
                 "type": "string_scalar",
-                "start": 687,
-                "end": 691,
+                "start": 691,
+                "end": 695,
                 "text": "clip"
                }
               ]
@@ -312,25 +312,25 @@
            },
            {
             "type": ":",
-            "start": 691,
-            "end": 692,
+            "start": 696,
+            "end": 697,
             "text": ":"
            },
            {
             "type": "block_node",
-            "start": 693,
-            "end": 709,
+            "start": 698,
+            "end": 714,
             "field": "value",
             "children": [
              {
               "type": "block_scalar",
-              "start": 693,
-              "end": 709,
+              "start": 698,
+              "end": 714,
               "children": [
                {
                 "type": "|",
-                "start": 693,
-                "end": 694,
+                "start": 698,
+                "end": 699,
                 "text": "|"
                }
               ]
@@ -341,36 +341,36 @@
          },
          {
           "type": "comment",
-          "start": 711,
-          "end": 779,
+          "start": 716,
+          "end": 784,
           "text": "# Indent indicator: the `2` is part of the token. Content starts two"
          },
          {
           "type": "comment",
-          "start": 780,
-          "end": 849,
+          "start": 785,
+          "end": 854,
           "text": "# columns past the parent, so four leading spaces are two of content."
          },
          {
           "type": "block_mapping_pair",
-          "start": 850,
-          "end": 903,
+          "start": 855,
+          "end": 909,
           "children": [
            {
             "type": "flow_node",
-            "start": 850,
-            "end": 854,
+            "start": 855,
+            "end": 859,
             "field": "key",
             "children": [
              {
               "type": "plain_scalar",
-              "start": 850,
-              "end": 854,
+              "start": 855,
+              "end": 859,
               "children": [
                {
                 "type": "string_scalar",
-                "start": 850,
-                "end": 854,
+                "start": 855,
+                "end": 859,
                 "text": "note"
                }
               ]
@@ -379,25 +379,25 @@
            },
            {
             "type": ":",
-            "start": 854,
-            "end": 855,
+            "start": 859,
+            "end": 860,
             "text": ":"
            },
            {
             "type": "block_node",
-            "start": 856,
-            "end": 903,
+            "start": 862,
+            "end": 909,
             "field": "value",
             "children": [
              {
               "type": "block_scalar",
-              "start": 856,
-              "end": 903,
+              "start": 862,
+              "end": 909,
               "children": [
                {
                 "type": "|",
-                "start": 856,
-                "end": 858,
+                "start": 862,
+                "end": 864,
                 "text": "|2"
                }
               ]
@@ -408,30 +408,30 @@
          },
          {
           "type": "comment",
-          "start": 905,
-          "end": 974,
+          "start": 911,
+          "end": 980,
           "text": "# Relative extra indent inside a literal is content and must survive."
          },
          {
           "type": "block_mapping_pair",
-          "start": 975,
-          "end": 1023,
+          "start": 981,
+          "end": 1030,
           "children": [
            {
             "type": "flow_node",
-            "start": 975,
-            "end": 983,
+            "start": 981,
+            "end": 989,
             "field": "key",
             "children": [
              {
               "type": "plain_scalar",
-              "start": 975,
-              "end": 983,
+              "start": 981,
+              "end": 989,
               "children": [
                {
                 "type": "string_scalar",
-                "start": 975,
-                "end": 983,
+                "start": 981,
+                "end": 989,
                 "text": "indented"
                }
               ]
@@ -440,25 +440,25 @@
            },
            {
             "type": ":",
-            "start": 983,
-            "end": 984,
+            "start": 990,
+            "end": 991,
             "text": ":"
            },
            {
             "type": "block_node",
-            "start": 985,
-            "end": 1023,
+            "start": 992,
+            "end": 1030,
             "field": "value",
             "children": [
              {
               "type": "block_scalar",
-              "start": 985,
-              "end": 1023,
+              "start": 992,
+              "end": 1030,
               "children": [
                {
                 "type": "|",
-                "start": 985,
-                "end": 986,
+                "start": 992,
+                "end": 993,
                 "text": "|"
                }
               ]
@@ -469,24 +469,24 @@
          },
          {
           "type": "block_mapping_pair",
-          "start": 1025,
-          "end": 1193,
+          "start": 1032,
+          "end": 1201,
           "children": [
            {
             "type": "flow_node",
-            "start": 1025,
-            "end": 1037,
+            "start": 1032,
+            "end": 1044,
             "field": "key",
             "children": [
              {
               "type": "plain_scalar",
-              "start": 1025,
-              "end": 1037,
+              "start": 1032,
+              "end": 1044,
               "children": [
                {
                 "type": "string_scalar",
-                "start": 1025,
-                "end": 1037,
+                "start": 1032,
+                "end": 1044,
                 "text": "folded_strip"
                }
               ]
@@ -495,25 +495,25 @@
            },
            {
             "type": ":",
-            "start": 1037,
-            "end": 1038,
+            "start": 1044,
+            "end": 1045,
             "text": ":"
            },
            {
             "type": "block_node",
-            "start": 1039,
-            "end": 1193,
+            "start": 1047,
+            "end": 1201,
             "field": "value",
             "children": [
              {
               "type": "block_scalar",
-              "start": 1039,
-              "end": 1193,
+              "start": 1047,
+              "end": 1201,
               "children": [
                {
                 "type": ">",
-                "start": 1039,
-                "end": 1041,
+                "start": 1047,
+                "end": 1049,
                 "text": ">-"
                }
               ]

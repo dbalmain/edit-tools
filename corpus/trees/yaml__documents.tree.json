@@ -1,11 +1,11 @@
 {
  "language": "yaml",
  "source_file": "corpus/src/yaml/documents.yaml",
- "source": "# Multi-document streams. `---` / `...` are anonymous tokens under each\n# `document`; `%YAML` is a `yaml_directive` with a `yaml_version` child.\n\n%YAML 1.2\n---\n# First document.\nname: one\nvalue: 1\n---\n# Second document, no directive.\nname: two\nvalue: 2\n...\n---\n# A third document after an explicit end marker.\nname: three\nitems: [a, b, c]\n...\n",
+ "source": "# Multi-document streams. `---` / `...` are anonymous tokens under each\n# `document`; `%YAML` is a `yaml_directive` with a `yaml_version` child.\n\n%YAML 1.2\n---\n# First document.\nname:  one\nvalue : 1\n---\n# Second document, no directive.\nname:  two\nvalue : 2\n...\n---\n# A third document after an explicit end marker.\nname:  three\nitems: [a,b,c]\n...\n",
  "root": {
   "type": "stream",
   "start": 0,
-  "end": 343,
+  "end": 346,
   "children": [
    {
     "type": "comment",
@@ -22,7 +22,7 @@
    {
     "type": "document",
     "start": 146,
-    "end": 196,
+    "end": 198,
     "children": [
      {
       "type": "yaml_directive",
@@ -52,17 +52,17 @@
      {
       "type": "block_node",
       "start": 178,
-      "end": 196,
+      "end": 198,
       "children": [
        {
         "type": "block_mapping",
         "start": 178,
-        "end": 196,
+        "end": 198,
         "children": [
          {
           "type": "block_mapping_pair",
           "start": 178,
-          "end": 187,
+          "end": 188,
           "children": [
            {
             "type": "flow_node",
@@ -93,19 +93,19 @@
            },
            {
             "type": "flow_node",
-            "start": 184,
-            "end": 187,
+            "start": 185,
+            "end": 188,
             "field": "value",
             "children": [
              {
               "type": "plain_scalar",
-              "start": 184,
-              "end": 187,
+              "start": 185,
+              "end": 188,
               "children": [
                {
                 "type": "string_scalar",
-                "start": 184,
-                "end": 187,
+                "start": 185,
+                "end": 188,
                 "text": "one"
                }
               ]
@@ -116,24 +116,24 @@
          },
          {
           "type": "block_mapping_pair",
-          "start": 188,
-          "end": 196,
+          "start": 189,
+          "end": 198,
           "children": [
            {
             "type": "flow_node",
-            "start": 188,
-            "end": 193,
+            "start": 189,
+            "end": 194,
             "field": "key",
             "children": [
              {
               "type": "plain_scalar",
-              "start": 188,
-              "end": 193,
+              "start": 189,
+              "end": 194,
               "children": [
                {
                 "type": "string_scalar",
-                "start": 188,
-                "end": 193,
+                "start": 189,
+                "end": 194,
                 "text": "value"
                }
               ]
@@ -142,25 +142,25 @@
            },
            {
             "type": ":",
-            "start": 193,
-            "end": 194,
+            "start": 195,
+            "end": 196,
             "text": ":"
            },
            {
             "type": "flow_node",
-            "start": 195,
-            "end": 196,
+            "start": 197,
+            "end": 198,
             "field": "value",
             "children": [
              {
               "type": "plain_scalar",
-              "start": 195,
-              "end": 196,
+              "start": 197,
+              "end": 198,
               "children": [
                {
                 "type": "integer_scalar",
-                "start": 195,
-                "end": 196,
+                "start": 197,
+                "end": 198,
                 "text": "1"
                }
               ]
@@ -177,51 +177,51 @@
    },
    {
     "type": "document",
-    "start": 197,
-    "end": 256,
+    "start": 199,
+    "end": 260,
     "children": [
      {
       "type": "---",
-      "start": 197,
-      "end": 200,
+      "start": 199,
+      "end": 202,
       "text": "---"
      },
      {
       "type": "comment",
-      "start": 201,
-      "end": 233,
+      "start": 203,
+      "end": 235,
       "text": "# Second document, no directive."
      },
      {
       "type": "block_node",
-      "start": 234,
-      "end": 252,
+      "start": 236,
+      "end": 256,
       "children": [
        {
         "type": "block_mapping",
-        "start": 234,
-        "end": 252,
+        "start": 236,
+        "end": 256,
         "children": [
          {
           "type": "block_mapping_pair",
-          "start": 234,
-          "end": 243,
+          "start": 236,
+          "end": 246,
           "children": [
            {
             "type": "flow_node",
-            "start": 234,
-            "end": 238,
+            "start": 236,
+            "end": 240,
             "field": "key",
             "children": [
              {
               "type": "plain_scalar",
-              "start": 234,
-              "end": 238,
+              "start": 236,
+              "end": 240,
               "children": [
                {
                 "type": "string_scalar",
-                "start": 234,
-                "end": 238,
+                "start": 236,
+                "end": 240,
                 "text": "name"
                }
               ]
@@ -230,25 +230,25 @@
            },
            {
             "type": ":",
-            "start": 238,
-            "end": 239,
+            "start": 240,
+            "end": 241,
             "text": ":"
            },
            {
             "type": "flow_node",
-            "start": 240,
-            "end": 243,
+            "start": 243,
+            "end": 246,
             "field": "value",
             "children": [
              {
               "type": "plain_scalar",
-              "start": 240,
-              "end": 243,
+              "start": 243,
+              "end": 246,
               "children": [
                {
                 "type": "string_scalar",
-                "start": 240,
-                "end": 243,
+                "start": 243,
+                "end": 246,
                 "text": "two"
                }
               ]
@@ -259,24 +259,24 @@
          },
          {
           "type": "block_mapping_pair",
-          "start": 244,
-          "end": 252,
+          "start": 247,
+          "end": 256,
           "children": [
            {
             "type": "flow_node",
-            "start": 244,
-            "end": 249,
+            "start": 247,
+            "end": 252,
             "field": "key",
             "children": [
              {
               "type": "plain_scalar",
-              "start": 244,
-              "end": 249,
+              "start": 247,
+              "end": 252,
               "children": [
                {
                 "type": "string_scalar",
-                "start": 244,
-                "end": 249,
+                "start": 247,
+                "end": 252,
                 "text": "value"
                }
               ]
@@ -285,25 +285,25 @@
            },
            {
             "type": ":",
-            "start": 249,
-            "end": 250,
+            "start": 253,
+            "end": 254,
             "text": ":"
            },
            {
             "type": "flow_node",
-            "start": 251,
-            "end": 252,
+            "start": 255,
+            "end": 256,
             "field": "value",
             "children": [
              {
               "type": "plain_scalar",
-              "start": 251,
-              "end": 252,
+              "start": 255,
+              "end": 256,
               "children": [
                {
                 "type": "integer_scalar",
-                "start": 251,
-                "end": 252,
+                "start": 255,
+                "end": 256,
                 "text": "2"
                }
               ]
@@ -318,59 +318,59 @@
      },
      {
       "type": "...",
-      "start": 253,
-      "end": 256,
+      "start": 257,
+      "end": 260,
       "text": "..."
      }
     ]
    },
    {
     "type": "document",
-    "start": 257,
-    "end": 342,
+    "start": 261,
+    "end": 345,
     "children": [
      {
       "type": "---",
-      "start": 257,
-      "end": 260,
+      "start": 261,
+      "end": 264,
       "text": "---"
      },
      {
       "type": "comment",
-      "start": 261,
-      "end": 309,
+      "start": 265,
+      "end": 313,
       "text": "# A third document after an explicit end marker."
      },
      {
       "type": "block_node",
-      "start": 310,
-      "end": 338,
+      "start": 314,
+      "end": 341,
       "children": [
        {
         "type": "block_mapping",
-        "start": 310,
-        "end": 338,
+        "start": 314,
+        "end": 341,
         "children": [
          {
           "type": "block_mapping_pair",
-          "start": 310,
-          "end": 321,
+          "start": 314,
+          "end": 326,
           "children": [
            {
             "type": "flow_node",
-            "start": 310,
-            "end": 314,
+            "start": 314,
+            "end": 318,
             "field": "key",
             "children": [
              {
               "type": "plain_scalar",
-              "start": 310,
-              "end": 314,
+              "start": 314,
+              "end": 318,
               "children": [
                {
                 "type": "string_scalar",
-                "start": 310,
-                "end": 314,
+                "start": 314,
+                "end": 318,
                 "text": "name"
                }
               ]
@@ -379,25 +379,25 @@
            },
            {
             "type": ":",
-            "start": 314,
-            "end": 315,
+            "start": 318,
+            "end": 319,
             "text": ":"
            },
            {
             "type": "flow_node",
-            "start": 316,
-            "end": 321,
+            "start": 321,
+            "end": 326,
             "field": "value",
             "children": [
              {
               "type": "plain_scalar",
-              "start": 316,
-              "end": 321,
+              "start": 321,
+              "end": 326,
               "children": [
                {
                 "type": "string_scalar",
-                "start": 316,
-                "end": 321,
+                "start": 321,
+                "end": 326,
                 "text": "three"
                }
               ]
@@ -408,24 +408,24 @@
          },
          {
           "type": "block_mapping_pair",
-          "start": 322,
-          "end": 338,
+          "start": 327,
+          "end": 341,
           "children": [
            {
             "type": "flow_node",
-            "start": 322,
-            "end": 327,
+            "start": 327,
+            "end": 332,
             "field": "key",
             "children": [
              {
               "type": "plain_scalar",
-              "start": 322,
-              "end": 327,
+              "start": 327,
+              "end": 332,
               "children": [
                {
                 "type": "string_scalar",
-                "start": 322,
-                "end": 327,
+                "start": 327,
+                "end": 332,
                 "text": "items"
                }
               ]
@@ -434,41 +434,41 @@
            },
            {
             "type": ":",
-            "start": 327,
-            "end": 328,
+            "start": 332,
+            "end": 333,
             "text": ":"
            },
            {
             "type": "flow_node",
-            "start": 329,
-            "end": 338,
+            "start": 334,
+            "end": 341,
             "field": "value",
             "children": [
              {
               "type": "flow_sequence",
-              "start": 329,
-              "end": 338,
+              "start": 334,
+              "end": 341,
               "children": [
                {
                 "type": "[",
-                "start": 329,
-                "end": 330,
+                "start": 334,
+                "end": 335,
                 "text": "["
                },
                {
                 "type": "flow_node",
-                "start": 330,
-                "end": 331,
+                "start": 335,
+                "end": 336,
                 "children": [
                  {
                   "type": "plain_scalar",
-                  "start": 330,
-                  "end": 331,
+                  "start": 335,
+                  "end": 336,
                   "children": [
                    {
                     "type": "string_scalar",
-                    "start": 330,
-                    "end": 331,
+                    "start": 335,
+                    "end": 336,
                     "text": "a"
                    }
                   ]
@@ -477,24 +477,24 @@
                },
                {
                 "type": ",",
-                "start": 331,
-                "end": 332,
+                "start": 336,
+                "end": 337,
                 "text": ","
                },
                {
                 "type": "flow_node",
-                "start": 333,
-                "end": 334,
+                "start": 337,
+                "end": 338,
                 "children": [
                  {
                   "type": "plain_scalar",
-                  "start": 333,
-                  "end": 334,
+                  "start": 337,
+                  "end": 338,
                   "children": [
                    {
                     "type": "string_scalar",
-                    "start": 333,
-                    "end": 334,
+                    "start": 337,
+                    "end": 338,
                     "text": "b"
                    }
                   ]
@@ -503,24 +503,24 @@
                },
                {
                 "type": ",",
-                "start": 334,
-                "end": 335,
+                "start": 338,
+                "end": 339,
                 "text": ","
                },
                {
                 "type": "flow_node",
-                "start": 336,
-                "end": 337,
+                "start": 339,
+                "end": 340,
                 "children": [
                  {
                   "type": "plain_scalar",
-                  "start": 336,
-                  "end": 337,
+                  "start": 339,
+                  "end": 340,
                   "children": [
                    {
                     "type": "string_scalar",
-                    "start": 336,
-                    "end": 337,
+                    "start": 339,
+                    "end": 340,
                     "text": "c"
                    }
                   ]
@@ -529,8 +529,8 @@
                },
                {
                 "type": "]",
-                "start": 337,
-                "end": 338,
+                "start": 340,
+                "end": 341,
                 "text": "]"
                }
               ]
@@ -545,8 +545,8 @@
      },
      {
       "type": "...",
-      "start": 339,
-      "end": 342,
+      "start": 342,
+      "end": 345,
       "text": "..."
      }
     ]

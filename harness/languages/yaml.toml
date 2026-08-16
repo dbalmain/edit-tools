@@ -38,14 +38,20 @@ injection_aliases = ["yaml", "yml"]
 # diffing 80 vs 40 rather than by reading --help. Block collections, strings,
 # comments, block scalars, keys and document markers never reflow.
 #
-# Measurement exclusions forced by the linearity invariant: prettier chooses
-# quote delimiters and rewrites the corresponding escapes; reindents block
-# scalar bodies; and canonicalises a block-scalar header such as `|-2` to
-# `|2-`. The corpus therefore omits non-canonical quote spellings and writes
-# block scalars at prettier's indentation with canonical indicator order. It
-# retains one explicit `?` key even though prettier removes that anonymous
-# token: this is an intentionally measured, unwinnable package divergence,
-# not an omission. prettier 3.9.6 preserves `---` and `...` markers.
+# Measurement exclusions forced by the linearity invariant. prettier rewrites
+# that no package may match, so the corpus does not contain them:
+#   - quote delimiters and their escapes, chosen to minimise escaping, in
+#     values, keys, tagged and anchored values, and multiline quoted scalars
+#     ('hello' -> "hello", but also "she said \"hi\"" -> 'she said "hi"')
+#   - block-scalar bodies reindented to the canonical parent-relative indent
+#   - terminal block-scalar whitespace and chomping layout
+#   - block-scalar indicator order (`|-2` -> `|2-`)
+# The corpus therefore omits non-canonical quote spellings and writes block
+# scalars at prettier's indentation with canonical indicator order and
+# already-canonical chomping layout. It retains one explicit `?` key even
+# though prettier removes that anonymous token: that is an intentionally
+# measured, unwinnable package divergence, not an omission. prettier 3.9.6
+# preserves `---` and `...` markers.
 reference = "npx --yes prettier@3.9.6 --parser yaml --no-config --print-width {width}"
 reference_version = "3.9.6"
 reference_width = "flag"
