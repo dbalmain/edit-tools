@@ -147,8 +147,11 @@ whether the package is right. Budget your effort here:
   expressed without it. That is yours to decide; do not ask, and do not propose
   a standing freeze on future rounds (Dave declined one — see `LEDGER.md`).
 - **Design findings**: the design limits this language exposed, stated as
-  capabilities the IR lacks rather than as bugs. The orchestrator forwards
-  these; they are the point of the exercise.
+  capabilities the IR lacks rather than as bugs. They are the point of the
+  exercise. Read `docs/onboarding/FINDINGS.md` first and say, for each one,
+  whether it is **an existing entry that this language also hits** — which is
+  the more valuable answer, because it is what turns one language's complaint
+  into evidence — or genuinely new. The orchestrator files them.
 - If `escalate`: the diagnosis and the **disproved approaches**, written for the
   next agent's prompt.
 - **Template delta** for `templates/package-brief.md`. Nothing to say is valid.

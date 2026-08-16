@@ -2,6 +2,11 @@
 
 Three running records. The orchestrator writes all of them.
 
+The fourth record, [FINDINGS.md](FINDINGS.md), is the one the others exist to
+feed: the capabilities the IR lacks, each paid for by a language that could not
+express something without it. This file tracks what we **changed**; that one
+tracks what we **chose not to**.
+
 ## 1. Runtime changes
 
 Dave's rule: builders may edit `rust/` and `runtime-js/` freely; the reviewer
@@ -71,6 +76,7 @@ pattern.
 | 2026-08-15 | `package-brief.md`                    | Set `comment_gap`/`blank_cap` from the reference's observed behaviour rather than defaulting; and report any _second_ runtime constant that turns out to be house style                                                              | Design review — two of black's habits were unreachable from a package                                                            |
 | 2026-08-16 | `review-brief.md`                     | Stage B must run both `cmp` loops itself rather than reading the counts out of the report, and must check `widths` against the reference's bisected default                                                                          | TOML stage B passed a corpus the reference changed in 6 of 14 files, and `widths = [88, 60]` against taplo's default of 80       |
 | 2026-08-16 | `corpus-brief.md`                     | Replace reference-output equivalence with the one-way adversarial rule: every useful mutation rejected by the default must also be rejected by an override; zero useful mutations is a failure                                       | The old check certified `tomllib`, `ast.dump`, and ordered `json.loads` on correct inputs while missing their spelling blindness |
+| 2026-08-16 | `corpus-brief.md`                     | The normalisation probe must include an **empty container written with a space** (`f( )`, `{ }`, `[ ]`); if the gate rejects the reference's own output on it, report and stop rather than deleting the probe                        | Round 2 — Go and CSS independently hit a gate-3 defect there that was latent in every merged language                            |
 
 ## 3. Model scorecard
 

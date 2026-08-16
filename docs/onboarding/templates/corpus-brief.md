@@ -56,9 +56,9 @@ Fields you must establish rather than guess:
   `tree_sitter_xml` exposes `language_xml()` and `language_dtd()`. If you get it
   wrong the loader tells you which names the module actually exports.
 - `injection_aliases` — the exact info-string names that may select this
-  language inside a host document. Use at least the canonical language name;
-  add conventional aliases only when you can vouch for them. Aliases must be
-  unique across manifests. A host language also declares its grammar-specific
+  language inside a host document. Use at least the canonical language name; add
+  conventional aliases only when you can vouch for them. Aliases must be unique
+  across manifests. A host language also declares its grammar-specific
   `[[injections]]` node, info-child and content-child types. Put those array
   tables after every root key; in TOML, later keys otherwise belong to the
   injection entry rather than the manifest root.
@@ -117,8 +117,8 @@ Fields you must establish rather than guess:
   data is unchanged but the document is not** — respell a number (`1_000` →
   `1000`, `0xdead` → `57005`), swap quote styles, convert a dotted key to a
   header, reorder sibling entries — and show your override **rejects** it. The
-  checker must report a non-zero useful count. If the override accepts any member
-  of that oracle, it is weaker and cannot be selected.
+  checker must report a non-zero useful count. If the override accepts any
+  member of that oracle, it is weaker and cannot be selected.
 
   **Data-model loaders are almost always the wrong choice.** `tomllib`,
   `yaml.safe_load`, `json.loads` and friends collapse exactly the spelling
@@ -176,6 +176,17 @@ Every corpus must include, adapted to {{LANG}}'s actual syntax:
   mandatory: one builder wrote all fourteen files already in the reference's own
   spacing, so **7 of 14 were byte-identical input to output** and the corpus
   probed token-level normalisation not at all.
+
+  Include an **empty container written with a space in it** — `f( )`, `{ }`,
+  `[ ]`, whatever the language spells it. It looks like a triviality and it is
+  not: it is the one shape whose node has no named children at all, so it is the
+  only place the gate compares a _construct_ rather than a token. Round 2 found
+  a gate-3 defect there that had been latent across every merged language, and
+  found it twice independently, in Go and CSS, because those were the first two
+  corpora to write one. If the gate rejects your reference's output on this
+  case, **that is a finding — report it and stop.** Do not delete the probe and
+  do not weaken the gate; both round-2 builders got this right.
+
 - a `kitchen` probe — several constructs interacting, the one file allowed to be
   messy
 
