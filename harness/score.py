@@ -31,6 +31,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import gate3  # noqa: E402
+import gen_trees  # noqa: E402
 import manifest as mf  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -87,31 +88,21 @@ def leaves(node: dict) -> list[str]:
     return out
 
 
-def as_tree_doc(text: str, language: str, parser) -> dict | None:
-    """Re-parse formatted output back into the corpus tree format."""
-    source = text.encode("utf-8")
-    root = parser.parse(source).root_node
-    stack = [root]
-    while stack:
-        n = stack.pop()
-        if n.type == "ERROR" or n.is_missing:
-            return None
-        stack.extend(n.children)
-
-    def convert(node, fld: str | None) -> dict:
-        out: dict = {"type": node.type, "start": node.start_byte, "end": node.end_byte}
-        if fld is not None:
-            out["field"] = fld
-        if node.children:
-            out["children"] = [
-                convert(c, node.field_name_for_child(i))
-                for i, c in enumerate(node.children)
-            ]
-        else:
-            out["text"] = source[node.start_byte : node.end_byte].decode("utf-8")
-        return out
-
-    return {"language": language, "source": text, "root": convert(root, None)}
+def as_tree_doc(
+    text: str,
+    manifest: mf.Manifest,
+    manifests: dict[str, mf.Manifest],
+    parsers: dict,
+) -> dict | None:
+    """Re-parse output through the same splicing path as the frozen corpus."""
+    doc, problems = gen_trees.parse_doc(
+        manifest,
+        text.encode("utf-8"),
+        f"<gate2:{manifest.name}>",
+        manifests,
+        parsers,
+    )
+    return None if problems else doc
 
 
 # --------------------------------------------------------------------------
@@ -188,11 +179,15 @@ def corpus(manifests: dict[str, mf.Manifest]) -> list[tuple[Path, mf.Manifest]]:
 
 
 def score(
-    submission: Path, manifests: dict[str, mf.Manifest], verbose: bool = False
+    submission: Path,
+    manifests: dict[str, mf.Manifest],
+    verbose: bool = False,
+    all_manifests: dict[str, mf.Manifest] | None = None,
 ) -> Report:
     rep = Report(submission=submission.name)
     rust, js = submission / "fmt-rust", submission / "fmt-js"
-    parsers = mf.parsers(manifests)
+    all_manifests = all_manifests or manifests
+    parsers = mf.parsers(all_manifests)
 
     trees = corpus(manifests)
     if not trees:
@@ -209,7 +204,9 @@ def score(
             doc = json.loads(tree_path.read_text())
             parser = parsers[m.name]
             src_text = (ROOT / doc["source_file"]).read_text()
-            src_sig = gate3.signature(src_text, m, parser)
+            src_sig = gate3.signature(
+                src_text, m, parser, all_manifests, parsers
+            )
             src_tokens = leaves(doc["root"])
 
             for width in m.widths:
@@ -232,14 +229,19 @@ def score(
                 text = r_run.text
 
                 # --- gate 3: output parses and means the same thing
-                out_sig = gate3.signature(text, m, parser)
+                out_sig = gate3.signature(
+                    text, m, parser, all_manifests, parsers
+                )
                 if out_sig != src_sig:
                     notes.append(f"{tag}: {gate3.describe(src_sig, out_sig, m)}")
                     continue
                 nondestructive += 1
 
                 # --- gate 2: formatting the output again changes nothing
-                redoc = as_tree_doc(text, m.name, parser)
+                redoc = as_tree_doc(text, m, all_manifests, parsers)
+                if redoc is None:
+                    notes.append(f"{tag}: could not build round-2 tree")
+                    continue
                 round2 = tmp / f"{tag}.tree.json"
                 round2.write_text(json.dumps(redoc))
                 again = invoke(rust, round2, width)
@@ -448,8 +450,9 @@ def main() -> int:
     ap.add_argument("--language", help="score only this language")
     args = ap.parse_args()
 
-    manifests = mf.selected(mf.bootstrap(), args.language)
-    rep = score(args.submission.resolve(), manifests, args.verbose)
+    known = mf.bootstrap()
+    manifests = mf.selected(known, args.language)
+    rep = score(args.submission.resolve(), manifests, args.verbose, known)
 
     if args.json:
         print(json.dumps(rep.__dict__, indent=2))

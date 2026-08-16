@@ -181,15 +181,15 @@ than-guess rule intact.
 The two runtime slices have landed: `Indent` carries its own amount, and the
 formatter now takes a language-to-package map with optional `language`
 boundaries on nodes. Each boundary binds a formatter to that region's package,
-so nested switches restore the enclosing package without mutable language
-state. The CLIs load every language named by the tree.
+so nested switches restore the enclosing package without mutable language state.
+The CLIs load every language named by the tree.
 
 A missing formatter package is a refusal that names the language. This is
 deliberately opposite to the highlighter, which degrades to empty tables so it
 can keep walking and resume painting at a nested known language. Layout bytes
 cannot be guessed safely; missing colour can. Unsupported or unparseable
-formatter regions still degrade one layer out, by the harness declining to
-stamp `language` and the package using `verbatim`.
+formatter regions still degrade one layer out, by the harness declining to stamp
+`language` and the package using `verbatim`.
 
 Harness splicing has now landed too. Guest info-string aliases and host
 node/info/content shapes live in manifests; `gen_trees.py` parses clean embedded
@@ -198,9 +198,19 @@ content node with the guest root, and stamps that root. Unsupported and dirty
 regions stay ordinary host content. `probe_injection.py` proves the policy with
 markdown + JSON through both runtimes without adding markdown to scoring.
 
+The gates now cross the boundary too, and the check that established this is the
+reason the order changed. Gate 3's generic signature was **blind to the inside
+of a fenced code block**: tree-sitter-markdown's block grammar gives
+`code_fence_content` one empty `block_continuation` per line and no leaf holding
+the text, so replacing a JSON body with `TOTAL GARBAGE, NOT JSON AT ALL` scored
+as identical. Non-destruction now means the _guest_ language's notion of
+meaning, checked by the guest's own gate 3 through the same manifest routing the
+splicer uses; an unroutable region falls back to exact bytes, because that is
+what `verbatim` promised. Gate 2's second pass calls `gen_trees.parse_doc()`
+instead of a private reparse, so idempotence across a boundary is idempotence.
+
 Remaining for this point: the ordinary markdown onboarding round—its real
-manifest, package and corpus—with gate 3 and idempotence exercised across the
-already-working language boundary.
+manifest, package and corpus—landing on gates that can now see what it does.
 
 ## 7. Is the tree interface actually independent of tree-sitter? — **closed, yes**
 

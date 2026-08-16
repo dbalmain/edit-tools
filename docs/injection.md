@@ -89,7 +89,44 @@ It removed an argument rather than adding one. It also buys something unrelated:
 a language whose continuation lines indent differently from its block bodies
 becomes expressible, which is a `LANGUAGES.md` "known stress" for Haskell.
 
-### 4. Nothing else
+### 4. The gates cross the same boundary — **done**
+
+Gate 3 cannot treat an injection's host node as ordinary structure. Measured on
+the Markdown fixture, `tree-sitter-markdown` represents each content line only
+as an empty `block_continuation`; replacing a JSON body with garbage leaves the
+generic named-node signature unchanged. The failure is under-strict, so it must
+be fixed before a Markdown package can produce trusted goldens.
+
+The non-destruction signature now follows the same manifest routing as tree
+generation. It masks the opaque content in the host structure and records an
+ordered recursive signature beside it:
+
+- a clean, known region uses the guest manifest, parser, gate-3 override and
+  extras policy;
+- an unlabelled, unknown, or unparseable region records its exact bytes;
+- a nested host repeats the same process, with no language or node names in the
+  gate.
+
+The host extras walk stops at the content boundary and the guest signature
+collects extras below it. Therefore comments are checked by the grammar that
+owns them; they are neither lost between two grammar-specific extras walks nor
+interpreted by the host grammar. `check_gate3.py` proves this with a Python
+comment inside Markdown, as well as JSON meaning changes, parse failure,
+verbatim mutations, legitimate JSON reformatting, and
+Markdown-in-Markdown-in-JSON recursion.
+
+The signature is still driven from text, not from a prebuilt spliced tree. Gate
+3 judges arbitrary formatter output, and the stronger overrides deliberately
+accept text (`ast.parse`, `json.loads`) rather than the corpus-tree format.
+Changing that interface would not make those checks tree-native. Instead,
+`gen_trees.py` and `gate3.py` share the small region-routing and guest-parse
+helper, so gate 3 re-derives sites without duplicating the routing decision.
+
+Gate 2 now calls `gen_trees.parse_doc()` for its second pass. The frozen corpus
+and the idempotence reparse therefore have one conversion and splicing path,
+including the same `source` field and the same verbatim degradation policy.
+
+### 5. Nothing else in the runtime
 
 Width needs no work. Once the embedded Doc is spliced under the enclosing
 `Indent`, the printer measures from the current column exactly as it does for
@@ -148,17 +185,15 @@ through the same place.
 
 ## What this does _not_ solve
 
-- **Gate 3 across a language boundary.** The non-destruction checker compares
-  named nodes, and "the grammar's extras" (comments) are per-language. A spliced
-  tree has two grammars' extras in it. The generic default probably works
-  unchanged; nobody has checked, and given round 1's lesson about gate-3
-  overrides certifying themselves, it should be checked adversarially rather
-  than assumed.
-- **Idempotence across the boundary.** Formatting a markdown file reformats the
-  JavaScript inside it. Formatting the result must not change it again — which
-  requires the embedded formatter to be idempotent _at the width the fence
-  leaves it_, not at its own default width. This is a real new failure mode and
-  the corpus must probe it: the same snippet at two indent depths.
+- **Markdown's package and corpus.** The gates can now see the boundary, but no
+  scored Markdown language exists yet. Onboarding must still declare the real
+  host shape, write the package, and add adversarial corpus cases. In
+  particular, it must measure the same guest at two indent depths: a formatter
+  can be idempotent at its own width and unstable at the width left by its host.
+- **The verbatim-fence newline policy.** The fixture package remains
+  deliberately non-idempotent for unspliced content; the probe result below is
+  now more precise, but the package-design choice still belongs to Markdown
+  onboarding.
 - **The reference formatter.** Prettier formats embedded code in markdown, so
   there is ground truth to measure against — but prettier's markdown defaults
   matter enormously here, and one of them is load-bearing (below).
@@ -195,15 +230,17 @@ highlighter invent its own.
 3. Harness splicing in `gen_trees.py`, with markdown + JSON as the first real
    pair — **done**. `probe_injection.py` uses a fixture-only markdown manifest
    and package, so this did not add an unformattable scored language.
-4. Markdown package and corpus, as an ordinary onboarding round with an
-   injection-shaped brief. The machinery is now in place; the round adds the
-   real markdown manifest (including its host shape), package and corpus, then
-   checks gate 3 and idempotence across language boundaries.
+4. Injection-aware gate 3 and a spliced gate-2 reparse — **done**. The fixture
+   adversarially proves guest semantics, guest extras, exact-byte fallback and
+   nesting, without adding a scored language.
+5. Markdown package and corpus, as an ordinary onboarding round with an
+   injection-shaped brief. The round adds the real markdown manifest (including
+   its host shape), package and corpus, then exercises the now-capable gates.
 
 Steps 1 and 2 are runtime work and belong to whoever owns the runtime. Steps 3
-and 4 are a language round and can go to a builder.
+and 4 are harness work. Step 5 is a language round and can go to a builder.
 
-### What step 3 found that step 4 must solve
+### What step 3 found that Markdown onboarding must solve
 
 Run the probe fixture through both CLIs and the injected fence is right while
 the verbatim ones each gain a blank line before their closing delimiter:
@@ -230,8 +267,22 @@ The fixture package leaves it wrong on purpose — it exists to prove the
 machinery, and `probe_injection.py` asserts Rust/JS identity rather than
 blessing the bytes. The real markdown package has to resolve it. Whether that is
 a `when` on the child, a trailing-newline convention for `verbatim`, or the
-harness narrowing the content extent is step 4's call; what step 4 must not do
-is discover it from a corpus diff.
+harness narrowing the content extent is the Markdown round's call; what that
+round must not do is discover it from a corpus diff.
+
+Re-splicing in gate 2 does not remove the tension or turn it into a route
+mismatch. The clean JSON fence takes the injected path in both rounds, while the
+no-info, unknown-language and malformed-JSON fences remain verbatim in both. The
+second format still adds one newline to each of those three regions (`+3` bytes
+total). The remaining bug is therefore specifically the fixture package's
+trailing-newline contract for verbatim content.
+
+What did change is who notices. **Gate 3 now rejects the fixture's own first
+format**, because a verbatim region is compared by exact bytes and this one
+gained a newline it was supposed to reproduce unchanged. Before this step no
+gate could see it at all. So the markdown round does not get to leave this
+undecided: the defect is named by gate 3 on the first run and compounds by one
+newline per fence per round under gate 2.
 
 ### What step 2 settled that step 3 must obey
 
