@@ -21,23 +21,28 @@ injection_aliases = ["go", "golang"]
 # in a dir full of plausible `.editorconfig` / `gofmt`-shaped files -- identical.
 # `gofmt` with no arguments reads stdin and writes stdout; no fake filename is
 # needed. It ships inside the go distribution rather than as its own package, so
-# the pinned-runner form is `nix shell nixpkgs#go -c gofmt` (there is no
+# the runner form is `nix shell nixpkgs#go -c gofmt` (there is no
 # `nixpkgs#gofmt` attribute; `nix run nixpkgs#go` runs `go`, not `gofmt`).
 # Verified: source on stdin -> formatted source on stdout, exit 0, deterministic
 # across two runs.
 reference = "nix shell nixpkgs#go -c gofmt"
+# gofmt has no version flag. `go version` supplies the recorded display string,
+# and `go version $(command -v gofmt)` inspects the formatter executable itself:
+# it reports go1.26.5. `go` and `gofmt` also resolve inside the same
+# `...-go-1.26.5` Nix output, so this identifies the binary more directly than
+# merely assuming that every tool shipped beside `go` has its version.
 reference_version = "go version go1.26.5 linux/amd64"
 
-# gofmt has no width knob and does not reflow (a 120-character call stays on one
-# line). `reference_width = "fixed"` is the honest entry: established by running
-# the same long line at two widths and diffing -- identical, and there is no
-# `{width}` flag to pass. gofmt's single output is ground truth.
+# gofmt has no width knob and does not reflow (a 166-character call stays on one
+# line). Its help has no width option, the command has nowhere to pass one, and
+# repeated runs are identical. `reference_width = "fixed"` is the honest entry;
+# gofmt's single output is ground truth.
 reference_width = "fixed"
 
-# One entry only, as the loader requires for a fixed reference. 80 is not a
-# gofmt number -- gofmt has no width -- it is the conventional Go line-length
-# guideline and only feeds the scorer's comparative overflow measure. See the
-# report: this is arbitrary because the reference ignores width entirely.
+# One entry only, as the loader requires for a fixed reference. 80 is an
+# arbitrary round measurement width, not a gofmt setting or an official Go
+# default. It only feeds the scorer's comparative line-length measure. See the
+# report: the reference ignores width entirely.
 widths = [80]
 
 # Generic default. gofmt's only structural rewrite is removing redundant nested

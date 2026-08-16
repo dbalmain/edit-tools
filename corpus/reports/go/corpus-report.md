@@ -12,9 +12,9 @@ previous (interrupted) run.
 | `grammar_module`    | `tree_sitter_go`                        | `uv run --with tree-sitter-go==0.25.0` then `import tree_sitter_go`. The hyphen-to-underscore swap is correct.                                                                                                                                 |
 | `grammar_symbol`    | `language`                              | The module exports `language()` (and `HIGHLIGHTS_QUERY`, `TAGS_QUERY`); it returns a `tree_sitter.Language` capsule.                                                                                                                            |
 | `reference`         | `nix shell nixpkgs#go -c gofmt`         | Source on stdin, formatted source on stdout, no fake filename needed. There is no `nixpkgs#gofmt` attribute — gofmt ships inside the go distribution, and `nix run nixpkgs#go` runs `go`, not `gofmt`. `nix shell … -c gofmt` is the working form. |
-| `reference_version` | `go version go1.26.5 linux/amd64`      | Printed by `nix shell nixpkgs#go -c go version`. gofmt has no `-version` flag; it is versioned with the toolchain. Not assumed.                                                                                                                |
-| `reference_width`   | `fixed`                                 | gofmt has no width knob and does not reflow: a 120+ character call stays on one line, verified by diffing the same long line at two widths — identical. There is no `{width}` to pass, so `"fixed"` with a single width is the honest entry.      |
-| `widths`            | `[80]`                                  | `"fixed"` requires exactly one width. 80 is not a gofmt number — gofmt has no width — it is the conventional Go line-length guideline and only feeds the scorer's comparative overflow measure, which gofmt ignores.                            |
+| `reference_version` | `go version go1.26.5 linux/amd64`      | Printed by `nix shell nixpkgs#go -c go version`. More directly, `go version $(command -v gofmt)` reads the formatter executable's embedded build version as `go1.26.5`, and both binaries resolve inside the same `...-go-1.26.5` Nix output. gofmt has no version flag.                                            |
+| `reference_width`   | `fixed`                                 | gofmt has no width knob and does not reflow: a 166-character call stays on one line, its help exposes no width option, and there is no `{width}` to pass. `"fixed"` with a single measurement width is the honest entry.                                                                                         |
+| `widths`            | `[80]`                                  | `"fixed"` requires exactly one width. 80 is an arbitrary round measurement width, not a gofmt setting or an official Go default. It only feeds the scorer's comparative line-length measure, which gofmt ignores.                                                                                              |
 | `gate3`             | `default`                               | See below.                                                                                                                                                                                                                                      |
 | `transparent_wrappers` | `["parenthesized_expression"]`       | Established by running gofmt over the corpus, not by reading the grammar: gofmt removes a redundant inner pair of parentheses (`((1))` → `(1)`) while leaving a single level in place.                                                          |
 | `equivalent_kinds`  | `[]`                                    | Nothing was renamed.                                                                                                                                                                                                                            |
@@ -31,7 +31,11 @@ config search to suppress, and no environment variable that changes formatting.
 
 `nix shell nixpkgs#go` is not pinned the way `uvx black@25.9.0` is. A nixpkgs
 channel bump would change the binary; `gen_reference.py --check` is what would
-show it. `reference_version` records the binary that actually wrote the files.
+show it. `reference_version` records the toolchain that actually wrote the
+files. Because gofmt has no version flag, the strongest local check is `go
+version $(command -v gofmt)`: it inspects gofmt's own embedded build information
+and reports `go1.26.5`. The formatter and `go` command also resolve from the same
+Nix store output, rather than merely happening to be on the same `PATH`.
 
 ### Why `gate3 = "default"`
 
@@ -108,21 +112,26 @@ Required probes:
   arm now has a comment to drop in every file.
 - **"Differs between two widths" does not apply.** gofmt has one output. There
   is a single width in the manifest (`[80]`), and `reference_width = "fixed"`
-  forbids more. Nothing in the corpus can tell two widths apart because the
-  reference has no width to tell.
+  forbids more. A comparison loop over two independent reference invocations
+  found 0 of 16 differences; those are determinism runs, not two width settings.
+  Nothing in the corpus can tell two widths apart because the reference has no
+  width to tell.
 
 ## What gofmt does that surprised me
 
 ### It has no width, and that is the finding
 
-gofmt refuses to reflow. A 120-character function call, a chained method call,
-a long slice literal — all stay on one line no matter what. The manifest is
-`reference_width = "fixed"` and the scorer's width-based measures (overflow
-count, agreement-at-two-widths) are structurally inapplicable; there is no
-"reference's own overflow count" to report because gofmt has no target width to
-overflow. A stage-C package that treats `{width}` as a prettier-style
-print-width has nothing to do; a package that emits gofmt's output byte for
-byte needs no width at all.
+gofmt refuses to reflow. A 166-character call, a chained method call, and a long
+slice literal all stay on one line. The manifest is `reference_width = "fixed"`
+and agreement-at-two-widths is structurally inapplicable.
+
+The current scorer nevertheless computes and prints `its own overflow: N`
+against the manifest's arbitrary 80. That label is misleading: gofmt has no
+target width to overflow. For a fixed-width reference the human report should
+print `its own overflow: n/a (fixed reference; measurement width 80)` (and the
+package's width gate remains waived). The raw count may remain in JSON as a
+comparative line-length diagnostic if it is explicitly named as such. A stage-C
+package that emits gofmt's output byte for byte needs no width at all.
 
 ### Line structure is source-driven, not width-driven
 
@@ -211,11 +220,11 @@ reference output is reproducible.
 
 ## Files touched outside `corpus/` and `harness/languages/`
 
-None. The diff against the branch base (`3b9cdf9`) excluding those two paths is
-empty:
+None. After merging the current `main`, the branch-only diff excluding those two
+paths is empty:
 
 ```
-$ git diff --stat 3b9cdf9 -- . ':(exclude)corpus' ':(exclude)harness/languages'
+$ git diff --stat main...HEAD -- . ':(exclude)corpus' ':(exclude)harness/languages'
 ```
 
 No `rust/`, no `runtime-js/`, no `packages/`, no shared harness script. The
@@ -228,14 +237,21 @@ block.
   one output. The manifest says `reference_width = "fixed"`, which is the
   schema's own way of expressing "this reference has no width". I did not
   invent a second width to satisfy a property the reference cannot meet.
-- **"The reference's own overflow count" cannot apply.** There is no width to
-  overflow. I note the absence rather than reporting a number.
+- **"The reference's own overflow count" cannot apply as currently worded.**
+  There is no width to overflow. The brief should say what the scorer prints for
+  `reference_width = "fixed"`; `n/a (fixed reference; measurement width 80)` is
+  honest, while an unlabeled count against arbitrary 80 is not.
 - **"Most files should carry a comment" was the one real miss in the previous
   run**, at 4 of 16. It is fixed (16 of 16), and the report states the count
   rather than asserting it.
+- **“Pinned-runner” is too strong for the Nix examples.** `nix shell
+  nixpkgs#go` records and rechecks an observed version but follows the caller's
+  nixpkgs registry; it does not pin a revision the way `uvx black@25.9.0` pins a
+  release. The brief should call this a runner pattern or require a locked flake
+  reference when it truly means pinned.
 - **`--stdin-filepath` is noise for gofmt.** Unlike prettier, gofmt infers
   nothing from a filename on stdin; there is no fake filename to pass. The
-  pinned-runner form `nix shell nixpkgs#go -c gofmt` is the whole command, and
+  runner form `nix shell nixpkgs#go -c gofmt` is the whole command, and
   `nix run nixpkgs#go` would run `go`, not `gofmt` — worth recording because a
   later Go-adjacent language could copy the wrong form.
 - **`./test.sh` does go green at stage A now.** The `awaiting_package` path in
