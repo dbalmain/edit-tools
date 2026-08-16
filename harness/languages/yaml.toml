@@ -1,0 +1,59 @@
+# YAML. Schema: docs/onboarding/WORKFLOW.md, "Stage 0".
+name = "yaml"
+extensions = [".yaml", ".yml"]
+
+# PyPI name matches the orchestrator's tree_sitter_yaml guess after the usual
+# hyphen-to-underscore swap. 0.7.2 is the latest release (2025-10-07), confirmed
+# against the live index; imported as tree_sitter_yaml; the only language()
+# export is language(), which returns a tree_sitter.Language capsule.
+grammar = "tree-sitter-yaml==0.7.2"
+grammar_module = "tree_sitter_yaml"
+grammar_symbol = "language"
+
+# `yaml` is the canonical info-string. `yml` is the conventional alternate
+# (GitHub linguist, prettier's own support-info aliases, common fence spelling).
+# No other alias is worth vouching for.
+injection_aliases = ["yaml", "yml"]
+
+# prettier 3.9.6 observed from `npx --yes prettier@3.9.6 --version`.
+# `--parser yaml` is required: stdin with no parser and no filepath errors
+# ("No parser and no file path given"). `--stdin-filepath x.yaml` also selects
+# the yaml parser and produces byte-identical output, but it is omitted on
+# purpose -- a filepath opens prettier's editorconfig lookup, which
+# `--parser yaml` alone does not. Verified: a planted .editorconfig with
+# indent_size=8 changes output only when `--stdin-filepath` is present.
+#
+# `--no-config` is load-bearing. prettier walks cwd and ancestors for
+# .prettierrc / prettier.config.* / a package.json "prettier" key. A planted
+# config with tabWidth: 4 and singleQuote: true (options the command line does
+# not name) silently reindents and requotes. CLI --print-width wins over a
+# file printWidth under the default --config-precedence cli-override; the file
+# fills every option the CLI does not name. --config-precedence file-override
+# lets the file's printWidth win (checked). --no-config + --config is refused.
+# There is no PRETTIER_CONFIG env that reopens the search. Residual channel:
+# an explicit --config, which cannot be combined with --no-config.
+#
+# print-width honours {width} for flow collections only; established by
+# diffing 80 vs 40 rather than by reading --help. Block collections, strings,
+# comments, block scalars, keys and document markers never reflow.
+reference = "npx --yes prettier@3.9.6 --parser yaml --no-config --print-width {width}"
+reference_version = "3.9.6"
+reference_width = "flag"
+
+# prettier's own default, established by bisection: a flow-sequence line of
+# exactly 80 characters stays flat and 81 breaks. --help also says 80; the
+# bisection is what counts. 40 is the narrow width; it forces the flow
+# expand/collapse that 80 lets a package dodge.
+widths = [80, 40]
+
+# yaml.safe_load (and every other data-model loader) collapses the spellings
+# a formatter must preserve: block vs flow, quote style, null/~ / empty,
+# yes/true, 0xFF vs 255, | vs >. The generic named-node comparison is the
+# right oracle; extras still cover comments. Leave wrappers/equivalences
+# empty until the gate names a kind -- YAML has no parenthesised-expression
+# node, and flow_node / block_node are structural (a flow sequence is not
+# a block sequence).
+gate3 = "default"
+
+transparent_wrappers = []
+equivalent_kinds = []
