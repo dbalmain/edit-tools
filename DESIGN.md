@@ -442,6 +442,10 @@ cannot yet select it safely, because the same array rule also handles strings,
 mixed values and containers and the predicate language cannot say “all children
 are numbers.” Applying fill to every array regresses `scalars.json`; the
 all-child-kind predicate described in `docs/roadmap.md` is the clean follow-up.
+CSS could opt in without that predicate: `font-family` lists contain a
+`string_value` and `box-shadow` / `transition` do not, so `count t:string_value
+0` separates them. That moved CSS from 11/30 to 18/30. The same test would not
+select an unquoted-only family list, and it does not help JSON.
 
 The black-agreement figure is worse than this document used to claim, and the
 reason is worth keeping. The submission scored it at width 88 only, where

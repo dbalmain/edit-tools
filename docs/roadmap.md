@@ -147,7 +147,11 @@ to put several numbers on a line rather than one per line (the second JSON
 construct, `long_flat_array`). Built on 2026-08-17 after CSS priced it: **+365 B
 gzip** across the hand-written JS runtime, with a byte-identical Rust mirror.
 The opcode is `["fill", sel, sep]`, parallel to `each`; its separator chooses
-flat or break independently per line. JSON did not opt in: its grammar uses one
+flat or break independently per line. CSS opted in on 2026-08-17: declaration
+`font-family` lists and hanging space-separated call lists, behind existing
+`count` tests. Agreement 11/30 → 18/30; 7 of 19 accepted divergences resolved.
+Stage D's 9/21 was optimistic — `calc`'s last `minmax()` and `--list`'s
+comma-groups are not this fill. JSON still cannot opt in: its grammar uses one
 array node type for numeric, string, mixed and container arrays, and the current
 predicate set cannot prove that every element is numeric.
 
