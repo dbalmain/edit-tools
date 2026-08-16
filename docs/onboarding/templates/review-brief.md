@@ -29,7 +29,13 @@ Check, in roughly this order of importance:
    the narrow width? Does it cover comments in every position? Is there anything
    characteristic of {{LANG}} that a person would notice missing?
 
-   **Run both `cmp` loops yourself. Do not read the counts out of the report.**
+   **Run `./harness/corpus_stats.py --language {{LANG}}` yourself. Do not read
+   the counts out of the report.** It prints all four -- how many files the
+   reference changes, how many differ between the two widths, how many carry a
+   comment, and the reference's own overflow -- and it replaces the hand-rolled
+   `cmp` loops this check used to ask for. A shared implementation matters here:
+   a reviewer re-deriving a number with a *different* loop cannot tell a real
+   disagreement from a methodology difference.
    How many files does the reference change at all, and how many differ between
    the two widths? A builder who omits one of the two numbers looks exactly like
    a builder who reports a good one, and TOML's stage B passed a corpus where

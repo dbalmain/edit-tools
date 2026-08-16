@@ -98,8 +98,13 @@ rather than an accident.
 
 ## 4. The reference rewrites token text, so the corpus cannot contain the case
 
-**Status:** open · **Cost:** measurement, not IR · **Languages:** YAML (two
-constructs), Python (dodged by flag)
+**Status:** open · **Cost:** measurement, not IR · **Languages:** YAML (three
+constructs), CSS (three more), Python (dodged by flag)
+
+**This is now the most-confirmed entry in the register, and it was confirmed by
+languages that had no reason to agree.** Three of round 2's four builders hit it
+independently, in two different languages, against the same reference. It is no
+longer a YAML quirk.
 
 This one is not a missing capability. It is a hole in **what the numbers mean**,
 and it is the most important entry here.
@@ -113,6 +118,10 @@ the corpus loses:
 - **Python** dodged it. black normalises quotes, so the manifest passes
   `--skip-string-normalization` — and says so, in the manifest, with the
   reasoning. Clean, because black has a flag.
+- **CSS** cannot dodge it either. prettier rewrites `.5` to `0.5`, normalises
+  hex-colour case, and changes quote style. Found at stage B, in a language
+  picked as the round's _simplest_ — which is the strongest evidence here that
+  this is structural rather than a property of hard languages.
 - **YAML** cannot dodge it. prettier rewrites `'hello'` to `"hello"` and
   reindents block scalars, and has no flag to stop either. Stage A therefore
   **left both constructs out of the corpus** and wrote the block scalars
