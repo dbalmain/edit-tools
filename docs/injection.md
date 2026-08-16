@@ -187,9 +187,9 @@ through the same place.
 
 - **Markdown's package and corpus.** The gates can now see the boundary, but no
   scored Markdown language exists yet. Onboarding must still declare the real
-  host shape, write the package, and add adversarial corpus cases. In particular,
-  it must measure the same guest at two indent depths: a formatter can be
-  idempotent at its own width and unstable at the width left by its host.
+  host shape, write the package, and add adversarial corpus cases. In
+  particular, it must measure the same guest at two indent depths: a formatter
+  can be idempotent at its own width and unstable at the width left by its host.
 - **The verbatim-fence newline policy.** The fixture package remains
   deliberately non-idempotent for unspliced content; the probe result below is
   now more precise, but the package-design choice still belongs to Markdown
@@ -272,10 +272,17 @@ round must not do is discover it from a corpus diff.
 
 Re-splicing in gate 2 does not remove the tension or turn it into a route
 mismatch. The clean JSON fence takes the injected path in both rounds, while the
-no-info, unknown-language and malformed-JSON fences remain verbatim in both.
-The second format still adds one newline to each of those three regions (`+3`
-bytes total). The remaining bug is therefore specifically the fixture
-package's trailing-newline contract for verbatim content.
+no-info, unknown-language and malformed-JSON fences remain verbatim in both. The
+second format still adds one newline to each of those three regions (`+3` bytes
+total). The remaining bug is therefore specifically the fixture package's
+trailing-newline contract for verbatim content.
+
+What did change is who notices. **Gate 3 now rejects the fixture's own first
+format**, because a verbatim region is compared by exact bytes and this one
+gained a newline it was supposed to reproduce unchanged. Before this step no
+gate could see it at all. So the markdown round does not get to leave this
+undecided: the defect is named by gate 3 on the first run and compounds by one
+newline per fence per round under gate 2.
 
 ### What step 2 settled that step 3 must obey
 
