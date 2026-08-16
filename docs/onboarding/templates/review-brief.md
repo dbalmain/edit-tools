@@ -34,14 +34,13 @@ Check, in roughly this order of importance:
    reference changes, how many differ between the two widths, how many carry a
    comment, and the reference's own overflow -- and it replaces the hand-rolled
    `cmp` loops this check used to ask for. A shared implementation matters here:
-   a reviewer re-deriving a number with a *different* loop cannot tell a real
-   disagreement from a methodology difference.
-   How many files does the reference change at all, and how many differ between
-   the two widths? A builder who omits one of the two numbers looks exactly like
-   a builder who reports a good one, and TOML's stage B passed a corpus where
-   the reference changed 6 of 14 files — worse than the round-1 corpus that was
-   scored as a defect for the same reason. The reviewer trusted a report that
-   simply did not mention it.
+   a reviewer re-deriving a number with a _different_ loop cannot tell a real
+   disagreement from a methodology difference. How many files does the reference
+   change at all, and how many differ between the two widths? A builder who
+   omits one of the two numbers looks exactly like a builder who reports a good
+   one, and TOML's stage B passed a corpus where the reference changed 6 of 14
+   files — worse than the round-1 corpus that was scored as a defect for the
+   same reason. The reviewer trusted a report that simply did not mention it.
 
    The consequence is not cosmetic. Byte-identical input and output means the
    corpus never probes **normalisation** — what the reference rewrites at token
@@ -114,10 +113,29 @@ whether the package is right. Budget your effort here:
    classification with the viewer's `--approve`, `--verdict`, `--reason`, and
    `--reviewed-by` flags; the resulting JSONL diff is part of the review.
 4. **Verdict each runtime edit**: `warranted` | `unnecessary` |
-   `needs-redesign`. Ask whether a package-level expression would have done it.
-   State whether you now recommend **freezing** the runtime against further
-   builder edits — you have the authority to recommend that, and the
-   orchestrator will act on it.
+   `needs-redesign`. A verdict of `unnecessary` is a **retroactive freeze for
+   this run**: revert the edit and require the package to be expressed without
+   it. You hold that power directly and do not need to ask — it has been
+   exercised, on CSS, and it worked. Do **not** recommend a standing freeze;
+   Dave declined that in round 1 and the question here is always "was _this_
+   edit warranted", never "should builders still be allowed to edit".
+
+   Two checks, and the second is the one reviewers skip:
+
+   - **Was it needed?** Would a package-level expression have done it? Test any
+     workaround you propose at **one adversarially narrow width** as well as the
+     scored one — a `group`-based composition can match a fixed-width reference
+     perfectly at width 80 and still be wrong, because it is width-sensitive
+     where the reference is not.
+   - **Is its _shape_ right?** A warranted capability can still be implemented
+     too broadly, and gates cannot see that: every gate passes either way. Read
+     the predicate. YAML's semantic-gap bypass was warranted and searched the
+     whole preceding subtree for its declaring token, so a `|+` buried anywhere
+     inside an item uncapped a blank run belonging to the next sibling. Build
+     the smallest input that separates the implemented predicate from the
+     intended one and run it. Correcting the shape is part of the verdict, not a
+     separate finding.
+
 5. **Read the package for what gates cannot see**: design fit, whether it reuses
    the existing concepts or invents parallel ones, whether the rule table reads
    like `packages/python.json` or like something bolted on.

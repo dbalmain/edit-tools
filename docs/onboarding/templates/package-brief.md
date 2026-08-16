@@ -118,6 +118,16 @@ If {{LANG}} genuinely needs something the runtime does not have, add it — and
 put the full case in the report: what you tried first, what the package could
 not express, and why a package-level workaround is worse.
 
+**Test every package-level workaround at one adversarially narrow width**, even
+when the manifest scores only one. Go's stage D found a
+`group + trail(" ") + srcline` composition that matched gofmt perfectly at width
+80 and was still wrong: at width 1 it rewrote a source-flat `struct{ … }` as
+`struct { … }`, because the composition is width-sensitive and gofmt is not. A
+workaround that only holds at the measured width is not a workaround — it is a
+coincidence, and reporting it as one costs the reviewer a run. This matters most
+under `reference_width = "fixed"`, where nothing else in the pipeline ever
+varies the width.
+
 Measure the **gzip size delta of each runtime edit separately**, and name the
 {{LANG}} construct that forced it. Not one lump figure for the whole slice. The
 20 KB budget is soft — going over is a question ("which language features cost
