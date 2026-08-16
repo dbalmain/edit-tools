@@ -67,6 +67,7 @@ def make_manifest(path: Path, name: str, selected_gate: str) -> manifest.Manifes
         gate3_requires=(),
         transparent_wrappers=frozenset(),
         equivalent_kinds=(),
+        incomparable={},
         path=path,
     )
 
