@@ -13,6 +13,11 @@ it does that the gate rejects is a bug in the gate, not in the formatter. This
 generalises the old "black is the oracle" check to every language, and reads the
 committed `corpus/reference/` output so it needs nothing installed.
 
+Files listed in the manifest's `incomparable` table skip only this assertion:
+the reference is known to rewrite them in a way linearity forbids (quote
+respelling, import sorting, `.5` → `0.5`). They still have to parse, still
+feed the override and destruction arms, and still count for gates 0–3.
+
 **2. An override must never be weaker than the generic default.** Agreement on
 reference output is retained as a sanity check, but correct input is not an
 adversarial test: every sound checker should accept it. Each reference output is
@@ -61,18 +66,20 @@ INJECTION = ROOT / "harness" / "fixtures" / "injection"
 
 
 def cases(m: mf.Manifest):
-    """(label, source_text, formatted_text) per corpus file per width."""
+    """(label, source_text, formatted_text, incomparable) per file per width."""
     src_dir = SRC / m.name
     if not src_dir.is_dir():
         return
     for path in sorted(p for ext in m.extensions for p in src_dir.glob(f"*{ext}")):
         source = path.read_text()
+        incomparable = path.name in m.incomparable
         for width in m.widths:
+            label = f"{m.name}__{path.stem}@{width}"
             ref = REFERENCE / f"{m.name}__{path.stem}@{width}.txt"
             if not ref.is_file():
-                yield (f"{m.name}__{path.stem}@{width}", source, None)
+                yield (label, source, None, incomparable)
                 continue
-            yield (f"{m.name}__{path.stem}@{width}", source, ref.read_text())
+            yield (label, source, ref.read_text(), incomparable)
 
 
 def drop_a_comment(text: str, parser) -> str | None:
@@ -410,7 +417,7 @@ def main() -> int:
         parser = parsers[m.name]
         overridden = m.gate3 != "default"
 
-        for label, source, formatted in cases(m):
+        for label, source, formatted, incomparable in cases(m):
             if formatted is None:
                 uncompared += 1
                 failures.append(
@@ -427,8 +434,10 @@ def main() -> int:
                 failures.append(f"{label}: the *source* does not pass its own gate")
             elif after is None:
                 failures.append(f"{label}: reference output does not parse")
-            elif before != after:
+            elif before != after and not incomparable:
                 failures.append(f"{label}: {gate3.describe(before, after, m)}")
+            elif before != after and args.verbose:
+                print(f"  incomparable (reference rewrite skipped) {label}")
 
             # --- 2. the generic default must reach the same verdict
             if overridden:

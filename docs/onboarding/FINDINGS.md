@@ -568,7 +568,8 @@ workaround have moved it up.
 
 ## 11. Two smaller CSS findings, recorded but not yet argued
 
-**Status:** open · **Cost:** unknown · **Languages:** CSS
+**Status:** open · **Cost:** unknown · **Languages:** CSS, Python, JavaScript
+(first bullet); CSS (second)
 
 Both from CSS stage D, both real, neither yet costed. They are kept together
 because each is currently a single divergence in a single language, which is
@@ -585,8 +586,28 @@ The second is a close relative of the block-scalar problem in entry 4: content
 whose layout is data. If a third language wants it, it should probably become
 one entry about **layout-as-content** rather than two per-language ones.
 
-**Decide when:** a second language hits either. Recorded now so the first
-sighting is not lost.
+**The first bullet is no longer a single sighting, and should be split out.**
+Reviewing the stage-0 python baseline found `chains.py@60` to be exactly it:
+black treats `a.b().c().d()` as one flat chain that breaks at every dot, and the
+chain is left-nested *alternating* `attribute` and `call` nodes, so `flatten` --
+which requires same-type, same-tightness -- cannot collect it. `DESIGN.md`
+already names "method chains at the dots" as a known limit, which means this was
+understood before the register existed and simply never got an entry.
+JavaScript's stage A reports prettier doing the same thing, making three
+languages.
+
+So this is a **heterogeneous-chain `flatten`**: the existing opcode generalised
+from "same type, same tightness" to a declared alternating spine. Probably local,
+since `flatten` already walks a left-nested spine and the change is to what it
+accepts rather than to when it runs -- but nobody has costed it.
+
+The second bullet (source-break-sensitive layout for `grid-template-areas`) is
+still a single CSS sighting, though Go's `srcline` work is a close relative.
+
+**Decide when:** the first bullet now -- three languages and a `DESIGN.md`
+acknowledgement is well past this register's bar, and it should get its own
+entry number the next time this file is edited. The second when a second
+language hits it.
 
 ## 12. Semantic content can live in the whitespace _between_ two nodes
 
@@ -788,6 +809,75 @@ now: a policy may respell a token in place; nothing may move one.
 completely. Land it before round 3 reaches stage C, so its packages are written
 against the final policy list rather than retrofitted.
 
+## 15. The IR commits to one layout per group; the references choose among candidates
+
+**Status:** open · **Cost:** local for the verified case, contextual in general ·
+**Languages:** Python (2 divergences)
+
+A Wadler group has exactly two states: flat if it fits, broken if it does not.
+`fits` is asked once, about the flat form. **The references do not work that
+way** — they generate candidate layouts and pick one, which lets them decline a
+break that would not help, and prefer one break site over another.
+
+Found while reviewing the stage-0 python baseline, which nobody had ever
+classified. Two faces, both verified against committed reference output.
+
+### (a) Do not break if breaking does not help
+
+black wraps a too-long assignment RHS in parentheses **only when the wrapped
+form actually fits**. Measured on `strings.py`, all six data points agreeing:
+
+| line          | flat | wrapped @ indent 4 | black @88 | black @60 |
+| ------------- | ---- | ------------------ | --------- | --------- |
+| `long_string` | 95   | 85                 | **wraps** | leaves it |
+| `formatted`   | 82   | 74                 | flat fits | leaves it |
+| `astral`      | 74   | 69                 | flat fits | leaves it |
+
+At 88 the wrap buys something (85 ≤ 88) so black takes it. At 60 nothing fits
+either way, so black leaves the line long rather than adding parentheses that do
+not help. Our `autoparen` cannot express that: its `IfBreak` fires whenever the
+flat form misses, regardless of whether the broken form lands.
+
+**This was verified by experiment, not inferred.** Adding `string` to python's
+`optional_parens` fixes `strings.py@88` exactly as predicted — and breaks
+`strings.py@60` exactly as predicted, wrapping all three lines in parentheses
+that still overflow. Net agreement unchanged at 20/24: one divergence traded for
+another. The experiment was reverted.
+
+### (b) Prefer one break site over another
+
+`kitchen.py@60`, where **both** layouts fit and black picks the other one:
+
+```
+black                              ours
+if on_error is None or not on_error(   if (
+    record, error                          on_error is None
+):                                         or not on_error(record, error)
+                                       ):
+```
+
+black splits the trailing call bracket in preference to splitting the top-level
+boolean operator. Ours breaks the outermost group first, which is what
+Wadler/Oppen does. This is a *preference order over candidates*, not a fit
+question — which is why it belongs with (a) rather than being its own entry.
+
+### What it would take
+
+For (a) specifically, the change is small and local: a group mode that breaks
+only if the broken form fits, otherwise stays flat. The runtime already computes
+both measurements; it simply never compares them.
+
+The general form — prettier's `conditionalGroup`, a list of candidate layouts
+tried in order — is **contextual**, because it means laying out a candidate,
+measuring it, and discarding it. That is speculative work the single-pass
+printer does not do today.
+
+**Do not build the general form to fix (a).** The verified case needs one
+comparison; the general case is a different and much larger decision that only
+(b) argues for, and (b) is one divergence in one language.
+
+**Decide when:** (a) with `fill` (entry 8), which touches the same fit
+machinery. (b) when a second language wants it.
 ---
 
 ## Closed
