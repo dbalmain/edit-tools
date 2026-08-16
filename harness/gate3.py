@@ -157,12 +157,39 @@ def _tokens(node, source: bytes) -> str | tuple[str, ...]:
     differs. So the token boundary is protected by the reparse, and pinning the
     span on top of it buys no strictness -- only a false rejection of correct
     layout.
+
+    **Only whitespace gaps may be dropped, and that distinction is the whole
+    correctness argument.** The first version of this function returned just the
+    child token texts, which silently discarded any source the grammar did not
+    tokenise at all. YAML's `block_scalar` is exactly that shape: one anonymous
+    `|` child, with the entire body an untokenised gap. Its signature became
+    `("|",)` and `d: |\\n  hello` compared equal to `d: |\\n  goodbye` -- a
+    formatter could rewrite the contents of a block scalar and gate 3 would not
+    notice. That is the destructive direction, which is the one failure this
+    gate exists to prevent, and it was a regression against the raw-span
+    comparison it replaced.
+
+    So a gap is dropped only when it is *entirely* whitespace. A gap holding
+    anything else is content the grammar declined to tokenise, and it is kept
+    verbatim -- including its own indentation, which for a block scalar is part
+    of the content rather than layout. That is also why the reference reindenting
+    a block scalar is unmatchable rather than merely inconvenient.
     """
     if not node.children:
         return source[node.start_byte:node.end_byte].decode()
-    return tuple(
-        source[c.start_byte:c.end_byte].decode() for c in node.children
-    )
+
+    parts: list[str] = []
+    cursor = node.start_byte
+    for child in node.children:
+        gap = source[cursor:child.start_byte].decode()
+        if gap.strip():
+            parts.append(gap)
+        parts.append(source[child.start_byte:child.end_byte].decode())
+        cursor = child.end_byte
+    tail = source[cursor:node.end_byte].decode()
+    if tail.strip():
+        parts.append(tail)
+    return tuple(parts)
 
 
 def _generic(
