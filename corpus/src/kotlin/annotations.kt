@@ -1,0 +1,10 @@
+// Stacked annotations and use-site targets. Written on one line so the
+// grammar attaches them as modifiers; own-line stacks parse as siblings.
+
+@JvmStatic @Throws(IOException::class) fun demo(@param:Min(0) count:Int) {} // stacked + use-site
+
+@Deprecated("use other",ReplaceWith("other()")) fun old():String="gone"
+
+class Holder(@get:JvmName("readValue") val value:Int)
+
+annotation class Min(val n:Int)

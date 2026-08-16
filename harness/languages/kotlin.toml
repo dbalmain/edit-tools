@@ -1,0 +1,71 @@
+# Kotlin. Schema: docs/onboarding/WORKFLOW.md, "Stage 0".
+name = "kotlin"
+extensions = [".kt"]
+
+# Live PyPI: the distribution name matches the orchestrator's guess
+# (tree-sitter-kotlin), but the pin does not. 0.7.0 was the guess; the only
+# releases on the index are 1.0.0, 1.0.1 and 1.1.0, and 1.1.0 is latest
+# (checked against https://pypi.org/pypi/tree-sitter-kotlin/json, 2026-08-17).
+# Imported as tree_sitter_kotlin; the module exports only language(), which
+# returns a tree_sitter.Language capsule.
+grammar = "tree-sitter-kotlin==1.1.0"
+grammar_module = "tree_sitter_kotlin"
+grammar_symbol = "language"
+
+# Markdown info strings that select this grammar for a fenced region.
+# `kotlin` is the canonical name; `kt` is the conventional short alias
+# (highlight.js lists kotlin, kt, kts, ktm, ktx). `kts` is the script
+# extension, not a distinct grammar, but I have not seen it used as a fence
+# tag often enough to vouch for; `ktm`/`ktx` are even thinner.
+injection_aliases = ["kotlin", "kt"]
+
+# ktfmt 0.63 observed from `nix run nixpkgs#ktfmt -- --version`.
+# `-` is required: without it ktfmt prints usage and writes nothing (verified).
+# `--stdin-name` is a no-op on output (verified: omitted, `--stdin-name=x.kt`
+# and `--stdin-name=x.kotlin` are byte-identical) so it is omitted.
+# `--kotlinlang-style` is load-bearing: it is official Kotlin coding
+# conventions (4-space block and continuation, COMPLETE trailing commas),
+# not Meta's default 2-space ONLY_ADD house style. Diffed against
+# `--meta-style` and `--google-style` on the same input; meta == default,
+# google shares 2-space indent but uses continuation-indent 2 and COMPLETE
+# commas, kotlinlang is 4/4 COMPLETE. They are different formatters.
+#
+# There is no CLI width flag. `--max-width`, `--print-width` and
+# `--column-limit` are all rejected as "Unexpected option". Internal
+# maxWidth is 100 for every style (bisected: a formatted assignment line of
+# exactly 100 characters stays flat; 101 breaks the `val x =` off). So
+# `reference_width = "fixed"` and `{width}` is forbidden; 100 is the one
+# measurement width because it is the width ktfmt actually targets.
+#
+# Ambient config: ktfmt reads `.editorconfig` only with
+# `--enable-editorconfig`, and even then only for a real file, not stdin
+# (verified: planted `max_line_length = 40` / `indent_size = 8` is inert
+# without the flag; with the flag it rewrites a real `.kt` file — indent 8
+# and width 40, overriding `--kotlinlang-style` — but the same planted file
+# is still inert on stdin, with or without `--stdin-name=x.kt`). No
+# KTFMT_CONFIG / EDITORCONFIG env applies a file. The command below does
+# not pass `--enable-editorconfig` and reads stdin, so no channel is open.
+# Residual channel if someone added the flag: a real-file invocation, not
+# this command.
+reference = "nix run nixpkgs#ktfmt -- --kotlinlang-style -"
+reference_version = "ktfmt version 0.63"
+reference_width = "fixed"
+
+# One entry only, as the loader requires for a fixed reference. 100 is
+# ktfmt's own default maxWidth, established by bisection of unprompted
+# `--kotlinlang-style` output, not from --help (there is no width flag to
+# read). It is not an arbitrary measurement width the way gofmt's 80 is:
+# ktfmt really does target 100, it just will not take the number on the
+# command line.
+widths = [100]
+
+# Generic default. A data-model loader (PSI dump, kotlinc, kotlinx
+# serialization) would collapse the spellings ktfmt itself preserves
+# (`1_000`, `0xdead`, `"double"` vs no single-quoted strings, both
+# trailing-lambda shapes) and would be weaker than the named-node
+# comparison. Leave wrappers/equivalences empty until the gate names a
+# kind — ktfmt does not add or remove parentheses (`((1))` stays).
+gate3 = "default"
+
+transparent_wrappers = []
+equivalent_kinds = []
