@@ -514,7 +514,12 @@ function splitChildren(fmt, node) {
   const host = [...items].reverse().find((i) => !fmt.tokens.has(i.node.type));
   if (lead.length > 0 && host) host.after = lead;
   // A file that is nothing but comments is still a file.
-  return { items, dangling: lead.length > 0 && !host ? lead : [] };
+  const trailingBlanks = Math.max(newlinesBetween(fmt.bytes, prevEnd, node.end) - 1, 0);
+  return {
+    items,
+    dangling: lead.length > 0 && !host ? lead : [],
+    trailingBlanks,
+  };
 }
 
 const decorated = (item) =>
@@ -566,6 +571,7 @@ class Ctx {
     this.items = split.items;
     this.dangling = split.dangling;
     this.cursor = 0;
+    this.trailingBlanks = split.trailingBlanks;
   }
 
   matches(at, sel) {
@@ -652,6 +658,11 @@ class Ctx {
         const around = rest[1];
         if (around !== undefined && !Array.isArray(around)) {
           throw new Refusal(`expected a list of node types, got ${around}`);
+        }
+        if (this.cursor === this.items.length) {
+          return concat(
+            Array.from({ length: Math.min(this.trailingBlanks, cap) }, () => hard),
+          );
         }
         const n = this.forcesBlank(around) ? cap : Math.min(this.blanks(), cap);
         return concat(Array.from({ length: n }, () => hard));

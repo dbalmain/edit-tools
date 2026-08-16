@@ -49,6 +49,13 @@ fn newlines(src: &[u8], from: usize, to: usize) -> usize {
 pub struct Split<'a> {
     pub items: Vec<Item<'a>>,
     pub dangling: Vec<Comment>,
+    /// Blank lines between the last child and the node's end.
+    ///
+    /// Some grammars (tree-sitter-toml's `table` is the first) include the
+    /// blank line before the next sibling *inside* this node. `blank` between
+    /// the parent's children cannot see that gap; a `blank` at the end of
+    /// this node's rule can.
+    pub trailing_blanks: usize,
 }
 
 pub fn split<'a>(node: &'a Node, src: &[u8], pkg: &Package) -> Split<'a> {
@@ -101,5 +108,10 @@ pub fn split<'a>(node: &'a Node, src: &[u8], pkg: &Package) -> Split<'a> {
             None => dangling = lead,
         }
     }
-    Split { items, dangling }
+    let trailing_blanks = newlines(src, prev_end, node.end).saturating_sub(1);
+    Split {
+        items,
+        dangling,
+        trailing_blanks,
+    }
 }

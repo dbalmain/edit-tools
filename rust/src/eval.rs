@@ -150,6 +150,7 @@ struct Ctx<'a> {
     items: Vec<Item<'a>>,
     dangling: Vec<Comment>,
     cursor: usize,
+    trailing_blanks: usize,
 }
 
 impl<'a> Ctx<'a> {
@@ -160,6 +161,7 @@ impl<'a> Ctx<'a> {
             items: parts.items,
             dangling: parts.dangling,
             cursor: 0,
+            trailing_blanks: parts.trailing_blanks,
         }
     }
 
@@ -220,6 +222,13 @@ impl<'a> Ctx<'a> {
             }
             Expr::Flatten(kind, sep) => self.flatten(kind, sep, f),
             Expr::Blank(cap, around) => {
+                if self.cursor == self.items.len() {
+                    return Ok(Doc::Concat(
+                        std::iter::repeat_with(|| Doc::Hard)
+                            .take(self.trailing_blanks.min(*cap))
+                            .collect(),
+                    ));
+                }
                 let n = if self.forces_blank(around) {
                     *cap
                 } else {
@@ -1399,6 +1408,47 @@ try {{
         assert_eq!(
             run_on(&one(pkg), source, root, 80).expect("ok"),
             "x = 1\ndef f\n"
+        );
+    }
+
+    #[test]
+    fn blank_at_end_of_a_rule_preserves_trailing_trivia() {
+        // tree-sitter-toml's table range includes the blank line before the
+        // next header. A `blank` after the last child is the only way a
+        // package can see that gap.
+        let pkg: Package = serde_json::from_value(json!({
+            "format": "et-doc-rules/1",
+            "indent": 2,
+            "tokens": ["["],
+            "rules": {
+                "file": ["each", "named", ["seq", ["hard"], ["blank", 2]]],
+                "table": ["seq", ["tok", "["], ["child", "named"], ["blank", 2]]
+            }
+        }))
+        .expect("trailing-trivia package parses");
+        let source = "[a\n\n[b\n";
+        let root = json!({
+            "type": "file", "start": 0, "end": 7,
+            "children": [
+                {
+                    "type": "table", "start": 0, "end": 4,
+                    "children": [
+                        { "type": "[", "start": 0, "end": 1, "text": "[" },
+                        { "type": "name", "start": 1, "end": 2, "text": "a" },
+                    ]
+                },
+                {
+                    "type": "table", "start": 4, "end": 7,
+                    "children": [
+                        { "type": "[", "start": 4, "end": 5, "text": "[" },
+                        { "type": "name", "start": 5, "end": 6, "text": "b" },
+                    ]
+                }
+            ]
+        });
+        assert_eq!(
+            run_on(&one(pkg), source, root, 80).expect("ok"),
+            "[a\n\n[b\n"
         );
     }
 }

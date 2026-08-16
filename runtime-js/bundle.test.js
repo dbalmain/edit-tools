@@ -665,6 +665,39 @@ test("blank without a type list is still only a cap", () => {
   assert.equal(runOn(pkg, source, root, 80), "x = 1\ndef f\n");
 });
 
+test("blank at end of a rule preserves trailing trivia", () => {
+  const pkg = {
+    format: "et-doc-rules/1",
+    indent: 2,
+    tokens: ["["],
+    rules: {
+      file: ["each", "named", ["seq", ["hard"], ["blank", 2]]],
+      table: ["seq", ["tok", "["], ["child", "named"], ["blank", 2]],
+    },
+  };
+  const source = "[a\n\n[b\n";
+  const root = {
+    type: "file", start: 0, end: 7,
+    children: [
+      {
+        type: "table", start: 0, end: 4,
+        children: [
+          { type: "[", start: 0, end: 1, text: "[" },
+          { type: "name", start: 1, end: 2, text: "a" },
+        ],
+      },
+      {
+        type: "table", start: 4, end: 7,
+        children: [
+          { type: "[", start: 4, end: 5, text: "[" },
+          { type: "name", start: 5, end: 6, text: "b" },
+        ],
+      },
+    ],
+  };
+  assert.equal(runOn(pkg, source, root, 80), "[a\n\n[b\n");
+});
+
 // Expansion is memoised on the package object, because it is work proportional
 // to the package rather than the tree. These pin the two ways that can go wrong.
 
