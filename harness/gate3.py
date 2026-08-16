@@ -133,6 +133,38 @@ def _extras(
 # the generic structural default
 
 
+def _tokens(node, source: bytes) -> str | tuple[str, ...]:
+    """The spelling of a node that has no named children, with the whitespace
+    *between* its tokens dropped.
+
+    A true leaf -- no children at all -- is its own text, and that text is
+    significant down to the byte: a formatter may not respell `1_000` as `1000`
+    or `"x"` as `'x'`.
+
+    A node whose children are all anonymous is different. `parameter_list` in an
+    empty Go signature holds `(` and `)` and nothing else, so its source span is
+    `( )` or `()` depending only on how the author spaced it -- and the space
+    between two punctuation tokens is layout, which is the formatter's to
+    decide. Comparing the raw span rejected gofmt's own output, and the same
+    rejection reproduces on `{ }` in JSON, `[ ]` in TOML, and `( )`, `[ ]`,
+    `def f( )` in Python. Every language, latent since the default was written,
+    and found only because Go's stage-A corpus was the first to write an empty
+    container with a space in it.
+
+    Dropping the gap is safe because gate 3 **reparses** the output. Whitespace
+    that carries meaning is whitespace that separates tokens, and deleting it
+    merges them: `not in` -> `notin` reparses as one identifier and the tree
+    differs. So the token boundary is protected by the reparse, and pinning the
+    span on top of it buys no strictness -- only a false rejection of correct
+    layout.
+    """
+    if not node.children:
+        return source[node.start_byte:node.end_byte].decode()
+    return tuple(
+        source[c.start_byte:c.end_byte].decode() for c in node.children
+    )
+
+
 def _generic(
     node,
     source: bytes,
@@ -149,7 +181,7 @@ def _generic(
     kind = canon.get(node.type, node.type)
     kids = [c for c in node.children if c.is_named and not c.is_extra]
     if not kids:
-        return (kind, source[node.start_byte:node.end_byte].decode())
+        return (kind, _tokens(node, source))
     region = injection.region_for(node, source, manifest, aliases)
     return (
         kind,
@@ -358,6 +390,14 @@ def _describe_regions(before: tuple, after: tuple) -> str:
     return "embedded regions differ"
 
 
+def _is_spelling(value) -> bool:
+    """`_tokens` returns a str or a tuple of str; a node's children are a tuple
+    of `(kind, ...)` pairs. Both are tuples, so the elements decide."""
+    if isinstance(value, str):
+        return True
+    return isinstance(value, tuple) and all(isinstance(v, str) for v in value)
+
+
 def _describe_generic(a, b, path: str = "root") -> str:
     if a == b:
         return "identical"
@@ -365,7 +405,7 @@ def _describe_generic(a, b, path: str = "root") -> str:
         if a[0] != b[0]:
             return f"{path}: node kind {a[0]!r} became {b[0]!r}"
         ca, cb = a[1], b[1]
-        if isinstance(ca, str) or isinstance(cb, str):
+        if _is_spelling(ca) or _is_spelling(cb):
             return f"{path}/{a[0]}: leaf text {ca!r:.60} became {cb!r:.60}"
         if len(ca) != len(cb):
             return (f"{path}/{a[0]}: {len(ca)} named children became {len(cb)}"
