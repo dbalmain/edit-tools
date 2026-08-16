@@ -11,9 +11,21 @@ judges after the fact and may recommend a freeze. Every edit lands here.
 | --- | -------- | --------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------- | ------ | ---------- |
 | 1   | (all)    | codex-Sol | `comment_gap` + `blank_cap` header fields; runtime reads them, not constants | Trailing-comment spacing (2) and the blank-line ceiling (2) were black's, hardcoded where no package could reach them. 7 of 16 roster languages use prettier, which wants 1 of each. | warranted        | +245 B | 2026-08-15 |
 
-**Freeze status:** open. _(A stage-D reviewer may recommend closing this. If it
-does, record the recommendation, the language that prompted it, and Dave's
-decision.)_
+**Freeze status:** **recommended, with Dave.** TOML's stage-D review recommends
+freezing the runtime against further language-builder edits, permitting only a
+dedicated corrective patch for the comment-order defect it found, reviewed
+independently. Prompted by TOML's second runtime edit — delayed own-line
+comments — which was verdicted `needs-redesign`.
+
+The defect, reproduced independently in both runtimes: with a legal flat `array`
+rule, a comment before the closing bracket **absorbs the bracket into its own
+text**, so `a = [1,\n  # c\n]` becomes `a = [1,\n# c]` and the array is never
+closed. Gate 3 rejects it ("output does not parse"), so it cannot ship silently,
+but a legal package producing invalid source is a runtime defect regardless of
+which gate notices. Own-line comments after the last sibling are delayed so
+`trail` can emit the separator first, and they flush only incidentally — at
+`indent`, at `blank`, and at node end. A flat rule reaches the closer before any
+of those fire.
 
 Baseline at the start of the exercise: **10,196 B gzip = 8,080 runtime + 2,116
 packages** (python + json), against a 20 KB budget. **Now 10,441 B** after row 1
