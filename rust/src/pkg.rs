@@ -439,10 +439,11 @@ pub enum Sel {
     Any,
 }
 
-/// A static test on the node. Arity is the only one either package needed.
+/// A static test on the node.
 #[derive(Debug)]
 pub enum Pred {
     Count(Sel, usize),
+    ChildCount(Sel, Sel, usize),
 }
 
 /// One expression of the package language. Eighteen opcodes; see DESIGN.md.
@@ -466,9 +467,10 @@ pub enum Expr {
     AutoParen(Sel),
     When(Pred, Box<Expr>, Box<Expr>),
     Flatten(String, Box<Expr>),
-    /// Up to `n` blank lines from the source; the list, if any, is the types
-    /// that force the gap open to exactly `n`.
-    Blank(usize, Vec<String>),
+    /// Up to `n` blank lines from the source. The first list, if any, is the
+    /// types that force the gap open to exactly `n`. The second is exact leaf
+    /// spellings after which the source gap is semantic and must not be capped.
+    Blank(usize, Vec<String>, Vec<String>),
     /// A break that mirrors the source's line structure: space when flat,
     /// newline when the source had a line break before the cursor.
     SrcLine,
@@ -538,19 +540,24 @@ impl TryFrom<Value> for Expr {
                 Ok(Expr::Trail(literal(&parts[0])?, selector(&parts[1])?))
             }
             "blank" => {
-                if parts.is_empty() || parts.len() > 2 {
+                if parts.is_empty() || parts.len() > 3 {
                     return Err(format!(
-                        "`blank` takes 1 or 2 operands, got {}",
+                        "`blank` takes 1 to 3 operands, got {}",
                         parts.len()
                     ));
                 }
                 let cap = count(&parts[0])?;
-                let around = if parts.len() == 2 {
+                let around = if parts.len() >= 2 {
                     node_types(&parts[1])?
                 } else {
                     Vec::new()
                 };
-                Ok(Expr::Blank(cap, around))
+                let keep_after = if parts.len() == 3 {
+                    node_types(&parts[2])?
+                } else {
+                    Vec::new()
+                };
+                Ok(Expr::Blank(cap, around, keep_after))
             }
             "each" | "opt" => {
                 arity(2)?;
@@ -619,6 +626,11 @@ fn predicate(value: &Value) -> Result<Pred, String> {
         Some("count") if parts.len() == 3 => {
             Ok(Pred::Count(selector(&parts[1])?, count(&parts[2])?))
         }
+        Some("child-count") if parts.len() == 4 => Ok(Pred::ChildCount(
+            selector(&parts[1])?,
+            selector(&parts[2])?,
+            count(&parts[3])?,
+        )),
         _ => Err(format!("unknown predicate {value}")),
     }
 }

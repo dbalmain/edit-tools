@@ -1,0 +1,31 @@
+# Block mappings and block sequences -- the other spelling of a container.
+# Prettier never converts these to flow, even when they would fit on one line.
+
+server: # a short mapping
+  host:  localhost
+  port : 8080
+  enabled:  true
+
+# A block sequence whose items are themselves mappings.
+backends:
+- name:  alpha
+  url: https://alpha.example.com
+- name:  beta
+  url: https://beta.example.com
+- name: empty
+
+# Nested block sequences under a mapping key. Dash indent is load-bearing.
+regions:
+  us-east:
+  - primary
+  - replica
+  eu-west:
+  - primary
+
+# A nested sequence of scalars. prettier writes the compact `- -` form;
+# the expanded dash-on-its-own-line spelling is in normalisation.yaml.
+flags:
+  -  one
+  - - nested-a
+    -  nested-b
+  - two

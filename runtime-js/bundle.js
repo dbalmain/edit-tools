@@ -140,11 +140,15 @@ function validatePredicate(value) {
   if (!Array.isArray(value)) {
     throw new Refusal(`predicate must be an array, got ${JSON.stringify(value)}`);
   }
-  if (value.length !== 3 || value[0] !== "count") {
+  const valid =
+    (value[0] === "count" && value.length === 3) ||
+    (value[0] === "child-count" && value.length === 4);
+  if (!valid) {
     throw new Refusal(`unknown predicate ${JSON.stringify(value)}`);
   }
   parseSelector(value[1]);
-  count(value[2]);
+  if (value[0] === "child-count") parseSelector(value[2]);
+  count(value.at(-1));
 }
 
 function validateExpr(value) {
@@ -194,11 +198,15 @@ function validateExpr(value) {
       literal(rest[0]);
       return;
     case "blank":
-      if (rest.length < 1 || rest.length > 2) {
-        throw new Refusal(`\`blank\` takes 1 or 2 operands, got ${rest.length}`);
+      if (rest.length < 1 || rest.length > 3) {
+        throw new Refusal(`\`blank\` takes 1 to 3 operands, got ${rest.length}`);
       }
       count(rest[0]);
       if (rest.length === 2) nodeTypes(rest[1]);
+      if (rest.length === 3) {
+        nodeTypes(rest[1]);
+        nodeTypes(rest[2]);
+      }
       return;
     case "each":
     case "opt":
@@ -585,6 +593,21 @@ function afterDocs(fmt, comments) {
 
 // ---------------------------------------------------------------- evaluation
 
+// Rightmost spine only: a gap after a subtree that merely contains the
+// spelling belongs to a later sibling, not to the token.
+function endsWithLeafText(node, spellings) {
+  const kids = node.children ?? [];
+  if (kids.length > 0) return endsWithLeafText(kids[kids.length - 1], spellings);
+  return node.text !== undefined && spellings.includes(node.text);
+}
+
+function selectorMatches(fmt, node, sel) {
+  if (sel.field !== undefined) return node.field === sel.field;
+  if (sel.type !== undefined) return node.type === sel.type;
+  if (sel.named) return !fmt.tokens.has(node.type);
+  return true;
+}
+
 function parseSelector(raw) {
   if (typeof raw !== "string") throw new Refusal(`selector must be a string, got ${raw}`);
   if (raw.startsWith("f:")) return { field: raw.slice(2) };
@@ -649,6 +672,11 @@ class Ctx {
     return kinds.includes(prev.node.type) || kinds.includes(next.node.type);
   }
 
+  keepsGap(spellings) {
+    if (!spellings || spellings.length === 0 || this.cursor === 0) return false;
+    return endsWithLeafText(this.items[this.cursor - 1].node, spellings);
+  }
+
   /** Predicates describe the node, not the cursor: count over every child. */
   tally(sel) {
     let n = 0;
@@ -708,16 +736,24 @@ class Ctx {
       case "blank": {
         const cap = rest[0];
         const around = rest[1];
+        const keepAfter = rest[2];
         if (around !== undefined && !Array.isArray(around)) {
           throw new Refusal(`expected a list of node types, got ${around}`);
         }
+        const keep = this.keepsGap(keepAfter);
         if (this.cursor === this.items.length) {
+          if (keep && this.node.end === this.fmt.bytes.length) {
+            this.fmt.semanticEof = true;
+          }
+          const blanks = keep ? this.trailingBlanks : Math.min(this.trailingBlanks, cap);
           return concat([
             this.flushAfter(),
-            ...Array.from({ length: Math.min(this.trailingBlanks, cap) }, () => hard),
+            ...Array.from({ length: blanks }, () => hard),
           ]);
         }
-        const n = this.forcesBlank(around) ? cap : Math.min(this.blanks(), cap);
+        const n = keep
+          ? this.blanks()
+          : this.forcesBlank(around) ? cap : Math.min(this.blanks(), cap);
         return concat(Array.from({ length: n }, () => hard));
       }
       default:
@@ -727,10 +763,21 @@ class Ctx {
 
   test(pred) {
     if (!Array.isArray(pred)) throw new Refusal(`predicate must be an array, got ${pred}`);
-    const [op, raw, n] = pred;
-    // Arity is the only static test either package needed.
-    if (op !== "count") throw new Refusal(`unknown predicate \`${op}\``);
-    return this.tally(parseSelector(raw)) === n;
+    const [op, raw, childRaw, childN] = pred;
+    if (op === "count") return this.tally(parseSelector(raw)) === childRaw;
+    if (op === "child-count") {
+      const parent = parseSelector(raw);
+      const child = parseSelector(childRaw);
+      let count = 0;
+      for (const item of this.items) {
+        if (!selectorMatches(this.fmt, item.node, parent)) continue;
+        for (const node of item.node.children ?? []) {
+          if (selectorMatches(this.fmt, node, child)) count++;
+        }
+      }
+      return count === childN;
+    }
+    throw new Refusal(`unknown predicate \`${op}\``);
   }
 
   take(sel, what) {
@@ -979,6 +1026,7 @@ class Formatter {
     this.commentGap = this.pkg.comment_gap;
     this.blankCap = this.pkg.blank_cap;
     this.flatten = this.pkg.flatten_fields;
+    this.semanticEof = false;
     this.indentUnit = this.pkg.tab_indent ? "\t" : " ".repeat(this.pkg.indent ?? 0);
   }
 
@@ -1026,6 +1074,10 @@ function format(tree, packages, cols) {
   const bytes = new TextEncoder().encode(tree.source ?? "");
   const fmt = new Formatter(packages, tree.language, bytes, new TextDecoder());
   const out = print(fmt.node(tree.root), cols);
+  if (fmt.semanticEof) {
+    const suffix = (tree.source ?? "").match(/(?:\r\n|\r|\n)+$/)?.[0] ?? "";
+    return `${out.replace(/[\r\n]+$/, "")}${suffix}`;
+  }
   return `${out.replace(/\n+$/, "")}\n`;
 }
 

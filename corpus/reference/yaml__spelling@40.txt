@@ -1,0 +1,47 @@
+# The same data, written every legal way prettier will not collapse.
+# A package that converted block to flow (or the other way) is visible
+# here as a tree diff against prettier, which does not convert.
+
+# 1. block mapping vs flow mapping
+as_block:
+  name: foo
+  version: "1.0.0"
+as_flow: { name: foo, version: "1.0.0" }
+
+# 2. block sequence vs flow sequence
+as_block_seq:
+  - host: a
+    port: 1
+  - host: b
+    port: 2
+as_flow_seq:
+  [
+    { host: a, port: 1 },
+    { host: b, port: 2 },
+  ]
+
+# 3. a long flow that prettier will expand at 40, next to the block
+# form of the same list. The expansion stays flow (brackets, commas).
+as_long_flow:
+  [
+    primary,
+    us-east,
+    canary,
+    production,
+    staging,
+  ]
+as_long_block:
+  - primary
+  - us-east
+  - canary
+  - production
+  - staging
+
+# 4. three null spellings, side by side
+n1: null
+n2: ~
+n3:
+
+# 5. yes vs true -- both stay
+flag_word: yes
+flag_bool: true

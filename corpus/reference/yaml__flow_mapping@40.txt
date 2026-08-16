@@ -1,0 +1,43 @@
+# Flow mappings: the {} spelling of a mapping, and when it has to break.
+
+short: { host: localhost, port: 8080 }
+
+medium:
+  {
+    name: alice,
+    city: amsterdam,
+    country: netherlands,
+    occupation: engineer,
+  }
+
+long:
+  {
+    aaaaaaaaaa: 1,
+    bbbbbbbbbb: 2,
+    cccccccccc: 3,
+    dddddddddd: 4,
+    eeeeeeeeee: 5,
+    ffffffffff: 6,
+  }
+
+nested:
+  {
+    outer: { inner: { deep: value } },
+    sibling: 1,
+  }
+
+seq_inside:
+  {
+    items: [1, 2, 3],
+    other: value,
+    third: thing,
+  }
+
+mixed:
+  {
+    bool: true,
+    num: 42,
+    null: null,
+    list: [a, b],
+    nested: { x: 1 },
+  }

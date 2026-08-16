@@ -619,6 +619,112 @@ test("blank still caps a run longer than n", () => {
   assert.equal(runOn(stmtsPkg(["fn"]), source, root, 80), "x = 1\n\n\ndef f\n");
 });
 
+test("blank keeps the exact gap after a declared leaf spelling", () => {
+  const pkg = {
+    format: "et-doc-rules/1",
+    indent: 2,
+    rules: {
+      file: [
+        "seq",
+        ["each", "named", ["seq", ["hard"], ["blank", 1, [], ["|+"]]]],
+        ["blank", 1, [], ["|+"]],
+      ],
+      pair: ["verbatim"],
+    },
+  };
+  const source = "|+\n  keep\n\n\nnext";
+  const root = {
+    type: "file", start: 0, end: 16,
+    children: [
+      {
+        type: "pair", start: 0, end: 9,
+        children: [{
+          type: "block_scalar", start: 0, end: 9,
+          children: [{ type: "|", start: 0, end: 2, text: "|+" }],
+        }],
+      },
+      {
+        type: "pair", start: 12, end: 16,
+        children: [{ type: "word", start: 12, end: 16, text: "next" }],
+      },
+    ],
+  };
+  assert.equal(runOn(pkg, source, root, 80), "|+\n  keep\n\n\nnext\n");
+
+  const eofSource = "|+\n  keep\n\n\n";
+  const eofRoot = {
+    type: "file", start: 0, end: 12,
+    children: [{
+      type: "pair", start: 0, end: 12,
+      children: [{
+        type: "block_scalar", start: 0, end: 12,
+        children: [{ type: "|", start: 0, end: 2, text: "|+" }],
+      }],
+    }],
+  };
+  assert.equal(runOn(pkg, eofSource, eofRoot, 80), eofSource);
+});
+
+test("blank still caps after a subtree that merely contains the spelling", () => {
+  // The `|+` is buried mid-subtree, so the gap that follows the subtree is
+  // ordinary trivia belonging to the next item, not scalar content.
+  const pkg = {
+    format: "et-doc-rules/1",
+    indent: 2,
+    rules: {
+      file: [
+        "seq",
+        ["each", "named", ["seq", ["hard"], ["blank", 1, [], ["|+"]]]],
+        ["blank", 1, [], ["|+"]],
+      ],
+      pair: ["verbatim"],
+    },
+  };
+  const source = "|+ tail\n\n\nnext";
+  const root = {
+    type: "file", start: 0, end: 14,
+    children: [
+      {
+        type: "pair", start: 0, end: 7,
+        children: [
+          { type: "|", start: 0, end: 2, text: "|+" },
+          { type: "word", start: 3, end: 7, text: "tail" },
+        ],
+      },
+      {
+        type: "pair", start: 10, end: 14,
+        children: [{ type: "word", start: 10, end: 14, text: "next" }],
+      },
+    ],
+  };
+  assert.equal(runOn(pkg, source, root, 80), "|+ tail\n\nnext\n");
+});
+
+test("child-count can dispatch on a field's wrapped construct", () => {
+  const pkg = {
+    format: "et-doc-rules/1",
+    indent: 2,
+    rules: {
+      file: [
+        "when", ["child-count", "f:value", "t:block_scalar", 1],
+        ["child", "named"], [],
+      ],
+      wrapper: ["verbatim"],
+    },
+  };
+  const root = {
+    type: "file", start: 0, end: 1,
+    children: [{
+      type: "wrapper", field: "value", start: 0, end: 1,
+      children: [{
+        type: "block_scalar", start: 0, end: 1,
+        children: [{ type: "|", start: 0, end: 1, text: "|" }],
+      }],
+    }],
+  };
+  assert.equal(runOn(pkg, "|", root, 80), "|\n");
+});
+
 test("blank opens before a comment that leads a listed type", () => {
   const source = "x = 1\n# c\ndef f\n";
   const root = {
