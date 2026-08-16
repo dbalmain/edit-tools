@@ -16,12 +16,8 @@ reference_width = "flag"
 
 widths = [88, 60]
 
-# Ordered `json.loads` catches key reordering, which the generic tree comparison
-# would also catch -- but it additionally proves the output is *valid JSON* by a
-# parser that is not tree-sitter, which the generic default cannot.
-#
-# It is blind to comments; `json.loads` rejects them outright and tree-sitter
-# accepts them. gate3.py's universal extras check covers that, and the scored
-# JSON corpus has no comments. A builder adding a JSON file *with* comments must
-# switch this to "default": the override would report a parse failure.
-gate3 = "json"
+# The generic default is selected deliberately. Ordered `json.loads` was the
+# original override, but the adversarial arm proved it weaker: it accepted
+# numeric (`42` -> `42.0`) and string (`"value"` -> `"\u0076alue"`) respellings
+# that the default rejected. A formatter may not rewrite either token spelling.
+gate3 = "default"

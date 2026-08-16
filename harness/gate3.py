@@ -10,10 +10,10 @@ different parent; losing or duplicating one is real destruction. The old JSON
 checker compared `json.loads` output, which cannot see a comment at all, so
 dropping every comment in a JSON file passed gate 3. That hole is closed here.
 
-**Structural, per language.** Either the generic default below, or a stronger
-checker the language's manifest names (`gate3 = "python"` loads
-`harness/languages/python_gate3.py`). An override is a file of its own so a
-builder never edits a shared one.
+**Structural, per language.** Either the generic default below, or an override
+the language's manifest names. An override is a file of its own so a builder
+never edits a shared one. `check_gate3.py` requires its accepted equivalence
+class to be a subset of the default's: an override may reject more, never less.
 
 At a manifest-declared injection site, the host signature masks the opaque
 content node and records a recursive signature from the guest manifest and
@@ -51,9 +51,11 @@ the same way:
 
     equivalent_kinds = [["pattern_list", "tuple_pattern"]]
 
-With both declared, the generic default accepts black on 26/26 python runs and
-agrees with `ast.dump` everywhere -- see `harness/check_gate3.py`, which pins
-that agreement as a gate rather than a claim.
+With both declared, the generic default accepts black on 26/26 python runs.
+Python's former `ast.dump` override agreed on all of those correct outputs, but
+the adversarial arm in `check_gate3.py` then proved it weaker on quote and number
+respellings. The generic default is selected; agreement on correct input was not
+evidence of override strength.
 """
 
 from __future__ import annotations

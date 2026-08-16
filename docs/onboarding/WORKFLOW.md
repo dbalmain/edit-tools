@@ -81,10 +81,11 @@ this section is now the description of what a builder is working against.
 
    **Structural, per language:** either the generic default — the tree of
    **named** nodes, kind plus leaf text, ignoring anonymous punctuation and
-   extras — or a stronger checker the manifest names. `gate3 = "python"` loads
-   `harness/languages/python_gate3.py`, which must define
-   `signature(text) -> object | None`. An override is a file of its own, so
-   declaring one is still adding a file.
+   extras — or an override the manifest names. An override must define
+   `signature(text) -> object | None`, and is a file of its own so declaring one
+   is still adding a file. The harness treats it as a replacement, so
+   `check_gate3.py` requires it to reject every well-formed mutation the default
+   rejects. It may reject more; it may never accept less.
 
    **At a manifest-declared injection boundary, ownership recurses.** The host's
    generic structure masks the opaque content node, and an ordered embedded
@@ -115,18 +116,21 @@ this section is now the description of what a builder is working against.
 
    `harness/check_gate3.py` pins all of this as a gate rather than a claim, and
    runs in `./test.sh`. It proves four things: the reference formatter passes
-   for every language; the generic default reaches the **same verdict** as every
-   stronger override on the same input; the gate still **rejects** a dropped
-   comment and a dropped token; and Markdown-shaped mutations cannot hide in an
-   opaque host node. The boundary cases cover valid guest reformatting, invalid
-   guest text, changed guest meaning, guest comments, exact-byte fallbacks, and
-   nested hosts. The mutation checks matter most — a gate that accepts
-   everything passes the reference and override checks perfectly.
+   for every language; every override rejects all useful adversarial mutations
+   rejected by the generic default; the gate still **rejects** a dropped comment
+   and a dropped token; and Markdown-shaped mutations cannot hide in an opaque
+   host node. The boundary cases cover valid guest reformatting, invalid guest
+   text, changed guest meaning, guest comments, exact-byte fallbacks, and nested
+   hosts. A zero useful-mutation count for an override is a failure, not a pass.
 
-   As measured today: 0 disagreements between the generic default and both
-   `ast.dump` and ordered `json.loads`, over 30 reference outputs, with 36
-   single-language destructive mutations rejected and 11 injection cases
-   checked.
+   The adversarial families are same-kind leaf replacement, numeric respelling,
+   string delimiter/escape respelling, same-kind sibling swapping, and subtree
+   duplication. Candidates count only when they reparse cleanly and the generic
+   signature changes. This arm rejected both original overrides: ordered
+   `json.loads` accepted numeric and string respellings (`42` → `42.0`,
+   `"value"` → `"\u0076alue"`), and `ast.dump` accepted the same classes
+   (`8080` → `8_080`, `"POST"` → `'POST'`). Python and JSON now select the
+   generic default.
 
 ### The manifest schema
 

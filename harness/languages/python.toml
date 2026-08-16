@@ -21,14 +21,14 @@ reference_width = "flag"
 # 88 is black's default; 60 forces the layout decisions 88 lets a package dodge.
 widths = [88, 60]
 
-# `ast.dump` is stronger than the generic tree comparison and stays: it already
-# discards exactly what a formatter may change (parenthesisation, quote style,
-# trailing commas, line breaks) and nothing else.
-gate3 = "python"
+# The generic default is selected deliberately. `ast.dump` was the original
+# override, but the adversarial arm proved it weaker: it accepted quote changes
+# (`"POST"` -> `'POST'`) and numeric respellings (`8080` -> `8_080`) that the
+# default rejected. This formatter is not allowed to rewrite token text.
+gate3 = "default"
 
-# Used by the generic default, which check_gate3.py runs alongside `ast` to keep
-# the two honest against each other. Both entries were established by running
-# black over the corpus, not by reading the grammar:
+# Both entries were established by running black over the corpus, not by reading
+# the grammar:
 #   - black parenthesises an expression when it wraps it   (7 of 26 runs)
 #   - parenthesising an assignment target renames the node (1 of 26 runs)
 transparent_wrappers = ["parenthesized_expression"]

@@ -107,17 +107,18 @@ Fields you must establish rather than guess:
   set `reference_width = "fixed"` rather than inventing a width it does not
   honour.
 - `gate3` — **start at `"default"`, and expect to stay there.** An override must
-  be **strictly stronger** than the generic default, and you must _prove_ it
-  before declaring one.
+  be **at least as strict as** the generic default, and you must _prove_ the
+  one-way implication before declaring one: whenever the default rejects a
+  candidate, the override rejects it too.
 
   Agreeing with the default on reference output proves nothing: both accept a
   correct formatter, which is what reference output is. The proof is
   adversarial. Take a committed reference output, rewrite it so the **loaded
   data is unchanged but the document is not** — respell a number (`1_000` →
   `1000`, `0xdead` → `57005`), swap quote styles, convert a dotted key to a
-  header, reorder sibling entries — and show your override **rejects** it. If
-  you cannot make the override reject something the default rejects, the default
-  is stronger and you are done.
+  header, reorder sibling entries — and show your override **rejects** it. The
+  checker must report a non-zero useful count. If the override accepts any member
+  of that oracle, it is weaker and cannot be selected.
 
   **Data-model loaders are almost always the wrong choice.** `tomllib`,
   `yaml.safe_load`, `json.loads` and friends collapse exactly the spelling
@@ -263,9 +264,10 @@ anything. Fix until green. Do not claim a gate for code you have not run.
 `check_gate3.py` is the one to read the output of rather than just the exit
 code. It asserts that your reference formatter passes gate 3, that the gate
 still rejects a dropped comment and a dropped token, and — if you declared an
-override — that the generic default reaches the same verdict as your override on
-every file. A disagreement there is a real finding about {{LANG}} and belongs in
-the report even when you fix it.
+override — that every well-formed mutation rejected by the generic default is
+also rejected by your override. It reports the useful count and fails rather
+than claiming success when that count is zero. A disagreement is a real finding
+about {{LANG}} and belongs in the report even when you remove the override.
 
 ## Report
 

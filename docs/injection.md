@@ -116,11 +116,11 @@ verbatim mutations, legitimate JSON reformatting, and
 Markdown-in-Markdown-in-JSON recursion.
 
 The signature is still driven from text, not from a prebuilt spliced tree. Gate
-3 judges arbitrary formatter output, and the stronger overrides deliberately
-accept text (`ast.parse`, `json.loads`) rather than the corpus-tree format.
-Changing that interface would not make those checks tree-native. Instead,
-`gen_trees.py` and `gate3.py` share the small region-routing and guest-parse
-helper, so gate 3 re-derives sites without duplicating the routing decision.
+3 judges arbitrary formatter output, and any future override accepts text rather
+than the corpus-tree format. Changing that interface would not make the check
+tree-native. Instead, `gen_trees.py` and `gate3.py` share the small
+region-routing and guest-parse helper, so gate 3 re-derives sites without
+duplicating the routing decision.
 
 Gate 2 now calls `gen_trees.parse_doc()` for its second pass. The frozen corpus
 and the idempotence reparse therefore have one conversion and splicing path,

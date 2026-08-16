@@ -191,17 +191,18 @@ are correctness properties, not preferences.
    and drops no comment. This is the "does not corrupt code" property.
 
    Comments are compared for every language as the grammar's **extra** nodes, in
-   order. Meaning is compared by whatever the language's manifest declares in
-   `gate3`: `ast.dump(ast.parse(...))` for Python, ordered `json.loads` for
-   JSON, and for a language with no semantic checker of its own, the generic
-   named-node comparison in `harness/gate3.py`.
+   order. Meaning is compared by the language's manifest-selected `gate3`;
+   Python and JSON both use the generic named-node comparison in
+   `harness/gate3.py`. A named override may reject more but must never accept a
+   well-formed mutation that generic gate 3 rejects.
 
    That choice matters, and an earlier token-stream version of this gate was
    wrong. **Black inserts parentheses when it wraps a long expression**, and
    turns a bare target list into a parenthesised one; comparing tokens or even
-   tree shape would have disqualified correct black-style output. Deferring to
-   `ast` draws the line where it belongs: **parenthesisation, quote style,
-   trailing commas and line breaks are yours to change; anything else is not.**
+   tree shape would have disqualified correct black-style output. Python instead
+   declares the two measured tree equivalences that black needs. Quote style is
+   deliberately not one of them: this project's linearity rule forbids rewriting
+   token text.
 
    The generic default has to draw that same line without an `ast`, and it does
    it by declaration rather than by heuristic — see `harness/gate3.py`, which
