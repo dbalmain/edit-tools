@@ -86,6 +86,17 @@ this section is now the description of what a builder is working against.
    `signature(text) -> object | None`. An override is a file of its own, so
    declaring one is still adding a file.
 
+   **At a manifest-declared injection boundary, ownership recurses.** The host's
+   generic structure masks the opaque content node, and an ordered embedded
+   signature uses the guest manifest's structural checker and extras policy.
+   The host extras walk stops at the boundary, so a guest comment is checked by
+   its guest grammar. A region with no info string, an unknown alias, or a failed
+   grammar parse is compared as exact bytes, matching the formatter's
+   conservative verbatim path. If a stronger guest gate rejects a region that
+   tree-sitter accepts, gate 3 also uses exact bytes rather than certifying it.
+   The routing and clean guest parse are shared with `gen_trees.py`; no language
+   or host node name is built into the gate.
+
    **The naive named-node comparison does not work, and this is the important
    part.** Black — a correct formatter, therefore the oracle — parenthesises an
    expression when it wraps it, and the raw comparison rejects black on **7 of
@@ -103,15 +114,18 @@ this section is now the description of what a builder is working against.
    kind named. Over-strict is a message; under-strict is corrupted source.
 
    `harness/check_gate3.py` pins all of this as a gate rather than a claim, and
-   runs in `./test.sh`. It proves three things: the reference formatter passes
+   runs in `./test.sh`. It proves four things: the reference formatter passes
    for every language; the generic default reaches the **same verdict** as every
-   stronger override on the same input; and the gate still **rejects** a dropped
-   comment and a dropped token. The third matters most — a gate that accepts
-   everything passes the first two perfectly.
+   stronger override on the same input; the gate still **rejects** a dropped
+   comment and a dropped token; and Markdown-shaped mutations cannot hide in an
+   opaque host node. The boundary cases cover valid guest reformatting, invalid
+   guest text, changed guest meaning, guest comments, exact-byte fallbacks, and
+   nested hosts. The mutation checks matter most — a gate that accepts
+   everything passes the reference and override checks perfectly.
 
    As measured today: 0 disagreements between the generic default and both
    `ast.dump` and ordered `json.loads`, over 30 reference outputs, with 36
-   destructive mutations rejected.
+   single-language destructive mutations and 11 injection mutations checked.
 
 ### The manifest schema
 
