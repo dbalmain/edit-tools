@@ -6,6 +6,9 @@ grammar = "tree-sitter-json==0.24.8"
 grammar_module = "tree_sitter_json"
 grammar_symbol = "language"
 
+# Markdown info strings that select this grammar for a fenced region.
+injection_aliases = ["json"]
+
 # prettier infers the parser from the filename, so stdin needs a fake one.
 reference = "npx --yes prettier@3.6.2 --stdin-filepath x.json --print-width {width}"
 reference_version = "3.6.2"

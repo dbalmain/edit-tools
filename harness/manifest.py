@@ -37,9 +37,10 @@ _BOOTSTRAPPED = "EDITOR_TOOLS_GRAMMARS_READY"
 
 _REQUIRED = ("name", "extensions", "grammar", "grammar_module", "reference",
              "reference_version", "widths", "reference_width", "gate3",
-             "intentional_divergences")
+             "injection_aliases", "intentional_divergences")
 _KNOWN = set(_REQUIRED) | {"grammar_symbol", "gate3_requires",
-                           "transparent_wrappers", "equivalent_kinds"}
+                           "transparent_wrappers", "equivalent_kinds",
+                           "injections"}
 
 
 class ManifestError(Exception):
@@ -54,12 +55,21 @@ class IntentionalDivergence:
 
 
 @dataclass(frozen=True)
+class Injection:
+    node: str
+    info: str
+    content: str
+
+
+@dataclass(frozen=True)
 class Manifest:
     name: str
     extensions: tuple[str, ...]
     grammar: str            # PEP 508 requirement, pin included
     grammar_module: str     # importable module name
     grammar_symbol: str     # callable on that module returning the Language
+    injection_aliases: tuple[str, ...]  # info-string names for this language
+    injections: tuple[Injection, ...]   # host node shapes containing regions
     reference: str          # shell command, source on stdin, result on stdout
     reference_version: str  # the version string actually observed
     widths: tuple[int, ...]
@@ -161,6 +171,49 @@ def _intentional_divergences(
     return tuple(out)
 
 
+def _injection_aliases(raw: dict[str, Any], path: Path) -> tuple[str, ...]:
+    aliases = tuple(_need(raw, "injection_aliases", list, path))
+    for i, alias in enumerate(aliases):
+        if not isinstance(alias, str) or not alias or any(c.isspace() for c in alias):
+            raise ManifestError(
+                f"{path.name}: `injection_aliases[{i}]` must be a non-empty "
+                "string containing no whitespace"
+            )
+    if len(set(aliases)) != len(aliases):
+        raise ManifestError(f"{path.name}: `injection_aliases` contains duplicates")
+    return aliases
+
+
+def _injections(raw: dict[str, Any], path: Path) -> tuple[Injection, ...]:
+    out = []
+    fields = {"node", "info", "content"}
+    entries = raw.get("injections", [])
+    if not isinstance(entries, list):
+        raise ManifestError(f"{path.name}: `injections` must be a list")
+    for i, entry in enumerate(entries):
+        name = f"injections[{i}]"
+        if not isinstance(entry, dict):
+            raise ManifestError(f"{path.name}: `{name}` must be a table")
+        unknown = set(entry) - fields
+        if unknown:
+            raise ManifestError(
+                f"{path.name}: `{name}` has unknown field(s) {sorted(unknown)}"
+            )
+        missing = fields - set(entry)
+        if missing:
+            raise ManifestError(
+                f"{path.name}: `{name}` missing required field(s) {sorted(missing)}"
+            )
+        for field in sorted(fields):
+            value = entry[field]
+            if not isinstance(value, str) or not value:
+                raise ManifestError(
+                    f"{path.name}: `{name}.{field}` must be a non-empty string"
+                )
+        out.append(Injection(entry["node"], entry["info"], entry["content"]))
+    return tuple(out)
+
+
 def parse(path: Path) -> Manifest:
     raw = tomllib.loads(path.read_text())
 
@@ -238,6 +291,8 @@ def parse(path: Path) -> Manifest:
         grammar=grammar,
         grammar_module=_need(raw, "grammar_module", str, path),
         grammar_symbol=raw.get("grammar_symbol", "language"),
+        injection_aliases=_injection_aliases(raw, path),
+        injections=_injections(raw, path),
         reference=reference,
         reference_version=_need(raw, "reference_version", str, path),
         widths=widths,
@@ -260,6 +315,22 @@ def load_all() -> dict[str, Manifest]:
         out[m.name] = m
     if not out:
         raise ManifestError(f"no manifests in {LANG_DIR}")
+    injection_map(out)
+    return out
+
+
+def injection_map(manifests: dict[str, Manifest]) -> dict[str, Manifest]:
+    """Info-string alias -> guest manifest, rejecting ambiguous aliases."""
+    out = {}
+    for manifest in manifests.values():
+        for alias in manifest.injection_aliases:
+            if alias in out:
+                other = out[alias]
+                raise ManifestError(
+                    f"{manifest.path.name}: injection alias {alias!r} is already "
+                    f"declared by {other.path.name}"
+                )
+            out[alias] = manifest
     return out
 
 

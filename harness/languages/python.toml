@@ -6,6 +6,9 @@ grammar = "tree-sitter-python==0.25.0"
 grammar_module = "tree_sitter_python"
 grammar_symbol = "language"
 
+# Markdown info strings that select this grammar for a fenced region.
+injection_aliases = ["python"]
+
 # `-S` / --skip-string-normalization: the linearity invariant forbids rewriting a
 # token's text, so quote normalisation is not available to any package. Comparing
 # against a black that does it would make files unwinnable by a rule we imposed.

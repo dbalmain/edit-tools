@@ -36,6 +36,7 @@ class IntentionalDivergenceScoreTests(unittest.TestCase):
                     'extensions = [".json"]',
                     'grammar = "tree-sitter-json==1.0.0"',
                     'grammar_module = "tree_sitter_json"',
+                    'injection_aliases = ["json"]',
                     'reference = "prettier --print-width {width}"',
                     'reference_version = "1.0.0"',
                     'reference_width = "flag"',

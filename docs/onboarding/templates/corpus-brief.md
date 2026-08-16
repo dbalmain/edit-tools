@@ -55,6 +55,11 @@ Fields you must establish rather than guess:
   `tree_sitter_typescript` exposes `language_typescript()` and `language_tsx()`,
   `tree_sitter_xml` exposes `language_xml()` and `language_dtd()`. If you get it
   wrong the loader tells you which names the module actually exports.
+- `injection_aliases` — the exact info-string names that may select this
+  language inside a host document. Use at least the canonical language name;
+  add conventional aliases only when you can vouch for them. Aliases must be
+  unique across manifests. A host language also declares its grammar-specific
+  `[[injections]]` node, info-child and content-child types.
 - `reference` — the exact shell command that runs the canonical formatter:
   source on **stdin**, formatted source on **stdout**, with `{width}` where the
   width goes. Nothing is installed globally on this machine; use the

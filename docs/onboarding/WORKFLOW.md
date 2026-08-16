@@ -127,6 +127,17 @@ grammar = "tree-sitter-toml==0.7.0"
 grammar_module = "tree_sitter_toml"   # importable module — NOT derived from the above
 grammar_symbol = "language"           # optional, defaults to "language"
 
+# Exact fenced-info names that may select this language as an embedded region.
+# Empty opts out; aliases are unique across all language manifests.
+injection_aliases = ["toml"]
+
+# Optional host shapes. The node has direct info/content children of these types.
+# Markdown will declare this when it onboards; ordinary guest manifests omit it.
+# [[injections]]
+# node = "fenced_code_block"
+# info = "info_string"
+# content = "code_fence_content"
+
 # Shell command. Source on stdin, formatted source on stdout. `{width}` is
 # substituted. Note that some references need a fake filename to infer the
 # language from stdin (`--stdin-filepath x.toml`), and that nothing is installed
@@ -147,8 +158,11 @@ equivalent_kinds = []                 # kinds that are the same thing under a di
                                       # name, e.g. [["pattern_list", "tuple_pattern"]]
 ```
 
-`harness/languages/python.toml` and `json.toml` are the two worked examples and
-carry the reasoning for each field they set. Every field is validated on load:
+`injection_aliases` is required because info-string spelling is a language fact,
+not a list in `gen_trees.py`; `injections` is optional and describes a host
+grammar's extraction shape. `harness/languages/python.toml` and `json.toml` are
+the two worked examples and carry the reasoning for each field they set. Every
+field is validated on load:
 an unknown key, an unpinned grammar, a `name` that does not match the filename,
 a `{width}` placeholder that a `"fixed"` reference would never use, and a
 `"fixed"` reference with more than one width are all one-line errors naming the
