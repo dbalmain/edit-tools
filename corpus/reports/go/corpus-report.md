@@ -39,16 +39,26 @@ Nix store output, rather than merely happening to be on the same `PATH`.
 
 ### Why `gate3 = "default"`
 
-The generic named-node comparison is the right oracle for Go. The obvious
-override — `go/parser` + a `go/ast` dump — would be a *weaker* oracle, and for
-the usual reason: it is a data-model loader, not a formatter. A node dump
-cannot see gofmt's column alignment (struct fields, const blocks, trailing
-comments) or comment placement, and would accept the very token rewrites a
-package may never perform. There is no spelling-equivalence problem that would
-justify a loader: Go has one literal spelling per construct (no quote-style
-swap, no numeric respellings a formatter would perform), and the generic
-default already refuses `ERROR` / `MISSING` and compares extras order, which is
-where comments live.
+The generic named-node comparison is the right oracle for the package's
+non-destruction contract. The obvious override — `go/parser` + a `go/ast` dump
+— would be a *weaker* oracle, and for the usual reason: it is a data-model
+loader, not a formatter. A node dump cannot see gofmt's column alignment
+(struct fields, const blocks, trailing comments) or comment placement, and
+would accept token rewrites a package may never perform. There is no literal
+spelling equivalence that would justify a loader: Go has one literal spelling
+per construct (no quote-style swap or numeric respelling that gofmt performs),
+and the generic default already refuses `ERROR` / `MISSING` and compares extras
+order, which is where comments live.
+
+There is one important reference/package-contract collision: gofmt sorts import
+specs. An unsorted two-import probe becomes sorted under gofmt, and the generic
+gate correctly rejects that candidate because the package's linearity contract
+forbids sibling reordering. `imports.go` is therefore deliberately pre-sorted.
+The corpus measures formatting of all four import forms but **does not measure
+import sorting**. This is the same measurement-gap class as FINDINGS entry 4:
+the correct reference behaviour cannot be placed in the scored corpus under the
+current gate contract, so the exclusion must be visible rather than mistaken
+for coverage.
 
 `check_gate3.py --language go`: 16 reference outputs accepted, 32 destructive
 mutations rejected, 279 useful adversarial mutations checked, 0 wrapper kinds
@@ -88,7 +98,9 @@ Required probes:
   value-receiver methods.
 - `generics.go` — type parameters, generic methods, generic functions,
   constraint interfaces with type sets.
-- `imports.go` — the four import forms: plain, aliased, blank, dot.
+- `imports.go` — the four import forms: plain, aliased, blank, dot. Its groups
+  are pre-sorted because gofmt's import reordering is an explicit unmeasured
+  case under gate 3, not a capability the package is allowed to emulate.
 - `interfaces.go` — interface declarations, embedding, compile-time interface
   assertions.
 - `iota.go` — `iota`, implicit repetition, bit-shift definitions.
@@ -182,6 +194,11 @@ At token level gofmt rewrites aggressively:
 - a trailing comma on a single-line composite literal is removed; a multi-line
   one keeps it.
 
+gofmt also sorts import specs, but that token-order rewrite is not in the scored
+corpus: gate 3 rejects it, as the package contract requires. The omission and
+its consequence are recorded above rather than counting `imports.go` as import
+sorting coverage.
+
 ### Alignment is computed across siblings, and resets on blank lines
 
 This is the single most important thing Go has to teach this project, and the
@@ -249,6 +266,10 @@ block.
   nixpkgs registry; it does not pin a revision the way `uvx black@25.9.0` pins a
   release. The brief should call this a runner pattern or require a locked flake
   reference when it truly means pinned.
+- **Reference rewrites are broader than token text.** The brief discusses quote
+  and scalar rewrites, but gofmt exposes the same measurement gap by reordering
+  import siblings. It should require each language to report every reference
+  behaviour excluded by gate 3, including token order, not only text spelling.
 - **`--stdin-filepath` is noise for gofmt.** Unlike prettier, gofmt infers
   nothing from a filename on stdin; there is no fake filename to pass. The
   runner form `nix shell nixpkgs#go -c gofmt` is the whole command, and
