@@ -5,6 +5,7 @@
 //! construction a disjoint, ordered partition of the children -- and a rule
 //! that fails to consume all of them refuses the file instead of emitting.
 
+use std::cell::Cell;
 use std::collections::HashMap;
 
 use crate::attach::{split, Comment, Item};
@@ -19,6 +20,17 @@ pub fn format(tree: &TreeDoc, packages: &PackageMap, width: usize) -> Result<Str
     let fmt = Fmt::for_language(&tree.language, packages, tree.source.as_bytes())?;
     let doc = fmt.node(&tree.root)?;
     let mut out = crate::doc::print(&doc, width);
+    if fmt.semantic_eof.get() {
+        while out.ends_with(['\r', '\n']) {
+            out.pop();
+        }
+        let suffix = tree
+            .source
+            .trim_end_matches(|c| c == '\r' || c == '\n')
+            .len();
+        out.push_str(&tree.source[suffix..]);
+        return Ok(out);
+    }
     while out.ends_with('\n') {
         out.pop();
     }
@@ -30,6 +42,7 @@ struct Fmt<'a> {
     pkg: &'a Package,
     packages: &'a PackageMap,
     src: &'a [u8],
+    semantic_eof: Cell<bool>,
 }
 
 impl<'a> Fmt<'a> {
@@ -41,7 +54,12 @@ impl<'a> Fmt<'a> {
         let pkg = packages
             .get(language)
             .ok_or_else(|| Refusal(format!("no package for language `{language}`")))?;
-        Ok(Self { pkg, packages, src })
+        Ok(Self {
+            pkg,
+            packages,
+            src,
+            semantic_eof: Cell::new(false),
+        })
     }
 
     fn node(&self, node: &'a Node) -> Result<Doc, Refusal> {
@@ -248,15 +266,24 @@ impl<'a> Ctx<'a> {
                 self.eval(if hit { then } else { alt }, f)
             }
             Expr::Flatten(kind, sep) => self.flatten(kind, sep, f),
-            Expr::Blank(cap, around) => {
+            Expr::Blank(cap, around, keep_after) => {
+                let keep = self.keeps_gap(keep_after);
                 if self.cursor == self.items.len() {
+                    if keep && self.node.end == f.src.len() {
+                        f.semantic_eof.set(true);
+                    }
                     let mut parts = vec![self.flush_after(f)];
-                    parts.extend(
-                        std::iter::repeat_with(|| Doc::Hard).take(self.trailing_blanks.min(*cap)),
-                    );
+                    let blanks = if keep {
+                        self.trailing_blanks
+                    } else {
+                        self.trailing_blanks.min(*cap)
+                    };
+                    parts.extend(std::iter::repeat_with(|| Doc::Hard).take(blanks));
                     return Ok(Doc::Concat(parts));
                 }
-                let n = if self.forces_blank(around) {
+                let n = if keep {
+                    self.blanks()
+                } else if self.forces_blank(around) {
                     *cap
                 } else {
                     self.blanks().min(*cap)
@@ -291,6 +318,18 @@ impl<'a> Ctx<'a> {
         kinds
             .iter()
             .any(|k| k == &prev.node.kind || k == &next.node.kind)
+    }
+
+    /// Some grammars leave semantic line endings outside the node whose token
+    /// declares them. YAML's `|+` is the motivating case: the exact newlines
+    /// live in the gap after the block-scalar pair. A package may name the
+    /// declaring leaf spelling; only that preceding subtree bypasses the cap.
+    fn keeps_gap(&self, spellings: &[String]) -> bool {
+        if spellings.is_empty() || self.cursor == 0 {
+            return false;
+        }
+        let prev = self.items[self.cursor - 1].node;
+        contains_leaf_text(prev, spellings)
     }
 
     fn take(&mut self, sel: &Sel, f: &Fmt<'a>) -> Result<usize, Refusal> {
@@ -440,6 +479,7 @@ impl<'a> Ctx<'a> {
     fn test(&self, pred: &Pred, pkg: &Package) -> bool {
         match pred {
             Pred::Count(sel, n) => self.tally(sel, pkg) == *n,
+            Pred::DescendantCount(sel, n) => descendant_tally(self.node, sel, pkg) == *n,
         }
     }
 
@@ -508,6 +548,32 @@ impl<'a> Ctx<'a> {
         }
         Ok(())
     }
+}
+
+fn contains_leaf_text(node: &Node, spellings: &[String]) -> bool {
+    node.text
+        .as_ref()
+        .is_some_and(|text| spellings.iter().any(|spelling| spelling == text))
+        || node
+            .children
+            .iter()
+            .any(|child| contains_leaf_text(child, spellings))
+}
+
+fn descendant_tally(node: &Node, sel: &Sel, pkg: &Package) -> usize {
+    fn matches(node: &Node, sel: &Sel, pkg: &Package) -> bool {
+        match sel {
+            Sel::Field(name) => node.field.as_deref() == Some(name.as_str()),
+            Sel::Type(kind) => node.kind == *kind,
+            Sel::Named => !pkg.is_token(&node.kind),
+            Sel::Any => true,
+        }
+    }
+
+    node.children
+        .iter()
+        .map(|child| usize::from(matches(child, sel, pkg)) + descendant_tally(child, sel, pkg))
+        .sum()
 }
 
 fn tightness(pkg: &Package, node: &Node) -> i64 {
@@ -1391,6 +1457,93 @@ try {{
             run_on(&stmts_pkg(json!(["fn"])), source, root, 80).expect("ok"),
             "x = 1\n\n\ndef f\n"
         );
+    }
+
+    #[test]
+    fn blank_keeps_the_exact_gap_after_a_declared_leaf_spelling() {
+        let pkg = one(serde_json::from_value(json!({
+            "format": "et-doc-rules/1",
+            "indent": 2,
+            "rules": {
+                "file": [
+                    "seq",
+                    ["each", "named",
+                     ["seq", ["hard"], ["blank", 1, [], ["|+"]]]],
+                    ["blank", 1, [], ["|+"]]
+                ],
+                "pair": ["verbatim"]
+            }
+        }))
+        .expect("semantic-gap package parses"));
+        let source = "|+\n  keep\n\n\nnext";
+        let root = json!({
+            "type": "file", "start": 0, "end": 16,
+            "children": [
+                {
+                    "type": "pair", "start": 0, "end": 9,
+                    "children": [{
+                        "type": "block_scalar", "start": 0, "end": 9,
+                        "children": [
+                            { "type": "|", "start": 0, "end": 2, "text": "|+" }
+                        ]
+                    }]
+                },
+                {
+                    "type": "pair", "start": 12, "end": 16,
+                    "children": [
+                        { "type": "word", "start": 12, "end": 16, "text": "next" }
+                    ]
+                }
+            ]
+        });
+        assert_eq!(
+            run_on(&pkg, source, root, 80).expect("ok"),
+            "|+\n  keep\n\n\nnext\n"
+        );
+
+        let source = "|+\n  keep\n\n\n";
+        let root = json!({
+            "type": "file", "start": 0, "end": 12,
+            "children": [{
+                "type": "pair", "start": 0, "end": 12,
+                "children": [{
+                    "type": "block_scalar", "start": 0, "end": 12,
+                    "children": [
+                        { "type": "|", "start": 0, "end": 2, "text": "|+" }
+                    ]
+                }]
+            }]
+        });
+        assert_eq!(run_on(&pkg, source, root, 80).expect("ok"), source);
+    }
+
+    #[test]
+    fn descendant_count_can_dispatch_on_a_wrapped_construct() {
+        let pkg = one(serde_json::from_value(json!({
+            "format": "et-doc-rules/1",
+            "indent": 2,
+            "rules": {
+                "file": [
+                    "when", ["descendant-count", "t:block_scalar", 1],
+                    ["child", "named"], []
+                ],
+                "wrapper": ["verbatim"]
+            }
+        }))
+        .expect("descendant predicate parses"));
+        let root = json!({
+            "type": "file", "start": 0, "end": 1,
+            "children": [{
+                "type": "wrapper", "start": 0, "end": 1,
+                "children": [{
+                    "type": "block_scalar", "start": 0, "end": 1,
+                    "children": [
+                        { "type": "|", "start": 0, "end": 1, "text": "|" }
+                    ]
+                }]
+            }]
+        });
+        assert_eq!(run_on(&pkg, "|", root, 80).expect("ok"), "|\n");
     }
 
     #[test]

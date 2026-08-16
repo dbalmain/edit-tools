@@ -140,7 +140,7 @@ function validatePredicate(value) {
   if (!Array.isArray(value)) {
     throw new Refusal(`predicate must be an array, got ${JSON.stringify(value)}`);
   }
-  if (value.length !== 3 || value[0] !== "count") {
+  if (value.length !== 3 || !["count", "descendant-count"].includes(value[0])) {
     throw new Refusal(`unknown predicate ${JSON.stringify(value)}`);
   }
   parseSelector(value[1]);
@@ -188,11 +188,15 @@ function validateExpr(value) {
       parseSelector(rest[1]);
       return;
     case "blank":
-      if (rest.length < 1 || rest.length > 2) {
-        throw new Refusal(`\`blank\` takes 1 or 2 operands, got ${rest.length}`);
+      if (rest.length < 1 || rest.length > 3) {
+        throw new Refusal(`\`blank\` takes 1 to 3 operands, got ${rest.length}`);
       }
       count(rest[0]);
       if (rest.length === 2) nodeTypes(rest[1]);
+      if (rest.length === 3) {
+        nodeTypes(rest[1]);
+        nodeTypes(rest[2]);
+      }
       return;
     case "each":
     case "opt":
@@ -570,6 +574,27 @@ function afterDocs(fmt, comments) {
 
 // ---------------------------------------------------------------- evaluation
 
+function containsLeafText(node, spellings) {
+  if (node.text !== undefined && spellings.includes(node.text)) return true;
+  return (node.children ?? []).some((child) => containsLeafText(child, spellings));
+}
+
+function selectorMatches(fmt, node, sel) {
+  if (sel.field !== undefined) return node.field === sel.field;
+  if (sel.type !== undefined) return node.type === sel.type;
+  if (sel.named) return !fmt.tokens.has(node.type);
+  return true;
+}
+
+function descendantTally(fmt, node, sel) {
+  let count = 0;
+  for (const child of node.children ?? []) {
+    if (selectorMatches(fmt, child, sel)) count++;
+    count += descendantTally(fmt, child, sel);
+  }
+  return count;
+}
+
 function parseSelector(raw) {
   if (typeof raw !== "string") throw new Refusal(`selector must be a string, got ${raw}`);
   if (raw.startsWith("f:")) return { field: raw.slice(2) };
@@ -634,6 +659,11 @@ class Ctx {
     return kinds.includes(prev.node.type) || kinds.includes(next.node.type);
   }
 
+  keepsGap(spellings) {
+    if (!spellings || spellings.length === 0 || this.cursor === 0) return false;
+    return containsLeafText(this.items[this.cursor - 1].node, spellings);
+  }
+
   /** Predicates describe the node, not the cursor: count over every child. */
   tally(sel) {
     let n = 0;
@@ -687,16 +717,24 @@ class Ctx {
       case "blank": {
         const cap = rest[0];
         const around = rest[1];
+        const keepAfter = rest[2];
         if (around !== undefined && !Array.isArray(around)) {
           throw new Refusal(`expected a list of node types, got ${around}`);
         }
+        const keep = this.keepsGap(keepAfter);
         if (this.cursor === this.items.length) {
+          if (keep && this.node.end === this.fmt.bytes.length) {
+            this.fmt.semanticEof = true;
+          }
+          const blanks = keep ? this.trailingBlanks : Math.min(this.trailingBlanks, cap);
           return concat([
             this.flushAfter(),
-            ...Array.from({ length: Math.min(this.trailingBlanks, cap) }, () => hard),
+            ...Array.from({ length: blanks }, () => hard),
           ]);
         }
-        const n = this.forcesBlank(around) ? cap : Math.min(this.blanks(), cap);
+        const n = keep
+          ? this.blanks()
+          : this.forcesBlank(around) ? cap : Math.min(this.blanks(), cap);
         return concat(Array.from({ length: n }, () => hard));
       }
       default:
@@ -707,9 +745,11 @@ class Ctx {
   test(pred) {
     if (!Array.isArray(pred)) throw new Refusal(`predicate must be an array, got ${pred}`);
     const [op, raw, n] = pred;
-    // Arity is the only static test either package needed.
-    if (op !== "count") throw new Refusal(`unknown predicate \`${op}\``);
-    return this.tally(parseSelector(raw)) === n;
+    if (op === "count") return this.tally(parseSelector(raw)) === n;
+    if (op === "descendant-count") {
+      return descendantTally(this.fmt, this.node, parseSelector(raw)) === n;
+    }
+    throw new Refusal(`unknown predicate \`${op}\``);
   }
 
   take(sel, what) {
@@ -931,6 +971,7 @@ class Formatter {
     this.commentGap = this.pkg.comment_gap;
     this.blankCap = this.pkg.blank_cap;
     this.flatten = this.pkg.flatten_fields;
+    this.semanticEof = false;
   }
 
   tightness(node) {
@@ -977,6 +1018,10 @@ function format(tree, packages, cols) {
   const bytes = new TextEncoder().encode(tree.source ?? "");
   const fmt = new Formatter(packages, tree.language, bytes, new TextDecoder());
   const out = print(fmt.node(tree.root), cols);
+  if (fmt.semanticEof) {
+    const suffix = (tree.source ?? "").match(/(?:\r\n|\r|\n)+$/)?.[0] ?? "";
+    return `${out.replace(/[\r\n]+$/, "")}${suffix}`;
+  }
   return `${out.replace(/\n+$/, "")}\n`;
 }
 

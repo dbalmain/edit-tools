@@ -73,6 +73,13 @@ to one of those types opens to exactly `n` — the cap is also a floor, but only
 there. `module` passes the definition types at 2, `block` the same list at 1,
 which is black's depth rule with no extra concept.
 
+It also takes an optional fourth operand, a list of exact leaf spellings after
+which the source gap must not be capped. This is for syntax whose semantic
+whitespace lives outside the declaring CST node: tree-sitter-yaml ends a `|+`
+block scalar before the trailing newlines that keep-chomping makes part of its
+value. The YAML mapping rule names only `|+`, so ordinary inter-pair whitespace
+still follows the one-blank layout policy.
+
 ### Children
 
 Every opcode that emits a child **consumes** it. See _linearity_ below.
@@ -96,10 +103,12 @@ Every opcode that emits a child **consumes** it. See _linearity_ below.
 | `["autoparen", sel]`         | `paren` applied to a child, if its type asks for it |
 
 Selectors pick a child: `"f:name"` (tree-sitter field), `"t:identifier"` (node
-type), `"named"` (any type not listed in the package's `tokens`), `"*"`. The one
-predicate is `["count", sel, n]`, which describes the node, not the cursor. I
-wrote two more while building this and deleted them: neither package ever needed
-anything but arity.
+type), `"named"` (any type not listed in the package's `tokens`), `"*"`. The
+direct-child predicate is `["count", sel, n]`; `["descendant-count", sel, n]`
+applies the same selector recursively. Both describe the node, not the cursor.
+YAML uses the latter to distinguish a `block_node` containing a block scalar
+from the same wrapper containing a nested mapping or sequence, without making
+rule selection depend on comment decoration.
 
 ### The package header
 
