@@ -1,41 +1,70 @@
 //! Experimental rendered-text alignment.
 //!
-//! This is intentionally Go-shaped rather than a proposed general IR. The
-//! package opts in, the ordinary printer finishes first, and this pass aligns
-//! blank-line-delimited runs in struct and const/var bodies. A final suffix
-//! pass covers adjacent declarations such as top-level `var` lines.
+//! A second pass over rendered text that reproduces gofmt: `go/printer` splits
+//! a declaration into vtab-terminated cells, and `text/tabwriter` aligns column
+//! `c` over each *contiguous* run of rows that still have a cell after it,
+//! discarding a column whose cells are all empty. Both halves matter -- padding
+//! a whole block uniformly is what the first cut of this spike got wrong.
+//!
+//! This mirrors `runtime-js/bundle.js` line for line on purpose; gate 1 checks
+//! the two byte for byte.
 
-#[derive(Clone, Copy)]
-enum Block {
-    Fields,
-    Assignments,
+#[derive(Clone, Copy, PartialEq)]
+enum Kind {
+    Field,
+    Value,
+    Stmt,
 }
 
 #[derive(Default)]
-struct LineInfo {
+struct Scan {
     indent: String,
     body: String,
-    comment: Option<String>,
-    multiline_raw: bool,
+    comment: String,
+    opaque: bool,
+}
+
+#[derive(Default)]
+struct State {
+    raw: bool,
+    block: bool,
+}
+
+#[derive(Default)]
+struct Parts {
+    name: String,
+    ty: String,
+    value: String,
+    tag: String,
 }
 
 fn width(s: &str) -> usize {
     s.chars().count()
 }
 
-fn line_info(line: &str, raw: &mut bool) -> LineInfo {
-    let began_raw = *raw;
+fn scan(line: &str, state: &mut State) -> Scan {
+    let began = state.raw || state.block;
     let bytes = line.as_bytes();
-    let mut quote = if *raw { b'`' } else { 0 };
+    let mut quote = if state.raw { b'`' } else { 0 };
     let mut escaped = false;
     let mut comment = None;
     let mut i = 0;
     while i < bytes.len() {
         let byte = bytes[i];
-        if quote == b'`' {
+        if state.block {
+            if byte == b'*' && bytes.get(i + 1) == Some(&b'/') {
+                state.block = false;
+                // A block comment that closes mid-line is part of the code, not
+                // a trailing comment: only a run to end of line starts one.
+                if !line[i + 2..].trim().is_empty() {
+                    comment = None;
+                }
+                i += 1;
+            }
+        } else if quote == b'`' {
             if byte == b'`' {
                 quote = 0;
-                *raw = false;
+                state.raw = false;
             }
         } else if quote != 0 {
             if escaped {
@@ -47,12 +76,16 @@ fn line_info(line: &str, raw: &mut bool) -> LineInfo {
             }
         } else if byte == b'`' {
             quote = b'`';
-            *raw = true;
+            state.raw = true;
         } else if byte == b'"' || byte == b'\'' {
             quote = byte;
         } else if byte == b'/' && bytes.get(i + 1) == Some(&b'/') {
             comment = Some(i);
             break;
+        } else if byte == b'/' && bytes.get(i + 1) == Some(&b'*') {
+            state.block = true;
+            comment = comment.or(Some(i));
+            i += 1;
         }
         i += 1;
     }
@@ -62,17 +95,19 @@ fn line_info(line: &str, raw: &mut bool) -> LineInfo {
         .iter()
         .take_while(|byte| matches!(byte, b' ' | b'\t'))
         .count();
-    LineInfo {
+    Scan {
         indent: code[..indent_len].to_owned(),
         body: code[indent_len..].to_owned(),
-        comment: comment.map(|at| line[at..].to_owned()),
-        multiline_raw: began_raw || *raw,
+        comment: comment.map(|at| &line[at..]).unwrap_or_default().to_owned(),
+        opaque: began || state.raw || state.block,
     }
 }
 
-fn cells(s: &str) -> Vec<String> {
-    let bytes = s.as_bytes();
-    let mut out = Vec::new();
+/// Quote-aware whitespace split with the leading comma-terminated tokens
+/// merged: gofmt's `identList` makes `r, w int` two cells, not three.
+fn tokens(value: &str) -> Vec<String> {
+    let bytes = value.as_bytes();
+    let mut out: Vec<String> = Vec::new();
     let mut start = None;
     let mut quote = 0;
     let mut escaped = false;
@@ -91,9 +126,9 @@ fn cells(s: &str) -> Vec<String> {
             }
         } else if byte == b'`' || byte == b'"' || byte == b'\'' {
             quote = byte;
-        } else if byte.is_ascii_whitespace() {
+        } else if byte == b' ' || byte == b'\t' {
             if let Some(at) = start.take() {
-                out.push(s[at..i].to_owned());
+                out.push(value[at..i].to_owned());
             }
             continue;
         }
@@ -102,15 +137,28 @@ fn cells(s: &str) -> Vec<String> {
         }
     }
     if let Some(at) = start {
-        out.push(s[at..].to_owned());
+        out.push(value[at..].to_owned());
     }
-    out
+    let mut names = 1;
+    while names < out.len() && out[names - 1].ends_with(',') {
+        names += 1;
+    }
+    if names > 1 {
+        let tail = out.split_off(names);
+        let mut merged = vec![out.join(" ")];
+        merged.extend(tail);
+        merged
+    } else {
+        out
+    }
 }
 
-fn assignment_at(s: &str) -> Option<usize> {
-    let bytes = s.as_bytes();
+/// Top-level `=` introducing a spec's values.
+fn assign_at(value: &str) -> Option<usize> {
+    let bytes = value.as_bytes();
     let mut quote = 0;
     let mut escaped = false;
+    let mut depth: i32 = 0;
     for (i, &byte) in bytes.iter().enumerate() {
         if quote == b'`' {
             if byte == b'`' {
@@ -126,192 +174,257 @@ fn assignment_at(s: &str) -> Option<usize> {
             }
         } else if byte == b'`' || byte == b'"' || byte == b'\'' {
             quote = byte;
-        } else if byte == b'=' {
+        } else if matches!(byte, b'(' | b'[' | b'{') {
+            depth += 1;
+        } else if matches!(byte, b')' | b']' | b'}') {
+            depth -= 1;
+        } else if byte == b'='
+            && depth == 0
+            && bytes.get(i + 1) != Some(&b'=')
+            && !matches!(
+                i.checked_sub(1).map_or(b' ', |at| bytes[at]),
+                b'=' | b'!' | b'<' | b'>' | b':'
+            )
+        {
             return Some(i);
         }
     }
     None
 }
 
-fn render(indent: &str, body: &str, comment: Option<&str>, target: usize) -> String {
-    let mut out = format!("{indent}{body}");
-    if let Some(comment) = comment {
-        out.push_str(&" ".repeat(target.saturating_sub(width(body)) + 1));
-        out.push_str(comment);
+/// Recover the printer's slots from rendered text: names, type, values, tag.
+fn parts(info: &Scan, kind: Kind) -> Parts {
+    if kind == Kind::Stmt {
+        return Parts {
+            name: info.body.clone(),
+            ..Parts::default()
+        };
     }
-    out
-}
-
-fn align_fields(lines: &mut [String], infos: &[LineInfo], run: &[usize]) {
-    let rows: Vec<_> = run
-        .iter()
-        .filter_map(|&at| {
-            let parts = cells(&infos[at].body);
-            (parts.len() >= 2).then_some((at, parts))
-        })
-        .collect();
-    if rows.len() < 2 {
-        return;
-    }
-    let columns = rows.iter().map(|(_, parts)| parts.len()).max().unwrap_or(0);
-    let mut maxima = vec![0; columns.saturating_sub(1)];
-    for (_, parts) in &rows {
-        for (column, part) in parts.iter().take(parts.len() - 1).enumerate() {
-            maxima[column] = maxima[column].max(width(part));
+    let equal = if kind == Kind::Value {
+        assign_at(&info.body)
+    } else {
+        None
+    };
+    let head = equal.map_or(info.body.as_str(), |at| info.body[..at].trim_end());
+    let all = tokens(head);
+    let mut rest: Vec<String> = all.iter().skip(1).cloned().collect();
+    let mut tag = String::new();
+    if kind == Kind::Field && rest.len() > 1 {
+        let last = rest[rest.len() - 1].clone();
+        if last.starts_with('`') || last.starts_with('"') {
+            tag = last;
+            rest.pop();
         }
     }
-    let bodies: Vec<_> = rows
-        .iter()
-        .map(|(_, parts)| {
-            let mut body = String::new();
-            for (column, part) in parts.iter().enumerate() {
-                body.push_str(part);
-                if column + 1 < parts.len() {
-                    body.push_str(&" ".repeat(maxima[column] - width(part) + 1));
-                }
+    Parts {
+        name: all.first().cloned().unwrap_or_default(),
+        ty: rest.join(" "),
+        value: equal.map_or(String::new(), |at| {
+            format!("= {}", info.body[at + 1..].trim_start())
+        }),
+        tag,
+    }
+}
+
+/// `go/printer`'s `valueSpec` and `fieldList`, cell for cell. `keep` is
+/// `keepTypeColumn`'s answer for this row.
+fn row(part: &Parts, comment: &str, kind: Kind, keep: bool) -> Vec<String> {
+    if kind == Kind::Stmt {
+        return if comment.is_empty() {
+            vec![part.name.clone()]
+        } else {
+            vec![part.name.clone(), comment.to_owned()]
+        };
+    }
+    let mut cells = vec![part.name.clone()];
+    let mut extra;
+    if kind == Kind::Value {
+        extra = 3;
+        if !part.ty.is_empty() || keep {
+            cells.push(part.ty.clone());
+            extra -= 1;
+        }
+        if !part.value.is_empty() {
+            cells.push(part.value.clone());
+            extra -= 1;
+        }
+    } else if !part.ty.is_empty() {
+        cells.push(part.ty.clone());
+        extra = 1;
+    } else {
+        extra = 2;
+    }
+    if !part.tag.is_empty() {
+        if !part.ty.is_empty() {
+            cells.push(String::new());
+        }
+        cells.push(part.tag.clone());
+        extra = 1;
+    }
+    if !comment.is_empty() {
+        for _ in 1..extra {
+            cells.push(String::new());
+        }
+        cells.push(comment.to_owned());
+    }
+    cells
+}
+
+/// `keepTypeColumn`: within a run of specs that all have values, the type
+/// column survives if any of them declares a type.
+fn keep_type(rows: &[Parts]) -> Vec<bool> {
+    let mut keep = vec![false; rows.len()];
+    let mut from: Option<usize> = None;
+    let mut seen = false;
+    for i in 0..=rows.len() {
+        if i < rows.len() && !rows[i].value.is_empty() {
+            if from.is_none() {
+                from = Some(i);
+                seen = false;
             }
-            body
-        })
-        .collect();
-    let target = bodies.iter().map(|body| width(body)).max().unwrap_or(0);
-    for ((at, _), body) in rows.into_iter().zip(bodies) {
-        lines[at] = render(
-            &infos[at].indent,
-            &body,
-            infos[at].comment.as_deref(),
-            target,
-        );
-    }
-}
-
-fn align_assignments(lines: &mut [String], infos: &[LineInfo], run: &[usize]) {
-    let rows: Vec<_> = run
-        .iter()
-        .filter_map(|&at| {
-            assignment_at(&infos[at].body).map(|equal| {
-                let lhs = infos[at].body[..equal].trim_end().to_owned();
-                let rhs = infos[at].body[equal + 1..].trim_start().to_owned();
-                (at, lhs, rhs)
-            })
-        })
-        .collect();
-    if rows.len() < 2 {
-        return;
-    }
-    let lhs_width = rows.iter().map(|(_, lhs, _)| width(lhs)).max().unwrap_or(0);
-    let bodies: Vec<_> = rows
-        .iter()
-        .map(|(_, lhs, rhs)| format!("{lhs}{}= {rhs}", " ".repeat(lhs_width - width(lhs) + 1)))
-        .collect();
-    let target = bodies.iter().map(|body| width(body)).max().unwrap_or(0);
-    for ((at, _, _), body) in rows.into_iter().zip(bodies) {
-        lines[at] = render(
-            &infos[at].indent,
-            &body,
-            infos[at].comment.as_deref(),
-            target,
-        );
-    }
-}
-
-fn flush_block(lines: &mut [String], infos: &[LineInfo], block: Block, run: &mut Vec<usize>) {
-    match block {
-        Block::Fields => align_fields(lines, infos, run),
-        Block::Assignments => align_assignments(lines, infos, run),
-    }
-    run.clear();
-}
-
-fn align_blocks(lines: &mut [String]) {
-    let mut raw = false;
-    let infos: Vec<_> = lines.iter().map(|line| line_info(line, &mut raw)).collect();
-    let mut block: Option<(Block, String)> = None;
-    let mut run = Vec::new();
-
-    for (at, info) in infos.iter().enumerate() {
-        if let Some((kind, opener_indent)) = &block {
-            let close = match kind {
-                Block::Fields => info.body == "}",
-                Block::Assignments => info.body == ")",
-            } && info.indent == *opener_indent;
-            if close {
-                flush_block(lines, &infos, *kind, &mut run);
-                block = None;
-            } else if info.multiline_raw || info.body.is_empty() {
-                flush_block(lines, &infos, *kind, &mut run);
-            } else {
-                run.push(at);
+        } else if let Some(start) = from.take() {
+            if seen {
+                keep[start..i].fill(true);
             }
-            continue;
         }
-
-        if info.multiline_raw {
-            continue;
-        }
-        if info.body.ends_with("struct {") {
-            block = Some((Block::Fields, info.indent.clone()));
-        } else if info.body == "const (" || info.body == "var (" {
-            block = Some((Block::Assignments, info.indent.clone()));
+        if i < rows.len() && !rows[i].ty.is_empty() {
+            seen = true;
         }
     }
-    if let Some((kind, _)) = block {
-        flush_block(lines, &infos, kind, &mut run);
-    }
+    keep
 }
 
-fn align_comments(lines: &mut [String]) {
-    let mut raw = false;
-    let infos: Vec<_> = lines.iter().map(|line| line_info(line, &mut raw)).collect();
-    let mut run = Vec::new();
-    let mut indent: Option<&str> = None;
-
-    let flush = |run: &mut Vec<usize>, lines: &mut [String]| {
-        let commented: Vec<_> = run
-            .iter()
-            .copied()
-            .filter(|&at| infos[at].comment.is_some())
-            .collect();
-        if commented.len() >= 2 {
-            let target = commented
+fn tabwrite(lines: &mut [String], infos: &[Scan], at: &[usize], rows: &[Vec<String>]) {
+    let columns = rows.iter().map(Vec::len).max().unwrap_or(1) - 1;
+    let mut pad: Vec<Vec<usize>> = rows.iter().map(|cells| vec![0; cells.len()]).collect();
+    for column in 0..columns {
+        let mut block: Vec<usize> = Vec::new();
+        let close = |block: &mut Vec<usize>, pad: &mut Vec<Vec<usize>>| {
+            let wide = block
                 .iter()
-                .map(|&at| width(&infos[at].body))
+                .map(|&r| width(&rows[r][column]))
                 .max()
                 .unwrap_or(0);
-            for at in commented {
-                lines[at] = render(
-                    &infos[at].indent,
-                    &infos[at].body,
-                    infos[at].comment.as_deref(),
-                    target,
-                );
+            // DiscardEmptyColumns: gofmt separates cells with vertical tabs.
+            if wide > 0 {
+                for &r in block.iter() {
+                    pad[r][column] = wide + 1;
+                }
+            }
+            block.clear();
+        };
+        for (r, cells) in rows.iter().enumerate() {
+            if cells.len() > column + 1 {
+                block.push(r);
+            } else {
+                close(&mut block, &mut pad);
             }
         }
-        run.clear();
-    };
+        close(&mut block, &mut pad);
+    }
+    for (r, cells) in rows.iter().enumerate() {
+        let mut out = infos[at[r]].indent.clone();
+        for (column, cell) in cells.iter().enumerate() {
+            out.push_str(cell);
+            if column + 1 < cells.len() {
+                out.push_str(&" ".repeat(pad[r][column].saturating_sub(width(cell))));
+            }
+        }
+        lines[at[r]] = out;
+    }
+}
 
-    for (at, info) in infos.iter().enumerate() {
-        let boundary = info.multiline_raw
-            || info.body.is_empty()
-            || indent.is_some_and(|current| current != info.indent);
-        if boundary {
-            flush(&mut run, lines);
-            indent = None;
-            if info.multiline_raw || info.body.is_empty() {
+/// Runs end at a blank line, an opaque line (raw string or block comment), an
+/// indent change, or the brace closing a declaration group. Declarations and
+/// statements are separate passes because their cell models differ.
+fn align(lines: &mut [String], decl: bool) {
+    let mut state = State::default();
+    let infos: Vec<Scan> = lines.iter().map(|line| scan(line, &mut state)).collect();
+    let mut at: Vec<usize> = Vec::new();
+    let mut rows: Vec<Parts> = Vec::new();
+    let mut kind = Kind::Stmt;
+    let mut indent: Option<&str> = None;
+    let mut group: Option<(Kind, String)> = None;
+
+    macro_rules! flush {
+        () => {
+            if at.len() > 1 {
+                let keep = if kind == Kind::Value {
+                    keep_type(&rows)
+                } else {
+                    vec![false; rows.len()]
+                };
+                let cells: Vec<_> = rows
+                    .iter()
+                    .enumerate()
+                    .map(|(i, part)| row(part, &infos[at[i]].comment, kind, keep[i]))
+                    .collect();
+                tabwrite(lines, &infos, &at, &cells);
+            }
+            at.clear();
+            rows.clear();
+            #[allow(unused_assignments)]
+            {
+                indent = None;
+            }
+        };
+    }
+
+    for (i, info) in infos.iter().enumerate() {
+        if info.opaque || info.body.is_empty() {
+            flush!();
+            continue;
+        }
+        let closes = group.as_ref().is_some_and(|(_, opener)| {
+            info.indent == *opener
+                && (info.body.starts_with('}') || info.body.starts_with(')'))
+        });
+        if closes {
+            flush!();
+            group = None;
+            continue;
+        }
+        let mut current = group.as_ref().map(|(kind, _)| *kind);
+        if current.is_none() {
+            let opened = if info.body.ends_with("struct {") {
+                Some(Kind::Field)
+            } else if info.body == "const (" || info.body == "var (" {
+                Some(Kind::Value)
+            } else {
+                None
+            };
+            if let Some(opened) = opened {
+                flush!();
+                group = Some((opened, info.indent.clone()));
                 continue;
             }
+            current = Some(Kind::Stmt);
         }
-        if indent.is_none() {
-            indent = Some(&info.indent);
+        let current = current.unwrap_or(Kind::Stmt);
+        let skip = if decl {
+            current == Kind::Stmt
+        } else {
+            current != Kind::Stmt || info.comment.is_empty()
+        };
+        if skip {
+            flush!();
+            continue;
         }
-        run.push(at);
+        if indent.is_some_and(|seen| seen != info.indent) {
+            flush!();
+        }
+        indent = Some(&info.indent);
+        kind = current;
+        at.push(i);
+        rows.push(parts(info, current));
     }
-    flush(&mut run, lines);
+    flush!();
 }
 
 pub fn go(input: &str) -> String {
     let mut lines: Vec<String> = input.split('\n').map(str::to_owned).collect();
-    align_blocks(&mut lines);
-    align_comments(&mut lines);
+    align(&mut lines, true);
+    align(&mut lines, false);
     lines.join("\n")
 }
 
@@ -319,36 +432,132 @@ pub fn go(input: &str) -> String {
 mod tests {
     use super::*;
 
+    fn fixpoint(input: &str) -> String {
+        let once = go(input);
+        assert_eq!(go(&once), once, "alignment must be idempotent");
+        once
+    }
+
     #[test]
-    fn go_alignment_has_blank_line_runs_and_independent_columns() {
-        let input = concat!(
+    fn blank_line_resets_a_run_and_columns_are_independent() {
+        let got = fixpoint(concat!(
             "type T struct {\n",
             "\tA int\n",
             "\tLong string\n",
             "\n",
             "\tTag bool `json:\"tag\"`\n",
             "\tX string `json:\"x\"`\n",
-            "}\n",
-            "const (\n",
-            "\tA = 1 // a\n",
-            "\tLong = 2 // b\n",
-            ")",
+            "}",
+        ));
+        assert_eq!(
+            got,
+            concat!(
+                "type T struct {\n",
+                "\tA    int\n",
+                "\tLong string\n",
+                "\n",
+                "\tTag bool   `json:\"tag\"`\n",
+                "\tX   string `json:\"x\"`\n",
+                "}",
+            )
         );
-        let want = concat!(
+    }
+
+    #[test]
+    fn a_shorter_row_terminates_a_column_rather_than_widening_it() {
+        // gofmt: the embedded field splits the type column in two, and the
+        // comment-free `err error` splits the comment column in two.
+        let got = fixpoint(concat!(
             "type T struct {\n",
-            "\tA    int\n",
-            "\tLong string\n",
-            "\n",
-            "\tTag bool   `json:\"tag\"`\n",
-            "\tX   string `json:\"x\"`\n",
-            "}\n",
-            "const (\n",
-            "\tA    = 1 // a\n",
-            "\tLong = 2 // b\n",
-            ")",
+            "\tA int\n",
+            "\tEmbedded\n",
+            "\tBcd int\n",
+            "\tr, w int // rw\n",
+            "\terr error\n",
+            "\tlast int // last\n",
+            "\tmore int // more\n",
+            "}",
+        ));
+        assert_eq!(
+            got,
+            concat!(
+                "type T struct {\n",
+                "\tA int\n",
+                "\tEmbedded\n",
+                "\tBcd  int\n",
+                "\tr, w int // rw\n",
+                "\terr  error\n",
+                "\tlast int // last\n",
+                "\tmore int // more\n",
+                "}",
+            )
         );
-        let once = go(input);
-        assert_eq!(once, want);
-        assert_eq!(go(&once), once);
+    }
+
+    #[test]
+    fn value_specs_keep_the_type_column_only_inside_a_run_with_values() {
+        let got = fixpoint(concat!(
+            "const (\n",
+            "\ta = 1\n",
+            "\tbcd int = 2\n",
+            "\tef = 3 // c\n",
+            ")",
+        ));
+        assert_eq!(
+            got,
+            concat!(
+                "const (\n",
+                "\ta       = 1\n",
+                "\tbcd int = 2\n",
+                "\tef      = 3 // c\n",
+                ")",
+            )
+        );
+    }
+
+    #[test]
+    fn an_all_empty_column_is_discarded_rather_than_padded() {
+        let got = fixpoint(concat!("const (\n", "\tA = iota // a\n", "\tBcdefg // b\n", ")"));
+        assert_eq!(
+            got,
+            concat!("const (\n", "\tA      = iota // a\n", "\tBcdefg        // b\n", ")")
+        );
+    }
+
+    #[test]
+    fn a_block_comment_closing_mid_line_is_code_not_a_trailing_comment() {
+        let got = fixpoint(concat!(
+            "func f() {\n",
+            "\tg(1000 /* 1ms */)\n",
+            "\tlonger(2)\n",
+            "}",
+        ));
+        assert_eq!(
+            got,
+            concat!("func f() {\n", "\tg(1000 /* 1ms */)\n", "\tlonger(2)\n", "}")
+        );
+    }
+
+    #[test]
+    fn a_multi_line_block_comment_is_opaque() {
+        let got = fixpoint(concat!(
+            "/*\n",
+            "type T struct {\n",
+            "\tint r;\n",
+            "\tchar pad[4];\n",
+            "*/\n",
+            "import \"C\"",
+        ));
+        assert_eq!(
+            got,
+            concat!(
+                "/*\n",
+                "type T struct {\n",
+                "\tint r;\n",
+                "\tchar pad[4];\n",
+                "*/\n",
+                "import \"C\""
+            )
+        );
     }
 }

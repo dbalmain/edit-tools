@@ -524,18 +524,28 @@ function print(doc, cols) {
 
 // ------------------------------------------------ experimental alignment
 
-// This spike deliberately measures the smallest real second pass, not a
-// general alignment IR. Blank lines split runs; struct fields, const/var
-// assignments, and trailing comments have independent rendered-text schemas.
+// A second pass over rendered text that reproduces gofmt: `go/printer` splits
+// a declaration into vtab-terminated cells, and `text/tabwriter` aligns
+// column `c` over each *contiguous* run of rows that still have a cell after
+// it, discarding a column whose cells are all empty. Both halves matter --
+// padding a whole block uniformly is what the first cut got wrong.
 
-function goLineInfo(line, state) {
-  const beganRaw = state.raw;
+function goScan(line, state) {
+  const began = state.raw || state.block;
   let quote = state.raw ? "`" : "";
   let escaped = false;
   let comment = -1;
   for (let i = 0; i < line.length; i++) {
     const ch = line[i];
-    if (quote === "`") {
+    if (state.block) {
+      if (ch === "*" && line[i + 1] === "/") {
+        state.block = false;
+        // A block comment that closes mid-line is part of the code, not a
+        // trailing comment: only a run to end of line starts one.
+        if (line.slice(i + 2).trim() !== "") comment = -1;
+        i++;
+      }
+    } else if (quote === "`") {
       if (ch === "`") {
         quote = "";
         state.raw = false;
@@ -551,6 +561,10 @@ function goLineInfo(line, state) {
     else if (ch === "/" && line[i + 1] === "/") {
       comment = i;
       break;
+    } else if (ch === "/" && line[i + 1] === "*") {
+      state.block = true;
+      if (comment < 0) comment = i;
+      i++;
     }
   }
   const code = line.slice(0, comment < 0 ? line.length : comment).trimEnd();
@@ -559,13 +573,15 @@ function goLineInfo(line, state) {
   return {
     indent: code.slice(0, at),
     body: code.slice(at),
-    comment: comment < 0 ? undefined : line.slice(comment),
-    multilineRaw: beganRaw || state.raw,
+    comment: comment < 0 ? "" : line.slice(comment),
+    opaque: began || state.raw || state.block,
   };
 }
 
-function goCells(value) {
-  const cells = [];
+// Quote-aware whitespace split with the leading comma-terminated tokens merged:
+// gofmt's identList makes `r, w int` two cells, not three.
+function goTokens(value) {
+  const out = [];
   let start = -1;
   let quote = "";
   let escaped = false;
@@ -579,19 +595,23 @@ function goCells(value) {
       else if (ch === quote) quote = "";
     } else if (ch === "`" || ch === '"' || ch === "'") quote = ch;
     else if (ch === " " || ch === "\t") {
-      if (start >= 0) cells.push(value.slice(start, i));
+      if (start >= 0) out.push(value.slice(start, i));
       start = -1;
       continue;
     }
     if (start < 0) start = i;
   }
-  if (start >= 0) cells.push(value.slice(start));
-  return cells;
+  if (start >= 0) out.push(value.slice(start));
+  let names = 1;
+  while (names < out.length && out[names - 1].endsWith(",")) names++;
+  return names > 1 ? [out.slice(0, names).join(" ")].concat(out.slice(names)) : out;
 }
 
-function goAssignmentAt(value) {
+// Top-level `=` introducing a spec's values, or -1.
+function goAssignAt(value) {
   let quote = "";
   let escaped = false;
+  let depth = 0;
   for (let i = 0; i < value.length; i++) {
     const ch = value[i];
     if (quote === "`") {
@@ -601,114 +621,184 @@ function goAssignmentAt(value) {
       else if (ch === "\\") escaped = true;
       else if (ch === quote) quote = "";
     } else if (ch === "`" || ch === '"' || ch === "'") quote = ch;
-    else if (ch === "=") return i;
+    else if (ch === "(" || ch === "[" || ch === "{") depth++;
+    else if (ch === ")" || ch === "]" || ch === "}") depth--;
+    else if (ch === "=" && depth === 0 && value[i + 1] !== "=" &&
+             !"=!<>:".includes(value[i - 1] ?? " ")) return i;
   }
   return -1;
 }
 
-function goRender(info, body, target) {
-  const padding = info.comment === undefined ? "" : " ".repeat(target - width(body) + 1);
-  return `${info.indent}${body}${padding}${info.comment ?? ""}`;
-}
-
-function goAlignFields(lines, infos, run) {
-  const rows = run.map((at) => [at, goCells(infos[at].body)]).filter(([, cells]) => cells.length >= 2);
-  if (rows.length < 2) return;
-  const count = Math.max(...rows.map(([, cells]) => cells.length));
-  const maxima = Array(Math.max(count - 1, 0)).fill(0);
-  for (const [, cells] of rows) {
-    cells.slice(0, -1).forEach((cell, column) => {
-      maxima[column] = Math.max(maxima[column], width(cell));
-    });
+// Recover the printer's slots from rendered text: names, type, values, tag.
+function goParts(info, kind) {
+  if (kind === "stmt") return { name: info.body, type: "", value: "", tag: "" };
+  const equal = kind === "value" ? goAssignAt(info.body) : -1;
+  const tokens = goTokens(equal < 0 ? info.body : info.body.slice(0, equal).trimEnd());
+  let rest = tokens.slice(1);
+  let tag = "";
+  if (kind === "field" && rest.length > 1) {
+    const last = rest[rest.length - 1];
+    if (last.startsWith("`") || last.startsWith('"')) {
+      tag = last;
+      rest = rest.slice(0, -1);
+    }
   }
-  const bodies = rows.map(([, cells]) => cells.map((cell, column) =>
-    column + 1 < cells.length ? `${cell}${" ".repeat(maxima[column] - width(cell) + 1)}` : cell,
-  ).join(""));
-  const target = Math.max(...bodies.map(width));
-  rows.forEach(([at], row) => { lines[at] = goRender(infos[at], bodies[row], target); });
-}
-
-function goAlignAssignments(lines, infos, run) {
-  const rows = run.map((at) => {
-    const equal = goAssignmentAt(infos[at].body);
-    return equal < 0 ? undefined : [
-      at,
-      infos[at].body.slice(0, equal).trimEnd(),
-      infos[at].body.slice(equal + 1).trimStart(),
-    ];
-  }).filter((row) => row !== undefined);
-  if (rows.length < 2) return;
-  const lhsWidth = Math.max(...rows.map(([, lhs]) => width(lhs)));
-  const bodies = rows.map(([, lhs, rhs]) =>
-    `${lhs}${" ".repeat(lhsWidth - width(lhs) + 1)}= ${rhs}`,
-  );
-  const target = Math.max(...bodies.map(width));
-  rows.forEach(([at], row) => { lines[at] = goRender(infos[at], bodies[row], target); });
-}
-
-function goAlignBlocks(lines) {
-  const state = { raw: false };
-  const infos = lines.map((line) => goLineInfo(line, state));
-  let block;
-  let run = [];
-  const flush = () => {
-    if (block?.kind === "fields") goAlignFields(lines, infos, run);
-    else if (block?.kind === "assignments") goAlignAssignments(lines, infos, run);
-    run = [];
+  return {
+    name: tokens[0] ?? "",
+    type: rest.join(" "),
+    value: equal < 0 ? "" : `= ${info.body.slice(equal + 1).trimStart()}`,
+    tag,
   };
-  for (let at = 0; at < lines.length; at++) {
-    const info = infos[at];
-    if (block !== undefined) {
-      const close = info.indent === block.indent &&
-        ((block.kind === "fields" && info.body === "}") ||
-         (block.kind === "assignments" && info.body === ")"));
-      if (close) {
-        flush();
-        block = undefined;
-      } else if (info.multilineRaw || info.body === "") flush();
-      else run.push(at);
+}
+
+// go/printer's valueSpec and fieldList, cell for cell. `keep` is
+// keepTypeColumn's answer for this row.
+function goRow(part, comment, kind, keep) {
+  if (kind === "stmt") return comment === "" ? [part.name] : [part.name, comment];
+  const cells = [part.name];
+  let extra;
+  if (kind === "value") {
+    extra = 3;
+    if (part.type !== "" || keep) {
+      cells.push(part.type);
+      extra--;
+    }
+    if (part.value !== "") {
+      cells.push(part.value);
+      extra--;
+    }
+  } else if (part.type !== "") {
+    cells.push(part.type);
+    extra = 1;
+  } else {
+    extra = 2;
+  }
+  if (part.tag !== "") {
+    if (part.type !== "") cells.push("");
+    cells.push(part.tag);
+    extra = 1;
+  }
+  if (comment !== "") {
+    for (let i = 1; i < extra; i++) cells.push("");
+    cells.push(comment);
+  }
+  return cells;
+}
+
+// keepTypeColumn: within a run of specs that all have values, the type column
+// survives if any of them declares a type.
+function goKeepType(parts) {
+  const keep = parts.map(() => false);
+  let from = -1;
+  let seen = false;
+  for (let i = 0; i <= parts.length; i++) {
+    if (i < parts.length && parts[i].value !== "") {
+      if (from < 0) {
+        from = i;
+        seen = false;
+      }
+    } else if (from >= 0) {
+      if (seen) for (let j = from; j < i; j++) keep[j] = true;
+      from = -1;
+    }
+    if (i < parts.length && parts[i].type !== "") seen = true;
+  }
+  return keep;
+}
+
+function goTabwrite(lines, infos, at, rows) {
+  const columns = Math.max(...rows.map((cells) => cells.length)) - 1;
+  const pad = rows.map((cells) => Array(cells.length).fill(0));
+  for (let c = 0; c < columns; c++) {
+    let block = [];
+    const close = () => {
+      let wide = 0;
+      let empty = true;
+      for (const row of block) {
+        wide = Math.max(wide, width(rows[row][c]));
+        if (rows[row][c] !== "") empty = false;
+      }
+      // DiscardEmptyColumns: gofmt separates cells with vertical tabs.
+      if (!empty) for (const row of block) pad[row][c] = wide + 1;
+      block = [];
+    };
+    for (let row = 0; row < rows.length; row++) {
+      if (rows[row].length > c + 1) block.push(row);
+      else close();
+    }
+    close();
+  }
+  rows.forEach((cells, row) => {
+    let out = infos[at[row]].indent;
+    cells.forEach((cell, c) => {
+      out += cell;
+      if (c + 1 < cells.length) out += " ".repeat(pad[row][c] - width(cell));
+    });
+    lines[at[row]] = out;
+  });
+}
+
+// Runs end at a blank line, an opaque line (raw string or block comment), an
+// indent change, or the brace closing a declaration group. Declarations and
+// statements are separate passes because their cell models differ.
+function goAlign(lines, decl) {
+  const state = { raw: false, block: false };
+  const infos = lines.map((line) => goScan(line, state));
+  let at = [];
+  let parts = [];
+  let kind;
+  let indent;
+  let group;
+  const flush = () => {
+    if (at.length > 1) {
+      const keep = kind === "value" ? goKeepType(parts) : parts.map(() => false);
+      goTabwrite(lines, infos, at,
+        parts.map((part, i) => goRow(part, infos[at[i]].comment, kind, keep[i])));
+    }
+    at = [];
+    parts = [];
+    indent = undefined;
+  };
+  for (let i = 0; i < lines.length; i++) {
+    const info = infos[i];
+    if (info.opaque || info.body === "") {
+      flush();
       continue;
     }
-    if (info.multilineRaw) continue;
-    if (info.body.endsWith("struct {")) block = { kind: "fields", indent: info.indent };
-    else if (info.body === "const (" || info.body === "var (") {
-      block = { kind: "assignments", indent: info.indent };
-    }
-  }
-  if (block !== undefined) flush();
-}
-
-function goAlignComments(lines) {
-  const state = { raw: false };
-  const infos = lines.map((line) => goLineInfo(line, state));
-  let run = [];
-  let indent;
-  const flush = () => {
-    const commented = run.filter((at) => infos[at].comment !== undefined);
-    if (commented.length >= 2) {
-      const target = Math.max(...commented.map((at) => width(infos[at].body)));
-      commented.forEach((at) => { lines[at] = goRender(infos[at], infos[at].body, target); });
-    }
-    run = [];
-  };
-  for (let at = 0; at < lines.length; at++) {
-    const info = infos[at];
-    const boundary = info.multilineRaw || info.body === "" || (indent !== undefined && indent !== info.indent);
-    if (boundary) {
+    if (group !== undefined && info.indent === group.indent &&
+        (info.body.startsWith("}") || info.body.startsWith(")"))) {
       flush();
-      indent = undefined;
-      if (info.multilineRaw || info.body === "") continue;
+      group = undefined;
+      continue;
     }
-    if (indent === undefined) indent = info.indent;
-    run.push(at);
+    let row = group?.kind;
+    if (row === undefined) {
+      if (info.body.endsWith("struct {")) row = "field";
+      else if (info.body === "const (" || info.body === "var (") row = "value";
+      if (row !== undefined) {
+        flush();
+        group = { kind: row, indent: info.indent };
+        continue;
+      }
+      row = "stmt";
+    }
+    if (decl ? row === "stmt" : row !== "stmt" || info.comment === "") {
+      flush();
+      continue;
+    }
+    if (indent !== undefined && indent !== info.indent) flush();
+    indent = info.indent;
+    kind = row;
+    at.push(i);
+    parts.push(goParts(info, row));
   }
   flush();
 }
 
 function alignGo(input) {
   const lines = input.split("\n");
-  goAlignBlocks(lines);
-  goAlignComments(lines);
+  goAlign(lines, true);
+  goAlign(lines, false);
   return lines.join("\n");
 }
 
