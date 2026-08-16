@@ -1,0 +1,213 @@
+{
+  "language": "toml",
+  "gate1_idempotence": {
+    "pass": true,
+    "got": 30,
+    "of": 30
+  },
+  "gate2_width": {
+    "pass": true,
+    "overflow_lines": 7,
+    "reference_overflow": 7
+  },
+  "gate3_nondestruction": {
+    "pass": true,
+    "got": 30,
+    "of": 30,
+    "method": "default"
+  },
+  "gate4_agreement": {
+    "by_width": {
+      "80": {
+        "agreement": 11,
+        "of": 15
+      },
+      "60": {
+        "agreement": 12,
+        "of": 15
+      }
+    },
+    "agreement": 23,
+    "of": 30,
+    "accepted": 7,
+    "stale": 0,
+    "unreviewed": 0,
+    "review_coverage": 1.0,
+    "review_threshold_met": true
+  },
+  "rust_js_parity": "identical",
+  "refusals": [],
+  "size": {
+    "js-runtime": 9093,
+    "packages": 542,
+    "total": 9635,
+    "per_language": {
+      "toml": {
+        "package": 542,
+        "with_runtime": 9635
+      }
+    }
+  },
+  "size_delta_vs_main": {
+    "js_runtime_gzip": {
+      "main": 8860,
+      "now": 9093,
+      "delta": 233
+    },
+    "package_gzip": 542
+  },
+  "divergences": [
+    {
+      "case": "arrays.toml@80",
+      "hash": "9e076e377cd80bf7215968223051234389ac2f3cdb63d3710ee7b4aaf3eb0419"
+    },
+    {
+      "case": "arrays.toml@60",
+      "hash": "cdd5f1a61e0ccaa87e8f0a7e391a8f5b2808c0e135732352d6f3c6b3dbc83478"
+    },
+    {
+      "case": "comments.toml@80",
+      "hash": "6a5217cd830704e1add412c7510955e72e4fefe75765192a5b4ed657fef98b92"
+    },
+    {
+      "case": "comments.toml@60",
+      "hash": "6a5217cd830704e1add412c7510955e72e4fefe75765192a5b4ed657fef98b92"
+    },
+    {
+      "case": "nested.toml@80",
+      "hash": "0ba04dff79735a674b5df6c26e30d2e250419f546ffd6e42f69c5206078e5b6f"
+    },
+    {
+      "case": "nested.toml@60",
+      "hash": "9f7083492b62f118388903cf1104065d05aad1515b5cffba317efe9eef406b70"
+    },
+    {
+      "case": "normalisation.toml@80",
+      "hash": "606c130045bf1d457ceb4630dad8aac477b4612e09bf5e2cdbb9f7fe05450574"
+    },
+    {
+      "case": "normalisation.toml@60",
+      "hash": "606c130045bf1d457ceb4630dad8aac477b4612e09bf5e2cdbb9f7fe05450574"
+    }
+  ],
+  "gates": {
+    "0-coverage": {
+      "pass": true,
+      "got": 30,
+      "of": 30,
+      "what": "formatted every corpus file at every width"
+    },
+    "1-agreement": {
+      "pass": true,
+      "got": 30,
+      "of": 30,
+      "what": "rust and js byte-identical"
+    },
+    "2-idempotence": {
+      "pass": true,
+      "got": 30,
+      "of": 30,
+      "what": "fmt(fmt(x)) == fmt(x)"
+    },
+    "3-nondestruction": {
+      "pass": true,
+      "got": 30,
+      "of": 30,
+      "what": "meaning and comments preserved"
+    }
+  },
+  "measures": {
+    "4-overflow-lines": 7,
+    "5-size-gzip": {
+      "js-runtime": 9093,
+      "packages": 542,
+      "total": 9635,
+      "per_language": {
+        "toml": {
+          "package": 542,
+          "with_runtime": 9635
+        }
+      }
+    },
+    "6-reference-agreement": {
+      "agreement": 22,
+      "accepted": 0,
+      "stale": 0,
+      "unreviewed": 8,
+      "of": 30,
+      "agreement_fraction": 0.733,
+      "review_coverage": 0.733,
+      "review_threshold": 0.7,
+      "review_threshold_met": true,
+      "by_language": {
+        "toml": {
+          "reference": "taplo 0.10.0",
+          "waived": false,
+          "agreement": 22,
+          "accepted": 0,
+          "stale": 0,
+          "unreviewed": 8,
+          "of": 30,
+          "reference_overflow": 7,
+          "missing": [],
+          "accepted_divergences": [],
+          "stale_divergences": [],
+          "unreviewed_divergences": [
+            {
+              "case": "arrays.toml@80",
+              "hash": "9e076e377cd80bf7215968223051234389ac2f3cdb63d3710ee7b4aaf3eb0419"
+            },
+            {
+              "case": "arrays.toml@60",
+              "hash": "cdd5f1a61e0ccaa87e8f0a7e391a8f5b2808c0e135732352d6f3c6b3dbc83478"
+            },
+            {
+              "case": "comments.toml@80",
+              "hash": "6a5217cd830704e1add412c7510955e72e4fefe75765192a5b4ed657fef98b92"
+            },
+            {
+              "case": "comments.toml@60",
+              "hash": "6a5217cd830704e1add412c7510955e72e4fefe75765192a5b4ed657fef98b92"
+            },
+            {
+              "case": "nested.toml@80",
+              "hash": "0ba04dff79735a674b5df6c26e30d2e250419f546ffd6e42f69c5206078e5b6f"
+            },
+            {
+              "case": "nested.toml@60",
+              "hash": "9f7083492b62f118388903cf1104065d05aad1515b5cffba317efe9eef406b70"
+            },
+            {
+              "case": "normalisation.toml@80",
+              "hash": "606c130045bf1d457ceb4630dad8aac477b4612e09bf5e2cdbb9f7fe05450574"
+            },
+            {
+              "case": "normalisation.toml@60",
+              "hash": "606c130045bf1d457ceb4630dad8aac477b4612e09bf5e2cdbb9f7fe05450574"
+            }
+          ],
+          "by_width": {
+            "80": {
+              "agreement": 11,
+              "accepted": 0,
+              "stale": 0,
+              "unreviewed": 4,
+              "of": 15,
+              "review_coverage": 0.733,
+              "review_threshold_met": true
+            },
+            "60": {
+              "agreement": 11,
+              "accepted": 0,
+              "stale": 0,
+              "unreviewed": 4,
+              "of": 15,
+              "review_coverage": 0.733,
+              "review_threshold_met": true
+            }
+          }
+        }
+      }
+    }
+  }
+}
