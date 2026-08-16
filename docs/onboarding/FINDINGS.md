@@ -404,9 +404,11 @@ once.
 
 ## 8. `fill` — pack as many items per line as fit
 
-**Status:** **built** (2026-08-17), **CSS opted in** (2026-08-17) · **Cost:**
-local, **+365 B gzip** runtime, **+44 B gzip** CSS package ·
-**Languages:** CSS (measured), JSON (still blocked)
+**Status:** **built** (2026-08-17), **CSS opted in** (2026-08-17), **`all`
+unblocked JSON** (2026-08-17) · **Cost:** local, **+365 B gzip** `fill`
+runtime then **+86 B gzip** `all`, **+133 B gzip** JSON package, **+17 B
+gzip** CSS package on top of the earlier **+44 B** ·
+**Languages:** CSS (measured), JSON (measured, 6/6)
 
 The IR breaks a group all-or-nothing: every separator breaks, or none does.
 Neither reference does that. prettier packs short items onto a line and wraps to
@@ -451,7 +453,7 @@ Stage D's costing, which is what makes this decidable:
 | Divergences it contributes to   | **13 of 21** (CSS, stage-D estimate)               |
 | Divergences it fully resolves   | **9 of 21** estimated; **7 of 19** measured        |
 | Cost on this register's scale   | **local**                                          |
-| Effect on merged packages       | CSS 11/30 → 18/30; JSON still cannot opt in        |
+| Effect on merged packages       | CSS 11/30 → 18/30; JSON 4/6 → 6/6 once `all` landed |
 
 Local is the important word. It needs a new Doc node and one printer case using
 the width state the runtime already carries: no sibling measurement, no second
@@ -500,11 +502,19 @@ Those are why 9/21 became 7/19, not a package that refused to try. Applying
 `fill` to every comma list — the JSON-shaped opt-in — fixed `font-family`
 and spoiled `box-shadow` / `transition` in the same file, leaving
 `values.css` divergent and making `custom_properties` and `kitchen` worse.
-The `string_value == 0` guard is the existing-predicate way around that
-wall; it is not `["all", sel, kinds]`, and an unquoted-only `font-family`
-would not take the branch. The `all` predicate was not built.
+The `string_value == 0` guard was the existing-predicate way around that
+wall. `["all", "named", ["property_name", "string_value", "plain_value",
+"important"]]` replaced it: declaration has no value field, so `all named`
+has to list `property_name` and `important` or the predicate never fires.
+No corpus file moved (still 18/30). An unquoted-only family list now takes
+the branch; the corpus does not contain one.
 
-JSON is unchanged at 4/6. The same dispatch wall still blocks its opt-in.
+JSON used the same predicate to opt in. `all named [number]` selects fill
+for `long_flat_array` without regressing mixed `scalars.json`. `all named
+[array, object]` plus a `count == 1` fallback explodes `matrix` on this
+corpus (prettier also wants "parent is not an array", which is ancestor
+context and was not built). Agreement **4/6 → 6/6**; both `nested.json`
+reviews retired.
 
 ## 9. Comment placement cannot see the surrounding syntax
 
