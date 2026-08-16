@@ -782,7 +782,11 @@ function goAlign(lines, decl) {
       }
       row = "stmt";
     }
-    if (decl ? row === "stmt" : row !== "stmt" || info.comment === "") {
+    // A line ending in a binary operator or a comma continues one expression
+    // or name list across lines; go/printer emits a formfeed there, which ends
+    // the tabwriter section rather than aligning the pieces.
+    if ((decl ? row === "stmt" : row !== "stmt" || info.comment === "") ||
+        "+-*/%&|^,".includes(info.body[info.body.length - 1])) {
       flush();
       continue;
     }

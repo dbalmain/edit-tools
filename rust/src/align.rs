@@ -401,11 +401,17 @@ fn align(lines: &mut [String], decl: bool) {
             current = Some(Kind::Stmt);
         }
         let current = current.unwrap_or(Kind::Stmt);
+        // A line ending in a binary operator or a comma continues one
+        // expression or name list across lines; go/printer emits a formfeed
+        // there, which ends the tabwriter section rather than aligning the
+        // pieces.
         let skip = if decl {
             current == Kind::Stmt
         } else {
             current != Kind::Stmt || info.comment.is_empty()
-        };
+        } || info
+            .body
+            .ends_with(['+', '-', '*', '/', '%', '&', '|', '^', ',']);
         if skip {
             flush!();
             continue;
