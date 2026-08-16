@@ -71,5 +71,45 @@ class ReviewLedgerTests(unittest.TestCase):
         )
 
 
+
+class RetireTests(unittest.TestCase):
+    """Retiring is for a divergence that is gone, never one that changed."""
+
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.root = Path(tmp.name)
+        review_ledger.approve(
+            "formatter", "toml", "toml/a.toml@80", "a" * 64,
+            "design limit", "because", "someone", root=self.root,
+        )
+        review_ledger.approve(
+            "formatter", "toml", "toml/b.toml@80", "b" * 64,
+            "design limit", "because", "someone", root=self.root,
+        )
+
+    def test_retiring_drops_only_that_record(self):
+        dropped = review_ledger.retire(
+            "formatter", "toml", "toml/a.toml@80", root=self.root
+        )
+
+        self.assertEqual(dropped.id, "toml/a.toml@80")
+        remaining = review_ledger.load("formatter", "toml", root=self.root)
+        self.assertEqual(list(remaining), ["toml/b.toml@80"])
+
+    def test_retiring_the_last_record_removes_the_file(self):
+        for item in ("toml/a.toml@80", "toml/b.toml@80"):
+            review_ledger.retire("formatter", "toml", item, root=self.root)
+
+        self.assertFalse(
+            review_ledger.path_for("formatter", "toml", self.root).exists()
+        )
+
+    def test_retiring_something_absent_is_an_error(self):
+        with self.assertRaises(review_ledger.LedgerError):
+            review_ledger.retire(
+                "formatter", "toml", "toml/never.toml@80", root=self.root
+            )
+
 if __name__ == "__main__":
     unittest.main()

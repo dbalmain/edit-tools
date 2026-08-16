@@ -447,8 +447,21 @@ def reference_agreement(
                     entry["agreement"] += 1
                     width_entry["agreement"] += 1
                 else:
+                    # Two different situations wear the same word otherwise.
+                    # A divergence that *changed* needs a human to look again; a
+                    # divergence that was *resolved* needs nobody -- its verdict
+                    # simply has no subject any more. Saying "stale" for both
+                    # sends someone to re-review a case that now agrees, and the
+                    # only way out is hand-editing the ledger. Name it, and name
+                    # the command that clears it.
                     width_entry["stale"] += 1
-                    stale(entry, case, review, "output now agrees with the reference")
+                    stale(
+                        entry,
+                        case,
+                        review,
+                        "resolved: output now agrees with the reference -- "
+                        "retire the record with review_formatter.py --retire",
+                    )
             else:
                 divergence = fd.make(m.name, file, width, run.text, expected)
                 item_state = review_ledger.state(divergence.hash, review)

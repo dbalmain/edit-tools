@@ -161,3 +161,35 @@ def approve(
         encoding="utf-8",
     )
     return record
+
+
+def retire(kind: str, language: str, item_id: str, *, root: Path = ROOT) -> Review:
+    """Drop a record whose case no longer exists, and return what was dropped.
+
+    Retiring is not a soft delete of a verdict someone disagrees with: it is the
+    only correct response to a divergence that has been *fixed*. The reason a
+    record can be removed at all is that its subject is gone, so there is
+    nothing left to have an opinion about. A record whose divergence merely
+    *changed* must be re-judged with `approve`, never retired -- that is the
+    case the content hash exists to catch, and quietly deleting it is exactly
+    the failure the ledger was built to prevent.
+
+    Callers are responsible for establishing that the case now agrees; this
+    function does not re-run the formatter.
+    """
+    records = load(kind, language, root)
+    if item_id not in records:
+        raise LedgerError(f"no review to retire for {item_id!r}")
+    dropped = records.pop(item_id)
+    path = path_for(kind, language, root)
+    if records:
+        path.write_text(
+            "".join(
+                json.dumps(asdict(item), ensure_ascii=False) + "\n"
+                for item in records.values()
+            ),
+            encoding="utf-8",
+        )
+    else:
+        path.unlink()
+    return dropped
