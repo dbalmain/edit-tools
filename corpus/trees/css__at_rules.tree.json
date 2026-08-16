@@ -1,0 +1,967 @@
+{
+ "language": "css",
+ "source_file": "corpus/src/css/at_rules.css",
+ "source": "/* At-rules. @media never wraps; @supports wraps at 40. */\n\n@import url(\"theme.css\");\n@import \"print.css\" print;\n\n@layer reset, theme, components;\n\n@layer components {\n  .btn {\n    color: red; /* layer-local */\n  }\n}\n\n@media screen and (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) and (prefers-color-scheme: dark) {\n  .x {\n    color: red;\n  }\n}\n\n@supports (display: grid) and (gap: 1rem) and (not (display: -ms-grid)) {\n  .grid {\n    display: grid;\n  }\n}\n",
+ "root": {
+  "type": "stylesheet",
+  "start": 0,
+  "end": 482,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 58,
+    "text": "/* At-rules. @media never wraps; @supports wraps at 40. */"
+   },
+   {
+    "type": "import_statement",
+    "start": 60,
+    "end": 85,
+    "children": [
+     {
+      "type": "@import",
+      "start": 60,
+      "end": 67,
+      "text": "@import"
+     },
+     {
+      "type": "call_expression",
+      "start": 68,
+      "end": 84,
+      "children": [
+       {
+        "type": "function_name",
+        "start": 68,
+        "end": 71,
+        "text": "url"
+       },
+       {
+        "type": "arguments",
+        "start": 71,
+        "end": 84,
+        "children": [
+         {
+          "type": "(",
+          "start": 71,
+          "end": 72,
+          "text": "("
+         },
+         {
+          "type": "string_value",
+          "start": 72,
+          "end": 83,
+          "children": [
+           {
+            "type": "\"",
+            "start": 72,
+            "end": 73,
+            "text": "\""
+           },
+           {
+            "type": "string_content",
+            "start": 73,
+            "end": 82,
+            "text": "theme.css"
+           },
+           {
+            "type": "\"",
+            "start": 82,
+            "end": 83,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ")",
+          "start": 83,
+          "end": 84,
+          "text": ")"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": ";",
+      "start": 84,
+      "end": 85,
+      "text": ";"
+     }
+    ]
+   },
+   {
+    "type": "import_statement",
+    "start": 86,
+    "end": 112,
+    "children": [
+     {
+      "type": "@import",
+      "start": 86,
+      "end": 93,
+      "text": "@import"
+     },
+     {
+      "type": "string_value",
+      "start": 94,
+      "end": 105,
+      "children": [
+       {
+        "type": "\"",
+        "start": 94,
+        "end": 95,
+        "text": "\""
+       },
+       {
+        "type": "string_content",
+        "start": 95,
+        "end": 104,
+        "text": "print.css"
+       },
+       {
+        "type": "\"",
+        "start": 104,
+        "end": 105,
+        "text": "\""
+       }
+      ]
+     },
+     {
+      "type": "keyword_query",
+      "start": 106,
+      "end": 111,
+      "text": "print"
+     },
+     {
+      "type": ";",
+      "start": 111,
+      "end": 112,
+      "text": ";"
+     }
+    ]
+   },
+   {
+    "type": "at_rule",
+    "start": 114,
+    "end": 146,
+    "children": [
+     {
+      "type": "at_keyword",
+      "start": 114,
+      "end": 120,
+      "text": "@layer"
+     },
+     {
+      "type": "keyword_query",
+      "start": 121,
+      "end": 126,
+      "text": "reset"
+     },
+     {
+      "type": ",",
+      "start": 126,
+      "end": 127,
+      "text": ","
+     },
+     {
+      "type": "keyword_query",
+      "start": 128,
+      "end": 133,
+      "text": "theme"
+     },
+     {
+      "type": ",",
+      "start": 133,
+      "end": 134,
+      "text": ","
+     },
+     {
+      "type": "keyword_query",
+      "start": 135,
+      "end": 145,
+      "text": "components"
+     },
+     {
+      "type": ";",
+      "start": 145,
+      "end": 146,
+      "text": ";"
+     }
+    ]
+   },
+   {
+    "type": "at_rule",
+    "start": 148,
+    "end": 216,
+    "children": [
+     {
+      "type": "at_keyword",
+      "start": 148,
+      "end": 154,
+      "text": "@layer"
+     },
+     {
+      "type": "keyword_query",
+      "start": 155,
+      "end": 165,
+      "text": "components"
+     },
+     {
+      "type": "block",
+      "start": 166,
+      "end": 216,
+      "children": [
+       {
+        "type": "{",
+        "start": 166,
+        "end": 167,
+        "text": "{"
+       },
+       {
+        "type": "rule_set",
+        "start": 170,
+        "end": 214,
+        "children": [
+         {
+          "type": "selectors",
+          "start": 170,
+          "end": 174,
+          "children": [
+           {
+            "type": "class_selector",
+            "start": 170,
+            "end": 174,
+            "children": [
+             {
+              "type": ".",
+              "start": 170,
+              "end": 171,
+              "text": "."
+             },
+             {
+              "type": "class_name",
+              "start": 171,
+              "end": 174,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 171,
+                "end": 174,
+                "text": "btn"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "block",
+          "start": 175,
+          "end": 214,
+          "children": [
+           {
+            "type": "{",
+            "start": 175,
+            "end": 176,
+            "text": "{"
+           },
+           {
+            "type": "declaration",
+            "start": 181,
+            "end": 192,
+            "children": [
+             {
+              "type": "property_name",
+              "start": 181,
+              "end": 186,
+              "text": "color"
+             },
+             {
+              "type": ":",
+              "start": 186,
+              "end": 187,
+              "text": ":"
+             },
+             {
+              "type": "plain_value",
+              "start": 188,
+              "end": 191,
+              "text": "red"
+             },
+             {
+              "type": ";",
+              "start": 191,
+              "end": 192,
+              "text": ";"
+             }
+            ]
+           },
+           {
+            "type": "comment",
+            "start": 193,
+            "end": 210,
+            "text": "/* layer-local */"
+           },
+           {
+            "type": "}",
+            "start": 213,
+            "end": 214,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 215,
+        "end": 216,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "media_statement",
+    "start": 218,
+    "end": 371,
+    "children": [
+     {
+      "type": "@media",
+      "start": 218,
+      "end": 224,
+      "text": "@media"
+     },
+     {
+      "type": "binary_query",
+      "start": 225,
+      "end": 340,
+      "children": [
+       {
+        "type": "binary_query",
+        "start": 225,
+        "end": 307,
+        "children": [
+         {
+          "type": "binary_query",
+          "start": 225,
+          "end": 278,
+          "children": [
+           {
+            "type": "binary_query",
+            "start": 225,
+            "end": 254,
+            "children": [
+             {
+              "type": "keyword_query",
+              "start": 225,
+              "end": 231,
+              "text": "screen"
+             },
+             {
+              "type": "and",
+              "start": 232,
+              "end": 235,
+              "text": "and"
+             },
+             {
+              "type": "feature_query",
+              "start": 236,
+              "end": 254,
+              "children": [
+               {
+                "type": "(",
+                "start": 236,
+                "end": 237,
+                "text": "("
+               },
+               {
+                "type": "feature_name",
+                "start": 237,
+                "end": 246,
+                "text": "min-width"
+               },
+               {
+                "type": ":",
+                "start": 246,
+                "end": 247,
+                "text": ":"
+               },
+               {
+                "type": "integer_value",
+                "start": 248,
+                "end": 253,
+                "children": [
+                 {
+                  "type": "unit",
+                  "start": 251,
+                  "end": 253,
+                  "text": "px"
+                 }
+                ]
+               },
+               {
+                "type": ")",
+                "start": 253,
+                "end": 254,
+                "text": ")"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "and",
+            "start": 255,
+            "end": 258,
+            "text": "and"
+           },
+           {
+            "type": "feature_query",
+            "start": 259,
+            "end": 278,
+            "children": [
+             {
+              "type": "(",
+              "start": 259,
+              "end": 260,
+              "text": "("
+             },
+             {
+              "type": "feature_name",
+              "start": 260,
+              "end": 269,
+              "text": "max-width"
+             },
+             {
+              "type": ":",
+              "start": 269,
+              "end": 270,
+              "text": ":"
+             },
+             {
+              "type": "integer_value",
+              "start": 271,
+              "end": 277,
+              "children": [
+               {
+                "type": "unit",
+                "start": 275,
+                "end": 277,
+                "text": "px"
+               }
+              ]
+             },
+             {
+              "type": ")",
+              "start": 277,
+              "end": 278,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "and",
+          "start": 279,
+          "end": 282,
+          "text": "and"
+         },
+         {
+          "type": "feature_query",
+          "start": 283,
+          "end": 307,
+          "children": [
+           {
+            "type": "(",
+            "start": 283,
+            "end": 284,
+            "text": "("
+           },
+           {
+            "type": "feature_name",
+            "start": 284,
+            "end": 295,
+            "text": "orientation"
+           },
+           {
+            "type": ":",
+            "start": 295,
+            "end": 296,
+            "text": ":"
+           },
+           {
+            "type": "plain_value",
+            "start": 297,
+            "end": 306,
+            "text": "landscape"
+           },
+           {
+            "type": ")",
+            "start": 306,
+            "end": 307,
+            "text": ")"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "and",
+        "start": 308,
+        "end": 311,
+        "text": "and"
+       },
+       {
+        "type": "feature_query",
+        "start": 312,
+        "end": 340,
+        "children": [
+         {
+          "type": "(",
+          "start": 312,
+          "end": 313,
+          "text": "("
+         },
+         {
+          "type": "feature_name",
+          "start": 313,
+          "end": 333,
+          "text": "prefers-color-scheme"
+         },
+         {
+          "type": ":",
+          "start": 333,
+          "end": 334,
+          "text": ":"
+         },
+         {
+          "type": "plain_value",
+          "start": 335,
+          "end": 339,
+          "text": "dark"
+         },
+         {
+          "type": ")",
+          "start": 339,
+          "end": 340,
+          "text": ")"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "block",
+      "start": 341,
+      "end": 371,
+      "children": [
+       {
+        "type": "{",
+        "start": 341,
+        "end": 342,
+        "text": "{"
+       },
+       {
+        "type": "rule_set",
+        "start": 345,
+        "end": 369,
+        "children": [
+         {
+          "type": "selectors",
+          "start": 345,
+          "end": 347,
+          "children": [
+           {
+            "type": "class_selector",
+            "start": 345,
+            "end": 347,
+            "children": [
+             {
+              "type": ".",
+              "start": 345,
+              "end": 346,
+              "text": "."
+             },
+             {
+              "type": "class_name",
+              "start": 346,
+              "end": 347,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 346,
+                "end": 347,
+                "text": "x"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "block",
+          "start": 348,
+          "end": 369,
+          "children": [
+           {
+            "type": "{",
+            "start": 348,
+            "end": 349,
+            "text": "{"
+           },
+           {
+            "type": "declaration",
+            "start": 354,
+            "end": 365,
+            "children": [
+             {
+              "type": "property_name",
+              "start": 354,
+              "end": 359,
+              "text": "color"
+             },
+             {
+              "type": ":",
+              "start": 359,
+              "end": 360,
+              "text": ":"
+             },
+             {
+              "type": "plain_value",
+              "start": 361,
+              "end": 364,
+              "text": "red"
+             },
+             {
+              "type": ";",
+              "start": 364,
+              "end": 365,
+              "text": ";"
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 368,
+            "end": 369,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 370,
+        "end": 371,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "supports_statement",
+    "start": 373,
+    "end": 481,
+    "children": [
+     {
+      "type": "@supports",
+      "start": 373,
+      "end": 382,
+      "text": "@supports"
+     },
+     {
+      "type": "binary_query",
+      "start": 383,
+      "end": 444,
+      "children": [
+       {
+        "type": "binary_query",
+        "start": 383,
+        "end": 414,
+        "children": [
+         {
+          "type": "feature_query",
+          "start": 383,
+          "end": 398,
+          "children": [
+           {
+            "type": "(",
+            "start": 383,
+            "end": 384,
+            "text": "("
+           },
+           {
+            "type": "feature_name",
+            "start": 384,
+            "end": 391,
+            "text": "display"
+           },
+           {
+            "type": ":",
+            "start": 391,
+            "end": 392,
+            "text": ":"
+           },
+           {
+            "type": "plain_value",
+            "start": 393,
+            "end": 397,
+            "text": "grid"
+           },
+           {
+            "type": ")",
+            "start": 397,
+            "end": 398,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": "and",
+          "start": 399,
+          "end": 402,
+          "text": "and"
+         },
+         {
+          "type": "feature_query",
+          "start": 403,
+          "end": 414,
+          "children": [
+           {
+            "type": "(",
+            "start": 403,
+            "end": 404,
+            "text": "("
+           },
+           {
+            "type": "feature_name",
+            "start": 404,
+            "end": 407,
+            "text": "gap"
+           },
+           {
+            "type": ":",
+            "start": 407,
+            "end": 408,
+            "text": ":"
+           },
+           {
+            "type": "integer_value",
+            "start": 409,
+            "end": 413,
+            "children": [
+             {
+              "type": "unit",
+              "start": 410,
+              "end": 413,
+              "text": "rem"
+             }
+            ]
+           },
+           {
+            "type": ")",
+            "start": 413,
+            "end": 414,
+            "text": ")"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "and",
+        "start": 415,
+        "end": 418,
+        "text": "and"
+       },
+       {
+        "type": "parenthesized_query",
+        "start": 419,
+        "end": 444,
+        "children": [
+         {
+          "type": "(",
+          "start": 419,
+          "end": 420,
+          "text": "("
+         },
+         {
+          "type": "unary_query",
+          "start": 420,
+          "end": 443,
+          "children": [
+           {
+            "type": "not",
+            "start": 420,
+            "end": 423,
+            "text": "not"
+           },
+           {
+            "type": "feature_query",
+            "start": 424,
+            "end": 443,
+            "children": [
+             {
+              "type": "(",
+              "start": 424,
+              "end": 425,
+              "text": "("
+             },
+             {
+              "type": "feature_name",
+              "start": 425,
+              "end": 432,
+              "text": "display"
+             },
+             {
+              "type": ":",
+              "start": 432,
+              "end": 433,
+              "text": ":"
+             },
+             {
+              "type": "plain_value",
+              "start": 434,
+              "end": 442,
+              "text": "-ms-grid"
+             },
+             {
+              "type": ")",
+              "start": 442,
+              "end": 443,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ")",
+          "start": 443,
+          "end": 444,
+          "text": ")"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "block",
+      "start": 445,
+      "end": 481,
+      "children": [
+       {
+        "type": "{",
+        "start": 445,
+        "end": 446,
+        "text": "{"
+       },
+       {
+        "type": "rule_set",
+        "start": 449,
+        "end": 479,
+        "children": [
+         {
+          "type": "selectors",
+          "start": 449,
+          "end": 454,
+          "children": [
+           {
+            "type": "class_selector",
+            "start": 449,
+            "end": 454,
+            "children": [
+             {
+              "type": ".",
+              "start": 449,
+              "end": 450,
+              "text": "."
+             },
+             {
+              "type": "class_name",
+              "start": 450,
+              "end": 454,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 450,
+                "end": 454,
+                "text": "grid"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "block",
+          "start": 455,
+          "end": 479,
+          "children": [
+           {
+            "type": "{",
+            "start": 455,
+            "end": 456,
+            "text": "{"
+           },
+           {
+            "type": "declaration",
+            "start": 461,
+            "end": 475,
+            "children": [
+             {
+              "type": "property_name",
+              "start": 461,
+              "end": 468,
+              "text": "display"
+             },
+             {
+              "type": ":",
+              "start": 468,
+              "end": 469,
+              "text": ":"
+             },
+             {
+              "type": "plain_value",
+              "start": 470,
+              "end": 474,
+              "text": "grid"
+             },
+             {
+              "type": ";",
+              "start": 474,
+              "end": 475,
+              "text": ";"
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 478,
+            "end": 479,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 480,
+        "end": 481,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -1,0 +1,1046 @@
+{
+ "language": "css",
+ "source_file": "corpus/src/css/selectors.css",
+ "source": "/* Selectors: lists, combinators, attributes, :is/:has. */\n\n/* Comma lists are always one selector per line, whatever the width. */\n.header,\n.footer,\n.sidebar,\n.main-content {\n  color: inherit;\n}\n\n/* Combinators, attributes, trailing comment. */\nnav > ul + p ~ a[href=\"https://example.com\"][target=\"_blank\"] {\n  color: blue; /* external link */\n}\n\n/* :is descendant wraps at 40, not at 80. */\n:is(header, footer, aside) a:not(:hover, :focus) {\n  color: navy;\n}\n\n:where(.teaser, .card, .panel) {\n  margin: 0;\n}\n\narticle:has(> img + p) {\n  display: grid;\n}\n",
+ "root": {
+  "type": "stylesheet",
+  "start": 0,
+  "end": 555,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 58,
+    "text": "/* Selectors: lists, combinators, attributes, :is/:has. */"
+   },
+   {
+    "type": "comment",
+    "start": 60,
+    "end": 131,
+    "text": "/* Comma lists are always one selector per line, whatever the width. */"
+   },
+   {
+    "type": "rule_set",
+    "start": 132,
+    "end": 195,
+    "children": [
+     {
+      "type": "selectors",
+      "start": 132,
+      "end": 173,
+      "children": [
+       {
+        "type": "class_selector",
+        "start": 132,
+        "end": 139,
+        "children": [
+         {
+          "type": ".",
+          "start": 132,
+          "end": 133,
+          "text": "."
+         },
+         {
+          "type": "class_name",
+          "start": 133,
+          "end": 139,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 133,
+            "end": 139,
+            "text": "header"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 139,
+        "end": 140,
+        "text": ","
+       },
+       {
+        "type": "class_selector",
+        "start": 141,
+        "end": 148,
+        "children": [
+         {
+          "type": ".",
+          "start": 141,
+          "end": 142,
+          "text": "."
+         },
+         {
+          "type": "class_name",
+          "start": 142,
+          "end": 148,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 142,
+            "end": 148,
+            "text": "footer"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 148,
+        "end": 149,
+        "text": ","
+       },
+       {
+        "type": "class_selector",
+        "start": 150,
+        "end": 158,
+        "children": [
+         {
+          "type": ".",
+          "start": 150,
+          "end": 151,
+          "text": "."
+         },
+         {
+          "type": "class_name",
+          "start": 151,
+          "end": 158,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 151,
+            "end": 158,
+            "text": "sidebar"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 158,
+        "end": 159,
+        "text": ","
+       },
+       {
+        "type": "class_selector",
+        "start": 160,
+        "end": 173,
+        "children": [
+         {
+          "type": ".",
+          "start": 160,
+          "end": 161,
+          "text": "."
+         },
+         {
+          "type": "class_name",
+          "start": 161,
+          "end": 173,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 161,
+            "end": 173,
+            "text": "main-content"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "block",
+      "start": 174,
+      "end": 195,
+      "children": [
+       {
+        "type": "{",
+        "start": 174,
+        "end": 175,
+        "text": "{"
+       },
+       {
+        "type": "declaration",
+        "start": 178,
+        "end": 193,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 178,
+          "end": 183,
+          "text": "color"
+         },
+         {
+          "type": ":",
+          "start": 183,
+          "end": 184,
+          "text": ":"
+         },
+         {
+          "type": "plain_value",
+          "start": 185,
+          "end": 192,
+          "text": "inherit"
+         },
+         {
+          "type": ";",
+          "start": 192,
+          "end": 193,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 194,
+        "end": 195,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 197,
+    "end": 245,
+    "text": "/* Combinators, attributes, trailing comment. */"
+   },
+   {
+    "type": "rule_set",
+    "start": 246,
+    "end": 346,
+    "children": [
+     {
+      "type": "selectors",
+      "start": 246,
+      "end": 307,
+      "children": [
+       {
+        "type": "attribute_selector",
+        "start": 246,
+        "end": 307,
+        "children": [
+         {
+          "type": "attribute_selector",
+          "start": 246,
+          "end": 290,
+          "children": [
+           {
+            "type": "sibling_selector",
+            "start": 246,
+            "end": 262,
+            "children": [
+             {
+              "type": "adjacent_sibling_selector",
+              "start": 246,
+              "end": 258,
+              "children": [
+               {
+                "type": "child_selector",
+                "start": 246,
+                "end": 254,
+                "children": [
+                 {
+                  "type": "tag_name",
+                  "start": 246,
+                  "end": 249,
+                  "text": "nav"
+                 },
+                 {
+                  "type": ">",
+                  "start": 250,
+                  "end": 251,
+                  "text": ">"
+                 },
+                 {
+                  "type": "tag_name",
+                  "start": 252,
+                  "end": 254,
+                  "text": "ul"
+                 }
+                ]
+               },
+               {
+                "type": "+",
+                "start": 255,
+                "end": 256,
+                "text": "+"
+               },
+               {
+                "type": "tag_name",
+                "start": 257,
+                "end": 258,
+                "text": "p"
+               }
+              ]
+             },
+             {
+              "type": "~",
+              "start": 259,
+              "end": 260,
+              "text": "~"
+             },
+             {
+              "type": "tag_name",
+              "start": 261,
+              "end": 262,
+              "text": "a"
+             }
+            ]
+           },
+           {
+            "type": "[",
+            "start": 262,
+            "end": 263,
+            "text": "["
+           },
+           {
+            "type": "attribute_name",
+            "start": 263,
+            "end": 267,
+            "text": "href"
+           },
+           {
+            "type": "=",
+            "start": 267,
+            "end": 268,
+            "text": "="
+           },
+           {
+            "type": "string_value",
+            "start": 268,
+            "end": 289,
+            "children": [
+             {
+              "type": "\"",
+              "start": 268,
+              "end": 269,
+              "text": "\""
+             },
+             {
+              "type": "string_content",
+              "start": 269,
+              "end": 288,
+              "text": "https://example.com"
+             },
+             {
+              "type": "\"",
+              "start": 288,
+              "end": 289,
+              "text": "\""
+             }
+            ]
+           },
+           {
+            "type": "]",
+            "start": 289,
+            "end": 290,
+            "text": "]"
+           }
+          ]
+         },
+         {
+          "type": "[",
+          "start": 290,
+          "end": 291,
+          "text": "["
+         },
+         {
+          "type": "attribute_name",
+          "start": 291,
+          "end": 297,
+          "text": "target"
+         },
+         {
+          "type": "=",
+          "start": 297,
+          "end": 298,
+          "text": "="
+         },
+         {
+          "type": "string_value",
+          "start": 298,
+          "end": 306,
+          "children": [
+           {
+            "type": "\"",
+            "start": 298,
+            "end": 299,
+            "text": "\""
+           },
+           {
+            "type": "string_content",
+            "start": 299,
+            "end": 305,
+            "text": "_blank"
+           },
+           {
+            "type": "\"",
+            "start": 305,
+            "end": 306,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": "]",
+          "start": 306,
+          "end": 307,
+          "text": "]"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "block",
+      "start": 308,
+      "end": 346,
+      "children": [
+       {
+        "type": "{",
+        "start": 308,
+        "end": 309,
+        "text": "{"
+       },
+       {
+        "type": "declaration",
+        "start": 312,
+        "end": 324,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 312,
+          "end": 317,
+          "text": "color"
+         },
+         {
+          "type": ":",
+          "start": 317,
+          "end": 318,
+          "text": ":"
+         },
+         {
+          "type": "plain_value",
+          "start": 319,
+          "end": 323,
+          "text": "blue"
+         },
+         {
+          "type": ";",
+          "start": 323,
+          "end": 324,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "comment",
+        "start": 325,
+        "end": 344,
+        "text": "/* external link */"
+       },
+       {
+        "type": "}",
+        "start": 345,
+        "end": 346,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 348,
+    "end": 392,
+    "text": "/* :is descendant wraps at 40, not at 80. */"
+   },
+   {
+    "type": "rule_set",
+    "start": 393,
+    "end": 460,
+    "children": [
+     {
+      "type": "selectors",
+      "start": 393,
+      "end": 441,
+      "children": [
+       {
+        "type": "pseudo_class_selector",
+        "start": 393,
+        "end": 441,
+        "children": [
+         {
+          "type": "descendant_selector",
+          "start": 393,
+          "end": 421,
+          "children": [
+           {
+            "type": "pseudo_class_selector",
+            "start": 393,
+            "end": 419,
+            "children": [
+             {
+              "type": ":",
+              "start": 393,
+              "end": 394,
+              "text": ":"
+             },
+             {
+              "type": "class_name",
+              "start": 394,
+              "end": 396,
+              "text": "is"
+             },
+             {
+              "type": "arguments",
+              "start": 396,
+              "end": 419,
+              "children": [
+               {
+                "type": "(",
+                "start": 396,
+                "end": 397,
+                "text": "("
+               },
+               {
+                "type": "tag_name",
+                "start": 397,
+                "end": 403,
+                "text": "header"
+               },
+               {
+                "type": ",",
+                "start": 403,
+                "end": 404,
+                "text": ","
+               },
+               {
+                "type": "tag_name",
+                "start": 405,
+                "end": 411,
+                "text": "footer"
+               },
+               {
+                "type": ",",
+                "start": 411,
+                "end": 412,
+                "text": ","
+               },
+               {
+                "type": "tag_name",
+                "start": 413,
+                "end": 418,
+                "text": "aside"
+               },
+               {
+                "type": ")",
+                "start": 418,
+                "end": 419,
+                "text": ")"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "tag_name",
+            "start": 420,
+            "end": 421,
+            "text": "a"
+           }
+          ]
+         },
+         {
+          "type": ":",
+          "start": 421,
+          "end": 422,
+          "text": ":"
+         },
+         {
+          "type": "class_name",
+          "start": 422,
+          "end": 425,
+          "text": "not"
+         },
+         {
+          "type": "arguments",
+          "start": 425,
+          "end": 441,
+          "children": [
+           {
+            "type": "(",
+            "start": 425,
+            "end": 426,
+            "text": "("
+           },
+           {
+            "type": "pseudo_class_selector",
+            "start": 426,
+            "end": 432,
+            "children": [
+             {
+              "type": ":",
+              "start": 426,
+              "end": 427,
+              "text": ":"
+             },
+             {
+              "type": "class_name",
+              "start": 427,
+              "end": 432,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 427,
+                "end": 432,
+                "text": "hover"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 432,
+            "end": 433,
+            "text": ","
+           },
+           {
+            "type": "pseudo_class_selector",
+            "start": 434,
+            "end": 440,
+            "children": [
+             {
+              "type": ":",
+              "start": 434,
+              "end": 435,
+              "text": ":"
+             },
+             {
+              "type": "class_name",
+              "start": 435,
+              "end": 440,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 435,
+                "end": 440,
+                "text": "focus"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ")",
+            "start": 440,
+            "end": 441,
+            "text": ")"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "block",
+      "start": 442,
+      "end": 460,
+      "children": [
+       {
+        "type": "{",
+        "start": 442,
+        "end": 443,
+        "text": "{"
+       },
+       {
+        "type": "declaration",
+        "start": 446,
+        "end": 458,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 446,
+          "end": 451,
+          "text": "color"
+         },
+         {
+          "type": ":",
+          "start": 451,
+          "end": 452,
+          "text": ":"
+         },
+         {
+          "type": "plain_value",
+          "start": 453,
+          "end": 457,
+          "text": "navy"
+         },
+         {
+          "type": ";",
+          "start": 457,
+          "end": 458,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 459,
+        "end": 460,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "rule_set",
+    "start": 462,
+    "end": 509,
+    "children": [
+     {
+      "type": "selectors",
+      "start": 462,
+      "end": 492,
+      "children": [
+       {
+        "type": "pseudo_class_selector",
+        "start": 462,
+        "end": 492,
+        "children": [
+         {
+          "type": ":",
+          "start": 462,
+          "end": 463,
+          "text": ":"
+         },
+         {
+          "type": "class_name",
+          "start": 463,
+          "end": 468,
+          "text": "where"
+         },
+         {
+          "type": "arguments",
+          "start": 468,
+          "end": 492,
+          "children": [
+           {
+            "type": "(",
+            "start": 468,
+            "end": 469,
+            "text": "("
+           },
+           {
+            "type": "class_selector",
+            "start": 469,
+            "end": 476,
+            "children": [
+             {
+              "type": ".",
+              "start": 469,
+              "end": 470,
+              "text": "."
+             },
+             {
+              "type": "class_name",
+              "start": 470,
+              "end": 476,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 470,
+                "end": 476,
+                "text": "teaser"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 476,
+            "end": 477,
+            "text": ","
+           },
+           {
+            "type": "class_selector",
+            "start": 478,
+            "end": 483,
+            "children": [
+             {
+              "type": ".",
+              "start": 478,
+              "end": 479,
+              "text": "."
+             },
+             {
+              "type": "class_name",
+              "start": 479,
+              "end": 483,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 479,
+                "end": 483,
+                "text": "card"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 483,
+            "end": 484,
+            "text": ","
+           },
+           {
+            "type": "class_selector",
+            "start": 485,
+            "end": 491,
+            "children": [
+             {
+              "type": ".",
+              "start": 485,
+              "end": 486,
+              "text": "."
+             },
+             {
+              "type": "class_name",
+              "start": 486,
+              "end": 491,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 486,
+                "end": 491,
+                "text": "panel"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ")",
+            "start": 491,
+            "end": 492,
+            "text": ")"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "block",
+      "start": 493,
+      "end": 509,
+      "children": [
+       {
+        "type": "{",
+        "start": 493,
+        "end": 494,
+        "text": "{"
+       },
+       {
+        "type": "declaration",
+        "start": 497,
+        "end": 507,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 497,
+          "end": 503,
+          "text": "margin"
+         },
+         {
+          "type": ":",
+          "start": 503,
+          "end": 504,
+          "text": ":"
+         },
+         {
+          "type": "integer_value",
+          "start": 505,
+          "end": 506,
+          "text": "0"
+         },
+         {
+          "type": ";",
+          "start": 506,
+          "end": 507,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 508,
+        "end": 509,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "rule_set",
+    "start": 511,
+    "end": 554,
+    "children": [
+     {
+      "type": "selectors",
+      "start": 511,
+      "end": 533,
+      "children": [
+       {
+        "type": "pseudo_class_selector",
+        "start": 511,
+        "end": 533,
+        "children": [
+         {
+          "type": "tag_name",
+          "start": 511,
+          "end": 518,
+          "text": "article"
+         },
+         {
+          "type": ":",
+          "start": 518,
+          "end": 519,
+          "text": ":"
+         },
+         {
+          "type": "class_name",
+          "start": 519,
+          "end": 522,
+          "text": "has"
+         },
+         {
+          "type": "arguments",
+          "start": 522,
+          "end": 533,
+          "children": [
+           {
+            "type": "(",
+            "start": 522,
+            "end": 523,
+            "text": "("
+           },
+           {
+            "type": "adjacent_sibling_selector",
+            "start": 523,
+            "end": 532,
+            "children": [
+             {
+              "type": "child_selector",
+              "start": 523,
+              "end": 528,
+              "children": [
+               {
+                "type": ">",
+                "start": 523,
+                "end": 524,
+                "text": ">"
+               },
+               {
+                "type": "tag_name",
+                "start": 525,
+                "end": 528,
+                "text": "img"
+               }
+              ]
+             },
+             {
+              "type": "+",
+              "start": 529,
+              "end": 530,
+              "text": "+"
+             },
+             {
+              "type": "tag_name",
+              "start": 531,
+              "end": 532,
+              "text": "p"
+             }
+            ]
+           },
+           {
+            "type": ")",
+            "start": 532,
+            "end": 533,
+            "text": ")"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "block",
+      "start": 534,
+      "end": 554,
+      "children": [
+       {
+        "type": "{",
+        "start": 534,
+        "end": 535,
+        "text": "{"
+       },
+       {
+        "type": "declaration",
+        "start": 538,
+        "end": 552,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 538,
+          "end": 545,
+          "text": "display"
+         },
+         {
+          "type": ":",
+          "start": 545,
+          "end": 546,
+          "text": ":"
+         },
+         {
+          "type": "plain_value",
+          "start": 547,
+          "end": 551,
+          "text": "grid"
+         },
+         {
+          "type": ";",
+          "start": 551,
+          "end": 552,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 553,
+        "end": 554,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

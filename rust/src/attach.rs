@@ -98,14 +98,22 @@ pub fn split<'a>(node: &'a Node, src: &[u8], pkg: &Package) -> Split<'a> {
 
     let mut dangling = Vec::new();
     if !lead.is_empty() {
-        match items
+        if let Some(host) = items
             .iter_mut()
             .rev()
             .find(|item| !pkg.is_token(&item.node.kind))
         {
-            Some(host) => host.after = lead,
+            host.after = lead;
+        } else if pkg.descend.contains(&node.kind) && !items.is_empty() {
+            // A descend node whose only non-token children are comments
+            // (a CSS `{ /* empty */ }`) has no named host. Park the
+            // comments on the first token so `indent` can flush them
+            // inside the brackets; prepending them as dangling would
+            // move them outside the node and fail gate 3.
+            items[0].after = lead;
+        } else {
             // A file that is nothing but comments is still a file.
-            None => dangling = lead,
+            dangling = lead;
         }
     }
     let trailing_blanks = newlines(src, prev_end, node.end).saturating_sub(1);

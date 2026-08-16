@@ -1,0 +1,652 @@
+{
+ "language": "css",
+ "source_file": "corpus/src/css/calc.css",
+ "source": "/* calc / clamp / minmax. minmax() splits at 40. */\n\n.measure {\n  width: calc(100% - 2rem);\n  width: calc(100vw - 20px - 2rem);\n  margin: clamp(1rem, 2vw + 1rem, 3rem); /* preferred size in the middle */\n  grid-template-columns: minmax(200px, 1fr) minmax(200px, 1fr) minmax(200px, 1fr);\n}\n",
+ "root": {
+  "type": "stylesheet",
+  "start": 0,
+  "end": 289,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 51,
+    "text": "/* calc / clamp / minmax. minmax() splits at 40. */"
+   },
+   {
+    "type": "rule_set",
+    "start": 53,
+    "end": 288,
+    "children": [
+     {
+      "type": "selectors",
+      "start": 53,
+      "end": 61,
+      "children": [
+       {
+        "type": "class_selector",
+        "start": 53,
+        "end": 61,
+        "children": [
+         {
+          "type": ".",
+          "start": 53,
+          "end": 54,
+          "text": "."
+         },
+         {
+          "type": "class_name",
+          "start": 54,
+          "end": 61,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 54,
+            "end": 61,
+            "text": "measure"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "block",
+      "start": 62,
+      "end": 288,
+      "children": [
+       {
+        "type": "{",
+        "start": 62,
+        "end": 63,
+        "text": "{"
+       },
+       {
+        "type": "declaration",
+        "start": 66,
+        "end": 91,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 66,
+          "end": 71,
+          "text": "width"
+         },
+         {
+          "type": ":",
+          "start": 71,
+          "end": 72,
+          "text": ":"
+         },
+         {
+          "type": "call_expression",
+          "start": 73,
+          "end": 90,
+          "children": [
+           {
+            "type": "function_name",
+            "start": 73,
+            "end": 77,
+            "text": "calc"
+           },
+           {
+            "type": "arguments",
+            "start": 77,
+            "end": 90,
+            "children": [
+             {
+              "type": "(",
+              "start": 77,
+              "end": 78,
+              "text": "("
+             },
+             {
+              "type": "binary_expression",
+              "start": 78,
+              "end": 89,
+              "children": [
+               {
+                "type": "integer_value",
+                "start": 78,
+                "end": 82,
+                "children": [
+                 {
+                  "type": "unit",
+                  "start": 81,
+                  "end": 82,
+                  "text": "%"
+                 }
+                ]
+               },
+               {
+                "type": "-",
+                "start": 83,
+                "end": 84,
+                "text": "-"
+               },
+               {
+                "type": "integer_value",
+                "start": 85,
+                "end": 89,
+                "children": [
+                 {
+                  "type": "unit",
+                  "start": 86,
+                  "end": 89,
+                  "text": "rem"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ")",
+              "start": 89,
+              "end": 90,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 90,
+          "end": 91,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "declaration",
+        "start": 94,
+        "end": 127,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 94,
+          "end": 99,
+          "text": "width"
+         },
+         {
+          "type": ":",
+          "start": 99,
+          "end": 100,
+          "text": ":"
+         },
+         {
+          "type": "call_expression",
+          "start": 101,
+          "end": 126,
+          "children": [
+           {
+            "type": "function_name",
+            "start": 101,
+            "end": 105,
+            "text": "calc"
+           },
+           {
+            "type": "arguments",
+            "start": 105,
+            "end": 126,
+            "children": [
+             {
+              "type": "(",
+              "start": 105,
+              "end": 106,
+              "text": "("
+             },
+             {
+              "type": "binary_expression",
+              "start": 106,
+              "end": 125,
+              "children": [
+               {
+                "type": "binary_expression",
+                "start": 106,
+                "end": 118,
+                "children": [
+                 {
+                  "type": "integer_value",
+                  "start": 106,
+                  "end": 111,
+                  "children": [
+                   {
+                    "type": "unit",
+                    "start": 109,
+                    "end": 111,
+                    "text": "vw"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "-",
+                  "start": 112,
+                  "end": 113,
+                  "text": "-"
+                 },
+                 {
+                  "type": "integer_value",
+                  "start": 114,
+                  "end": 118,
+                  "children": [
+                   {
+                    "type": "unit",
+                    "start": 116,
+                    "end": 118,
+                    "text": "px"
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": "-",
+                "start": 119,
+                "end": 120,
+                "text": "-"
+               },
+               {
+                "type": "integer_value",
+                "start": 121,
+                "end": 125,
+                "children": [
+                 {
+                  "type": "unit",
+                  "start": 122,
+                  "end": 125,
+                  "text": "rem"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ")",
+              "start": 125,
+              "end": 126,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 126,
+          "end": 127,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "declaration",
+        "start": 130,
+        "end": 168,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 130,
+          "end": 136,
+          "text": "margin"
+         },
+         {
+          "type": ":",
+          "start": 136,
+          "end": 137,
+          "text": ":"
+         },
+         {
+          "type": "call_expression",
+          "start": 138,
+          "end": 167,
+          "children": [
+           {
+            "type": "function_name",
+            "start": 138,
+            "end": 143,
+            "text": "clamp"
+           },
+           {
+            "type": "arguments",
+            "start": 143,
+            "end": 167,
+            "children": [
+             {
+              "type": "(",
+              "start": 143,
+              "end": 144,
+              "text": "("
+             },
+             {
+              "type": "integer_value",
+              "start": 144,
+              "end": 148,
+              "children": [
+               {
+                "type": "unit",
+                "start": 145,
+                "end": 148,
+                "text": "rem"
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 148,
+              "end": 149,
+              "text": ","
+             },
+             {
+              "type": "binary_expression",
+              "start": 150,
+              "end": 160,
+              "children": [
+               {
+                "type": "integer_value",
+                "start": 150,
+                "end": 153,
+                "children": [
+                 {
+                  "type": "unit",
+                  "start": 151,
+                  "end": 153,
+                  "text": "vw"
+                 }
+                ]
+               },
+               {
+                "type": "+",
+                "start": 154,
+                "end": 155,
+                "text": "+"
+               },
+               {
+                "type": "integer_value",
+                "start": 156,
+                "end": 160,
+                "children": [
+                 {
+                  "type": "unit",
+                  "start": 157,
+                  "end": 160,
+                  "text": "rem"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 160,
+              "end": 161,
+              "text": ","
+             },
+             {
+              "type": "integer_value",
+              "start": 162,
+              "end": 166,
+              "children": [
+               {
+                "type": "unit",
+                "start": 163,
+                "end": 166,
+                "text": "rem"
+               }
+              ]
+             },
+             {
+              "type": ")",
+              "start": 166,
+              "end": 167,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 167,
+          "end": 168,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "comment",
+        "start": 169,
+        "end": 203,
+        "text": "/* preferred size in the middle */"
+       },
+       {
+        "type": "declaration",
+        "start": 206,
+        "end": 286,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 206,
+          "end": 227,
+          "text": "grid-template-columns"
+         },
+         {
+          "type": ":",
+          "start": 227,
+          "end": 228,
+          "text": ":"
+         },
+         {
+          "type": "call_expression",
+          "start": 229,
+          "end": 247,
+          "children": [
+           {
+            "type": "function_name",
+            "start": 229,
+            "end": 235,
+            "text": "minmax"
+           },
+           {
+            "type": "arguments",
+            "start": 235,
+            "end": 247,
+            "children": [
+             {
+              "type": "(",
+              "start": 235,
+              "end": 236,
+              "text": "("
+             },
+             {
+              "type": "integer_value",
+              "start": 236,
+              "end": 241,
+              "children": [
+               {
+                "type": "unit",
+                "start": 239,
+                "end": 241,
+                "text": "px"
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 241,
+              "end": 242,
+              "text": ","
+             },
+             {
+              "type": "integer_value",
+              "start": 243,
+              "end": 246,
+              "children": [
+               {
+                "type": "unit",
+                "start": 244,
+                "end": 246,
+                "text": "fr"
+               }
+              ]
+             },
+             {
+              "type": ")",
+              "start": 246,
+              "end": 247,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "call_expression",
+          "start": 248,
+          "end": 266,
+          "children": [
+           {
+            "type": "function_name",
+            "start": 248,
+            "end": 254,
+            "text": "minmax"
+           },
+           {
+            "type": "arguments",
+            "start": 254,
+            "end": 266,
+            "children": [
+             {
+              "type": "(",
+              "start": 254,
+              "end": 255,
+              "text": "("
+             },
+             {
+              "type": "integer_value",
+              "start": 255,
+              "end": 260,
+              "children": [
+               {
+                "type": "unit",
+                "start": 258,
+                "end": 260,
+                "text": "px"
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 260,
+              "end": 261,
+              "text": ","
+             },
+             {
+              "type": "integer_value",
+              "start": 262,
+              "end": 265,
+              "children": [
+               {
+                "type": "unit",
+                "start": 263,
+                "end": 265,
+                "text": "fr"
+               }
+              ]
+             },
+             {
+              "type": ")",
+              "start": 265,
+              "end": 266,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "call_expression",
+          "start": 267,
+          "end": 285,
+          "children": [
+           {
+            "type": "function_name",
+            "start": 267,
+            "end": 273,
+            "text": "minmax"
+           },
+           {
+            "type": "arguments",
+            "start": 273,
+            "end": 285,
+            "children": [
+             {
+              "type": "(",
+              "start": 273,
+              "end": 274,
+              "text": "("
+             },
+             {
+              "type": "integer_value",
+              "start": 274,
+              "end": 279,
+              "children": [
+               {
+                "type": "unit",
+                "start": 277,
+                "end": 279,
+                "text": "px"
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 279,
+              "end": 280,
+              "text": ","
+             },
+             {
+              "type": "integer_value",
+              "start": 281,
+              "end": 284,
+              "children": [
+               {
+                "type": "unit",
+                "start": 282,
+                "end": 284,
+                "text": "fr"
+               }
+              ]
+             },
+             {
+              "type": ")",
+              "start": 284,
+              "end": 285,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 285,
+          "end": 286,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 287,
+        "end": 288,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -1,0 +1,15 @@
+/* grid-template-areas: author line breaks are the layout. */
+
+.page {
+  display: grid;
+  /* column alignment inside the strings is meaningful */
+  grid-template-areas:
+    "header header header"
+    "nav    main   aside"
+    "nav    footer footer";
+}
+
+.compact {
+  /* stays one line at both widths */
+  grid-template-areas: "a b c" "d e f";
+}

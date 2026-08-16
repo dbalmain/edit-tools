@@ -1,0 +1,33 @@
+/* File-level comment at the very top of the stylesheet. */
+
+.lead /* after a simple selector */ {
+  /* own-line before the first declaration */
+  color: red; /* trailing on a declaration */
+  /* own-line between declarations */
+  margin: 1px /* inside a value list */ 2px;
+  background: linear-gradient(
+    /* after the opening paren */
+    90deg,
+    red,
+    /* own-line between arguments */
+    blue
+    /* before the closing paren */
+  );
+  /* before the closing brace */
+}
+
+/* comment between two rules */
+
+.alpha,
+.beta /* comment in a selector list; prettier keeps the list flat */ {
+  display: block;
+}
+
+.only-comment {
+  /* only comment in an otherwise empty block */
+}
+
+/* consecutive own-line comment */
+/* second of the pair */
+
+/* comment at the end of the file */
