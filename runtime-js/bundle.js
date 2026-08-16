@@ -209,6 +209,7 @@ function validateExpr(value) {
       }
       return;
     case "each":
+    case "fill":
     case "opt":
       arity(2);
       parseSelector(rest[0]);
@@ -342,6 +343,21 @@ const breakParent = { k: "breakParent", brk: true };
 const nil = concat([]);
 const ifBreak = (b, f) => ({ k: "ifBreak", b, f, brk: false });
 const suffix = (d) => ({ k: "suffix", d, brk: false });
+const fillDoc = (parts) => {
+  if (parts.length === 0) return nil;
+  let next = { k: "fill", content: parts.at(-1), tail: undefined, brk: parts.at(-1).brk };
+  for (let i = parts.length - 2; i >= 0; i -= 2) {
+    const whitespace = parts[i];
+    const content = parts[i - 1];
+    next = {
+      k: "fill",
+      content,
+      tail: { whitespace, next },
+      brk: content.brk || whitespace.brk || next.brk,
+    };
+  }
+  return next;
+};
 
 const width = (s) => [...s].length;
 
@@ -353,7 +369,7 @@ const BREAK = 1;
 /** Does `next` fit in `rem` columns, given the work still on the printer's
  *  stack? Measuring the rest of the line -- not just the group -- is what
  *  makes a trailing `)` or a trailing comment count against the budget. */
-function fits(next, rest, rem) {
+function fits(next, rest, rem, mustBeFlat = false) {
   const stack = [next];
   let restAt = rest.length;
   for (;;) {
@@ -375,7 +391,14 @@ function fits(next, rest, rem) {
         for (let i = doc.parts.length - 1; i >= 0; i--) stack.push([ind, mode, doc.parts[i]]);
         break;
       case "group":
+        if (mustBeFlat && doc.brk) return false;
         stack.push([ind, doc.brk ? BREAK : mode, doc.d]);
+        break;
+      case "fill":
+        if (doc.tail !== undefined) {
+          stack.push([ind, mode, doc.tail.next], [ind, mode, doc.tail.whitespace]);
+        }
+        stack.push([ind, mode, doc.content]);
         break;
       case "indent":
         stack.push([ind + doc.unit, mode, doc.d]);
@@ -437,6 +460,30 @@ function print(doc, cols) {
         case "group": {
           const flat = !d.brk && fits([ind, FLAT, d.d], stack, cols - pos);
           stack.push([ind, flat ? FLAT : BREAK, d.d]);
+          break;
+        }
+        case "fill": {
+          const rem = cols - pos;
+          const contentFits = fits([ind, FLAT, d.content], [], rem, true);
+          if (d.tail === undefined) {
+            stack.push([ind, contentFits ? FLAT : BREAK, d.content]);
+            break;
+          }
+          const bothFit = fits(
+            [
+              ind,
+              FLAT,
+              concat([d.content, d.tail.whitespace, d.tail.next.content]),
+            ],
+            [],
+            rem,
+            true,
+          );
+          stack.push(
+            [ind, mode, d.tail.next],
+            [ind, bothFit ? FLAT : BREAK, d.tail.whitespace],
+            [ind, contentFits ? FLAT : BREAK, d.content],
+          );
           break;
         }
         case "line":
@@ -717,6 +764,8 @@ class Ctx {
         return this.child(parseSelector(rest[0]));
       case "each":
         return this.each(parseSelector(rest[0]), rest[1]);
+      case "fill":
+        return this.fill(parseSelector(rest[0]), rest[1]);
       case "tok":
         return this.tok(rest[0]);
       case "verbatim":
@@ -919,6 +968,26 @@ class Ctx {
       }
     }
     return concat(parts);
+  }
+
+  fill(sel, sep) {
+    const parts = [];
+    while (this.matches(this.cursor, sel)) {
+      parts.push(this.child(sel));
+      let next = -1;
+      for (let i = this.cursor; i < this.items.length; i++) {
+        if (this.matches(i, sel)) {
+          next = i;
+          break;
+        }
+      }
+      if (next < 0) break;
+      parts.push(this.eval(sep));
+      if (this.cursor !== next) {
+        throw this.refuse("its separator to take the children between items");
+      }
+    }
+    return fillDoc(parts);
   }
 
   /** Collect a left-nested run of same-type, same-tightness operators into one

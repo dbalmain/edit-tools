@@ -404,8 +404,9 @@ once.
 
 ## 8. `fill` — pack as many items per line as fit
 
-**Status:** **decided — build it** (Dave, 2026-08-17) · **Cost:** local ·
-**Languages:** CSS, JSON
+**Status:** **built** (2026-08-17), **CSS opted in** (2026-08-17) · **Cost:**
+local, **+365 B gzip** runtime, **+44 B gzip** CSS package ·
+**Languages:** CSS (measured), JSON (still blocked)
 
 The IR breaks a group all-or-nothing: every separator breaks, or none does.
 Neither reference does that. prettier packs short items onto a line and wraps to
@@ -415,8 +416,8 @@ the next, and it decides per line rather than per group.
 asked for by CSS's stage-C builder, corroborated independently against JSON
 before any reviewer saw it, and then costed at CSS's stage D.
 
-JSON's _only_ outstanding divergence is this gap, and it gets both directions
-wrong at once:
+JSON's only outstanding file exposes two gaps, and the combined diff gets both
+directions wrong at once:
 
 ```
 ours                                   prettier
@@ -432,19 +433,25 @@ ours                                   prettier
 ]
 ```
 
-Both lines are one prettier behaviour: fill when the elements are short
-primitives, one-per-line when they are not. Having only all-or-nothing gives us
-each case backwards.
+Implementation corrected the diagnosis: these are two prettier behaviours, not
+one. `fill` accounts for packing the numeric literals in `long_flat_array`.
+`matrix` is the separately deferred static test from `docs/roadmap.md` pile A:
+all of an array's children are arrays or objects. It needs an all-child-kind
+predicate and an always-broken package branch, not a different fill algorithm.
+That predicate is also required to opt JSON into fill safely: prettier does not
+fill a mixed scalar array after its first overlong string. Applying fill to all
+arrays fixed `long_flat_array` at both widths but regressed `scalars.json` at
+both, moving JSON from **4/6 to 2/6**. The experiment was reverted.
 
 Stage D's costing, which is what makes this decidable:
 
 | Question                        | Answer                                             |
 | ------------------------------- | -------------------------------------------------- |
-| Same construct in CSS and JSON? | Yes — one generalised combinator, no second shape  |
-| Divergences it contributes to   | **13 of 21** (CSS)                                 |
-| Divergences it fully resolves   | **9 of 21** (CSS), and **2 of 2** (JSON)           |
+| Same construct in CSS and JSON? | Yes for per-line packing; `matrix` is a second shape |
+| Divergences it contributes to   | **13 of 21** (CSS, stage-D estimate)               |
+| Divergences it fully resolves   | **9 of 21** estimated; **7 of 19** measured        |
 | Cost on this register's scale   | **local**                                          |
-| Effect on merged packages       | Additive — JSON opts in, TOML and python unchanged |
+| Effect on merged packages       | CSS 11/30 → 18/30; JSON still cannot opt in        |
 
 Local is the important word. It needs a new Doc node and one printer case using
 the width state the runtime already carries: no sibling measurement, no second
@@ -457,8 +464,47 @@ two-language count is not inflated: python's four divergences are
 operator-precedence breaking, a different gap, and TOML's seven are entries 1, 2
 and 3.
 
-**Decision needed from Dave.** It is the one entry here where the cost is small,
-the benefit is measured, and two languages already want it.
+The shipped shape is `["fill", sel, sep]`, deliberately parallel to `each`.
+The evaluator already has exactly the information needed to build alternating
+content and separator Docs, and the printer makes the three ordinary Wadler
+fill choices per line. Hard breaks and `BreakParent` propagate through it, and
+both runtimes retain scalar-value width counting.
+
+### CSS measured it, and the 9/21 estimate was optimistic
+
+CSS is the language that asked for `fill` and where stage D costed it. The
+package now uses it in two places, both behind predicates the IR already had:
+
+- Comma-separated declaration values that contain a `string_value` (`font-family`).
+- Space-separated declaration values that contain a `call_expression`, hanging
+  after the colon (`1px solid color-mix(...)`).
+
+Agreement moved **11/30 → 18/30** (7→10 at @80, 4→8 at @40). **7 of the 19**
+accepted divergences resolved: `nested@80`, `nesting@80`, `nesting@40`,
+`normalisation@40`, `values@80`, `values@40`, `custom_properties@40`. No
+previously-agreeing file moved. The CSS package grew 1,194 → 1,238 B gzip.
+
+The stage-D "fully resolves 9 of 21" figure counted two constructs `fill`
+cannot actually match:
+
+- **`calc` both widths.** Hanging fill packs the first two `minmax()` calls
+  and wraps the third *flat*. prettier starts the third *broken* on the
+  current line (`minmax(` then the args). The printer decides from the next
+  item's flat form, so it will not open a group-valued item in broken mode
+  on the remaining width.
+- **`custom_properties@80`.** prettier fills comma-groups (`0 1px 2px
+  rgba(...)` as one item). Our items are named CST children, so filling the
+  list packs past the last comma and explodes the last `rgba()`.
+
+Those are why 9/21 became 7/19, not a package that refused to try. Applying
+`fill` to every comma list — the JSON-shaped opt-in — fixed `font-family`
+and spoiled `box-shadow` / `transition` in the same file, leaving
+`values.css` divergent and making `custom_properties` and `kitchen` worse.
+The `string_value == 0` guard is the existing-predicate way around that
+wall; it is not `["all", sel, kinds]`, and an unquoted-only `font-family`
+would not take the branch. The `all` predicate was not built.
+
+JSON is unchanged at 4/6. The same dispatch wall still blocks its opt-in.
 
 ## 9. Comment placement cannot see the surrounding syntax
 

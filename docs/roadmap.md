@@ -127,28 +127,33 @@ ordinary:
 than broken-if-it-does-not-fit. No printer change, no new opcode class, and the
 predicate is as inspectable as `count`.
 
-**Deferred, deliberately, as of 2026-08-16.** Cheap is not the same as worth
-doing. Adding this predicate to match prettier on `matrix` buys **nothing
-measurable** — `matrix` and `deep` share a file and we currently match prettier
-on `deep`, so agreement stays 4/6 either way. And two languages cannot tell
-"this reads better everywhere" from "this suits JSON". See
-[house-style.md](house-style.md): the trigger is a corpus spanning YAML, CSS,
-TOML and Go, at which point the rule can be measured across every language at
-once rather than argued from one file.
+**Reopened by `fill`, but deliberately not folded into that slice.** The
+predicate now buys something measurable beyond the `matrix` house-style choice:
+it is the only honest way to select numeric-only arrays for fill. Applying fill
+to every JSON array fixed `long_flat_array` but regressed the mixed
+`scalars.json`, taking agreement from 4/6 to 2/6. With `all`, the package can
+choose numeric fill, container explosion, and the ordinary array rule without
+guessing from corpus-specific counts. That is a separate local feature and a
+separate decision.
 
 Pile A remains the right _classification_ — these limits are cheap to lift when
 we want them lifted. What changed is the assumption that cheap therefore means
 now.
 
-### Pile B — `fill`
+### Pile B — `fill` — **built**
 
 A printer primitive, well understood, linear cost, and the thing prettier uses
 to put several numbers on a line rather than one per line (the second JSON
-divergence, `long_flat_array@60`). Bounded work, but it is printer work in both
-runtimes, so it is not free the way pile A is.
-
-Driven by HTML/XML inline content in round 4. **Possibly not by markdown** — see
-`injection.md` on `proseWrap`.
+construct, `long_flat_array`). Built on 2026-08-17 after CSS priced it: **+365 B
+gzip** across the hand-written JS runtime, with a byte-identical Rust mirror.
+The opcode is `["fill", sel, sep]`, parallel to `each`; its separator chooses
+flat or break independently per line. CSS opted in on 2026-08-17: declaration
+`font-family` lists and hanging space-separated call lists, behind existing
+`count` tests. Agreement 11/30 → 18/30; 7 of 19 accepted divergences resolved.
+Stage D's 9/21 was optimistic — `calc`'s last `minmax()` and `--list`'s
+comma-groups are not this fill. JSON still cannot opt in: its grammar uses one
+array node type for numeric, string, mixed and container arrays, and the current
+predicate set cannot prove that every element is numeric.
 
 ### Pile C — trying two layouts and picking one
 

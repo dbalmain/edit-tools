@@ -249,6 +249,7 @@ impl<'a> Ctx<'a> {
             Expr::SrcTrail(sep) => self.srctrail(sep, f),
             Expr::Child(sel) => self.child(sel, f),
             Expr::Each(sel, sep) => self.each(sel, sep, f),
+            Expr::Fill(sel, sep) => self.fill(sel, sep, f),
             Expr::Tok(s) => self.tok(s, f),
             Expr::Verbatim => self.verbatim(f),
             Expr::Opt(sel, body) => {
@@ -511,6 +512,22 @@ impl<'a> Ctx<'a> {
             }
         }
         Ok(Doc::Concat(parts))
+    }
+
+    /// `each` with a per-line printer decision: every separator independently
+    /// stays flat when the next content fits, or breaks when it does not.
+    fn fill(&mut self, sel: &Sel, sep: &Expr, f: &Fmt<'a>) -> Result<Doc, Refusal> {
+        let mut parts = Vec::new();
+        while self.matches(self.cursor, sel, f.pkg) {
+            parts.push(self.child(sel, f)?);
+            let next = (self.cursor..self.items.len()).find(|&i| self.matches(i, sel, f.pkg));
+            let Some(next) = next else { break };
+            parts.push(self.eval(sep, f)?);
+            if self.cursor != next {
+                return Err(self.refuse("its separator to take the children between items"));
+            }
+        }
+        Ok(Doc::fill(parts))
     }
 
     fn test(&self, pred: &Pred, pkg: &Package) -> bool {
@@ -806,6 +823,20 @@ mod tests {
         ])
     }
 
+    fn fill_rule() -> serde_json::Value {
+        json!([
+            "group",
+            ["tok", "("],
+            [
+                "indent",
+                ["soft"],
+                ["fill", "named", ["seq", ["tok", ","], ["line"]]]
+            ],
+            ["soft"],
+            ["tok", ")"]
+        ])
+    }
+
     #[test]
     fn a_rule_that_ignores_a_child_refuses_rather_than_dropping_it() {
         let pkg = toy(json!({ "list": ["seq", ["tok", "("]] }));
@@ -951,6 +982,17 @@ mod tests {
         let pkg = toy(json!({ "list": ["seq", ["tok", "["], ["each", "*", ["seq"]]] }));
         let err = run(&pkg, list(&["a"], false), 80).expect_err("must refuse");
         assert!(err.0.contains("the token `[`"), "{}", err.0);
+    }
+
+    #[test]
+    fn fill_is_a_fixed_point_for_already_packed_input() {
+        let pkg = toy(json!({ "list": fill_rule() }));
+        let tree = list(&["100", "200", "300", "400"], false);
+        let once = run_on(&pkg, "(\n  100, 200,\n  300, 400\n)", tree.clone(), 12)
+            .expect("first fill succeeds");
+        let twice = run_on(&pkg, &once, tree, 12).expect("second fill succeeds");
+        assert_eq!(once, "(\n  100, 200,\n  300, 400\n)\n");
+        assert_eq!(twice, once);
     }
 
     #[test]

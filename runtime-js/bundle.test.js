@@ -95,6 +95,64 @@ test("width counts scalar values, not UTF-16 code units", () => {
   assert.equal(run(pkg, tree, 6), "(🙂🙂🙂\nx)\n");
 });
 
+test("fill packs independently per line and counts Unicode scalars", () => {
+  const rule = [
+    "group", ["tok", "("],
+    ["indent", ["soft"], ["fill", "named", ["seq", ["tok", ","], ["line"]]]],
+    ["soft"], ["tok", ")"],
+  ];
+  const pkg = toy({ list: rule });
+  assert.equal(
+    run(pkg, list(["100", "200", "300", "400"], false), 12),
+    "(\n  100, 200,\n  300, 400\n)\n",
+  );
+  assert.equal(
+    run(pkg, list(["🙂🙂", "x", "y"], false), 8),
+    "(\n  🙂🙂, x,\n  y\n)\n",
+  );
+});
+
+test("fill is a fixed point for already packed input", () => {
+  const rule = [
+    "group", ["tok", "("],
+    ["indent", ["soft"], ["fill", "named", ["seq", ["tok", ","], ["line"]]]],
+    ["soft"], ["tok", ")"],
+  ];
+  const pkg = toy({ list: rule });
+  const tree = list(["100", "200", "300", "400"], false);
+  const once = runOn(pkg, "(\n  100, 200,\n  300, 400\n)", tree, 12);
+  const twice = runOn(pkg, once, tree, 12);
+  assert.equal(twice, once);
+});
+
+test("a BreakParent reaches through fill without disabling its packing", () => {
+  const pkg = {
+    ...toy({
+      list: [
+        "group", ["tok", "("],
+        ["indent", ["soft"], ["fill", "named", ["seq", ["tok", ","], ["line"]]]],
+        ["soft"], ["tok", ")"],
+      ],
+    }),
+    comments: ["comment"],
+  };
+  const source = "(a,b,c# note)";
+  const root = {
+    type: "list", start: 0, end: 13,
+    children: [
+      span("(", 0, 1, "("),
+      span("name", 1, 2, "a"),
+      span(",", 2, 3, ","),
+      span("name", 3, 4, "b"),
+      span(",", 4, 5, ","),
+      span("name", 5, 6, "c"),
+      span("comment", 6, 12, "# note"),
+      span(")", 12, 13, ")"),
+    ],
+  };
+  assert.equal(runOn(pkg, source, root, 80), "(\n  a, b, c # note\n)\n");
+});
+
 test("a rule that ignores a child refuses rather than dropping it", () => {
   const pkg = toy({ list: ["seq", ["tok", "("]] });
   assert.throws(() => run(pkg, list(["a"], false), 80), (e) => e instanceof Refusal && /left child/.test(e.message));
