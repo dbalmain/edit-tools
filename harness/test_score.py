@@ -87,8 +87,8 @@ class ReviewLedgerScoreTests(unittest.TestCase):
         }
         report = self.classify(outputs)
         self.assertEqual(
-            (report["accepted"], report["stale"], report["unreviewed"]),
-            (0, 0, 1),
+            (report["accepted"], report["stale"], report["unreviewed"], report["excluded"]),
+            (0, 0, 1, 0),
         )
         self.assertFalse(report["review_threshold_met"])
 
@@ -241,6 +241,153 @@ class AwaitingPackageTests(unittest.TestCase):
         pending = score.awaiting_package(self.submission, {"toml": object()})
 
         self.assertEqual(pending, {})
+
+
+class IncomparableScoreTests(unittest.TestCase):
+    """Incomparable files stay gated, but they are not agreement."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.root = Path(self.tmp.name)
+        self.reference = self.root / "reference"
+        self.reviews = self.root / "reviews"
+        self.reference.mkdir()
+        self.sample = self.root / "json__sample.tree.json"
+        self.sample.write_text(
+            json.dumps(
+                {
+                    "source_file": "corpus/src/json/sample.json",
+                    "root": {"text": "source"},
+                }
+            )
+        )
+        self.quotes = self.root / "json__quotes.tree.json"
+        self.quotes.write_text(
+            json.dumps(
+                {
+                    "source_file": "corpus/src/json/quotes.json",
+                    "root": {"text": "'hello'"},
+                }
+            )
+        )
+        for width in (88, 60):
+            (self.reference / f"json__sample@{width}.txt").write_text("reference")
+            (self.reference / f"json__quotes@{width}.txt").write_text("rewritten")
+
+    def manifest(self, incomparable=None) -> manifest.Manifest:
+        path = self.root / "json.toml"
+        path.write_text(
+            "\n".join(
+                (
+                    'name = "json"',
+                    'extensions = [".json"]',
+                    'grammar = "tree-sitter-json==1.0.0"',
+                    'grammar_module = "tree_sitter_json"',
+                    'injection_aliases = ["json"]',
+                    'reference = "prettier --print-width {width}"',
+                    'reference_version = "1.0.0"',
+                    'reference_width = "flag"',
+                    "widths = [88, 60]",
+                    'gate3 = "default"',
+                )
+            )
+        )
+        parsed = manifest.parse(path)
+        if incomparable is None:
+            return parsed
+        return manifest.Manifest(
+            **{**parsed.__dict__, "incomparable": incomparable}
+        )
+
+    def classify(self, m, outputs):
+        def invoke(_exe, tree, width):
+            return outputs[Path(tree).name, width]
+
+        with (
+            mock.patch.object(score, "REFERENCE", self.reference),
+            mock.patch.object(score, "invoke", side_effect=invoke),
+        ):
+            return score.reference_agreement(
+                self.root,
+                [(self.sample, m), (self.quotes, m)],
+                ledger_root=self.reviews,
+            )
+
+    def test_incomparable_file_does_not_enter_the_denominator(self):
+        m = self.manifest({"quotes.json": "prettier re-quotes to minimise escaping"})
+        report = self.classify(
+            m,
+            {
+                ("json__sample.tree.json", 88): score.Run(ok=True, text="reference"),
+                ("json__sample.tree.json", 60): score.Run(ok=True, text="reference"),
+                ("json__quotes.tree.json", 88): score.Run(ok=True, text="ours"),
+                ("json__quotes.tree.json", 60): score.Run(ok=True, text="ours"),
+            },
+        )
+
+        self.assertEqual(report["of"], 2)
+        self.assertEqual(report["agreement"], 2)
+        self.assertEqual(report["unreviewed"], 0)
+        self.assertEqual(report["excluded"], 1)
+        language = report["by_language"]["json"]
+        self.assertEqual(language["of"], 2)
+        self.assertEqual(language["excluded"], 1)
+        self.assertEqual(
+            language["excluded_files"],
+            [
+                {
+                    "file": "quotes.json",
+                    "reason": "prettier re-quotes to minimise escaping",
+                }
+            ],
+        )
+        self.assertEqual(language["by_width"]["88"]["of"], 1)
+        self.assertEqual(language["by_width"]["60"]["of"], 1)
+
+    def test_the_same_file_is_unreviewed_when_it_is_comparable(self):
+        report = self.classify(
+            self.manifest(),
+            {
+                ("json__sample.tree.json", 88): score.Run(ok=True, text="reference"),
+                ("json__sample.tree.json", 60): score.Run(ok=True, text="reference"),
+                ("json__quotes.tree.json", 88): score.Run(ok=True, text="ours"),
+                ("json__quotes.tree.json", 60): score.Run(ok=True, text="ours"),
+            },
+        )
+
+        self.assertEqual(report["of"], 4)
+        self.assertEqual(report["agreement"], 2)
+        self.assertEqual(report["unreviewed"], 2)
+        self.assertEqual(report["excluded"], 0)
+
+    def test_a_review_of_an_incomparable_file_is_not_an_orphan(self):
+        digest = formatter_divergence.make(
+            "json", "quotes.json", 60, "ours", "rewritten"
+        ).hash
+        review_ledger.approve(
+            "formatter",
+            "json",
+            "json/quotes.json@60",
+            digest,
+            "design limit",
+            "Reference rewrites quotes.",
+            "reviewer@example.com",
+            root=self.reviews,
+            reviewed_at="2026-08-16T00:00:00Z",
+        )
+        report = self.classify(
+            self.manifest({"quotes.json": "prettier re-quotes"}),
+            {
+                ("json__sample.tree.json", 88): score.Run(ok=True, text="reference"),
+                ("json__sample.tree.json", 60): score.Run(ok=True, text="reference"),
+                ("json__quotes.tree.json", 88): score.Run(ok=True, text="ours"),
+                ("json__quotes.tree.json", 60): score.Run(ok=True, text="ours"),
+            },
+        )
+
+        self.assertEqual(report["stale"], 0)
+        self.assertEqual(report["excluded"], 1)
 
 
 if __name__ == "__main__":
