@@ -33,10 +33,15 @@ reference = "nix run nixpkgs#taplo -- fmt --no-auto-config -o column_width={widt
 reference_version = "taplo 0.10.0"
 reference_width = "flag"
 
-# 88 matches the other languages; 60 forces the array expand/collapse the 88
-# budget lets a package dodge. taplo's own default is 80, not 88 -- both
-# scored widths still produce different array layouts on this corpus.
-widths = [88, 60]
+# taplo's own default, established by bisection rather than from --help: a line
+# of exactly 80 characters stays flat and 81 breaks. Stage A found this number
+# and then scored 88 anyway, "to match the other languages" -- but 88 is black's
+# default, inherited through the python manifest, and matching it is exactly the
+# round-1 defect this brief was rewritten to prevent. Agreement measured at a
+# width no taplo user ever sees is not agreement with taplo.
+# 60 is the narrow width; it forces the array expand/collapse that 80 lets a
+# package dodge.
+widths = [80, 60]
 
 # tomllib is in the stdlib and is a real loader, but it is weaker than the
 # generic named-node comparison for the reason that matters in TOML: the same
@@ -48,8 +53,5 @@ widths = [88, 60]
 # gate names a kind -- TOML has no parenthesised-expression node.
 gate3 = "default"
 
-# Empty until a package exists to diverge. Each entry names an exact file and
-# width, and score.py fails when a declaration goes stale.
-intentional_divergences = []
 transparent_wrappers = []
 equivalent_kinds = []

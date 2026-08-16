@@ -5,8 +5,14 @@
 
 name = "edge-proxy"
 revision = 17
-listen = { host = "0.0.0.0", port = 8443 }                                          # inline on a root pair
-features = ["http2", "gzip", "access-log", "proxy-protocol", "tls-session-tickets"]
+listen = { host = "0.0.0.0", port = 8443 } # inline on a root pair
+features = [
+  "http2",
+  "gzip",
+  "access-log",
+  "proxy-protocol",
+  "tls-session-tickets",
+]
 
 [upstream.primary]
 url = "https://origin.example.com/api/v1"
