@@ -115,10 +115,13 @@ Selectors pick a child: `"f:name"` (tree-sitter field), `"t:identifier"` (node
 type), `"named"` (any type not listed in the package's `tokens`), `"*"`. The
 direct-child predicate is `["count", sel, n]`;
 `["child-count", parent-sel, child-sel, n]` counts the direct children of the
-selected child. Both describe the node, not the cursor. YAML uses the latter to
-distinguish a value `block_node` whose direct child is a block scalar from the
-same wrapper around a nested mapping or sequence, without making rule selection
-depend on comment decoration.
+selected child; `["all", sel, [kinds…]]` is true when every `sel` child has a
+type in `kinds`, including when there are none — "all" is universal, and a
+package that wants "at least one" composes with `count`. All three describe the
+node, not the cursor. YAML uses `child-count` to distinguish a value
+`block_node` whose direct child is a block scalar from the same wrapper around
+a nested mapping or sequence, without making rule selection depend on comment
+decoration. JSON uses `all` to apply `fill` only to numeric arrays.
 
 ### The package header
 

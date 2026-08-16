@@ -79,11 +79,7 @@ pub fn split<'a>(node: &'a Node, src: &[u8], pkg: &Package) -> Split<'a> {
             // its last statement), which would make an own-line comment
             // look adjacent if we used node.end.
             let share_line = items.last().is_some_and(|last| {
-                let content_end = last
-                    .node
-                    .children
-                    .last()
-                    .map_or(last.node.end, |c| c.end);
+                let content_end = last.node.children.last().map_or(last.node.end, |c| c.end);
                 newlines(src, content_end, child.start) == 0
             });
             match items.last_mut() {
