@@ -78,7 +78,11 @@
 
     "flow_node": ["each", "named", ["sp"]],
 
-    "block_mapping": ["each", "named", ["seq", ["hard"], ["blank", 1]]],
+    "block_mapping": [
+      "seq",
+      ["each", "named", ["seq", ["hard"], ["blank", 1, [], ["|+"]]]],
+      ["blank", 1, [], ["|+"]]
+    ],
     "block_sequence": ["each", "named", ["seq", ["hard"], ["blank", 1]]],
 
     "block_mapping_pair": [
@@ -96,9 +100,14 @@
         "f:value",
         [
           "when",
-          ["count", "t:block_node", 1],
-          ["indent", ["hard"], ["child", "f:value"]],
-          ["group", ["indent", ["line"], ["child", "f:value"]]]
+          ["descendant-count", "t:block_scalar", 1],
+          ["seq", ["sp"], ["child", "f:value"]],
+          [
+            "when",
+            ["count", "t:block_node", 1],
+            ["indent", ["hard"], ["child", "f:value"]],
+            ["group", ["indent", ["line"], ["child", "f:value"]]]
+          ]
         ]
       ]
     ],
