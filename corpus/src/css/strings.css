@@ -1,0 +1,13 @@
+/* Strings, urls, and CSS escapes. None of these wrap. */
+
+.quote {
+  content: "hello";
+  content: 'single'; /* prettier double-quotes this */
+  content: 'say "hi"';
+  content: "line\A break";
+  content: "tab\9 and slash\\";
+  font-family: "Font With Spaces";
+  background: url("https://example.com/very/long/path/to/an/image.png?query=1&other=2");
+  background: url(unquoted.png);
+  background: url("quoted.png");
+}

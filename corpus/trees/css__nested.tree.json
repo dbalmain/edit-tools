@@ -1,0 +1,933 @@
+{
+ "language": "css",
+ "source_file": "corpus/src/css/nested.css",
+ "source": "/* Nested at-rules and a function whose children fit. */\n\n@media screen and (min-width: 768px) {\n  @supports (display: grid) and (gap: 1rem) and (not (display: -ms-grid)) {\n    .hero {\n      /* rgb() fits after linear-gradient breaks; stays flat */\n      background: linear-gradient(90deg, rgb(1, 2, 3), rgb(4, 5, 6), rgb(7, 8, 9), rgb(10, 11, 12));\n      font-family: \"Helvetica Neue\", \"Arial\", \"sans-serif\", \"Georgia\", \"Times New Roman\", \"Courier New\";\n    }\n  }\n}\n",
+ "root": {
+  "type": "stylesheet",
+  "start": 0,
+  "end": 467,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 56,
+    "text": "/* Nested at-rules and a function whose children fit. */"
+   },
+   {
+    "type": "media_statement",
+    "start": 58,
+    "end": 466,
+    "children": [
+     {
+      "type": "@media",
+      "start": 58,
+      "end": 64,
+      "text": "@media"
+     },
+     {
+      "type": "binary_query",
+      "start": 65,
+      "end": 94,
+      "children": [
+       {
+        "type": "keyword_query",
+        "start": 65,
+        "end": 71,
+        "text": "screen"
+       },
+       {
+        "type": "and",
+        "start": 72,
+        "end": 75,
+        "text": "and"
+       },
+       {
+        "type": "feature_query",
+        "start": 76,
+        "end": 94,
+        "children": [
+         {
+          "type": "(",
+          "start": 76,
+          "end": 77,
+          "text": "("
+         },
+         {
+          "type": "feature_name",
+          "start": 77,
+          "end": 86,
+          "text": "min-width"
+         },
+         {
+          "type": ":",
+          "start": 86,
+          "end": 87,
+          "text": ":"
+         },
+         {
+          "type": "integer_value",
+          "start": 88,
+          "end": 93,
+          "children": [
+           {
+            "type": "unit",
+            "start": 91,
+            "end": 93,
+            "text": "px"
+           }
+          ]
+         },
+         {
+          "type": ")",
+          "start": 93,
+          "end": 94,
+          "text": ")"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "block",
+      "start": 95,
+      "end": 466,
+      "children": [
+       {
+        "type": "{",
+        "start": 95,
+        "end": 96,
+        "text": "{"
+       },
+       {
+        "type": "supports_statement",
+        "start": 99,
+        "end": 464,
+        "children": [
+         {
+          "type": "@supports",
+          "start": 99,
+          "end": 108,
+          "text": "@supports"
+         },
+         {
+          "type": "binary_query",
+          "start": 109,
+          "end": 170,
+          "children": [
+           {
+            "type": "binary_query",
+            "start": 109,
+            "end": 140,
+            "children": [
+             {
+              "type": "feature_query",
+              "start": 109,
+              "end": 124,
+              "children": [
+               {
+                "type": "(",
+                "start": 109,
+                "end": 110,
+                "text": "("
+               },
+               {
+                "type": "feature_name",
+                "start": 110,
+                "end": 117,
+                "text": "display"
+               },
+               {
+                "type": ":",
+                "start": 117,
+                "end": 118,
+                "text": ":"
+               },
+               {
+                "type": "plain_value",
+                "start": 119,
+                "end": 123,
+                "text": "grid"
+               },
+               {
+                "type": ")",
+                "start": 123,
+                "end": 124,
+                "text": ")"
+               }
+              ]
+             },
+             {
+              "type": "and",
+              "start": 125,
+              "end": 128,
+              "text": "and"
+             },
+             {
+              "type": "feature_query",
+              "start": 129,
+              "end": 140,
+              "children": [
+               {
+                "type": "(",
+                "start": 129,
+                "end": 130,
+                "text": "("
+               },
+               {
+                "type": "feature_name",
+                "start": 130,
+                "end": 133,
+                "text": "gap"
+               },
+               {
+                "type": ":",
+                "start": 133,
+                "end": 134,
+                "text": ":"
+               },
+               {
+                "type": "integer_value",
+                "start": 135,
+                "end": 139,
+                "children": [
+                 {
+                  "type": "unit",
+                  "start": 136,
+                  "end": 139,
+                  "text": "rem"
+                 }
+                ]
+               },
+               {
+                "type": ")",
+                "start": 139,
+                "end": 140,
+                "text": ")"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "and",
+            "start": 141,
+            "end": 144,
+            "text": "and"
+           },
+           {
+            "type": "parenthesized_query",
+            "start": 145,
+            "end": 170,
+            "children": [
+             {
+              "type": "(",
+              "start": 145,
+              "end": 146,
+              "text": "("
+             },
+             {
+              "type": "unary_query",
+              "start": 146,
+              "end": 169,
+              "children": [
+               {
+                "type": "not",
+                "start": 146,
+                "end": 149,
+                "text": "not"
+               },
+               {
+                "type": "feature_query",
+                "start": 150,
+                "end": 169,
+                "children": [
+                 {
+                  "type": "(",
+                  "start": 150,
+                  "end": 151,
+                  "text": "("
+                 },
+                 {
+                  "type": "feature_name",
+                  "start": 151,
+                  "end": 158,
+                  "text": "display"
+                 },
+                 {
+                  "type": ":",
+                  "start": 158,
+                  "end": 159,
+                  "text": ":"
+                 },
+                 {
+                  "type": "plain_value",
+                  "start": 160,
+                  "end": 168,
+                  "text": "-ms-grid"
+                 },
+                 {
+                  "type": ")",
+                  "start": 168,
+                  "end": 169,
+                  "text": ")"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ")",
+              "start": 169,
+              "end": 170,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "block",
+          "start": 171,
+          "end": 464,
+          "children": [
+           {
+            "type": "{",
+            "start": 171,
+            "end": 172,
+            "text": "{"
+           },
+           {
+            "type": "rule_set",
+            "start": 177,
+            "end": 460,
+            "children": [
+             {
+              "type": "selectors",
+              "start": 177,
+              "end": 182,
+              "children": [
+               {
+                "type": "class_selector",
+                "start": 177,
+                "end": 182,
+                "children": [
+                 {
+                  "type": ".",
+                  "start": 177,
+                  "end": 178,
+                  "text": "."
+                 },
+                 {
+                  "type": "class_name",
+                  "start": 178,
+                  "end": 182,
+                  "children": [
+                   {
+                    "type": "identifier",
+                    "start": 178,
+                    "end": 182,
+                    "text": "hero"
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": "block",
+              "start": 183,
+              "end": 460,
+              "children": [
+               {
+                "type": "{",
+                "start": 183,
+                "end": 184,
+                "text": "{"
+               },
+               {
+                "type": "comment",
+                "start": 191,
+                "end": 248,
+                "text": "/* rgb() fits after linear-gradient breaks; stays flat */"
+               },
+               {
+                "type": "declaration",
+                "start": 255,
+                "end": 349,
+                "children": [
+                 {
+                  "type": "property_name",
+                  "start": 255,
+                  "end": 265,
+                  "text": "background"
+                 },
+                 {
+                  "type": ":",
+                  "start": 265,
+                  "end": 266,
+                  "text": ":"
+                 },
+                 {
+                  "type": "call_expression",
+                  "start": 267,
+                  "end": 348,
+                  "children": [
+                   {
+                    "type": "function_name",
+                    "start": 267,
+                    "end": 282,
+                    "text": "linear-gradient"
+                   },
+                   {
+                    "type": "arguments",
+                    "start": 282,
+                    "end": 348,
+                    "children": [
+                     {
+                      "type": "(",
+                      "start": 282,
+                      "end": 283,
+                      "text": "("
+                     },
+                     {
+                      "type": "integer_value",
+                      "start": 283,
+                      "end": 288,
+                      "children": [
+                       {
+                        "type": "unit",
+                        "start": 285,
+                        "end": 288,
+                        "text": "deg"
+                       }
+                      ]
+                     },
+                     {
+                      "type": ",",
+                      "start": 288,
+                      "end": 289,
+                      "text": ","
+                     },
+                     {
+                      "type": "call_expression",
+                      "start": 290,
+                      "end": 302,
+                      "children": [
+                       {
+                        "type": "function_name",
+                        "start": 290,
+                        "end": 293,
+                        "text": "rgb"
+                       },
+                       {
+                        "type": "arguments",
+                        "start": 293,
+                        "end": 302,
+                        "children": [
+                         {
+                          "type": "(",
+                          "start": 293,
+                          "end": 294,
+                          "text": "("
+                         },
+                         {
+                          "type": "integer_value",
+                          "start": 294,
+                          "end": 295,
+                          "text": "1"
+                         },
+                         {
+                          "type": ",",
+                          "start": 295,
+                          "end": 296,
+                          "text": ","
+                         },
+                         {
+                          "type": "integer_value",
+                          "start": 297,
+                          "end": 298,
+                          "text": "2"
+                         },
+                         {
+                          "type": ",",
+                          "start": 298,
+                          "end": 299,
+                          "text": ","
+                         },
+                         {
+                          "type": "integer_value",
+                          "start": 300,
+                          "end": 301,
+                          "text": "3"
+                         },
+                         {
+                          "type": ")",
+                          "start": 301,
+                          "end": 302,
+                          "text": ")"
+                         }
+                        ]
+                       }
+                      ]
+                     },
+                     {
+                      "type": ",",
+                      "start": 302,
+                      "end": 303,
+                      "text": ","
+                     },
+                     {
+                      "type": "call_expression",
+                      "start": 304,
+                      "end": 316,
+                      "children": [
+                       {
+                        "type": "function_name",
+                        "start": 304,
+                        "end": 307,
+                        "text": "rgb"
+                       },
+                       {
+                        "type": "arguments",
+                        "start": 307,
+                        "end": 316,
+                        "children": [
+                         {
+                          "type": "(",
+                          "start": 307,
+                          "end": 308,
+                          "text": "("
+                         },
+                         {
+                          "type": "integer_value",
+                          "start": 308,
+                          "end": 309,
+                          "text": "4"
+                         },
+                         {
+                          "type": ",",
+                          "start": 309,
+                          "end": 310,
+                          "text": ","
+                         },
+                         {
+                          "type": "integer_value",
+                          "start": 311,
+                          "end": 312,
+                          "text": "5"
+                         },
+                         {
+                          "type": ",",
+                          "start": 312,
+                          "end": 313,
+                          "text": ","
+                         },
+                         {
+                          "type": "integer_value",
+                          "start": 314,
+                          "end": 315,
+                          "text": "6"
+                         },
+                         {
+                          "type": ")",
+                          "start": 315,
+                          "end": 316,
+                          "text": ")"
+                         }
+                        ]
+                       }
+                      ]
+                     },
+                     {
+                      "type": ",",
+                      "start": 316,
+                      "end": 317,
+                      "text": ","
+                     },
+                     {
+                      "type": "call_expression",
+                      "start": 318,
+                      "end": 330,
+                      "children": [
+                       {
+                        "type": "function_name",
+                        "start": 318,
+                        "end": 321,
+                        "text": "rgb"
+                       },
+                       {
+                        "type": "arguments",
+                        "start": 321,
+                        "end": 330,
+                        "children": [
+                         {
+                          "type": "(",
+                          "start": 321,
+                          "end": 322,
+                          "text": "("
+                         },
+                         {
+                          "type": "integer_value",
+                          "start": 322,
+                          "end": 323,
+                          "text": "7"
+                         },
+                         {
+                          "type": ",",
+                          "start": 323,
+                          "end": 324,
+                          "text": ","
+                         },
+                         {
+                          "type": "integer_value",
+                          "start": 325,
+                          "end": 326,
+                          "text": "8"
+                         },
+                         {
+                          "type": ",",
+                          "start": 326,
+                          "end": 327,
+                          "text": ","
+                         },
+                         {
+                          "type": "integer_value",
+                          "start": 328,
+                          "end": 329,
+                          "text": "9"
+                         },
+                         {
+                          "type": ")",
+                          "start": 329,
+                          "end": 330,
+                          "text": ")"
+                         }
+                        ]
+                       }
+                      ]
+                     },
+                     {
+                      "type": ",",
+                      "start": 330,
+                      "end": 331,
+                      "text": ","
+                     },
+                     {
+                      "type": "call_expression",
+                      "start": 332,
+                      "end": 347,
+                      "children": [
+                       {
+                        "type": "function_name",
+                        "start": 332,
+                        "end": 335,
+                        "text": "rgb"
+                       },
+                       {
+                        "type": "arguments",
+                        "start": 335,
+                        "end": 347,
+                        "children": [
+                         {
+                          "type": "(",
+                          "start": 335,
+                          "end": 336,
+                          "text": "("
+                         },
+                         {
+                          "type": "integer_value",
+                          "start": 336,
+                          "end": 338,
+                          "text": "10"
+                         },
+                         {
+                          "type": ",",
+                          "start": 338,
+                          "end": 339,
+                          "text": ","
+                         },
+                         {
+                          "type": "integer_value",
+                          "start": 340,
+                          "end": 342,
+                          "text": "11"
+                         },
+                         {
+                          "type": ",",
+                          "start": 342,
+                          "end": 343,
+                          "text": ","
+                         },
+                         {
+                          "type": "integer_value",
+                          "start": 344,
+                          "end": 346,
+                          "text": "12"
+                         },
+                         {
+                          "type": ")",
+                          "start": 346,
+                          "end": 347,
+                          "text": ")"
+                         }
+                        ]
+                       }
+                      ]
+                     },
+                     {
+                      "type": ")",
+                      "start": 347,
+                      "end": 348,
+                      "text": ")"
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 {
+                  "type": ";",
+                  "start": 348,
+                  "end": 349,
+                  "text": ";"
+                 }
+                ]
+               },
+               {
+                "type": "declaration",
+                "start": 356,
+                "end": 454,
+                "children": [
+                 {
+                  "type": "property_name",
+                  "start": 356,
+                  "end": 367,
+                  "text": "font-family"
+                 },
+                 {
+                  "type": ":",
+                  "start": 367,
+                  "end": 368,
+                  "text": ":"
+                 },
+                 {
+                  "type": "string_value",
+                  "start": 369,
+                  "end": 385,
+                  "children": [
+                   {
+                    "type": "\"",
+                    "start": 369,
+                    "end": 370,
+                    "text": "\""
+                   },
+                   {
+                    "type": "string_content",
+                    "start": 370,
+                    "end": 384,
+                    "text": "Helvetica Neue"
+                   },
+                   {
+                    "type": "\"",
+                    "start": 384,
+                    "end": 385,
+                    "text": "\""
+                   }
+                  ]
+                 },
+                 {
+                  "type": ",",
+                  "start": 385,
+                  "end": 386,
+                  "text": ","
+                 },
+                 {
+                  "type": "string_value",
+                  "start": 387,
+                  "end": 394,
+                  "children": [
+                   {
+                    "type": "\"",
+                    "start": 387,
+                    "end": 388,
+                    "text": "\""
+                   },
+                   {
+                    "type": "string_content",
+                    "start": 388,
+                    "end": 393,
+                    "text": "Arial"
+                   },
+                   {
+                    "type": "\"",
+                    "start": 393,
+                    "end": 394,
+                    "text": "\""
+                   }
+                  ]
+                 },
+                 {
+                  "type": ",",
+                  "start": 394,
+                  "end": 395,
+                  "text": ","
+                 },
+                 {
+                  "type": "string_value",
+                  "start": 396,
+                  "end": 408,
+                  "children": [
+                   {
+                    "type": "\"",
+                    "start": 396,
+                    "end": 397,
+                    "text": "\""
+                   },
+                   {
+                    "type": "string_content",
+                    "start": 397,
+                    "end": 407,
+                    "text": "sans-serif"
+                   },
+                   {
+                    "type": "\"",
+                    "start": 407,
+                    "end": 408,
+                    "text": "\""
+                   }
+                  ]
+                 },
+                 {
+                  "type": ",",
+                  "start": 408,
+                  "end": 409,
+                  "text": ","
+                 },
+                 {
+                  "type": "string_value",
+                  "start": 410,
+                  "end": 419,
+                  "children": [
+                   {
+                    "type": "\"",
+                    "start": 410,
+                    "end": 411,
+                    "text": "\""
+                   },
+                   {
+                    "type": "string_content",
+                    "start": 411,
+                    "end": 418,
+                    "text": "Georgia"
+                   },
+                   {
+                    "type": "\"",
+                    "start": 418,
+                    "end": 419,
+                    "text": "\""
+                   }
+                  ]
+                 },
+                 {
+                  "type": ",",
+                  "start": 419,
+                  "end": 420,
+                  "text": ","
+                 },
+                 {
+                  "type": "string_value",
+                  "start": 421,
+                  "end": 438,
+                  "children": [
+                   {
+                    "type": "\"",
+                    "start": 421,
+                    "end": 422,
+                    "text": "\""
+                   },
+                   {
+                    "type": "string_content",
+                    "start": 422,
+                    "end": 437,
+                    "text": "Times New Roman"
+                   },
+                   {
+                    "type": "\"",
+                    "start": 437,
+                    "end": 438,
+                    "text": "\""
+                   }
+                  ]
+                 },
+                 {
+                  "type": ",",
+                  "start": 438,
+                  "end": 439,
+                  "text": ","
+                 },
+                 {
+                  "type": "string_value",
+                  "start": 440,
+                  "end": 453,
+                  "children": [
+                   {
+                    "type": "\"",
+                    "start": 440,
+                    "end": 441,
+                    "text": "\""
+                   },
+                   {
+                    "type": "string_content",
+                    "start": 441,
+                    "end": 452,
+                    "text": "Courier New"
+                   },
+                   {
+                    "type": "\"",
+                    "start": 452,
+                    "end": 453,
+                    "text": "\""
+                   }
+                  ]
+                 },
+                 {
+                  "type": ";",
+                  "start": 453,
+                  "end": 454,
+                  "text": ";"
+                 }
+                ]
+               },
+               {
+                "type": "}",
+                "start": 459,
+                "end": 460,
+                "text": "}"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 463,
+            "end": 464,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 465,
+        "end": 466,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

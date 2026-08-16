@@ -1,0 +1,524 @@
+{
+ "language": "css",
+ "source_file": "corpus/src/css/comments.css",
+ "source": "/* File-level comment at the very top of the stylesheet. */\n\n.lead /* after a simple selector */ {\n  /* own-line before the first declaration */\n  color: red; /* trailing on a declaration */\n  /* own-line between declarations */\n  margin: 1px /* inside a value list */ 2px;\n  background: linear-gradient(\n    /* after the opening paren */\n    90deg,\n    red,\n    /* own-line between arguments */\n    blue\n    /* before the closing paren */\n  );\n  /* before the closing brace */\n}\n\n/* comment between two rules */\n\n.alpha,\n.beta /* comment in a selector list; prettier keeps the list flat */ {\n  display: block;\n}\n\n.only-comment {\n  /* only comment in an otherwise empty block */\n}\n\n/* consecutive own-line comment */\n/* second of the pair */\n\n/* comment at the end of the file */\n",
+ "root": {
+  "type": "stylesheet",
+  "start": 0,
+  "end": 780,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 59,
+    "text": "/* File-level comment at the very top of the stylesheet. */"
+   },
+   {
+    "type": "rule_set",
+    "start": 61,
+    "end": 479,
+    "children": [
+     {
+      "type": "selectors",
+      "start": 61,
+      "end": 66,
+      "children": [
+       {
+        "type": "class_selector",
+        "start": 61,
+        "end": 66,
+        "children": [
+         {
+          "type": ".",
+          "start": 61,
+          "end": 62,
+          "text": "."
+         },
+         {
+          "type": "class_name",
+          "start": 62,
+          "end": 66,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 62,
+            "end": 66,
+            "text": "lead"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 67,
+      "end": 96,
+      "text": "/* after a simple selector */"
+     },
+     {
+      "type": "block",
+      "start": 97,
+      "end": 479,
+      "children": [
+       {
+        "type": "{",
+        "start": 97,
+        "end": 98,
+        "text": "{"
+       },
+       {
+        "type": "comment",
+        "start": 101,
+        "end": 144,
+        "text": "/* own-line before the first declaration */"
+       },
+       {
+        "type": "declaration",
+        "start": 147,
+        "end": 158,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 147,
+          "end": 152,
+          "text": "color"
+         },
+         {
+          "type": ":",
+          "start": 152,
+          "end": 153,
+          "text": ":"
+         },
+         {
+          "type": "plain_value",
+          "start": 154,
+          "end": 157,
+          "text": "red"
+         },
+         {
+          "type": ";",
+          "start": 157,
+          "end": 158,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "comment",
+        "start": 159,
+        "end": 190,
+        "text": "/* trailing on a declaration */"
+       },
+       {
+        "type": "comment",
+        "start": 193,
+        "end": 228,
+        "text": "/* own-line between declarations */"
+       },
+       {
+        "type": "declaration",
+        "start": 231,
+        "end": 273,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 231,
+          "end": 237,
+          "text": "margin"
+         },
+         {
+          "type": ":",
+          "start": 237,
+          "end": 238,
+          "text": ":"
+         },
+         {
+          "type": "integer_value",
+          "start": 239,
+          "end": 242,
+          "children": [
+           {
+            "type": "unit",
+            "start": 240,
+            "end": 242,
+            "text": "px"
+           }
+          ]
+         },
+         {
+          "type": "comment",
+          "start": 243,
+          "end": 268,
+          "text": "/* inside a value list */"
+         },
+         {
+          "type": "integer_value",
+          "start": 269,
+          "end": 272,
+          "children": [
+           {
+            "type": "unit",
+            "start": 270,
+            "end": 272,
+            "text": "px"
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 272,
+          "end": 273,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "declaration",
+        "start": 276,
+        "end": 444,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 276,
+          "end": 286,
+          "text": "background"
+         },
+         {
+          "type": ":",
+          "start": 286,
+          "end": 287,
+          "text": ":"
+         },
+         {
+          "type": "call_expression",
+          "start": 288,
+          "end": 443,
+          "children": [
+           {
+            "type": "function_name",
+            "start": 288,
+            "end": 303,
+            "text": "linear-gradient"
+           },
+           {
+            "type": "arguments",
+            "start": 303,
+            "end": 443,
+            "children": [
+             {
+              "type": "(",
+              "start": 303,
+              "end": 304,
+              "text": "("
+             },
+             {
+              "type": "comment",
+              "start": 309,
+              "end": 338,
+              "text": "/* after the opening paren */"
+             },
+             {
+              "type": "integer_value",
+              "start": 343,
+              "end": 348,
+              "children": [
+               {
+                "type": "unit",
+                "start": 345,
+                "end": 348,
+                "text": "deg"
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 348,
+              "end": 349,
+              "text": ","
+             },
+             {
+              "type": "plain_value",
+              "start": 354,
+              "end": 357,
+              "text": "red"
+             },
+             {
+              "type": ",",
+              "start": 357,
+              "end": 358,
+              "text": ","
+             },
+             {
+              "type": "comment",
+              "start": 363,
+              "end": 395,
+              "text": "/* own-line between arguments */"
+             },
+             {
+              "type": "plain_value",
+              "start": 400,
+              "end": 404,
+              "text": "blue"
+             },
+             {
+              "type": "comment",
+              "start": 409,
+              "end": 439,
+              "text": "/* before the closing paren */"
+             },
+             {
+              "type": ")",
+              "start": 442,
+              "end": 443,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 443,
+          "end": 444,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "comment",
+        "start": 447,
+        "end": 477,
+        "text": "/* before the closing brace */"
+       },
+       {
+        "type": "}",
+        "start": 478,
+        "end": 479,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 481,
+    "end": 512,
+    "text": "/* comment between two rules */"
+   },
+   {
+    "type": "rule_set",
+    "start": 514,
+    "end": 612,
+    "children": [
+     {
+      "type": "selectors",
+      "start": 514,
+      "end": 527,
+      "children": [
+       {
+        "type": "class_selector",
+        "start": 514,
+        "end": 520,
+        "children": [
+         {
+          "type": ".",
+          "start": 514,
+          "end": 515,
+          "text": "."
+         },
+         {
+          "type": "class_name",
+          "start": 515,
+          "end": 520,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 515,
+            "end": 520,
+            "text": "alpha"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 520,
+        "end": 521,
+        "text": ","
+       },
+       {
+        "type": "class_selector",
+        "start": 522,
+        "end": 527,
+        "children": [
+         {
+          "type": ".",
+          "start": 522,
+          "end": 523,
+          "text": "."
+         },
+         {
+          "type": "class_name",
+          "start": 523,
+          "end": 527,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 523,
+            "end": 527,
+            "text": "beta"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 528,
+      "end": 590,
+      "text": "/* comment in a selector list; prettier keeps the list flat */"
+     },
+     {
+      "type": "block",
+      "start": 591,
+      "end": 612,
+      "children": [
+       {
+        "type": "{",
+        "start": 591,
+        "end": 592,
+        "text": "{"
+       },
+       {
+        "type": "declaration",
+        "start": 595,
+        "end": 610,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 595,
+          "end": 602,
+          "text": "display"
+         },
+         {
+          "type": ":",
+          "start": 602,
+          "end": 603,
+          "text": ":"
+         },
+         {
+          "type": "plain_value",
+          "start": 604,
+          "end": 609,
+          "text": "block"
+         },
+         {
+          "type": ";",
+          "start": 609,
+          "end": 610,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 611,
+        "end": 612,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "rule_set",
+    "start": 614,
+    "end": 680,
+    "children": [
+     {
+      "type": "selectors",
+      "start": 614,
+      "end": 627,
+      "children": [
+       {
+        "type": "class_selector",
+        "start": 614,
+        "end": 627,
+        "children": [
+         {
+          "type": ".",
+          "start": 614,
+          "end": 615,
+          "text": "."
+         },
+         {
+          "type": "class_name",
+          "start": 615,
+          "end": 627,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 615,
+            "end": 627,
+            "text": "only-comment"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "block",
+      "start": 628,
+      "end": 680,
+      "children": [
+       {
+        "type": "{",
+        "start": 628,
+        "end": 629,
+        "text": "{"
+       },
+       {
+        "type": "comment",
+        "start": 632,
+        "end": 678,
+        "text": "/* only comment in an otherwise empty block */"
+       },
+       {
+        "type": "}",
+        "start": 679,
+        "end": 680,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 682,
+    "end": 716,
+    "text": "/* consecutive own-line comment */"
+   },
+   {
+    "type": "comment",
+    "start": 717,
+    "end": 741,
+    "text": "/* second of the pair */"
+   },
+   {
+    "type": "comment",
+    "start": 743,
+    "end": 779,
+    "text": "/* comment at the end of the file */"
+   }
+  ]
+ }
+}

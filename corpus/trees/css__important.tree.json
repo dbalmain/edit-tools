@@ -1,0 +1,258 @@
+{
+ "language": "css",
+ "source_file": "corpus/src/css/important.css",
+ "source": "/* !important, including a missing space prettier will insert. */\n\n.override {\n  color: red !important;\n  margin: 1px 2px !important;\n  font-size: 1rem!important; /* missing space */\n  z-index: 1 !important;\n}\n",
+ "root": {
+  "type": "stylesheet",
+  "start": 0,
+  "end": 210,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 65,
+    "text": "/* !important, including a missing space prettier will insert. */"
+   },
+   {
+    "type": "rule_set",
+    "start": 67,
+    "end": 209,
+    "children": [
+     {
+      "type": "selectors",
+      "start": 67,
+      "end": 76,
+      "children": [
+       {
+        "type": "class_selector",
+        "start": 67,
+        "end": 76,
+        "children": [
+         {
+          "type": ".",
+          "start": 67,
+          "end": 68,
+          "text": "."
+         },
+         {
+          "type": "class_name",
+          "start": 68,
+          "end": 76,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 68,
+            "end": 76,
+            "text": "override"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "block",
+      "start": 77,
+      "end": 209,
+      "children": [
+       {
+        "type": "{",
+        "start": 77,
+        "end": 78,
+        "text": "{"
+       },
+       {
+        "type": "declaration",
+        "start": 81,
+        "end": 103,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 81,
+          "end": 86,
+          "text": "color"
+         },
+         {
+          "type": ":",
+          "start": 86,
+          "end": 87,
+          "text": ":"
+         },
+         {
+          "type": "plain_value",
+          "start": 88,
+          "end": 91,
+          "text": "red"
+         },
+         {
+          "type": "important",
+          "start": 92,
+          "end": 102,
+          "text": "!important"
+         },
+         {
+          "type": ";",
+          "start": 102,
+          "end": 103,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "declaration",
+        "start": 106,
+        "end": 133,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 106,
+          "end": 112,
+          "text": "margin"
+         },
+         {
+          "type": ":",
+          "start": 112,
+          "end": 113,
+          "text": ":"
+         },
+         {
+          "type": "integer_value",
+          "start": 114,
+          "end": 117,
+          "children": [
+           {
+            "type": "unit",
+            "start": 115,
+            "end": 117,
+            "text": "px"
+           }
+          ]
+         },
+         {
+          "type": "integer_value",
+          "start": 118,
+          "end": 121,
+          "children": [
+           {
+            "type": "unit",
+            "start": 119,
+            "end": 121,
+            "text": "px"
+           }
+          ]
+         },
+         {
+          "type": "important",
+          "start": 122,
+          "end": 132,
+          "text": "!important"
+         },
+         {
+          "type": ";",
+          "start": 132,
+          "end": 133,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "declaration",
+        "start": 136,
+        "end": 162,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 136,
+          "end": 145,
+          "text": "font-size"
+         },
+         {
+          "type": ":",
+          "start": 145,
+          "end": 146,
+          "text": ":"
+         },
+         {
+          "type": "integer_value",
+          "start": 147,
+          "end": 151,
+          "children": [
+           {
+            "type": "unit",
+            "start": 148,
+            "end": 151,
+            "text": "rem"
+           }
+          ]
+         },
+         {
+          "type": "important",
+          "start": 151,
+          "end": 161,
+          "text": "!important"
+         },
+         {
+          "type": ";",
+          "start": 161,
+          "end": 162,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "comment",
+        "start": 163,
+        "end": 182,
+        "text": "/* missing space */"
+       },
+       {
+        "type": "declaration",
+        "start": 185,
+        "end": 207,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 185,
+          "end": 192,
+          "text": "z-index"
+         },
+         {
+          "type": ":",
+          "start": 192,
+          "end": 193,
+          "text": ":"
+         },
+         {
+          "type": "integer_value",
+          "start": 194,
+          "end": 195,
+          "text": "1"
+         },
+         {
+          "type": "important",
+          "start": 196,
+          "end": 206,
+          "text": "!important"
+         },
+         {
+          "type": ";",
+          "start": 206,
+          "end": 207,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 208,
+        "end": 209,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

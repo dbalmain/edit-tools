@@ -513,6 +513,15 @@ function splitChildren(fmt, node) {
 
   const host = [...items].reverse().find((i) => !fmt.tokens.has(i.node.type));
   if (lead.length > 0 && host) host.after = lead;
+  else if (lead.length > 0 && fmt.descend.has(node.type) && items.length > 0) {
+    // A descend node whose only non-token children are comments
+    // (a CSS `{ /* empty */ }`) has no named host. Park the comments
+    // on the first token so `indent` can flush them inside the
+    // brackets; prepending them as dangling would move them outside
+    // the node and fail gate 3.
+    items[0].after = lead;
+    lead = [];
+  }
   // A file that is nothing but comments is still a file.
   const trailingBlanks = Math.max(newlinesBetween(fmt.bytes, prevEnd, node.end) - 1, 0);
   return {
@@ -724,6 +733,9 @@ class Ctx {
     const item = this.items[this.cursor];
     if (!item || item.node.text !== want) throw this.refuse(`the token \`${want}\``);
     this.cursor++;
+    const after = item.after;
+    item.after = [];
+    this.pendingAfter = after;
     return concat([flushed, decorate(this.fmt, item, text(want))]);
   }
 

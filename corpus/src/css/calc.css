@@ -1,0 +1,8 @@
+/* calc / clamp / minmax. minmax() splits at 40. */
+
+.measure {
+  width: calc(100% - 2rem);
+  width: calc(100vw - 20px - 2rem);
+  margin: clamp(1rem, 2vw + 1rem, 3rem); /* preferred size in the middle */
+  grid-template-columns: minmax(200px, 1fr) minmax(200px, 1fr) minmax(200px, 1fr);
+}

@@ -1,0 +1,17 @@
+/* Native CSS nesting, including & and a nested at-rule. */
+
+.card {
+  color: black;
+  /* hover, descendant, and a nested media query */
+  &:hover {
+    color: blue;
+  }
+  & .title {
+    font-weight: bold;
+    font-family: "Helvetica Neue", "Arial", "sans-serif", "Georgia", "Times New Roman";
+  }
+  @media (min-width: 600px) {
+    padding: 2rem;
+    font-family: "Helvetica Neue", "Arial", "sans-serif", "Georgia", "Times New Roman";
+  }
+}

@@ -1,0 +1,775 @@
+{
+ "language": "css",
+ "source_file": "corpus/src/css/nesting.css",
+ "source": "/* Native CSS nesting, including & and a nested at-rule. */\n\n.card {\n  color: black;\n  /* hover, descendant, and a nested media query */\n  &:hover {\n    color: blue;\n  }\n  & .title {\n    font-weight: bold;\n    font-family: \"Helvetica Neue\", \"Arial\", \"sans-serif\", \"Georgia\", \"Times New Roman\";\n  }\n  @media (min-width: 600px) {\n    padding: 2rem;\n    font-family: \"Helvetica Neue\", \"Arial\", \"sans-serif\", \"Georgia\", \"Times New Roman\";\n  }\n}\n",
+ "root": {
+  "type": "stylesheet",
+  "start": 0,
+  "end": 441,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 59,
+    "text": "/* Native CSS nesting, including & and a nested at-rule. */"
+   },
+   {
+    "type": "rule_set",
+    "start": 61,
+    "end": 440,
+    "children": [
+     {
+      "type": "selectors",
+      "start": 61,
+      "end": 66,
+      "children": [
+       {
+        "type": "class_selector",
+        "start": 61,
+        "end": 66,
+        "children": [
+         {
+          "type": ".",
+          "start": 61,
+          "end": 62,
+          "text": "."
+         },
+         {
+          "type": "class_name",
+          "start": 62,
+          "end": 66,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 62,
+            "end": 66,
+            "text": "card"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "block",
+      "start": 67,
+      "end": 440,
+      "children": [
+       {
+        "type": "{",
+        "start": 67,
+        "end": 68,
+        "text": "{"
+       },
+       {
+        "type": "declaration",
+        "start": 71,
+        "end": 84,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 71,
+          "end": 76,
+          "text": "color"
+         },
+         {
+          "type": ":",
+          "start": 76,
+          "end": 77,
+          "text": ":"
+         },
+         {
+          "type": "plain_value",
+          "start": 78,
+          "end": 83,
+          "text": "black"
+         },
+         {
+          "type": ";",
+          "start": 83,
+          "end": 84,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "comment",
+        "start": 87,
+        "end": 136,
+        "text": "/* hover, descendant, and a nested media query */"
+       },
+       {
+        "type": "rule_set",
+        "start": 139,
+        "end": 169,
+        "children": [
+         {
+          "type": "selectors",
+          "start": 139,
+          "end": 146,
+          "children": [
+           {
+            "type": "pseudo_class_selector",
+            "start": 139,
+            "end": 146,
+            "children": [
+             {
+              "type": "nesting_selector",
+              "start": 139,
+              "end": 140,
+              "text": "&"
+             },
+             {
+              "type": ":",
+              "start": 140,
+              "end": 141,
+              "text": ":"
+             },
+             {
+              "type": "class_name",
+              "start": 141,
+              "end": 146,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 141,
+                "end": 146,
+                "text": "hover"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "block",
+          "start": 147,
+          "end": 169,
+          "children": [
+           {
+            "type": "{",
+            "start": 147,
+            "end": 148,
+            "text": "{"
+           },
+           {
+            "type": "declaration",
+            "start": 153,
+            "end": 165,
+            "children": [
+             {
+              "type": "property_name",
+              "start": 153,
+              "end": 158,
+              "text": "color"
+             },
+             {
+              "type": ":",
+              "start": 158,
+              "end": 159,
+              "text": ":"
+             },
+             {
+              "type": "plain_value",
+              "start": 160,
+              "end": 164,
+              "text": "blue"
+             },
+             {
+              "type": ";",
+              "start": 164,
+              "end": 165,
+              "text": ";"
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 168,
+            "end": 169,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "rule_set",
+        "start": 172,
+        "end": 297,
+        "children": [
+         {
+          "type": "selectors",
+          "start": 172,
+          "end": 180,
+          "children": [
+           {
+            "type": "descendant_selector",
+            "start": 172,
+            "end": 180,
+            "children": [
+             {
+              "type": "nesting_selector",
+              "start": 172,
+              "end": 173,
+              "text": "&"
+             },
+             {
+              "type": "class_selector",
+              "start": 174,
+              "end": 180,
+              "children": [
+               {
+                "type": ".",
+                "start": 174,
+                "end": 175,
+                "text": "."
+               },
+               {
+                "type": "class_name",
+                "start": 175,
+                "end": 180,
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 175,
+                  "end": 180,
+                  "text": "title"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "block",
+          "start": 181,
+          "end": 297,
+          "children": [
+           {
+            "type": "{",
+            "start": 181,
+            "end": 182,
+            "text": "{"
+           },
+           {
+            "type": "declaration",
+            "start": 187,
+            "end": 205,
+            "children": [
+             {
+              "type": "property_name",
+              "start": 187,
+              "end": 198,
+              "text": "font-weight"
+             },
+             {
+              "type": ":",
+              "start": 198,
+              "end": 199,
+              "text": ":"
+             },
+             {
+              "type": "plain_value",
+              "start": 200,
+              "end": 204,
+              "text": "bold"
+             },
+             {
+              "type": ";",
+              "start": 204,
+              "end": 205,
+              "text": ";"
+             }
+            ]
+           },
+           {
+            "type": "declaration",
+            "start": 210,
+            "end": 293,
+            "children": [
+             {
+              "type": "property_name",
+              "start": 210,
+              "end": 221,
+              "text": "font-family"
+             },
+             {
+              "type": ":",
+              "start": 221,
+              "end": 222,
+              "text": ":"
+             },
+             {
+              "type": "string_value",
+              "start": 223,
+              "end": 239,
+              "children": [
+               {
+                "type": "\"",
+                "start": 223,
+                "end": 224,
+                "text": "\""
+               },
+               {
+                "type": "string_content",
+                "start": 224,
+                "end": 238,
+                "text": "Helvetica Neue"
+               },
+               {
+                "type": "\"",
+                "start": 238,
+                "end": 239,
+                "text": "\""
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 239,
+              "end": 240,
+              "text": ","
+             },
+             {
+              "type": "string_value",
+              "start": 241,
+              "end": 248,
+              "children": [
+               {
+                "type": "\"",
+                "start": 241,
+                "end": 242,
+                "text": "\""
+               },
+               {
+                "type": "string_content",
+                "start": 242,
+                "end": 247,
+                "text": "Arial"
+               },
+               {
+                "type": "\"",
+                "start": 247,
+                "end": 248,
+                "text": "\""
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 248,
+              "end": 249,
+              "text": ","
+             },
+             {
+              "type": "string_value",
+              "start": 250,
+              "end": 262,
+              "children": [
+               {
+                "type": "\"",
+                "start": 250,
+                "end": 251,
+                "text": "\""
+               },
+               {
+                "type": "string_content",
+                "start": 251,
+                "end": 261,
+                "text": "sans-serif"
+               },
+               {
+                "type": "\"",
+                "start": 261,
+                "end": 262,
+                "text": "\""
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 262,
+              "end": 263,
+              "text": ","
+             },
+             {
+              "type": "string_value",
+              "start": 264,
+              "end": 273,
+              "children": [
+               {
+                "type": "\"",
+                "start": 264,
+                "end": 265,
+                "text": "\""
+               },
+               {
+                "type": "string_content",
+                "start": 265,
+                "end": 272,
+                "text": "Georgia"
+               },
+               {
+                "type": "\"",
+                "start": 272,
+                "end": 273,
+                "text": "\""
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 273,
+              "end": 274,
+              "text": ","
+             },
+             {
+              "type": "string_value",
+              "start": 275,
+              "end": 292,
+              "children": [
+               {
+                "type": "\"",
+                "start": 275,
+                "end": 276,
+                "text": "\""
+               },
+               {
+                "type": "string_content",
+                "start": 276,
+                "end": 291,
+                "text": "Times New Roman"
+               },
+               {
+                "type": "\"",
+                "start": 291,
+                "end": 292,
+                "text": "\""
+               }
+              ]
+             },
+             {
+              "type": ";",
+              "start": 292,
+              "end": 293,
+              "text": ";"
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 296,
+            "end": 297,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "media_statement",
+        "start": 300,
+        "end": 438,
+        "children": [
+         {
+          "type": "@media",
+          "start": 300,
+          "end": 306,
+          "text": "@media"
+         },
+         {
+          "type": "feature_query",
+          "start": 307,
+          "end": 325,
+          "children": [
+           {
+            "type": "(",
+            "start": 307,
+            "end": 308,
+            "text": "("
+           },
+           {
+            "type": "feature_name",
+            "start": 308,
+            "end": 317,
+            "text": "min-width"
+           },
+           {
+            "type": ":",
+            "start": 317,
+            "end": 318,
+            "text": ":"
+           },
+           {
+            "type": "integer_value",
+            "start": 319,
+            "end": 324,
+            "children": [
+             {
+              "type": "unit",
+              "start": 322,
+              "end": 324,
+              "text": "px"
+             }
+            ]
+           },
+           {
+            "type": ")",
+            "start": 324,
+            "end": 325,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": "block",
+          "start": 326,
+          "end": 438,
+          "children": [
+           {
+            "type": "{",
+            "start": 326,
+            "end": 327,
+            "text": "{"
+           },
+           {
+            "type": "declaration",
+            "start": 332,
+            "end": 346,
+            "children": [
+             {
+              "type": "property_name",
+              "start": 332,
+              "end": 339,
+              "text": "padding"
+             },
+             {
+              "type": ":",
+              "start": 339,
+              "end": 340,
+              "text": ":"
+             },
+             {
+              "type": "integer_value",
+              "start": 341,
+              "end": 345,
+              "children": [
+               {
+                "type": "unit",
+                "start": 342,
+                "end": 345,
+                "text": "rem"
+               }
+              ]
+             },
+             {
+              "type": ";",
+              "start": 345,
+              "end": 346,
+              "text": ";"
+             }
+            ]
+           },
+           {
+            "type": "declaration",
+            "start": 351,
+            "end": 434,
+            "children": [
+             {
+              "type": "property_name",
+              "start": 351,
+              "end": 362,
+              "text": "font-family"
+             },
+             {
+              "type": ":",
+              "start": 362,
+              "end": 363,
+              "text": ":"
+             },
+             {
+              "type": "string_value",
+              "start": 364,
+              "end": 380,
+              "children": [
+               {
+                "type": "\"",
+                "start": 364,
+                "end": 365,
+                "text": "\""
+               },
+               {
+                "type": "string_content",
+                "start": 365,
+                "end": 379,
+                "text": "Helvetica Neue"
+               },
+               {
+                "type": "\"",
+                "start": 379,
+                "end": 380,
+                "text": "\""
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 380,
+              "end": 381,
+              "text": ","
+             },
+             {
+              "type": "string_value",
+              "start": 382,
+              "end": 389,
+              "children": [
+               {
+                "type": "\"",
+                "start": 382,
+                "end": 383,
+                "text": "\""
+               },
+               {
+                "type": "string_content",
+                "start": 383,
+                "end": 388,
+                "text": "Arial"
+               },
+               {
+                "type": "\"",
+                "start": 388,
+                "end": 389,
+                "text": "\""
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 389,
+              "end": 390,
+              "text": ","
+             },
+             {
+              "type": "string_value",
+              "start": 391,
+              "end": 403,
+              "children": [
+               {
+                "type": "\"",
+                "start": 391,
+                "end": 392,
+                "text": "\""
+               },
+               {
+                "type": "string_content",
+                "start": 392,
+                "end": 402,
+                "text": "sans-serif"
+               },
+               {
+                "type": "\"",
+                "start": 402,
+                "end": 403,
+                "text": "\""
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 403,
+              "end": 404,
+              "text": ","
+             },
+             {
+              "type": "string_value",
+              "start": 405,
+              "end": 414,
+              "children": [
+               {
+                "type": "\"",
+                "start": 405,
+                "end": 406,
+                "text": "\""
+               },
+               {
+                "type": "string_content",
+                "start": 406,
+                "end": 413,
+                "text": "Georgia"
+               },
+               {
+                "type": "\"",
+                "start": 413,
+                "end": 414,
+                "text": "\""
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 414,
+              "end": 415,
+              "text": ","
+             },
+             {
+              "type": "string_value",
+              "start": 416,
+              "end": 433,
+              "children": [
+               {
+                "type": "\"",
+                "start": 416,
+                "end": 417,
+                "text": "\""
+               },
+               {
+                "type": "string_content",
+                "start": 417,
+                "end": 432,
+                "text": "Times New Roman"
+               },
+               {
+                "type": "\"",
+                "start": 432,
+                "end": 433,
+                "text": "\""
+               }
+              ]
+             },
+             {
+              "type": ";",
+              "start": 433,
+              "end": 434,
+              "text": ";"
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 437,
+            "end": 438,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 439,
+        "end": 440,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

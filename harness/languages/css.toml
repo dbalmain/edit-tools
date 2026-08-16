@@ -1,0 +1,47 @@
+# CSS. Schema: docs/onboarding/WORKFLOW.md, "Stage 0".
+name = "css"
+extensions = [".css"]
+
+# PyPI name and 0.25.0 pin confirmed against the live index (latest as of
+# 2026-08-16). Imported as tree_sitter_css; the only language() export is
+# language(), which returns a tree_sitter.Language capsule.
+grammar = "tree-sitter-css==0.25.0"
+grammar_module = "tree_sitter_css"
+grammar_symbol = "language"
+
+# Markdown info strings that select this grammar for a fenced region.
+# `css` is the only spelling worth vouching for; `scss` / `less` / `style` are
+# different languages or guesses.
+injection_aliases = ["css"]
+
+# prettier infers the parser from the filename, so stdin needs a fake one
+# (verified: without --stdin-filepath, and without --parser, it errors
+# "No parser and no file path given"). --parser css is an alternative, not
+# an extra flag; it is omitted. --no-config is load-bearing (below).
+# --print-width honours {width}: established by diffing 80 vs 40, not by
+# reading --help. Selectors, @media conditions, strings, urls and
+# grid-template-areas do not reflow; value lists, function arguments and
+# @supports conditions do.
+reference = "npx --yes prettier@3.9.6 --no-config --stdin-filepath x.css --print-width {width}"
+reference_version = "3.9.6"
+reference_width = "flag"
+
+# 80 is prettier's own default, established three ways: `prettier --help`
+# and `getSupportInfo()` both say 80; unprompted output matches
+# `--print-width 80` on every probe; and a font-family fill line of exactly
+# 80 characters is produced with no width flag, while `--print-width 79`
+# wraps one item earlier. 40 is the narrow width: it is the first round
+# number at which @supports conditions, :is() descendant selectors, and
+# minmax() arguments actually split. 60 still leaves most of those flat.
+widths = [80, 40]
+
+# The generic default is selected deliberately. A css.loads-style override
+# does not exist, and inventing one would collapse the spellings prettier
+# itself preserves (0.5 vs a rewritten .5, #fff vs #ffffff, url("x") vs
+# url(x)). Leave wrappers/equivalences empty until the gate names a kind --
+# CSS has no parenthesised-expression node, and parentheses in url()/calc()
+# are structural.
+gate3 = "default"
+
+transparent_wrappers = []
+equivalent_kinds = []

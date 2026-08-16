@@ -1,0 +1,2273 @@
+{
+ "language": "css",
+ "source_file": "corpus/src/css/kitchen.css",
+ "source": "/* Several constructs interacting; the messy file. */\n\n@import url(\"reset.css\");\n\n:root {\n  --ink: #111111;\n  --paper: #f7f4ef;\n  --shadow: 0 1px 2px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.08), 0 4px 8px rgba(0, 0, 0, 0.06);\n}\n\n/* selector list plus a family list that reflows */\n.site-header, .site-nav, .site-footer {\n  color: var(--ink, #111111);\n  font-family: \"Helvetica Neue\", \"Arial\", \"sans-serif\", \"Georgia\", \"Times New Roman\", \"Courier New\";\n  background: var(--paper);\n}\n\n@media screen and (min-width: 768px) {\n  .hero {\n    display: grid;\n    grid-template-areas:\n      \"title title\"\n      \"copy  media\";\n    background: linear-gradient(90deg, rgba(255, 0, 0, 0.4), rgba(0, 0, 255, 0.4));\n    box-shadow: var(--shadow);\n    & .cta {\n      color: white !important;\n      -webkit-transform: translateY(-2px);\n      transform: translateY(-2px);\n    }\n  }\n}\n\n@supports (display: grid) and (gap: 1rem) {\n  .gallery {\n    grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr) minmax(180px, 1fr);\n  }\n}\n\n/* trailing comment at the end of the kitchen */\n",
+ "root": {
+  "type": "stylesheet",
+  "start": 0,
+  "end": 1071,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 53,
+    "text": "/* Several constructs interacting; the messy file. */"
+   },
+   {
+    "type": "import_statement",
+    "start": 55,
+    "end": 80,
+    "children": [
+     {
+      "type": "@import",
+      "start": 55,
+      "end": 62,
+      "text": "@import"
+     },
+     {
+      "type": "call_expression",
+      "start": 63,
+      "end": 79,
+      "children": [
+       {
+        "type": "function_name",
+        "start": 63,
+        "end": 66,
+        "text": "url"
+       },
+       {
+        "type": "arguments",
+        "start": 66,
+        "end": 79,
+        "children": [
+         {
+          "type": "(",
+          "start": 66,
+          "end": 67,
+          "text": "("
+         },
+         {
+          "type": "string_value",
+          "start": 67,
+          "end": 78,
+          "children": [
+           {
+            "type": "\"",
+            "start": 67,
+            "end": 68,
+            "text": "\""
+           },
+           {
+            "type": "string_content",
+            "start": 68,
+            "end": 77,
+            "text": "reset.css"
+           },
+           {
+            "type": "\"",
+            "start": 77,
+            "end": 78,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ")",
+          "start": 78,
+          "end": 79,
+          "text": ")"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": ";",
+      "start": 79,
+      "end": 80,
+      "text": ";"
+     }
+    ]
+   },
+   {
+    "type": "rule_set",
+    "start": 82,
+    "end": 233,
+    "children": [
+     {
+      "type": "selectors",
+      "start": 82,
+      "end": 87,
+      "children": [
+       {
+        "type": "pseudo_class_selector",
+        "start": 82,
+        "end": 87,
+        "children": [
+         {
+          "type": ":",
+          "start": 82,
+          "end": 83,
+          "text": ":"
+         },
+         {
+          "type": "class_name",
+          "start": 83,
+          "end": 87,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 83,
+            "end": 87,
+            "text": "root"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "block",
+      "start": 88,
+      "end": 233,
+      "children": [
+       {
+        "type": "{",
+        "start": 88,
+        "end": 89,
+        "text": "{"
+       },
+       {
+        "type": "declaration",
+        "start": 92,
+        "end": 107,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 92,
+          "end": 97,
+          "text": "--ink"
+         },
+         {
+          "type": ":",
+          "start": 97,
+          "end": 98,
+          "text": ":"
+         },
+         {
+          "type": "color_value",
+          "start": 99,
+          "end": 106,
+          "children": [
+           {
+            "type": "#",
+            "start": 99,
+            "end": 100,
+            "text": "#"
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 106,
+          "end": 107,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "declaration",
+        "start": 110,
+        "end": 127,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 110,
+          "end": 117,
+          "text": "--paper"
+         },
+         {
+          "type": ":",
+          "start": 117,
+          "end": 118,
+          "text": ":"
+         },
+         {
+          "type": "color_value",
+          "start": 119,
+          "end": 126,
+          "children": [
+           {
+            "type": "#",
+            "start": 119,
+            "end": 120,
+            "text": "#"
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 126,
+          "end": 127,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "declaration",
+        "start": 130,
+        "end": 231,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 130,
+          "end": 138,
+          "text": "--shadow"
+         },
+         {
+          "type": ":",
+          "start": 138,
+          "end": 139,
+          "text": ":"
+         },
+         {
+          "type": "integer_value",
+          "start": 140,
+          "end": 141,
+          "text": "0"
+         },
+         {
+          "type": "integer_value",
+          "start": 142,
+          "end": 145,
+          "children": [
+           {
+            "type": "unit",
+            "start": 143,
+            "end": 145,
+            "text": "px"
+           }
+          ]
+         },
+         {
+          "type": "integer_value",
+          "start": 146,
+          "end": 149,
+          "children": [
+           {
+            "type": "unit",
+            "start": 147,
+            "end": 149,
+            "text": "px"
+           }
+          ]
+         },
+         {
+          "type": "call_expression",
+          "start": 150,
+          "end": 168,
+          "children": [
+           {
+            "type": "function_name",
+            "start": 150,
+            "end": 154,
+            "text": "rgba"
+           },
+           {
+            "type": "arguments",
+            "start": 154,
+            "end": 168,
+            "children": [
+             {
+              "type": "(",
+              "start": 154,
+              "end": 155,
+              "text": "("
+             },
+             {
+              "type": "integer_value",
+              "start": 155,
+              "end": 156,
+              "text": "0"
+             },
+             {
+              "type": ",",
+              "start": 156,
+              "end": 157,
+              "text": ","
+             },
+             {
+              "type": "integer_value",
+              "start": 158,
+              "end": 159,
+              "text": "0"
+             },
+             {
+              "type": ",",
+              "start": 159,
+              "end": 160,
+              "text": ","
+             },
+             {
+              "type": "integer_value",
+              "start": 161,
+              "end": 162,
+              "text": "0"
+             },
+             {
+              "type": ",",
+              "start": 162,
+              "end": 163,
+              "text": ","
+             },
+             {
+              "type": "float_value",
+              "start": 164,
+              "end": 167,
+              "text": "0.1"
+             },
+             {
+              "type": ")",
+              "start": 167,
+              "end": 168,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 168,
+          "end": 169,
+          "text": ","
+         },
+         {
+          "type": "integer_value",
+          "start": 170,
+          "end": 171,
+          "text": "0"
+         },
+         {
+          "type": "integer_value",
+          "start": 172,
+          "end": 175,
+          "children": [
+           {
+            "type": "unit",
+            "start": 173,
+            "end": 175,
+            "text": "px"
+           }
+          ]
+         },
+         {
+          "type": "integer_value",
+          "start": 176,
+          "end": 179,
+          "children": [
+           {
+            "type": "unit",
+            "start": 177,
+            "end": 179,
+            "text": "px"
+           }
+          ]
+         },
+         {
+          "type": "call_expression",
+          "start": 180,
+          "end": 199,
+          "children": [
+           {
+            "type": "function_name",
+            "start": 180,
+            "end": 184,
+            "text": "rgba"
+           },
+           {
+            "type": "arguments",
+            "start": 184,
+            "end": 199,
+            "children": [
+             {
+              "type": "(",
+              "start": 184,
+              "end": 185,
+              "text": "("
+             },
+             {
+              "type": "integer_value",
+              "start": 185,
+              "end": 186,
+              "text": "0"
+             },
+             {
+              "type": ",",
+              "start": 186,
+              "end": 187,
+              "text": ","
+             },
+             {
+              "type": "integer_value",
+              "start": 188,
+              "end": 189,
+              "text": "0"
+             },
+             {
+              "type": ",",
+              "start": 189,
+              "end": 190,
+              "text": ","
+             },
+             {
+              "type": "integer_value",
+              "start": 191,
+              "end": 192,
+              "text": "0"
+             },
+             {
+              "type": ",",
+              "start": 192,
+              "end": 193,
+              "text": ","
+             },
+             {
+              "type": "float_value",
+              "start": 194,
+              "end": 198,
+              "text": "0.08"
+             },
+             {
+              "type": ")",
+              "start": 198,
+              "end": 199,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 199,
+          "end": 200,
+          "text": ","
+         },
+         {
+          "type": "integer_value",
+          "start": 201,
+          "end": 202,
+          "text": "0"
+         },
+         {
+          "type": "integer_value",
+          "start": 203,
+          "end": 206,
+          "children": [
+           {
+            "type": "unit",
+            "start": 204,
+            "end": 206,
+            "text": "px"
+           }
+          ]
+         },
+         {
+          "type": "integer_value",
+          "start": 207,
+          "end": 210,
+          "children": [
+           {
+            "type": "unit",
+            "start": 208,
+            "end": 210,
+            "text": "px"
+           }
+          ]
+         },
+         {
+          "type": "call_expression",
+          "start": 211,
+          "end": 230,
+          "children": [
+           {
+            "type": "function_name",
+            "start": 211,
+            "end": 215,
+            "text": "rgba"
+           },
+           {
+            "type": "arguments",
+            "start": 215,
+            "end": 230,
+            "children": [
+             {
+              "type": "(",
+              "start": 215,
+              "end": 216,
+              "text": "("
+             },
+             {
+              "type": "integer_value",
+              "start": 216,
+              "end": 217,
+              "text": "0"
+             },
+             {
+              "type": ",",
+              "start": 217,
+              "end": 218,
+              "text": ","
+             },
+             {
+              "type": "integer_value",
+              "start": 219,
+              "end": 220,
+              "text": "0"
+             },
+             {
+              "type": ",",
+              "start": 220,
+              "end": 221,
+              "text": ","
+             },
+             {
+              "type": "integer_value",
+              "start": 222,
+              "end": 223,
+              "text": "0"
+             },
+             {
+              "type": ",",
+              "start": 223,
+              "end": 224,
+              "text": ","
+             },
+             {
+              "type": "float_value",
+              "start": 225,
+              "end": 229,
+              "text": "0.06"
+             },
+             {
+              "type": ")",
+              "start": 229,
+              "end": 230,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 230,
+          "end": 231,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 232,
+        "end": 233,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 235,
+    "end": 286,
+    "text": "/* selector list plus a family list that reflows */"
+   },
+   {
+    "type": "rule_set",
+    "start": 287,
+    "end": 487,
+    "children": [
+     {
+      "type": "selectors",
+      "start": 287,
+      "end": 324,
+      "children": [
+       {
+        "type": "class_selector",
+        "start": 287,
+        "end": 299,
+        "children": [
+         {
+          "type": ".",
+          "start": 287,
+          "end": 288,
+          "text": "."
+         },
+         {
+          "type": "class_name",
+          "start": 288,
+          "end": 299,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 288,
+            "end": 299,
+            "text": "site-header"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 299,
+        "end": 300,
+        "text": ","
+       },
+       {
+        "type": "class_selector",
+        "start": 301,
+        "end": 310,
+        "children": [
+         {
+          "type": ".",
+          "start": 301,
+          "end": 302,
+          "text": "."
+         },
+         {
+          "type": "class_name",
+          "start": 302,
+          "end": 310,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 302,
+            "end": 310,
+            "text": "site-nav"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 310,
+        "end": 311,
+        "text": ","
+       },
+       {
+        "type": "class_selector",
+        "start": 312,
+        "end": 324,
+        "children": [
+         {
+          "type": ".",
+          "start": 312,
+          "end": 313,
+          "text": "."
+         },
+         {
+          "type": "class_name",
+          "start": 313,
+          "end": 324,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 313,
+            "end": 324,
+            "text": "site-footer"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "block",
+      "start": 325,
+      "end": 487,
+      "children": [
+       {
+        "type": "{",
+        "start": 325,
+        "end": 326,
+        "text": "{"
+       },
+       {
+        "type": "declaration",
+        "start": 329,
+        "end": 356,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 329,
+          "end": 334,
+          "text": "color"
+         },
+         {
+          "type": ":",
+          "start": 334,
+          "end": 335,
+          "text": ":"
+         },
+         {
+          "type": "call_expression",
+          "start": 336,
+          "end": 355,
+          "children": [
+           {
+            "type": "function_name",
+            "start": 336,
+            "end": 339,
+            "text": "var"
+           },
+           {
+            "type": "arguments",
+            "start": 339,
+            "end": 355,
+            "children": [
+             {
+              "type": "(",
+              "start": 339,
+              "end": 340,
+              "text": "("
+             },
+             {
+              "type": "plain_value",
+              "start": 340,
+              "end": 345,
+              "text": "--ink"
+             },
+             {
+              "type": ",",
+              "start": 345,
+              "end": 346,
+              "text": ","
+             },
+             {
+              "type": "color_value",
+              "start": 347,
+              "end": 354,
+              "children": [
+               {
+                "type": "#",
+                "start": 347,
+                "end": 348,
+                "text": "#"
+               }
+              ]
+             },
+             {
+              "type": ")",
+              "start": 354,
+              "end": 355,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 355,
+          "end": 356,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "declaration",
+        "start": 359,
+        "end": 457,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 359,
+          "end": 370,
+          "text": "font-family"
+         },
+         {
+          "type": ":",
+          "start": 370,
+          "end": 371,
+          "text": ":"
+         },
+         {
+          "type": "string_value",
+          "start": 372,
+          "end": 388,
+          "children": [
+           {
+            "type": "\"",
+            "start": 372,
+            "end": 373,
+            "text": "\""
+           },
+           {
+            "type": "string_content",
+            "start": 373,
+            "end": 387,
+            "text": "Helvetica Neue"
+           },
+           {
+            "type": "\"",
+            "start": 387,
+            "end": 388,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 388,
+          "end": 389,
+          "text": ","
+         },
+         {
+          "type": "string_value",
+          "start": 390,
+          "end": 397,
+          "children": [
+           {
+            "type": "\"",
+            "start": 390,
+            "end": 391,
+            "text": "\""
+           },
+           {
+            "type": "string_content",
+            "start": 391,
+            "end": 396,
+            "text": "Arial"
+           },
+           {
+            "type": "\"",
+            "start": 396,
+            "end": 397,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 397,
+          "end": 398,
+          "text": ","
+         },
+         {
+          "type": "string_value",
+          "start": 399,
+          "end": 411,
+          "children": [
+           {
+            "type": "\"",
+            "start": 399,
+            "end": 400,
+            "text": "\""
+           },
+           {
+            "type": "string_content",
+            "start": 400,
+            "end": 410,
+            "text": "sans-serif"
+           },
+           {
+            "type": "\"",
+            "start": 410,
+            "end": 411,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 411,
+          "end": 412,
+          "text": ","
+         },
+         {
+          "type": "string_value",
+          "start": 413,
+          "end": 422,
+          "children": [
+           {
+            "type": "\"",
+            "start": 413,
+            "end": 414,
+            "text": "\""
+           },
+           {
+            "type": "string_content",
+            "start": 414,
+            "end": 421,
+            "text": "Georgia"
+           },
+           {
+            "type": "\"",
+            "start": 421,
+            "end": 422,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 422,
+          "end": 423,
+          "text": ","
+         },
+         {
+          "type": "string_value",
+          "start": 424,
+          "end": 441,
+          "children": [
+           {
+            "type": "\"",
+            "start": 424,
+            "end": 425,
+            "text": "\""
+           },
+           {
+            "type": "string_content",
+            "start": 425,
+            "end": 440,
+            "text": "Times New Roman"
+           },
+           {
+            "type": "\"",
+            "start": 440,
+            "end": 441,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 441,
+          "end": 442,
+          "text": ","
+         },
+         {
+          "type": "string_value",
+          "start": 443,
+          "end": 456,
+          "children": [
+           {
+            "type": "\"",
+            "start": 443,
+            "end": 444,
+            "text": "\""
+           },
+           {
+            "type": "string_content",
+            "start": 444,
+            "end": 455,
+            "text": "Courier New"
+           },
+           {
+            "type": "\"",
+            "start": 455,
+            "end": 456,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 456,
+          "end": 457,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "declaration",
+        "start": 460,
+        "end": 485,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 460,
+          "end": 470,
+          "text": "background"
+         },
+         {
+          "type": ":",
+          "start": 470,
+          "end": 471,
+          "text": ":"
+         },
+         {
+          "type": "call_expression",
+          "start": 472,
+          "end": 484,
+          "children": [
+           {
+            "type": "function_name",
+            "start": 472,
+            "end": 475,
+            "text": "var"
+           },
+           {
+            "type": "arguments",
+            "start": 475,
+            "end": 484,
+            "children": [
+             {
+              "type": "(",
+              "start": 475,
+              "end": 476,
+              "text": "("
+             },
+             {
+              "type": "plain_value",
+              "start": 476,
+              "end": 483,
+              "text": "--paper"
+             },
+             {
+              "type": ")",
+              "start": 483,
+              "end": 484,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 484,
+          "end": 485,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 486,
+        "end": 487,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "media_statement",
+    "start": 489,
+    "end": 871,
+    "children": [
+     {
+      "type": "@media",
+      "start": 489,
+      "end": 495,
+      "text": "@media"
+     },
+     {
+      "type": "binary_query",
+      "start": 496,
+      "end": 525,
+      "children": [
+       {
+        "type": "keyword_query",
+        "start": 496,
+        "end": 502,
+        "text": "screen"
+       },
+       {
+        "type": "and",
+        "start": 503,
+        "end": 506,
+        "text": "and"
+       },
+       {
+        "type": "feature_query",
+        "start": 507,
+        "end": 525,
+        "children": [
+         {
+          "type": "(",
+          "start": 507,
+          "end": 508,
+          "text": "("
+         },
+         {
+          "type": "feature_name",
+          "start": 508,
+          "end": 517,
+          "text": "min-width"
+         },
+         {
+          "type": ":",
+          "start": 517,
+          "end": 518,
+          "text": ":"
+         },
+         {
+          "type": "integer_value",
+          "start": 519,
+          "end": 524,
+          "children": [
+           {
+            "type": "unit",
+            "start": 522,
+            "end": 524,
+            "text": "px"
+           }
+          ]
+         },
+         {
+          "type": ")",
+          "start": 524,
+          "end": 525,
+          "text": ")"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "block",
+      "start": 526,
+      "end": 871,
+      "children": [
+       {
+        "type": "{",
+        "start": 526,
+        "end": 527,
+        "text": "{"
+       },
+       {
+        "type": "rule_set",
+        "start": 530,
+        "end": 869,
+        "children": [
+         {
+          "type": "selectors",
+          "start": 530,
+          "end": 535,
+          "children": [
+           {
+            "type": "class_selector",
+            "start": 530,
+            "end": 535,
+            "children": [
+             {
+              "type": ".",
+              "start": 530,
+              "end": 531,
+              "text": "."
+             },
+             {
+              "type": "class_name",
+              "start": 531,
+              "end": 535,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 531,
+                "end": 535,
+                "text": "hero"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "block",
+          "start": 536,
+          "end": 869,
+          "children": [
+           {
+            "type": "{",
+            "start": 536,
+            "end": 537,
+            "text": "{"
+           },
+           {
+            "type": "declaration",
+            "start": 542,
+            "end": 556,
+            "children": [
+             {
+              "type": "property_name",
+              "start": 542,
+              "end": 549,
+              "text": "display"
+             },
+             {
+              "type": ":",
+              "start": 549,
+              "end": 550,
+              "text": ":"
+             },
+             {
+              "type": "plain_value",
+              "start": 551,
+              "end": 555,
+              "text": "grid"
+             },
+             {
+              "type": ";",
+              "start": 555,
+              "end": 556,
+              "text": ";"
+             }
+            ]
+           },
+           {
+            "type": "declaration",
+            "start": 561,
+            "end": 622,
+            "children": [
+             {
+              "type": "property_name",
+              "start": 561,
+              "end": 580,
+              "text": "grid-template-areas"
+             },
+             {
+              "type": ":",
+              "start": 580,
+              "end": 581,
+              "text": ":"
+             },
+             {
+              "type": "string_value",
+              "start": 588,
+              "end": 601,
+              "children": [
+               {
+                "type": "\"",
+                "start": 588,
+                "end": 589,
+                "text": "\""
+               },
+               {
+                "type": "string_content",
+                "start": 589,
+                "end": 600,
+                "text": "title title"
+               },
+               {
+                "type": "\"",
+                "start": 600,
+                "end": 601,
+                "text": "\""
+               }
+              ]
+             },
+             {
+              "type": "string_value",
+              "start": 608,
+              "end": 621,
+              "children": [
+               {
+                "type": "\"",
+                "start": 608,
+                "end": 609,
+                "text": "\""
+               },
+               {
+                "type": "string_content",
+                "start": 609,
+                "end": 620,
+                "text": "copy  media"
+               },
+               {
+                "type": "\"",
+                "start": 620,
+                "end": 621,
+                "text": "\""
+               }
+              ]
+             },
+             {
+              "type": ";",
+              "start": 621,
+              "end": 622,
+              "text": ";"
+             }
+            ]
+           },
+           {
+            "type": "declaration",
+            "start": 627,
+            "end": 706,
+            "children": [
+             {
+              "type": "property_name",
+              "start": 627,
+              "end": 637,
+              "text": "background"
+             },
+             {
+              "type": ":",
+              "start": 637,
+              "end": 638,
+              "text": ":"
+             },
+             {
+              "type": "call_expression",
+              "start": 639,
+              "end": 705,
+              "children": [
+               {
+                "type": "function_name",
+                "start": 639,
+                "end": 654,
+                "text": "linear-gradient"
+               },
+               {
+                "type": "arguments",
+                "start": 654,
+                "end": 705,
+                "children": [
+                 {
+                  "type": "(",
+                  "start": 654,
+                  "end": 655,
+                  "text": "("
+                 },
+                 {
+                  "type": "integer_value",
+                  "start": 655,
+                  "end": 660,
+                  "children": [
+                   {
+                    "type": "unit",
+                    "start": 657,
+                    "end": 660,
+                    "text": "deg"
+                   }
+                  ]
+                 },
+                 {
+                  "type": ",",
+                  "start": 660,
+                  "end": 661,
+                  "text": ","
+                 },
+                 {
+                  "type": "call_expression",
+                  "start": 662,
+                  "end": 682,
+                  "children": [
+                   {
+                    "type": "function_name",
+                    "start": 662,
+                    "end": 666,
+                    "text": "rgba"
+                   },
+                   {
+                    "type": "arguments",
+                    "start": 666,
+                    "end": 682,
+                    "children": [
+                     {
+                      "type": "(",
+                      "start": 666,
+                      "end": 667,
+                      "text": "("
+                     },
+                     {
+                      "type": "integer_value",
+                      "start": 667,
+                      "end": 670,
+                      "text": "255"
+                     },
+                     {
+                      "type": ",",
+                      "start": 670,
+                      "end": 671,
+                      "text": ","
+                     },
+                     {
+                      "type": "integer_value",
+                      "start": 672,
+                      "end": 673,
+                      "text": "0"
+                     },
+                     {
+                      "type": ",",
+                      "start": 673,
+                      "end": 674,
+                      "text": ","
+                     },
+                     {
+                      "type": "integer_value",
+                      "start": 675,
+                      "end": 676,
+                      "text": "0"
+                     },
+                     {
+                      "type": ",",
+                      "start": 676,
+                      "end": 677,
+                      "text": ","
+                     },
+                     {
+                      "type": "float_value",
+                      "start": 678,
+                      "end": 681,
+                      "text": "0.4"
+                     },
+                     {
+                      "type": ")",
+                      "start": 681,
+                      "end": 682,
+                      "text": ")"
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 {
+                  "type": ",",
+                  "start": 682,
+                  "end": 683,
+                  "text": ","
+                 },
+                 {
+                  "type": "call_expression",
+                  "start": 684,
+                  "end": 704,
+                  "children": [
+                   {
+                    "type": "function_name",
+                    "start": 684,
+                    "end": 688,
+                    "text": "rgba"
+                   },
+                   {
+                    "type": "arguments",
+                    "start": 688,
+                    "end": 704,
+                    "children": [
+                     {
+                      "type": "(",
+                      "start": 688,
+                      "end": 689,
+                      "text": "("
+                     },
+                     {
+                      "type": "integer_value",
+                      "start": 689,
+                      "end": 690,
+                      "text": "0"
+                     },
+                     {
+                      "type": ",",
+                      "start": 690,
+                      "end": 691,
+                      "text": ","
+                     },
+                     {
+                      "type": "integer_value",
+                      "start": 692,
+                      "end": 693,
+                      "text": "0"
+                     },
+                     {
+                      "type": ",",
+                      "start": 693,
+                      "end": 694,
+                      "text": ","
+                     },
+                     {
+                      "type": "integer_value",
+                      "start": 695,
+                      "end": 698,
+                      "text": "255"
+                     },
+                     {
+                      "type": ",",
+                      "start": 698,
+                      "end": 699,
+                      "text": ","
+                     },
+                     {
+                      "type": "float_value",
+                      "start": 700,
+                      "end": 703,
+                      "text": "0.4"
+                     },
+                     {
+                      "type": ")",
+                      "start": 703,
+                      "end": 704,
+                      "text": ")"
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 {
+                  "type": ")",
+                  "start": 704,
+                  "end": 705,
+                  "text": ")"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ";",
+              "start": 705,
+              "end": 706,
+              "text": ";"
+             }
+            ]
+           },
+           {
+            "type": "declaration",
+            "start": 711,
+            "end": 737,
+            "children": [
+             {
+              "type": "property_name",
+              "start": 711,
+              "end": 721,
+              "text": "box-shadow"
+             },
+             {
+              "type": ":",
+              "start": 721,
+              "end": 722,
+              "text": ":"
+             },
+             {
+              "type": "call_expression",
+              "start": 723,
+              "end": 736,
+              "children": [
+               {
+                "type": "function_name",
+                "start": 723,
+                "end": 726,
+                "text": "var"
+               },
+               {
+                "type": "arguments",
+                "start": 726,
+                "end": 736,
+                "children": [
+                 {
+                  "type": "(",
+                  "start": 726,
+                  "end": 727,
+                  "text": "("
+                 },
+                 {
+                  "type": "plain_value",
+                  "start": 727,
+                  "end": 735,
+                  "text": "--shadow"
+                 },
+                 {
+                  "type": ")",
+                  "start": 735,
+                  "end": 736,
+                  "text": ")"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ";",
+              "start": 736,
+              "end": 737,
+              "text": ";"
+             }
+            ]
+           },
+           {
+            "type": "rule_set",
+            "start": 742,
+            "end": 865,
+            "children": [
+             {
+              "type": "selectors",
+              "start": 742,
+              "end": 748,
+              "children": [
+               {
+                "type": "descendant_selector",
+                "start": 742,
+                "end": 748,
+                "children": [
+                 {
+                  "type": "nesting_selector",
+                  "start": 742,
+                  "end": 743,
+                  "text": "&"
+                 },
+                 {
+                  "type": "class_selector",
+                  "start": 744,
+                  "end": 748,
+                  "children": [
+                   {
+                    "type": ".",
+                    "start": 744,
+                    "end": 745,
+                    "text": "."
+                   },
+                   {
+                    "type": "class_name",
+                    "start": 745,
+                    "end": 748,
+                    "children": [
+                     {
+                      "type": "identifier",
+                      "start": 745,
+                      "end": 748,
+                      "text": "cta"
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": "block",
+              "start": 749,
+              "end": 865,
+              "children": [
+               {
+                "type": "{",
+                "start": 749,
+                "end": 750,
+                "text": "{"
+               },
+               {
+                "type": "declaration",
+                "start": 757,
+                "end": 781,
+                "children": [
+                 {
+                  "type": "property_name",
+                  "start": 757,
+                  "end": 762,
+                  "text": "color"
+                 },
+                 {
+                  "type": ":",
+                  "start": 762,
+                  "end": 763,
+                  "text": ":"
+                 },
+                 {
+                  "type": "plain_value",
+                  "start": 764,
+                  "end": 769,
+                  "text": "white"
+                 },
+                 {
+                  "type": "important",
+                  "start": 770,
+                  "end": 780,
+                  "text": "!important"
+                 },
+                 {
+                  "type": ";",
+                  "start": 780,
+                  "end": 781,
+                  "text": ";"
+                 }
+                ]
+               },
+               {
+                "type": "declaration",
+                "start": 788,
+                "end": 824,
+                "children": [
+                 {
+                  "type": "property_name",
+                  "start": 788,
+                  "end": 805,
+                  "text": "-webkit-transform"
+                 },
+                 {
+                  "type": ":",
+                  "start": 805,
+                  "end": 806,
+                  "text": ":"
+                 },
+                 {
+                  "type": "call_expression",
+                  "start": 807,
+                  "end": 823,
+                  "children": [
+                   {
+                    "type": "function_name",
+                    "start": 807,
+                    "end": 817,
+                    "text": "translateY"
+                   },
+                   {
+                    "type": "arguments",
+                    "start": 817,
+                    "end": 823,
+                    "children": [
+                     {
+                      "type": "(",
+                      "start": 817,
+                      "end": 818,
+                      "text": "("
+                     },
+                     {
+                      "type": "integer_value",
+                      "start": 818,
+                      "end": 822,
+                      "children": [
+                       {
+                        "type": "unit",
+                        "start": 820,
+                        "end": 822,
+                        "text": "px"
+                       }
+                      ]
+                     },
+                     {
+                      "type": ")",
+                      "start": 822,
+                      "end": 823,
+                      "text": ")"
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 {
+                  "type": ";",
+                  "start": 823,
+                  "end": 824,
+                  "text": ";"
+                 }
+                ]
+               },
+               {
+                "type": "declaration",
+                "start": 831,
+                "end": 859,
+                "children": [
+                 {
+                  "type": "property_name",
+                  "start": 831,
+                  "end": 840,
+                  "text": "transform"
+                 },
+                 {
+                  "type": ":",
+                  "start": 840,
+                  "end": 841,
+                  "text": ":"
+                 },
+                 {
+                  "type": "call_expression",
+                  "start": 842,
+                  "end": 858,
+                  "children": [
+                   {
+                    "type": "function_name",
+                    "start": 842,
+                    "end": 852,
+                    "text": "translateY"
+                   },
+                   {
+                    "type": "arguments",
+                    "start": 852,
+                    "end": 858,
+                    "children": [
+                     {
+                      "type": "(",
+                      "start": 852,
+                      "end": 853,
+                      "text": "("
+                     },
+                     {
+                      "type": "integer_value",
+                      "start": 853,
+                      "end": 857,
+                      "children": [
+                       {
+                        "type": "unit",
+                        "start": 855,
+                        "end": 857,
+                        "text": "px"
+                       }
+                      ]
+                     },
+                     {
+                      "type": ")",
+                      "start": 857,
+                      "end": 858,
+                      "text": ")"
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 {
+                  "type": ";",
+                  "start": 858,
+                  "end": 859,
+                  "text": ";"
+                 }
+                ]
+               },
+               {
+                "type": "}",
+                "start": 864,
+                "end": 865,
+                "text": "}"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 868,
+            "end": 869,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 870,
+        "end": 871,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "supports_statement",
+    "start": 873,
+    "end": 1020,
+    "children": [
+     {
+      "type": "@supports",
+      "start": 873,
+      "end": 882,
+      "text": "@supports"
+     },
+     {
+      "type": "binary_query",
+      "start": 883,
+      "end": 914,
+      "children": [
+       {
+        "type": "feature_query",
+        "start": 883,
+        "end": 898,
+        "children": [
+         {
+          "type": "(",
+          "start": 883,
+          "end": 884,
+          "text": "("
+         },
+         {
+          "type": "feature_name",
+          "start": 884,
+          "end": 891,
+          "text": "display"
+         },
+         {
+          "type": ":",
+          "start": 891,
+          "end": 892,
+          "text": ":"
+         },
+         {
+          "type": "plain_value",
+          "start": 893,
+          "end": 897,
+          "text": "grid"
+         },
+         {
+          "type": ")",
+          "start": 897,
+          "end": 898,
+          "text": ")"
+         }
+        ]
+       },
+       {
+        "type": "and",
+        "start": 899,
+        "end": 902,
+        "text": "and"
+       },
+       {
+        "type": "feature_query",
+        "start": 903,
+        "end": 914,
+        "children": [
+         {
+          "type": "(",
+          "start": 903,
+          "end": 904,
+          "text": "("
+         },
+         {
+          "type": "feature_name",
+          "start": 904,
+          "end": 907,
+          "text": "gap"
+         },
+         {
+          "type": ":",
+          "start": 907,
+          "end": 908,
+          "text": ":"
+         },
+         {
+          "type": "integer_value",
+          "start": 909,
+          "end": 913,
+          "children": [
+           {
+            "type": "unit",
+            "start": 910,
+            "end": 913,
+            "text": "rem"
+           }
+          ]
+         },
+         {
+          "type": ")",
+          "start": 913,
+          "end": 914,
+          "text": ")"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "block",
+      "start": 915,
+      "end": 1020,
+      "children": [
+       {
+        "type": "{",
+        "start": 915,
+        "end": 916,
+        "text": "{"
+       },
+       {
+        "type": "rule_set",
+        "start": 919,
+        "end": 1018,
+        "children": [
+         {
+          "type": "selectors",
+          "start": 919,
+          "end": 927,
+          "children": [
+           {
+            "type": "class_selector",
+            "start": 919,
+            "end": 927,
+            "children": [
+             {
+              "type": ".",
+              "start": 919,
+              "end": 920,
+              "text": "."
+             },
+             {
+              "type": "class_name",
+              "start": 920,
+              "end": 927,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 920,
+                "end": 927,
+                "text": "gallery"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "block",
+          "start": 928,
+          "end": 1018,
+          "children": [
+           {
+            "type": "{",
+            "start": 928,
+            "end": 929,
+            "text": "{"
+           },
+           {
+            "type": "declaration",
+            "start": 934,
+            "end": 1014,
+            "children": [
+             {
+              "type": "property_name",
+              "start": 934,
+              "end": 955,
+              "text": "grid-template-columns"
+             },
+             {
+              "type": ":",
+              "start": 955,
+              "end": 956,
+              "text": ":"
+             },
+             {
+              "type": "call_expression",
+              "start": 957,
+              "end": 975,
+              "children": [
+               {
+                "type": "function_name",
+                "start": 957,
+                "end": 963,
+                "text": "minmax"
+               },
+               {
+                "type": "arguments",
+                "start": 963,
+                "end": 975,
+                "children": [
+                 {
+                  "type": "(",
+                  "start": 963,
+                  "end": 964,
+                  "text": "("
+                 },
+                 {
+                  "type": "integer_value",
+                  "start": 964,
+                  "end": 969,
+                  "children": [
+                   {
+                    "type": "unit",
+                    "start": 967,
+                    "end": 969,
+                    "text": "px"
+                   }
+                  ]
+                 },
+                 {
+                  "type": ",",
+                  "start": 969,
+                  "end": 970,
+                  "text": ","
+                 },
+                 {
+                  "type": "integer_value",
+                  "start": 971,
+                  "end": 974,
+                  "children": [
+                   {
+                    "type": "unit",
+                    "start": 972,
+                    "end": 974,
+                    "text": "fr"
+                   }
+                  ]
+                 },
+                 {
+                  "type": ")",
+                  "start": 974,
+                  "end": 975,
+                  "text": ")"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": "call_expression",
+              "start": 976,
+              "end": 994,
+              "children": [
+               {
+                "type": "function_name",
+                "start": 976,
+                "end": 982,
+                "text": "minmax"
+               },
+               {
+                "type": "arguments",
+                "start": 982,
+                "end": 994,
+                "children": [
+                 {
+                  "type": "(",
+                  "start": 982,
+                  "end": 983,
+                  "text": "("
+                 },
+                 {
+                  "type": "integer_value",
+                  "start": 983,
+                  "end": 988,
+                  "children": [
+                   {
+                    "type": "unit",
+                    "start": 986,
+                    "end": 988,
+                    "text": "px"
+                   }
+                  ]
+                 },
+                 {
+                  "type": ",",
+                  "start": 988,
+                  "end": 989,
+                  "text": ","
+                 },
+                 {
+                  "type": "integer_value",
+                  "start": 990,
+                  "end": 993,
+                  "children": [
+                   {
+                    "type": "unit",
+                    "start": 991,
+                    "end": 993,
+                    "text": "fr"
+                   }
+                  ]
+                 },
+                 {
+                  "type": ")",
+                  "start": 993,
+                  "end": 994,
+                  "text": ")"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": "call_expression",
+              "start": 995,
+              "end": 1013,
+              "children": [
+               {
+                "type": "function_name",
+                "start": 995,
+                "end": 1001,
+                "text": "minmax"
+               },
+               {
+                "type": "arguments",
+                "start": 1001,
+                "end": 1013,
+                "children": [
+                 {
+                  "type": "(",
+                  "start": 1001,
+                  "end": 1002,
+                  "text": "("
+                 },
+                 {
+                  "type": "integer_value",
+                  "start": 1002,
+                  "end": 1007,
+                  "children": [
+                   {
+                    "type": "unit",
+                    "start": 1005,
+                    "end": 1007,
+                    "text": "px"
+                   }
+                  ]
+                 },
+                 {
+                  "type": ",",
+                  "start": 1007,
+                  "end": 1008,
+                  "text": ","
+                 },
+                 {
+                  "type": "integer_value",
+                  "start": 1009,
+                  "end": 1012,
+                  "children": [
+                   {
+                    "type": "unit",
+                    "start": 1010,
+                    "end": 1012,
+                    "text": "fr"
+                   }
+                  ]
+                 },
+                 {
+                  "type": ")",
+                  "start": 1012,
+                  "end": 1013,
+                  "text": ")"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ";",
+              "start": 1013,
+              "end": 1014,
+              "text": ";"
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 1017,
+            "end": 1018,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 1019,
+        "end": 1020,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 1022,
+    "end": 1070,
+    "text": "/* trailing comment at the end of the kitchen */"
+   }
+  ]
+ }
+}

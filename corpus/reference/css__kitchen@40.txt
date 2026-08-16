@@ -1,0 +1,61 @@
+/* Several constructs interacting; the messy file. */
+
+@import url("reset.css");
+
+:root {
+  --ink: #111111;
+  --paper: #f7f4ef;
+  --shadow:
+    0 1px 2px rgba(0, 0, 0, 0.1),
+    0 2px 4px rgba(0, 0, 0, 0.08),
+    0 4px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* selector list plus a family list that reflows */
+.site-header,
+.site-nav,
+.site-footer {
+  color: var(--ink, #111111);
+  font-family:
+    "Helvetica Neue", "Arial",
+    "sans-serif", "Georgia",
+    "Times New Roman", "Courier New";
+  background: var(--paper);
+}
+
+@media screen and (min-width: 768px) {
+  .hero {
+    display: grid;
+    grid-template-areas:
+      "title title"
+      "copy  media";
+    background: linear-gradient(
+      90deg,
+      rgba(255, 0, 0, 0.4),
+      rgba(0, 0, 255, 0.4)
+    );
+    box-shadow: var(--shadow);
+    & .cta {
+      color: white !important;
+      -webkit-transform: translateY(
+        -2px
+      );
+      transform: translateY(-2px);
+    }
+  }
+}
+
+@supports (display: grid) and
+  (gap: 1rem) {
+  .gallery {
+    grid-template-columns: minmax(
+        180px,
+        1fr
+      ) minmax(180px, 1fr) minmax(
+        180px,
+        1fr
+      );
+  }
+}
+
+/* trailing comment at the end of the kitchen */

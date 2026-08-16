@@ -693,6 +693,39 @@ test("after comments inside indent keep the indent", () => {
   assert.equal(runOn(pkg, source, root, 80), "def\n  x\n  # c\n");
 });
 
+test("a comment-only descend block keeps the comment inside", () => {
+  const pkg = {
+    format: "et-doc-rules/1",
+    indent: 2,
+    comments: ["comment"],
+    descend: ["block"],
+    tokens: ["{", "}"],
+    rules: {
+      file: ["child", "t:block"],
+      block: [
+        "seq",
+        ["tok", "{"],
+        ["indent", ["opt", "named", ["seq", ["hard"], ["each", "named", ["hard"]]]]],
+        ["hard"],
+        ["tok", "}"],
+      ],
+    },
+  };
+  const source = "{\n  /* c */\n}";
+  const root = {
+    type: "file", start: 0, end: 13,
+    children: [{
+      type: "block", start: 0, end: 13,
+      children: [
+        { type: "{", start: 0, end: 1, text: "{" },
+        { type: "comment", start: 4, end: 11, text: "/* c */" },
+        { type: "}", start: 12, end: 13, text: "}" },
+      ],
+    }],
+  };
+  assert.equal(runOn(pkg, source, root, 80), "{\n  /* c */\n}\n");
+});
+
 test("trail comma precedes an own-line comment before the closer", () => {
   const pkg = {
     format: "et-doc-rules/1",
