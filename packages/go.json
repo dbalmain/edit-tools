@@ -439,32 +439,44 @@
       ")"
     ],
     "parameter_declaration": [
-      "seq",
+      "when",
       [
-        "each",
+        "count",
         "f:name",
-        [
-          "seq",
-          [
-            "tok",
-            ","
-          ],
-          [
-            "sp"
-          ]
-        ]
+        0
       ],
       [
-        "opt",
-        "f:type",
+        "child",
+        "f:type"
+      ],
+      [
+        "seq",
         [
-          "seq",
+          "each",
+          "f:name",
           [
-            "sp"
-          ],
+            "seq",
+            [
+              "tok",
+              ","
+            ],
+            [
+              "sp"
+            ]
+          ]
+        ],
+        [
+          "opt",
+          "f:type",
           [
-            "child",
-            "f:type"
+            "seq",
+            [
+              "sp"
+            ],
+            [
+              "child",
+              "f:type"
+            ]
           ]
         ]
       ]
@@ -839,9 +851,6 @@
         "struct"
       ],
       [
-        "sp"
-      ],
-      [
         "child",
         "t:field_declaration_list"
       ]
@@ -865,8 +874,46 @@
         ]
       ],
       [
-        "use",
-        "braced_list"
+        "when",
+        [
+          "count",
+          "named",
+          1
+        ],
+        [
+          "seq",
+          [
+            "tok",
+            "{"
+          ],
+          [
+            "indent",
+            [
+              "srcline"
+            ],
+            [
+              "child",
+              "named"
+            ]
+          ],
+          [
+            "srcline"
+          ],
+          [
+            "tok",
+            "}"
+          ]
+        ],
+        [
+          "seq",
+          [
+            "sp"
+          ],
+          [
+            "use",
+            "braced_list"
+          ]
+        ]
       ]
     ],
     "field_declaration": [
@@ -1011,6 +1058,9 @@
       "named",
       [
         "seq",
+        [
+          "sp"
+        ],
         [
           "tok",
           "|"
