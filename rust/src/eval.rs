@@ -61,6 +61,7 @@ impl<'a> Fmt<'a> {
             })?;
         let mut ctx = Ctx::new(node, self);
         let mut doc = ctx.eval(rule, self)?;
+        doc = Doc::Concat(vec![doc, ctx.flush_after(self)]);
         if !ctx.dangling.is_empty() {
             doc = Doc::Concat(dangling(self.pkg, &ctx.dangling, doc));
         }
@@ -85,9 +86,12 @@ impl<'a> Fmt<'a> {
     }
 }
 
-/// Comments the runtime attached to `item`, wrapped around its doc.
+/// Leading and same-line comments attached to `item`, wrapped around its doc.
+/// Own-line comments that trail the last sibling are held in `Ctx::pending_after`
+/// so `trail` can emit a break-only comma *before* them — a comment before `]`
+/// must not swallow that comma.
 fn decorate(pkg: &Package, item: &Item<'_>, inner: Doc) -> Doc {
-    if !item.decorated() {
+    if item.lead.is_empty() && item.suffix.is_empty() {
         return inner;
     }
     let mut parts = Vec::new();
@@ -118,7 +122,16 @@ fn decorate(pkg: &Package, item: &Item<'_>, inner: Doc) -> Doc {
     for text in &item.suffix {
         parts.push(Doc::Suffix(Box::new(Doc::text(format!("{gap}{text}")))));
     }
-    for comment in &item.after {
+    parts.push(Doc::BreakParent);
+    Doc::Concat(parts)
+}
+
+fn after_docs(pkg: &Package, comments: &[Comment]) -> Doc {
+    if comments.is_empty() {
+        return Doc::nil();
+    }
+    let mut parts = Vec::new();
+    for comment in comments {
         parts.push(Doc::Hard);
         for _ in 0..comment.blanks.min(pkg.blank_cap) {
             parts.push(Doc::Hard);
@@ -150,6 +163,7 @@ struct Ctx<'a> {
     items: Vec<Item<'a>>,
     dangling: Vec<Comment>,
     cursor: usize,
+    pending_after: Vec<Comment>,
     trailing_blanks: usize,
 }
 
@@ -161,8 +175,20 @@ impl<'a> Ctx<'a> {
             items: parts.items,
             dangling: parts.dangling,
             cursor: 0,
+            pending_after: Vec::new(),
             trailing_blanks: parts.trailing_blanks,
         }
+    }
+
+    fn flush_after(&mut self, f: &Fmt<'a>) -> Doc {
+        after_docs(f.pkg, &std::mem::take(&mut self.pending_after))
+    }
+
+    fn flush_before_token(&mut self, f: &Fmt<'a>) -> Doc {
+        if self.pending_after.is_empty() {
+            return Doc::nil();
+        }
+        Doc::Concat(vec![self.flush_after(f), Doc::Hard])
     }
 
     fn matches(&self, at: usize, sel: &Sel, pkg: &Package) -> bool {
@@ -194,10 +220,11 @@ impl<'a> Ctx<'a> {
         match expr {
             Expr::Seq(es) => Ok(Doc::Concat(self.eval_all(es, f)?)),
             Expr::Group(es) => Ok(Doc::group(Doc::Concat(self.eval_all(es, f)?))),
-            Expr::Indent(es) => Ok(Doc::indent(
-                f.pkg.indent,
-                Doc::Concat(self.eval_all(es, f)?),
-            )),
+            Expr::Indent(es) => {
+                let mut parts = self.eval_all(es, f)?;
+                parts.push(self.flush_after(f));
+                Ok(Doc::indent(f.pkg.indent, Doc::Concat(parts)))
+            }
             Expr::Line => Ok(Doc::Line),
             Expr::Soft => Ok(Doc::Soft),
             Expr::Hard => Ok(Doc::Hard),
@@ -223,11 +250,11 @@ impl<'a> Ctx<'a> {
             Expr::Flatten(kind, sep) => self.flatten(kind, sep, f),
             Expr::Blank(cap, around) => {
                 if self.cursor == self.items.len() {
-                    return Ok(Doc::Concat(
-                        std::iter::repeat_with(|| Doc::Hard)
-                            .take(self.trailing_blanks.min(*cap))
-                            .collect(),
-                    ));
+                    let mut parts = vec![self.flush_after(f)];
+                    parts.extend(
+                        std::iter::repeat_with(|| Doc::Hard).take(self.trailing_blanks.min(*cap)),
+                    );
+                    return Ok(Doc::Concat(parts));
                 }
                 let n = if self.forces_blank(around) {
                     *cap
@@ -275,19 +302,27 @@ impl<'a> Ctx<'a> {
     }
 
     fn child(&mut self, sel: &Sel, f: &Fmt<'a>) -> Result<Doc, Refusal> {
+        let flushed = self.flush_after(f);
         let at = self.take(sel, f)?;
+        let after = std::mem::take(&mut self.items[at].after);
         let item = &self.items[at];
         let inner = f.node(item.node)?;
-        Ok(decorate(f.pkg, item, inner))
+        let decorated = decorate(f.pkg, item, inner);
+        self.pending_after = after;
+        Ok(Doc::Concat(vec![flushed, decorated]))
     }
 
     fn tok(&mut self, want: &str, f: &Fmt<'a>) -> Result<Doc, Refusal> {
+        let flushed = self.flush_before_token(f);
         let at = self.cursor;
         if self.items.get(at).and_then(|i| i.node.text.as_deref()) != Some(want) {
             return Err(self.refuse(&format!("the token `{want}`")));
         }
         self.cursor += 1;
-        Ok(decorate(f.pkg, &self.items[at], Doc::text(want)))
+        Ok(Doc::Concat(vec![
+            flushed,
+            decorate(f.pkg, &self.items[at], Doc::text(want)),
+        ]))
     }
 
     fn verbatim(&mut self, f: &Fmt<'a>) -> Result<Doc, Refusal> {
@@ -311,11 +346,12 @@ impl<'a> Ctx<'a> {
         if self.items.get(at).and_then(|i| i.node.text.as_deref()) != Some(sep) {
             // One item is not a list: black splits such a bracket without ever
             // reaching a comma, and so leaves none behind.
-            return Ok(if self.tally(sel, f.pkg) > 1 {
+            let comma = if self.tally(sel, f.pkg) > 1 {
                 optional
             } else {
                 Doc::nil()
-            });
+            };
+            return Ok(comma);
         }
         self.cursor += 1;
         Ok(Doc::Concat(vec![
@@ -334,24 +370,30 @@ impl<'a> Ctx<'a> {
             && self.items[last].node.text.as_deref() == Some(")");
 
         let open = if adopt {
-            self.cursor += 1;
-            decorate(f.pkg, &self.items[opener], Doc::text("("))
+            self.tok("(", f)?
         } else {
             Doc::IfBreak(Box::new(Doc::text("(")), Box::new(Doc::nil()))
         };
-        let inner = Doc::Concat(self.eval_all(body, f)?);
+        let mut inner = self.eval_all(body, f)?;
+        if adopt {
+            // Keep a comment before the adopted closer inside the region's
+            // indent, then let `tok` enforce the ordinary token boundary.
+            inner.push(self.flush_after(f));
+        }
         let close = if adopt {
             if self.cursor != last {
                 return Err(self.refuse("the closing `)` of the region it wraps"));
             }
-            self.cursor += 1;
-            decorate(f.pkg, &self.items[last], Doc::text(")"))
+            self.tok(")", f)?
         } else {
             Doc::IfBreak(Box::new(Doc::text(")")), Box::new(Doc::nil()))
         };
         Ok(Doc::group(Doc::Concat(vec![
             open,
-            Doc::indent(f.pkg.indent, Doc::Concat(vec![Doc::Soft, inner])),
+            Doc::indent(
+                f.pkg.indent,
+                Doc::Concat(vec![Doc::Soft, Doc::Concat(inner)]),
+            ),
             Doc::Soft,
             close,
         ])))
@@ -443,7 +485,8 @@ impl<'a> Ctx<'a> {
         parts.push(self.eval(sep, f)?);
         parts.push(self.child(&right, f)?);
 
-        for ctx in &inner {
+        for ctx in &mut inner {
+            parts.push(ctx.flush_after(f));
             if ctx.cursor != ctx.items.len() {
                 return Err(Refusal(format!(
                     "flattened `{}` left a child unconsumed",
@@ -1412,6 +1455,115 @@ try {{
     }
 
     #[test]
+    fn after_comments_inside_indent_keep_the_indent() {
+        // Flushing pending after-comments at the end of the *node* would drop
+        // a block-trailing comment to column 0. They have to flush inside
+        // the indent that holds the last sibling.
+        let pkg: Package = serde_json::from_value(json!({
+            "format": "et-doc-rules/1",
+            "indent": 2,
+            "comments": ["comment"],
+            "rules": {
+                "file": ["seq", ["tok", "def"], ["child", "t:body"]],
+                "body": ["indent", ["hard"], ["each", "named", ["hard"]]]
+            },
+            "tokens": ["def"]
+        }))
+        .expect("indented-after package parses");
+        let source = "def\n  x\n  # c\n";
+        let root = json!({
+            "type": "file", "start": 0, "end": 13,
+            "children": [
+                { "type": "def", "start": 0, "end": 3, "text": "def" },
+                {
+                    "type": "body", "start": 4, "end": 13,
+                    "children": [
+                        { "type": "name", "start": 6, "end": 7, "text": "x" },
+                        { "type": "comment", "start": 10, "end": 13, "text": "# c" },
+                    ]
+                }
+            ]
+        });
+        assert_eq!(
+            run_on(&one(pkg), source, root, 80).expect("ok"),
+            "def\n  x\n  # c\n"
+        );
+    }
+
+    #[test]
+    fn trail_comma_precedes_an_own_line_comment_before_the_closer() {
+        // TOML (and any language whose last list item carries an own-line
+        // comment before `]`) must not let that comment swallow the
+        // break-only trailing comma.
+        let pkg = one(serde_json::from_value(json!({
+            "format": "et-doc-rules/1",
+            "indent": 2,
+            "tokens": ["(", ")", ","],
+            "comments": ["comment"],
+            "rules": {
+                "list": [
+                    "group", ["tok", "("],
+                    ["indent", ["soft"],
+                        ["each", "named", ["seq", ["tok", ","], ["line"]]],
+                        ["trail", ",", "*"]],
+                    ["soft"], ["tok", ")"]
+                ]
+            }
+        }))
+        .expect("list-with-comments package parses"));
+        let source = "(a\n# c\n)";
+        let root = json!({
+            "type": "list", "start": 0, "end": 9,
+            "children": [
+                { "type": "(", "start": 0, "end": 1, "text": "(" },
+                { "type": "name", "start": 1, "end": 2, "text": "a" },
+                { "type": "comment", "start": 3, "end": 6, "text": "# c" },
+                { "type": ")", "start": 7, "end": 8, "text": ")" },
+            ]
+        });
+        assert_eq!(
+            run_on(&pkg, source, root, 4).expect("ok"),
+            "(\n  a,\n  # c\n)\n"
+        );
+    }
+
+    #[test]
+    fn a_flat_rule_keeps_an_own_line_comment_before_the_closer() {
+        let pkg = one(serde_json::from_value(json!({
+            "format": "et-doc-rules/1",
+            "indent": 2,
+            "tokens": ["[", "]", ","],
+            "comments": ["comment"],
+            "rules": {
+                "array": [
+                    "seq", ["tok", "["],
+                    ["each", "named", ["seq", ["tok", ","], ["sp"]]],
+                    ["trail", ",", "*"], ["tok", "]"]
+                ]
+            }
+        }))
+        .expect("flat-array package parses"));
+        let source = "a = [\n  1,\n  # a comment before the closer\n]\n";
+        let root = json!({
+            "type": "array", "start": 4, "end": 44,
+            "children": [
+                { "type": "[", "start": 4, "end": 5, "text": "[" },
+                { "type": "integer", "start": 8, "end": 9, "text": "1" },
+                { "type": ",", "start": 9, "end": 10, "text": "," },
+                {
+                    "type": "comment", "start": 13, "end": 42,
+                    "text": "# a comment before the closer"
+                },
+                { "type": "]", "start": 43, "end": 44, "text": "]" },
+            ]
+        });
+        assert_eq!(
+            run_on(&pkg, source, root, 80).expect("ok"),
+            "[1,\n# a comment before the closer\n]\n"
+        );
+    }
+
+    #[test]
     fn blank_at_end_of_a_rule_preserves_trailing_trivia() {
         // tree-sitter-toml's table range includes the blank line before the
         // next header. A `blank` after the last child is the only way a
@@ -1422,7 +1574,12 @@ try {{
             "tokens": ["["],
             "rules": {
                 "file": ["each", "named", ["seq", ["hard"], ["blank", 2]]],
-                "table": ["seq", ["tok", "["], ["child", "named"], ["blank", 2]]
+                "table": [
+                    "seq",
+                    ["tok", "["],
+                    ["child", "named"],
+                    ["blank", 2]
+                ]
             }
         }))
         .expect("trailing-trivia package parses");
@@ -1443,7 +1600,7 @@ try {{
                         { "type": "[", "start": 4, "end": 5, "text": "[" },
                         { "type": "name", "start": 5, "end": 6, "text": "b" },
                     ]
-                }
+                },
             ]
         });
         assert_eq!(

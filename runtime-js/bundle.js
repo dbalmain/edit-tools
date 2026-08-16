@@ -526,7 +526,7 @@ const decorated = (item) =>
   item.lead.length > 0 || item.suffix.length > 0 || item.after.length > 0;
 
 function decorate(fmt, item, inner) {
-  if (!decorated(item)) return inner;
+  if (item.lead.length === 0 && item.suffix.length === 0) return inner;
   let parts = [];
   // A comment leading a suite belongs on the first line *inside* it.
   const sink = fmt.descend.has(item.node.type);
@@ -543,7 +543,14 @@ function decorate(fmt, item, inner) {
   parts.push(inner);
   const gap = " ".repeat(fmt.commentGap);
   for (const s of item.suffix) parts.push(suffix(text(`${gap}${s}`)));
-  for (const comment of item.after) {
+  parts.push(breakParent);
+  return concat(parts);
+}
+
+function afterDocs(fmt, comments) {
+  if (comments.length === 0) return nil;
+  const parts = [];
+  for (const comment of comments) {
     parts.push(hard);
     for (let i = 0; i < Math.min(comment.blanks, fmt.blankCap); i++) parts.push(hard);
     parts.push(text(comment.text));
@@ -571,7 +578,19 @@ class Ctx {
     this.items = split.items;
     this.dangling = split.dangling;
     this.cursor = 0;
+    this.pendingAfter = [];
     this.trailingBlanks = split.trailingBlanks;
+  }
+
+  flushAfter() {
+    const comments = this.pendingAfter;
+    this.pendingAfter = [];
+    return afterDocs(this.fmt, comments);
+  }
+
+  flushBeforeToken() {
+    if (this.pendingAfter.length === 0) return nil;
+    return concat([this.flushAfter(), hard]);
   }
 
   matches(at, sel) {
@@ -624,7 +643,10 @@ class Ctx {
       case "group":
         return group(concat(rest.map((e) => this.eval(e))));
       case "indent":
-        return indent(this.fmt.pkg.indent, concat(rest.map((e) => this.eval(e))));
+        return indent(
+          this.fmt.pkg.indent,
+          concat([...rest.map((e) => this.eval(e)), this.flushAfter()]),
+        );
       case "line":
         return line;
       case "soft":
@@ -660,9 +682,10 @@ class Ctx {
           throw new Refusal(`expected a list of node types, got ${around}`);
         }
         if (this.cursor === this.items.length) {
-          return concat(
-            Array.from({ length: Math.min(this.trailingBlanks, cap) }, () => hard),
-          );
+          return concat([
+            this.flushAfter(),
+            ...Array.from({ length: Math.min(this.trailingBlanks, cap) }, () => hard),
+          ]);
         }
         const n = this.forcesBlank(around) ? cap : Math.min(this.blanks(), cap);
         return concat(Array.from({ length: n }, () => hard));
@@ -686,16 +709,22 @@ class Ctx {
   }
 
   child(sel) {
+    const flushed = this.flushAfter();
     const at = this.take(sel, `a child matching ${JSON.stringify(sel)}`);
     const item = this.items[at];
-    return decorate(this.fmt, item, this.fmt.node(item.node));
+    const after = item.after;
+    item.after = [];
+    const decoratedItem = decorate(this.fmt, item, this.fmt.node(item.node));
+    this.pendingAfter = after;
+    return concat([flushed, decoratedItem]);
   }
 
   tok(want) {
+    const flushed = this.flushBeforeToken();
     const item = this.items[this.cursor];
     if (!item || item.node.text !== want) throw this.refuse(`the token \`${want}\``);
     this.cursor++;
-    return decorate(this.fmt, item, text(want));
+    return concat([flushed, decorate(this.fmt, item, text(want))]);
   }
 
   verbatim() {
@@ -716,7 +745,9 @@ class Ctx {
     const item = this.items[this.cursor];
     // One item is not a list: black splits such a bracket without ever
     // reaching a comma, and so leaves none behind.
-    if (!item || item.node.text !== sep) return this.tally(sel) > 1 ? optional : nil;
+    if (!item || item.node.text !== sep) {
+      return this.tally(sel) > 1 ? optional : nil;
+    }
     this.cursor++;
     return concat([decorate(this.fmt, item, optional), breakParent]);
   }
@@ -733,21 +764,22 @@ class Ctx {
 
     let open;
     if (adopt) {
-      this.cursor++;
-      open = decorate(this.fmt, this.items[opener], text("("));
+      open = this.tok("(");
     } else {
       open = ifBreak(text("("), nil);
     }
-    const inner = concat(body.map((e) => this.eval(e)));
+    const inner = body.map((e) => this.eval(e));
+    // Keep a comment before the adopted closer inside the region's indent,
+    // then let tok enforce the ordinary token boundary.
+    if (adopt) inner.push(this.flushAfter());
     let close;
     if (adopt) {
       if (this.cursor !== last) throw this.refuse("the closing `)` of the region it wraps");
-      this.cursor++;
-      close = decorate(this.fmt, this.items[last], text(")"));
+      close = this.tok(")");
     } else {
       close = ifBreak(text(")"), nil);
     }
-    return group(concat([open, indent(this.fmt.pkg.indent, concat([soft, inner])), soft, close]));
+    return group(concat([open, indent(this.fmt.pkg.indent, concat([soft, ...inner])), soft, close]));
   }
 
   /** Format a child, adding optional parentheses if its type is one the
@@ -815,6 +847,7 @@ class Ctx {
     parts.push(this.eval(sep), this.child(right));
 
     for (const ctx of inner) {
+      parts.push(ctx.flushAfter());
       if (ctx.cursor !== ctx.items.length) {
         throw new Refusal(`flattened \`${ctx.node.type}\` left a child unconsumed`);
       }
@@ -909,7 +942,7 @@ class Formatter {
     const rule = this.pkg.rules[node.type];
     if (!rule) throw new Refusal(`package has no rule for node type \`${node.type}\``);
     const ctx = new Ctx(this, node);
-    let doc = ctx.eval(rule);
+    let doc = concat([ctx.eval(rule), ctx.flushAfter()]);
     if (ctx.dangling.length > 0) {
       const parts = [];
       ctx.dangling.forEach((comment, i) => {
