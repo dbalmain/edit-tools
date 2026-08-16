@@ -126,9 +126,9 @@
                 ["line"],
                 [
                   "when",
-                  ["count", "t:string_value", 0],
-                  ["each", "named", ["use", "comma_or_space"]],
-                  ["fill", "named", ["use", "comma_or_space"]]
+                  ["all", "named", ["property_name", "string_value", "plain_value", "important"]],
+                  ["fill", "named", ["use", "comma_or_space"]],
+                  ["each", "named", ["use", "comma_or_space"]]
                 ]
               ]
             ]
