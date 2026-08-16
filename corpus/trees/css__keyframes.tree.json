@@ -1,0 +1,684 @@
+{
+ "language": "css",
+ "source_file": "corpus/src/css/keyframes.css",
+ "source": "/* @keyframes: percentages and a from/to pair. */\n\n@keyframes slide-in {\n  0% {\n    transform: translateX(-100%);\n    opacity: 0; /* start hidden */\n  }\n  50% {\n    transform: translateX(-50%) scale(1.05);\n    opacity: 0.5;\n  }\n  100% {\n    transform: translateX(0);\n    opacity: 1;\n  }\n}\n\n@keyframes fade {\n  from {\n    opacity: 0;\n  }\n  to {\n    opacity: 1;\n  }\n}\n",
+ "root": {
+  "type": "stylesheet",
+  "start": 0,
+  "end": 366,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 49,
+    "text": "/* @keyframes: percentages and a from/to pair. */"
+   },
+   {
+    "type": "keyframes_statement",
+    "start": 51,
+    "end": 288,
+    "children": [
+     {
+      "type": "@keyframes",
+      "start": 51,
+      "end": 61,
+      "text": "@keyframes"
+     },
+     {
+      "type": "keyframes_name",
+      "start": 62,
+      "end": 70,
+      "text": "slide-in"
+     },
+     {
+      "type": "keyframe_block_list",
+      "start": 71,
+      "end": 288,
+      "children": [
+       {
+        "type": "{",
+        "start": 71,
+        "end": 72,
+        "text": "{"
+       },
+       {
+        "type": "keyframe_block",
+        "start": 75,
+        "end": 152,
+        "children": [
+         {
+          "type": "integer_value",
+          "start": 75,
+          "end": 77,
+          "children": [
+           {
+            "type": "unit",
+            "start": 76,
+            "end": 77,
+            "text": "%"
+           }
+          ]
+         },
+         {
+          "type": "block",
+          "start": 78,
+          "end": 152,
+          "children": [
+           {
+            "type": "{",
+            "start": 78,
+            "end": 79,
+            "text": "{"
+           },
+           {
+            "type": "declaration",
+            "start": 84,
+            "end": 113,
+            "children": [
+             {
+              "type": "property_name",
+              "start": 84,
+              "end": 93,
+              "text": "transform"
+             },
+             {
+              "type": ":",
+              "start": 93,
+              "end": 94,
+              "text": ":"
+             },
+             {
+              "type": "call_expression",
+              "start": 95,
+              "end": 112,
+              "children": [
+               {
+                "type": "function_name",
+                "start": 95,
+                "end": 105,
+                "text": "translateX"
+               },
+               {
+                "type": "arguments",
+                "start": 105,
+                "end": 112,
+                "children": [
+                 {
+                  "type": "(",
+                  "start": 105,
+                  "end": 106,
+                  "text": "("
+                 },
+                 {
+                  "type": "integer_value",
+                  "start": 106,
+                  "end": 111,
+                  "children": [
+                   {
+                    "type": "unit",
+                    "start": 110,
+                    "end": 111,
+                    "text": "%"
+                   }
+                  ]
+                 },
+                 {
+                  "type": ")",
+                  "start": 111,
+                  "end": 112,
+                  "text": ")"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ";",
+              "start": 112,
+              "end": 113,
+              "text": ";"
+             }
+            ]
+           },
+           {
+            "type": "declaration",
+            "start": 118,
+            "end": 129,
+            "children": [
+             {
+              "type": "property_name",
+              "start": 118,
+              "end": 125,
+              "text": "opacity"
+             },
+             {
+              "type": ":",
+              "start": 125,
+              "end": 126,
+              "text": ":"
+             },
+             {
+              "type": "integer_value",
+              "start": 127,
+              "end": 128,
+              "text": "0"
+             },
+             {
+              "type": ";",
+              "start": 128,
+              "end": 129,
+              "text": ";"
+             }
+            ]
+           },
+           {
+            "type": "comment",
+            "start": 130,
+            "end": 148,
+            "text": "/* start hidden */"
+           },
+           {
+            "type": "}",
+            "start": 151,
+            "end": 152,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "keyframe_block",
+        "start": 155,
+        "end": 227,
+        "children": [
+         {
+          "type": "integer_value",
+          "start": 155,
+          "end": 158,
+          "children": [
+           {
+            "type": "unit",
+            "start": 157,
+            "end": 158,
+            "text": "%"
+           }
+          ]
+         },
+         {
+          "type": "block",
+          "start": 159,
+          "end": 227,
+          "children": [
+           {
+            "type": "{",
+            "start": 159,
+            "end": 160,
+            "text": "{"
+           },
+           {
+            "type": "declaration",
+            "start": 165,
+            "end": 205,
+            "children": [
+             {
+              "type": "property_name",
+              "start": 165,
+              "end": 174,
+              "text": "transform"
+             },
+             {
+              "type": ":",
+              "start": 174,
+              "end": 175,
+              "text": ":"
+             },
+             {
+              "type": "call_expression",
+              "start": 176,
+              "end": 192,
+              "children": [
+               {
+                "type": "function_name",
+                "start": 176,
+                "end": 186,
+                "text": "translateX"
+               },
+               {
+                "type": "arguments",
+                "start": 186,
+                "end": 192,
+                "children": [
+                 {
+                  "type": "(",
+                  "start": 186,
+                  "end": 187,
+                  "text": "("
+                 },
+                 {
+                  "type": "integer_value",
+                  "start": 187,
+                  "end": 191,
+                  "children": [
+                   {
+                    "type": "unit",
+                    "start": 190,
+                    "end": 191,
+                    "text": "%"
+                   }
+                  ]
+                 },
+                 {
+                  "type": ")",
+                  "start": 191,
+                  "end": 192,
+                  "text": ")"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": "call_expression",
+              "start": 193,
+              "end": 204,
+              "children": [
+               {
+                "type": "function_name",
+                "start": 193,
+                "end": 198,
+                "text": "scale"
+               },
+               {
+                "type": "arguments",
+                "start": 198,
+                "end": 204,
+                "children": [
+                 {
+                  "type": "(",
+                  "start": 198,
+                  "end": 199,
+                  "text": "("
+                 },
+                 {
+                  "type": "float_value",
+                  "start": 199,
+                  "end": 203,
+                  "text": "1.05"
+                 },
+                 {
+                  "type": ")",
+                  "start": 203,
+                  "end": 204,
+                  "text": ")"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ";",
+              "start": 204,
+              "end": 205,
+              "text": ";"
+             }
+            ]
+           },
+           {
+            "type": "declaration",
+            "start": 210,
+            "end": 223,
+            "children": [
+             {
+              "type": "property_name",
+              "start": 210,
+              "end": 217,
+              "text": "opacity"
+             },
+             {
+              "type": ":",
+              "start": 217,
+              "end": 218,
+              "text": ":"
+             },
+             {
+              "type": "float_value",
+              "start": 219,
+              "end": 222,
+              "text": "0.5"
+             },
+             {
+              "type": ";",
+              "start": 222,
+              "end": 223,
+              "text": ";"
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 226,
+            "end": 227,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "keyframe_block",
+        "start": 230,
+        "end": 286,
+        "children": [
+         {
+          "type": "integer_value",
+          "start": 230,
+          "end": 234,
+          "children": [
+           {
+            "type": "unit",
+            "start": 233,
+            "end": 234,
+            "text": "%"
+           }
+          ]
+         },
+         {
+          "type": "block",
+          "start": 235,
+          "end": 286,
+          "children": [
+           {
+            "type": "{",
+            "start": 235,
+            "end": 236,
+            "text": "{"
+           },
+           {
+            "type": "declaration",
+            "start": 241,
+            "end": 266,
+            "children": [
+             {
+              "type": "property_name",
+              "start": 241,
+              "end": 250,
+              "text": "transform"
+             },
+             {
+              "type": ":",
+              "start": 250,
+              "end": 251,
+              "text": ":"
+             },
+             {
+              "type": "call_expression",
+              "start": 252,
+              "end": 265,
+              "children": [
+               {
+                "type": "function_name",
+                "start": 252,
+                "end": 262,
+                "text": "translateX"
+               },
+               {
+                "type": "arguments",
+                "start": 262,
+                "end": 265,
+                "children": [
+                 {
+                  "type": "(",
+                  "start": 262,
+                  "end": 263,
+                  "text": "("
+                 },
+                 {
+                  "type": "integer_value",
+                  "start": 263,
+                  "end": 264,
+                  "text": "0"
+                 },
+                 {
+                  "type": ")",
+                  "start": 264,
+                  "end": 265,
+                  "text": ")"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ";",
+              "start": 265,
+              "end": 266,
+              "text": ";"
+             }
+            ]
+           },
+           {
+            "type": "declaration",
+            "start": 271,
+            "end": 282,
+            "children": [
+             {
+              "type": "property_name",
+              "start": 271,
+              "end": 278,
+              "text": "opacity"
+             },
+             {
+              "type": ":",
+              "start": 278,
+              "end": 279,
+              "text": ":"
+             },
+             {
+              "type": "integer_value",
+              "start": 280,
+              "end": 281,
+              "text": "1"
+             },
+             {
+              "type": ";",
+              "start": 281,
+              "end": 282,
+              "text": ";"
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 285,
+            "end": 286,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 287,
+        "end": 288,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "keyframes_statement",
+    "start": 290,
+    "end": 365,
+    "children": [
+     {
+      "type": "@keyframes",
+      "start": 290,
+      "end": 300,
+      "text": "@keyframes"
+     },
+     {
+      "type": "keyframes_name",
+      "start": 301,
+      "end": 305,
+      "text": "fade"
+     },
+     {
+      "type": "keyframe_block_list",
+      "start": 306,
+      "end": 365,
+      "children": [
+       {
+        "type": "{",
+        "start": 306,
+        "end": 307,
+        "text": "{"
+       },
+       {
+        "type": "keyframe_block",
+        "start": 310,
+        "end": 336,
+        "children": [
+         {
+          "type": "from",
+          "start": 310,
+          "end": 314,
+          "text": "from"
+         },
+         {
+          "type": "block",
+          "start": 315,
+          "end": 336,
+          "children": [
+           {
+            "type": "{",
+            "start": 315,
+            "end": 316,
+            "text": "{"
+           },
+           {
+            "type": "declaration",
+            "start": 321,
+            "end": 332,
+            "children": [
+             {
+              "type": "property_name",
+              "start": 321,
+              "end": 328,
+              "text": "opacity"
+             },
+             {
+              "type": ":",
+              "start": 328,
+              "end": 329,
+              "text": ":"
+             },
+             {
+              "type": "integer_value",
+              "start": 330,
+              "end": 331,
+              "text": "0"
+             },
+             {
+              "type": ";",
+              "start": 331,
+              "end": 332,
+              "text": ";"
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 335,
+            "end": 336,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "keyframe_block",
+        "start": 339,
+        "end": 363,
+        "children": [
+         {
+          "type": "to",
+          "start": 339,
+          "end": 341,
+          "children": [
+           {
+            "type": "to",
+            "start": 339,
+            "end": 341,
+            "text": "to"
+           }
+          ]
+         },
+         {
+          "type": "block",
+          "start": 342,
+          "end": 363,
+          "children": [
+           {
+            "type": "{",
+            "start": 342,
+            "end": 343,
+            "text": "{"
+           },
+           {
+            "type": "declaration",
+            "start": 348,
+            "end": 359,
+            "children": [
+             {
+              "type": "property_name",
+              "start": 348,
+              "end": 355,
+              "text": "opacity"
+             },
+             {
+              "type": ":",
+              "start": 355,
+              "end": 356,
+              "text": ":"
+             },
+             {
+              "type": "integer_value",
+              "start": 357,
+              "end": 358,
+              "text": "1"
+             },
+             {
+              "type": ";",
+              "start": 358,
+              "end": 359,
+              "text": ";"
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 362,
+            "end": 363,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 364,
+        "end": 365,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

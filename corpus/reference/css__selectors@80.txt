@@ -1,0 +1,27 @@
+/* Selectors: lists, combinators, attributes, :is/:has. */
+
+/* Comma lists are always one selector per line, whatever the width. */
+.header,
+.footer,
+.sidebar,
+.main-content {
+  color: inherit;
+}
+
+/* Combinators, attributes, trailing comment. */
+nav > ul + p ~ a[href="https://example.com"][target="_blank"] {
+  color: blue; /* external link */
+}
+
+/* :is descendant wraps at 40, not at 80. */
+:is(header, footer, aside) a:not(:hover, :focus) {
+  color: navy;
+}
+
+:where(.teaser, .card, .panel) {
+  margin: 0;
+}
+
+article:has(> img + p) {
+  display: grid;
+}

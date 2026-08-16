@@ -1,0 +1,19 @@
+/* Nested at-rules and a function whose children fit. */
+
+@media screen and (min-width: 768px) {
+  @supports (display: grid) and (gap: 1rem) and (not (display: -ms-grid)) {
+    .hero {
+      /* rgb() fits after linear-gradient breaks; stays flat */
+      background: linear-gradient(
+        90deg,
+        rgb(1, 2, 3),
+        rgb(4, 5, 6),
+        rgb(7, 8, 9),
+        rgb(10, 11, 12)
+      );
+      font-family:
+        "Helvetica Neue", "Arial", "sans-serif", "Georgia", "Times New Roman",
+        "Courier New";
+    }
+  }
+}
