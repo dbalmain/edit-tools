@@ -41,13 +41,14 @@ Every stage-B and stage-D review ends with a template delta. Applied deltas go
 here, so the templates have a history and a repeated complaint is visible as a
 pattern.
 
-| Date       | Template                              | Change                                                                                                                                                                                                                               | Prompted by                                                           |
-| ---------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
-| 2026-08-15 | `WORKFLOW.md`                         | Manifest schema rewritten: `gate2` → `reference_width` (`"flag"`/`"fixed"`), `grammar_pin` → pinned PEP 508 `grammar` plus `grammar_module` and `grammar_symbol`, added `gate3_requires`, `transparent_wrappers`, `equivalent_kinds` | Stage 0                                                               |
-| 2026-08-15 | `corpus-brief.md`                     | Deliverable 3 no longer asks the builder to extend the tree generator; names `gen_trees.py --language` and `gen_reference.py --check`; adds the "never edit a shared file" list and the gate commands                                | Stage 0                                                               |
-| 2026-08-15 | `package-brief.md`, `review-brief.md` | `gate2 = "waive"` → `reference_width = "fixed"`                                                                                                                                                                                      | Stage 0 (name collided with score.py's gate 2, which is idempotence)  |
-| 2026-08-15 | `WORKFLOW.md` (Launching)             | Strip the template's leading `---` before launching; anchor the branch rewrite; head-to-head worktree naming `lang-<name>-<agent>`                                                                                                   | R1 launch — opencode printed usage and exited 0, having run nothing   |
-| 2026-08-15 | `package-brief.md`                    | Set `comment_gap`/`blank_cap` from the reference's observed behaviour rather than defaulting; and report any _second_ runtime constant that turns out to be house style                                                              | Design review — two of black's habits were unreachable from a package |
+| Date       | Template                              | Change                                                                                                                                                                                                                               | Prompted by                                                                                                                |
+| ---------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| 2026-08-15 | `WORKFLOW.md`                         | Manifest schema rewritten: `gate2` → `reference_width` (`"flag"`/`"fixed"`), `grammar_pin` → pinned PEP 508 `grammar` plus `grammar_module` and `grammar_symbol`, added `gate3_requires`, `transparent_wrappers`, `equivalent_kinds` | Stage 0                                                                                                                    |
+| 2026-08-15 | `corpus-brief.md`                     | Deliverable 3 no longer asks the builder to extend the tree generator; names `gen_trees.py --language` and `gen_reference.py --check`; adds the "never edit a shared file" list and the gate commands                                | Stage 0                                                                                                                    |
+| 2026-08-15 | `package-brief.md`, `review-brief.md` | `gate2 = "waive"` → `reference_width = "fixed"`                                                                                                                                                                                      | Stage 0 (name collided with score.py's gate 2, which is idempotence)                                                       |
+| 2026-08-15 | `WORKFLOW.md` (Launching)             | Strip the template's leading `---` before launching; anchor the branch rewrite; head-to-head worktree naming `lang-<name>-<agent>`                                                                                                   | R1 launch — opencode printed usage and exited 0, having run nothing                                                        |
+| 2026-08-15 | `package-brief.md`                    | Set `comment_gap`/`blank_cap` from the reference's observed behaviour rather than defaulting; and report any _second_ runtime constant that turns out to be house style                                                              | Design review — two of black's habits were unreachable from a package                                                      |
+| 2026-08-16 | `review-brief.md`                     | Stage B must run both `cmp` loops itself rather than reading the counts out of the report, and must check `widths` against the reference's bisected default                                                                          | TOML stage B passed a corpus the reference changed in 6 of 14 files, and `widths = [88, 60]` against taplo's default of 80 |
 
 ## 3. Model scorecard
 
@@ -62,6 +63,25 @@ escalation adds a row.
 | TOML     | Terra    | A     | ~15 min    | (not reviewed)  | none         | yes                       | thin             | Also chose `tomllib`, 32 mutations vs 54/56. Same trap as Luna → treated as a brief defect and fixed in the template.                                        |
 
 Round 1 was a head-to-head: all four built TOML from the identical brief.
+
+**Closed 2026-08-16.** grok's corpus merged; the other three are abandoned in
+place on their branches. Two defects survived stage B and were caught only when
+the orchestrator audited the artefact before launching stage C — both are
+reviewer-template defects rather than builder defects, and both are now in the
+stage-B checklist:
+
+- The reference changed **6 of 14** files, so the corpus barely probed
+  normalisation. The stage-A brief mandates two `cmp` counts; the report gave
+  one and the reviewer read the report. A probe covering all nine of taplo's
+  token-level rewrites brings it to 7 of 15.
+- `widths = [88, 60]` against taplo's default of **80**, which the builder had
+  itself established and written in a manifest comment before setting 88 "to
+  match the other languages". That is round 1's own delta recurring one stage
+  later, and it is worth noting that finding the right number is not the same as
+  using it.
+
+Round 1 also produced no stage C at all, so `package-brief.md` remains unproven
+going into TOML's package.
 
 **The single most useful result is that two of four independently chose a
 `tomllib` gate-3 override.** Both codex variants did; grok and DeepSeek both

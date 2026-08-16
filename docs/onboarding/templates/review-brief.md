@@ -28,14 +28,34 @@ Check, in roughly this order of importance:
    formatted files scores well and teaches nothing. Does it force breaking at
    the narrow width? Does it cover comments in every position? Is there anything
    characteristic of {{LANG}} that a person would notice missing?
-4. **Do the corpus files parse cleanly** — no `ERROR`, no `MISSING`?
-5. **Is `gate3` right for this language?** If the builder took the default when
+
+   **Run both `cmp` loops yourself. Do not read the counts out of the report.**
+   How many files does the reference change at all, and how many differ between
+   the two widths? A builder who omits one of the two numbers looks exactly like
+   a builder who reports a good one, and TOML's stage B passed a corpus where
+   the reference changed 6 of 14 files — worse than the round-1 corpus that was
+   scored as a defect for the same reason. The reviewer trusted a report that
+   simply did not mention it.
+
+   The consequence is not cosmetic. Byte-identical input and output means the
+   corpus never probes **normalisation** — what the reference rewrites at token
+   level, as opposed to what it breaks at line level. taplo normalises nine
+   distinct things and the corpus probed one.
+
+4. **Is `widths` the reference's own default, established by bisection?** This
+   is the round-1 delta and it recurred at stage B: TOML's builder found taplo's
+   default of 80, wrote it in a comment, and set `widths = [88, 60]` anyway
+   because 88 "matches the other languages". 88 is black's, inherited through
+   the python manifest. Agreement measured at a width no user of that reference
+   ever sees is not agreement. Check the number, do not read it.
+5. **Do the corpus files parse cleanly** — no `ERROR`, no `MISSING`?
+6. **Is `gate3` right for this language?** If the builder took the default when
    a real semantic checker was available, say so. If it declared an override, is
    the override actually stronger?
-6. **Is `reference_width = "fixed"` honest** where used — does the reference
+7. **Is `reference_width = "fixed"` honest** where used — does the reference
    genuinely not honour a width, or did the builder waive a gate it found
    inconvenient?
-7. **What did the builder change outside `corpus/` and `harness/languages/`?**
+8. **What did the builder change outside `corpus/` and `harness/languages/`?**
    Every such edit needs a reason. Edits to `rust/` or `runtime-js/` at stage A
    are a strong smell.
 
@@ -75,19 +95,18 @@ whether the package is right. Budget your effort here:
    requirement and a package can pass its own scoring while diverging on
    something unscored.
 3. **Audit the divergence classifications.** This is the real review. Use
-   `./harness/review_formatter.py {{WORKTREE}} --language {{LANG}}` for the exact
-   output pairs. For each proposed ledger verdict, test its stated reason: does
-   the difference actually
-   improve readability or cross-language consistency enough to justify a house
-   rule? Differing from the reference is not a defect by itself, but a vague or
-   weak reason is not a licence to hide one. For unreviewed divergences, a
-   **design limit** mislabelled as a **reference quirk** hides exactly the finding
-   this whole exercise exists to produce. Take two or three "reference quirk"
-   labels and check whether the reference is actually being arbitrary or whether
-   the package simply cannot do it. Be sceptical of that label specifically.
-   Record each accepted classification with the viewer's `--approve`,
-   `--verdict`, `--reason`, and `--reviewed-by` flags; the resulting JSONL diff is
-   part of the review.
+   `./harness/review_formatter.py {{WORKTREE}} --language {{LANG}}` for the
+   exact output pairs. For each proposed ledger verdict, test its stated reason:
+   does the difference actually improve readability or cross-language
+   consistency enough to justify a house rule? Differing from the reference is
+   not a defect by itself, but a vague or weak reason is not a licence to hide
+   one. For unreviewed divergences, a **design limit** mislabelled as a
+   **reference quirk** hides exactly the finding this whole exercise exists to
+   produce. Take two or three "reference quirk" labels and check whether the
+   reference is actually being arbitrary or whether the package simply cannot do
+   it. Be sceptical of that label specifically. Record each accepted
+   classification with the viewer's `--approve`, `--verdict`, `--reason`, and
+   `--reviewed-by` flags; the resulting JSONL diff is part of the review.
 4. **Verdict each runtime edit**: `warranted` | `unnecessary` |
    `needs-redesign`. Ask whether a package-level expression would have done it.
    State whether you now recommend **freezing** the runtime against further
@@ -112,8 +131,8 @@ whether the package is right. Budget your effort here:
   the reference's own overflow count; references overrun their own width, taplo
   included. Do not reject a package for matching its reference's overflow. A
   package that beats it deserves inspection because it may be losing agreement,
-  but judge an accepted divergence on its stated readability and
-  consistency reason, not on the fact that it differs from the reference.
+  but judge an accepted divergence on its stated readability and consistency
+  reason, not on the fact that it differs from the reference.
 - Every accepted divergence has a defensible ledger reason and reviewer, and
   every unreviewed divergence is classified in the report. A weak verdict should
   be challenged; an unclassified divergence is an automatic _escalate_.
