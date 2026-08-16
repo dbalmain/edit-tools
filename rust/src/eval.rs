@@ -24,10 +24,7 @@ pub fn format(tree: &TreeDoc, packages: &PackageMap, width: usize) -> Result<Str
         while out.ends_with(['\r', '\n']) {
             out.pop();
         }
-        let suffix = tree
-            .source
-            .trim_end_matches(|c| c == '\r' || c == '\n')
-            .len();
+        let suffix = tree.source.trim_end_matches(['\r', '\n']).len();
         out.push_str(&tree.source[suffix..]);
         return Ok(out);
     }

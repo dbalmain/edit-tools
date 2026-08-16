@@ -514,9 +514,7 @@ impl TryFrom<Value> for Expr {
                     ));
                 }
                 let cap = count(&parts[0])?;
-                let around = if parts.len() == 2 {
-                    node_types(&parts[1])?
-                } else if parts.len() == 3 {
+                let around = if parts.len() >= 2 {
                     node_types(&parts[1])?
                 } else {
                     Vec::new()
