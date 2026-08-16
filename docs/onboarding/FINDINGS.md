@@ -43,20 +43,44 @@ What it blocks:
   defensible house style, but a house style, not agreement.
 - Go: gofmt aligns consecutive struct field types, consecutive `const` values,
   and trailing comments on consecutive lines. This is not a garnish in Go, it is
-  what gofmt output _looks like_. If it is inexpressible, Go's agreement number
-  has a floor set by how much alignment the corpus contains.
+  what gofmt output _looks like_.
 
 Why it is global, not local: alignment is a width computed across a group of
 siblings **after** each has been laid out, then fed back as padding. That is a
 second pass. Wadler/Oppen has one.
 
-The cheap partial: a `column` opcode that aligns within a single parent's
-immediate children, computed during the parent's own layout. It would cover
-trailing comments and struct fields — probably most of the real demand — without
-a general constraint solver. Nobody has costed it.
+### Go priced it, which is what this entry was waiting for
 
-**Decide when:** Go's stage D lands. Go is the language that makes this
-expensive to decline.
+Go's stage-B review produced the number, by method rather than by adjective:
+
+- **6 of 16 corpus files (37.5%)** show observable alignment.
+- A proxy scan of GOROOT non-test sources found alignment-like padding in
+  **2,733 of 5,957 files**. Allowing for literal-content false positives,
+  declining alignment caps real-world byte agreement at roughly **55–60%** — so
+  about **40–45% of real Go files would diverge**, permanently.
+- The probe is sharp in both directions: ignoring alignment fails loudly, and
+  aligning every child uniformly also fails.
+
+That is the largest single cost in this register, and it is concentrated in one
+language rather than spread thinly.
+
+### The cheap partial does not work, and Go is why
+
+The `column` opcode this entry used to propose — align within a single parent's
+immediate children, computed during that parent's own layout — was costed and
+**rejected** at Go's stage B. Immediate-child scope cannot distinguish
+consecutive alignment _runs_: in Go a **blank line resets the run**, so two runs
+with different column widths sit under the same syntax parent. Getting it right
+needs layout-aware run boundaries, plus independent column schemas for fields,
+tags, assignments and comments — which is most of the way to the general
+feature, not a cheap partial.
+
+So the honest choice is now binary: build real alignment, or accept that Go and
+every aligning reference has a hard agreement ceiling. There is no cheap middle.
+
+**Decide when:** now, in principle — Go's stage C should be started with the
+answer known, because a package written as if alignment might arrive later looks
+different from one written to concede it.
 
 ## 2. Ancestor break context
 
@@ -96,10 +120,16 @@ rather than an accident.
 
 **Decide when:** a language wants the opposite behaviour and says why.
 
-## 4. The reference rewrites token text, so the corpus cannot contain the case
+## 4. The reference rewrites the source, so the corpus cannot contain the case
 
-**Status:** open · **Cost:** measurement, not IR · **Languages:** YAML (two
-constructs), Python (dodged by flag)
+**Status:** open, **decision needed** · **Cost:** measurement, not IR ·
+**Languages:** YAML (five constructs), CSS (three), Go (one), Python (dodged by
+flag)
+
+**This is now the most-confirmed entry in the register, and it was confirmed by
+languages that had no reason to agree.** Three of round 2's four builders hit it
+independently, in two different languages, against the same reference. It is no
+longer a YAML quirk.
 
 This one is not a missing capability. It is a hole in **what the numbers mean**,
 and it is the most important entry here.
@@ -113,38 +143,208 @@ the corpus loses:
 - **Python** dodged it. black normalises quotes, so the manifest passes
   `--skip-string-normalization` — and says so, in the manifest, with the
   reasoning. Clean, because black has a flag.
-- **YAML** cannot dodge it. prettier rewrites `'hello'` to `"hello"` and
-  reindents block scalars, and has no flag to stop either. Stage A therefore
-  **left both constructs out of the corpus** and wrote the block scalars
-  pre-indented.
+- **CSS** cannot dodge it either. prettier rewrites `.5` to `0.5`, normalises
+  hex-colour case, and changes quote style. Found at stage B, in a language
+  picked as the round's _simplest_ — which is the strongest evidence here that
+  this is structural rather than a property of hard languages.
+- **YAML** cannot dodge it. Stage B enumerated prettier 3.9.6's unmatchable
+  rewrites by experiment rather than by example:
 
-That was the correct call under the current rules and the builder reported it
-plainly. But the consequence is that YAML's agreement number will be measured
-over a corpus chosen partly for being winnable. Every language where the
-reference does something we forbid will quietly do the same.
+  - quote delimiters and their escapes, chosen to minimise escaping, in values,
+    keys, tagged and anchored values, and multiline quoted scalars — so
+    `'hello'` → `"hello"` but also `"she said \"hi\""` → `'she said "hi"'`
+  - block-scalar indentation reduced to the canonical parent-relative indent
+  - block-scalar indicator order canonicalised: `|-2` → `|2-`
+  - explicit mapping keys made implicit: `? key\n: value` → `key: value`
+  - terminal block-scalar whitespace and chomping layout normalised
 
-Three options, none taken yet:
+  It does **not** respell numbers, booleans, nulls, tags, anchors, ordinary
+  escapes, or plain-vs-quoted status — a useful negative result, since it bounds
+  the exclusion rather than leaving it open-ended.
+
+- **Go** widens the entry beyond token _text_. gofmt **sorts import specs**,
+  which is a token **reordering**, and gate 3 correctly rejects sibling
+  reordering under the same linearity contract. `imports.go` was written
+  pre-sorted, so the behaviour is unmeasured for exactly the same reason. The
+  entry is not "the reference rewrites token text" but "the reference rewrites
+  the source in a way linearity forbids".
+
+That was the correct call under the current rules and every builder reported it
+plainly. But the consequence is that these agreement numbers are measured over
+corpora chosen partly for being winnable. Every language whose reference does
+something we forbid will quietly do the same.
+
+### How much it removes, measured
+
+YAML's stage B sampled real YAML from `/home/dave/w` — 745 files discovered, 303
+unique by content, 227 parse-clean:
+
+| Construct            | Files          |
+| -------------------- | -------------- |
+| single-quoted scalar | 16 (7.0%)      |
+| block scalar         | 31 (13.7%)     |
+| **either**           | **46 (20.3%)** |
+
+At node level it is 84 of 10,543 scalar nodes, about 0.8%. The reviewer flags
+this as a Kubernetes/Helm-heavy local sample rather than a global estimate,
+which is the right caveat — but **roughly one file in five** is the number to
+argue with, and it is the first real one this entry has had.
+
+### The options, and what the reviewer recommends
 
 1. **Accept it, and say so per language.** Each manifest names the constructs
-   its reference rewrites and its corpus omits. Cheapest, and at least the
-   omission stops being invisible.
+   its reference rewrites and its corpus omits. Cheapest, and the omission at
+   least stops being invisible.
 2. **Let the corpus hold them as declared non-comparisons.** A manifest field
    marking files the reference is known to mangle; `check_gate3.py` exempts them
-   from "the reference must pass", and the scorer counts them as neither
-   agreement nor divergence. Honest, and it makes the count visible instead of
-   absent.
+   from "the reference must pass", and the scorer counts them separately.
 3. **Relax linearity.** Not seriously proposed. It is the invariant the whole
    highlighter/formatter split rests on.
 
-Option 2 is the one worth costing. It converts a silent corpus-selection bias
-into a reported number, which is what the rest of this harness does everywhere
-else.
+YAML's stage B argues for **option 2, refined**: one excluded construct per
+dedicated probe file with a required reason, still counting for coverage,
+idempotence, non-destruction and parity, but skipping the "reference passes gate
+3" assertion, reported as a fifth count `excluded` alongside agreement /
+accepted / stale / unreviewed, and **out of the agreement denominator**. Mixed
+files that would hide otherwise comparable constructs are rejected.
 
-**Decide when:** before YAML's stage B signs off, because stage B is where the
-corpus is judged and this changes what "a good corpus" means.
+Its argument against option 1 is the strong part: a manifest comment "neither
+forces the omitted construct to exist nor quantifies the resulting measurement
+hole". A comment decays; a probe file that must exist does not.
+
+**Decision needed from Dave.** This is the one blocking round 2 — YAML's stage B
+returned `rework`, and whether the reworked corpus carries non-comparison probes
+changes what the builder is being asked to write.
+
+## 5. Anonymous tokens are only compared when their parent has no named children
+
+**Status:** open · **Cost:** gate change, not IR · **Languages:** YAML
+
+Reported by YAML's builder, verified here. `_generic` recurses into **named**
+children only, so an anonymous token is compared at all only when its parent has
+no named children. prettier drops YAML's `...` document-end marker and gate 3
+does not notice.
+
+Measured, on the merged YAML grammar:
+
+| Edit                         | Gate 3    |
+| ---------------------------- | --------- |
+| `...` document-end dropped   | **blind** |
+| `---` document-start dropped | **blind** |
+| flow trailing comma dropped  | **blind** |
+| whole second document lost   | catches   |
+| anchor `&x` dropped          | catches   |
+| tag `!!str` dropped          | catches   |
+
+The boundary is the interesting part, and it says this is **not simply a bug**:
+
+- The trailing-comma row is blind **by design**. A formatter is allowed to add
+  or drop one — that is the magic-trailing-comma policy every reference has —
+  and `transparent_wrappers` exists for the same reason, because black inserts
+  parentheses. Anonymous tokens are the formatter's to edit; that is the rule.
+- The three "catches" rows are caught by the **named tree**, not by token
+  comparison. Losing a document changes `stream`'s children; an anchor and a tag
+  are themselves named nodes.
+- What is left is a narrow tail: an anonymous token that is semantically
+  meaningful, whose removal changes neither the named tree nor the parse. `---`
+  and `...` are the first known members.
+
+So a fix cannot be "compare all anonymous tokens" — that would reject the
+trailing-comma and parenthesis behaviour the gate must tolerate.
+
+### Stage B widened it, and proposed a better rule than a per-language list
+
+A deletion sweep over all 42 YAML corpus files found clean, gate-equal loss of
+the trailing commas (permitted), `...`, `---` in contexts that stay parseable,
+and — new — the explicit-key `?` indicator. So the tail has four known members,
+not two.
+
+It also argued `...` is **not** cosmetic, which corrects the assumption above:
+the YAML 1.2.2 specification defines it as the signal that a parser may resume
+scanning for directives, so it can matter to a streaming consumer even when a
+completed file loads identically. And the behaviour is **version-specific** —
+prettier 3.6.2 drops the markers, 3.9.6 preserves them — which is its own small
+lesson about pinning references.
+
+The recommended shape avoids the per-language list this entry previously
+expected: **compare anonymous tokens by default, and permit only named
+transformation classes** — optional trailing separator, declared transparent
+wrapper, explicit-key canonicalisation. That mirrors how the IR already
+enumerates permitted mutations rather than enumerating forbidden tokens, and it
+protects document markers by default instead of by remembering to list them.
+
+It is the better design. It is also a real change to the gate's centre, and the
+gate has now been wrong in both directions once each this round, so it deserves
+its own slice rather than being folded into a language merge.
+
+**Decide when:** as its own harness slice, before round 3. Round 2's languages
+can merge without it — no package exists that would exploit the hole.
+
+## 6. A group cannot fit itself while ignoring a trailing comment
+
+**Status:** open · **Cost:** local · **Languages:** YAML, TOML (opposite
+directions)
+
+References disagree about whether a trailing comment counts toward the width a
+group must fit in, and the IR has no way to say either.
+
+- **taplo** counts it: it will break a TOML collection to make room for the
+  comment.
+- **prettier** does not: it will not break a YAML collection to fit one, and
+  simply overruns.
+
+Both are defensible, both are observable, and a package can express neither
+choice — the group measures whatever it contains. This is a small, local opcode
+(a group-fit mode that excludes suffix trivia) and the two references between
+them prove both modes are needed, which is unusually clean evidence for adding
+something.
+
+**Decide when:** YAML or TOML stage C, whichever next produces a divergence that
+turns on it. Cheap enough that it does not need a second language to justify it.
+
+## 7. A rule cannot tell a comment-forced break from a width-forced break
+
+**Status:** open · **Cost:** contextual · **Languages:** YAML
+
+prettier uses a **different** flow-collection layout depending on _why_ the
+group broke: a break forced by an interior comment is laid out differently from
+one forced by width. A rule sees only that its group broke.
+
+Reported at YAML stage B and marked as needing stage-C confirmation, so it is
+recorded here as a candidate rather than a finding. If it holds it is a close
+relative of entry 2 — both are the evaluator withholding context from the rule —
+and the two should be costed together rather than separately.
+
+**Decide when:** YAML stage C confirms or refutes it.
 
 ---
 
 ## Closed
 
-Nothing yet.
+### The generic default was blind to untokenised source
+
+**Closed 2026-08-16, by fixing it.** Opened and closed inside round 2, which is
+the only reason it is worth recording: it is the clearest evidence in this file
+that the gate needs the same scepticism the packages get.
+
+Fixing the over-strict empty-container defect (entry — see `LEDGER.md`) by
+comparing a node's _child token texts_ silently discarded source the grammar
+never tokenised. YAML's `block_scalar` is one anonymous `|` child with the whole
+body an untokenised gap, so `d: |\n  hello` compared equal to `d: |\n  goodbye`
+— a formatter could rewrite a block scalar's contents undetected.
+
+Found by YAML's stage-B reviewer, which reported block-scalar bodies as
+unprotected. The reviewer believed it was pre-existing; reproducing it against
+`main` rather than against the builder's unmerged worktree showed the cause was
+the fix earlier the same day. A gap is now dropped only when it is _entirely_
+whitespace.
+
+Two lessons worth keeping:
+
+- **A strictness fix can trade a loud failure for a silent one.** The original
+  defect rejected correct output — noisy, harmless. The regression accepted
+  destroyed output. Those are not equally bad and a change that moves between
+  them needs the destructive direction tested explicitly, which it was not.
+- **Verify a reported defect against the tree the report is about.** The first
+  reproduction used the builder's worktree, which had not merged the change, and
+  said the hole did not exist.

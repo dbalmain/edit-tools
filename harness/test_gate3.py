@@ -57,6 +57,48 @@ class SpellingTests(unittest.TestCase):
         )
         self.assertNotEqual(pair, single)
 
+    def test_source_the_grammar_did_not_tokenise_is_still_compared(self):
+        """YAML's `block_scalar` is one anonymous `|` child with the whole body
+        an untokenised gap. Returning only the child token texts made
+        `d: |\\n  hello` equal `d: |\\n  goodbye` -- a formatter could rewrite a
+        block scalar's contents and gate 3 would not notice. Destructive
+        blindness is the one failure this gate exists to prevent."""
+        def block_scalar(body: str):
+            source = "|" + body
+            return signature_of(
+                Node(
+                    "block_scalar",
+                    0,
+                    len(source),
+                    (Node("|", 0, 1, named=False),),
+                ),
+                source,
+            )
+
+        self.assertNotEqual(block_scalar("\n  hello\n"), block_scalar("\n  goodbye\n"))
+
+    def test_a_gap_that_is_only_whitespace_is_still_dropped(self):
+        """The property the whole change exists for, stated against the same
+        shape as the test above so the two cannot drift apart."""
+        self.assertEqual(
+            signature_of(empty_parens("( )", 0, 2), "( )"),
+            signature_of(empty_parens("()", 0, 1), "()"),
+        )
+
+    def test_indentation_inside_an_untokenised_gap_is_content(self):
+        """A block scalar's interior indentation is part of the data, which is
+        why a reference that reindents one is unmatchable rather than merely
+        inconvenient."""
+        def block_scalar(body: str):
+            source = "|" + body
+            return signature_of(
+                Node("block_scalar", 0, len(source),
+                     (Node("|", 0, 1, named=False),)),
+                source,
+            )
+
+        self.assertNotEqual(block_scalar("\n  hello\n"), block_scalar("\n    hello\n"))
+
     def test_a_token_tuple_is_described_as_a_spelling_not_as_children(self):
         """`_describe_generic` tells the two apart by their elements, since a
         node's children and a node's tokens are both tuples."""
