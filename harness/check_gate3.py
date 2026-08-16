@@ -28,6 +28,12 @@ in two ways a real formatter bug would produce -- a comment dropped, a token
 dropped -- and the gate must reject both. Without this, gate 3 could rot into a
 no-op and every other check here would keep saying PASS.
 
+The injection fixture adds the adversarial shape the single-language mutations
+cannot cover: valid guest-only reformatting must pass, while changed guest
+meaning, guest parse failure, lost guest extras, and any change to an unroutable
+verbatim region must fail. A nested Markdown-in-Markdown fence proves the check
+recurses rather than special-casing one host/guest pair.
+
 Run after changing anything in `gate3.py` or a `*_gate3.py` override.
 """
 
@@ -42,6 +48,7 @@ import manifest as mf  # noqa: E402
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "corpus" / "src"
 REFERENCE = ROOT / "corpus" / "reference"
+INJECTION = ROOT / "harness" / "fixtures" / "injection"
 
 
 def cases(m: mf.Manifest):
@@ -91,18 +98,92 @@ def drop_a_token(text: str, parser) -> str | None:
     return (b[: last.start_byte] + b[last.end_byte :]).decode()
 
 
+def check_injection_mutations(
+    markdown, manifests, parsers, failures: list[str]
+) -> int:
+    """Markdown-shaped changes the host grammar cannot judge on its own."""
+    source = (INJECTION / "regions.md").read_text()
+    body = '{"outer":{"items":[1,2]}}'
+    parser = parsers[markdown.name]
+    before = gate3.signature(source, markdown, parser, manifests, parsers)
+    cases = (
+        (
+            "legitimate guest reformat",
+            body,
+            '{ "outer": { "items": [1, 2] } }',
+            True,
+        ),
+        ("non-JSON fence body", body, "TOTAL GARBAGE, NOT JSON AT ALL", False),
+        ("renamed JSON key", body, '{"renamed":{"items":[1,2]}}', False),
+        ("altered JSON value", body, '{"outer":{"items":[1,3]}}', False),
+        ("changed no-info fence", "no language", "changed no-info body", False),
+        ("changed unknown fence", "leave unknown", "changed unknown body", False),
+        (
+            "changed malformed guest fence",
+            '{"broken": [1,}',
+            '{"still-broken": [2,}',
+            False,
+        ),
+    )
+    for label, original, replacement, should_pass in cases:
+        changed = source.replace(original, replacement, 1)
+        passed = (
+            gate3.signature(changed, markdown, parser, manifests, parsers) == before
+        )
+        if passed != should_pass:
+            verdict = "rejects" if should_pass else "ACCEPTS"
+            failures.append(f"markdown injection: gate {verdict} {label}")
+
+    commented = "```python\nx=1  # keep me\n```\n"
+    comment_sig = gate3.signature(
+        commented, markdown, parser, manifests, parsers
+    )
+    for label, changed, should_pass in (
+        ("guest comment-preserving reformat", "```python\nx = 1 # keep me\n```\n", True),
+        ("dropped guest comment", "```python\nx = 1\n```\n", False),
+    ):
+        passed = (
+            gate3.signature(changed, markdown, parser, manifests, parsers)
+            == comment_sig
+        )
+        if passed != should_pass:
+            verdict = "rejects" if should_pass else "ACCEPTS"
+            failures.append(f"markdown injection: gate {verdict} {label}")
+
+    nested = "````markdown\n```json\n{\"a\":1}\n```\n````\n"
+    nested_sig = gate3.signature(nested, markdown, parser, manifests, parsers)
+    for label, replacement, should_pass in (
+        ("nested guest reformat", '{ "a": 1 }', True),
+        ("nested guest meaning change", '{"a":2}', False),
+    ):
+        changed = nested.replace('{"a":1}', replacement)
+        passed = (
+            gate3.signature(changed, markdown, parser, manifests, parsers)
+            == nested_sig
+        )
+        if passed != should_pass:
+            verdict = "rejects" if should_pass else "ACCEPTS"
+            failures.append(f"markdown injection: gate {verdict} {label}")
+
+    return len(cases) + 4
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--language")
     ap.add_argument("--verbose", action="store_true")
     args = ap.parse_args()
 
-    manifests = mf.selected(mf.bootstrap(), args.language)
+    known = mf.load_all()
+    markdown = mf.parse(INJECTION / "markdown.toml")
+    bootstrapped = mf.bootstrap({**known, markdown.name: markdown})
+    manifests = mf.selected(known, args.language)
+    parsers = mf.parsers(bootstrapped)
     failures: list[str] = []
     checked = disagreements = mutations = uncompared = 0
 
     for name, m in manifests.items():
-        parser = mf.parser_for(m)
+        parser = parsers[m.name]
         overridden = m.gate3 != "default"
 
         for label, source, formatted in cases(m):
@@ -115,8 +196,8 @@ def main() -> int:
                 continue
 
             # --- 1. the reference formatter must pass the gate
-            before = gate3.signature(source, m, parser)
-            after = gate3.signature(formatted, m, parser)
+            before = gate3.signature(source, m, parser, bootstrapped, parsers)
+            after = gate3.signature(formatted, m, parser, bootstrapped, parsers)
             checked += 1
             if before is None:
                 failures.append(f"{label}: the *source* does not pass its own gate")
@@ -127,8 +208,12 @@ def main() -> int:
 
             # --- 2. the generic default must reach the same verdict
             if overridden:
-                g_before = gate3.generic_signature(source, m, parser)
-                g_after = gate3.generic_signature(formatted, m, parser)
+                g_before = gate3.generic_signature(
+                    source, m, parser, bootstrapped, parsers
+                )
+                g_after = gate3.generic_signature(
+                    formatted, m, parser, bootstrapped, parsers
+                )
                 strong_ok = before is not None and before == after
                 generic_ok = g_before is not None and g_before == g_after
                 if strong_ok != generic_ok:
@@ -149,8 +234,15 @@ def main() -> int:
                 if broken is None or broken == formatted:
                     continue
                 mutations += 1
-                if gate3.signature(broken, m, parser) == before:
+                if (
+                    gate3.signature(broken, m, parser, bootstrapped, parsers)
+                    == before
+                ):
                     failures.append(f"{label}: gate ACCEPTS {what}")
+
+    injection_mutations = check_injection_mutations(
+        markdown, bootstrapped, parsers, failures
+    )
 
     for f in failures:
         print(f"  FAIL {f}")
@@ -158,7 +250,8 @@ def main() -> int:
     print(f"\n{checked} reference outputs checked across "
           f"{len(manifests)} language(s); "
           f"{mutations} destructive mutations rejected; "
-          f"{disagreements} generic/override disagreement(s)")
+          f"{disagreements} generic/override disagreement(s); "
+          f"{injection_mutations} injection mutations checked")
     if failures:
         print(f"{len(failures)} problem(s) -- the gate is wrong, "
               f"or the reference corpus is stale")

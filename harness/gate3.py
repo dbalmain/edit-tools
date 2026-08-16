@@ -15,6 +15,12 @@ checker the language's manifest names (`gate3 = "python"` loads
 `harness/languages/python_gate3.py`). An override is a file of its own so a
 builder never edits a shared one.
 
+At a manifest-declared injection site, the host signature masks the opaque
+content node and records a recursive signature from the guest manifest and
+parser. The host's extras walk stops at that boundary, so comments are checked
+by the grammar that owns them. An unknown, unlabelled, or unparseable region is
+recorded as exact bytes: that is the conservative match for the verbatim path.
+
 ## Why the generic default is not just "the named-node tree must match"
 
 Measured, not guessed. Black -- a correct formatter, and therefore the oracle --
@@ -59,6 +65,7 @@ from typing import Any
 
 LANG_DIR = Path(__file__).resolve().parent / "languages"
 sys.path.insert(0, str(LANG_DIR.parent))
+import injection  # noqa: E402
 import manifest as _mf  # noqa: E402
 
 _overrides: dict[str, Any] = {}
@@ -85,7 +92,13 @@ def _reparse(text: str, parser):
     return root, source
 
 
-def _extras(node, source: bytes, out: list[str]) -> list[str]:
+def _extras(
+    node,
+    source: bytes,
+    manifest,
+    aliases: dict[str, _mf.Manifest],
+    out: list[str],
+) -> list[str]:
     """Named extras, in document order.
 
     Verified on tree-sitter-python 0.25.0 and tree-sitter-json 0.24.8: `comment`
@@ -100,12 +113,17 @@ def _extras(node, source: bytes, out: list[str]) -> list[str]:
     weaker one. A formatter that reorders two comments has moved a comment past
     the code it documents, which is destruction by any reading.
     """
+    region = injection.region_for(node, source, manifest, aliases)
     for child in node.children:
         if child.is_extra:
             if child.is_named:
                 out.append(source[child.start_byte:child.end_byte].decode().strip())
+        elif region is not None and child == region.content:
+            # A routed guest contributes its own extras through its recursive
+            # signature. An unroutable region is protected byte-for-byte.
+            continue
         else:
-            _extras(child, source, out)
+            _extras(child, source, manifest, aliases, out)
     return out
 
 
@@ -113,7 +131,14 @@ def _extras(node, source: bytes, out: list[str]) -> list[str]:
 # the generic structural default
 
 
-def _generic(node, source: bytes, wrappers: frozenset[str], canon: dict[str, str]):
+def _generic(
+    node,
+    source: bytes,
+    manifest,
+    aliases: dict[str, _mf.Manifest],
+    wrappers: frozenset[str],
+    canon: dict[str, str],
+):
     while node.type in wrappers:
         inner = [c for c in node.children if c.is_named and not c.is_extra]
         if len(inner) != 1:
@@ -123,7 +148,16 @@ def _generic(node, source: bytes, wrappers: frozenset[str], canon: dict[str, str
     kids = [c for c in node.children if c.is_named and not c.is_extra]
     if not kids:
         return (kind, source[node.start_byte:node.end_byte].decode())
-    return (kind, tuple(_generic(c, source, wrappers, canon) for c in kids))
+    region = injection.region_for(node, source, manifest, aliases)
+    return (
+        kind,
+        tuple(
+            ("injection_region", "")
+            if region is not None and child == region.content
+            else _generic(child, source, manifest, aliases, wrappers, canon)
+            for child in kids
+        ),
+    )
 
 
 def _canon_map(manifest) -> dict[str, str]:
@@ -163,28 +197,104 @@ def _override(name: str):
 # the gate
 
 
-def signature(text: str, manifest, parser) -> tuple | None:
-    """A meaning-preserving signature, or None if `text` does not parse.
+def _region_signatures(
+    node,
+    source: bytes,
+    manifest,
+    aliases: dict[str, _mf.Manifest],
+    parsers: dict,
+    out: list[tuple],
+) -> tuple:
+    region = injection.region_for(node, source, manifest, aliases)
+    for child in node.children:
+        if region is not None and child == region.content:
+            root = injection.parse(region, parsers)
+            if root is None:
+                out.append(("verbatim", region.source))
+            else:
+                guest = region.guest
+                assert guest is not None
+                guest_text = region.source.decode("utf-8")
+                guest_signature = _signature_from_root(
+                    guest_text,
+                    root,
+                    region.source,
+                    guest,
+                    aliases,
+                    parsers,
+                )
+                if guest_signature is None:
+                    out.append(("verbatim", region.source))
+                else:
+                    out.append(
+                        (
+                            "parsed",
+                            guest.name,
+                            guest_signature,
+                        )
+                    )
+        else:
+            _region_signatures(child, source, manifest, aliases, parsers, out)
+    return tuple(out)
 
-    Comparing two of these for equality *is* gate 3.
-    """
-    root, source = _reparse(text, parser)
-    if root is None:
-        return None
-    extras = tuple(_extras(root, source, []))
 
-    if manifest.gate3 == "default":
+def _signature_from_root(
+    text: str,
+    root,
+    source: bytes,
+    manifest,
+    aliases: dict[str, _mf.Manifest],
+    parsers: dict,
+    *,
+    generic: bool = False,
+) -> tuple | None:
+    extras = tuple(_extras(root, source, manifest, aliases, []))
+
+    if generic or manifest.gate3 == "default":
         structural = _generic(
-            root, source, manifest.transparent_wrappers, _canon_map(manifest)
+            root,
+            source,
+            manifest,
+            aliases,
+            manifest.transparent_wrappers,
+            _canon_map(manifest),
         )
     else:
         structural = _override(manifest.gate3).signature(text)
         if structural is None:
             return None
-    return (manifest.name, structural, extras)
+    regions = _region_signatures(root, source, manifest, aliases, parsers, [])
+    return (manifest.name, structural, extras, regions)
 
 
-def generic_signature(text: str, manifest, parser) -> tuple | None:
+def signature(
+    text: str,
+    manifest,
+    parser,
+    manifests: dict[str, _mf.Manifest] | None = None,
+    parsers: dict | None = None,
+) -> tuple | None:
+    """A recursive meaning-preserving signature, or None if `text` does not parse.
+
+    `manifests` and `parsers` enable manifest-routed embedded regions. Comparing
+    two signatures for equality *is* gate 3.
+    """
+    root, source = _reparse(text, parser)
+    if root is None:
+        return None
+    manifests = manifests or {manifest.name: manifest}
+    parsers = {**(parsers or {}), manifest.name: parser}
+    aliases = _mf.injection_map(manifests)
+    return _signature_from_root(text, root, source, manifest, aliases, parsers)
+
+
+def generic_signature(
+    text: str,
+    manifest,
+    parser,
+    manifests: dict[str, _mf.Manifest] | None = None,
+    parsers: dict | None = None,
+) -> tuple | None:
     """The generic default, regardless of what the manifest selects.
 
     Used by `check_gate3.py` to hold the default honest against the languages
@@ -193,10 +303,17 @@ def generic_signature(text: str, manifest, parser) -> tuple | None:
     root, source = _reparse(text, parser)
     if root is None:
         return None
-    return (
-        manifest.name,
-        _generic(root, source, manifest.transparent_wrappers, _canon_map(manifest)),
-        tuple(_extras(root, source, [])),
+    manifests = manifests or {manifest.name: manifest}
+    parsers = {**(parsers or {}), manifest.name: parser}
+    aliases = _mf.injection_map(manifests)
+    return _signature_from_root(
+        text,
+        root,
+        source,
+        manifest,
+        aliases,
+        parsers,
+        generic=True,
     )
 
 
@@ -213,12 +330,30 @@ def describe(before: tuple | None, after: tuple | None, manifest) -> str:
         if gained:
             return f"comments invented: {gained[:3]}"
         return "comments reordered"
+    if before[3] != after[3]:
+        return _describe_regions(before[3], after[3])
     if manifest.gate3 != "default":
         mod = _override(manifest.gate3)
         if hasattr(mod, "describe"):
             return mod.describe(before[1], after[1])
         return "parse tree differs"
     return _describe_generic(before[1], after[1])
+
+
+def _describe_regions(before: tuple, after: tuple) -> str:
+    if len(before) != len(after):
+        return f"{len(before)} embedded regions became {len(after)}"
+    for i, (old, new) in enumerate(zip(before, after), 1):
+        if old == new:
+            continue
+        if old[0] != new[0]:
+            return f"embedded region {i}: {old[0]} content became {new[0]} content"
+        if old[0] == "parsed":
+            if old[1] != new[1]:
+                return f"embedded region {i}: language {old[1]!r} became {new[1]!r}"
+            return f"embedded region {i} ({old[1]}): meaning or comments differ"
+        return f"embedded region {i}: verbatim bytes differ"
+    return "embedded regions differ"
 
 
 def _describe_generic(a, b, path: str = "root") -> str:

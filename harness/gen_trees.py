@@ -31,43 +31,12 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import injection  # noqa: E402
 import manifest as mf  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "corpus" / "src"
 OUT = ROOT / "corpus" / "trees"
-
-
-def _direct(node, kind: str):
-    return next((child for child in node.children if child.type == kind), None)
-
-
-def _injected_root(
-    node,
-    source: bytes,
-    manifest: mf.Manifest,
-    aliases: dict[str, mf.Manifest],
-    parsers: dict,
-):
-    site = next((site for site in manifest.injections if site.node == node.type), None)
-    if site is None:
-        return None
-
-    info = _direct(node, site.info)
-    content = _direct(node, site.content)
-    if info is None or content is None:
-        return None
-    words = source[info.start_byte : info.end_byte].decode("utf-8").split()
-    guest = aliases.get(words[0]) if words else None
-    parser = parsers.get(guest.name) if guest is not None else None
-    if parser is None:
-        return None
-
-    embedded_source = source[content.start_byte : content.end_byte]
-    root = parser.parse(embedded_source).root_node
-    if check_clean(root, manifest.path):
-        return None
-    return content, embedded_source, root, guest
 
 
 def convert(
@@ -98,19 +67,21 @@ def convert(
         out["field"] = field
 
     if node.children:
-        injected = None
+        region = root = None
         if manifest is not None and aliases is not None and parsers is not None:
-            injected = _injected_root(node, source, manifest, aliases, parsers)
+            region = injection.region_for(node, source, manifest, aliases)
+            root = injection.parse(region, parsers) if region is not None else None
         children = []
         for i, child in enumerate(node.children):
             child_field = node.field_name_for_child(i)
-            if injected is not None and child == injected[0]:
-                content, embedded_source, root, guest = injected
+            if region is not None and root is not None and child == region.content:
+                guest = region.guest
+                assert guest is not None
                 embedded = convert(
                     root,
-                    embedded_source,
+                    region.source,
                     child_field,
-                    base=base + content.start_byte,
+                    base=base + region.content.start_byte,
                     outer_source=outer_source,
                     manifest=guest,
                     aliases=aliases,
