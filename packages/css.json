@@ -61,6 +61,17 @@
       ["child", "named"],
       ["sp"],
       ["child", "t:block"]
+    ],
+    "grouped_arguments": [
+      "group",
+      ["tok", "("],
+      [
+        "indent",
+        ["soft"],
+        ["each", "named", ["use", "comma_or_space"]]
+      ],
+      ["soft"],
+      ["tok", ")"]
     ]
   },
 
@@ -96,21 +107,26 @@
         ["count", "named", 2],
         ["seq", ["sp"], ["child", "named"]],
         [
-          "group",
+          "when",
+          ["count", "t:call_expression", 2],
+          ["group", ["indent", ["sp"], ["each", "named", ["line"]]]],
           [
-            "indent",
-            ["line"],
+            "group",
             [
-              "when",
-              ["count", "t:,", 0],
-              ["each", "named", ["line"]],
-              ["each", "named", ["use", "comma_or_space"]]
+              "indent",
+              ["line"],
+              [
+                "when",
+                ["count", "t:,", 0],
+                ["each", "named", ["line"]],
+                ["each", "named", ["use", "comma_or_space"]]
+              ]
             ]
           ]
         ]
       ],
       ["opt", "t:important", ["seq", ["sp"], ["child", "t:important"]]],
-      ["opt", "t:;", ["tok", ";"]]
+      ["trail", ";", "*"]
     ],
 
     "class_selector": ["seq", ["tok", "."], ["child", "named"]],
@@ -150,15 +166,15 @@
     ],
 
     "arguments": [
-      "group",
-      ["tok", "("],
+      "when",
+      ["count", "named", 1],
       [
-        "indent",
-        ["soft"],
-        ["each", "named", ["use", "comma_or_space"]]
+        "when",
+        ["count", "t:string_value", 1],
+        ["seq", ["tok", "("], ["child", "t:string_value"], ["tok", ")"]],
+        ["use", "grouped_arguments"]
       ],
-      ["soft"],
-      ["tok", ")"]
+      ["use", "grouped_arguments"]
     ],
 
     "import_statement": [
