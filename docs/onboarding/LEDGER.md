@@ -19,6 +19,9 @@ judges after the fact and may recommend a freeze. Every edit lands here.
 | 3   | TOML     | codex-Sol | comments flush before a following token, with `trail` the one exception         | Own-line comments were delayed so `trail` could emit the separator first, and flushed only incidentally at `indent`/`blank`/node end. A legal flat rule reached the closer first and the comment absorbed it, producing invalid source.       | warranted (redesign of grok's `needs-redesign` edit)            | +242 B           | 2026-08-16      |
 | 4   | CSS      | grok      | `opt` gains an else branch, for a declaration mixing comma and space separators | The builder's case: `when` tests the node, not the cursor, and a CSS `declaration` mixes both separators under one parent, so "there is no package-level workaround".                                                                         | **unnecessary — retroactively frozen and reverted** (`f2d84b9`) | +44 B (reverted) | —               |
 | 5   | CSS      | grok      | leftover comments attach to a descend opener                                    | Comments were escaping a descend node with no named host and failing gate 3. Reclassified by the reviewer as a **runtime bug fix exposed by CSS**, not a CSS feature; extends TOML's pending-comment machinery but has a distinct root cause. | warranted                                                       | +149 B           | pending stage E |
+| 6   | Go       | grok      | tab indentation                                                              | gofmt indents with tabs; the runtime hardcoded spaces. Same class as row 1 -- a house-style constant hardcoded where no package could reach it. | warranted | +39 B  | 2026-08-17 |
+| 7   | Go       | grok      | source-mirroring breaks (`srcline`, `srcsoft`, `srctrail`, `line_break` on `Item`) | gofmt keeps the author's single-line-versus-broken decision and a fit-driven `group` does the opposite. Reviewer's reframing: **one reusable source-break capability plus a source-driven counterpart to magic trailing commas**, despite appearing as three opcodes. | warranted | +321 B | 2026-08-17 |
+| 8   | Go       | grok      | own-line comments after trailing trivia                                      | tree-sitter-go's `statement_list` range swallows the newline after the last statement, so an own-line comment before `}` attached as a suffix. Third language to need a comment-attachment fix -- see FINDINGS entry 9. | warranted | +180 B | 2026-08-17 |
 
 **Freeze status: open.** Decided by Dave, 2026-08-16, against TOML's stage-D
 recommendation. Builders may edit the runtime freely; the reviewer judges after
@@ -57,6 +60,19 @@ which gate notices. Own-line comments after the last sibling are delayed so
 `trail` can emit the separator first, and they flush only incidentally — at
 `indent`, at `blank`, and at node end. A flat rule reaches the closer before any
 of those fire.
+
+**Size, after round 2: 9,855 B runtime + Go's 2,190 B package = 12,045 B**
+against the 20 KB soft budget. The runtime grew 8,080 → 9,855 across the
+exercise, and **Go alone accounts for +540 B of that** — the most any single
+language has cost, and the reason the attribution column exists. Round 2's other
+two languages cost +149 B (CSS) and 0 B (YAML, which tried a `parent` predicate
+and reverted it).
+
+Worth noting which kind of edit is expensive. Row 7 at +321 B is the only one
+that bought a genuine *capability*; rows 6 and 8, and CSS's row 5, are a
+hardcoded house-style constant and two comment-attachment defects — 368 B of the
+690 spent this round went on fixing things rather than expressing anything, and
+three of those four were the same architectural gap (FINDINGS entry 9).
 
 Baseline at the start of the exercise: **10,196 B gzip = 8,080 runtime + 2,116
 packages** (python + json), against a 20 KB budget. **Now 10,441 B** after row 1
@@ -101,6 +117,9 @@ pattern.
 | 2026-08-16 | `corpus-brief.md`                     | Describe `--parser` and `--stdin-filepath` as alternative prettier parser selectors, and warn that a green generic gate is not evidence that grammar source gaps or anonymous tokens are protected                                   | YAML stage B — two builders drew opposite conclusions about which flag was required, and both read a green gate as protection it did not give |
 | 2026-08-16 | `package-brief.md`                    | Before extending a conditional opcode, try compositions of the **existing positive selectors, in both orders**                                                                                                                       | CSS stage D — a two-`opt` composition replaced the `opt` else branch the builder called impossible                                            |
 | 2026-08-16 | `package-brief.md`                    | A divergence pair holding **both** a genuine design limit and an avoidable package defect stays `package bug` until the avoidable part is removed; the real limit does not excuse the whole hash                                     | CSS stage D — `strings.css` mixed the entry-4 quote limit with a fixable `url()` defect                                                       |
+| 2026-08-16 | `corpus-brief.md`                     | If an override is needed, **extend the default** (`(default_signature(text), extra)`) rather than replace it — that composition cannot be weaker by construction | YAML stage D — `|+` chomping puts semantic newlines between two nodes, where no generic rule can see them |
+| 2026-08-16 | `package-brief.md`                    | Require one **language-semantic** source/output comparison wherever meaning can extend into whitespace outside a CST node range; a green generic gate is not sufficient evidence | YAML stage D — gate 3 reported 32/32 non-destruction while the package silently dropped a newline from a `|+` scalar |
+| 2026-08-17 | `package-brief.md`                    | For a **fixed-width** reference, test any package-level workaround at one adversarially narrow width too, even though only one width is scored | Go stage D — a `group + trail + srcline` composition matched at width 80 and changed source-flat `struct{ … }` at width 1, so it only looked source-sensitive |
 
 ## 3. Model scorecard
 
@@ -159,7 +178,28 @@ separators; the reviewer disproved it. | | CSS | codex-Sol | D | ~25 min |
 escalate | none | yes (reproduced 6/15 and 3/15 exactly) | full, structured |
 **First use of the retroactive freeze**, and it found the workaround the builder
 said did not exist. Costed `fill` at 13/21 contributing, 9/21 resolving,
-_local_. Separated four new findings from the entries they resembled. | | CSS |
+_local_. Separated four new findings from the entries they resembled. | | Go | DeepSeek | C |
+cut off | resumed | none | n/a — died mid-run | none | Second cut-off in two
+runs, `packages/go.json` left untracked again. Reached 6/16 with all hard gates
+green before dying, so the work was real. **Then hung twice on a later relaunch
+— 25 min, 14s CPU, zero bytes — and was routed around.** | | Go | grok | C |
+~35 min | merge after fixes | none | yes | full, structured | Picked up another
+model's uncommitted package and finished it. Split the combined runtime commit
+into two measured deltas as asked, added a third, and reported the alignment
+fraction that this whole slice existed to produce. | | Go | codex-Sol | D |
+~22 min | **merged** | none | yes (re-scored; parity checked on an unhighlighted
+file) | full, structured | Verified all six alignment cases hunk-by-hunk rather
+than the three requested, and produced the ceiling figure: 10/16. Reframed
+`srcline`/`srcsoft`/`srctrail` as one capability, not three opcodes. Disproved a
+tempting workaround with an **adversarial width probe** on a fixed-width
+reference — a technique now in the template. | | YAML | grok | C | ~15 min |
+escalate | none | yes | full, structured | Tried a `parent` predicate, found it
+broke comment flushing, reverted it: gzip delta 0. **Refuted FINDINGS entry 7**,
+which YAML's own stage B had opened. Returned the `fill` negative honestly
+rather than agreeing with CSS. | | YAML | codex-Sol | D | ~20 min | escalate |
+none | yes | full, structured | Found the package **destroying data** while gate
+3 reported 32/32 non-destruction — a `|+` scalar losing a newline. Caught with a
+real YAML loader, which no gate was doing. | | CSS |
 codex-Sol | E | ~18 min | **merged** | none | yes (all four hard gates 90/90) |
 full, structured | Took 9/30 to 11/30 exactly as its own stage D predicted, and
 finished at 19 accepted / 0 stale / 0 unreviewed -- the first package to reach

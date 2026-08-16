@@ -130,7 +130,7 @@ fn decorate(pkg: &Package, item: &Item<'_>, inner: Doc) -> Doc {
         }
     }
     if sink && !parts.is_empty() {
-        parts = vec![Doc::indent(pkg.indent, Doc::Concat(parts))];
+        parts = vec![Doc::indent_unit(&pkg.indent_unit(), Doc::Concat(parts))];
     }
     parts.push(inner);
     let gap = " ".repeat(pkg.comment_gap);
@@ -238,12 +238,15 @@ impl<'a> Ctx<'a> {
             Expr::Indent(es) => {
                 let mut parts = self.eval_all(es, f)?;
                 parts.push(self.flush_after(f));
-                Ok(Doc::indent(f.pkg.indent, Doc::Concat(parts)))
+                Ok(Doc::indent_unit(&f.pkg.indent_unit(), Doc::Concat(parts)))
             }
             Expr::Line => Ok(Doc::Line),
             Expr::Soft => Ok(Doc::Soft),
             Expr::Hard => Ok(Doc::Hard),
             Expr::Sp => Ok(Doc::text(" ")),
+            Expr::SrcLine => Ok(self.src_break(Doc::text(" "))),
+            Expr::SrcSoft => Ok(self.src_break(Doc::nil())),
+            Expr::SrcTrail(sep) => self.srctrail(sep, f),
             Expr::Child(sel) => self.child(sel, f),
             Expr::Each(sel, sep) => self.each(sel, sep, f),
             Expr::Tok(s) => self.tok(s, f),
@@ -337,6 +340,42 @@ impl<'a> Ctx<'a> {
         Ok(self.cursor - 1)
     }
 
+    /// A break that mirrors the source's line structure rather than the group's
+    /// fit: `flat` when the source put the next item on the same line, a hard
+    /// break when it did not.
+    fn src_break(&self, flat: Doc) -> Doc {
+        let brk = self.items.get(self.cursor).is_some_and(|i| i.line_break);
+        if brk {
+            Doc::Hard
+        } else {
+            flat
+        }
+    }
+
+    /// The trailing-separator policy for a source-driven list: adopt a
+    /// separator the source has, and emit it only when the following token sits
+    /// on a fresh line. gofmt strips a single-line literal's trailing comma and
+    /// keeps a broken literal's.
+    fn srctrail(&mut self, sep: &str, f: &Fmt<'a>) -> Result<Doc, Refusal> {
+        let at = self.cursor;
+        let present = self.items.get(at).and_then(|i| i.node.text.as_deref()) == Some(sep);
+        if present {
+            self.cursor += 1;
+        }
+        let brk = self.items.get(self.cursor).is_some_and(|i| i.line_break);
+        if !brk {
+            if present && self.items[at].decorated() {
+                return Err(self.refuse("no comment on a stripped trailing separator"));
+            }
+            return Ok(Doc::nil());
+        }
+        Ok(if present {
+            decorate(f.pkg, &self.items[at], Doc::text(sep))
+        } else {
+            Doc::text(sep)
+        })
+    }
+
     fn child(&mut self, sel: &Sel, f: &Fmt<'a>) -> Result<Doc, Refusal> {
         let flushed = self.flush_after(f);
         let at = self.take(sel, f)?;
@@ -428,8 +467,8 @@ impl<'a> Ctx<'a> {
         };
         Ok(Doc::group(Doc::Concat(vec![
             open,
-            Doc::indent(
-                f.pkg.indent,
+            Doc::indent_unit(
+                &f.pkg.indent_unit(),
                 Doc::Concat(vec![Doc::Soft, Doc::Concat(inner)]),
             ),
             Doc::Soft,
@@ -453,7 +492,7 @@ impl<'a> Ctx<'a> {
         }
         Ok(Doc::group(Doc::Concat(vec![
             Doc::IfBreak(Box::new(Doc::text("(")), Box::new(Doc::nil())),
-            Doc::indent(f.pkg.indent, Doc::Concat(vec![Doc::Soft, inner])),
+            Doc::indent_unit(&f.pkg.indent_unit(), Doc::Concat(vec![Doc::Soft, inner])),
             Doc::Soft,
             Doc::IfBreak(Box::new(Doc::text(")")), Box::new(Doc::nil())),
         ])))
@@ -1682,6 +1721,57 @@ try {{
         assert_eq!(
             run_on(&one(pkg), source, root, 80).expect("ok"),
             "{\n  /* c */\n}\n"
+        );
+    }
+
+    #[test]
+    fn trailing_trivia_does_not_make_an_own_line_comment_a_suffix() {
+        // tree-sitter-go's statement_list range includes the newline after
+        // the last statement, so an own-line comment before `}` looks
+        // adjacent if suffix detection uses node.end. Content end (last
+        // child) is the right line.
+        let pkg: Package = serde_json::from_value(json!({
+            "format": "et-doc-rules/1",
+            "indent": 2,
+            "comments": ["comment"],
+            "descend": ["statements"],
+            "tokens": ["{", "}"],
+            "rules": {
+                "file": ["child", "t:block"],
+                "block": [
+                    "seq",
+                    ["tok", "{"],
+                    ["child", "t:statements"],
+                    ["indent"],
+                    ["hard"],
+                    ["tok", "}"]
+                ],
+                "statements": ["indent", ["hard"], ["each", "named", ["hard"]]],
+                "name": ["verbatim"]
+            }
+        }))
+        .expect("trivia-suffix package parses");
+        let source = "{\n  x\n  // c\n}";
+        let root = json!({
+            "type": "file", "start": 0, "end": 14,
+            "children": [{
+                "type": "block", "start": 0, "end": 14,
+                "children": [
+                    { "type": "{", "start": 0, "end": 1, "text": "{" },
+                    {
+                        "type": "statements", "start": 4, "end": 6,
+                        "children": [
+                            { "type": "name", "start": 4, "end": 5, "text": "x" }
+                        ]
+                    },
+                    { "type": "comment", "start": 8, "end": 12, "text": "// c" },
+                    { "type": "}", "start": 13, "end": 14, "text": "}" }
+                ]
+            }]
+        });
+        assert_eq!(
+            run_on(&one(pkg), source, root, 80).expect("ok"),
+            "{\n  x\n  // c\n}\n"
         );
     }
 

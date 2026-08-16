@@ -1,0 +1,919 @@
+{
+ "language": "go",
+ "source_file": "corpus/src/go/strings.go",
+ "source": "package main\n\nvar plain = \"hello world\"\n\nvar escaped = \"line one\\nline two\\ttabbed \\\"quoted\\\"\"\n\nvar raw = `a raw string\nwith backslashes \\n \\t and \"quotes\"\nthat spans three lines`\n\nvar rune1 = 'a'\nvar rune2 = '\\n'\nvar rune3 = '\\u00e9'\n\ntype Model struct {\n\tID int64 `json:\"id\"`\n\tName string `json:\"name,omitempty\"`\n\tTags []string `json:\"tags,omitempty\"`\n}\n\nvar unicode = \"café ☕\"\n\n// astral characters: width must be counted in scalar values, not UTF-16 units\nvar astral = \"🙂🙂🙂🙂🙂🙂\"\n\nvar concatenated = \"first part \" + \"second part \" + \"third part\"\n",
+ "root": {
+  "type": "source_file",
+  "start": 0,
+  "end": 569,
+  "children": [
+   {
+    "type": "package_clause",
+    "start": 0,
+    "end": 12,
+    "children": [
+     {
+      "type": "package",
+      "start": 0,
+      "end": 7,
+      "text": "package"
+     },
+     {
+      "type": "package_identifier",
+      "start": 8,
+      "end": 12,
+      "text": "main"
+     }
+    ]
+   },
+   {
+    "type": "var_declaration",
+    "start": 14,
+    "end": 39,
+    "children": [
+     {
+      "type": "var",
+      "start": 14,
+      "end": 17,
+      "text": "var"
+     },
+     {
+      "type": "var_spec",
+      "start": 18,
+      "end": 39,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 18,
+        "end": 23,
+        "field": "name",
+        "text": "plain"
+       },
+       {
+        "type": "=",
+        "start": 24,
+        "end": 25,
+        "text": "="
+       },
+       {
+        "type": "expression_list",
+        "start": 26,
+        "end": 39,
+        "field": "value",
+        "children": [
+         {
+          "type": "interpreted_string_literal",
+          "start": 26,
+          "end": 39,
+          "children": [
+           {
+            "type": "\"",
+            "start": 26,
+            "end": 27,
+            "text": "\""
+           },
+           {
+            "type": "interpreted_string_literal_content",
+            "start": 27,
+            "end": 38,
+            "text": "hello world"
+           },
+           {
+            "type": "\"",
+            "start": 38,
+            "end": 39,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "var_declaration",
+    "start": 41,
+    "end": 94,
+    "children": [
+     {
+      "type": "var",
+      "start": 41,
+      "end": 44,
+      "text": "var"
+     },
+     {
+      "type": "var_spec",
+      "start": 45,
+      "end": 94,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 45,
+        "end": 52,
+        "field": "name",
+        "text": "escaped"
+       },
+       {
+        "type": "=",
+        "start": 53,
+        "end": 54,
+        "text": "="
+       },
+       {
+        "type": "expression_list",
+        "start": 55,
+        "end": 94,
+        "field": "value",
+        "children": [
+         {
+          "type": "interpreted_string_literal",
+          "start": 55,
+          "end": 94,
+          "children": [
+           {
+            "type": "\"",
+            "start": 55,
+            "end": 56,
+            "text": "\""
+           },
+           {
+            "type": "interpreted_string_literal_content",
+            "start": 56,
+            "end": 64,
+            "text": "line one"
+           },
+           {
+            "type": "escape_sequence",
+            "start": 64,
+            "end": 66,
+            "text": "\\n"
+           },
+           {
+            "type": "interpreted_string_literal_content",
+            "start": 66,
+            "end": 74,
+            "text": "line two"
+           },
+           {
+            "type": "escape_sequence",
+            "start": 74,
+            "end": 76,
+            "text": "\\t"
+           },
+           {
+            "type": "interpreted_string_literal_content",
+            "start": 76,
+            "end": 83,
+            "text": "tabbed "
+           },
+           {
+            "type": "escape_sequence",
+            "start": 83,
+            "end": 85,
+            "text": "\\\""
+           },
+           {
+            "type": "interpreted_string_literal_content",
+            "start": 85,
+            "end": 91,
+            "text": "quoted"
+           },
+           {
+            "type": "escape_sequence",
+            "start": 91,
+            "end": 93,
+            "text": "\\\""
+           },
+           {
+            "type": "\"",
+            "start": 93,
+            "end": 94,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "var_declaration",
+    "start": 96,
+    "end": 179,
+    "children": [
+     {
+      "type": "var",
+      "start": 96,
+      "end": 99,
+      "text": "var"
+     },
+     {
+      "type": "var_spec",
+      "start": 100,
+      "end": 179,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 100,
+        "end": 103,
+        "field": "name",
+        "text": "raw"
+       },
+       {
+        "type": "=",
+        "start": 104,
+        "end": 105,
+        "text": "="
+       },
+       {
+        "type": "expression_list",
+        "start": 106,
+        "end": 179,
+        "field": "value",
+        "children": [
+         {
+          "type": "raw_string_literal",
+          "start": 106,
+          "end": 179,
+          "children": [
+           {
+            "type": "`",
+            "start": 106,
+            "end": 107,
+            "text": "`"
+           },
+           {
+            "type": "raw_string_literal_content",
+            "start": 107,
+            "end": 178,
+            "text": "a raw string\nwith backslashes \\n \\t and \"quotes\"\nthat spans three lines"
+           },
+           {
+            "type": "`",
+            "start": 178,
+            "end": 179,
+            "text": "`"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "var_declaration",
+    "start": 181,
+    "end": 196,
+    "children": [
+     {
+      "type": "var",
+      "start": 181,
+      "end": 184,
+      "text": "var"
+     },
+     {
+      "type": "var_spec",
+      "start": 185,
+      "end": 196,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 185,
+        "end": 190,
+        "field": "name",
+        "text": "rune1"
+       },
+       {
+        "type": "=",
+        "start": 191,
+        "end": 192,
+        "text": "="
+       },
+       {
+        "type": "expression_list",
+        "start": 193,
+        "end": 196,
+        "field": "value",
+        "children": [
+         {
+          "type": "rune_literal",
+          "start": 193,
+          "end": 196,
+          "text": "'a'"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "var_declaration",
+    "start": 197,
+    "end": 213,
+    "children": [
+     {
+      "type": "var",
+      "start": 197,
+      "end": 200,
+      "text": "var"
+     },
+     {
+      "type": "var_spec",
+      "start": 201,
+      "end": 213,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 201,
+        "end": 206,
+        "field": "name",
+        "text": "rune2"
+       },
+       {
+        "type": "=",
+        "start": 207,
+        "end": 208,
+        "text": "="
+       },
+       {
+        "type": "expression_list",
+        "start": 209,
+        "end": 213,
+        "field": "value",
+        "children": [
+         {
+          "type": "rune_literal",
+          "start": 209,
+          "end": 213,
+          "text": "'\\n'"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "var_declaration",
+    "start": 214,
+    "end": 234,
+    "children": [
+     {
+      "type": "var",
+      "start": 214,
+      "end": 217,
+      "text": "var"
+     },
+     {
+      "type": "var_spec",
+      "start": 218,
+      "end": 234,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 218,
+        "end": 223,
+        "field": "name",
+        "text": "rune3"
+       },
+       {
+        "type": "=",
+        "start": 224,
+        "end": 225,
+        "text": "="
+       },
+       {
+        "type": "expression_list",
+        "start": 226,
+        "end": 234,
+        "field": "value",
+        "children": [
+         {
+          "type": "rune_literal",
+          "start": 226,
+          "end": 234,
+          "text": "'\\u00e9'"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "type_declaration",
+    "start": 236,
+    "end": 355,
+    "children": [
+     {
+      "type": "type",
+      "start": 236,
+      "end": 240,
+      "text": "type"
+     },
+     {
+      "type": "type_spec",
+      "start": 241,
+      "end": 355,
+      "children": [
+       {
+        "type": "type_identifier",
+        "start": 241,
+        "end": 246,
+        "field": "name",
+        "text": "Model"
+       },
+       {
+        "type": "struct_type",
+        "start": 247,
+        "end": 355,
+        "field": "type",
+        "children": [
+         {
+          "type": "struct",
+          "start": 247,
+          "end": 253,
+          "text": "struct"
+         },
+         {
+          "type": "field_declaration_list",
+          "start": 254,
+          "end": 355,
+          "children": [
+           {
+            "type": "{",
+            "start": 254,
+            "end": 255,
+            "text": "{"
+           },
+           {
+            "type": "field_declaration",
+            "start": 257,
+            "end": 277,
+            "children": [
+             {
+              "type": "field_identifier",
+              "start": 257,
+              "end": 259,
+              "field": "name",
+              "text": "ID"
+             },
+             {
+              "type": "type_identifier",
+              "start": 260,
+              "end": 265,
+              "field": "type",
+              "text": "int64"
+             },
+             {
+              "type": "raw_string_literal",
+              "start": 266,
+              "end": 277,
+              "field": "tag",
+              "children": [
+               {
+                "type": "`",
+                "start": 266,
+                "end": 267,
+                "text": "`"
+               },
+               {
+                "type": "raw_string_literal_content",
+                "start": 267,
+                "end": 276,
+                "text": "json:\"id\""
+               },
+               {
+                "type": "`",
+                "start": 276,
+                "end": 277,
+                "text": "`"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "field_declaration",
+            "start": 279,
+            "end": 314,
+            "children": [
+             {
+              "type": "field_identifier",
+              "start": 279,
+              "end": 283,
+              "field": "name",
+              "text": "Name"
+             },
+             {
+              "type": "type_identifier",
+              "start": 284,
+              "end": 290,
+              "field": "type",
+              "text": "string"
+             },
+             {
+              "type": "raw_string_literal",
+              "start": 291,
+              "end": 314,
+              "field": "tag",
+              "children": [
+               {
+                "type": "`",
+                "start": 291,
+                "end": 292,
+                "text": "`"
+               },
+               {
+                "type": "raw_string_literal_content",
+                "start": 292,
+                "end": 313,
+                "text": "json:\"name,omitempty\""
+               },
+               {
+                "type": "`",
+                "start": 313,
+                "end": 314,
+                "text": "`"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "field_declaration",
+            "start": 316,
+            "end": 353,
+            "children": [
+             {
+              "type": "field_identifier",
+              "start": 316,
+              "end": 320,
+              "field": "name",
+              "text": "Tags"
+             },
+             {
+              "type": "slice_type",
+              "start": 321,
+              "end": 329,
+              "field": "type",
+              "children": [
+               {
+                "type": "[",
+                "start": 321,
+                "end": 322,
+                "text": "["
+               },
+               {
+                "type": "]",
+                "start": 322,
+                "end": 323,
+                "text": "]"
+               },
+               {
+                "type": "type_identifier",
+                "start": 323,
+                "end": 329,
+                "field": "element",
+                "text": "string"
+               }
+              ]
+             },
+             {
+              "type": "raw_string_literal",
+              "start": 330,
+              "end": 353,
+              "field": "tag",
+              "children": [
+               {
+                "type": "`",
+                "start": 330,
+                "end": 331,
+                "text": "`"
+               },
+               {
+                "type": "raw_string_literal_content",
+                "start": 331,
+                "end": 352,
+                "text": "json:\"tags,omitempty\""
+               },
+               {
+                "type": "`",
+                "start": 352,
+                "end": 353,
+                "text": "`"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 354,
+            "end": 355,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "var_declaration",
+    "start": 357,
+    "end": 382,
+    "children": [
+     {
+      "type": "var",
+      "start": 357,
+      "end": 360,
+      "text": "var"
+     },
+     {
+      "type": "var_spec",
+      "start": 361,
+      "end": 382,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 361,
+        "end": 368,
+        "field": "name",
+        "text": "unicode"
+       },
+       {
+        "type": "=",
+        "start": 369,
+        "end": 370,
+        "text": "="
+       },
+       {
+        "type": "expression_list",
+        "start": 371,
+        "end": 382,
+        "field": "value",
+        "children": [
+         {
+          "type": "interpreted_string_literal",
+          "start": 371,
+          "end": 382,
+          "children": [
+           {
+            "type": "\"",
+            "start": 371,
+            "end": 372,
+            "text": "\""
+           },
+           {
+            "type": "interpreted_string_literal_content",
+            "start": 372,
+            "end": 381,
+            "text": "café ☕"
+           },
+           {
+            "type": "\"",
+            "start": 381,
+            "end": 382,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 384,
+    "end": 462,
+    "text": "// astral characters: width must be counted in scalar values, not UTF-16 units"
+   },
+   {
+    "type": "var_declaration",
+    "start": 463,
+    "end": 502,
+    "children": [
+     {
+      "type": "var",
+      "start": 463,
+      "end": 466,
+      "text": "var"
+     },
+     {
+      "type": "var_spec",
+      "start": 467,
+      "end": 502,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 467,
+        "end": 473,
+        "field": "name",
+        "text": "astral"
+       },
+       {
+        "type": "=",
+        "start": 474,
+        "end": 475,
+        "text": "="
+       },
+       {
+        "type": "expression_list",
+        "start": 476,
+        "end": 502,
+        "field": "value",
+        "children": [
+         {
+          "type": "interpreted_string_literal",
+          "start": 476,
+          "end": 502,
+          "children": [
+           {
+            "type": "\"",
+            "start": 476,
+            "end": 477,
+            "text": "\""
+           },
+           {
+            "type": "interpreted_string_literal_content",
+            "start": 477,
+            "end": 501,
+            "text": "🙂🙂🙂🙂🙂🙂"
+           },
+           {
+            "type": "\"",
+            "start": 501,
+            "end": 502,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "var_declaration",
+    "start": 504,
+    "end": 568,
+    "children": [
+     {
+      "type": "var",
+      "start": 504,
+      "end": 507,
+      "text": "var"
+     },
+     {
+      "type": "var_spec",
+      "start": 508,
+      "end": 568,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 508,
+        "end": 520,
+        "field": "name",
+        "text": "concatenated"
+       },
+       {
+        "type": "=",
+        "start": 521,
+        "end": 522,
+        "text": "="
+       },
+       {
+        "type": "expression_list",
+        "start": 523,
+        "end": 568,
+        "field": "value",
+        "children": [
+         {
+          "type": "binary_expression",
+          "start": 523,
+          "end": 568,
+          "children": [
+           {
+            "type": "binary_expression",
+            "start": 523,
+            "end": 553,
+            "field": "left",
+            "children": [
+             {
+              "type": "interpreted_string_literal",
+              "start": 523,
+              "end": 536,
+              "field": "left",
+              "children": [
+               {
+                "type": "\"",
+                "start": 523,
+                "end": 524,
+                "text": "\""
+               },
+               {
+                "type": "interpreted_string_literal_content",
+                "start": 524,
+                "end": 535,
+                "text": "first part "
+               },
+               {
+                "type": "\"",
+                "start": 535,
+                "end": 536,
+                "text": "\""
+               }
+              ]
+             },
+             {
+              "type": "+",
+              "start": 537,
+              "end": 538,
+              "field": "operator",
+              "text": "+"
+             },
+             {
+              "type": "interpreted_string_literal",
+              "start": 539,
+              "end": 553,
+              "field": "right",
+              "children": [
+               {
+                "type": "\"",
+                "start": 539,
+                "end": 540,
+                "text": "\""
+               },
+               {
+                "type": "interpreted_string_literal_content",
+                "start": 540,
+                "end": 552,
+                "text": "second part "
+               },
+               {
+                "type": "\"",
+                "start": 552,
+                "end": 553,
+                "text": "\""
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "+",
+            "start": 554,
+            "end": 555,
+            "field": "operator",
+            "text": "+"
+           },
+           {
+            "type": "interpreted_string_literal",
+            "start": 556,
+            "end": 568,
+            "field": "right",
+            "children": [
+             {
+              "type": "\"",
+              "start": 556,
+              "end": 557,
+              "text": "\""
+             },
+             {
+              "type": "interpreted_string_literal_content",
+              "start": 557,
+              "end": 567,
+              "text": "third part"
+             },
+             {
+              "type": "\"",
+              "start": 567,
+              "end": 568,
+              "text": "\""
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

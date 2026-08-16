@@ -1,0 +1,1201 @@
+{
+ "language": "go",
+ "source_file": "corpus/src/go/alignment.go",
+ "source": "package main\n\ntype Server struct {\n\tName string\n\tPort int\n\tTimeout int\n\tMaxRetries int32\n\tDatabase string\n}\n\ntype Commented struct {\n\tAlpha int // first field\n\tBeta string // second field\n\tGamma bool // third field\n}\n\ntype Config struct {\n\tHost string `json:\"host\"`\n\tPort int `json:\"port\"`\n\tWorkerCount int `json:\"worker_count\"`\n}\n\ntype Grouped struct {\n\tA int\n\tB string\n\n\tLongFieldName int\n\tC bool\n}\n\nconst (\n\tStatusOK = 200\n\tStatusNotFound = 404\n\tStatusInternalServerError = 500\n)\n\nconst (\n\tOne = 1 // first\n\tTwoLonger = 2 // second\n\tThree = 3\n)\n\nvar (\n\tx = 1\n\tyyy = 2\n)\n\nvar first = 1 // first comment\nvar secondLonger = 2 // second comment\nvar third = 3\n",
+ "root": {
+  "type": "source_file",
+  "start": 0,
+  "end": 658,
+  "children": [
+   {
+    "type": "package_clause",
+    "start": 0,
+    "end": 12,
+    "children": [
+     {
+      "type": "package",
+      "start": 0,
+      "end": 7,
+      "text": "package"
+     },
+     {
+      "type": "package_identifier",
+      "start": 8,
+      "end": 12,
+      "text": "main"
+     }
+    ]
+   },
+   {
+    "type": "type_declaration",
+    "start": 14,
+    "end": 107,
+    "children": [
+     {
+      "type": "type",
+      "start": 14,
+      "end": 18,
+      "text": "type"
+     },
+     {
+      "type": "type_spec",
+      "start": 19,
+      "end": 107,
+      "children": [
+       {
+        "type": "type_identifier",
+        "start": 19,
+        "end": 25,
+        "field": "name",
+        "text": "Server"
+       },
+       {
+        "type": "struct_type",
+        "start": 26,
+        "end": 107,
+        "field": "type",
+        "children": [
+         {
+          "type": "struct",
+          "start": 26,
+          "end": 32,
+          "text": "struct"
+         },
+         {
+          "type": "field_declaration_list",
+          "start": 33,
+          "end": 107,
+          "children": [
+           {
+            "type": "{",
+            "start": 33,
+            "end": 34,
+            "text": "{"
+           },
+           {
+            "type": "field_declaration",
+            "start": 36,
+            "end": 47,
+            "children": [
+             {
+              "type": "field_identifier",
+              "start": 36,
+              "end": 40,
+              "field": "name",
+              "text": "Name"
+             },
+             {
+              "type": "type_identifier",
+              "start": 41,
+              "end": 47,
+              "field": "type",
+              "text": "string"
+             }
+            ]
+           },
+           {
+            "type": "field_declaration",
+            "start": 49,
+            "end": 57,
+            "children": [
+             {
+              "type": "field_identifier",
+              "start": 49,
+              "end": 53,
+              "field": "name",
+              "text": "Port"
+             },
+             {
+              "type": "type_identifier",
+              "start": 54,
+              "end": 57,
+              "field": "type",
+              "text": "int"
+             }
+            ]
+           },
+           {
+            "type": "field_declaration",
+            "start": 59,
+            "end": 70,
+            "children": [
+             {
+              "type": "field_identifier",
+              "start": 59,
+              "end": 66,
+              "field": "name",
+              "text": "Timeout"
+             },
+             {
+              "type": "type_identifier",
+              "start": 67,
+              "end": 70,
+              "field": "type",
+              "text": "int"
+             }
+            ]
+           },
+           {
+            "type": "field_declaration",
+            "start": 72,
+            "end": 88,
+            "children": [
+             {
+              "type": "field_identifier",
+              "start": 72,
+              "end": 82,
+              "field": "name",
+              "text": "MaxRetries"
+             },
+             {
+              "type": "type_identifier",
+              "start": 83,
+              "end": 88,
+              "field": "type",
+              "text": "int32"
+             }
+            ]
+           },
+           {
+            "type": "field_declaration",
+            "start": 90,
+            "end": 105,
+            "children": [
+             {
+              "type": "field_identifier",
+              "start": 90,
+              "end": 98,
+              "field": "name",
+              "text": "Database"
+             },
+             {
+              "type": "type_identifier",
+              "start": 99,
+              "end": 105,
+              "field": "type",
+              "text": "string"
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 106,
+            "end": 107,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "type_declaration",
+    "start": 109,
+    "end": 216,
+    "children": [
+     {
+      "type": "type",
+      "start": 109,
+      "end": 113,
+      "text": "type"
+     },
+     {
+      "type": "type_spec",
+      "start": 114,
+      "end": 216,
+      "children": [
+       {
+        "type": "type_identifier",
+        "start": 114,
+        "end": 123,
+        "field": "name",
+        "text": "Commented"
+       },
+       {
+        "type": "struct_type",
+        "start": 124,
+        "end": 216,
+        "field": "type",
+        "children": [
+         {
+          "type": "struct",
+          "start": 124,
+          "end": 130,
+          "text": "struct"
+         },
+         {
+          "type": "field_declaration_list",
+          "start": 131,
+          "end": 216,
+          "children": [
+           {
+            "type": "{",
+            "start": 131,
+            "end": 132,
+            "text": "{"
+           },
+           {
+            "type": "field_declaration",
+            "start": 134,
+            "end": 143,
+            "children": [
+             {
+              "type": "field_identifier",
+              "start": 134,
+              "end": 139,
+              "field": "name",
+              "text": "Alpha"
+             },
+             {
+              "type": "type_identifier",
+              "start": 140,
+              "end": 143,
+              "field": "type",
+              "text": "int"
+             }
+            ]
+           },
+           {
+            "type": "comment",
+            "start": 144,
+            "end": 158,
+            "text": "// first field"
+           },
+           {
+            "type": "field_declaration",
+            "start": 160,
+            "end": 171,
+            "children": [
+             {
+              "type": "field_identifier",
+              "start": 160,
+              "end": 164,
+              "field": "name",
+              "text": "Beta"
+             },
+             {
+              "type": "type_identifier",
+              "start": 165,
+              "end": 171,
+              "field": "type",
+              "text": "string"
+             }
+            ]
+           },
+           {
+            "type": "comment",
+            "start": 172,
+            "end": 187,
+            "text": "// second field"
+           },
+           {
+            "type": "field_declaration",
+            "start": 189,
+            "end": 199,
+            "children": [
+             {
+              "type": "field_identifier",
+              "start": 189,
+              "end": 194,
+              "field": "name",
+              "text": "Gamma"
+             },
+             {
+              "type": "type_identifier",
+              "start": 195,
+              "end": 199,
+              "field": "type",
+              "text": "bool"
+             }
+            ]
+           },
+           {
+            "type": "comment",
+            "start": 200,
+            "end": 214,
+            "text": "// third field"
+           },
+           {
+            "type": "}",
+            "start": 215,
+            "end": 216,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "type_declaration",
+    "start": 218,
+    "end": 330,
+    "children": [
+     {
+      "type": "type",
+      "start": 218,
+      "end": 222,
+      "text": "type"
+     },
+     {
+      "type": "type_spec",
+      "start": 223,
+      "end": 330,
+      "children": [
+       {
+        "type": "type_identifier",
+        "start": 223,
+        "end": 229,
+        "field": "name",
+        "text": "Config"
+       },
+       {
+        "type": "struct_type",
+        "start": 230,
+        "end": 330,
+        "field": "type",
+        "children": [
+         {
+          "type": "struct",
+          "start": 230,
+          "end": 236,
+          "text": "struct"
+         },
+         {
+          "type": "field_declaration_list",
+          "start": 237,
+          "end": 330,
+          "children": [
+           {
+            "type": "{",
+            "start": 237,
+            "end": 238,
+            "text": "{"
+           },
+           {
+            "type": "field_declaration",
+            "start": 240,
+            "end": 265,
+            "children": [
+             {
+              "type": "field_identifier",
+              "start": 240,
+              "end": 244,
+              "field": "name",
+              "text": "Host"
+             },
+             {
+              "type": "type_identifier",
+              "start": 245,
+              "end": 251,
+              "field": "type",
+              "text": "string"
+             },
+             {
+              "type": "raw_string_literal",
+              "start": 252,
+              "end": 265,
+              "field": "tag",
+              "children": [
+               {
+                "type": "`",
+                "start": 252,
+                "end": 253,
+                "text": "`"
+               },
+               {
+                "type": "raw_string_literal_content",
+                "start": 253,
+                "end": 264,
+                "text": "json:\"host\""
+               },
+               {
+                "type": "`",
+                "start": 264,
+                "end": 265,
+                "text": "`"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "field_declaration",
+            "start": 267,
+            "end": 289,
+            "children": [
+             {
+              "type": "field_identifier",
+              "start": 267,
+              "end": 271,
+              "field": "name",
+              "text": "Port"
+             },
+             {
+              "type": "type_identifier",
+              "start": 272,
+              "end": 275,
+              "field": "type",
+              "text": "int"
+             },
+             {
+              "type": "raw_string_literal",
+              "start": 276,
+              "end": 289,
+              "field": "tag",
+              "children": [
+               {
+                "type": "`",
+                "start": 276,
+                "end": 277,
+                "text": "`"
+               },
+               {
+                "type": "raw_string_literal_content",
+                "start": 277,
+                "end": 288,
+                "text": "json:\"port\""
+               },
+               {
+                "type": "`",
+                "start": 288,
+                "end": 289,
+                "text": "`"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "field_declaration",
+            "start": 291,
+            "end": 328,
+            "children": [
+             {
+              "type": "field_identifier",
+              "start": 291,
+              "end": 302,
+              "field": "name",
+              "text": "WorkerCount"
+             },
+             {
+              "type": "type_identifier",
+              "start": 303,
+              "end": 306,
+              "field": "type",
+              "text": "int"
+             },
+             {
+              "type": "raw_string_literal",
+              "start": 307,
+              "end": 328,
+              "field": "tag",
+              "children": [
+               {
+                "type": "`",
+                "start": 307,
+                "end": 308,
+                "text": "`"
+               },
+               {
+                "type": "raw_string_literal_content",
+                "start": 308,
+                "end": 327,
+                "text": "json:\"worker_count\""
+               },
+               {
+                "type": "`",
+                "start": 327,
+                "end": 328,
+                "text": "`"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 329,
+            "end": 330,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "type_declaration",
+    "start": 332,
+    "end": 400,
+    "children": [
+     {
+      "type": "type",
+      "start": 332,
+      "end": 336,
+      "text": "type"
+     },
+     {
+      "type": "type_spec",
+      "start": 337,
+      "end": 400,
+      "children": [
+       {
+        "type": "type_identifier",
+        "start": 337,
+        "end": 344,
+        "field": "name",
+        "text": "Grouped"
+       },
+       {
+        "type": "struct_type",
+        "start": 345,
+        "end": 400,
+        "field": "type",
+        "children": [
+         {
+          "type": "struct",
+          "start": 345,
+          "end": 351,
+          "text": "struct"
+         },
+         {
+          "type": "field_declaration_list",
+          "start": 352,
+          "end": 400,
+          "children": [
+           {
+            "type": "{",
+            "start": 352,
+            "end": 353,
+            "text": "{"
+           },
+           {
+            "type": "field_declaration",
+            "start": 355,
+            "end": 360,
+            "children": [
+             {
+              "type": "field_identifier",
+              "start": 355,
+              "end": 356,
+              "field": "name",
+              "text": "A"
+             },
+             {
+              "type": "type_identifier",
+              "start": 357,
+              "end": 360,
+              "field": "type",
+              "text": "int"
+             }
+            ]
+           },
+           {
+            "type": "field_declaration",
+            "start": 362,
+            "end": 370,
+            "children": [
+             {
+              "type": "field_identifier",
+              "start": 362,
+              "end": 363,
+              "field": "name",
+              "text": "B"
+             },
+             {
+              "type": "type_identifier",
+              "start": 364,
+              "end": 370,
+              "field": "type",
+              "text": "string"
+             }
+            ]
+           },
+           {
+            "type": "field_declaration",
+            "start": 373,
+            "end": 390,
+            "children": [
+             {
+              "type": "field_identifier",
+              "start": 373,
+              "end": 386,
+              "field": "name",
+              "text": "LongFieldName"
+             },
+             {
+              "type": "type_identifier",
+              "start": 387,
+              "end": 390,
+              "field": "type",
+              "text": "int"
+             }
+            ]
+           },
+           {
+            "type": "field_declaration",
+            "start": 392,
+            "end": 398,
+            "children": [
+             {
+              "type": "field_identifier",
+              "start": 392,
+              "end": 393,
+              "field": "name",
+              "text": "C"
+             },
+             {
+              "type": "type_identifier",
+              "start": 394,
+              "end": 398,
+              "field": "type",
+              "text": "bool"
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 399,
+            "end": 400,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "const_declaration",
+    "start": 402,
+    "end": 482,
+    "children": [
+     {
+      "type": "const",
+      "start": 402,
+      "end": 407,
+      "text": "const"
+     },
+     {
+      "type": "(",
+      "start": 408,
+      "end": 409,
+      "text": "("
+     },
+     {
+      "type": "const_spec",
+      "start": 411,
+      "end": 425,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 411,
+        "end": 419,
+        "field": "name",
+        "text": "StatusOK"
+       },
+       {
+        "type": "=",
+        "start": 420,
+        "end": 421,
+        "text": "="
+       },
+       {
+        "type": "expression_list",
+        "start": 422,
+        "end": 425,
+        "field": "value",
+        "children": [
+         {
+          "type": "int_literal",
+          "start": 422,
+          "end": 425,
+          "text": "200"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "const_spec",
+      "start": 427,
+      "end": 447,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 427,
+        "end": 441,
+        "field": "name",
+        "text": "StatusNotFound"
+       },
+       {
+        "type": "=",
+        "start": 442,
+        "end": 443,
+        "text": "="
+       },
+       {
+        "type": "expression_list",
+        "start": 444,
+        "end": 447,
+        "field": "value",
+        "children": [
+         {
+          "type": "int_literal",
+          "start": 444,
+          "end": 447,
+          "text": "404"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "const_spec",
+      "start": 449,
+      "end": 480,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 449,
+        "end": 474,
+        "field": "name",
+        "text": "StatusInternalServerError"
+       },
+       {
+        "type": "=",
+        "start": 475,
+        "end": 476,
+        "text": "="
+       },
+       {
+        "type": "expression_list",
+        "start": 477,
+        "end": 480,
+        "field": "value",
+        "children": [
+         {
+          "type": "int_literal",
+          "start": 477,
+          "end": 480,
+          "text": "500"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": ")",
+      "start": 481,
+      "end": 482,
+      "text": ")"
+     }
+    ]
+   },
+   {
+    "type": "const_declaration",
+    "start": 484,
+    "end": 547,
+    "children": [
+     {
+      "type": "const",
+      "start": 484,
+      "end": 489,
+      "text": "const"
+     },
+     {
+      "type": "(",
+      "start": 490,
+      "end": 491,
+      "text": "("
+     },
+     {
+      "type": "const_spec",
+      "start": 493,
+      "end": 500,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 493,
+        "end": 496,
+        "field": "name",
+        "text": "One"
+       },
+       {
+        "type": "=",
+        "start": 497,
+        "end": 498,
+        "text": "="
+       },
+       {
+        "type": "expression_list",
+        "start": 499,
+        "end": 500,
+        "field": "value",
+        "children": [
+         {
+          "type": "int_literal",
+          "start": 499,
+          "end": 500,
+          "text": "1"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 501,
+      "end": 509,
+      "text": "// first"
+     },
+     {
+      "type": "const_spec",
+      "start": 511,
+      "end": 524,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 511,
+        "end": 520,
+        "field": "name",
+        "text": "TwoLonger"
+       },
+       {
+        "type": "=",
+        "start": 521,
+        "end": 522,
+        "text": "="
+       },
+       {
+        "type": "expression_list",
+        "start": 523,
+        "end": 524,
+        "field": "value",
+        "children": [
+         {
+          "type": "int_literal",
+          "start": 523,
+          "end": 524,
+          "text": "2"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 525,
+      "end": 534,
+      "text": "// second"
+     },
+     {
+      "type": "const_spec",
+      "start": 536,
+      "end": 545,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 536,
+        "end": 541,
+        "field": "name",
+        "text": "Three"
+       },
+       {
+        "type": "=",
+        "start": 542,
+        "end": 543,
+        "text": "="
+       },
+       {
+        "type": "expression_list",
+        "start": 544,
+        "end": 545,
+        "field": "value",
+        "children": [
+         {
+          "type": "int_literal",
+          "start": 544,
+          "end": 545,
+          "text": "3"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": ")",
+      "start": 546,
+      "end": 547,
+      "text": ")"
+     }
+    ]
+   },
+   {
+    "type": "var_declaration",
+    "start": 549,
+    "end": 572,
+    "children": [
+     {
+      "type": "var",
+      "start": 549,
+      "end": 552,
+      "text": "var"
+     },
+     {
+      "type": "var_spec_list",
+      "start": 553,
+      "end": 572,
+      "children": [
+       {
+        "type": "(",
+        "start": 553,
+        "end": 554,
+        "text": "("
+       },
+       {
+        "type": "var_spec",
+        "start": 556,
+        "end": 561,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 556,
+          "end": 557,
+          "field": "name",
+          "text": "x"
+         },
+         {
+          "type": "=",
+          "start": 558,
+          "end": 559,
+          "text": "="
+         },
+         {
+          "type": "expression_list",
+          "start": 560,
+          "end": 561,
+          "field": "value",
+          "children": [
+           {
+            "type": "int_literal",
+            "start": 560,
+            "end": 561,
+            "text": "1"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "var_spec",
+        "start": 563,
+        "end": 570,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 563,
+          "end": 566,
+          "field": "name",
+          "text": "yyy"
+         },
+         {
+          "type": "=",
+          "start": 567,
+          "end": 568,
+          "text": "="
+         },
+         {
+          "type": "expression_list",
+          "start": 569,
+          "end": 570,
+          "field": "value",
+          "children": [
+           {
+            "type": "int_literal",
+            "start": 569,
+            "end": 570,
+            "text": "2"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ")",
+        "start": 571,
+        "end": 572,
+        "text": ")"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "var_declaration",
+    "start": 574,
+    "end": 587,
+    "children": [
+     {
+      "type": "var",
+      "start": 574,
+      "end": 577,
+      "text": "var"
+     },
+     {
+      "type": "var_spec",
+      "start": 578,
+      "end": 587,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 578,
+        "end": 583,
+        "field": "name",
+        "text": "first"
+       },
+       {
+        "type": "=",
+        "start": 584,
+        "end": 585,
+        "text": "="
+       },
+       {
+        "type": "expression_list",
+        "start": 586,
+        "end": 587,
+        "field": "value",
+        "children": [
+         {
+          "type": "int_literal",
+          "start": 586,
+          "end": 587,
+          "text": "1"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 588,
+    "end": 604,
+    "text": "// first comment"
+   },
+   {
+    "type": "var_declaration",
+    "start": 605,
+    "end": 625,
+    "children": [
+     {
+      "type": "var",
+      "start": 605,
+      "end": 608,
+      "text": "var"
+     },
+     {
+      "type": "var_spec",
+      "start": 609,
+      "end": 625,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 609,
+        "end": 621,
+        "field": "name",
+        "text": "secondLonger"
+       },
+       {
+        "type": "=",
+        "start": 622,
+        "end": 623,
+        "text": "="
+       },
+       {
+        "type": "expression_list",
+        "start": 624,
+        "end": 625,
+        "field": "value",
+        "children": [
+         {
+          "type": "int_literal",
+          "start": 624,
+          "end": 625,
+          "text": "2"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 626,
+    "end": 643,
+    "text": "// second comment"
+   },
+   {
+    "type": "var_declaration",
+    "start": 644,
+    "end": 657,
+    "children": [
+     {
+      "type": "var",
+      "start": 644,
+      "end": 647,
+      "text": "var"
+     },
+     {
+      "type": "var_spec",
+      "start": 648,
+      "end": 657,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 648,
+        "end": 653,
+        "field": "name",
+        "text": "third"
+       },
+       {
+        "type": "=",
+        "start": 654,
+        "end": 655,
+        "text": "="
+       },
+       {
+        "type": "expression_list",
+        "start": 656,
+        "end": 657,
+        "field": "value",
+        "children": [
+         {
+          "type": "int_literal",
+          "start": 656,
+          "end": 657,
+          "text": "3"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

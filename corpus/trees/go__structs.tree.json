@@ -1,0 +1,851 @@
+{
+ "language": "go",
+ "source_file": "corpus/src/go/structs.go",
+ "source": "package main\n\n// Base holds the identity fields every record shares.\ntype Base struct {\n\tID int64\n\tCreatedAt int64\n}\n\ntype User struct {\n\tBase\n\tName string `json:\"name\"`\n\tEmail string `json:\"email,omitempty\"`\n\t*Permissions\n}\n\ntype Permissions struct {\n\tCanRead bool\n\tCanWrite bool\n\tCanDelete bool\n}\n\ntype empty struct{}\n\ntype Alias = int\n\ntype pair struct{ left, right int }\n\nvar u = User{Name: \"alice\", Email: \"alice@example.com\"} // a user value\n",
+ "root": {
+  "type": "source_file",
+  "start": 0,
+  "end": 448,
+  "children": [
+   {
+    "type": "package_clause",
+    "start": 0,
+    "end": 12,
+    "children": [
+     {
+      "type": "package",
+      "start": 0,
+      "end": 7,
+      "text": "package"
+     },
+     {
+      "type": "package_identifier",
+      "start": 8,
+      "end": 12,
+      "text": "main"
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 14,
+    "end": 68,
+    "text": "// Base holds the identity fields every record shares."
+   },
+   {
+    "type": "type_declaration",
+    "start": 69,
+    "end": 116,
+    "children": [
+     {
+      "type": "type",
+      "start": 69,
+      "end": 73,
+      "text": "type"
+     },
+     {
+      "type": "type_spec",
+      "start": 74,
+      "end": 116,
+      "children": [
+       {
+        "type": "type_identifier",
+        "start": 74,
+        "end": 78,
+        "field": "name",
+        "text": "Base"
+       },
+       {
+        "type": "struct_type",
+        "start": 79,
+        "end": 116,
+        "field": "type",
+        "children": [
+         {
+          "type": "struct",
+          "start": 79,
+          "end": 85,
+          "text": "struct"
+         },
+         {
+          "type": "field_declaration_list",
+          "start": 86,
+          "end": 116,
+          "children": [
+           {
+            "type": "{",
+            "start": 86,
+            "end": 87,
+            "text": "{"
+           },
+           {
+            "type": "field_declaration",
+            "start": 89,
+            "end": 97,
+            "children": [
+             {
+              "type": "field_identifier",
+              "start": 89,
+              "end": 91,
+              "field": "name",
+              "text": "ID"
+             },
+             {
+              "type": "type_identifier",
+              "start": 92,
+              "end": 97,
+              "field": "type",
+              "text": "int64"
+             }
+            ]
+           },
+           {
+            "type": "field_declaration",
+            "start": 99,
+            "end": 114,
+            "children": [
+             {
+              "type": "field_identifier",
+              "start": 99,
+              "end": 108,
+              "field": "name",
+              "text": "CreatedAt"
+             },
+             {
+              "type": "type_identifier",
+              "start": 109,
+              "end": 114,
+              "field": "type",
+              "text": "int64"
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 115,
+            "end": 116,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "type_declaration",
+    "start": 118,
+    "end": 224,
+    "children": [
+     {
+      "type": "type",
+      "start": 118,
+      "end": 122,
+      "text": "type"
+     },
+     {
+      "type": "type_spec",
+      "start": 123,
+      "end": 224,
+      "children": [
+       {
+        "type": "type_identifier",
+        "start": 123,
+        "end": 127,
+        "field": "name",
+        "text": "User"
+       },
+       {
+        "type": "struct_type",
+        "start": 128,
+        "end": 224,
+        "field": "type",
+        "children": [
+         {
+          "type": "struct",
+          "start": 128,
+          "end": 134,
+          "text": "struct"
+         },
+         {
+          "type": "field_declaration_list",
+          "start": 135,
+          "end": 224,
+          "children": [
+           {
+            "type": "{",
+            "start": 135,
+            "end": 136,
+            "text": "{"
+           },
+           {
+            "type": "field_declaration",
+            "start": 138,
+            "end": 142,
+            "children": [
+             {
+              "type": "type_identifier",
+              "start": 138,
+              "end": 142,
+              "field": "type",
+              "text": "Base"
+             }
+            ]
+           },
+           {
+            "type": "field_declaration",
+            "start": 144,
+            "end": 169,
+            "children": [
+             {
+              "type": "field_identifier",
+              "start": 144,
+              "end": 148,
+              "field": "name",
+              "text": "Name"
+             },
+             {
+              "type": "type_identifier",
+              "start": 149,
+              "end": 155,
+              "field": "type",
+              "text": "string"
+             },
+             {
+              "type": "raw_string_literal",
+              "start": 156,
+              "end": 169,
+              "field": "tag",
+              "children": [
+               {
+                "type": "`",
+                "start": 156,
+                "end": 157,
+                "text": "`"
+               },
+               {
+                "type": "raw_string_literal_content",
+                "start": 157,
+                "end": 168,
+                "text": "json:\"name\""
+               },
+               {
+                "type": "`",
+                "start": 168,
+                "end": 169,
+                "text": "`"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "field_declaration",
+            "start": 171,
+            "end": 208,
+            "children": [
+             {
+              "type": "field_identifier",
+              "start": 171,
+              "end": 176,
+              "field": "name",
+              "text": "Email"
+             },
+             {
+              "type": "type_identifier",
+              "start": 177,
+              "end": 183,
+              "field": "type",
+              "text": "string"
+             },
+             {
+              "type": "raw_string_literal",
+              "start": 184,
+              "end": 208,
+              "field": "tag",
+              "children": [
+               {
+                "type": "`",
+                "start": 184,
+                "end": 185,
+                "text": "`"
+               },
+               {
+                "type": "raw_string_literal_content",
+                "start": 185,
+                "end": 207,
+                "text": "json:\"email,omitempty\""
+               },
+               {
+                "type": "`",
+                "start": 207,
+                "end": 208,
+                "text": "`"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "field_declaration",
+            "start": 210,
+            "end": 222,
+            "children": [
+             {
+              "type": "*",
+              "start": 210,
+              "end": 211,
+              "text": "*"
+             },
+             {
+              "type": "type_identifier",
+              "start": 211,
+              "end": 222,
+              "field": "type",
+              "text": "Permissions"
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 223,
+            "end": 224,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "type_declaration",
+    "start": 226,
+    "end": 298,
+    "children": [
+     {
+      "type": "type",
+      "start": 226,
+      "end": 230,
+      "text": "type"
+     },
+     {
+      "type": "type_spec",
+      "start": 231,
+      "end": 298,
+      "children": [
+       {
+        "type": "type_identifier",
+        "start": 231,
+        "end": 242,
+        "field": "name",
+        "text": "Permissions"
+       },
+       {
+        "type": "struct_type",
+        "start": 243,
+        "end": 298,
+        "field": "type",
+        "children": [
+         {
+          "type": "struct",
+          "start": 243,
+          "end": 249,
+          "text": "struct"
+         },
+         {
+          "type": "field_declaration_list",
+          "start": 250,
+          "end": 298,
+          "children": [
+           {
+            "type": "{",
+            "start": 250,
+            "end": 251,
+            "text": "{"
+           },
+           {
+            "type": "field_declaration",
+            "start": 253,
+            "end": 265,
+            "children": [
+             {
+              "type": "field_identifier",
+              "start": 253,
+              "end": 260,
+              "field": "name",
+              "text": "CanRead"
+             },
+             {
+              "type": "type_identifier",
+              "start": 261,
+              "end": 265,
+              "field": "type",
+              "text": "bool"
+             }
+            ]
+           },
+           {
+            "type": "field_declaration",
+            "start": 267,
+            "end": 280,
+            "children": [
+             {
+              "type": "field_identifier",
+              "start": 267,
+              "end": 275,
+              "field": "name",
+              "text": "CanWrite"
+             },
+             {
+              "type": "type_identifier",
+              "start": 276,
+              "end": 280,
+              "field": "type",
+              "text": "bool"
+             }
+            ]
+           },
+           {
+            "type": "field_declaration",
+            "start": 282,
+            "end": 296,
+            "children": [
+             {
+              "type": "field_identifier",
+              "start": 282,
+              "end": 291,
+              "field": "name",
+              "text": "CanDelete"
+             },
+             {
+              "type": "type_identifier",
+              "start": 292,
+              "end": 296,
+              "field": "type",
+              "text": "bool"
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 297,
+            "end": 298,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "type_declaration",
+    "start": 300,
+    "end": 319,
+    "children": [
+     {
+      "type": "type",
+      "start": 300,
+      "end": 304,
+      "text": "type"
+     },
+     {
+      "type": "type_spec",
+      "start": 305,
+      "end": 319,
+      "children": [
+       {
+        "type": "type_identifier",
+        "start": 305,
+        "end": 310,
+        "field": "name",
+        "text": "empty"
+       },
+       {
+        "type": "struct_type",
+        "start": 311,
+        "end": 319,
+        "field": "type",
+        "children": [
+         {
+          "type": "struct",
+          "start": 311,
+          "end": 317,
+          "text": "struct"
+         },
+         {
+          "type": "field_declaration_list",
+          "start": 317,
+          "end": 319,
+          "children": [
+           {
+            "type": "{",
+            "start": 317,
+            "end": 318,
+            "text": "{"
+           },
+           {
+            "type": "}",
+            "start": 318,
+            "end": 319,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "type_declaration",
+    "start": 321,
+    "end": 337,
+    "children": [
+     {
+      "type": "type",
+      "start": 321,
+      "end": 325,
+      "text": "type"
+     },
+     {
+      "type": "type_alias",
+      "start": 326,
+      "end": 337,
+      "children": [
+       {
+        "type": "type_identifier",
+        "start": 326,
+        "end": 331,
+        "field": "name",
+        "text": "Alias"
+       },
+       {
+        "type": "=",
+        "start": 332,
+        "end": 333,
+        "text": "="
+       },
+       {
+        "type": "type_identifier",
+        "start": 334,
+        "end": 337,
+        "field": "type",
+        "text": "int"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "type_declaration",
+    "start": 339,
+    "end": 374,
+    "children": [
+     {
+      "type": "type",
+      "start": 339,
+      "end": 343,
+      "text": "type"
+     },
+     {
+      "type": "type_spec",
+      "start": 344,
+      "end": 374,
+      "children": [
+       {
+        "type": "type_identifier",
+        "start": 344,
+        "end": 348,
+        "field": "name",
+        "text": "pair"
+       },
+       {
+        "type": "struct_type",
+        "start": 349,
+        "end": 374,
+        "field": "type",
+        "children": [
+         {
+          "type": "struct",
+          "start": 349,
+          "end": 355,
+          "text": "struct"
+         },
+         {
+          "type": "field_declaration_list",
+          "start": 355,
+          "end": 374,
+          "children": [
+           {
+            "type": "{",
+            "start": 355,
+            "end": 356,
+            "text": "{"
+           },
+           {
+            "type": "field_declaration",
+            "start": 357,
+            "end": 372,
+            "children": [
+             {
+              "type": "field_identifier",
+              "start": 357,
+              "end": 361,
+              "field": "name",
+              "text": "left"
+             },
+             {
+              "type": ",",
+              "start": 361,
+              "end": 362,
+              "text": ","
+             },
+             {
+              "type": "field_identifier",
+              "start": 363,
+              "end": 368,
+              "field": "name",
+              "text": "right"
+             },
+             {
+              "type": "type_identifier",
+              "start": 369,
+              "end": 372,
+              "field": "type",
+              "text": "int"
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 373,
+            "end": 374,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "var_declaration",
+    "start": 376,
+    "end": 431,
+    "children": [
+     {
+      "type": "var",
+      "start": 376,
+      "end": 379,
+      "text": "var"
+     },
+     {
+      "type": "var_spec",
+      "start": 380,
+      "end": 431,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 380,
+        "end": 381,
+        "field": "name",
+        "text": "u"
+       },
+       {
+        "type": "=",
+        "start": 382,
+        "end": 383,
+        "text": "="
+       },
+       {
+        "type": "expression_list",
+        "start": 384,
+        "end": 431,
+        "field": "value",
+        "children": [
+         {
+          "type": "composite_literal",
+          "start": 384,
+          "end": 431,
+          "children": [
+           {
+            "type": "type_identifier",
+            "start": 384,
+            "end": 388,
+            "field": "type",
+            "text": "User"
+           },
+           {
+            "type": "literal_value",
+            "start": 388,
+            "end": 431,
+            "field": "body",
+            "children": [
+             {
+              "type": "{",
+              "start": 388,
+              "end": 389,
+              "text": "{"
+             },
+             {
+              "type": "keyed_element",
+              "start": 389,
+              "end": 402,
+              "children": [
+               {
+                "type": "literal_element",
+                "start": 389,
+                "end": 393,
+                "field": "key",
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 389,
+                  "end": 393,
+                  "text": "Name"
+                 }
+                ]
+               },
+               {
+                "type": ":",
+                "start": 393,
+                "end": 394,
+                "text": ":"
+               },
+               {
+                "type": "literal_element",
+                "start": 395,
+                "end": 402,
+                "field": "value",
+                "children": [
+                 {
+                  "type": "interpreted_string_literal",
+                  "start": 395,
+                  "end": 402,
+                  "children": [
+                   {
+                    "type": "\"",
+                    "start": 395,
+                    "end": 396,
+                    "text": "\""
+                   },
+                   {
+                    "type": "interpreted_string_literal_content",
+                    "start": 396,
+                    "end": 401,
+                    "text": "alice"
+                   },
+                   {
+                    "type": "\"",
+                    "start": 401,
+                    "end": 402,
+                    "text": "\""
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 402,
+              "end": 403,
+              "text": ","
+             },
+             {
+              "type": "keyed_element",
+              "start": 404,
+              "end": 430,
+              "children": [
+               {
+                "type": "literal_element",
+                "start": 404,
+                "end": 409,
+                "field": "key",
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 404,
+                  "end": 409,
+                  "text": "Email"
+                 }
+                ]
+               },
+               {
+                "type": ":",
+                "start": 409,
+                "end": 410,
+                "text": ":"
+               },
+               {
+                "type": "literal_element",
+                "start": 411,
+                "end": 430,
+                "field": "value",
+                "children": [
+                 {
+                  "type": "interpreted_string_literal",
+                  "start": 411,
+                  "end": 430,
+                  "children": [
+                   {
+                    "type": "\"",
+                    "start": 411,
+                    "end": 412,
+                    "text": "\""
+                   },
+                   {
+                    "type": "interpreted_string_literal_content",
+                    "start": 412,
+                    "end": 429,
+                    "text": "alice@example.com"
+                   },
+                   {
+                    "type": "\"",
+                    "start": 429,
+                    "end": 430,
+                    "text": "\""
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": "}",
+              "start": 430,
+              "end": 431,
+              "text": "}"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 432,
+    "end": 447,
+    "text": "// a user value"
+   }
+  ]
+ }
+}

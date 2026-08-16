@@ -175,6 +175,8 @@ function validateExpr(value) {
     case "hard":
     case "sp":
     case "verbatim":
+    case "srcline":
+    case "srcsoft":
       arity(0);
       return;
     case "child":
@@ -190,6 +192,10 @@ function validateExpr(value) {
       arity(2);
       literal(rest[0]);
       parseSelector(rest[1]);
+      return;
+    case "srctrail":
+      arity(1);
+      literal(rest[0]);
       return;
     case "blank":
       if (rest.length < 1 || rest.length > 3) {
@@ -328,7 +334,7 @@ function buildPackage(pkg) {
 const text = (s) => ({ k: "text", s, brk: false });
 const concat = (parts) => ({ k: "concat", parts, brk: parts.some((p) => p.brk) });
 const group = (d) => ({ k: "group", d, brk: d.brk });
-const indent = (n, d) => ({ k: "indent", n, d, brk: d.brk });
+const indent = (unit, d) => ({ k: "indent", unit, d, brk: d.brk });
 const line = { k: "line", brk: false };
 const soft = { k: "soft", brk: false };
 const hard = { k: "hard", brk: true };
@@ -372,7 +378,7 @@ function fits(next, rest, rem) {
         stack.push([ind, doc.brk ? BREAK : mode, doc.d]);
         break;
       case "indent":
-        stack.push([ind + doc.n, mode, doc.d]);
+        stack.push([ind + doc.unit, mode, doc.d]);
         break;
       case "line":
         if (mode === BREAK) return true;
@@ -398,14 +404,14 @@ function fits(next, rest, rem) {
 function print(doc, cols) {
   const out = [];
   let pos = 0;
-  let pending = 0;
+  let pending = "";
   let suffixes = [];
-  let stack = [[0, BREAK, doc]];
+  let stack = [["", BREAK, doc]];
 
   const write = (s) => {
-    if (pending > 0) {
-      out.push(" ".repeat(pending));
-      pending = 0;
+    if (pending.length > 0) {
+      out.push(pending);
+      pending = "";
     }
     out.push(s);
   };
@@ -426,7 +432,7 @@ function print(doc, cols) {
           for (let i = d.parts.length - 1; i >= 0; i--) stack.push([ind, mode, d.parts[i]]);
           break;
         case "indent":
-          stack.push([ind + d.n, mode, d.d]);
+          stack.push([ind + d.unit, mode, d.d]);
           break;
         case "group": {
           const flat = !d.brk && fits([ind, FLAT, d.d], stack, cols - pos);
@@ -445,7 +451,7 @@ function print(doc, cols) {
           if (breaking) {
             out.push("\n");
             pending = ind;
-            pos = ind;
+            pos = width(ind);
           } else if (d.k === "line") {
             write(" ");
             pos += 1;
@@ -497,12 +503,21 @@ function splitChildren(fmt, node) {
 
     if (fmt.comments.has(child.type)) {
       const last = items[items.length - 1];
-      if (last && gap === 0) last.suffix.push(child.text);
+      // Suffix only when the comment shares a line with the previous
+      // item's content. A node's range can include trailing trivia
+      // (tree-sitter-go's statement_list swallows the newline after
+      // its last statement), which would make an own-line comment
+      // look adjacent if we used node.end.
+      const kids = last?.node.children ?? [];
+      const contentEnd = kids.length > 0 ? kids[kids.length - 1].end : last?.node.end;
+      const shareLine = last && newlinesBetween(fmt.bytes, contentEnd, child.start) === 0;
+      if (shareLine) last.suffix.push(child.text);
       else lead.push({ text: child.text, blanks: Math.max(gap - 1, 0) });
       continue;
     }
     // Punctuation cannot carry a leading comment: emitting it there would put
     // the comment at the wrong indent, outside the bracket it closes.
+    const lineBreak = gap >= 1 || lead.length > 0;
     let take = [];
     if (!fmt.tokens.has(child.type)) {
       take = lead;
@@ -514,8 +529,8 @@ function splitChildren(fmt, node) {
       suffix: [],
       after: [],
       blanks: take.length > 0 ? take[0].blanks : Math.max(gap - 1, 0),
-      // Blank lines between the last leading comment and the item itself.
       gap: take.length > 0 ? Math.max(gap - 1, 0) : 0,
+      lineBreak,
     });
   }
 
@@ -556,7 +571,7 @@ function decorate(fmt, item, inner) {
   if (!sink) {
     for (let i = 0; i < Math.min(item.gap, fmt.blankCap); i++) parts.push(hard);
   }
-  if (sink && parts.length > 0) parts = [indent(fmt.pkg.indent, concat(parts))];
+  if (sink && parts.length > 0) parts = [indent(fmt.indentUnit, concat(parts))];
   parts.push(inner);
   const gap = " ".repeat(fmt.commentGap);
   for (const s of item.suffix) parts.push(suffix(text(`${gap}${s}`)));
@@ -678,7 +693,7 @@ class Ctx {
         return group(concat(rest.map((e) => this.eval(e))));
       case "indent":
         return indent(
-          this.fmt.pkg.indent,
+          this.fmt.indentUnit,
           concat([...rest.map((e) => this.eval(e)), this.flushAfter()]),
         );
       case "line":
@@ -689,6 +704,12 @@ class Ctx {
         return hard;
       case "sp":
         return text(" ");
+      case "srcline":
+        return this.srcBreak(text(" "));
+      case "srcsoft":
+        return this.srcBreak(nil);
+      case "srctrail":
+        return this.srctrail(rest[0]);
       case "child":
         return this.child(parseSelector(rest[0]));
       case "each":
@@ -808,6 +829,33 @@ class Ctx {
     return concat([decorate(this.fmt, item, optional), breakParent]);
   }
 
+  /** A break that mirrors the source's line structure rather than the group's
+   *  fit: `flat` when the source put the next item on the same line, a hard
+   *  break when it did not. */
+  srcBreak(flat) {
+    const item = this.items[this.cursor];
+    return item && item.lineBreak ? hard : flat;
+  }
+
+  /** The trailing-separator policy for a source-driven list: adopt a separator
+   *  the source has, and emit it only when the following token sits on a fresh
+   *  line. gofmt strips a single-line literal's trailing comma and keeps a
+   *  broken literal's. */
+  srctrail(sep) {
+    const at = this.cursor;
+    const item = this.items[at];
+    const present = item && item.node.text === sep;
+    if (present) this.cursor++;
+    const next = this.items[this.cursor];
+    if (!(next && next.lineBreak)) {
+      if (present && decorated(item)) {
+        throw this.refuse("no comment on a stripped trailing separator");
+      }
+      return nil;
+    }
+    return present ? decorate(this.fmt, item, text(sep)) : text(sep);
+  }
+
   /** The balanced-paren policy: adopt the pair the source already has, or add
    *  one when the region breaks. */
   paren(body) {
@@ -835,7 +883,7 @@ class Ctx {
     } else {
       close = ifBreak(text(")"), nil);
     }
-    return group(concat([open, indent(this.fmt.pkg.indent, concat([soft, ...inner])), soft, close]));
+    return group(concat([open, indent(this.fmt.indentUnit, concat([soft, ...inner])), soft, close]));
   }
 
   /** Format a child, adding optional parentheses if its type is one the
@@ -846,7 +894,7 @@ class Ctx {
     const inner = this.child(sel);
     if (!wrap) return inner;
     return group(
-      concat([ifBreak(text("("), nil), indent(this.fmt.pkg.indent, concat([soft, inner])), soft, ifBreak(text(")"), nil)]),
+      concat([ifBreak(text("("), nil), indent(this.fmt.indentUnit, concat([soft, inner])), soft, ifBreak(text(")"), nil)]),
     );
   }
 
@@ -976,6 +1024,7 @@ class Formatter {
     this.blankCap = this.pkg.blank_cap;
     this.flatten = this.pkg.flatten_fields;
     this.semanticEof = false;
+    this.indentUnit = this.pkg.tab_indent ? "\t" : " ".repeat(this.pkg.indent ?? 0);
   }
 
   tightness(node) {

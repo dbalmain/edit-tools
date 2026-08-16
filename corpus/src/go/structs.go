@@ -1,0 +1,28 @@
+package main
+
+// Base holds the identity fields every record shares.
+type Base struct {
+	ID int64
+	CreatedAt int64
+}
+
+type User struct {
+	Base
+	Name string `json:"name"`
+	Email string `json:"email,omitempty"`
+	*Permissions
+}
+
+type Permissions struct {
+	CanRead bool
+	CanWrite bool
+	CanDelete bool
+}
+
+type empty struct{}
+
+type Alias = int
+
+type pair struct{ left, right int }
+
+var u = User{Name: "alice", Email: "alice@example.com"} // a user value

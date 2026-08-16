@@ -1,0 +1,30 @@
+package main
+
+const (
+	Sunday = iota // day zero
+	Monday
+	Tuesday
+	Wednesday
+	Thursday
+	Friday
+	Saturday
+)
+
+const (
+	Read = 1 << iota
+	Write
+	Execute
+)
+
+const (
+	_  = iota
+	KB = 1 << (10 * iota) // kibibyte
+	MB
+	GB
+)
+
+const (
+	StatusUnknown = iota + 1
+	StatusActive
+	StatusDisabled
+)

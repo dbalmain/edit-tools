@@ -1,0 +1,601 @@
+{
+ "language": "go",
+ "source_file": "corpus/src/go/comments.go",
+ "source": "// Package-level comment at the very top of the file.\npackage main\n\nimport \"fmt\" // trailing comment on an import\n\n// A function with a doc comment.\nfunc add(a, b int) int {\n  // Leading comment inside the body.\n  return a + b // trailing comment on a return statement\n}\n\nvar values = []int{\n  1, // first element\n  2, // second element\n  // own-line comment inside a slice literal\n  3,\n}\n\nfunc multi() {\n  /* a block comment on its own line */\n  x := 1\n  _ = x\n  // comment before the closing brace\n}\n\n// Comment at the end of the file.\n",
+ "root": {
+  "type": "source_file",
+  "start": 0,
+  "end": 538,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 53,
+    "text": "// Package-level comment at the very top of the file."
+   },
+   {
+    "type": "package_clause",
+    "start": 54,
+    "end": 66,
+    "children": [
+     {
+      "type": "package",
+      "start": 54,
+      "end": 61,
+      "text": "package"
+     },
+     {
+      "type": "package_identifier",
+      "start": 62,
+      "end": 66,
+      "text": "main"
+     }
+    ]
+   },
+   {
+    "type": "import_declaration",
+    "start": 68,
+    "end": 80,
+    "children": [
+     {
+      "type": "import",
+      "start": 68,
+      "end": 74,
+      "text": "import"
+     },
+     {
+      "type": "import_spec",
+      "start": 75,
+      "end": 80,
+      "children": [
+       {
+        "type": "interpreted_string_literal",
+        "start": 75,
+        "end": 80,
+        "field": "path",
+        "children": [
+         {
+          "type": "\"",
+          "start": 75,
+          "end": 76,
+          "text": "\""
+         },
+         {
+          "type": "interpreted_string_literal_content",
+          "start": 76,
+          "end": 79,
+          "text": "fmt"
+         },
+         {
+          "type": "\"",
+          "start": 79,
+          "end": 80,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 81,
+    "end": 113,
+    "text": "// trailing comment on an import"
+   },
+   {
+    "type": "comment",
+    "start": 115,
+    "end": 148,
+    "text": "// A function with a doc comment."
+   },
+   {
+    "type": "function_declaration",
+    "start": 149,
+    "end": 270,
+    "children": [
+     {
+      "type": "func",
+      "start": 149,
+      "end": 153,
+      "text": "func"
+     },
+     {
+      "type": "identifier",
+      "start": 154,
+      "end": 157,
+      "field": "name",
+      "text": "add"
+     },
+     {
+      "type": "parameter_list",
+      "start": 157,
+      "end": 167,
+      "field": "parameters",
+      "children": [
+       {
+        "type": "(",
+        "start": 157,
+        "end": 158,
+        "text": "("
+       },
+       {
+        "type": "parameter_declaration",
+        "start": 158,
+        "end": 166,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 158,
+          "end": 159,
+          "field": "name",
+          "text": "a"
+         },
+         {
+          "type": ",",
+          "start": 159,
+          "end": 160,
+          "text": ","
+         },
+         {
+          "type": "identifier",
+          "start": 161,
+          "end": 162,
+          "field": "name",
+          "text": "b"
+         },
+         {
+          "type": "type_identifier",
+          "start": 163,
+          "end": 166,
+          "field": "type",
+          "text": "int"
+         }
+        ]
+       },
+       {
+        "type": ")",
+        "start": 166,
+        "end": 167,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "type_identifier",
+      "start": 168,
+      "end": 171,
+      "field": "result",
+      "text": "int"
+     },
+     {
+      "type": "block",
+      "start": 172,
+      "end": 270,
+      "field": "body",
+      "children": [
+       {
+        "type": "{",
+        "start": 172,
+        "end": 173,
+        "text": "{"
+       },
+       {
+        "type": "comment",
+        "start": 176,
+        "end": 211,
+        "text": "// Leading comment inside the body."
+       },
+       {
+        "type": "statement_list",
+        "start": 214,
+        "end": 269,
+        "children": [
+         {
+          "type": "return_statement",
+          "start": 214,
+          "end": 226,
+          "children": [
+           {
+            "type": "return",
+            "start": 214,
+            "end": 220,
+            "text": "return"
+           },
+           {
+            "type": "expression_list",
+            "start": 221,
+            "end": 226,
+            "children": [
+             {
+              "type": "binary_expression",
+              "start": 221,
+              "end": 226,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 221,
+                "end": 222,
+                "field": "left",
+                "text": "a"
+               },
+               {
+                "type": "+",
+                "start": 223,
+                "end": 224,
+                "field": "operator",
+                "text": "+"
+               },
+               {
+                "type": "identifier",
+                "start": 225,
+                "end": 226,
+                "field": "right",
+                "text": "b"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "comment",
+          "start": 227,
+          "end": 268,
+          "text": "// trailing comment on a return statement"
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 269,
+        "end": 270,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "var_declaration",
+    "start": 272,
+    "end": 388,
+    "children": [
+     {
+      "type": "var",
+      "start": 272,
+      "end": 275,
+      "text": "var"
+     },
+     {
+      "type": "var_spec",
+      "start": 276,
+      "end": 388,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 276,
+        "end": 282,
+        "field": "name",
+        "text": "values"
+       },
+       {
+        "type": "=",
+        "start": 283,
+        "end": 284,
+        "text": "="
+       },
+       {
+        "type": "expression_list",
+        "start": 285,
+        "end": 388,
+        "field": "value",
+        "children": [
+         {
+          "type": "composite_literal",
+          "start": 285,
+          "end": 388,
+          "children": [
+           {
+            "type": "slice_type",
+            "start": 285,
+            "end": 290,
+            "field": "type",
+            "children": [
+             {
+              "type": "[",
+              "start": 285,
+              "end": 286,
+              "text": "["
+             },
+             {
+              "type": "]",
+              "start": 286,
+              "end": 287,
+              "text": "]"
+             },
+             {
+              "type": "type_identifier",
+              "start": 287,
+              "end": 290,
+              "field": "element",
+              "text": "int"
+             }
+            ]
+           },
+           {
+            "type": "literal_value",
+            "start": 290,
+            "end": 388,
+            "field": "body",
+            "children": [
+             {
+              "type": "{",
+              "start": 290,
+              "end": 291,
+              "text": "{"
+             },
+             {
+              "type": "literal_element",
+              "start": 294,
+              "end": 295,
+              "children": [
+               {
+                "type": "int_literal",
+                "start": 294,
+                "end": 295,
+                "text": "1"
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 295,
+              "end": 296,
+              "text": ","
+             },
+             {
+              "type": "comment",
+              "start": 297,
+              "end": 313,
+              "text": "// first element"
+             },
+             {
+              "type": "literal_element",
+              "start": 316,
+              "end": 317,
+              "children": [
+               {
+                "type": "int_literal",
+                "start": 316,
+                "end": 317,
+                "text": "2"
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 317,
+              "end": 318,
+              "text": ","
+             },
+             {
+              "type": "comment",
+              "start": 319,
+              "end": 336,
+              "text": "// second element"
+             },
+             {
+              "type": "comment",
+              "start": 339,
+              "end": 381,
+              "text": "// own-line comment inside a slice literal"
+             },
+             {
+              "type": "literal_element",
+              "start": 384,
+              "end": 385,
+              "children": [
+               {
+                "type": "int_literal",
+                "start": 384,
+                "end": 385,
+                "text": "3"
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 385,
+              "end": 386,
+              "text": ","
+             },
+             {
+              "type": "}",
+              "start": 387,
+              "end": 388,
+              "text": "}"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "function_declaration",
+    "start": 390,
+    "end": 501,
+    "children": [
+     {
+      "type": "func",
+      "start": 390,
+      "end": 394,
+      "text": "func"
+     },
+     {
+      "type": "identifier",
+      "start": 395,
+      "end": 400,
+      "field": "name",
+      "text": "multi"
+     },
+     {
+      "type": "parameter_list",
+      "start": 400,
+      "end": 402,
+      "field": "parameters",
+      "children": [
+       {
+        "type": "(",
+        "start": 400,
+        "end": 401,
+        "text": "("
+       },
+       {
+        "type": ")",
+        "start": 401,
+        "end": 402,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "block",
+      "start": 403,
+      "end": 501,
+      "field": "body",
+      "children": [
+       {
+        "type": "{",
+        "start": 403,
+        "end": 404,
+        "text": "{"
+       },
+       {
+        "type": "comment",
+        "start": 407,
+        "end": 444,
+        "text": "/* a block comment on its own line */"
+       },
+       {
+        "type": "statement_list",
+        "start": 447,
+        "end": 462,
+        "children": [
+         {
+          "type": "short_var_declaration",
+          "start": 447,
+          "end": 453,
+          "children": [
+           {
+            "type": "expression_list",
+            "start": 447,
+            "end": 448,
+            "field": "left",
+            "children": [
+             {
+              "type": "identifier",
+              "start": 447,
+              "end": 448,
+              "text": "x"
+             }
+            ]
+           },
+           {
+            "type": ":=",
+            "start": 449,
+            "end": 451,
+            "text": ":="
+           },
+           {
+            "type": "expression_list",
+            "start": 452,
+            "end": 453,
+            "field": "right",
+            "children": [
+             {
+              "type": "int_literal",
+              "start": 452,
+              "end": 453,
+              "text": "1"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "assignment_statement",
+          "start": 456,
+          "end": 461,
+          "children": [
+           {
+            "type": "expression_list",
+            "start": 456,
+            "end": 457,
+            "field": "left",
+            "children": [
+             {
+              "type": "identifier",
+              "start": 456,
+              "end": 457,
+              "text": "_"
+             }
+            ]
+           },
+           {
+            "type": "=",
+            "start": 458,
+            "end": 459,
+            "field": "operator",
+            "text": "="
+           },
+           {
+            "type": "expression_list",
+            "start": 460,
+            "end": 461,
+            "field": "right",
+            "children": [
+             {
+              "type": "identifier",
+              "start": 460,
+              "end": 461,
+              "text": "x"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "comment",
+        "start": 464,
+        "end": 499,
+        "text": "// comment before the closing brace"
+       },
+       {
+        "type": "}",
+        "start": 500,
+        "end": 501,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 503,
+    "end": 537,
+    "text": "// Comment at the end of the file."
+   }
+  ]
+ }
+}
