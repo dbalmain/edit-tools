@@ -1,0 +1,42 @@
+# Scalar spellings prettier preserves. A loader would collapse most of
+# these; the tree comparison must not.
+
+bare: hello
+quoted: "hello"
+empty: ""
+
+# Three nulls, three node texts, one `null_scalar` kind for the first two.
+# An empty value is a pair with no value child, not a null_scalar.
+as_null: null
+as_tilde: ~
+as_empty:
+
+# Bool-ish words prettier does not rewrite into each other.
+as_true: true
+as_True: True
+as_TRUE: TRUE
+as_yes: yes
+as_on: on
+as_false: false
+as_no: no
+as_off: off
+
+# Number spellings. Underscores, hex, signs, specials.
+plain_int: 1000
+underscored: 1_000
+plus: +1
+minus: -1
+hex: 0xFF
+hex_lower: 0xff
+oct: 0o755
+bin: 0b1010
+float: 1.0
+exp: 6.8523015e+5
+inf: .inf
+plus_inf: +.inf
+minus_inf: -.inf
+nan: .nan
+
+# Sexagesimal-looking and leading-zero forms, left as plain text.
+leading_zero: 010
+sexagesimal: 12:30:00

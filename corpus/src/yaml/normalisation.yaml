@@ -1,0 +1,49 @@
+# Written the way a person writes YAML and prettier does not. Every other
+# file in this corpus probes what prettier *breaks*; this one probes what
+# it *rewrites*. Nothing here is about line width -- each rewrite happens
+# at every width.
+
+# Spacing around `:`, which people pad by hand and prettier collapses.
+name:    demo
+version:  "0.1.0"
+enabled:  true
+
+# Padding inside flow brackets, and spacing around the commas.
+padded: [ 1 , 2 , 3 ]
+tight: [1,2,3]
+# Flow mappings are the mirror image: prettier pads the braces out.
+compact: {x: 1,y: 2}
+half: { x: 1,y: 2 }
+
+# Sequence dashes flush with the key, which YAML allows and prettier indents.
+root:
+- first
+- second
+nested:
+  list:
+  - one
+  - two
+
+# A nested sequence written with the dash on its own line; prettier
+# collapses it to the compact `- - item` form.
+flags:
+  - one
+  -
+    - nested-a
+    - nested-b
+
+# Runs of spaces (and a tab) before a trailing comment.
+port: 8080          # many spaces before this one
+host: localhost	# a tab before this one
+
+# A source trailing comma on a flat flow sequence is dropped.
+trailing: [1, 2, 3,]
+
+# Explicit `?` keys; prettier writes the implicit form. Named tree is unchanged.
+? explicit
+: value
+
+
+
+# Three or more blank lines above; prettier caps a run at one.
+replicas: 2

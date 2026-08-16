@@ -1,0 +1,26 @@
+# Anchors, aliases, and the merge key. The grammar gives each a distinct
+# node type (anchor / alias); `<<` is just a string_scalar key.
+
+defaults: &def
+  host: localhost
+  port: 8080
+
+# Alias as a whole value.
+copy: *def
+
+# Merge key plus an override.
+prod:
+  <<: *def
+  port: 443 # overrides the merged port
+
+# Anchor on a flow mapping. Fits at 80, breaks at 40 -- prettier keeps
+# the anchor on the key and breaks the mapping, it does not convert to block.
+pair: &p { host: alpha.example.com, port: 8080 }
+
+# Alias of that flow mapping.
+again: *p
+
+# Two anchors in one document, used together.
+east: &east { region: us-east-1, role: primary }
+west: &west { region: us-west-2, role: replica }
+regions: [*east, *west]

@@ -1,0 +1,18 @@
+# Multi-document streams. `---` / `...` are anonymous tokens under each
+# `document`; `%YAML` is a `yaml_directive` with a `yaml_version` child.
+
+%YAML 1.2
+---
+# First document.
+name: one
+value: 1
+---
+# Second document, no directive.
+name: two
+value: 2
+...
+---
+# A third document after an explicit end marker.
+name: three
+items: [a, b, c]
+...

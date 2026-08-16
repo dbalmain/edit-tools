@@ -1,0 +1,834 @@
+{
+ "language": "yaml",
+ "source_file": "corpus/src/yaml/comments.yaml",
+ "source": "# File-level comment at the very top of the document.\n\ntitle: demo # trailing on a root pair\n\n# Own-line comment before a nested mapping.\nserver: # trailing on a short pair\n  # Own-line comment inside a mapping, before the first pair.\n  host: localhost # trailing on a short pair\n  listen_address: 0.0.0.0 # trailing on a longer pair\n  port: 8080 # trailing on a medium pair\n\ntags: # comment after the key, before a flow sequence\n  [ # comment after the opening bracket\n    # own-line before the first item\n    primary, # trailing on an item\n    us-east,\n    # own-line between items\n    canary,\n    # own-line before the closing bracket\n  ]\n\nmeta: # comment after the key, before a flow mapping\n  {\n    # own-line before the first pair\n    region: us-east-1, # trailing on a pair\n    # own-line before the closing brace\n  }\n\nitems:\n  # own-line before the first block item\n  - first # trailing on a block item\n  # own-line between block items\n  - second\n  # own-line after the last block item\n\n# Consecutive own-line comments.\n# Second of the pair.\n# Third of the pair.\n\n# Comment at the end of the file.\n",
+ "root": {
+  "type": "stream",
+  "start": 0,
+  "end": 1106,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 53,
+    "text": "# File-level comment at the very top of the document."
+   },
+   {
+    "type": "document",
+    "start": 55,
+    "end": 1106,
+    "children": [
+     {
+      "type": "block_node",
+      "start": 55,
+      "end": 1106,
+      "children": [
+       {
+        "type": "block_mapping",
+        "start": 55,
+        "end": 1106,
+        "children": [
+         {
+          "type": "block_mapping_pair",
+          "start": 55,
+          "end": 66,
+          "children": [
+           {
+            "type": "flow_node",
+            "start": 55,
+            "end": 60,
+            "field": "key",
+            "children": [
+             {
+              "type": "plain_scalar",
+              "start": 55,
+              "end": 60,
+              "children": [
+               {
+                "type": "string_scalar",
+                "start": 55,
+                "end": 60,
+                "text": "title"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ":",
+            "start": 60,
+            "end": 61,
+            "text": ":"
+           },
+           {
+            "type": "flow_node",
+            "start": 62,
+            "end": 66,
+            "field": "value",
+            "children": [
+             {
+              "type": "plain_scalar",
+              "start": 62,
+              "end": 66,
+              "children": [
+               {
+                "type": "string_scalar",
+                "start": 62,
+                "end": 66,
+                "text": "demo"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "comment",
+          "start": 67,
+          "end": 92,
+          "text": "# trailing on a root pair"
+         },
+         {
+          "type": "comment",
+          "start": 94,
+          "end": 137,
+          "text": "# Own-line comment before a nested mapping."
+         },
+         {
+          "type": "block_mapping_pair",
+          "start": 138,
+          "end": 374,
+          "children": [
+           {
+            "type": "flow_node",
+            "start": 138,
+            "end": 144,
+            "field": "key",
+            "children": [
+             {
+              "type": "plain_scalar",
+              "start": 138,
+              "end": 144,
+              "children": [
+               {
+                "type": "string_scalar",
+                "start": 138,
+                "end": 144,
+                "text": "server"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ":",
+            "start": 144,
+            "end": 145,
+            "text": ":"
+           },
+           {
+            "type": "comment",
+            "start": 146,
+            "end": 172,
+            "text": "# trailing on a short pair"
+           },
+           {
+            "type": "comment",
+            "start": 175,
+            "end": 234,
+            "text": "# Own-line comment inside a mapping, before the first pair."
+           },
+           {
+            "type": "block_node",
+            "start": 237,
+            "end": 374,
+            "field": "value",
+            "children": [
+             {
+              "type": "block_mapping",
+              "start": 237,
+              "end": 374,
+              "children": [
+               {
+                "type": "block_mapping_pair",
+                "start": 237,
+                "end": 252,
+                "children": [
+                 {
+                  "type": "flow_node",
+                  "start": 237,
+                  "end": 241,
+                  "field": "key",
+                  "children": [
+                   {
+                    "type": "plain_scalar",
+                    "start": 237,
+                    "end": 241,
+                    "children": [
+                     {
+                      "type": "string_scalar",
+                      "start": 237,
+                      "end": 241,
+                      "text": "host"
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 {
+                  "type": ":",
+                  "start": 241,
+                  "end": 242,
+                  "text": ":"
+                 },
+                 {
+                  "type": "flow_node",
+                  "start": 243,
+                  "end": 252,
+                  "field": "value",
+                  "children": [
+                   {
+                    "type": "plain_scalar",
+                    "start": 243,
+                    "end": 252,
+                    "children": [
+                     {
+                      "type": "string_scalar",
+                      "start": 243,
+                      "end": 252,
+                      "text": "localhost"
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": "comment",
+                "start": 253,
+                "end": 279,
+                "text": "# trailing on a short pair"
+               },
+               {
+                "type": "block_mapping_pair",
+                "start": 282,
+                "end": 305,
+                "children": [
+                 {
+                  "type": "flow_node",
+                  "start": 282,
+                  "end": 296,
+                  "field": "key",
+                  "children": [
+                   {
+                    "type": "plain_scalar",
+                    "start": 282,
+                    "end": 296,
+                    "children": [
+                     {
+                      "type": "string_scalar",
+                      "start": 282,
+                      "end": 296,
+                      "text": "listen_address"
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 {
+                  "type": ":",
+                  "start": 296,
+                  "end": 297,
+                  "text": ":"
+                 },
+                 {
+                  "type": "flow_node",
+                  "start": 298,
+                  "end": 305,
+                  "field": "value",
+                  "children": [
+                   {
+                    "type": "plain_scalar",
+                    "start": 298,
+                    "end": 305,
+                    "children": [
+                     {
+                      "type": "string_scalar",
+                      "start": 298,
+                      "end": 305,
+                      "text": "0.0.0.0"
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": "comment",
+                "start": 306,
+                "end": 333,
+                "text": "# trailing on a longer pair"
+               },
+               {
+                "type": "block_mapping_pair",
+                "start": 336,
+                "end": 346,
+                "children": [
+                 {
+                  "type": "flow_node",
+                  "start": 336,
+                  "end": 340,
+                  "field": "key",
+                  "children": [
+                   {
+                    "type": "plain_scalar",
+                    "start": 336,
+                    "end": 340,
+                    "children": [
+                     {
+                      "type": "string_scalar",
+                      "start": 336,
+                      "end": 340,
+                      "text": "port"
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 {
+                  "type": ":",
+                  "start": 340,
+                  "end": 341,
+                  "text": ":"
+                 },
+                 {
+                  "type": "flow_node",
+                  "start": 342,
+                  "end": 346,
+                  "field": "value",
+                  "children": [
+                   {
+                    "type": "plain_scalar",
+                    "start": 342,
+                    "end": 346,
+                    "children": [
+                     {
+                      "type": "integer_scalar",
+                      "start": 342,
+                      "end": 346,
+                      "text": "8080"
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": "comment",
+                "start": 347,
+                "end": 374,
+                "text": "# trailing on a medium pair"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "block_mapping_pair",
+          "start": 376,
+          "end": 641,
+          "children": [
+           {
+            "type": "flow_node",
+            "start": 376,
+            "end": 380,
+            "field": "key",
+            "children": [
+             {
+              "type": "plain_scalar",
+              "start": 376,
+              "end": 380,
+              "children": [
+               {
+                "type": "string_scalar",
+                "start": 376,
+                "end": 380,
+                "text": "tags"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ":",
+            "start": 380,
+            "end": 381,
+            "text": ":"
+           },
+           {
+            "type": "comment",
+            "start": 382,
+            "end": 429,
+            "text": "# comment after the key, before a flow sequence"
+           },
+           {
+            "type": "flow_node",
+            "start": 432,
+            "end": 641,
+            "field": "value",
+            "children": [
+             {
+              "type": "flow_sequence",
+              "start": 432,
+              "end": 641,
+              "children": [
+               {
+                "type": "[",
+                "start": 432,
+                "end": 433,
+                "text": "["
+               },
+               {
+                "type": "comment",
+                "start": 434,
+                "end": 469,
+                "text": "# comment after the opening bracket"
+               },
+               {
+                "type": "comment",
+                "start": 474,
+                "end": 506,
+                "text": "# own-line before the first item"
+               },
+               {
+                "type": "flow_node",
+                "start": 511,
+                "end": 518,
+                "children": [
+                 {
+                  "type": "plain_scalar",
+                  "start": 511,
+                  "end": 518,
+                  "children": [
+                   {
+                    "type": "string_scalar",
+                    "start": 511,
+                    "end": 518,
+                    "text": "primary"
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 518,
+                "end": 519,
+                "text": ","
+               },
+               {
+                "type": "comment",
+                "start": 520,
+                "end": 541,
+                "text": "# trailing on an item"
+               },
+               {
+                "type": "flow_node",
+                "start": 546,
+                "end": 553,
+                "children": [
+                 {
+                  "type": "plain_scalar",
+                  "start": 546,
+                  "end": 553,
+                  "children": [
+                   {
+                    "type": "string_scalar",
+                    "start": 546,
+                    "end": 553,
+                    "text": "us-east"
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 553,
+                "end": 554,
+                "text": ","
+               },
+               {
+                "type": "comment",
+                "start": 559,
+                "end": 583,
+                "text": "# own-line between items"
+               },
+               {
+                "type": "flow_node",
+                "start": 588,
+                "end": 594,
+                "children": [
+                 {
+                  "type": "plain_scalar",
+                  "start": 588,
+                  "end": 594,
+                  "children": [
+                   {
+                    "type": "string_scalar",
+                    "start": 588,
+                    "end": 594,
+                    "text": "canary"
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 594,
+                "end": 595,
+                "text": ","
+               },
+               {
+                "type": "comment",
+                "start": 600,
+                "end": 637,
+                "text": "# own-line before the closing bracket"
+               },
+               {
+                "type": "]",
+                "start": 640,
+                "end": 641,
+                "text": "]"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "block_mapping_pair",
+          "start": 643,
+          "end": 824,
+          "children": [
+           {
+            "type": "flow_node",
+            "start": 643,
+            "end": 647,
+            "field": "key",
+            "children": [
+             {
+              "type": "plain_scalar",
+              "start": 643,
+              "end": 647,
+              "children": [
+               {
+                "type": "string_scalar",
+                "start": 643,
+                "end": 647,
+                "text": "meta"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ":",
+            "start": 647,
+            "end": 648,
+            "text": ":"
+           },
+           {
+            "type": "comment",
+            "start": 649,
+            "end": 695,
+            "text": "# comment after the key, before a flow mapping"
+           },
+           {
+            "type": "flow_node",
+            "start": 698,
+            "end": 824,
+            "field": "value",
+            "children": [
+             {
+              "type": "flow_mapping",
+              "start": 698,
+              "end": 824,
+              "children": [
+               {
+                "type": "{",
+                "start": 698,
+                "end": 699,
+                "text": "{"
+               },
+               {
+                "type": "comment",
+                "start": 704,
+                "end": 736,
+                "text": "# own-line before the first pair"
+               },
+               {
+                "type": "flow_pair",
+                "start": 741,
+                "end": 758,
+                "children": [
+                 {
+                  "type": "flow_node",
+                  "start": 741,
+                  "end": 747,
+                  "field": "key",
+                  "children": [
+                   {
+                    "type": "plain_scalar",
+                    "start": 741,
+                    "end": 747,
+                    "children": [
+                     {
+                      "type": "string_scalar",
+                      "start": 741,
+                      "end": 747,
+                      "text": "region"
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 {
+                  "type": ":",
+                  "start": 747,
+                  "end": 748,
+                  "text": ":"
+                 },
+                 {
+                  "type": "flow_node",
+                  "start": 749,
+                  "end": 758,
+                  "field": "value",
+                  "children": [
+                   {
+                    "type": "plain_scalar",
+                    "start": 749,
+                    "end": 758,
+                    "children": [
+                     {
+                      "type": "string_scalar",
+                      "start": 749,
+                      "end": 758,
+                      "text": "us-east-1"
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 758,
+                "end": 759,
+                "text": ","
+               },
+               {
+                "type": "comment",
+                "start": 760,
+                "end": 780,
+                "text": "# trailing on a pair"
+               },
+               {
+                "type": "comment",
+                "start": 785,
+                "end": 820,
+                "text": "# own-line before the closing brace"
+               },
+               {
+                "type": "}",
+                "start": 823,
+                "end": 824,
+                "text": "}"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "block_mapping_pair",
+          "start": 826,
+          "end": 1106,
+          "children": [
+           {
+            "type": "flow_node",
+            "start": 826,
+            "end": 831,
+            "field": "key",
+            "children": [
+             {
+              "type": "plain_scalar",
+              "start": 826,
+              "end": 831,
+              "children": [
+               {
+                "type": "string_scalar",
+                "start": 826,
+                "end": 831,
+                "text": "items"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ":",
+            "start": 831,
+            "end": 832,
+            "text": ":"
+           },
+           {
+            "type": "comment",
+            "start": 835,
+            "end": 873,
+            "text": "# own-line before the first block item"
+           },
+           {
+            "type": "block_node",
+            "start": 876,
+            "end": 1106,
+            "field": "value",
+            "children": [
+             {
+              "type": "block_sequence",
+              "start": 876,
+              "end": 1106,
+              "children": [
+               {
+                "type": "block_sequence_item",
+                "start": 876,
+                "end": 883,
+                "children": [
+                 {
+                  "type": "-",
+                  "start": 876,
+                  "end": 877,
+                  "text": "-"
+                 },
+                 {
+                  "type": "flow_node",
+                  "start": 878,
+                  "end": 883,
+                  "children": [
+                   {
+                    "type": "plain_scalar",
+                    "start": 878,
+                    "end": 883,
+                    "children": [
+                     {
+                      "type": "string_scalar",
+                      "start": 878,
+                      "end": 883,
+                      "text": "first"
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": "comment",
+                "start": 884,
+                "end": 910,
+                "text": "# trailing on a block item"
+               },
+               {
+                "type": "comment",
+                "start": 913,
+                "end": 943,
+                "text": "# own-line between block items"
+               },
+               {
+                "type": "block_sequence_item",
+                "start": 946,
+                "end": 954,
+                "children": [
+                 {
+                  "type": "-",
+                  "start": 946,
+                  "end": 947,
+                  "text": "-"
+                 },
+                 {
+                  "type": "flow_node",
+                  "start": 948,
+                  "end": 954,
+                  "children": [
+                   {
+                    "type": "plain_scalar",
+                    "start": 948,
+                    "end": 954,
+                    "children": [
+                     {
+                      "type": "string_scalar",
+                      "start": 948,
+                      "end": 954,
+                      "text": "second"
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": "comment",
+                "start": 957,
+                "end": 993,
+                "text": "# own-line after the last block item"
+               },
+               {
+                "type": "comment",
+                "start": 995,
+                "end": 1027,
+                "text": "# Consecutive own-line comments."
+               },
+               {
+                "type": "comment",
+                "start": 1028,
+                "end": 1049,
+                "text": "# Second of the pair."
+               },
+               {
+                "type": "comment",
+                "start": 1050,
+                "end": 1070,
+                "text": "# Third of the pair."
+               },
+               {
+                "type": "comment",
+                "start": 1072,
+                "end": 1105,
+                "text": "# Comment at the end of the file."
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

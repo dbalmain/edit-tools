@@ -1,0 +1,37 @@
+# Block scalars. Interior is content, not layout: prettier does not reflow
+# a `>` line that overruns the width, and a relative extra indent is data.
+
+# Literal: newlines kept. Already at prettier's 2-space block indent so a
+# reindent does not change the block_scalar leaf text gate 3 compares.
+script: | # clip is the default
+  echo hello
+  echo world
+
+# Folded: newlines become spaces. Prettier leaves the source line-breaks.
+desc: >
+  This is a fairly long folded description that would overflow forty columns if reflowed onto one line of the document.
+
+# Chomping indicators. strip / keep / clip are three different spellings.
+strip: |-
+  no final newline
+
+keep: |+
+  keep blanks
+
+
+clip: |
+  clip default
+
+# Indent indicator: the `2` is part of the token. Content starts two
+# columns past the parent, so four leading spaces are two of content.
+note: |2
+    four spaces of content, two of them data
+
+# Relative extra indent inside a literal is content and must survive.
+indented: |
+  echo hello
+    nested
+  echo world
+
+folded_strip: >-
+  Supercalifragilisticexpialidocious words go here to see if prettier wraps the folded content itself when the source line is long enough to overflow.

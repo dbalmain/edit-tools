@@ -1,0 +1,38 @@
+# Several constructs interacting. The one file allowed to be messy.
+
+# Service config: block mappings, flow collections that reflow, an anchor,
+# a block scalar, comments in two positions.
+
+name: edge-proxy
+revision: 17
+listen: { host: 0.0.0.0, port: 8443 } # inline on a root pair
+features: [http2, gzip, access-log, proxy-protocol, tls-session-tickets]
+
+upstream:
+  primary: &origin
+    url: https://origin.example.com/api/v1
+    timeout: 30
+    headers: { authorization: Bearer placeholder, accept: application/json }
+    tls:
+      alpn: [h2, http/1.1]
+      sni: origin.example.com
+  canary:
+    <<: *origin
+    weight: 5
+    url: https://canary.example.com/api/v1
+
+middlewares:
+  - name: ratelimit
+    params: { requests: 100, window: 1m, burst: 20 }
+  - name: rewrite
+    # comment attached to the next pair, not the header
+    paths: [/v1, /v2, /internal/healthz, /internal/readyz, /metrics]
+  - name: auth
+    skip: true
+
+logging:
+  level: info
+  format: |
+    {timestamp} {level} {target}
+    {message}
+# trailing comment at the end of the kitchen

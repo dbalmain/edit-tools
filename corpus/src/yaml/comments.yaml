@@ -1,0 +1,40 @@
+# File-level comment at the very top of the document.
+
+title: demo # trailing on a root pair
+
+# Own-line comment before a nested mapping.
+server: # trailing on a short pair
+  # Own-line comment inside a mapping, before the first pair.
+  host: localhost # trailing on a short pair
+  listen_address: 0.0.0.0 # trailing on a longer pair
+  port: 8080 # trailing on a medium pair
+
+tags: # comment after the key, before a flow sequence
+  [ # comment after the opening bracket
+    # own-line before the first item
+    primary, # trailing on an item
+    us-east,
+    # own-line between items
+    canary,
+    # own-line before the closing bracket
+  ]
+
+meta: # comment after the key, before a flow mapping
+  {
+    # own-line before the first pair
+    region: us-east-1, # trailing on a pair
+    # own-line before the closing brace
+  }
+
+items:
+  # own-line before the first block item
+  - first # trailing on a block item
+  # own-line between block items
+  - second
+  # own-line after the last block item
+
+# Consecutive own-line comments.
+# Second of the pair.
+# Third of the pair.
+
+# Comment at the end of the file.

@@ -1,0 +1,25 @@
+# Blank lines are the only grouping YAML has between siblings. prettier
+# caps a run at one and leaves zero alone.
+
+packed: 1
+also_packed: 2
+
+# one blank above
+one_blank: 3
+
+
+# two blanks above -- prettier will leave one
+two_blanks: 4
+
+
+
+# three blanks above -- also one
+three_blanks: 5
+
+nested:
+  a: 1
+
+  b: 2
+
+
+  c: 3
