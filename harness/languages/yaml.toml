@@ -18,10 +18,11 @@ injection_aliases = ["yaml", "yml"]
 # prettier 3.9.6 observed from `npx --yes prettier@3.9.6 --version`.
 # `--parser yaml` is required: stdin with no parser and no filepath errors
 # ("No parser and no file path given"). `--stdin-filepath x.yaml` also selects
-# the yaml parser and produces byte-identical output, but it is omitted on
-# purpose -- a filepath opens prettier's editorconfig lookup, which
-# `--parser yaml` alone does not. Verified: a planted .editorconfig with
-# indent_size=8 changes output only when `--stdin-filepath` is present.
+# the yaml parser and produces byte-identical output, but it is omitted because
+# it is redundant once the parser is explicit. A filepath enables editorconfig
+# lookup only while auto-config is enabled; the exact command below includes
+# `--no-config`, under which a planted .editorconfig is inert with or without a
+# filepath (verified on both prettier 3.6.2 and 3.9.6).
 #
 # `--no-config` is load-bearing. prettier walks cwd and ancestors for
 # .prettierrc / prettier.config.* / a package.json "prettier" key. A planted
@@ -36,6 +37,15 @@ injection_aliases = ["yaml", "yml"]
 # print-width honours {width} for flow collections only; established by
 # diffing 80 vs 40 rather than by reading --help. Block collections, strings,
 # comments, block scalars, keys and document markers never reflow.
+#
+# Measurement exclusions forced by the linearity invariant: prettier chooses
+# quote delimiters and rewrites the corresponding escapes; reindents block
+# scalar bodies; and canonicalises a block-scalar header such as `|-2` to
+# `|2-`. The corpus therefore omits non-canonical quote spellings and writes
+# block scalars at prettier's indentation with canonical indicator order. It
+# retains one explicit `?` key even though prettier removes that anonymous
+# token: this is an intentionally measured, unwinnable package divergence,
+# not an omission. prettier 3.9.6 preserves `---` and `...` markers.
 reference = "npx --yes prettier@3.9.6 --parser yaml --no-config --print-width {width}"
 reference_version = "3.9.6"
 reference_width = "flag"

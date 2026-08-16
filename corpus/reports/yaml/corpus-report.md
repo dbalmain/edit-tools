@@ -25,11 +25,12 @@ observed.
 clean machine. The filepath is how JSON selects a parser, so it looks
 load-bearing. It is not, once `--parser` is set.
 
-It is worse than noise. A planted `.editorconfig` with `indent_size = 8` and
-`quote_type = single` changes output **only** when a filepath is present:
-prettier's editorconfig lookup is keyed on the file, and `--parser yaml`
-alone has no file. Adding `--stdin-filepath` would have opened that channel
-for every later prettier language that copied the flag.
+It is redundant once the parser is explicit. A planted `.editorconfig` with
+`indent_size = 8` and `quote_type = single` changes output only when a filepath
+is present **and auto-config remains enabled**. With the exact reference command
+above, `--no-config` makes that editorconfig inert on both prettier 3.6.2 and
+3.9.6, with or without `--stdin-filepath`. Omitting the filepath is still the
+smaller command, but it is not an additional config-safety boundary here.
 
 `--use-tabs` has no effect on YAML (checked). `--trailing-comma` and
 `--no-bracket-spacing` likewise do nothing. `--tab-width` and `--single-quote`
@@ -306,29 +307,30 @@ normalisation. Files that started life single-quoted are unwinnable for
 that reason, the same way black-without-`-S` made Python strings
 unwinnable.
 
-### Block scalars are leaves, and prettier reindents them
+### Block scalar bodies fall through a gate-3 gap, and prettier reindents them
 
 `block_scalar` has no named children. The indicator (`|`, `>-`, `|2`, …)
-is an anonymous token; the interior is not a child at all. Gate 3
-therefore treats the node as a leaf and compares
-`source[start:end]`, which includes the layout indent of the block.
+is an anonymous child; the interior is not a child at all. Gate 3's `_tokens`
+path therefore compares the anonymous child tokens and discards the source gap
+that holds the body. It does **not** compare `source[start:end]`.
 
-Prettier reindents a 4-space literal to 2-space. The YAML *data* is
-unchanged (the block indent is stripped). The leaf text is not. A
-corpus file written at 4 spaces would make gate 3 reject prettier, so
-`block_scalars.yaml` is already at prettier's 2-space indent.
+Prettier reindents a 4-space literal to 2-space. The YAML *data* is unchanged
+(the block indent is stripped), but a package cannot reproduce the rewrite.
+Experimentally, gate 3 accepts both that reindent and the destructive change
+`d: |\n  x` → `d: |\n  y`. `block_scalars.yaml` is already at prettier's
+2-space indent to avoid an unwinnable agreement case, not to make gate 3 pass.
 
 A relative extra indent inside the block (`echo hello` then `  nested`)
 is data and is preserved. Folded `>` interiors are **not** reflowed, even
 at 150 columns. Chomping indicators and the indent indicator stay.
 
-A package has no named child to recurse into. The construct needs
-`verbatim` (or an equivalent "emit this node's own source") and cannot
-be expressed as a layout of children. Reindenting to match prettier
-would change the leaf text the gate compares, so a package that matches
-prettier's reindent on non-prettier-indented input fails gate 3, and a
-package that preserves the source indent diverges from prettier. That is
-a real design limit, not a package bug.
+A package has no named child to recurse into. The construct needs `verbatim`
+(or an equivalent "emit this node's own source") and cannot be expressed as a
+layout of children. A package that preserves a non-canonical source indent
+diverges from prettier; matching it is impossible under linearity even though
+the current gate would permit the bytes. Prettier also canonicalises indicator
+order (`|-2` → `|2-`), another unsanctioned token rewrite. These are measurement
+limits plus a permissive gate defect, not package bugs.
 
 ### Anchors, aliases, tags, multi-document streams
 
@@ -349,6 +351,8 @@ keys.
 - **Quote normalisation.** No opcode rewrites token text.
 - **Block-scalar reindent.** The interior is not in the tree; `verbatim`
   preserves source bytes, including an indent prettier would change.
+- **Explicit-key canonicalisation.** Prettier removes the anonymous `?` from a
+  simple explicit mapping key; no package policy may delete it.
 - **"Break this group only if the *collection* overflows, ignoring a
   trailing comment."** `fits` counts the comment. Prettier does not.
 - **Moving a comment from after `[` onto the key.** Comment attachment is
@@ -379,14 +383,12 @@ is in the manifest; it is not in anyone's inline `dependencies` block.
 
 ## Template delta
 
-The brief says `--stdin-filepath` is "genuinely required for prettier".
-That is true when the parser is inferred from a name, which is how JSON
-works. YAML can set `--parser yaml` instead, and the filepath then does
-something the JSON builder never saw: it opens editorconfig. A later
-prettier language that copies `--stdin-filepath x.<ext>` from the JSON
-manifest without checking will pick up every `.editorconfig` between
-cwd and `/`. Prefer `--parser <name>` and omit the filepath unless a
-run without it fails.
+The brief says `--stdin-filepath` is "genuinely required for prettier". That is
+true when the parser is inferred from a name, which is how JSON works. YAML can
+set `--parser yaml` instead. The template should describe these as alternative
+parser selectors and ask for the smaller verified command; it should not imply
+that filepath inference is universally required. With `--no-config`, the
+filepath did not reopen editorconfig in either prettier version tested.
 
 The widths guess `[80, 40]` was right for prettier. The grammar guess
 was right. `gate3 = "default"` held.
