@@ -118,6 +118,8 @@ class Report:
     gates: dict = field(default_factory=dict)
     measures: dict = field(default_factory=dict)
     detail: list = field(default_factory=list)
+    # Languages with a corpus but no package yet; excluded from every gate.
+    pending: list = field(default_factory=list)
 
     @property
     def disqualified(self) -> bool:
@@ -180,6 +182,29 @@ def corpus(manifests: dict[str, mf.Manifest]) -> list[tuple[Path, mf.Manifest]]:
         names = ", ".join(f"{n} ({lang})" for n, lang in orphans[:5])
         sys.exit(f"trees with no manifest: {names}")
     return out
+
+
+def awaiting_package(
+    submission: Path, manifests: dict[str, mf.Manifest]
+) -> dict[str, mf.Manifest]:
+    """Languages that have landed a corpus but not yet a package.
+
+    Onboarding lands stage A (corpus, manifest, trees, reference output) before
+    stage C writes the package, and without this the scorer reports a stage-A
+    language as one refusal per tree per width and DISQUALIFIED -- which reads
+    exactly like a broken package. Four reviewed TOML corpora sat unmerged for
+    weeks because of it, and the stage-A brief asks for a green `./test.sh` from
+    a stage that could not produce one.
+
+    A language is awaiting its package only when no `packages/<name>.json`
+    exists at all. A package that is present and refuses is a real failure and
+    is still scored as one.
+    """
+    return {
+        name: m
+        for name, m in manifests.items()
+        if not (submission / "packages" / f"{name}.json").is_file()
+    }
 
 
 def score(
@@ -492,14 +517,25 @@ def main() -> int:
     args = ap.parse_args()
 
     known = mf.bootstrap()
+    submission = args.submission.resolve()
     manifests = mf.selected(known, args.language)
-    rep = score(args.submission.resolve(), manifests, args.verbose, known)
+    pending = awaiting_package(submission, manifests)
+    scored = {n: m for n, m in manifests.items() if n not in pending}
+    if not scored:
+        names = ", ".join(sorted(pending))
+        print(f"no package yet for {names}; nothing to score")
+        return 0
+    rep = score(submission, scored, args.verbose, known)
+    rep.pending = sorted(pending)
 
     if args.json:
         print(json.dumps(rep.__dict__, indent=2))
         return 0 if not rep.disqualified else 1
 
     print(f"submission: {rep.submission}\n")
+    if rep.pending:
+        print(f"  awaiting package   {', '.join(rep.pending)} "
+              f"(corpus landed, not yet scored)\n")
     for name, g in rep.gates.items():
         mark = "PASS" if g["pass"] else "FAIL"
         print(f"  [{mark}] {name:20} {g['got']:>3}/{g['of']:<3}  {g['what']}")

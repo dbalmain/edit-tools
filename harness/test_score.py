@@ -215,5 +215,33 @@ class SizeScoreTests(unittest.TestCase):
         )
 
 
+class AwaitingPackageTests(unittest.TestCase):
+    """Stage A lands a corpus; stage C lands the package. In between, a
+    language must read as pending rather than as one refusal per tree."""
+
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.submission = Path(tmp.name)
+        (self.submission / "packages").mkdir()
+
+    def test_a_language_with_no_package_is_awaiting_it(self):
+        (self.submission / "packages" / "json.json").write_text("{}")
+
+        pending = score.awaiting_package(
+            self.submission, {"json": object(), "toml": object()}
+        )
+
+        self.assertEqual(sorted(pending), ["toml"])
+
+    def test_a_package_that_exists_is_scored_however_it_behaves(self):
+        """A refusing package is a failure. Only a missing file is pending."""
+        (self.submission / "packages" / "toml.json").write_text("{}")
+
+        pending = score.awaiting_package(self.submission, {"toml": object()})
+
+        self.assertEqual(pending, {})
+
+
 if __name__ == "__main__":
     unittest.main()
