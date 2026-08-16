@@ -16,7 +16,7 @@ observed.
 | `reference_width`      | `flag`                                                                                 | Ran the same input at 80 and 40 and diffed. Flow collections reflow; almost nothing else does. `{width}` is therefore real.                                                                                                                                                                                                                            |
 | `widths`               | `[80, 40]`                                                                             | 80 is prettier's own default, established by bisection: a flow-sequence line of exactly 80 characters stays flat and 81 breaks. 40 is the narrow width; it forces the flow expand/collapse that 80 lets a package dodge.                                                                                                                               |
 | `gate3`                | `default`                                                                              | See below.                                                                                                                                                                                                                                                                                                                                             |
-| `transparent_wrappers` | `[]`                                                                                   | Gate 3 accepted prettier on 30/30 runs without naming a wrapper.                                                                                                                                                                                                                                                                                       |
+| `transparent_wrappers` | `[]`                                                                                   | Gate 3 accepted prettier on 32/32 runs without naming a wrapper.                                                                                                                                                                                                                                                                                       |
 | `equivalent_kinds`     | `[]`                                                                                   | Same: nothing was renamed. `flow_node` / `block_node` and `flow_sequence` / `block_sequence` are structural, not wrappers.                                                                                                                                                                                                                             |
 
 ### `--parser yaml` is sufficient; `--stdin-filepath` opens a channel
@@ -64,13 +64,13 @@ vs flow, `"hello"` vs `'hello'` vs `hello`, `null` / `~` / empty, `yes` /
 `true`, `0xFF` vs `255`, `|` vs `>`. The generic named-node comparison is
 the right oracle. Extras still cover comments.
 
-`check_gate3.py --language yaml`: 30 reference outputs accepted, 60
-destructive mutations rejected, 486 useful adversarial mutations (the arm is
+`check_gate3.py --language yaml`: 32 reference outputs accepted, 64
+destructive mutations rejected, 524 useful adversarial mutations (the arm is
 inert because there is no override), 0 wrapper kinds needed.
 
 ## Corpus
 
-Fifteen files in `corpus/src/yaml/`. Each is valid YAML: clean under
+Sixteen files in `corpus/src/yaml/`. Each is valid YAML: clean under
 tree-sitter-yaml 0.7.2 (no `ERROR` / `MISSING`) and under prettier 3.9.6.
 
 Required probes:
@@ -80,10 +80,14 @@ Required probes:
   broken. Width 80 keeps `matrix` flat; width 40 explodes the outer
   collections and leaves `[1, 2, 3, 4]`, `tags: [a, b]`, and `{ ok: 1 }`
   flat.
-- `flow_collections.yaml` — the construct that overflows. Empty, short,
-  medium (fits 80, breaks 40), long (still flat at 80, one item per line at
-  40), a source trailing comma, mixed types, and a hand-broken flow that
-  prettier collapses because it fits and has no comment.
+- `flow_sequence.yaml` — the construct that overflows. Short, medium (fits
+  80, breaks 40), long (breaks both), mixed types, nested sequences, flow
+  mappings as items, and a hand-broken sequence prettier collapses because
+  it fits and has no comment. Taken from DeepSeek's source probe;
+  trees and references regenerated with prettier 3.9.6.
+- `flow_mapping.yaml` — the `{ }` spelling alongside it. Short, medium
+  (pair-breaks at 80, items-break at 40), long (breaks both), nested,
+  a sequence inside, mixed types. Same origin and pin.
 - `comments.yaml` — every legal position: file-level, trailing on a pair,
   own-line before a nested mapping, own-line inside a mapping, after a key
   and before a flow collection, after `[` on the same line, trailing on an
@@ -135,7 +139,14 @@ Characteristic of YAML, one line each:
   block form of the same list, three nulls, `yes` vs `true`.
 - `blank_lines.yaml` — prettier caps a run at one and leaves zero alone.
 
-**Comments.** 15 of 15 files carry at least one comment. The extras layer
+The ten files that used to be byte-identical at width 80
+(`anchors`, `block_collections`, `block_scalars`, `documents`, `keys`,
+`nested`, `scalars`, `spelling`, `strings`, `tags`) now carry the same
+class of still-valid spacing prettier rewrites in `normalisation.yaml`.
+Block-scalar *bodies* stay at prettier's indent; only the keys around
+the indicators are padded.
+
+**Comments.** 16 of 16 files carry at least one comment. The extras layer
 of gate 3 is live on every file.
 
 **A prettier parse quirk, recorded so it is not "fixed" later.** A comment
@@ -144,35 +155,33 @@ mapping is a prettier `SyntaxError: Map comment with trailing content`.
 tree-sitter-yaml accepts it. `keys.yaml` puts the flow-collection keys
 first so the file is prettier-valid.
 
-## Two `cmp` loops
+## Corpus-quality counts
 
-Ran against the committed reference, not against a live prettier.
+From `./harness/corpus_stats.py --language yaml` against the committed
+reference, not a live prettier:
 
 ```
-# source vs reference@80
-changed 5 / 15
-  changed:    blank_lines, comments, flow_collections, kitchen, normalisation
-  identical:  anchors, block_collections, block_scalars, documents, keys,
-              nested, scalars, spelling, strings, tags
-
-# reference@80 vs reference@40
-width-diff 5 / 15
-  differs:    anchors, flow_collections, kitchen, nested, spelling
-  same:       blank_lines, block_collections, block_scalars, comments,
-              documents, keys, normalisation, scalars, strings, tags
+yaml  --  16 files, vs 3.9.6
+  reference changes    16/16 at some width   (@80 16/16  @40 16/16)
+  differs by width     6/16
+  carries a comment    16/16
+  reference overflow   @80 3  @40 17
 ```
 
-5 of 15 is exactly a third. Every width-discriminating file is a flow
-collection (or contains one). Block mappings, block sequences, strings,
-comments, block scalars, tags, and document markers do not reflow; they
-cannot contribute to this count. That is a fact about prettier, not a
-corpus hole.
+16 of 16 files change at width 80. The previous draft left ten files
+already in prettier's own spacing, so a width-80 diff tested only what
+prettier *breaks*. Those ten now carry deliberate, still-valid spacing
+or indentation that prettier rewrites: padded or tight `:` , unpadded
+flow braces, tight flow commas, flush sequence dashes, extra space
+after a dash. `normalisation.yaml` is no longer the only rewrite probe.
 
-5 of 15 files change at width 80 at all. The four structural files that
-prettier rewrites (`blank_lines`, `comments`, `flow_collections`,
-`kitchen`) plus the dedicated `normalisation` probe. The other ten are
-already in prettier's own spacing so a width-80 diff is about breaking,
-not about token cleanup.
+6 of 16 files differ between width 80 and width 40: `anchors`,
+`flow_mapping`, `flow_sequence`, `kitchen`, `nested`, `spelling`. That
+is above a third. Every width-discriminating file is a flow collection
+(or contains one). Block mappings, block sequences, strings, comments,
+block scalars, tags, and document markers do not reflow; they cannot
+contribute to this count. That is a fact about prettier, not a corpus
+hole.
 
 ## Reference overflow
 
@@ -182,7 +191,8 @@ not about token cleanup.
 trees — the same function, the same exemption for a line that contains a
 token longer than the width.
 
-**its own overflow: 20** across 30 line-runs (15 files × 2 widths).
+**its own overflow: 20** across 32 line-runs (16 files × 2 widths).
+`corpus_stats.py` prints this as `@80 3  @40 17`.
 
 | File            | @80 | @40 | Cause                                                                                          |
 | --------------- | --: | --: | ---------------------------------------------------------------------------------------------- |
@@ -308,30 +318,38 @@ normalisation. Files that started life single-quoted are unwinnable for
 that reason, the same way black-without-`-S` made Python strings
 unwinnable.
 
-### Block scalar bodies fall through a gate-3 gap, and prettier reindents them
+### Prettier reindents block-scalar bodies; that rewrite is now rejected
 
 `block_scalar` has no named children. The indicator (`|`, `>-`, `|2`, …)
-is an anonymous child; the interior is not a child at all. Gate 3's `_tokens`
-path therefore compares the anonymous child tokens and discards the source gap
-that holds the body. It does **not** compare `source[start:end]`.
+is an anonymous child; the interior is an untokenised source gap, not a
+child. prettier reindents a 4-space literal to 2-space. The YAML *data*
+is unchanged (the block indent is stripped), but a package cannot
+reproduce the rewrite: there is no named child to recurse into, so the
+construct needs `verbatim`, which preserves the source bytes including
+a non-canonical indent.
 
-Prettier reindents a 4-space literal to 2-space. The YAML *data* is unchanged
-(the block indent is stripped), but a package cannot reproduce the rewrite.
-Experimentally, gate 3 accepts both that reindent and the destructive change
-`d: |\n  x` → `d: |\n  y`. `block_scalars.yaml` is already at prettier's
-2-space indent to avoid an unwinnable agreement case, not to make gate 3 pass.
+The previous draft said gate 3 discarded that gap and therefore accepted
+both a reindent and a body rewrite (`d: |\n  x` → `d: |\n  y`). That
+account of the gate was wrong. After `06a7694` on `main`, a node whose
+children are all anonymous keeps any non-whitespace source gap. Confirmed
+on the live `tree-sitter-yaml` grammar: body rewrite, body deletion,
+folded-body rewrite, and a 2-space → 4-space reindent are all rejected;
+`[ ]` → `[]` and `{ }` → `{}` are still accepted, because those gaps are
+whitespace only.
+
+So a block-scalar body rewrite **is** rejected. `block_scalars.yaml` is
+already at prettier's 2-space indent with canonical indicator order
+because a non-canonical body would fail "the reference must pass gate 3",
+not because the gate is blind. Matching prettier's reindent remains
+impossible under linearity. The same is true of indicator-order
+canonicalisation (`|-2` → `|2-`) and terminal whitespace / chomping
+layout; those stay omitted.
 
 A relative extra indent inside the block (`echo hello` then `  nested`)
 is data and is preserved. Folded `>` interiors are **not** reflowed, even
 at 150 columns. Chomping indicators and the indent indicator stay.
-
-A package has no named child to recurse into. The construct needs `verbatim`
-(or an equivalent "emit this node's own source") and cannot be expressed as a
-layout of children. A package that preserves a non-canonical source indent
-diverges from prettier; matching it is impossible under linearity even though
-the current gate would permit the bytes. Prettier also canonicalises indicator
-order (`|-2` → `|2-`), another unsanctioned token rewrite. These are measurement
-limits plus a permissive gate defect, not package bugs.
+The file's noncanonical spacing is around the keys (`script : |`,
+`desc:  >`), which prettier collapses and gate 3 accepts.
 
 ### Anchors, aliases, tags, multi-document streams
 
@@ -352,6 +370,8 @@ keys.
 - **Quote normalisation.** No opcode rewrites token text.
 - **Block-scalar reindent.** The interior is not in the tree; `verbatim`
   preserves source bytes, including an indent prettier would change.
+  Gate 3 now keeps that gap, so a non-canonical body also fails "the
+  reference must pass".
 - **Explicit-key canonicalisation.** Prettier removes the anonymous `?` from a
   simple explicit mapping key; no package policy may delete it.
 - **"Break this group only if the *collection* overflows, ignoring a
