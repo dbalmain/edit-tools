@@ -111,15 +111,25 @@
           ["count", "t:call_expression", 2],
           ["group", ["indent", ["sp"], ["each", "named", ["line"]]]],
           [
-            "group",
+            "when",
+            ["count", "t:,", 0],
             [
-              "indent",
-              ["line"],
+              "when",
+              ["count", "t:call_expression", 0],
+              ["group", ["indent", ["line"], ["each", "named", ["line"]]]],
+              ["group", ["indent", ["sp"], ["fill", "named", ["line"]]]]
+            ],
+            [
+              "group",
               [
-                "when",
-                ["count", "t:,", 0],
-                ["each", "named", ["line"]],
-                ["each", "named", ["use", "comma_or_space"]]
+                "indent",
+                ["line"],
+                [
+                  "when",
+                  ["count", "t:string_value", 0],
+                  ["each", "named", ["use", "comma_or_space"]],
+                  ["fill", "named", ["use", "comma_or_space"]]
+                ]
               ]
             ]
           ]
