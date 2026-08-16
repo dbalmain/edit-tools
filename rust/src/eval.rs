@@ -229,6 +229,9 @@ impl<'a> Ctx<'a> {
             Expr::Soft => Ok(Doc::Soft),
             Expr::Hard => Ok(Doc::Hard),
             Expr::Sp => Ok(Doc::text(" ")),
+            Expr::SrcLine => Ok(self.src_break(Doc::text(" "))),
+            Expr::SrcSoft => Ok(self.src_break(Doc::nil())),
+            Expr::SrcTrail(sep) => self.srctrail(sep, f),
             Expr::Child(sel) => self.child(sel, f),
             Expr::Each(sel, sep) => self.each(sel, sep, f),
             Expr::Tok(s) => self.tok(s, f),
@@ -299,6 +302,42 @@ impl<'a> Ctx<'a> {
         }
         self.cursor += 1;
         Ok(self.cursor - 1)
+    }
+
+    /// A break that mirrors the source's line structure rather than the group's
+    /// fit: `flat` when the source put the next item on the same line, a hard
+    /// break when it did not.
+    fn src_break(&self, flat: Doc) -> Doc {
+        let brk = self.items.get(self.cursor).is_some_and(|i| i.line_break);
+        if brk {
+            Doc::Hard
+        } else {
+            flat
+        }
+    }
+
+    /// The trailing-separator policy for a source-driven list: adopt a
+    /// separator the source has, and emit it only when the following token sits
+    /// on a fresh line. gofmt strips a single-line literal's trailing comma and
+    /// keeps a broken literal's.
+    fn srctrail(&mut self, sep: &str, f: &Fmt<'a>) -> Result<Doc, Refusal> {
+        let at = self.cursor;
+        let present = self.items.get(at).and_then(|i| i.node.text.as_deref()) == Some(sep);
+        if present {
+            self.cursor += 1;
+        }
+        let brk = self.items.get(self.cursor).is_some_and(|i| i.line_break);
+        if !brk {
+            if present && self.items[at].decorated() {
+                return Err(self.refuse("no comment on a stripped trailing separator"));
+            }
+            return Ok(Doc::nil());
+        }
+        Ok(if present {
+            decorate(f.pkg, &self.items[at], Doc::text(sep))
+        } else {
+            Doc::text(sep)
+        })
     }
 
     fn child(&mut self, sel: &Sel, f: &Fmt<'a>) -> Result<Doc, Refusal> {

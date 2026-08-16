@@ -469,6 +469,15 @@ pub enum Expr {
     /// Up to `n` blank lines from the source; the list, if any, is the types
     /// that force the gap open to exactly `n`.
     Blank(usize, Vec<String>),
+    /// A break that mirrors the source's line structure: space when flat,
+    /// newline when the source had a line break before the cursor.
+    SrcLine,
+    /// `SrcLine`'s nothing-when-flat sibling.
+    SrcSoft,
+    /// The trailing-separator policy for a source-driven list (gofmt): consume
+    /// the separator if the source has one, and emit it only when the source
+    /// had a line break before the following token.
+    SrcTrail(String),
 }
 
 impl TryFrom<Value> for Expr {
@@ -506,6 +515,12 @@ impl TryFrom<Value> for Expr {
             "hard" => arity(0).map(|()| Expr::Hard),
             "sp" => arity(0).map(|()| Expr::Sp),
             "verbatim" => arity(0).map(|()| Expr::Verbatim),
+            "srcline" => arity(0).map(|()| Expr::SrcLine),
+            "srcsoft" => arity(0).map(|()| Expr::SrcSoft),
+            "srctrail" => {
+                arity(1)?;
+                Ok(Expr::SrcTrail(literal(&parts[0])?))
+            }
             "child" => {
                 arity(1)?;
                 Ok(Expr::Child(selector(&parts[0])?))

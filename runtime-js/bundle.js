@@ -171,6 +171,8 @@ function validateExpr(value) {
     case "hard":
     case "sp":
     case "verbatim":
+    case "srcline":
+    case "srcsoft":
       arity(0);
       return;
     case "child":
@@ -186,6 +188,10 @@ function validateExpr(value) {
       arity(2);
       literal(rest[0]);
       parseSelector(rest[1]);
+      return;
+    case "srctrail":
+      arity(1);
+      literal(rest[0]);
       return;
     case "blank":
       if (rest.length < 1 || rest.length > 2) {
@@ -495,6 +501,7 @@ function splitChildren(fmt, node) {
     }
     // Punctuation cannot carry a leading comment: emitting it there would put
     // the comment at the wrong indent, outside the bracket it closes.
+    const lineBreak = gap >= 1 || lead.length > 0;
     let take = [];
     if (!fmt.tokens.has(child.type)) {
       take = lead;
@@ -506,8 +513,8 @@ function splitChildren(fmt, node) {
       suffix: [],
       after: [],
       blanks: take.length > 0 ? take[0].blanks : Math.max(gap - 1, 0),
-      // Blank lines between the last leading comment and the item itself.
       gap: take.length > 0 ? Math.max(gap - 1, 0) : 0,
+      lineBreak,
     });
   }
 
@@ -655,6 +662,12 @@ class Ctx {
         return hard;
       case "sp":
         return text(" ");
+      case "srcline":
+        return this.srcBreak(text(" "));
+      case "srcsoft":
+        return this.srcBreak(nil);
+      case "srctrail":
+        return this.srctrail(rest[0]);
       case "child":
         return this.child(parseSelector(rest[0]));
       case "each":
@@ -750,6 +763,33 @@ class Ctx {
     }
     this.cursor++;
     return concat([decorate(this.fmt, item, optional), breakParent]);
+  }
+
+  /** A break that mirrors the source's line structure rather than the group's
+   *  fit: `flat` when the source put the next item on the same line, a hard
+   *  break when it did not. */
+  srcBreak(flat) {
+    const item = this.items[this.cursor];
+    return item && item.lineBreak ? hard : flat;
+  }
+
+  /** The trailing-separator policy for a source-driven list: adopt a separator
+   *  the source has, and emit it only when the following token sits on a fresh
+   *  line. gofmt strips a single-line literal's trailing comma and keeps a
+   *  broken literal's. */
+  srctrail(sep) {
+    const at = this.cursor;
+    const item = this.items[at];
+    const present = item && item.node.text === sep;
+    if (present) this.cursor++;
+    const next = this.items[this.cursor];
+    if (!(next && next.lineBreak)) {
+      if (present && decorated(item)) {
+        throw this.refuse("no comment on a stripped trailing separator");
+      }
+      return nil;
+    }
+    return present ? decorate(this.fmt, item, text(sep)) : text(sep);
   }
 
   /** The balanced-paren policy: adopt the pair the source already has, or add

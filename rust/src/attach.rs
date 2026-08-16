@@ -29,6 +29,10 @@ pub struct Item<'a> {
     pub blanks: usize,
     /// Blank lines between the last leading comment and the item itself.
     pub gap: usize,
+    /// Whether the source had a line break before this item (before its first
+    /// leading comment, if any). The source-mirroring breaks (`srcline` /
+    /// `srcsoft`) read this.
+    pub line_break: bool,
 }
 
 impl Item<'_> {
@@ -79,6 +83,7 @@ pub fn split<'a>(node: &'a Node, src: &[u8], pkg: &Package) -> Split<'a> {
             continue;
         }
         let blanks = gap.saturating_sub(1);
+        let line_break = gap >= 1 || !lead.is_empty();
         // Punctuation cannot carry a leading comment: emitting it there would
         // put the comment at the wrong indent, outside the bracket it closes.
         let take = if pkg.is_token(&child.kind) {
@@ -93,6 +98,7 @@ pub fn split<'a>(node: &'a Node, src: &[u8], pkg: &Package) -> Split<'a> {
             lead: take,
             suffix: Vec::new(),
             after: Vec::new(),
+            line_break,
         });
     }
 
