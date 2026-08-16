@@ -1,0 +1,132 @@
+{
+  "format": "et-doc-rules/1",
+  "indent": 2,
+
+  "comment_gap": 1,
+  "blank_cap": 1,
+
+  "tokens": [
+    "{", "}", "[", "]", ",", ":", "-", "---", "...", "?",
+    "&", "*", "|", ">", "\"", "'"
+  ],
+
+  "comments": ["comment"],
+  "descend": [],
+  "optional_parens": [],
+  "precedence": {},
+
+  "defs": {
+    "flow_brackets": [
+      "when",
+      ["count", "named", 0],
+      ["seq", ["tok", ["$", 0]], ["tok", ["$", 2]]],
+      [
+        "group",
+        ["tok", ["$", 0]],
+        [
+          "indent",
+          ["$", 1],
+          ["each", "named", ["seq", ["tok", ","], ["line"]]],
+          ["trail", ",", "named"]
+        ],
+        ["$", 1],
+        ["tok", ["$", 2]]
+      ]
+    ]
+  },
+
+  "rules": {
+    "stream": [
+      "seq",
+      ["each", "named", ["seq", ["hard"], ["blank", 1]]],
+      ["blank", 1]
+    ],
+
+    "document": [
+      "seq",
+      ["opt", "t:yaml_directive", ["seq", ["child", "t:yaml_directive"], ["hard"]]],
+      ["opt", "t:tag_directive", ["seq", ["child", "t:tag_directive"], ["hard"]]],
+      ["opt", "t:---", ["seq", ["tok", "---"], ["hard"]]],
+      ["opt", "named", ["child", "named"]],
+      ["opt", "t:...", ["seq", ["hard"], ["tok", "..."]]]
+    ],
+
+    "yaml_directive": ["verbatim"],
+    "tag_directive": ["verbatim"],
+
+    "block_node": [
+      "when",
+      ["count", "t:block_scalar", 1],
+      ["verbatim"],
+      [
+        "seq",
+        ["opt", "t:anchor", ["child", "t:anchor"]],
+        ["opt", "t:tag", ["child", "t:tag"]],
+        [
+          "when",
+          ["count", "t:anchor", 1],
+          ["seq", ["hard"], ["child", "named"]],
+          [
+            "when",
+            ["count", "t:tag", 1],
+            ["seq", ["hard"], ["child", "named"]],
+            ["child", "named"]
+          ]
+        ]
+      ]
+    ],
+
+    "flow_node": ["each", "named", ["sp"]],
+
+    "block_mapping": ["each", "named", ["seq", ["hard"], ["blank", 1]]],
+    "block_sequence": ["each", "named", ["seq", ["hard"], ["blank", 1]]],
+
+    "block_mapping_pair": [
+      "seq",
+      ["opt", "t:?", ["seq", ["tok", "?"], ["sp"]]],
+      ["child", "f:key"],
+      [
+        "when",
+        ["count", "t:?", 1],
+        ["seq", ["hard"], ["tok", ":"]],
+        ["tok", ":"]
+      ],
+      [
+        "opt",
+        "f:value",
+        [
+          "when",
+          ["count", "t:block_node", 1],
+          ["indent", ["hard"], ["child", "f:value"]],
+          ["group", ["indent", ["line"], ["child", "f:value"]]]
+        ]
+      ]
+    ],
+
+    "block_sequence_item": [
+      "seq",
+      ["tok", "-"],
+      ["sp"],
+      ["indent", ["child", "named"]]
+    ],
+
+    "block_scalar": ["verbatim"],
+
+    "flow_sequence": ["use", "flow_brackets", "[", ["soft"], "]"],
+    "flow_mapping": ["use", "flow_brackets", "{", ["line"], "}"],
+
+    "flow_pair": [
+      "seq",
+      ["child", "f:key"],
+      ["tok", ":"],
+      ["opt", "f:value", ["seq", ["sp"], ["child", "f:value"]]]
+    ],
+
+    "plain_scalar": ["child", "named"],
+    "double_quote_scalar": ["verbatim"],
+    "single_quote_scalar": ["verbatim"],
+
+    "anchor": ["seq", ["tok", "&"], ["child", "t:anchor_name"]],
+    "alias": ["seq", ["tok", "*"], ["child", "t:alias_name"]]
+  }
+}
