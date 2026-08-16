@@ -62,14 +62,14 @@ reference_width = "flag"
 # expand/collapse that 80 lets a package dodge.
 widths = [80, 40]
 
-# yaml.safe_load (and every other data-model loader) collapses the spellings
-# a formatter must preserve: block vs flow, quote style, null/~ / empty,
-# yes/true, 0xFF vs 255, | vs >. The generic named-node comparison is the
-# right oracle; extras still cover comments. Leave wrappers/equivalences
-# empty until the gate names a kind -- YAML has no parenthesised-expression
-# node, and flow_node / block_node are structural (a flow sequence is not
-# a block sequence).
-gate3 = "default"
+# yaml.safe_load (and every other data-model loader) collapses the spellings a
+# formatter must preserve, so it would be weaker than the default if used as a
+# replacement. This override is instead `(generic default, chomp evidence)`:
+# conjunction cannot accept anything the default rejects, while the added part
+# sees `|+` / `>+` newlines that tree-sitter leaves outside the scalar node.
+# Leave wrappers/equivalences empty: YAML has no parenthesised-expression node,
+# and flow_node / block_node are structural.
+gate3 = "yaml"
 
 transparent_wrappers = []
 equivalent_kinds = []

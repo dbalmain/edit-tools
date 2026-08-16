@@ -230,6 +230,31 @@ def _canon_map(manifest) -> dict[str, str]:
     return out
 
 
+def generic_part_from_root(
+    root,
+    source: bytes,
+    manifest,
+    aliases: dict[str, _mf.Manifest] | None = None,
+):
+    """The generic default's structural component for an already parsed tree.
+
+    Stronger language overrides compose with this value instead of replacing
+    it. Their accepted equivalence class is therefore a subset of the default's
+    by construction, including on cases no adversarial mutation happens to
+    exercise.
+    """
+    if aliases is None:
+        aliases = _mf.injection_map({manifest.name: manifest})
+    return _generic(
+        root,
+        source,
+        manifest,
+        aliases,
+        manifest.transparent_wrappers,
+        _canon_map(manifest),
+    )
+
+
 # --------------------------------------------------------------------------
 # per-language overrides
 
@@ -312,14 +337,7 @@ def _signature_from_root(
     extras = tuple(_extras(root, source, manifest, aliases, []))
 
     if generic or manifest.gate3 == "default":
-        structural = _generic(
-            root,
-            source,
-            manifest,
-            aliases,
-            manifest.transparent_wrappers,
-            _canon_map(manifest),
-        )
+        structural = generic_part_from_root(root, source, manifest, aliases)
     else:
         structural = _override(manifest.gate3).signature(text)
         if structural is None:
