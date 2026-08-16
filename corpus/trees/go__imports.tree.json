@@ -1,0 +1,771 @@
+{
+ "language": "go",
+ "source_file": "corpus/src/go/imports.go",
+ "source": "package main\n\nimport \"fmt\"\n\nimport (\n  \"context\"\n  \"os\"\n  \"time\" // the standard clock\n\n  alias \"net/http\"\n  _ \"net/http/pprof\" // registers debug handlers\n  . \"strings\"\n)\n\nfunc main() {\n  _ = fmt.Sprintf\n  _ = context.Background\n  _ = os.Args\n  _ = time.Now\n  _ = alias.Get\n  _ = ToUpper\n}\n",
+ "root": {
+  "type": "source_file",
+  "start": 0,
+  "end": 291,
+  "children": [
+   {
+    "type": "package_clause",
+    "start": 0,
+    "end": 12,
+    "children": [
+     {
+      "type": "package",
+      "start": 0,
+      "end": 7,
+      "text": "package"
+     },
+     {
+      "type": "package_identifier",
+      "start": 8,
+      "end": 12,
+      "text": "main"
+     }
+    ]
+   },
+   {
+    "type": "import_declaration",
+    "start": 14,
+    "end": 26,
+    "children": [
+     {
+      "type": "import",
+      "start": 14,
+      "end": 20,
+      "text": "import"
+     },
+     {
+      "type": "import_spec",
+      "start": 21,
+      "end": 26,
+      "children": [
+       {
+        "type": "interpreted_string_literal",
+        "start": 21,
+        "end": 26,
+        "field": "path",
+        "children": [
+         {
+          "type": "\"",
+          "start": 21,
+          "end": 22,
+          "text": "\""
+         },
+         {
+          "type": "interpreted_string_literal_content",
+          "start": 22,
+          "end": 25,
+          "text": "fmt"
+         },
+         {
+          "type": "\"",
+          "start": 25,
+          "end": 26,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "import_declaration",
+    "start": 28,
+    "end": 171,
+    "children": [
+     {
+      "type": "import",
+      "start": 28,
+      "end": 34,
+      "text": "import"
+     },
+     {
+      "type": "import_spec_list",
+      "start": 35,
+      "end": 171,
+      "children": [
+       {
+        "type": "(",
+        "start": 35,
+        "end": 36,
+        "text": "("
+       },
+       {
+        "type": "import_spec",
+        "start": 39,
+        "end": 48,
+        "children": [
+         {
+          "type": "interpreted_string_literal",
+          "start": 39,
+          "end": 48,
+          "field": "path",
+          "children": [
+           {
+            "type": "\"",
+            "start": 39,
+            "end": 40,
+            "text": "\""
+           },
+           {
+            "type": "interpreted_string_literal_content",
+            "start": 40,
+            "end": 47,
+            "text": "context"
+           },
+           {
+            "type": "\"",
+            "start": 47,
+            "end": 48,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "import_spec",
+        "start": 51,
+        "end": 55,
+        "children": [
+         {
+          "type": "interpreted_string_literal",
+          "start": 51,
+          "end": 55,
+          "field": "path",
+          "children": [
+           {
+            "type": "\"",
+            "start": 51,
+            "end": 52,
+            "text": "\""
+           },
+           {
+            "type": "interpreted_string_literal_content",
+            "start": 52,
+            "end": 54,
+            "text": "os"
+           },
+           {
+            "type": "\"",
+            "start": 54,
+            "end": 55,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "import_spec",
+        "start": 58,
+        "end": 64,
+        "children": [
+         {
+          "type": "interpreted_string_literal",
+          "start": 58,
+          "end": 64,
+          "field": "path",
+          "children": [
+           {
+            "type": "\"",
+            "start": 58,
+            "end": 59,
+            "text": "\""
+           },
+           {
+            "type": "interpreted_string_literal_content",
+            "start": 59,
+            "end": 63,
+            "text": "time"
+           },
+           {
+            "type": "\"",
+            "start": 63,
+            "end": 64,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "comment",
+        "start": 65,
+        "end": 86,
+        "text": "// the standard clock"
+       },
+       {
+        "type": "import_spec",
+        "start": 90,
+        "end": 106,
+        "children": [
+         {
+          "type": "package_identifier",
+          "start": 90,
+          "end": 95,
+          "field": "name",
+          "text": "alias"
+         },
+         {
+          "type": "interpreted_string_literal",
+          "start": 96,
+          "end": 106,
+          "field": "path",
+          "children": [
+           {
+            "type": "\"",
+            "start": 96,
+            "end": 97,
+            "text": "\""
+           },
+           {
+            "type": "interpreted_string_literal_content",
+            "start": 97,
+            "end": 105,
+            "text": "net/http"
+           },
+           {
+            "type": "\"",
+            "start": 105,
+            "end": 106,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "import_spec",
+        "start": 109,
+        "end": 127,
+        "children": [
+         {
+          "type": "blank_identifier",
+          "start": 109,
+          "end": 110,
+          "field": "name",
+          "text": "_"
+         },
+         {
+          "type": "interpreted_string_literal",
+          "start": 111,
+          "end": 127,
+          "field": "path",
+          "children": [
+           {
+            "type": "\"",
+            "start": 111,
+            "end": 112,
+            "text": "\""
+           },
+           {
+            "type": "interpreted_string_literal_content",
+            "start": 112,
+            "end": 126,
+            "text": "net/http/pprof"
+           },
+           {
+            "type": "\"",
+            "start": 126,
+            "end": 127,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "comment",
+        "start": 128,
+        "end": 155,
+        "text": "// registers debug handlers"
+       },
+       {
+        "type": "import_spec",
+        "start": 158,
+        "end": 169,
+        "children": [
+         {
+          "type": "dot",
+          "start": 158,
+          "end": 159,
+          "field": "name",
+          "children": [
+           {
+            "type": ".",
+            "start": 158,
+            "end": 159,
+            "text": "."
+           }
+          ]
+         },
+         {
+          "type": "interpreted_string_literal",
+          "start": 160,
+          "end": 169,
+          "field": "path",
+          "children": [
+           {
+            "type": "\"",
+            "start": 160,
+            "end": 161,
+            "text": "\""
+           },
+           {
+            "type": "interpreted_string_literal_content",
+            "start": 161,
+            "end": 168,
+            "text": "strings"
+           },
+           {
+            "type": "\"",
+            "start": 168,
+            "end": 169,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ")",
+        "start": 170,
+        "end": 171,
+        "text": ")"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "function_declaration",
+    "start": 173,
+    "end": 290,
+    "children": [
+     {
+      "type": "func",
+      "start": 173,
+      "end": 177,
+      "text": "func"
+     },
+     {
+      "type": "identifier",
+      "start": 178,
+      "end": 182,
+      "field": "name",
+      "text": "main"
+     },
+     {
+      "type": "parameter_list",
+      "start": 182,
+      "end": 184,
+      "field": "parameters",
+      "children": [
+       {
+        "type": "(",
+        "start": 182,
+        "end": 183,
+        "text": "("
+       },
+       {
+        "type": ")",
+        "start": 183,
+        "end": 184,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "block",
+      "start": 185,
+      "end": 290,
+      "field": "body",
+      "children": [
+       {
+        "type": "{",
+        "start": 185,
+        "end": 186,
+        "text": "{"
+       },
+       {
+        "type": "statement_list",
+        "start": 189,
+        "end": 289,
+        "children": [
+         {
+          "type": "assignment_statement",
+          "start": 189,
+          "end": 204,
+          "children": [
+           {
+            "type": "expression_list",
+            "start": 189,
+            "end": 190,
+            "field": "left",
+            "children": [
+             {
+              "type": "identifier",
+              "start": 189,
+              "end": 190,
+              "text": "_"
+             }
+            ]
+           },
+           {
+            "type": "=",
+            "start": 191,
+            "end": 192,
+            "field": "operator",
+            "text": "="
+           },
+           {
+            "type": "expression_list",
+            "start": 193,
+            "end": 204,
+            "field": "right",
+            "children": [
+             {
+              "type": "selector_expression",
+              "start": 193,
+              "end": 204,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 193,
+                "end": 196,
+                "field": "operand",
+                "text": "fmt"
+               },
+               {
+                "type": ".",
+                "start": 196,
+                "end": 197,
+                "text": "."
+               },
+               {
+                "type": "field_identifier",
+                "start": 197,
+                "end": 204,
+                "field": "field",
+                "text": "Sprintf"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "assignment_statement",
+          "start": 207,
+          "end": 229,
+          "children": [
+           {
+            "type": "expression_list",
+            "start": 207,
+            "end": 208,
+            "field": "left",
+            "children": [
+             {
+              "type": "identifier",
+              "start": 207,
+              "end": 208,
+              "text": "_"
+             }
+            ]
+           },
+           {
+            "type": "=",
+            "start": 209,
+            "end": 210,
+            "field": "operator",
+            "text": "="
+           },
+           {
+            "type": "expression_list",
+            "start": 211,
+            "end": 229,
+            "field": "right",
+            "children": [
+             {
+              "type": "selector_expression",
+              "start": 211,
+              "end": 229,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 211,
+                "end": 218,
+                "field": "operand",
+                "text": "context"
+               },
+               {
+                "type": ".",
+                "start": 218,
+                "end": 219,
+                "text": "."
+               },
+               {
+                "type": "field_identifier",
+                "start": 219,
+                "end": 229,
+                "field": "field",
+                "text": "Background"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "assignment_statement",
+          "start": 232,
+          "end": 243,
+          "children": [
+           {
+            "type": "expression_list",
+            "start": 232,
+            "end": 233,
+            "field": "left",
+            "children": [
+             {
+              "type": "identifier",
+              "start": 232,
+              "end": 233,
+              "text": "_"
+             }
+            ]
+           },
+           {
+            "type": "=",
+            "start": 234,
+            "end": 235,
+            "field": "operator",
+            "text": "="
+           },
+           {
+            "type": "expression_list",
+            "start": 236,
+            "end": 243,
+            "field": "right",
+            "children": [
+             {
+              "type": "selector_expression",
+              "start": 236,
+              "end": 243,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 236,
+                "end": 238,
+                "field": "operand",
+                "text": "os"
+               },
+               {
+                "type": ".",
+                "start": 238,
+                "end": 239,
+                "text": "."
+               },
+               {
+                "type": "field_identifier",
+                "start": 239,
+                "end": 243,
+                "field": "field",
+                "text": "Args"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "assignment_statement",
+          "start": 246,
+          "end": 258,
+          "children": [
+           {
+            "type": "expression_list",
+            "start": 246,
+            "end": 247,
+            "field": "left",
+            "children": [
+             {
+              "type": "identifier",
+              "start": 246,
+              "end": 247,
+              "text": "_"
+             }
+            ]
+           },
+           {
+            "type": "=",
+            "start": 248,
+            "end": 249,
+            "field": "operator",
+            "text": "="
+           },
+           {
+            "type": "expression_list",
+            "start": 250,
+            "end": 258,
+            "field": "right",
+            "children": [
+             {
+              "type": "selector_expression",
+              "start": 250,
+              "end": 258,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 250,
+                "end": 254,
+                "field": "operand",
+                "text": "time"
+               },
+               {
+                "type": ".",
+                "start": 254,
+                "end": 255,
+                "text": "."
+               },
+               {
+                "type": "field_identifier",
+                "start": 255,
+                "end": 258,
+                "field": "field",
+                "text": "Now"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "assignment_statement",
+          "start": 261,
+          "end": 274,
+          "children": [
+           {
+            "type": "expression_list",
+            "start": 261,
+            "end": 262,
+            "field": "left",
+            "children": [
+             {
+              "type": "identifier",
+              "start": 261,
+              "end": 262,
+              "text": "_"
+             }
+            ]
+           },
+           {
+            "type": "=",
+            "start": 263,
+            "end": 264,
+            "field": "operator",
+            "text": "="
+           },
+           {
+            "type": "expression_list",
+            "start": 265,
+            "end": 274,
+            "field": "right",
+            "children": [
+             {
+              "type": "selector_expression",
+              "start": 265,
+              "end": 274,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 265,
+                "end": 270,
+                "field": "operand",
+                "text": "alias"
+               },
+               {
+                "type": ".",
+                "start": 270,
+                "end": 271,
+                "text": "."
+               },
+               {
+                "type": "field_identifier",
+                "start": 271,
+                "end": 274,
+                "field": "field",
+                "text": "Get"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "assignment_statement",
+          "start": 277,
+          "end": 288,
+          "children": [
+           {
+            "type": "expression_list",
+            "start": 277,
+            "end": 278,
+            "field": "left",
+            "children": [
+             {
+              "type": "identifier",
+              "start": 277,
+              "end": 278,
+              "text": "_"
+             }
+            ]
+           },
+           {
+            "type": "=",
+            "start": 279,
+            "end": 280,
+            "field": "operator",
+            "text": "="
+           },
+           {
+            "type": "expression_list",
+            "start": 281,
+            "end": 288,
+            "field": "right",
+            "children": [
+             {
+              "type": "identifier",
+              "start": 281,
+              "end": 288,
+              "text": "ToUpper"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 289,
+        "end": 290,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

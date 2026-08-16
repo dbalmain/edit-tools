@@ -1,0 +1,40 @@
+package main
+
+type Stack[T any]struct {
+  items []T
+}
+
+func (s *Stack[T])Push(v T) {
+  s.items=append(s.items,v)
+}
+
+func (s *Stack[T])Pop() (T,bool) {
+  if len(s.items)==0 {
+    var zero T
+    return zero,false
+  }
+  v:=s.items[len(s.items)-1]
+  s.items=s.items[:len(s.items)-1]
+  return v,true
+}
+
+// Map applies f to every element of xs.
+func Map[T,U any](xs []T,f func(T) U) []U {
+  out:=make([]U,0,len(xs))
+  for _,x := range xs {
+    out=append(out,f(x))
+  }
+  return out
+}
+
+type Number interface {
+  ~int|~int64|~float64
+}
+
+func Sum[T Number](xs []T) T {
+  var total T
+  for _,x := range xs {
+    total+=x // fold over the slice
+  }
+  return total
+}

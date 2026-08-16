@@ -1,0 +1,25 @@
+package main
+
+var matrix = [][]int{
+{1, 2, 3},
+{4, 5, 6},
+{7, 8, 9},
+}
+
+var config = map[string]map[string]int{
+"primary": {"host": "localhost", "port": 8080},
+"replica": {"host": "backup", "port": 8081},
+}
+
+type Node struct {
+	Value int
+	Children []Node
+}
+
+// a tree literal deep enough that no single line holds it
+var tree = Node{Value: 1, Children: []Node{{Value: 2}, {Value: 3, Children: []Node{{Value: 4}}}}}
+
+var deep = map[string][]map[string][]int{
+"a": {{"x": {1, 2, 3}}, {"y": {4, 5}}},
+"b": {{"z": {6}}},
+}

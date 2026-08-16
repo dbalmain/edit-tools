@@ -1,0 +1,1012 @@
+{
+ "language": "go",
+ "source_file": "corpus/src/go/interfaces.go",
+ "source": "package main\n\nimport \"io\"\n\n// Reader is the minimal read interface.\ntype Reader interface {\n  Read(p []byte)(n int,err error)\n}\n\ntype Writer interface {\n  Write(p []byte)(n int,err error)\n}\n\ntype ReadWriter interface {\n  Reader\n  Writer\n}\n\ntype Closer interface {\n  Close() error\n}\n\ntype ReadWriteCloser interface {\n  io.Reader\n  io.Writer\n  io.Closer\n}\n\ntype Stringer interface {\n  String() string\n}\n\nvar _ io.Reader = Reader(nil) // compile-time interface assertion\n",
+ "root": {
+  "type": "source_file",
+  "start": 0,
+  "end": 468,
+  "children": [
+   {
+    "type": "package_clause",
+    "start": 0,
+    "end": 12,
+    "children": [
+     {
+      "type": "package",
+      "start": 0,
+      "end": 7,
+      "text": "package"
+     },
+     {
+      "type": "package_identifier",
+      "start": 8,
+      "end": 12,
+      "text": "main"
+     }
+    ]
+   },
+   {
+    "type": "import_declaration",
+    "start": 14,
+    "end": 25,
+    "children": [
+     {
+      "type": "import",
+      "start": 14,
+      "end": 20,
+      "text": "import"
+     },
+     {
+      "type": "import_spec",
+      "start": 21,
+      "end": 25,
+      "children": [
+       {
+        "type": "interpreted_string_literal",
+        "start": 21,
+        "end": 25,
+        "field": "path",
+        "children": [
+         {
+          "type": "\"",
+          "start": 21,
+          "end": 22,
+          "text": "\""
+         },
+         {
+          "type": "interpreted_string_literal_content",
+          "start": 22,
+          "end": 24,
+          "text": "io"
+         },
+         {
+          "type": "\"",
+          "start": 24,
+          "end": 25,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 27,
+    "end": 67,
+    "text": "// Reader is the minimal read interface."
+   },
+   {
+    "type": "type_declaration",
+    "start": 68,
+    "end": 127,
+    "children": [
+     {
+      "type": "type",
+      "start": 68,
+      "end": 72,
+      "text": "type"
+     },
+     {
+      "type": "type_spec",
+      "start": 73,
+      "end": 127,
+      "children": [
+       {
+        "type": "type_identifier",
+        "start": 73,
+        "end": 79,
+        "field": "name",
+        "text": "Reader"
+       },
+       {
+        "type": "interface_type",
+        "start": 80,
+        "end": 127,
+        "field": "type",
+        "children": [
+         {
+          "type": "interface",
+          "start": 80,
+          "end": 89,
+          "text": "interface"
+         },
+         {
+          "type": "{",
+          "start": 90,
+          "end": 91,
+          "text": "{"
+         },
+         {
+          "type": "method_elem",
+          "start": 94,
+          "end": 125,
+          "children": [
+           {
+            "type": "field_identifier",
+            "start": 94,
+            "end": 98,
+            "field": "name",
+            "text": "Read"
+           },
+           {
+            "type": "parameter_list",
+            "start": 98,
+            "end": 108,
+            "field": "parameters",
+            "children": [
+             {
+              "type": "(",
+              "start": 98,
+              "end": 99,
+              "text": "("
+             },
+             {
+              "type": "parameter_declaration",
+              "start": 99,
+              "end": 107,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 99,
+                "end": 100,
+                "field": "name",
+                "text": "p"
+               },
+               {
+                "type": "slice_type",
+                "start": 101,
+                "end": 107,
+                "field": "type",
+                "children": [
+                 {
+                  "type": "[",
+                  "start": 101,
+                  "end": 102,
+                  "text": "["
+                 },
+                 {
+                  "type": "]",
+                  "start": 102,
+                  "end": 103,
+                  "text": "]"
+                 },
+                 {
+                  "type": "type_identifier",
+                  "start": 103,
+                  "end": 107,
+                  "field": "element",
+                  "text": "byte"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ")",
+              "start": 107,
+              "end": 108,
+              "text": ")"
+             }
+            ]
+           },
+           {
+            "type": "parameter_list",
+            "start": 108,
+            "end": 125,
+            "field": "result",
+            "children": [
+             {
+              "type": "(",
+              "start": 108,
+              "end": 109,
+              "text": "("
+             },
+             {
+              "type": "parameter_declaration",
+              "start": 109,
+              "end": 114,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 109,
+                "end": 110,
+                "field": "name",
+                "text": "n"
+               },
+               {
+                "type": "type_identifier",
+                "start": 111,
+                "end": 114,
+                "field": "type",
+                "text": "int"
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 114,
+              "end": 115,
+              "text": ","
+             },
+             {
+              "type": "parameter_declaration",
+              "start": 115,
+              "end": 124,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 115,
+                "end": 118,
+                "field": "name",
+                "text": "err"
+               },
+               {
+                "type": "type_identifier",
+                "start": 119,
+                "end": 124,
+                "field": "type",
+                "text": "error"
+               }
+              ]
+             },
+             {
+              "type": ")",
+              "start": 124,
+              "end": 125,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "}",
+          "start": 126,
+          "end": 127,
+          "text": "}"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "type_declaration",
+    "start": 129,
+    "end": 189,
+    "children": [
+     {
+      "type": "type",
+      "start": 129,
+      "end": 133,
+      "text": "type"
+     },
+     {
+      "type": "type_spec",
+      "start": 134,
+      "end": 189,
+      "children": [
+       {
+        "type": "type_identifier",
+        "start": 134,
+        "end": 140,
+        "field": "name",
+        "text": "Writer"
+       },
+       {
+        "type": "interface_type",
+        "start": 141,
+        "end": 189,
+        "field": "type",
+        "children": [
+         {
+          "type": "interface",
+          "start": 141,
+          "end": 150,
+          "text": "interface"
+         },
+         {
+          "type": "{",
+          "start": 151,
+          "end": 152,
+          "text": "{"
+         },
+         {
+          "type": "method_elem",
+          "start": 155,
+          "end": 187,
+          "children": [
+           {
+            "type": "field_identifier",
+            "start": 155,
+            "end": 160,
+            "field": "name",
+            "text": "Write"
+           },
+           {
+            "type": "parameter_list",
+            "start": 160,
+            "end": 170,
+            "field": "parameters",
+            "children": [
+             {
+              "type": "(",
+              "start": 160,
+              "end": 161,
+              "text": "("
+             },
+             {
+              "type": "parameter_declaration",
+              "start": 161,
+              "end": 169,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 161,
+                "end": 162,
+                "field": "name",
+                "text": "p"
+               },
+               {
+                "type": "slice_type",
+                "start": 163,
+                "end": 169,
+                "field": "type",
+                "children": [
+                 {
+                  "type": "[",
+                  "start": 163,
+                  "end": 164,
+                  "text": "["
+                 },
+                 {
+                  "type": "]",
+                  "start": 164,
+                  "end": 165,
+                  "text": "]"
+                 },
+                 {
+                  "type": "type_identifier",
+                  "start": 165,
+                  "end": 169,
+                  "field": "element",
+                  "text": "byte"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ")",
+              "start": 169,
+              "end": 170,
+              "text": ")"
+             }
+            ]
+           },
+           {
+            "type": "parameter_list",
+            "start": 170,
+            "end": 187,
+            "field": "result",
+            "children": [
+             {
+              "type": "(",
+              "start": 170,
+              "end": 171,
+              "text": "("
+             },
+             {
+              "type": "parameter_declaration",
+              "start": 171,
+              "end": 176,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 171,
+                "end": 172,
+                "field": "name",
+                "text": "n"
+               },
+               {
+                "type": "type_identifier",
+                "start": 173,
+                "end": 176,
+                "field": "type",
+                "text": "int"
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 176,
+              "end": 177,
+              "text": ","
+             },
+             {
+              "type": "parameter_declaration",
+              "start": 177,
+              "end": 186,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 177,
+                "end": 180,
+                "field": "name",
+                "text": "err"
+               },
+               {
+                "type": "type_identifier",
+                "start": 181,
+                "end": 186,
+                "field": "type",
+                "text": "error"
+               }
+              ]
+             },
+             {
+              "type": ")",
+              "start": 186,
+              "end": 187,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "}",
+          "start": 188,
+          "end": 189,
+          "text": "}"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "type_declaration",
+    "start": 191,
+    "end": 238,
+    "children": [
+     {
+      "type": "type",
+      "start": 191,
+      "end": 195,
+      "text": "type"
+     },
+     {
+      "type": "type_spec",
+      "start": 196,
+      "end": 238,
+      "children": [
+       {
+        "type": "type_identifier",
+        "start": 196,
+        "end": 206,
+        "field": "name",
+        "text": "ReadWriter"
+       },
+       {
+        "type": "interface_type",
+        "start": 207,
+        "end": 238,
+        "field": "type",
+        "children": [
+         {
+          "type": "interface",
+          "start": 207,
+          "end": 216,
+          "text": "interface"
+         },
+         {
+          "type": "{",
+          "start": 217,
+          "end": 218,
+          "text": "{"
+         },
+         {
+          "type": "type_elem",
+          "start": 221,
+          "end": 227,
+          "children": [
+           {
+            "type": "type_identifier",
+            "start": 221,
+            "end": 227,
+            "text": "Reader"
+           }
+          ]
+         },
+         {
+          "type": "type_elem",
+          "start": 230,
+          "end": 236,
+          "children": [
+           {
+            "type": "type_identifier",
+            "start": 230,
+            "end": 236,
+            "text": "Writer"
+           }
+          ]
+         },
+         {
+          "type": "}",
+          "start": 237,
+          "end": 238,
+          "text": "}"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "type_declaration",
+    "start": 240,
+    "end": 281,
+    "children": [
+     {
+      "type": "type",
+      "start": 240,
+      "end": 244,
+      "text": "type"
+     },
+     {
+      "type": "type_spec",
+      "start": 245,
+      "end": 281,
+      "children": [
+       {
+        "type": "type_identifier",
+        "start": 245,
+        "end": 251,
+        "field": "name",
+        "text": "Closer"
+       },
+       {
+        "type": "interface_type",
+        "start": 252,
+        "end": 281,
+        "field": "type",
+        "children": [
+         {
+          "type": "interface",
+          "start": 252,
+          "end": 261,
+          "text": "interface"
+         },
+         {
+          "type": "{",
+          "start": 262,
+          "end": 263,
+          "text": "{"
+         },
+         {
+          "type": "method_elem",
+          "start": 266,
+          "end": 279,
+          "children": [
+           {
+            "type": "field_identifier",
+            "start": 266,
+            "end": 271,
+            "field": "name",
+            "text": "Close"
+           },
+           {
+            "type": "parameter_list",
+            "start": 271,
+            "end": 273,
+            "field": "parameters",
+            "children": [
+             {
+              "type": "(",
+              "start": 271,
+              "end": 272,
+              "text": "("
+             },
+             {
+              "type": ")",
+              "start": 272,
+              "end": 273,
+              "text": ")"
+             }
+            ]
+           },
+           {
+            "type": "type_identifier",
+            "start": 274,
+            "end": 279,
+            "field": "result",
+            "text": "error"
+           }
+          ]
+         },
+         {
+          "type": "}",
+          "start": 280,
+          "end": 281,
+          "text": "}"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "type_declaration",
+    "start": 283,
+    "end": 353,
+    "children": [
+     {
+      "type": "type",
+      "start": 283,
+      "end": 287,
+      "text": "type"
+     },
+     {
+      "type": "type_spec",
+      "start": 288,
+      "end": 353,
+      "children": [
+       {
+        "type": "type_identifier",
+        "start": 288,
+        "end": 303,
+        "field": "name",
+        "text": "ReadWriteCloser"
+       },
+       {
+        "type": "interface_type",
+        "start": 304,
+        "end": 353,
+        "field": "type",
+        "children": [
+         {
+          "type": "interface",
+          "start": 304,
+          "end": 313,
+          "text": "interface"
+         },
+         {
+          "type": "{",
+          "start": 314,
+          "end": 315,
+          "text": "{"
+         },
+         {
+          "type": "type_elem",
+          "start": 318,
+          "end": 327,
+          "children": [
+           {
+            "type": "qualified_type",
+            "start": 318,
+            "end": 327,
+            "children": [
+             {
+              "type": "package_identifier",
+              "start": 318,
+              "end": 320,
+              "field": "package",
+              "text": "io"
+             },
+             {
+              "type": ".",
+              "start": 320,
+              "end": 321,
+              "text": "."
+             },
+             {
+              "type": "type_identifier",
+              "start": 321,
+              "end": 327,
+              "field": "name",
+              "text": "Reader"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "type_elem",
+          "start": 330,
+          "end": 339,
+          "children": [
+           {
+            "type": "qualified_type",
+            "start": 330,
+            "end": 339,
+            "children": [
+             {
+              "type": "package_identifier",
+              "start": 330,
+              "end": 332,
+              "field": "package",
+              "text": "io"
+             },
+             {
+              "type": ".",
+              "start": 332,
+              "end": 333,
+              "text": "."
+             },
+             {
+              "type": "type_identifier",
+              "start": 333,
+              "end": 339,
+              "field": "name",
+              "text": "Writer"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "type_elem",
+          "start": 342,
+          "end": 351,
+          "children": [
+           {
+            "type": "qualified_type",
+            "start": 342,
+            "end": 351,
+            "children": [
+             {
+              "type": "package_identifier",
+              "start": 342,
+              "end": 344,
+              "field": "package",
+              "text": "io"
+             },
+             {
+              "type": ".",
+              "start": 344,
+              "end": 345,
+              "text": "."
+             },
+             {
+              "type": "type_identifier",
+              "start": 345,
+              "end": 351,
+              "field": "name",
+              "text": "Closer"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "}",
+          "start": 352,
+          "end": 353,
+          "text": "}"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "type_declaration",
+    "start": 355,
+    "end": 400,
+    "children": [
+     {
+      "type": "type",
+      "start": 355,
+      "end": 359,
+      "text": "type"
+     },
+     {
+      "type": "type_spec",
+      "start": 360,
+      "end": 400,
+      "children": [
+       {
+        "type": "type_identifier",
+        "start": 360,
+        "end": 368,
+        "field": "name",
+        "text": "Stringer"
+       },
+       {
+        "type": "interface_type",
+        "start": 369,
+        "end": 400,
+        "field": "type",
+        "children": [
+         {
+          "type": "interface",
+          "start": 369,
+          "end": 378,
+          "text": "interface"
+         },
+         {
+          "type": "{",
+          "start": 379,
+          "end": 380,
+          "text": "{"
+         },
+         {
+          "type": "method_elem",
+          "start": 383,
+          "end": 398,
+          "children": [
+           {
+            "type": "field_identifier",
+            "start": 383,
+            "end": 389,
+            "field": "name",
+            "text": "String"
+           },
+           {
+            "type": "parameter_list",
+            "start": 389,
+            "end": 391,
+            "field": "parameters",
+            "children": [
+             {
+              "type": "(",
+              "start": 389,
+              "end": 390,
+              "text": "("
+             },
+             {
+              "type": ")",
+              "start": 390,
+              "end": 391,
+              "text": ")"
+             }
+            ]
+           },
+           {
+            "type": "type_identifier",
+            "start": 392,
+            "end": 398,
+            "field": "result",
+            "text": "string"
+           }
+          ]
+         },
+         {
+          "type": "}",
+          "start": 399,
+          "end": 400,
+          "text": "}"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "var_declaration",
+    "start": 402,
+    "end": 431,
+    "children": [
+     {
+      "type": "var",
+      "start": 402,
+      "end": 405,
+      "text": "var"
+     },
+     {
+      "type": "var_spec",
+      "start": 406,
+      "end": 431,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 406,
+        "end": 407,
+        "field": "name",
+        "text": "_"
+       },
+       {
+        "type": "qualified_type",
+        "start": 408,
+        "end": 417,
+        "field": "type",
+        "children": [
+         {
+          "type": "package_identifier",
+          "start": 408,
+          "end": 410,
+          "field": "package",
+          "text": "io"
+         },
+         {
+          "type": ".",
+          "start": 410,
+          "end": 411,
+          "text": "."
+         },
+         {
+          "type": "type_identifier",
+          "start": 411,
+          "end": 417,
+          "field": "name",
+          "text": "Reader"
+         }
+        ]
+       },
+       {
+        "type": "=",
+        "start": 418,
+        "end": 419,
+        "text": "="
+       },
+       {
+        "type": "expression_list",
+        "start": 420,
+        "end": 431,
+        "field": "value",
+        "children": [
+         {
+          "type": "call_expression",
+          "start": 420,
+          "end": 431,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 420,
+            "end": 426,
+            "field": "function",
+            "text": "Reader"
+           },
+           {
+            "type": "argument_list",
+            "start": 426,
+            "end": 431,
+            "field": "arguments",
+            "children": [
+             {
+              "type": "(",
+              "start": 426,
+              "end": 427,
+              "text": "("
+             },
+             {
+              "type": "nil",
+              "start": 427,
+              "end": 430,
+              "text": "nil"
+             },
+             {
+              "type": ")",
+              "start": 430,
+              "end": 431,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 432,
+    "end": 467,
+    "text": "// compile-time interface assertion"
+   }
+  ]
+ }
+}
