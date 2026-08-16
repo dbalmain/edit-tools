@@ -111,6 +111,11 @@ def main() -> int:
     )
     parser.add_argument("--approve", metavar="ID", help="record a verdict for this ID")
     parser.add_argument(
+        "--retire",
+        metavar="ID",
+        help="drop a record whose case now agrees with the reference",
+    )
+    parser.add_argument(
         "--verdict",
         choices=("design-limit", "package-bug", "reference-quirk"),
     )
@@ -123,12 +128,28 @@ def main() -> int:
         parser.error("--verdict, --reason, and --reviewed-by require --approve")
     if args.approve is not None and not all(approval_fields):
         parser.error("--approve requires --verdict, --reason, and --reviewed-by")
+    if args.approve is not None and args.retire is not None:
+        parser.error("--approve and --retire are different answers; pick one")
 
     known = mf.bootstrap()
     selected = mf.selected(known, args.language)
     records, problems = divergences(
         args.submission.resolve(), score.corpus(selected)
     )
+
+    if args.retire is not None:
+        # The safety property is here, not in the ledger: a record may only be
+        # dropped when its divergence is *gone*. If the case still diverges --
+        # differently or not -- it needs a verdict, not a deletion.
+        if any(record.id == args.retire for record in records):
+            raise review_ledger.LedgerError(
+                f"cannot retire {args.retire!r}: it is still a divergence. "
+                "Re-judge it with --approve."
+            )
+        language = args.retire.split("/", 1)[0]
+        dropped = review_ledger.retire("formatter", language, args.retire)
+        print(f"retired {dropped.id} ({dropped.verdict}) -- the case now agrees")
+        return 0
 
     if args.approve is not None:
         matches = [record for record in records if record.id == args.approve]

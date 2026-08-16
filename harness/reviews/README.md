@@ -42,7 +42,21 @@ reviewing are deliberately separate commands:
 ```
 
 A matching hash is `accepted`, a moved hash is `stale`, and an absent record is
-`unreviewed`. Stale is a hard scorer failure. The 70% coverage result for
+`unreviewed`. Stale is a hard scorer failure.
+
+A divergence that is **fixed** is a different situation from one that
+**changed**, and only one of them is a review task. When our output starts
+agreeing with the reference, the verdict has no subject left, so it is retired
+rather than re-judged:
+
+```sh
+./harness/review_formatter.py . --retire toml/nested.toml@60
+```
+
+That refuses to run while the case is still a divergence, which is the whole
+safety property: a record may only be dropped when what it described is gone.
+A divergence that merely moved must be re-judged with `--approve` -- deleting
+one is exactly the failure the content hash exists to catch. The 70% coverage result for
 unreviewed items is printed as the stage-D merge threshold; it is not one of
 the scorer's numbered correctness gates. This keeps an unreviewed baseline
 honest without inventing signatures for it.
