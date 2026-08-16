@@ -1,0 +1,37 @@
+# The same data, written every legal way. taplo must not collapse these:
+# a formatter that turned [a.b] into [a][b] (or inline into a header)
+# would be making a semantic-ish choice the IR is not meant to make.
+
+# 1. dotted table header vs nested headers
+[spelling.dotted]
+x = 1
+
+[spelling.nested]
+[spelling.nested.child]
+x = 1
+
+# 2. inline table vs table header
+inline = { name = "foo", version = "1.0.0" }
+
+[as_table]
+name = "foo"
+version = "1.0.0"
+
+# 3. array of tables vs array of inline tables
+as_inline_array = [{ host = "a", port = 1 }, { host = "b", port = 2 }]
+
+[[as_table_array]]
+host = "a"
+port = 1
+
+[[as_table_array]]
+host = "b"
+port = 2
+
+# 4. dotted keys vs a table of the same path
+dotted.host = "localhost"
+dotted.port = 8080
+
+[explicit]
+host = "localhost"
+port = 8080

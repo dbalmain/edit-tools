@@ -1,0 +1,27 @@
+# Integer and float spellings. Underscores, bases, signs and specials
+# must come out as written: taplo does not normalise any of them.
+
+int = 42
+neg = -17
+plus = +99
+underscored = 1_000_000
+hex = 0xDEAD_BEEF
+hex_lower = 0xdeadbeef
+oct = 0o755
+bin = 0b1010
+zero = 0
+plus_zero = +0
+minus_zero = -0
+
+flt = 3.14159
+flt_us = 9_224_617.445_991
+exp = 1.5e10
+exp_plus = 5e+22
+exp_neg = 6.626e-34
+plus_flt = +1.0
+pos_inf = inf
+neg_inf = -inf
+plus_inf = +inf
+nn = nan
+plus_nan = +nan
+minus_nan = -nan

@@ -1,0 +1,18 @@
+# Every key spelling TOML distinguishes. "a.b" and a.b are different keys.
+
+bare = 1
+bare-with-dash = 2
+bare_with_underscore = 3
+bare123 = 4
+1234 = 5
+true = false
+false = true
+inf = 1
+"quoted key" = 6
+"a.b" = 7
+a.b = 8
+'literal-key' = 9
+"café" = 10
+"key with space" = 11
+"quoted\nescape" = 12
+site."example.com".enabled = true

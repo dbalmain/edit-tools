@@ -1,0 +1,599 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/numbers.toml",
+ "source": "# Integer and float spellings. Underscores, bases, signs and specials\n# must come out as written: taplo does not normalise any of them.\n\nint = 42\nneg = -17\nplus = +99\nunderscored = 1_000_000\nhex = 0xDEAD_BEEF\nhex_lower = 0xdeadbeef\noct = 0o755\nbin = 0b1010\nzero = 0\nplus_zero = +0\nminus_zero = -0\n\nflt = 3.14159\nflt_us = 9_224_617.445_991\nexp = 1.5e10\nexp_plus = 5e+22\nexp_neg = 6.626e-34\nplus_flt = +1.0\npos_inf = inf\nneg_inf = -inf\nplus_inf = +inf\nnn = nan\nplus_nan = +nan\nminus_nan = -nan\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 492,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 69,
+    "text": "# Integer and float spellings. Underscores, bases, signs and specials"
+   },
+   {
+    "type": "comment",
+    "start": 70,
+    "end": 135,
+    "text": "# must come out as written: taplo does not normalise any of them."
+   },
+   {
+    "type": "pair",
+    "start": 137,
+    "end": 145,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 137,
+      "end": 140,
+      "text": "int"
+     },
+     {
+      "type": "=",
+      "start": 141,
+      "end": 142,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 143,
+      "end": 145,
+      "text": "42"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 146,
+    "end": 155,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 146,
+      "end": 149,
+      "text": "neg"
+     },
+     {
+      "type": "=",
+      "start": 150,
+      "end": 151,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 152,
+      "end": 155,
+      "text": "-17"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 156,
+    "end": 166,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 156,
+      "end": 160,
+      "text": "plus"
+     },
+     {
+      "type": "=",
+      "start": 161,
+      "end": 162,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 163,
+      "end": 166,
+      "text": "+99"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 167,
+    "end": 190,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 167,
+      "end": 178,
+      "text": "underscored"
+     },
+     {
+      "type": "=",
+      "start": 179,
+      "end": 180,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 181,
+      "end": 190,
+      "text": "1_000_000"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 191,
+    "end": 208,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 191,
+      "end": 194,
+      "text": "hex"
+     },
+     {
+      "type": "=",
+      "start": 195,
+      "end": 196,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 197,
+      "end": 208,
+      "text": "0xDEAD_BEEF"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 209,
+    "end": 231,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 209,
+      "end": 218,
+      "text": "hex_lower"
+     },
+     {
+      "type": "=",
+      "start": 219,
+      "end": 220,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 221,
+      "end": 231,
+      "text": "0xdeadbeef"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 232,
+    "end": 243,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 232,
+      "end": 235,
+      "text": "oct"
+     },
+     {
+      "type": "=",
+      "start": 236,
+      "end": 237,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 238,
+      "end": 243,
+      "text": "0o755"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 244,
+    "end": 256,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 244,
+      "end": 247,
+      "text": "bin"
+     },
+     {
+      "type": "=",
+      "start": 248,
+      "end": 249,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 250,
+      "end": 256,
+      "text": "0b1010"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 257,
+    "end": 265,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 257,
+      "end": 261,
+      "text": "zero"
+     },
+     {
+      "type": "=",
+      "start": 262,
+      "end": 263,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 264,
+      "end": 265,
+      "text": "0"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 266,
+    "end": 280,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 266,
+      "end": 275,
+      "text": "plus_zero"
+     },
+     {
+      "type": "=",
+      "start": 276,
+      "end": 277,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 278,
+      "end": 280,
+      "text": "+0"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 281,
+    "end": 296,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 281,
+      "end": 291,
+      "text": "minus_zero"
+     },
+     {
+      "type": "=",
+      "start": 292,
+      "end": 293,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 294,
+      "end": 296,
+      "text": "-0"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 298,
+    "end": 311,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 298,
+      "end": 301,
+      "text": "flt"
+     },
+     {
+      "type": "=",
+      "start": 302,
+      "end": 303,
+      "text": "="
+     },
+     {
+      "type": "float",
+      "start": 304,
+      "end": 311,
+      "text": "3.14159"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 312,
+    "end": 338,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 312,
+      "end": 318,
+      "text": "flt_us"
+     },
+     {
+      "type": "=",
+      "start": 319,
+      "end": 320,
+      "text": "="
+     },
+     {
+      "type": "float",
+      "start": 321,
+      "end": 338,
+      "text": "9_224_617.445_991"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 339,
+    "end": 351,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 339,
+      "end": 342,
+      "text": "exp"
+     },
+     {
+      "type": "=",
+      "start": 343,
+      "end": 344,
+      "text": "="
+     },
+     {
+      "type": "float",
+      "start": 345,
+      "end": 351,
+      "text": "1.5e10"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 352,
+    "end": 368,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 352,
+      "end": 360,
+      "text": "exp_plus"
+     },
+     {
+      "type": "=",
+      "start": 361,
+      "end": 362,
+      "text": "="
+     },
+     {
+      "type": "float",
+      "start": 363,
+      "end": 368,
+      "text": "5e+22"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 369,
+    "end": 388,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 369,
+      "end": 376,
+      "text": "exp_neg"
+     },
+     {
+      "type": "=",
+      "start": 377,
+      "end": 378,
+      "text": "="
+     },
+     {
+      "type": "float",
+      "start": 379,
+      "end": 388,
+      "text": "6.626e-34"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 389,
+    "end": 404,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 389,
+      "end": 397,
+      "text": "plus_flt"
+     },
+     {
+      "type": "=",
+      "start": 398,
+      "end": 399,
+      "text": "="
+     },
+     {
+      "type": "float",
+      "start": 400,
+      "end": 404,
+      "text": "+1.0"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 405,
+    "end": 418,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 405,
+      "end": 412,
+      "text": "pos_inf"
+     },
+     {
+      "type": "=",
+      "start": 413,
+      "end": 414,
+      "text": "="
+     },
+     {
+      "type": "float",
+      "start": 415,
+      "end": 418,
+      "text": "inf"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 419,
+    "end": 433,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 419,
+      "end": 426,
+      "text": "neg_inf"
+     },
+     {
+      "type": "=",
+      "start": 427,
+      "end": 428,
+      "text": "="
+     },
+     {
+      "type": "float",
+      "start": 429,
+      "end": 433,
+      "text": "-inf"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 434,
+    "end": 449,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 434,
+      "end": 442,
+      "text": "plus_inf"
+     },
+     {
+      "type": "=",
+      "start": 443,
+      "end": 444,
+      "text": "="
+     },
+     {
+      "type": "float",
+      "start": 445,
+      "end": 449,
+      "text": "+inf"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 450,
+    "end": 458,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 450,
+      "end": 452,
+      "text": "nn"
+     },
+     {
+      "type": "=",
+      "start": 453,
+      "end": 454,
+      "text": "="
+     },
+     {
+      "type": "float",
+      "start": 455,
+      "end": 458,
+      "text": "nan"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 459,
+    "end": 474,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 459,
+      "end": 467,
+      "text": "plus_nan"
+     },
+     {
+      "type": "=",
+      "start": 468,
+      "end": 469,
+      "text": "="
+     },
+     {
+      "type": "float",
+      "start": 470,
+      "end": 474,
+      "text": "+nan"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 475,
+    "end": 491,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 475,
+      "end": 484,
+      "text": "minus_nan"
+     },
+     {
+      "type": "=",
+      "start": 485,
+      "end": 486,
+      "text": "="
+     },
+     {
+      "type": "float",
+      "start": 487,
+      "end": 491,
+      "text": "-nan"
+     }
+    ]
+   }
+  ]
+ }
+}

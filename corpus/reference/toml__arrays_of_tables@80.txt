@@ -1,0 +1,25 @@
+# Array-of-tables headers. Distinct from an array of inline tables.
+
+[[products]]
+name = "Hammer"
+sku = 738594937
+colors = ["red", "green", "blue", "yellow", "orange"]
+
+[products.extra]
+warranty_years = 2
+
+[[products]]
+name = "Nail"
+sku = 284758393
+
+[[products.sizes]]
+inch = 1
+
+[[products.sizes]]
+inch = 2
+
+[[products]] # trailing on a later header
+name = "Saw"
+
+# An empty element is legal and stays empty.
+[[products]]

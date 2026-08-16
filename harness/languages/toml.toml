@@ -1,0 +1,57 @@
+# TOML. Schema: docs/onboarding/WORKFLOW.md, "Stage 0".
+name = "toml"
+extensions = [".toml"]
+
+# PyPI name and 0.7.0 pin confirmed against the live index (latest as of
+# 2026-08-15). Imported as tree_sitter_toml; the only language() export is
+# language(), which returns a tree_sitter.Language capsule.
+grammar = "tree-sitter-toml==0.7.0"
+grammar_module = "tree_sitter_toml"
+grammar_symbol = "language"
+
+# Added when this branch was rebased: the field became required after stage A,
+# because info-string spelling is a language fact rather than a list in
+# gen_trees.py. `toml` is the only spelling worth vouching for; `tml` and `ini`
+# are guesses and TOML is not INI.
+injection_aliases = ["toml"]
+
+# taplo 0.10.0 observed from `nix run nixpkgs#taplo -- --version`.
+# `--no-auto-config` is load-bearing: taplo walks from cwd (and ancestors) for
+# `.taplo.toml` / `taplo.toml`, and every formatter option the command line does
+# not name -- reorder_keys, allowed_blank_lines, align_comments, indent_string --
+# is taken from a file it finds. Options passed with -o do win over the file
+# (checked: -o column_width=88 beats a planted column_width=20), so it is the
+# *unset* options that leak. Without the flag, committed reference output would
+# depend on whatever this machine (or a reviewer's) has in an ancestor
+# directory. The flag disables only the search: an explicit -c or TAPLO_CONFIG
+# is still honoured. `--stdin-filepath` is not required -- taplo formats stdin
+# as TOML with just `-` -- so it is omitted rather than invented.
+# column_width honours {width} for arrays only; established by diffing 88 vs 60
+# rather than by reading --help. Inline tables, strings, keys and table headers
+# never reflow.
+reference = "nix run nixpkgs#taplo -- fmt --no-auto-config -o column_width={width} -"
+reference_version = "taplo 0.10.0"
+reference_width = "flag"
+
+# taplo's own default, established by bisection rather than from --help: a line
+# of exactly 80 characters stays flat and 81 breaks. Stage A found this number
+# and then scored 88 anyway, "to match the other languages" -- but 88 is black's
+# default, inherited through the python manifest, and matching it is exactly the
+# round-1 defect this brief was rewritten to prevent. Agreement measured at a
+# width no taplo user ever sees is not agreement with taplo.
+# 60 is the narrow width; it forces the array expand/collapse that 80 lets a
+# package dodge.
+widths = [80, 60]
+
+# tomllib is in the stdlib and is a real loader, but it is weaker than the
+# generic named-node comparison for the reason that matters in TOML: the same
+# data has several legal spellings ([a.b] vs [a][b], inline table vs header,
+# dotted key vs table, [[x]] vs array of inline tables) and tomllib.loads
+# collapses all of them. A package that rewrote spelling would pass tomllib
+# and fail the tree comparison. The tree comparison is the right oracle;
+# extras still cover comments. Leave wrappers/equivalences empty until the
+# gate names a kind -- TOML has no parenthesised-expression node.
+gate3 = "default"
+
+transparent_wrappers = []
+equivalent_kinds = []

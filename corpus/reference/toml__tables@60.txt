@@ -1,0 +1,20 @@
+# Standard table headers, dotted headers, empty tables, implicit parents.
+
+[package]
+name = "editor-tools"
+version = "0.1.0"
+
+# Dotted header: one header names a nested path. The parent `package.metadata`
+# is implicit; taplo does not insert a `[package.metadata]` header.
+[package.metadata.docs]
+rs = true
+auto = false
+
+# Empty table: a header with no pairs.
+[unused]
+
+[build]
+target = "x86_64-unknown-linux-gnu"
+
+[build.dependencies]
+cc = "1.0"

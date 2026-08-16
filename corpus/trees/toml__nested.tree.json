@@ -1,0 +1,1381 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/nested.toml",
+ "source": "# Containers inside containers. The inner arrays fit at 88 and explode at 60.\n\nmatrix = [[1, 2, 3, 4, 5, 6], [7, 8, 9, 10, 11, 12], [13, 14, 15, 16, 17, 18]]\n\ndeep = [[[[\"leaf-one\", \"leaf-two\"], [\"leaf-three\"]], [[\"leaf-four\"]]]]\n\nservers = [{ host = \"alpha.example.com\", port = 8080, tags = [\"primary\", \"us-east\"] }, { host = \"beta.example.com\", port = 8081, tags = [\"replica\", \"eu-west\"] }]\n\n[cluster.region.us-east.primary]\nendpoints = [[\"https://a.example.com/v1\", \"https://b.example.com/v1\"], [\"https://c.example.com/v1\"]]\nmeta = { owner = \"platform\", labels = [\"canary\", \"production\", \"multi-region\"] }\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 609,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 77,
+    "text": "# Containers inside containers. The inner arrays fit at 88 and explode at 60."
+   },
+   {
+    "type": "pair",
+    "start": 79,
+    "end": 157,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 79,
+      "end": 85,
+      "text": "matrix"
+     },
+     {
+      "type": "=",
+      "start": 86,
+      "end": 87,
+      "text": "="
+     },
+     {
+      "type": "array",
+      "start": 88,
+      "end": 157,
+      "children": [
+       {
+        "type": "[",
+        "start": 88,
+        "end": 89,
+        "text": "["
+       },
+       {
+        "type": "array",
+        "start": 89,
+        "end": 107,
+        "children": [
+         {
+          "type": "[",
+          "start": 89,
+          "end": 90,
+          "text": "["
+         },
+         {
+          "type": "integer",
+          "start": 90,
+          "end": 91,
+          "text": "1"
+         },
+         {
+          "type": ",",
+          "start": 91,
+          "end": 92,
+          "text": ","
+         },
+         {
+          "type": "integer",
+          "start": 93,
+          "end": 94,
+          "text": "2"
+         },
+         {
+          "type": ",",
+          "start": 94,
+          "end": 95,
+          "text": ","
+         },
+         {
+          "type": "integer",
+          "start": 96,
+          "end": 97,
+          "text": "3"
+         },
+         {
+          "type": ",",
+          "start": 97,
+          "end": 98,
+          "text": ","
+         },
+         {
+          "type": "integer",
+          "start": 99,
+          "end": 100,
+          "text": "4"
+         },
+         {
+          "type": ",",
+          "start": 100,
+          "end": 101,
+          "text": ","
+         },
+         {
+          "type": "integer",
+          "start": 102,
+          "end": 103,
+          "text": "5"
+         },
+         {
+          "type": ",",
+          "start": 103,
+          "end": 104,
+          "text": ","
+         },
+         {
+          "type": "integer",
+          "start": 105,
+          "end": 106,
+          "text": "6"
+         },
+         {
+          "type": "]",
+          "start": 106,
+          "end": 107,
+          "text": "]"
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 107,
+        "end": 108,
+        "text": ","
+       },
+       {
+        "type": "array",
+        "start": 109,
+        "end": 130,
+        "children": [
+         {
+          "type": "[",
+          "start": 109,
+          "end": 110,
+          "text": "["
+         },
+         {
+          "type": "integer",
+          "start": 110,
+          "end": 111,
+          "text": "7"
+         },
+         {
+          "type": ",",
+          "start": 111,
+          "end": 112,
+          "text": ","
+         },
+         {
+          "type": "integer",
+          "start": 113,
+          "end": 114,
+          "text": "8"
+         },
+         {
+          "type": ",",
+          "start": 114,
+          "end": 115,
+          "text": ","
+         },
+         {
+          "type": "integer",
+          "start": 116,
+          "end": 117,
+          "text": "9"
+         },
+         {
+          "type": ",",
+          "start": 117,
+          "end": 118,
+          "text": ","
+         },
+         {
+          "type": "integer",
+          "start": 119,
+          "end": 121,
+          "text": "10"
+         },
+         {
+          "type": ",",
+          "start": 121,
+          "end": 122,
+          "text": ","
+         },
+         {
+          "type": "integer",
+          "start": 123,
+          "end": 125,
+          "text": "11"
+         },
+         {
+          "type": ",",
+          "start": 125,
+          "end": 126,
+          "text": ","
+         },
+         {
+          "type": "integer",
+          "start": 127,
+          "end": 129,
+          "text": "12"
+         },
+         {
+          "type": "]",
+          "start": 129,
+          "end": 130,
+          "text": "]"
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 130,
+        "end": 131,
+        "text": ","
+       },
+       {
+        "type": "array",
+        "start": 132,
+        "end": 156,
+        "children": [
+         {
+          "type": "[",
+          "start": 132,
+          "end": 133,
+          "text": "["
+         },
+         {
+          "type": "integer",
+          "start": 133,
+          "end": 135,
+          "text": "13"
+         },
+         {
+          "type": ",",
+          "start": 135,
+          "end": 136,
+          "text": ","
+         },
+         {
+          "type": "integer",
+          "start": 137,
+          "end": 139,
+          "text": "14"
+         },
+         {
+          "type": ",",
+          "start": 139,
+          "end": 140,
+          "text": ","
+         },
+         {
+          "type": "integer",
+          "start": 141,
+          "end": 143,
+          "text": "15"
+         },
+         {
+          "type": ",",
+          "start": 143,
+          "end": 144,
+          "text": ","
+         },
+         {
+          "type": "integer",
+          "start": 145,
+          "end": 147,
+          "text": "16"
+         },
+         {
+          "type": ",",
+          "start": 147,
+          "end": 148,
+          "text": ","
+         },
+         {
+          "type": "integer",
+          "start": 149,
+          "end": 151,
+          "text": "17"
+         },
+         {
+          "type": ",",
+          "start": 151,
+          "end": 152,
+          "text": ","
+         },
+         {
+          "type": "integer",
+          "start": 153,
+          "end": 155,
+          "text": "18"
+         },
+         {
+          "type": "]",
+          "start": 155,
+          "end": 156,
+          "text": "]"
+         }
+        ]
+       },
+       {
+        "type": "]",
+        "start": 156,
+        "end": 157,
+        "text": "]"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 159,
+    "end": 229,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 159,
+      "end": 163,
+      "text": "deep"
+     },
+     {
+      "type": "=",
+      "start": 164,
+      "end": 165,
+      "text": "="
+     },
+     {
+      "type": "array",
+      "start": 166,
+      "end": 229,
+      "children": [
+       {
+        "type": "[",
+        "start": 166,
+        "end": 167,
+        "text": "["
+       },
+       {
+        "type": "array",
+        "start": 167,
+        "end": 228,
+        "children": [
+         {
+          "type": "[",
+          "start": 167,
+          "end": 168,
+          "text": "["
+         },
+         {
+          "type": "array",
+          "start": 168,
+          "end": 210,
+          "children": [
+           {
+            "type": "[",
+            "start": 168,
+            "end": 169,
+            "text": "["
+           },
+           {
+            "type": "array",
+            "start": 169,
+            "end": 193,
+            "children": [
+             {
+              "type": "[",
+              "start": 169,
+              "end": 170,
+              "text": "["
+             },
+             {
+              "type": "string",
+              "start": 170,
+              "end": 180,
+              "children": [
+               {
+                "type": "\"",
+                "start": 170,
+                "end": 171,
+                "text": "\""
+               },
+               {
+                "type": "\"",
+                "start": 179,
+                "end": 180,
+                "text": "\""
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 180,
+              "end": 181,
+              "text": ","
+             },
+             {
+              "type": "string",
+              "start": 182,
+              "end": 192,
+              "children": [
+               {
+                "type": "\"",
+                "start": 182,
+                "end": 183,
+                "text": "\""
+               },
+               {
+                "type": "\"",
+                "start": 191,
+                "end": 192,
+                "text": "\""
+               }
+              ]
+             },
+             {
+              "type": "]",
+              "start": 192,
+              "end": 193,
+              "text": "]"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 193,
+            "end": 194,
+            "text": ","
+           },
+           {
+            "type": "array",
+            "start": 195,
+            "end": 209,
+            "children": [
+             {
+              "type": "[",
+              "start": 195,
+              "end": 196,
+              "text": "["
+             },
+             {
+              "type": "string",
+              "start": 196,
+              "end": 208,
+              "children": [
+               {
+                "type": "\"",
+                "start": 196,
+                "end": 197,
+                "text": "\""
+               },
+               {
+                "type": "\"",
+                "start": 207,
+                "end": 208,
+                "text": "\""
+               }
+              ]
+             },
+             {
+              "type": "]",
+              "start": 208,
+              "end": 209,
+              "text": "]"
+             }
+            ]
+           },
+           {
+            "type": "]",
+            "start": 209,
+            "end": 210,
+            "text": "]"
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 210,
+          "end": 211,
+          "text": ","
+         },
+         {
+          "type": "array",
+          "start": 212,
+          "end": 227,
+          "children": [
+           {
+            "type": "[",
+            "start": 212,
+            "end": 213,
+            "text": "["
+           },
+           {
+            "type": "array",
+            "start": 213,
+            "end": 226,
+            "children": [
+             {
+              "type": "[",
+              "start": 213,
+              "end": 214,
+              "text": "["
+             },
+             {
+              "type": "string",
+              "start": 214,
+              "end": 225,
+              "children": [
+               {
+                "type": "\"",
+                "start": 214,
+                "end": 215,
+                "text": "\""
+               },
+               {
+                "type": "\"",
+                "start": 224,
+                "end": 225,
+                "text": "\""
+               }
+              ]
+             },
+             {
+              "type": "]",
+              "start": 225,
+              "end": 226,
+              "text": "]"
+             }
+            ]
+           },
+           {
+            "type": "]",
+            "start": 226,
+            "end": 227,
+            "text": "]"
+           }
+          ]
+         },
+         {
+          "type": "]",
+          "start": 227,
+          "end": 228,
+          "text": "]"
+         }
+        ]
+       },
+       {
+        "type": "]",
+        "start": 228,
+        "end": 229,
+        "text": "]"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 231,
+    "end": 392,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 231,
+      "end": 238,
+      "text": "servers"
+     },
+     {
+      "type": "=",
+      "start": 239,
+      "end": 240,
+      "text": "="
+     },
+     {
+      "type": "array",
+      "start": 241,
+      "end": 392,
+      "children": [
+       {
+        "type": "[",
+        "start": 241,
+        "end": 242,
+        "text": "["
+       },
+       {
+        "type": "inline_table",
+        "start": 242,
+        "end": 316,
+        "children": [
+         {
+          "type": "{",
+          "start": 242,
+          "end": 243,
+          "text": "{"
+         },
+         {
+          "type": "pair",
+          "start": 244,
+          "end": 270,
+          "children": [
+           {
+            "type": "bare_key",
+            "start": 244,
+            "end": 248,
+            "text": "host"
+           },
+           {
+            "type": "=",
+            "start": 249,
+            "end": 250,
+            "text": "="
+           },
+           {
+            "type": "string",
+            "start": 251,
+            "end": 270,
+            "children": [
+             {
+              "type": "\"",
+              "start": 251,
+              "end": 252,
+              "text": "\""
+             },
+             {
+              "type": "\"",
+              "start": 269,
+              "end": 270,
+              "text": "\""
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 270,
+          "end": 271,
+          "text": ","
+         },
+         {
+          "type": "pair",
+          "start": 272,
+          "end": 283,
+          "children": [
+           {
+            "type": "bare_key",
+            "start": 272,
+            "end": 276,
+            "text": "port"
+           },
+           {
+            "type": "=",
+            "start": 277,
+            "end": 278,
+            "text": "="
+           },
+           {
+            "type": "integer",
+            "start": 279,
+            "end": 283,
+            "text": "8080"
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 283,
+          "end": 284,
+          "text": ","
+         },
+         {
+          "type": "pair",
+          "start": 285,
+          "end": 314,
+          "children": [
+           {
+            "type": "bare_key",
+            "start": 285,
+            "end": 289,
+            "text": "tags"
+           },
+           {
+            "type": "=",
+            "start": 290,
+            "end": 291,
+            "text": "="
+           },
+           {
+            "type": "array",
+            "start": 292,
+            "end": 314,
+            "children": [
+             {
+              "type": "[",
+              "start": 292,
+              "end": 293,
+              "text": "["
+             },
+             {
+              "type": "string",
+              "start": 293,
+              "end": 302,
+              "children": [
+               {
+                "type": "\"",
+                "start": 293,
+                "end": 294,
+                "text": "\""
+               },
+               {
+                "type": "\"",
+                "start": 301,
+                "end": 302,
+                "text": "\""
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 302,
+              "end": 303,
+              "text": ","
+             },
+             {
+              "type": "string",
+              "start": 304,
+              "end": 313,
+              "children": [
+               {
+                "type": "\"",
+                "start": 304,
+                "end": 305,
+                "text": "\""
+               },
+               {
+                "type": "\"",
+                "start": 312,
+                "end": 313,
+                "text": "\""
+               }
+              ]
+             },
+             {
+              "type": "]",
+              "start": 313,
+              "end": 314,
+              "text": "]"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "}",
+          "start": 315,
+          "end": 316,
+          "text": "}"
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 316,
+        "end": 317,
+        "text": ","
+       },
+       {
+        "type": "inline_table",
+        "start": 318,
+        "end": 391,
+        "children": [
+         {
+          "type": "{",
+          "start": 318,
+          "end": 319,
+          "text": "{"
+         },
+         {
+          "type": "pair",
+          "start": 320,
+          "end": 345,
+          "children": [
+           {
+            "type": "bare_key",
+            "start": 320,
+            "end": 324,
+            "text": "host"
+           },
+           {
+            "type": "=",
+            "start": 325,
+            "end": 326,
+            "text": "="
+           },
+           {
+            "type": "string",
+            "start": 327,
+            "end": 345,
+            "children": [
+             {
+              "type": "\"",
+              "start": 327,
+              "end": 328,
+              "text": "\""
+             },
+             {
+              "type": "\"",
+              "start": 344,
+              "end": 345,
+              "text": "\""
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 345,
+          "end": 346,
+          "text": ","
+         },
+         {
+          "type": "pair",
+          "start": 347,
+          "end": 358,
+          "children": [
+           {
+            "type": "bare_key",
+            "start": 347,
+            "end": 351,
+            "text": "port"
+           },
+           {
+            "type": "=",
+            "start": 352,
+            "end": 353,
+            "text": "="
+           },
+           {
+            "type": "integer",
+            "start": 354,
+            "end": 358,
+            "text": "8081"
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 358,
+          "end": 359,
+          "text": ","
+         },
+         {
+          "type": "pair",
+          "start": 360,
+          "end": 389,
+          "children": [
+           {
+            "type": "bare_key",
+            "start": 360,
+            "end": 364,
+            "text": "tags"
+           },
+           {
+            "type": "=",
+            "start": 365,
+            "end": 366,
+            "text": "="
+           },
+           {
+            "type": "array",
+            "start": 367,
+            "end": 389,
+            "children": [
+             {
+              "type": "[",
+              "start": 367,
+              "end": 368,
+              "text": "["
+             },
+             {
+              "type": "string",
+              "start": 368,
+              "end": 377,
+              "children": [
+               {
+                "type": "\"",
+                "start": 368,
+                "end": 369,
+                "text": "\""
+               },
+               {
+                "type": "\"",
+                "start": 376,
+                "end": 377,
+                "text": "\""
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 377,
+              "end": 378,
+              "text": ","
+             },
+             {
+              "type": "string",
+              "start": 379,
+              "end": 388,
+              "children": [
+               {
+                "type": "\"",
+                "start": 379,
+                "end": 380,
+                "text": "\""
+               },
+               {
+                "type": "\"",
+                "start": 387,
+                "end": 388,
+                "text": "\""
+               }
+              ]
+             },
+             {
+              "type": "]",
+              "start": 388,
+              "end": 389,
+              "text": "]"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "}",
+          "start": 390,
+          "end": 391,
+          "text": "}"
+         }
+        ]
+       },
+       {
+        "type": "]",
+        "start": 391,
+        "end": 392,
+        "text": "]"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table",
+    "start": 394,
+    "end": 609,
+    "children": [
+     {
+      "type": "[",
+      "start": 394,
+      "end": 395,
+      "text": "["
+     },
+     {
+      "type": "dotted_key",
+      "start": 395,
+      "end": 425,
+      "children": [
+       {
+        "type": "dotted_key",
+        "start": 395,
+        "end": 417,
+        "children": [
+         {
+          "type": "dotted_key",
+          "start": 395,
+          "end": 409,
+          "children": [
+           {
+            "type": "bare_key",
+            "start": 395,
+            "end": 402,
+            "text": "cluster"
+           },
+           {
+            "type": ".",
+            "start": 402,
+            "end": 403,
+            "text": "."
+           },
+           {
+            "type": "bare_key",
+            "start": 403,
+            "end": 409,
+            "text": "region"
+           }
+          ]
+         },
+         {
+          "type": ".",
+          "start": 409,
+          "end": 410,
+          "text": "."
+         },
+         {
+          "type": "bare_key",
+          "start": 410,
+          "end": 417,
+          "text": "us-east"
+         }
+        ]
+       },
+       {
+        "type": ".",
+        "start": 417,
+        "end": 418,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 418,
+        "end": 425,
+        "text": "primary"
+       }
+      ]
+     },
+     {
+      "type": "]",
+      "start": 425,
+      "end": 426,
+      "text": "]"
+     },
+     {
+      "type": "pair",
+      "start": 427,
+      "end": 527,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 427,
+        "end": 436,
+        "text": "endpoints"
+       },
+       {
+        "type": "=",
+        "start": 437,
+        "end": 438,
+        "text": "="
+       },
+       {
+        "type": "array",
+        "start": 439,
+        "end": 527,
+        "children": [
+         {
+          "type": "[",
+          "start": 439,
+          "end": 440,
+          "text": "["
+         },
+         {
+          "type": "array",
+          "start": 440,
+          "end": 496,
+          "children": [
+           {
+            "type": "[",
+            "start": 440,
+            "end": 441,
+            "text": "["
+           },
+           {
+            "type": "string",
+            "start": 441,
+            "end": 467,
+            "children": [
+             {
+              "type": "\"",
+              "start": 441,
+              "end": 442,
+              "text": "\""
+             },
+             {
+              "type": "\"",
+              "start": 466,
+              "end": 467,
+              "text": "\""
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 467,
+            "end": 468,
+            "text": ","
+           },
+           {
+            "type": "string",
+            "start": 469,
+            "end": 495,
+            "children": [
+             {
+              "type": "\"",
+              "start": 469,
+              "end": 470,
+              "text": "\""
+             },
+             {
+              "type": "\"",
+              "start": 494,
+              "end": 495,
+              "text": "\""
+             }
+            ]
+           },
+           {
+            "type": "]",
+            "start": 495,
+            "end": 496,
+            "text": "]"
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 496,
+          "end": 497,
+          "text": ","
+         },
+         {
+          "type": "array",
+          "start": 498,
+          "end": 526,
+          "children": [
+           {
+            "type": "[",
+            "start": 498,
+            "end": 499,
+            "text": "["
+           },
+           {
+            "type": "string",
+            "start": 499,
+            "end": 525,
+            "children": [
+             {
+              "type": "\"",
+              "start": 499,
+              "end": 500,
+              "text": "\""
+             },
+             {
+              "type": "\"",
+              "start": 524,
+              "end": 525,
+              "text": "\""
+             }
+            ]
+           },
+           {
+            "type": "]",
+            "start": 525,
+            "end": 526,
+            "text": "]"
+           }
+          ]
+         },
+         {
+          "type": "]",
+          "start": 526,
+          "end": 527,
+          "text": "]"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 528,
+      "end": 608,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 528,
+        "end": 532,
+        "text": "meta"
+       },
+       {
+        "type": "=",
+        "start": 533,
+        "end": 534,
+        "text": "="
+       },
+       {
+        "type": "inline_table",
+        "start": 535,
+        "end": 608,
+        "children": [
+         {
+          "type": "{",
+          "start": 535,
+          "end": 536,
+          "text": "{"
+         },
+         {
+          "type": "pair",
+          "start": 537,
+          "end": 555,
+          "children": [
+           {
+            "type": "bare_key",
+            "start": 537,
+            "end": 542,
+            "text": "owner"
+           },
+           {
+            "type": "=",
+            "start": 543,
+            "end": 544,
+            "text": "="
+           },
+           {
+            "type": "string",
+            "start": 545,
+            "end": 555,
+            "children": [
+             {
+              "type": "\"",
+              "start": 545,
+              "end": 546,
+              "text": "\""
+             },
+             {
+              "type": "\"",
+              "start": 554,
+              "end": 555,
+              "text": "\""
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 555,
+          "end": 556,
+          "text": ","
+         },
+         {
+          "type": "pair",
+          "start": 557,
+          "end": 606,
+          "children": [
+           {
+            "type": "bare_key",
+            "start": 557,
+            "end": 563,
+            "text": "labels"
+           },
+           {
+            "type": "=",
+            "start": 564,
+            "end": 565,
+            "text": "="
+           },
+           {
+            "type": "array",
+            "start": 566,
+            "end": 606,
+            "children": [
+             {
+              "type": "[",
+              "start": 566,
+              "end": 567,
+              "text": "["
+             },
+             {
+              "type": "string",
+              "start": 567,
+              "end": 575,
+              "children": [
+               {
+                "type": "\"",
+                "start": 567,
+                "end": 568,
+                "text": "\""
+               },
+               {
+                "type": "\"",
+                "start": 574,
+                "end": 575,
+                "text": "\""
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 575,
+              "end": 576,
+              "text": ","
+             },
+             {
+              "type": "string",
+              "start": 577,
+              "end": 589,
+              "children": [
+               {
+                "type": "\"",
+                "start": 577,
+                "end": 578,
+                "text": "\""
+               },
+               {
+                "type": "\"",
+                "start": 588,
+                "end": 589,
+                "text": "\""
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 589,
+              "end": 590,
+              "text": ","
+             },
+             {
+              "type": "string",
+              "start": 591,
+              "end": 605,
+              "children": [
+               {
+                "type": "\"",
+                "start": 591,
+                "end": 592,
+                "text": "\""
+               },
+               {
+                "type": "\"",
+                "start": 604,
+                "end": 605,
+                "text": "\""
+               }
+              ]
+             },
+             {
+              "type": "]",
+              "start": 605,
+              "end": 606,
+              "text": "]"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "}",
+          "start": 607,
+          "end": 608,
+          "text": "}"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

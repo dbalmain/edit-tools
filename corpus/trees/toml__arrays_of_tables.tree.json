@@ -1,0 +1,658 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/arrays_of_tables.toml",
+ "source": "# Array-of-tables headers. Distinct from an array of inline tables.\n\n[[products]]\nname = \"Hammer\"\nsku = 738594937\ncolors = [\"red\", \"green\", \"blue\", \"yellow\", \"orange\"]\n\n[products.extra]\nwarranty_years = 2\n\n[[products]]\nname = \"Nail\"\nsku = 284758393\n\n[[products.sizes]]\ninch = 1\n\n[[products.sizes]]\ninch = 2\n\n[[products]] # trailing on a later header\nname = \"Saw\"\n\n# An empty element is legal and stays empty.\n[[products]]\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 422,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 67,
+    "text": "# Array-of-tables headers. Distinct from an array of inline tables."
+   },
+   {
+    "type": "table_array_element",
+    "start": 69,
+    "end": 169,
+    "children": [
+     {
+      "type": "[[",
+      "start": 69,
+      "end": 71,
+      "text": "[["
+     },
+     {
+      "type": "bare_key",
+      "start": 71,
+      "end": 79,
+      "text": "products"
+     },
+     {
+      "type": "]]",
+      "start": 79,
+      "end": 81,
+      "text": "]]"
+     },
+     {
+      "type": "pair",
+      "start": 82,
+      "end": 97,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 82,
+        "end": 86,
+        "text": "name"
+       },
+       {
+        "type": "=",
+        "start": 87,
+        "end": 88,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 89,
+        "end": 97,
+        "children": [
+         {
+          "type": "\"",
+          "start": 89,
+          "end": 90,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 96,
+          "end": 97,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 98,
+      "end": 113,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 98,
+        "end": 101,
+        "text": "sku"
+       },
+       {
+        "type": "=",
+        "start": 102,
+        "end": 103,
+        "text": "="
+       },
+       {
+        "type": "integer",
+        "start": 104,
+        "end": 113,
+        "text": "738594937"
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 114,
+      "end": 167,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 114,
+        "end": 120,
+        "text": "colors"
+       },
+       {
+        "type": "=",
+        "start": 121,
+        "end": 122,
+        "text": "="
+       },
+       {
+        "type": "array",
+        "start": 123,
+        "end": 167,
+        "children": [
+         {
+          "type": "[",
+          "start": 123,
+          "end": 124,
+          "text": "["
+         },
+         {
+          "type": "string",
+          "start": 124,
+          "end": 129,
+          "children": [
+           {
+            "type": "\"",
+            "start": 124,
+            "end": 125,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 128,
+            "end": 129,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 129,
+          "end": 130,
+          "text": ","
+         },
+         {
+          "type": "string",
+          "start": 131,
+          "end": 138,
+          "children": [
+           {
+            "type": "\"",
+            "start": 131,
+            "end": 132,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 137,
+            "end": 138,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 138,
+          "end": 139,
+          "text": ","
+         },
+         {
+          "type": "string",
+          "start": 140,
+          "end": 146,
+          "children": [
+           {
+            "type": "\"",
+            "start": 140,
+            "end": 141,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 145,
+            "end": 146,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 146,
+          "end": 147,
+          "text": ","
+         },
+         {
+          "type": "string",
+          "start": 148,
+          "end": 156,
+          "children": [
+           {
+            "type": "\"",
+            "start": 148,
+            "end": 149,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 155,
+            "end": 156,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 156,
+          "end": 157,
+          "text": ","
+         },
+         {
+          "type": "string",
+          "start": 158,
+          "end": 166,
+          "children": [
+           {
+            "type": "\"",
+            "start": 158,
+            "end": 159,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 165,
+            "end": 166,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": "]",
+          "start": 166,
+          "end": 167,
+          "text": "]"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table",
+    "start": 169,
+    "end": 206,
+    "children": [
+     {
+      "type": "[",
+      "start": 169,
+      "end": 170,
+      "text": "["
+     },
+     {
+      "type": "dotted_key",
+      "start": 170,
+      "end": 184,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 170,
+        "end": 178,
+        "text": "products"
+       },
+       {
+        "type": ".",
+        "start": 178,
+        "end": 179,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 179,
+        "end": 184,
+        "text": "extra"
+       }
+      ]
+     },
+     {
+      "type": "]",
+      "start": 184,
+      "end": 185,
+      "text": "]"
+     },
+     {
+      "type": "pair",
+      "start": 186,
+      "end": 204,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 186,
+        "end": 200,
+        "text": "warranty_years"
+       },
+       {
+        "type": "=",
+        "start": 201,
+        "end": 202,
+        "text": "="
+       },
+       {
+        "type": "integer",
+        "start": 203,
+        "end": 204,
+        "text": "2"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table_array_element",
+    "start": 206,
+    "end": 250,
+    "children": [
+     {
+      "type": "[[",
+      "start": 206,
+      "end": 208,
+      "text": "[["
+     },
+     {
+      "type": "bare_key",
+      "start": 208,
+      "end": 216,
+      "text": "products"
+     },
+     {
+      "type": "]]",
+      "start": 216,
+      "end": 218,
+      "text": "]]"
+     },
+     {
+      "type": "pair",
+      "start": 219,
+      "end": 232,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 219,
+        "end": 223,
+        "text": "name"
+       },
+       {
+        "type": "=",
+        "start": 224,
+        "end": 225,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 226,
+        "end": 232,
+        "children": [
+         {
+          "type": "\"",
+          "start": 226,
+          "end": 227,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 231,
+          "end": 232,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 233,
+      "end": 248,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 233,
+        "end": 236,
+        "text": "sku"
+       },
+       {
+        "type": "=",
+        "start": 237,
+        "end": 238,
+        "text": "="
+       },
+       {
+        "type": "integer",
+        "start": 239,
+        "end": 248,
+        "text": "284758393"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table_array_element",
+    "start": 250,
+    "end": 279,
+    "children": [
+     {
+      "type": "[[",
+      "start": 250,
+      "end": 252,
+      "text": "[["
+     },
+     {
+      "type": "dotted_key",
+      "start": 252,
+      "end": 266,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 252,
+        "end": 260,
+        "text": "products"
+       },
+       {
+        "type": ".",
+        "start": 260,
+        "end": 261,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 261,
+        "end": 266,
+        "text": "sizes"
+       }
+      ]
+     },
+     {
+      "type": "]]",
+      "start": 266,
+      "end": 268,
+      "text": "]]"
+     },
+     {
+      "type": "pair",
+      "start": 269,
+      "end": 277,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 269,
+        "end": 273,
+        "text": "inch"
+       },
+       {
+        "type": "=",
+        "start": 274,
+        "end": 275,
+        "text": "="
+       },
+       {
+        "type": "integer",
+        "start": 276,
+        "end": 277,
+        "text": "1"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table_array_element",
+    "start": 279,
+    "end": 308,
+    "children": [
+     {
+      "type": "[[",
+      "start": 279,
+      "end": 281,
+      "text": "[["
+     },
+     {
+      "type": "dotted_key",
+      "start": 281,
+      "end": 295,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 281,
+        "end": 289,
+        "text": "products"
+       },
+       {
+        "type": ".",
+        "start": 289,
+        "end": 290,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 290,
+        "end": 295,
+        "text": "sizes"
+       }
+      ]
+     },
+     {
+      "type": "]]",
+      "start": 295,
+      "end": 297,
+      "text": "]]"
+     },
+     {
+      "type": "pair",
+      "start": 298,
+      "end": 306,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 298,
+        "end": 302,
+        "text": "inch"
+       },
+       {
+        "type": "=",
+        "start": 303,
+        "end": 304,
+        "text": "="
+       },
+       {
+        "type": "integer",
+        "start": 305,
+        "end": 306,
+        "text": "2"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table_array_element",
+    "start": 308,
+    "end": 409,
+    "children": [
+     {
+      "type": "[[",
+      "start": 308,
+      "end": 310,
+      "text": "[["
+     },
+     {
+      "type": "bare_key",
+      "start": 310,
+      "end": 318,
+      "text": "products"
+     },
+     {
+      "type": "]]",
+      "start": 318,
+      "end": 320,
+      "text": "]]"
+     },
+     {
+      "type": "comment",
+      "start": 321,
+      "end": 349,
+      "text": "# trailing on a later header"
+     },
+     {
+      "type": "pair",
+      "start": 350,
+      "end": 362,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 350,
+        "end": 354,
+        "text": "name"
+       },
+       {
+        "type": "=",
+        "start": 355,
+        "end": 356,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 357,
+        "end": 362,
+        "children": [
+         {
+          "type": "\"",
+          "start": 357,
+          "end": 358,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 361,
+          "end": 362,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 364,
+      "end": 408,
+      "text": "# An empty element is legal and stays empty."
+     }
+    ]
+   },
+   {
+    "type": "table_array_element",
+    "start": 409,
+    "end": 422,
+    "children": [
+     {
+      "type": "[[",
+      "start": 409,
+      "end": 411,
+      "text": "[["
+     },
+     {
+      "type": "bare_key",
+      "start": 411,
+      "end": 419,
+      "text": "products"
+     },
+     {
+      "type": "]]",
+      "start": 419,
+      "end": 421,
+      "text": "]]"
+     }
+    ]
+   }
+  ]
+ }
+}

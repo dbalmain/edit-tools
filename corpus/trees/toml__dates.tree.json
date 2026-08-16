@@ -1,0 +1,249 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/dates.toml",
+ "source": "# The four datetime types, including the space-vs-T offset form.\n# taplo preserves each spelling, including the space separator.\n\noffset_z = 1979-05-27T07:32:00Z\noffset_tz = 1979-05-27T00:32:00-07:00\noffset_frac = 1979-05-27T00:32:00.999999-07:00\noffset_space = 1979-05-27 07:32:00Z\nlocal_dt = 1979-05-27T07:32:00\nlocal_dt_frac = 1979-05-27T00:32:00.999999\nlocal_date = 1979-05-27\nlocal_time = 07:32:00\nlocal_time_frac = 00:32:00.999999\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 437,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 64,
+    "text": "# The four datetime types, including the space-vs-T offset form."
+   },
+   {
+    "type": "comment",
+    "start": 65,
+    "end": 128,
+    "text": "# taplo preserves each spelling, including the space separator."
+   },
+   {
+    "type": "pair",
+    "start": 130,
+    "end": 161,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 130,
+      "end": 138,
+      "text": "offset_z"
+     },
+     {
+      "type": "=",
+      "start": 139,
+      "end": 140,
+      "text": "="
+     },
+     {
+      "type": "offset_date_time",
+      "start": 141,
+      "end": 161,
+      "text": "1979-05-27T07:32:00Z"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 162,
+    "end": 199,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 162,
+      "end": 171,
+      "text": "offset_tz"
+     },
+     {
+      "type": "=",
+      "start": 172,
+      "end": 173,
+      "text": "="
+     },
+     {
+      "type": "offset_date_time",
+      "start": 174,
+      "end": 199,
+      "text": "1979-05-27T00:32:00-07:00"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 200,
+    "end": 246,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 200,
+      "end": 211,
+      "text": "offset_frac"
+     },
+     {
+      "type": "=",
+      "start": 212,
+      "end": 213,
+      "text": "="
+     },
+     {
+      "type": "offset_date_time",
+      "start": 214,
+      "end": 246,
+      "text": "1979-05-27T00:32:00.999999-07:00"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 247,
+    "end": 282,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 247,
+      "end": 259,
+      "text": "offset_space"
+     },
+     {
+      "type": "=",
+      "start": 260,
+      "end": 261,
+      "text": "="
+     },
+     {
+      "type": "offset_date_time",
+      "start": 262,
+      "end": 282,
+      "text": "1979-05-27 07:32:00Z"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 283,
+    "end": 313,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 283,
+      "end": 291,
+      "text": "local_dt"
+     },
+     {
+      "type": "=",
+      "start": 292,
+      "end": 293,
+      "text": "="
+     },
+     {
+      "type": "local_date_time",
+      "start": 294,
+      "end": 313,
+      "text": "1979-05-27T07:32:00"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 314,
+    "end": 356,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 314,
+      "end": 327,
+      "text": "local_dt_frac"
+     },
+     {
+      "type": "=",
+      "start": 328,
+      "end": 329,
+      "text": "="
+     },
+     {
+      "type": "local_date_time",
+      "start": 330,
+      "end": 356,
+      "text": "1979-05-27T00:32:00.999999"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 357,
+    "end": 380,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 357,
+      "end": 367,
+      "text": "local_date"
+     },
+     {
+      "type": "=",
+      "start": 368,
+      "end": 369,
+      "text": "="
+     },
+     {
+      "type": "local_date",
+      "start": 370,
+      "end": 380,
+      "text": "1979-05-27"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 381,
+    "end": 402,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 381,
+      "end": 391,
+      "text": "local_time"
+     },
+     {
+      "type": "=",
+      "start": 392,
+      "end": 393,
+      "text": "="
+     },
+     {
+      "type": "local_time",
+      "start": 394,
+      "end": 402,
+      "text": "07:32:00"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 403,
+    "end": 436,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 403,
+      "end": 418,
+      "text": "local_time_frac"
+     },
+     {
+      "type": "=",
+      "start": 419,
+      "end": 420,
+      "text": "="
+     },
+     {
+      "type": "local_time",
+      "start": 421,
+      "end": 436,
+      "text": "00:32:00.999999"
+     }
+    ]
+   }
+  ]
+ }
+}
