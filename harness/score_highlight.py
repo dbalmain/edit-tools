@@ -15,11 +15,15 @@ language region are reported as unhighlighted and are not failures.
 
 import argparse
 import gzip
+import hashlib
 import json
 import subprocess
 import sys
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import review_ledger  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 TREE_DIRS = (
@@ -28,6 +32,7 @@ TREE_DIRS = (
     ROOT / "corpus" / "trees-injected",
 )
 GOLDENS = ROOT / "corpus" / "highlight"
+REVIEWS = review_ledger.ROOT
 
 
 @dataclass
@@ -46,10 +51,14 @@ class Report:
     updated: list[str] = field(default_factory=list)
     detail: list[str] = field(default_factory=list)
     advisory: dict = field(default_factory=dict)
+    reviews: dict = field(default_factory=dict)
 
     @property
     def failed(self) -> bool:
-        return not all(gate["pass"] for gate in self.gates.values())
+        return (
+            not all(gate["pass"] for gate in self.gates.values())
+            or self.reviews.get("stale", 0) > 0
+        )
 
 
 def invoke(executable: Path, tree: Path, packages: dict[str, Path]) -> Run:
@@ -181,6 +190,13 @@ def golden_path(tree_path: Path) -> Path:
     return GOLDENS / f"{stem}.spans.json"
 
 
+def spans_hash(spans: object) -> str:
+    encoded = json.dumps(
+        spans, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
 def _gate(got: int, total: int, what: str) -> dict:
     return {"pass": got == total, "got": got, "of": total, "what": what}
 
@@ -217,6 +233,8 @@ def score(submission: Path, only: str | None, update: bool, verbose: bool) -> Re
     scopes_by_language = {}
     notes = []
     whitespace = {"entirely": {}, "trailing": {}}
+    review_items = []
+    reviews_by_language = {}
     package_paths = {
         path.name.removesuffix(".highlight.json"): path
         for path in (submission / "packages").glob("*.highlight.json")
@@ -241,6 +259,10 @@ def score(submission: Path, only: str | None, update: bool, verbose: bool) -> Re
             )
         destinations[destination] = tree_path
         highlighted.append((tree_path, tree, packages, destination))
+        if language not in reviews_by_language:
+            reviews_by_language[language] = review_ledger.load(
+                "highlight", language, REVIEWS
+            )
 
     identity = partition = golden = 0
     for tree_path, tree, packages, destination in highlighted:
@@ -298,10 +320,39 @@ def score(submission: Path, only: str | None, update: bool, verbose: bool) -> Re
         except (OSError, json.JSONDecodeError) as exc:
             notes.append(f"{tag}: malformed golden {destination.name} ({exc})")
             continue
+        item_id = tree_path.name.removesuffix(".tree.json")
+        language_reviews = reviews_by_language[tree["language"]]
+        review = language_reviews.get(item_id)
+        digest = spans_hash(expected)
+        item_state = review_ledger.state(digest, review)
+        review_items.append(
+            {
+                "id": item_id,
+                "language": tree["language"],
+                "hash": digest,
+                "state": item_state,
+                "review": asdict(review) if review is not None else None,
+            }
+        )
         if spans != expected:
             notes.append(f"{tag}: span stream differs from {destination.name}")
             continue
         golden += 1
+
+    seen_review_ids = {item["id"] for item in review_items}
+    for language, language_reviews in reviews_by_language.items():
+        for item_id, review in language_reviews.items():
+            if item_id not in seen_review_ids:
+                review_items.append(
+                    {
+                        "id": item_id,
+                        "language": language,
+                        "hash": None,
+                        "state": "stale",
+                        "why": "has no current reviewable golden",
+                        "review": asdict(review),
+                    }
+                )
 
     total = len(highlighted)
     report.trees = {
@@ -323,6 +374,10 @@ def score(submission: Path, only: str | None, update: bool, verbose: bool) -> Re
             for category, scopes_with_spans in whitespace.items()
         },
     }
+    report.reviews = {
+        **review_ledger.summary([item["state"] for item in review_items]),
+        "items": review_items,
+    }
     return report
 
 
@@ -335,9 +390,39 @@ def main() -> int:
     )
     parser.add_argument("--language", help="score only this tree language")
     parser.add_argument("--update", action="store_true", help="rewrite span goldens")
+    parser.add_argument("--approve", metavar="TREE", help="record a review for one golden")
+    parser.add_argument("--verdict")
+    parser.add_argument("--reason")
+    parser.add_argument("--reviewed-by")
     args = parser.parse_args()
 
+    approval_fields = (args.verdict, args.reason, args.reviewed_by)
+    if args.approve is None and any(approval_fields):
+        parser.error("--verdict, --reason, and --reviewed-by require --approve")
+    if args.approve is not None and not all(approval_fields):
+        parser.error("--approve requires --verdict, --reason, and --reviewed-by")
+    if args.approve is not None and args.update:
+        parser.error("--approve and --update must be separate review steps")
+
     report = score(args.submission.resolve(), args.language, args.update, args.verbose)
+    if args.approve is not None:
+        matches = [item for item in report.reviews["items"] if item["id"] == args.approve]
+        if not matches:
+            raise review_ledger.LedgerError(
+                f"cannot approve {args.approve!r}: it is not a current golden"
+            )
+        item = matches[0]
+        review_ledger.approve(
+            "highlight",
+            item["language"],
+            item["id"],
+            item["hash"],
+            args.verdict,
+            args.reason,
+            args.reviewed_by,
+            root=REVIEWS,
+        )
+        report = score(args.submission.resolve(), args.language, False, args.verbose)
     if args.json:
         print(json.dumps(report.__dict__, indent=2))
         return 1 if report.failed else 0
@@ -378,6 +463,20 @@ def main() -> int:
                     f"        {item['tree']} [{item['start']}, {item['end']}) "
                     f"{rendered}"
                 )
+    reviews = report.reviews
+    threshold = "met" if reviews["threshold_met"] else "BELOW THRESHOLD"
+    print("\n  golden reviews")
+    print(
+        f"    {reviews['accepted']} accepted, {reviews['stale']} stale, "
+        f"{reviews['unreviewed']} unreviewed / {reviews['of']}"
+    )
+    print(
+        f"    coverage {reviews['accepted_fraction']:.1%} "
+        f"(floor {reviews['threshold']:.0%}: {threshold})"
+    )
+    for item in reviews["items"]:
+        if item["state"] != "accepted":
+            print(f"    {item['state']:10} {item['id']}")
     if report.updated:
         print(f"\n  updated {len(report.updated)} golden(s)")
     if report.detail:
@@ -390,4 +489,7 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    try:
+        raise SystemExit(main())
+    except review_ledger.LedgerError as exc:
+        raise SystemExit(f"review ledger error: {exc}") from None

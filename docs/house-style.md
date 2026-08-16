@@ -82,8 +82,8 @@ Two things worth keeping from that:
 **The trigger to revisit:** a corpus spanning enough languages to actually test
 it — YAML, CSS, TOML and Go at minimum, since they are container-heavy and use
 three different references between them. At that point the question is
-answerable with evidence rather than taste: implement it behind the intentional-
-divergence machinery, measure the cost across every language at once, and keep
+answerable with evidence rather than taste: implement it behind the review
+ledger, measure the cost across every language at once, and keep
 or drop it on the numbers.
 
 Cost when it is time: one predicate. `roadmap.md` point 5 calls this "pile A" —
@@ -98,19 +98,15 @@ Under this document some divergences are **deliberate** — either a house
 readability rule, or, far more often, a decision that matching the reference is
 not worth the package complexity. The harness cannot say either.
 
-Today `score.py` reports one agreement number and `review-brief.md` sets a 70%
-floor. So a package that correctly declines to chase an edge case **scores worse
-for being right**, a stage-D reviewer would file that restraint as a defect, and
-nothing records the reasoning, so the next agent re-litigates it.
+`score.py` reports agreement separately from accepted, stale, and unreviewed
+divergences. A verdict lives in the content-addressed review ledger, not in the
+language manifest: changing either our output or the reference output makes the
+old review stale and fails the scorer. The 70% floor applies to agreement plus
+accepted reviews, so a package can correctly decline to chase an edge case
+without losing review coverage.
 
-Needed: divergence declared per language with a reason, reported separately from
-unexplained divergence, with the floor applying to the unexplained kind only —
-and a staleness check, so a declaration that has quietly become true fails
-loudly instead of rotting into a suppression list. That is `roadmap.md` point
-10, in flight.
-
-**"Not worth the bytes" must be a first-class, respectable reason there.** It is
-the most common one this document will generate.
+**"Not worth the bytes" is a first-class, respectable ledger reason.** It is the
+most common one this document will generate.
 
 ## How to apply this at stage C
 
