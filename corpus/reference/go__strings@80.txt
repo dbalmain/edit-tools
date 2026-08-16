@@ -1,0 +1,26 @@
+package main
+
+var plain = "hello world"
+
+var escaped = "line one\nline two\ttabbed \"quoted\""
+
+var raw = `a raw string
+with backslashes \n \t and "quotes"
+that spans three lines`
+
+var rune1 = 'a'
+var rune2 = '\n'
+var rune3 = '\u00e9'
+
+type Model struct {
+	ID   int64    `json:"id"`
+	Name string   `json:"name,omitempty"`
+	Tags []string `json:"tags,omitempty"`
+}
+
+var unicode = "café ☕"
+
+// astral characters: width must be counted in scalar values, not UTF-16 units
+var astral = "🙂🙂🙂🙂🙂🙂"
+
+var concatenated = "first part " + "second part " + "third part"

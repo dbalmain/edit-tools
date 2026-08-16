@@ -1,0 +1,65 @@
+# Go. Schema: docs/onboarding/WORKFLOW.md, "Stage 0".
+name = "go"
+extensions = [".go"]
+
+# Live PyPI: the distribution name matches the orchestrator's guess
+# (tree-sitter-go), but the pin does not. 0.7.0 was the guess; the latest
+# release is 0.25.0 (checked against the live index 2026-08-16). Imported as
+# tree_sitter_go; the module exports language() (plus HIGHLIGHTS_QUERY,
+# TAGS_QUERY) and it returns a tree_sitter.Language capsule.
+grammar = "tree-sitter-go==0.25.0"
+grammar_module = "tree_sitter_go"
+grammar_symbol = "language"
+
+# Markdown info strings that select this grammar for a fenced region. `go` is
+# the canonical name; `golang` is the conventional alias (PyMarks / highlight.js
+# both accept it). No other spelling is worth vouching for.
+injection_aliases = ["go", "golang"]
+
+# gofmt has no config file, so there is nothing to disable: its output depends
+# only on the source bytes on stdin. Verified by running it in an empty dir and
+# in a dir full of plausible `.editorconfig` / `gofmt`-shaped files -- identical.
+# `gofmt` with no arguments reads stdin and writes stdout; no fake filename is
+# needed. It ships inside the go distribution rather than as its own package, so
+# the runner form is `nix shell nixpkgs#go -c gofmt` (there is no
+# `nixpkgs#gofmt` attribute; `nix run nixpkgs#go` runs `go`, not `gofmt`).
+# Verified: source on stdin -> formatted source on stdout, exit 0, deterministic
+# across two runs.
+reference = "nix shell nixpkgs#go -c gofmt"
+# gofmt has no version flag. `go version` supplies the recorded display string,
+# and `go version $(command -v gofmt)` inspects the formatter executable itself:
+# it reports go1.26.5. `go` and `gofmt` also resolve inside the same
+# `...-go-1.26.5` Nix output, so this identifies the binary more directly than
+# merely assuming that every tool shipped beside `go` has its version.
+reference_version = "go version go1.26.5 linux/amd64"
+
+# gofmt has no width knob and does not reflow (a 166-character call stays on one
+# line). Its help has no width option, the command has nowhere to pass one, and
+# repeated runs are identical. `reference_width = "fixed"` is the honest entry;
+# gofmt's single output is ground truth.
+reference_width = "fixed"
+
+# One entry only, as the loader requires for a fixed reference. 80 is an
+# arbitrary round measurement width, not a gofmt setting or an official Go
+# default. It only feeds the scorer's comparative line-length measure. See the
+# report: the reference ignores width entirely.
+widths = [80]
+
+# Generic default. gofmt's only structural rewrite is removing redundant nested
+# parentheses (`((1))` -> `(1)`), which renames the tree; see transparent_wrappers
+# below. A data-model loader (e.g. go/parser or a hand-rolled AST dump) would be
+# the wrong oracle here for the usual reason: it cannot see gofmt's alignment and
+# comment placement, and would accept the very token rewrites this formatter may
+# never perform.
+gate3 = "default"
+
+# Established by running gofmt over the corpus, not by reading the grammar:
+# gofmt removes a redundant inner pair of parentheses (`((1))` -> `(1)`) while
+# leaving a single level in place. A parenthesized_expression in Go is genuinely
+# transparent -- `(x)` is always the same expression as `x`, so a package may add
+# or remove it -- *except* that removing parens can change precedence for a
+# selector on a deref (`(*p).y` != `*p.y`). That is a stage-C caution, not a gate
+# defect: gofmt itself never removes those parens, and the gate names this kind
+# only when the formatter's own output changes it.
+transparent_wrappers = ["parenthesized_expression"]
+equivalent_kinds = []

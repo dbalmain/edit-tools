@@ -29,6 +29,10 @@ pub struct Item<'a> {
     pub blanks: usize,
     /// Blank lines between the last leading comment and the item itself.
     pub gap: usize,
+    /// Whether the source had a line break before this item (before its first
+    /// leading comment, if any). The source-mirroring breaks (`srcline` /
+    /// `srcsoft`) read this.
+    pub line_break: bool,
 }
 
 impl Item<'_> {
@@ -69,8 +73,21 @@ pub fn split<'a>(node: &'a Node, src: &[u8], pkg: &Package) -> Split<'a> {
 
         if pkg.comments.contains(&child.kind) {
             let text = child.text.clone().unwrap_or_default();
+            // Suffix only when the comment shares a line with the previous
+            // item's content. A node's range can include trailing trivia
+            // (tree-sitter-go's statement_list swallows the newline after
+            // its last statement), which would make an own-line comment
+            // look adjacent if we used node.end.
+            let share_line = items.last().is_some_and(|last| {
+                let content_end = last
+                    .node
+                    .children
+                    .last()
+                    .map_or(last.node.end, |c| c.end);
+                newlines(src, content_end, child.start) == 0
+            });
             match items.last_mut() {
-                Some(last) if gap == 0 => last.suffix.push(text),
+                Some(last) if share_line => last.suffix.push(text),
                 _ => lead.push(Comment {
                     text,
                     blanks: gap.saturating_sub(1),
@@ -79,6 +96,7 @@ pub fn split<'a>(node: &'a Node, src: &[u8], pkg: &Package) -> Split<'a> {
             continue;
         }
         let blanks = gap.saturating_sub(1);
+        let line_break = gap >= 1 || !lead.is_empty();
         // Punctuation cannot carry a leading comment: emitting it there would
         // put the comment at the wrong indent, outside the bracket it closes.
         let take = if pkg.is_token(&child.kind) {
@@ -93,6 +111,7 @@ pub fn split<'a>(node: &'a Node, src: &[u8], pkg: &Package) -> Split<'a> {
             lead: take,
             suffix: Vec::new(),
             after: Vec::new(),
+            line_break,
         });
     }
 

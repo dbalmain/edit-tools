@@ -1,0 +1,31 @@
+package main
+
+import (
+	"fmt"
+	"strings"
+)
+
+type Record struct {
+	ID   int
+	Name string
+	Tags []string
+}
+
+var registry = map[string]Record{
+	"a": {ID: 1, Name: "alpha", Tags: []string{"x", "y"}}, // first record
+	"b": {ID: 2, Name: "beta", Tags: []string{"z"}},
+}
+
+func (r Record) String() string {
+	return fmt.Sprintf("%d:%s", r.ID, r.Name)
+}
+
+func process(records []Record) []string {
+	var out []string // collected names
+	for _, r := range records {
+		if strings.HasPrefix(r.Name, "a") {
+			out = append(out, r.Name)
+		}
+	}
+	return out
+}

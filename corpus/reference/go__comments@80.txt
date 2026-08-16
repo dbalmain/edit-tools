@@ -1,0 +1,26 @@
+// Package-level comment at the very top of the file.
+package main
+
+import "fmt" // trailing comment on an import
+
+// A function with a doc comment.
+func add(a, b int) int {
+	// Leading comment inside the body.
+	return a + b // trailing comment on a return statement
+}
+
+var values = []int{
+	1, // first element
+	2, // second element
+	// own-line comment inside a slice literal
+	3,
+}
+
+func multi() {
+	/* a block comment on its own line */
+	x := 1
+	_ = x
+	// comment before the closing brace
+}
+
+// Comment at the end of the file.

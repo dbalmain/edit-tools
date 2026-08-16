@@ -1,0 +1,36 @@
+package main
+
+func normalise(a int, b int) int {
+	result := a + b*2
+	return (result)
+}
+
+func weird() {
+	var x = []int{1, 2, 3}
+	if x != nil {
+		x[0] = 42
+	} else {
+		x = nil
+	}
+	_ = x
+}
+
+var redundant = (1)
+
+var kept = (1 + 2)
+
+var spaced = [3]int{1, 2, 3}
+
+var semis = 1
+var two = 2
+var three = 3
+
+var trailingSpaces = 1 // lots of spaces before this comment
+
+func indented() {
+	n := 0
+	if n == 0 {
+		n = 1
+	}
+	_ = n
+}

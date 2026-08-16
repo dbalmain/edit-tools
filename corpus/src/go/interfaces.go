@@ -1,0 +1,33 @@
+package main
+
+import "io"
+
+// Reader is the minimal read interface.
+type Reader interface {
+  Read(p []byte)(n int,err error)
+}
+
+type Writer interface {
+  Write(p []byte)(n int,err error)
+}
+
+type ReadWriter interface {
+  Reader
+  Writer
+}
+
+type Closer interface {
+  Close() error
+}
+
+type ReadWriteCloser interface {
+  io.Reader
+  io.Writer
+  io.Closer
+}
+
+type Stringer interface {
+  String() string
+}
+
+var _ io.Reader = Reader(nil) // compile-time interface assertion

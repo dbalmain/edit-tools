@@ -1,0 +1,22 @@
+package main
+
+import "fmt"
+
+import (
+	"context"
+	"os"
+	"time" // the standard clock
+
+	alias "net/http"
+	_ "net/http/pprof" // registers debug handlers
+	. "strings"
+)
+
+func main() {
+	_ = fmt.Sprintf
+	_ = context.Background
+	_ = os.Args
+	_ = time.Now
+	_ = alias.Get
+	_ = ToUpper
+}
