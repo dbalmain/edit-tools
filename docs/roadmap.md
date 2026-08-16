@@ -670,10 +670,17 @@ next slice.
 
 ## Not raised in the review, but now visible
 
-**Round 1's real finding was about briefs, not models.** Two of four builders
+**Closed 2026-08-16. Round 1's real finding was about briefs, not models.** Two of four builders
 independently chose the same weak gate-3 override because the brief never said
 an override must be strictly stronger than the default, and `check_gate3.py`
-actively certified the weak one as equivalent. The template is fixed; the
-harness is not (`wip/gate3-adversarial-arm`, unverified). **A checker that can
-certify a weaker replacement as equivalent is a defect of the same class as the
-one it let through**, and it is unfinished.
+actively certified the weak one as equivalent. The checker now generates five
+families of well-formed document mutations, keeps those the generic default
+rejects as its oracle, and requires an override to reject every one. It reports
+the useful count per language and fails loudly on zero.
+
+The arm also disproved both overrides that motivated the old equivalence check.
+Ordered `json.loads` accepted 19 numeric and 18 string respellings; Python's
+`ast.dump` accepted 4 numeric and 57 string respellings. Both manifests now use
+the generic default. **A checker that can certify a weaker replacement as
+equivalent is a defect of the same class as the one it let through**; this one
+now plants such a replacement in its unit suite and proves the run fails.
