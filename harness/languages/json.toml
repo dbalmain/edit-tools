@@ -14,7 +14,15 @@ reference = "npx --yes prettier@3.6.2 --stdin-filepath x.json --print-width {wid
 reference_version = "3.6.2"
 reference_width = "flag"
 
-widths = [88, 60]
+# 80 is prettier's own default, established by bisection rather than from its
+# docs: a 26-item flat array (78 chars) stays flat unprompted and a 27-item one
+# (81 chars) breaks, while `--print-width 88` keeps the 27-item array flat. This
+# read 88 -- *black's* default, inherited from the python manifest when json was
+# onboarded -- so agreement was measured at a width no prettier user ever sees.
+# The same defect was found in TOML in round 1 and corrected there; two round-2
+# builders bisected prettier at 80 independently, which is what prompted the
+# recheck here. 60 forces the layout decisions 80 lets a package dodge.
+widths = [80, 60]
 
 # The generic default is selected deliberately. Ordered `json.loads` was the
 # original override, but the adversarial arm proved it weaker: it accepted
