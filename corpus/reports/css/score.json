@@ -1,0 +1,265 @@
+{
+  "language": "css",
+  "gate1_idempotence": {
+    "pass": true,
+    "got": 30,
+    "of": 30
+  },
+  "gate2_width": {
+    "pass": true,
+    "overflow_lines": 9,
+    "reference_overflow": 8
+  },
+  "gate3_nondestruction": {
+    "pass": true,
+    "got": 30,
+    "of": 30,
+    "method": "default"
+  },
+  "gate4_agreement": {
+    "by_width": {
+      "80": {
+        "agreement": 6,
+        "of": 15
+      },
+      "40": {
+        "agreement": 3,
+        "of": 15
+      }
+    },
+    "agreement": 9,
+    "of": 30,
+    "accepted": 0,
+    "stale": 0,
+    "unreviewed": 21,
+    "review_coverage": 0.3,
+    "review_threshold_met": false
+  },
+  "rust_js_parity": "identical",
+  "refusals": [],
+  "size": {
+    "js-runtime": 9358,
+    "packages": 1105,
+    "total": 10463,
+    "per_language": {
+      "css": {
+        "package": 1105,
+        "with_runtime": 10463
+      }
+    }
+  },
+  "size_delta_vs_main": {
+    "js_runtime_gzip": {
+      "main": 9165,
+      "now": 9358,
+      "delta": 193,
+      "edits": [
+        {
+          "commit": "4281242",
+          "construct": "mixed comma/space lists (declaration, arguments)",
+          "from": 9165,
+          "to": 9209,
+          "delta": 44
+        },
+        {
+          "commit": "51ea32e",
+          "construct": "only-comment block",
+          "from": 9209,
+          "to": 9358,
+          "delta": 149
+        }
+      ]
+    },
+    "package_gzip": 1105
+  },
+  "divergences": [
+    {
+      "case": "at_rules.css@40",
+      "hash": "05166f0c859dbb097d69cdb2bccf91f4905aba1615e3591a97c723f7365edd9c",
+      "classification": "design limit"
+    },
+    {
+      "case": "calc.css@80",
+      "hash": "ac12c9ad5d96cf7e3fee1a23315525c0af15b3080eba6688fb5d6acc5af72cb6",
+      "classification": "design limit"
+    },
+    {
+      "case": "calc.css@40",
+      "hash": "55e8f69a94a5c2fa32ab8b4aa14ad993d43527a3be9cbfb35ec93112e9358994",
+      "classification": "design limit"
+    },
+    {
+      "case": "comments.css@80",
+      "hash": "0f3573cc7c352289b7996e4efbbf1e0fc474883831912f7192fb84dea0e30969",
+      "classification": "design limit"
+    },
+    {
+      "case": "comments.css@40",
+      "hash": "96e69663d5f870336686e215699881678f0326d7d11e9f6db429e5bc96d6297b",
+      "classification": "design limit"
+    },
+    {
+      "case": "custom_properties.css@80",
+      "hash": "d49f9d33f5614488ad6f14110a3874eba56b92f5f6b5d4abb454aae236df81be",
+      "classification": "design limit"
+    },
+    {
+      "case": "custom_properties.css@40",
+      "hash": "99252240e1821af1257f53869129a6d72d75d55c0ff4f6c78ad27f379685fc1b",
+      "classification": "design limit"
+    },
+    {
+      "case": "keyframes.css@40",
+      "hash": "83d4effdad8681a00a6ed930e721e3b303a3a4ebfe086df9f77acd82843d055d",
+      "classification": "reference quirk"
+    },
+    {
+      "case": "kitchen.css@80",
+      "hash": "88cb83c9cef539fa56b3337f04f3bf6b8c6d72b550e84c074f5def58e4261ad2",
+      "classification": "design limit"
+    },
+    {
+      "case": "kitchen.css@40",
+      "hash": "c31b2cc24639b07a809df2b79f05fe1998dfbfdd600de554debd5d7c9dcf7a4d",
+      "classification": "design limit"
+    },
+    {
+      "case": "nested.css@80",
+      "hash": "f38834a1967973b35dbd7f1075b3d440def445dc7f7660e48df28e179d1cf394",
+      "classification": "design limit"
+    },
+    {
+      "case": "nested.css@40",
+      "hash": "010ab77f3dba467962001d05b86e06742397db6963f2c7c7dfe3983786967478",
+      "classification": "design limit"
+    },
+    {
+      "case": "nesting.css@80",
+      "hash": "fac55aeab7dfb64d5f198b1fa4bb592635928e12b9b704508c0187ea3d097b62",
+      "classification": "design limit"
+    },
+    {
+      "case": "nesting.css@40",
+      "hash": "5acfad092aef2c986035fa96cb3460088e82ccecc295212db0b60eb51ef95777",
+      "classification": "design limit"
+    },
+    {
+      "case": "normalisation.css@80",
+      "hash": "4077a234c3f6a6a44efd81ce183f2f79f485e99461f6637b1f4d5e6e6dfae5ec",
+      "classification": "design limit"
+    },
+    {
+      "case": "normalisation.css@40",
+      "hash": "c1d204a53215546d5e4c8aab105c888b56d1e304aec4082dbb9c2abdec33e213",
+      "classification": "design limit"
+    },
+    {
+      "case": "selectors.css@40",
+      "hash": "bc8623406b33626c1995f1e9c636706e6e6123e9a13a84099e3515044bee85ca",
+      "classification": "design limit"
+    },
+    {
+      "case": "strings.css@80",
+      "hash": "cb4ce7242a8e5af3f71edbcbceb7a81eab4710de95131ed960dfa1568d33ba72",
+      "classification": "design limit"
+    },
+    {
+      "case": "strings.css@40",
+      "hash": "cb4ce7242a8e5af3f71edbcbceb7a81eab4710de95131ed960dfa1568d33ba72",
+      "classification": "design limit"
+    },
+    {
+      "case": "values.css@80",
+      "hash": "23f85b9cefa02c541a6e72ccd328fef0984c8342e315684fab8570f4dd05191c",
+      "classification": "design limit"
+    },
+    {
+      "case": "values.css@40",
+      "hash": "c8a40f326d8548f83bab7e17eea34f4a7cfab90c743f57e57a538418704c877d",
+      "classification": "design limit"
+    }
+  ],
+  "gates": {
+    "0-coverage": {
+      "pass": true,
+      "got": 30,
+      "of": 30,
+      "what": "formatted every corpus file at every width"
+    },
+    "1-agreement": {
+      "pass": true,
+      "got": 30,
+      "of": 30,
+      "what": "rust and js byte-identical"
+    },
+    "2-idempotence": {
+      "pass": true,
+      "got": 30,
+      "of": 30,
+      "what": "fmt(fmt(x)) == fmt(x)"
+    },
+    "3-nondestruction": {
+      "pass": true,
+      "got": 30,
+      "of": 30,
+      "what": "meaning and comments preserved"
+    }
+  },
+  "measures": {
+    "4-overflow-lines": 9,
+    "5-size-gzip": {
+      "js-runtime": 9358,
+      "packages": 1105,
+      "total": 10463,
+      "per_language": {
+        "css": {
+          "package": 1105,
+          "with_runtime": 10463
+        }
+      }
+    },
+    "6-reference-agreement": {
+      "agreement": 9,
+      "accepted": 0,
+      "stale": 0,
+      "unreviewed": 21,
+      "of": 30,
+      "agreement_fraction": 0.3,
+      "review_coverage": 0.3,
+      "review_threshold": 0.7,
+      "review_threshold_met": false,
+      "by_language": {
+        "css": {
+          "reference": "3.9.6",
+          "waived": false,
+          "agreement": 9,
+          "accepted": 0,
+          "stale": 0,
+          "unreviewed": 21,
+          "of": 30,
+          "reference_overflow": 8,
+          "by_width": {
+            "80": {
+              "agreement": 6,
+              "accepted": 0,
+              "stale": 0,
+              "unreviewed": 9,
+              "of": 15,
+              "review_coverage": 0.4,
+              "review_threshold_met": false
+            },
+            "40": {
+              "agreement": 3,
+              "accepted": 0,
+              "stale": 0,
+              "unreviewed": 12,
+              "of": 15,
+              "review_coverage": 0.2,
+              "review_threshold_met": false
+            }
+          }
+        }
+      }
+    }
+  }
+}
