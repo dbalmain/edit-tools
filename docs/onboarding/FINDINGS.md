@@ -116,8 +116,8 @@ not buy an IR feature.
 
 ## 3. A break-only separator pins its group
 
-**Status:** open · **Cost:** local · **Languages:** TOML (2 accepted
-divergences)
+**Status:** open · **Cost:** local · **Languages:** TOML (2), CSS (2), YAML (4)
+— 8 accepted divergences
 
 The IR's only break-only separator policy also pins a group when it consumes an
 existing comma, so a rule cannot consume a source comma without pinning the
@@ -129,7 +129,20 @@ existing trailing comma as an instruction to stay broken. So this may be a
 **feature** rather than a gap, and the entry exists to make that a decision
 rather than an accident.
 
-**Decide when:** a language wants the opposite behaviour and says why.
+**Two more languages want the opposite behaviour, and said why.** CSS's builder
+went as far as extending `opt` in the runtime to escape it — the edit the
+reviewer reverted (LEDGER row 4), which does not make the underlying want less
+real, only the workaround unnecessary. YAML's reviewer states it plainly:
+`trail` is the only policy that may consume the source comma and it pins the
+group; replacing it with `opt` collapses the group but leaves the comma behind
+and loses break-only commas everywhere else.
+
+So the "feature, not a gap" reading is now the minority one. Three languages,
+eight divergences, and the magic-trailing-comma argument only ever justified the
+_pinning_ — never the fact that consuming a separator and pinning a group are
+welded together in one opcode.
+
+**Decide when:** with entry 6, whose fix touches the same group-fit machinery.
 
 ## 4. The reference rewrites the source, so the corpus cannot contain the case
 
@@ -310,8 +323,17 @@ choice — the group measures whatever it contains. This is a small, local opcod
 them prove both modes are needed, which is unusually clean evidence for adding
 something.
 
-**Decide when:** YAML or TOML stage C, whichever next produces a divergence that
-turns on it. Cheap enough that it does not need a second language to justify it.
+**YAML's stage D produced them: five of its twenty accepted divergences cite
+this entry** (`comments@40`, `keys@40`, `nested@40`, `kitchen@40`, `tags@40`).
+The reviewer's reason is the same each time and is worth quoting once: removing
+the pair `group` fixes those scalar lines and regresses every broken flow
+collection, so the package has a choice between two wrong answers and no way to
+ask for the right one.
+
+**Decide when: now — this is the cheapest open entry with real evidence behind
+it.** A local opcode, both modes proven necessary by two references pulling in
+opposite directions, and five divergences in one language waiting on it. It is
+the second thing to build after `fill` (entry 8), and arguably before.
 
 ## 7. A rule cannot tell a comment-forced break from a width-forced break
 
@@ -460,7 +482,7 @@ one is contextual and the other global.
 
 ## 10. A rule cannot vary by where its node appears
 
-**Status:** open · **Cost:** contextual · **Languages:** CSS
+**Status:** open · **Cost:** contextual · **Languages:** CSS, Go, YAML
 
 Dispatch is on `node.type` alone. CSS needs `binary_query` formatted one way
 under `@media` and another under `@supports` — the same node kind, different
@@ -478,9 +500,27 @@ by the head of a form rather than the node kind. CSS has arrived at a milder
 version of the same problem three rounds early, which is useful: it means the
 question can be settled before a language exists that cannot work around it.
 
-**Decide when:** before Scheme (round 5), and sooner if a round-3 language hits
-it. Two languages would make it the cheapest of the contextual entries to
-justify.
+**Two more languages hit it in round 2, so the "two languages" bar is already
+passed — three times over.** Go's stage D reassigned mixed-precedence spacing,
+index-expression tightness and conditional-parenthesis handling here (the
+builder had filed them under entry 2). YAML hit it hardest: **eight of its
+twenty accepted divergences cite this entry**, because tree-sitter-yaml wraps
+every value in a `flow_node`/`block_node` and a `pair` rule therefore cannot see
+what kind of value it holds.
+
+YAML also shipped **the first partial answer, and it is worth reading as a
+warning**: a `child-count` predicate (LEDGER row 10, +58 B) that tallies a
+selector's children one level down, so
+`when (child-count f:value t:block_scalar 1)` can peer through the wrapper. It
+works, it is cheap, and it composes with the existing `count` family — but it is
+a one-level, count-only special case standing in for a dispatch question. The
+risk is obvious: each language adds its own one-level peephole, and by round 5
+there are six of them and still no answer for Scheme, where layout is driven by
+the head of a form at arbitrary depth.
+
+**Decide when: before round 3 launches.** This was previously "before Scheme
+(round 5)". Three languages, eight accepted divergences and one shipped
+workaround have moved it up.
 
 ## 11. Two smaller CSS findings, recorded but not yet argued
 
@@ -567,6 +607,24 @@ to: _if you need an override, extend the default rather than replace it._
 **Decide when:** YAML's stage E, which is building exactly this. The register
 entry stays open until some language other than YAML is asked the question and
 answers it.
+
+**Stage E shipped it, and it holds.** `gate3 = "yaml"` is
+`(generic_signature(text), chomp_evidence)`. The pre-fix verification is the
+part worth keeping: the generic gate accepted the old, data-destroying output
+(`True`); the override rejected it (`False`, "keep-chomping trailing newline run
+differs"). The gate checker then found 524 useful mutations, 0 blind spots and 0
+generic/override disagreements. The composition rule did its job — the override
+could not be weaker, and it demonstrably caught the one case the default missed.
+
+The runtime side cost +341 B (LEDGER row 9): `blank` gained a third operand
+naming the leaf spellings after which the source gap is semantic, plus an EOF
+escape from trailing-newline normalisation. **The first shape of that bypass was
+over-broad** and the reviewer narrowed it (LEDGER row 11) — it searched the
+whole preceding subtree for the declaring leaf, so a `|+` buried anywhere inside
+an item uncapped the blank run after that item. The rightmost-spine test is both
+correct and smaller. Worth recording as a general shape: _a predicate about "the
+gap after X" must ask whether X **ends** the thing the gap follows, not whether
+X appears in it._
 
 **Go was the first asked, and answered no**, which is the outcome to expect from
 most languages: semicolon insertion changes the reparse structure so gate 3
