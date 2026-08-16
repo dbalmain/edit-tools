@@ -4,16 +4,19 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
+import formatter_divergence
 import manifest
+import review_ledger
 import score
 
 
-class IntentionalDivergenceScoreTests(unittest.TestCase):
+class ReviewLedgerScoreTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.root = Path(self.tmp.name)
         self.reference = self.root / "reference"
+        self.reviews = self.root / "reviews"
         self.reference.mkdir()
         self.tree = self.root / "json__sample.tree.json"
         self.tree.write_text(
@@ -27,7 +30,7 @@ class IntentionalDivergenceScoreTests(unittest.TestCase):
         for width in (88, 60):
             (self.reference / f"json__sample@{width}.txt").write_text("reference")
 
-    def manifest(self, file: str = "sample.json") -> manifest.Manifest:
+    def manifest(self) -> manifest.Manifest:
         path = self.root / "json.toml"
         path.write_text(
             "\n".join(
@@ -42,9 +45,6 @@ class IntentionalDivergenceScoreTests(unittest.TestCase):
                     'reference_width = "flag"',
                     'widths = [88, 60]',
                     'gate3 = "default"',
-                    "intentional_divergences = [",
-                    f'  {{ file = "{file}", width = 60, reason = "House rule." }},',
-                    "]",
                 )
             )
         )
@@ -60,9 +60,110 @@ class IntentionalDivergenceScoreTests(unittest.TestCase):
             mock.patch.object(score, "REFERENCE", self.reference),
             mock.patch.object(score, "invoke", side_effect=invoke),
         ):
-            return score.reference_agreement(self.root, [(self.tree, m)])
+            return score.reference_agreement(
+                self.root, [(self.tree, m)], ledger_root=self.reviews
+            )
 
-    def test_reports_three_outcomes_and_the_reason(self):
+    def approve(self, output: str = "house", item_id: str = "json/sample.json@60"):
+        digest = formatter_divergence.make(
+            "json", "sample.json", 60, output, "reference"
+        ).hash
+        review_ledger.approve(
+            "formatter",
+            "json",
+            item_id,
+            digest,
+            "design limit",
+            "House containers break differently.",
+            "reviewer@example.com",
+            root=self.reviews,
+            reviewed_at="2026-08-16T00:00:00Z",
+        )
+
+    def test_reports_unreviewed_then_accepted_with_review_metadata(self):
+        outputs = {
+            88: score.Run(ok=True, text="reference"),
+            60: score.Run(ok=True, text="house"),
+        }
+        report = self.classify(outputs)
+        self.assertEqual(
+            (report["accepted"], report["stale"], report["unreviewed"]),
+            (0, 0, 1),
+        )
+        self.assertFalse(report["review_threshold_met"])
+
+        self.approve()
+        ledger_before = (self.reviews / "formatter" / "json.jsonl").read_text()
+        report = self.classify(
+            outputs
+        )
+
+        self.assertEqual(
+            (report["accepted"], report["stale"], report["unreviewed"]),
+            (1, 0, 0),
+        )
+        entry = report["by_language"]["json"]
+        self.assertEqual(
+            entry["accepted_divergences"][0]["review"]["reviewed_by"],
+            "reviewer@example.com",
+        )
+        self.assertEqual(entry["by_width"]["60"]["accepted"], 1)
+        self.assertEqual(
+            (self.reviews / "formatter" / "json.jsonl").read_text(), ledger_before
+        )
+
+    def test_shape_changing_divergence_is_stale_and_a_hard_failure(self):
+        self.approve("first shape")
+        report = self.classify(
+            {
+                88: score.Run(ok=True, text="reference"),
+                60: score.Run(ok=True, text="different shape"),
+            }
+        )
+
+        self.assertEqual(report["stale"], 1)
+        self.assertEqual(
+            report["by_language"]["json"]["stale_divergences"][0]["why"],
+            "formatter divergence changed",
+        )
+        scored = score.Report(submission="submission")
+        scored.gates = {"gate": {"pass": True}}
+        scored.measures = {"6-reference-agreement": report}
+        self.assertTrue(scored.disqualified)
+
+    def test_review_that_now_agrees_is_stale(self):
+        self.approve()
+        report = self.classify(
+            {
+                88: score.Run(ok=True, text="reference"),
+                60: score.Run(ok=True, text="reference"),
+            }
+        )
+
+        self.assertEqual(report["stale"], 1)
+        self.assertIn(
+            "now agrees",
+            report["by_language"]["json"]["stale_divergences"][0]["why"],
+        )
+
+    def test_review_cannot_cover_refusal(self):
+        self.approve()
+        report = self.classify(
+            {
+                88: score.Run(ok=True, text="reference"),
+                60: score.Run(ok=False, refused=True, error="no"),
+            }
+        )
+
+        self.assertEqual(report["stale"], 1)
+        self.assertIn(
+            "refuses",
+            report["by_language"]["json"]["stale_divergences"][0]["why"],
+        )
+
+    def test_review_requires_a_reference(self):
+        self.approve()
+        (self.reference / "json__sample@60.txt").unlink()
         report = self.classify(
             {
                 88: score.Run(ok=True, text="reference"),
@@ -70,56 +171,26 @@ class IntentionalDivergenceScoreTests(unittest.TestCase):
             }
         )
 
-        self.assertEqual(
-            (report["agreement"], report["intentional"], report["unexplained"]),
-            (1, 1, 0),
+        self.assertEqual(report["stale"], 1)
+        self.assertIn(
+            "reference is missing",
+            report["by_language"]["json"]["stale_divergences"][0]["why"],
         )
-        entry = report["by_language"]["json"]
-        self.assertEqual(
-            entry["intentional_divergences"],
-            [{"case": "sample.json@60", "reason": "House rule."}],
+
+    def test_review_requires_a_corpus_case(self):
+        self.approve(item_id="json/other.json@60")
+        report = self.classify(
+            {
+                88: score.Run(ok=True, text="reference"),
+                60: score.Run(ok=True, text="house"),
+            }
         )
-        self.assertEqual(entry["by_width"]["60"]["intentional"], 1)
 
-    def test_declaration_that_now_agrees_is_stale(self):
-        with self.assertRaisesRegex(manifest.ManifestError, "is stale"):
-            self.classify(
-                {
-                    88: score.Run(ok=True, text="reference"),
-                    60: score.Run(ok=True, text="reference"),
-                }
-            )
-
-    def test_declaration_cannot_cover_refusal(self):
-        with self.assertRaisesRegex(
-            manifest.ManifestError, "cannot cover a formatter refusal"
-        ):
-            self.classify(
-                {
-                    88: score.Run(ok=True, text="reference"),
-                    60: score.Run(ok=False, refused=True, error="no"),
-                }
-            )
-
-    def test_declaration_requires_a_reference(self):
-        (self.reference / "json__sample@60.txt").unlink()
-        with self.assertRaisesRegex(manifest.ManifestError, "reference is missing"):
-            self.classify(
-                {
-                    88: score.Run(ok=True, text="reference"),
-                    60: score.Run(ok=True, text="house"),
-                }
-            )
-
-    def test_declaration_requires_a_corpus_case(self):
-        with self.assertRaisesRegex(manifest.ManifestError, "has no corpus comparison"):
-            self.classify(
-                {
-                    88: score.Run(ok=True, text="reference"),
-                    60: score.Run(ok=True, text="house"),
-                },
-                self.manifest("other.json"),
-            )
+        self.assertEqual(report["stale"], 1)
+        self.assertIn(
+            "no corpus comparison",
+            report["by_language"]["json"]["stale_divergences"][0]["why"],
+        )
 
 
 class SizeScoreTests(unittest.TestCase):
@@ -142,6 +213,34 @@ class SizeScoreTests(unittest.TestCase):
         self.assertEqual(
             measured["total"], measured["js-runtime"] + measured["packages"]
         )
+
+
+class AwaitingPackageTests(unittest.TestCase):
+    """Stage A lands a corpus; stage C lands the package. In between, a
+    language must read as pending rather than as one refusal per tree."""
+
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.submission = Path(tmp.name)
+        (self.submission / "packages").mkdir()
+
+    def test_a_language_with_no_package_is_awaiting_it(self):
+        (self.submission / "packages" / "json.json").write_text("{}")
+
+        pending = score.awaiting_package(
+            self.submission, {"json": object(), "toml": object()}
+        )
+
+        self.assertEqual(sorted(pending), ["toml"])
+
+    def test_a_package_that_exists_is_scored_however_it_behaves(self):
+        """A refusing package is a failure. Only a missing file is pending."""
+        (self.submission / "packages" / "toml.json").write_text("{}")
+
+        pending = score.awaiting_package(self.submission, {"toml": object()})
+
+        self.assertEqual(pending, {})
 
 
 if __name__ == "__main__":

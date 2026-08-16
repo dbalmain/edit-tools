@@ -331,6 +331,10 @@ and exit 1; declaring the real `nested.json@88` moves it to intentional and the
 per-width split tracks the two widths separately. Nothing is declared for the
 current corpus — 0 intentional, 6 unexplained, agreement unchanged.
 
+This file-and-width mechanism was later replaced by point 11's content-addressed
+ledger. It remains here as the history of the weaker mechanism and why the
+three-way reporting exists.
+
 This is a central change and it belongs on `main` before round 2 opens — not
 because every language will have house rules (they will not; the container rule
 is deferred) but because every language will have places where matching the
@@ -514,7 +518,7 @@ The last point is the only one that adds a rule rather than a note, and it is
 the kind of rule this project likes: it makes the bad state unrepresentable at
 load rather than asking package authors to be careful.
 
-## 11. A difference nobody has looked at is not a decision — **next**
+## 11. A difference nobody has looked at is not a decision — **ledger built; HTML next**
 
 Both halves of this project produce differences that need a human verdict, and
 neither currently records that the verdict happened.
@@ -642,6 +646,25 @@ is what the ledger attaches to. The ledger and the suspicion reports come first
 and are worth having on their own; the HTML surface follows and is where the
 human-review question gets answered properly. Do not build the page before the
 ledger it is meant to display.
+
+**Ledger slice built.** Records are one-per-line JSON in per-language files
+under `harness/reviews/{formatter,highlight}/`: one verdict produces one stable
+git diff and parallel language work does not collide in a shared ledger.
+`harness/review_ledger.py` owns validation, persistence, and the three states;
+each scorer owns its id and hash input. `harness/formatter_divergence.py` is the
+structured pair consumed by both `score.py` and the terminal/JSON viewer in
+`harness/review_formatter.py`, so the displayed outputs are the outputs hashed.
+Formatter approval is restricted to a current viewer record and requires the
+three-way classification, reason, and reviewer. Highlight approval is wired
+through `score_highlight.py` and deliberately cannot be combined with
+`--update`.
+
+The old manifest declarations were removed rather than retained as a second,
+content-blind approval mechanism. Stale reviews fail either scorer; unreviewed
+coverage is reported against the 70% stage-D threshold. Existing highlight
+goldens remain visibly unreviewed rather than being assigned fabricated
+reviewers. The HTML surface and boundary-aware highlight rendering remain the
+next slice.
 
 ---
 

@@ -16,10 +16,6 @@ reference_width = "flag"
 
 widths = [88, 60]
 
-# Exact file-and-width cases where differing from prettier is a reviewed house-style
-# decision. A reason is mandatory, and score.py fails if a declaration goes stale.
-intentional_divergences = []
-
 # Ordered `json.loads` catches key reordering, which the generic tree comparison
 # would also catch -- but it additionally proves the output is *valid JSON* by a
 # parser that is not tree-sitter, which the generic default cannot.

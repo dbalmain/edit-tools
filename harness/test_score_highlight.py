@@ -5,6 +5,7 @@ from pathlib import Path
 from unittest import mock
 
 import score_highlight as scorer
+import review_ledger
 
 
 class PartitionTests(unittest.TestCase):
@@ -105,6 +106,7 @@ class ScoreTests(unittest.TestCase):
         self.trees = self.root / "trees"
         self.dirty = self.root / "trees-dirty"
         self.goldens = self.root / "highlight"
+        self.reviews = self.root / "reviews"
         self.submission = self.root / "submission"
         self.trees.mkdir()
         self.dirty.mkdir()
@@ -122,12 +124,14 @@ class ScoreTests(unittest.TestCase):
         self.globals = (
             mock.patch.object(scorer, "TREE_DIRS", (self.trees, self.dirty)),
             mock.patch.object(scorer, "GOLDENS", self.goldens),
+            mock.patch.object(scorer, "REVIEWS", self.reviews),
         )
 
     def test_missing_package_is_reported_without_failing(self):
         with (
             self.globals[0],
             self.globals[1],
+            self.globals[2],
             mock.patch.object(scorer, "invoke") as invoke,
         ):
             report = scorer.score(self.submission, None, update=False, verbose=True)
@@ -148,6 +152,7 @@ class ScoreTests(unittest.TestCase):
         with (
             self.globals[0],
             self.globals[1],
+            self.globals[2],
             mock.patch.object(scorer, "invoke", side_effect=[run, run]),
         ):
             report = scorer.score(self.submission, None, update=True, verbose=True)
@@ -179,6 +184,7 @@ class ScoreTests(unittest.TestCase):
         with (
             self.globals[0],
             self.globals[1],
+            self.globals[2],
             mock.patch.object(scorer, "invoke", side_effect=[run, run]) as invoke,
         ):
             report = scorer.score(self.submission, None, update=True, verbose=True)
@@ -196,6 +202,7 @@ class ScoreTests(unittest.TestCase):
         with (
             self.globals[0],
             self.globals[1],
+            self.globals[2],
             mock.patch.object(scorer, "invoke", side_effect=[rust, js]),
         ):
             report = scorer.score(self.submission, None, update=True, verbose=True)
@@ -220,6 +227,7 @@ class ScoreTests(unittest.TestCase):
         with (
             self.globals[0],
             self.globals[1],
+            self.globals[2],
             mock.patch.object(scorer, "invoke", side_effect=[run, run]),
         ):
             report = scorer.score(self.submission, None, update=True, verbose=True)
@@ -236,6 +244,76 @@ class ScoreTests(unittest.TestCase):
                 }
             ],
         )
+
+    def test_unchanged_golden_keeps_its_review_without_rewriting_it(self):
+        package = self.submission / "packages" / "toy.highlight.json"
+        package.write_text(json.dumps({"scopes": ["variable"]}))
+        spans = [{"start": 0, "end": 1, "scope": "variable"}]
+        output = (json.dumps(spans) + "\n").encode()
+        run = scorer.Run(ok=True, output=output)
+        self.goldens.mkdir()
+        (self.goldens / "toy__sample.spans.json").write_text(
+            json.dumps(spans, indent=2) + "\n"
+        )
+        review_ledger.approve(
+            "highlight",
+            "toy",
+            "toy__sample",
+            scorer.spans_hash(spans),
+            "accepted",
+            "The identifier span is correct.",
+            "reviewer@example.com",
+            root=self.reviews,
+            reviewed_at="2026-08-16T00:00:00Z",
+        )
+        ledger = self.reviews / "highlight" / "toy.jsonl"
+        before = ledger.read_text()
+
+        with (
+            self.globals[0],
+            self.globals[1],
+            self.globals[2],
+            mock.patch.object(scorer, "invoke", side_effect=[run, run]),
+        ):
+            report = scorer.score(self.submission, None, update=False, verbose=True)
+
+        self.assertFalse(report.failed)
+        self.assertEqual(report.reviews["accepted"], 1)
+        self.assertEqual(ledger.read_text(), before)
+
+    def test_changed_golden_makes_its_review_stale(self):
+        package = self.submission / "packages" / "toy.highlight.json"
+        package.write_text(json.dumps({"scopes": ["variable", "constant"]}))
+        old = [{"start": 0, "end": 1, "scope": "variable"}]
+        changed = [{"start": 0, "end": 1, "scope": "constant"}]
+        output = (json.dumps(changed) + "\n").encode()
+        run = scorer.Run(ok=True, output=output)
+        self.goldens.mkdir()
+        (self.goldens / "toy__sample.spans.json").write_text(
+            json.dumps(changed, indent=2) + "\n"
+        )
+        review_ledger.approve(
+            "highlight",
+            "toy",
+            "toy__sample",
+            scorer.spans_hash(old),
+            "accepted",
+            "The identifier span was correct.",
+            "reviewer@example.com",
+            root=self.reviews,
+            reviewed_at="2026-08-16T00:00:00Z",
+        )
+
+        with (
+            self.globals[0],
+            self.globals[1],
+            self.globals[2],
+            mock.patch.object(scorer, "invoke", side_effect=[run, run]),
+        ):
+            report = scorer.score(self.submission, None, update=False, verbose=True)
+
+        self.assertTrue(report.failed)
+        self.assertEqual(report.reviews["stale"], 1)
 
 
 if __name__ == "__main__":
