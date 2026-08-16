@@ -120,6 +120,15 @@ Fields you must establish rather than guess:
   checker must report a non-zero useful count. If the override accepts any
   member of that oracle, it is weaker and cannot be selected.
 
+  **If you do need an override, extend the default rather than replace it.**
+  Compose it as `(default_signature(text), your_extra)` — an override built that
+  way **cannot** be weaker than the default, by construction, which is a much
+  better guarantee than an adversarial run that merely failed to find a
+  counter-example. Both overrides tried before this rule existed were
+  _replacements_ and both were weaker; the one that motivated the rule is
+  YAML's, where `|+` chomping puts semantic newlines in the whitespace between
+  two nodes and no generic rule can see them (`FINDINGS.md` entry 12).
+
   **Data-model loaders are almost always the wrong choice.** `tomllib`,
   `yaml.safe_load`, `json.loads` and friends collapse exactly the spelling
   distinctions a formatter must preserve — that is their job as loaders and it
@@ -296,13 +305,13 @@ Write `corpus/reports/{{LANG}}/corpus-report.md`:
   along with the three corpus-quality counts above, so none of them has to be
   computed by hand. (`score.py` also prints it as "its own overflow: N", but
   only once a package exists; at stage A it filters your language out before it
-  computes anything.) Break the causes out in the report. **The reference is allowed to
-  overrun its own target width, and they all do.** taplo overruns on 8 line-runs
-  across the TOML corpus, one of which it _manufactures_: it pads a 66-character
-  line out to 107 in order to align a comment. Without this number in the
-  report, a stage-C agent reads a 107-character line at width 88 as a corpus bug
-  and either "fixes" it away from the reference or files it as a package
-  failure.
+  computes anything.) Break the causes out in the report. **The reference is
+  allowed to overrun its own target width, and they all do.** taplo overruns on
+  8 line-runs across the TOML corpus, one of which it _manufactures_: it pads a
+  66-character line out to 107 in order to align a comment. Without this number
+  in the report, a stage-C agent reads a 107-character line at width 88 as a
+  corpus bug and either "fixes" it away from the reference or files it as a
+  package failure.
 - **anything the reference formatter does that surprised you** — this is the
   most valuable section. Cases where it does not reflow, where its output
   depends on something other than the input line, where two inputs format the
