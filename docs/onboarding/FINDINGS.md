@@ -143,6 +143,56 @@ else.
 **Decide when:** before YAML's stage B signs off, because stage B is where the
 corpus is judged and this changes what "a good corpus" means.
 
+## 5. Anonymous tokens are only compared when their parent has no named children
+
+**Status:** open · **Cost:** gate change, not IR · **Languages:** YAML
+
+Reported by YAML's builder, verified here. `_generic` recurses into **named**
+children only, so an anonymous token is compared at all only when its parent has
+no named children. prettier drops YAML's `...` document-end marker and gate 3
+does not notice.
+
+Measured, on the merged YAML grammar:
+
+| Edit                         | Gate 3    |
+| ---------------------------- | --------- |
+| `...` document-end dropped   | **blind** |
+| `---` document-start dropped | **blind** |
+| flow trailing comma dropped  | **blind** |
+| whole second document lost   | catches   |
+| anchor `&x` dropped          | catches   |
+| tag `!!str` dropped          | catches   |
+
+The boundary is the interesting part, and it says this is **not simply a bug**:
+
+- The trailing-comma row is blind **by design**. A formatter is allowed to add
+  or drop one — that is the magic-trailing-comma policy every reference has —
+  and `transparent_wrappers` exists for the same reason, because black inserts
+  parentheses. Anonymous tokens are the formatter's to edit; that is the rule.
+- The three "catches" rows are caught by the **named tree**, not by token
+  comparison. Losing a document changes `stream`'s children; an anchor and a tag
+  are themselves named nodes.
+- What is left is a narrow tail: an anonymous token that is semantically
+  meaningful, whose removal changes neither the named tree nor the parse. `---`
+  and `...` are the first known members.
+
+So a fix cannot be "compare all anonymous tokens" — that would reject the
+trailing-comma and parenthesis behaviour the gate must tolerate. The plausible
+shapes are a per-language list of anonymous tokens that may not be dropped
+(honest, and yet another per-language list), or a rule that distinguishes
+_structural_ punctuation from _separator_ punctuation without one.
+
+How much does it matter? Dropping `---`/`...` where the document boundary is
+otherwise unchanged is close to cosmetic, and the destructive case — merging two
+documents — is already caught. So this is a small hole, correctly reported. It
+is recorded because it is the **permissive** direction, where the failure mode
+is corrupted source rather than a loud build error, and because the next
+language may find a wider member of the same class.
+
+**Decide when:** a language finds an anonymous token whose loss actually
+destroys meaning. Not before — a per-language list bought for `...` is a bad
+trade.
+
 ---
 
 ## Closed
