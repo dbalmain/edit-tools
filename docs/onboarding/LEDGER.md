@@ -159,7 +159,12 @@ separators; the reviewer disproved it. | | CSS | codex-Sol | D | ~25 min |
 escalate | none | yes (reproduced 6/15 and 3/15 exactly) | full, structured |
 **First use of the retroactive freeze**, and it found the workaround the builder
 said did not exist. Costed `fill` at 13/21 contributing, 9/21 resolving,
-_local_. Separated four new findings from the entries they resembled. |
+_local_. Separated four new findings from the entries they resembled. | | CSS |
+codex-Sol | E | ~18 min | **merged** | none | yes (all four hard gates 90/90) |
+full, structured | Took 9/30 to 11/30 exactly as its own stage D predicted, and
+finished at 19 accepted / 0 stale / 0 unreviewed -- the first package to reach
+100% reviewed. Used `--retire` for the two resolved pairs and re-judged the four
+changed ones, which is the ledger working as designed. |
 
 Round 1 was a head-to-head on TOML; round 2 ran three languages at once, with
 YAML as its three-way comparison.
