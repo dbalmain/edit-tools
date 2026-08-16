@@ -1,0 +1,18 @@
+# The construct that overflows a line. Width 88 keeps the medium ones flat;
+# width 60 expands them one element per line and adds a trailing comma.
+
+empty = []
+short = [1, 2, 3]
+medium = ["primary", "us-east", "canary", "production", "staging"]
+long = [
+  "primary",
+  "us-east",
+  "canary",
+  "production",
+  "high-availability",
+  "multi-region",
+]
+nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
+trailing = [1, 2, 3]
+mixed = [1, "two", 3.0, true, 1979-05-27, { k = 1 }, [8, 9]]
+already_broken = ["keep", "me", "open"]

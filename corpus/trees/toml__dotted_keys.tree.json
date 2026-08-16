@@ -1,0 +1,616 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/dotted_keys.toml",
+ "source": "# Dotted keys as pairs, not as table headers. These name a nested path\n# without opening a [table]. Mixed with a real table for the same prefix.\n\nname = \"demo\"\nserver.host = \"localhost\"\nserver.port = 8080\nserver.tls.enabled = true\nserver.tls.alpn = [\"h2\", \"http/1.1\", \"http/1.0\"]\n\n# A quoted segment is a single key that happens to contain a dot.\nsite.\"google.com\" = true\n\n# After a table header, a dotted key can still add to that table.\n[client]\ntimeout = 30\nclient.retry.max = 3\nclient.retry.backoff = 1.5\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 509,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 70,
+    "text": "# Dotted keys as pairs, not as table headers. These name a nested path"
+   },
+   {
+    "type": "comment",
+    "start": 71,
+    "end": 144,
+    "text": "# without opening a [table]. Mixed with a real table for the same prefix."
+   },
+   {
+    "type": "pair",
+    "start": 146,
+    "end": 159,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 146,
+      "end": 150,
+      "text": "name"
+     },
+     {
+      "type": "=",
+      "start": 151,
+      "end": 152,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 153,
+      "end": 159,
+      "children": [
+       {
+        "type": "\"",
+        "start": 153,
+        "end": 154,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 158,
+        "end": 159,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 160,
+    "end": 185,
+    "children": [
+     {
+      "type": "dotted_key",
+      "start": 160,
+      "end": 171,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 160,
+        "end": 166,
+        "text": "server"
+       },
+       {
+        "type": ".",
+        "start": 166,
+        "end": 167,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 167,
+        "end": 171,
+        "text": "host"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 172,
+      "end": 173,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 174,
+      "end": 185,
+      "children": [
+       {
+        "type": "\"",
+        "start": 174,
+        "end": 175,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 184,
+        "end": 185,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 186,
+    "end": 204,
+    "children": [
+     {
+      "type": "dotted_key",
+      "start": 186,
+      "end": 197,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 186,
+        "end": 192,
+        "text": "server"
+       },
+       {
+        "type": ".",
+        "start": 192,
+        "end": 193,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 193,
+        "end": 197,
+        "text": "port"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 198,
+      "end": 199,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 200,
+      "end": 204,
+      "text": "8080"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 205,
+    "end": 230,
+    "children": [
+     {
+      "type": "dotted_key",
+      "start": 205,
+      "end": 223,
+      "children": [
+       {
+        "type": "dotted_key",
+        "start": 205,
+        "end": 215,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 205,
+          "end": 211,
+          "text": "server"
+         },
+         {
+          "type": ".",
+          "start": 211,
+          "end": 212,
+          "text": "."
+         },
+         {
+          "type": "bare_key",
+          "start": 212,
+          "end": 215,
+          "text": "tls"
+         }
+        ]
+       },
+       {
+        "type": ".",
+        "start": 215,
+        "end": 216,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 216,
+        "end": 223,
+        "text": "enabled"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 224,
+      "end": 225,
+      "text": "="
+     },
+     {
+      "type": "boolean",
+      "start": 226,
+      "end": 230,
+      "text": "true"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 231,
+    "end": 279,
+    "children": [
+     {
+      "type": "dotted_key",
+      "start": 231,
+      "end": 246,
+      "children": [
+       {
+        "type": "dotted_key",
+        "start": 231,
+        "end": 241,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 231,
+          "end": 237,
+          "text": "server"
+         },
+         {
+          "type": ".",
+          "start": 237,
+          "end": 238,
+          "text": "."
+         },
+         {
+          "type": "bare_key",
+          "start": 238,
+          "end": 241,
+          "text": "tls"
+         }
+        ]
+       },
+       {
+        "type": ".",
+        "start": 241,
+        "end": 242,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 242,
+        "end": 246,
+        "text": "alpn"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 247,
+      "end": 248,
+      "text": "="
+     },
+     {
+      "type": "array",
+      "start": 249,
+      "end": 279,
+      "children": [
+       {
+        "type": "[",
+        "start": 249,
+        "end": 250,
+        "text": "["
+       },
+       {
+        "type": "string",
+        "start": 250,
+        "end": 254,
+        "children": [
+         {
+          "type": "\"",
+          "start": 250,
+          "end": 251,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 253,
+          "end": 254,
+          "text": "\""
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 254,
+        "end": 255,
+        "text": ","
+       },
+       {
+        "type": "string",
+        "start": 256,
+        "end": 266,
+        "children": [
+         {
+          "type": "\"",
+          "start": 256,
+          "end": 257,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 265,
+          "end": 266,
+          "text": "\""
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 266,
+        "end": 267,
+        "text": ","
+       },
+       {
+        "type": "string",
+        "start": 268,
+        "end": 278,
+        "children": [
+         {
+          "type": "\"",
+          "start": 268,
+          "end": 269,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 277,
+          "end": 278,
+          "text": "\""
+         }
+        ]
+       },
+       {
+        "type": "]",
+        "start": 278,
+        "end": 279,
+        "text": "]"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 281,
+    "end": 346,
+    "text": "# A quoted segment is a single key that happens to contain a dot."
+   },
+   {
+    "type": "pair",
+    "start": 347,
+    "end": 371,
+    "children": [
+     {
+      "type": "dotted_key",
+      "start": 347,
+      "end": 364,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 347,
+        "end": 351,
+        "text": "site"
+       },
+       {
+        "type": ".",
+        "start": 351,
+        "end": 352,
+        "text": "."
+       },
+       {
+        "type": "quoted_key",
+        "start": 352,
+        "end": 364,
+        "children": [
+         {
+          "type": "\"",
+          "start": 352,
+          "end": 353,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 363,
+          "end": 364,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 365,
+      "end": 366,
+      "text": "="
+     },
+     {
+      "type": "boolean",
+      "start": 367,
+      "end": 371,
+      "text": "true"
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 373,
+    "end": 438,
+    "text": "# After a table header, a dotted key can still add to that table."
+   },
+   {
+    "type": "table",
+    "start": 439,
+    "end": 509,
+    "children": [
+     {
+      "type": "[",
+      "start": 439,
+      "end": 440,
+      "text": "["
+     },
+     {
+      "type": "bare_key",
+      "start": 440,
+      "end": 446,
+      "text": "client"
+     },
+     {
+      "type": "]",
+      "start": 446,
+      "end": 447,
+      "text": "]"
+     },
+     {
+      "type": "pair",
+      "start": 448,
+      "end": 460,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 448,
+        "end": 455,
+        "text": "timeout"
+       },
+       {
+        "type": "=",
+        "start": 456,
+        "end": 457,
+        "text": "="
+       },
+       {
+        "type": "integer",
+        "start": 458,
+        "end": 460,
+        "text": "30"
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 461,
+      "end": 481,
+      "children": [
+       {
+        "type": "dotted_key",
+        "start": 461,
+        "end": 477,
+        "children": [
+         {
+          "type": "dotted_key",
+          "start": 461,
+          "end": 473,
+          "children": [
+           {
+            "type": "bare_key",
+            "start": 461,
+            "end": 467,
+            "text": "client"
+           },
+           {
+            "type": ".",
+            "start": 467,
+            "end": 468,
+            "text": "."
+           },
+           {
+            "type": "bare_key",
+            "start": 468,
+            "end": 473,
+            "text": "retry"
+           }
+          ]
+         },
+         {
+          "type": ".",
+          "start": 473,
+          "end": 474,
+          "text": "."
+         },
+         {
+          "type": "bare_key",
+          "start": 474,
+          "end": 477,
+          "text": "max"
+         }
+        ]
+       },
+       {
+        "type": "=",
+        "start": 478,
+        "end": 479,
+        "text": "="
+       },
+       {
+        "type": "integer",
+        "start": 480,
+        "end": 481,
+        "text": "3"
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 482,
+      "end": 508,
+      "children": [
+       {
+        "type": "dotted_key",
+        "start": 482,
+        "end": 502,
+        "children": [
+         {
+          "type": "dotted_key",
+          "start": 482,
+          "end": 494,
+          "children": [
+           {
+            "type": "bare_key",
+            "start": 482,
+            "end": 488,
+            "text": "client"
+           },
+           {
+            "type": ".",
+            "start": 488,
+            "end": 489,
+            "text": "."
+           },
+           {
+            "type": "bare_key",
+            "start": 489,
+            "end": 494,
+            "text": "retry"
+           }
+          ]
+         },
+         {
+          "type": ".",
+          "start": 494,
+          "end": 495,
+          "text": "."
+         },
+         {
+          "type": "bare_key",
+          "start": 495,
+          "end": 502,
+          "text": "backoff"
+         }
+        ]
+       },
+       {
+        "type": "=",
+        "start": 503,
+        "end": 504,
+        "text": "="
+       },
+       {
+        "type": "float",
+        "start": 505,
+        "end": 508,
+        "text": "1.5"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

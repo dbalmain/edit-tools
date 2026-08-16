@@ -1,0 +1,55 @@
+# Several constructs interacting. The one file allowed to be messy.
+
+# Service config: root pairs, dotted keys, tables, arrays of tables,
+# inline tables, comments in two positions, a long array that reflows.
+
+name = "edge-proxy"
+revision = 17
+listen = { host = "0.0.0.0", port = 8443 } # inline on a root pair
+features = [
+  "http2",
+  "gzip",
+  "access-log",
+  "proxy-protocol",
+  "tls-session-tickets",
+]
+
+[upstream.primary]
+url = "https://origin.example.com/api/v1"
+timeout = 30
+headers = { authorization = "Bearer placeholder", accept = "application/json" }
+
+[upstream.primary.tls]
+alpn = ["h2", "http/1.1"]
+sni = "origin.example.com"
+
+# Canaries share the primary's path prefix via dotted keys mixed with tables.
+upstream.canary.weight = 5
+upstream.canary.url = "https://canary.example.com/api/v1"
+
+[[middlewares]]
+name = "ratelimit"
+params = { requests = 100, window = "1m", burst = 20 }
+
+[[middlewares]]
+name = "rewrite"
+# comment attached to the next pair, not the header
+paths = [
+  "/v1",
+  "/v2",
+  "/internal/healthz",
+  "/internal/readyz",
+  "/metrics",
+]
+
+[[middlewares]]
+name = "auth"
+skip = true
+
+[logging]
+level = "info"
+format = """
+{timestamp} {level} {target}
+{message}
+"""
+# trailing comment at the end of the kitchen

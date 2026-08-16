@@ -1,0 +1,28 @@
+# Containers inside containers. The inner arrays fit at 88 and explode at 60.
+
+matrix = [[1, 2, 3, 4, 5, 6], [7, 8, 9, 10, 11, 12], [13, 14, 15, 16, 17, 18]]
+
+deep = [[[["leaf-one", "leaf-two"], ["leaf-three"]], [["leaf-four"]]]]
+
+servers = [
+  { host = "alpha.example.com", port = 8080, tags = [
+    "primary",
+    "us-east",
+  ] },
+  { host = "beta.example.com", port = 8081, tags = [
+    "replica",
+    "eu-west",
+  ] },
+]
+
+[cluster.region.us-east.primary]
+endpoints = [
+  [
+    "https://a.example.com/v1",
+    "https://b.example.com/v1",
+  ],
+  [
+    "https://c.example.com/v1",
+  ],
+]
+meta = { owner = "platform", labels = ["canary", "production", "multi-region"] }

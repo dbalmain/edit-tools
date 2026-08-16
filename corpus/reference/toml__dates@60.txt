@@ -1,0 +1,12 @@
+# The four datetime types, including the space-vs-T offset form.
+# taplo preserves each spelling, including the space separator.
+
+offset_z = 1979-05-27T07:32:00Z
+offset_tz = 1979-05-27T00:32:00-07:00
+offset_frac = 1979-05-27T00:32:00.999999-07:00
+offset_space = 1979-05-27 07:32:00Z
+local_dt = 1979-05-27T07:32:00
+local_dt_frac = 1979-05-27T00:32:00.999999
+local_date = 1979-05-27
+local_time = 07:32:00
+local_time_frac = 00:32:00.999999

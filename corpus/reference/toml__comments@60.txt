@@ -1,0 +1,30 @@
+# File-level comment at the very top of the document.
+
+title = "demo" # trailing on a root pair
+
+# Own-line comment before a table header.
+[server] # trailing on a table header
+# Own-line comment inside a table, before the first pair.
+host = "localhost"         # trailing on a short pair
+listen_address = "0.0.0.0" # trailing on a longer pair
+port = 8080                # trailing on a medium pair
+
+tags = [ # comment after the opening bracket
+  # own-line before the first item
+  "primary", # trailing on an item
+  "us-east",
+  # own-line between items
+  "canary",
+  # own-line before the closing bracket
+]
+
+# Comment between two tables.
+[client]
+timeout = 30
+# Trailing comment at the end of a table.
+
+# Consecutive own-line comments.
+# Second of the pair.
+# Third of the pair.
+
+# Comment at the end of the file.

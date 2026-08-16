@@ -1,0 +1,420 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/tables.toml",
+ "source": "# Standard table headers, dotted headers, empty tables, implicit parents.\n\n[package]\nname = \"editor-tools\"\nversion = \"0.1.0\"\n\n# Dotted header: one header names a nested path. The parent `package.metadata`\n# is implicit; taplo does not insert a `[package.metadata]` header.\n[package.metadata.docs]\nrs = true\nauto = false\n\n# Empty table: a header with no pairs.\n[unused]\n\n[build]\ntarget = \"x86_64-unknown-linux-gnu\"\n\n[build.dependencies]\ncc = \"1.0\"\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 447,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 73,
+    "text": "# Standard table headers, dotted headers, empty tables, implicit parents."
+   },
+   {
+    "type": "table",
+    "start": 75,
+    "end": 273,
+    "children": [
+     {
+      "type": "[",
+      "start": 75,
+      "end": 76,
+      "text": "["
+     },
+     {
+      "type": "bare_key",
+      "start": 76,
+      "end": 83,
+      "text": "package"
+     },
+     {
+      "type": "]",
+      "start": 83,
+      "end": 84,
+      "text": "]"
+     },
+     {
+      "type": "pair",
+      "start": 85,
+      "end": 106,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 85,
+        "end": 89,
+        "text": "name"
+       },
+       {
+        "type": "=",
+        "start": 90,
+        "end": 91,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 92,
+        "end": 106,
+        "children": [
+         {
+          "type": "\"",
+          "start": 92,
+          "end": 93,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 105,
+          "end": 106,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 107,
+      "end": 124,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 107,
+        "end": 114,
+        "text": "version"
+       },
+       {
+        "type": "=",
+        "start": 115,
+        "end": 116,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 117,
+        "end": 124,
+        "children": [
+         {
+          "type": "\"",
+          "start": 117,
+          "end": 118,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 123,
+          "end": 124,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 126,
+      "end": 204,
+      "text": "# Dotted header: one header names a nested path. The parent `package.metadata`"
+     },
+     {
+      "type": "comment",
+      "start": 205,
+      "end": 272,
+      "text": "# is implicit; taplo does not insert a `[package.metadata]` header."
+     }
+    ]
+   },
+   {
+    "type": "table",
+    "start": 273,
+    "end": 360,
+    "children": [
+     {
+      "type": "[",
+      "start": 273,
+      "end": 274,
+      "text": "["
+     },
+     {
+      "type": "dotted_key",
+      "start": 274,
+      "end": 295,
+      "children": [
+       {
+        "type": "dotted_key",
+        "start": 274,
+        "end": 290,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 274,
+          "end": 281,
+          "text": "package"
+         },
+         {
+          "type": ".",
+          "start": 281,
+          "end": 282,
+          "text": "."
+         },
+         {
+          "type": "bare_key",
+          "start": 282,
+          "end": 290,
+          "text": "metadata"
+         }
+        ]
+       },
+       {
+        "type": ".",
+        "start": 290,
+        "end": 291,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 291,
+        "end": 295,
+        "text": "docs"
+       }
+      ]
+     },
+     {
+      "type": "]",
+      "start": 295,
+      "end": 296,
+      "text": "]"
+     },
+     {
+      "type": "pair",
+      "start": 297,
+      "end": 306,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 297,
+        "end": 299,
+        "text": "rs"
+       },
+       {
+        "type": "=",
+        "start": 300,
+        "end": 301,
+        "text": "="
+       },
+       {
+        "type": "boolean",
+        "start": 302,
+        "end": 306,
+        "text": "true"
+       }
+      ]
+     },
+     {
+      "type": "pair",
+      "start": 307,
+      "end": 319,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 307,
+        "end": 311,
+        "text": "auto"
+       },
+       {
+        "type": "=",
+        "start": 312,
+        "end": 313,
+        "text": "="
+       },
+       {
+        "type": "boolean",
+        "start": 314,
+        "end": 319,
+        "text": "false"
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 321,
+      "end": 359,
+      "text": "# Empty table: a header with no pairs."
+     }
+    ]
+   },
+   {
+    "type": "table",
+    "start": 360,
+    "end": 370,
+    "children": [
+     {
+      "type": "[",
+      "start": 360,
+      "end": 361,
+      "text": "["
+     },
+     {
+      "type": "bare_key",
+      "start": 361,
+      "end": 367,
+      "text": "unused"
+     },
+     {
+      "type": "]",
+      "start": 367,
+      "end": 368,
+      "text": "]"
+     }
+    ]
+   },
+   {
+    "type": "table",
+    "start": 370,
+    "end": 415,
+    "children": [
+     {
+      "type": "[",
+      "start": 370,
+      "end": 371,
+      "text": "["
+     },
+     {
+      "type": "bare_key",
+      "start": 371,
+      "end": 376,
+      "text": "build"
+     },
+     {
+      "type": "]",
+      "start": 376,
+      "end": 377,
+      "text": "]"
+     },
+     {
+      "type": "pair",
+      "start": 378,
+      "end": 413,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 378,
+        "end": 384,
+        "text": "target"
+       },
+       {
+        "type": "=",
+        "start": 385,
+        "end": 386,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 387,
+        "end": 413,
+        "children": [
+         {
+          "type": "\"",
+          "start": 387,
+          "end": 388,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 412,
+          "end": 413,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table",
+    "start": 415,
+    "end": 447,
+    "children": [
+     {
+      "type": "[",
+      "start": 415,
+      "end": 416,
+      "text": "["
+     },
+     {
+      "type": "dotted_key",
+      "start": 416,
+      "end": 434,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 416,
+        "end": 421,
+        "text": "build"
+       },
+       {
+        "type": ".",
+        "start": 421,
+        "end": 422,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 422,
+        "end": 434,
+        "text": "dependencies"
+       }
+      ]
+     },
+     {
+      "type": "]",
+      "start": 434,
+      "end": 435,
+      "text": "]"
+     },
+     {
+      "type": "pair",
+      "start": 436,
+      "end": 446,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 436,
+        "end": 438,
+        "text": "cc"
+       },
+       {
+        "type": "=",
+        "start": 439,
+        "end": 440,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 441,
+        "end": 446,
+        "children": [
+         {
+          "type": "\"",
+          "start": 441,
+          "end": 442,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 445,
+          "end": 446,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

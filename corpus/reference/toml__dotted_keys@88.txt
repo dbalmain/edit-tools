@@ -1,0 +1,17 @@
+# Dotted keys as pairs, not as table headers. These name a nested path
+# without opening a [table]. Mixed with a real table for the same prefix.
+
+name = "demo"
+server.host = "localhost"
+server.port = 8080
+server.tls.enabled = true
+server.tls.alpn = ["h2", "http/1.1", "http/1.0"]
+
+# A quoted segment is a single key that happens to contain a dot.
+site."google.com" = true
+
+# After a table header, a dotted key can still add to that table.
+[client]
+timeout = 30
+client.retry.max = 3
+client.retry.backoff = 1.5
