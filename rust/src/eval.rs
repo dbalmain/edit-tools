@@ -5,17 +5,18 @@
 //! construction a disjoint, ordered partition of the children -- and a rule
 //! that fails to consume all of them refuses the file instead of emitting.
 
+use std::collections::HashMap;
+
 use crate::attach::{split, Comment, Item};
 use crate::doc::Doc;
 use crate::pkg::{Expr, Package, Pred, Sel};
 use crate::tree::{Node, TreeDoc};
 use crate::Refusal;
 
-pub fn format(tree: &TreeDoc, pkg: &Package, width: usize) -> Result<String, Refusal> {
-    let fmt = Fmt {
-        pkg,
-        src: tree.source.as_bytes(),
-    };
+pub type PackageMap = HashMap<String, Package>;
+
+pub fn format(tree: &TreeDoc, packages: &PackageMap, width: usize) -> Result<String, Refusal> {
+    let fmt = Fmt::for_language(&tree.language, packages, tree.source.as_bytes())?;
     let doc = fmt.node(&tree.root)?;
     let mut out = crate::doc::print(&doc, width);
     while out.ends_with('\n') {
@@ -27,11 +28,30 @@ pub fn format(tree: &TreeDoc, pkg: &Package, width: usize) -> Result<String, Ref
 
 struct Fmt<'a> {
     pkg: &'a Package,
+    packages: &'a PackageMap,
     src: &'a [u8],
 }
 
 impl<'a> Fmt<'a> {
+    fn for_language(
+        language: &str,
+        packages: &'a PackageMap,
+        src: &'a [u8],
+    ) -> Result<Self, Refusal> {
+        let pkg = packages
+            .get(language)
+            .ok_or_else(|| Refusal(format!("no package for language `{language}`")))?;
+        Ok(Self { pkg, packages, src })
+    }
+
     fn node(&self, node: &'a Node) -> Result<Doc, Refusal> {
+        if let Some(language) = node.language.as_deref() {
+            return Self::for_language(language, self.packages, self.src)?.node_current(node);
+        }
+        self.node_current(node)
+    }
+
+    fn node_current(&self, node: &'a Node) -> Result<Doc, Refusal> {
         if let Some(text) = &node.text {
             return Ok(Doc::text(text.as_str()));
         }
@@ -495,41 +515,59 @@ mod tests {
     use serde_json::json;
 
     /// A toy language, so the machinery is exercised without Python's bulk.
-    fn toy(rules: serde_json::Value) -> Package {
-        serde_json::from_value(json!({
+    fn one(package: Package) -> PackageMap {
+        PackageMap::from([("toy".to_owned(), package)])
+    }
+
+    fn toy(rules: serde_json::Value) -> PackageMap {
+        one(serde_json::from_value(json!({
             "format": "et-doc-rules/1",
             "indent": 2,
             "tokens": ["(", ")", ",", "+"],
             "precedence": { "+": 5, "*": 4 },
             "rules": rules,
         }))
-        .expect("toy package parses")
+        .expect("toy package parses"))
     }
 
     fn leaf(kind: &str, text: &str) -> serde_json::Value {
         json!({ "type": kind, "start": 0, "end": 0, "text": text })
     }
 
-    fn run(pkg: &Package, root: serde_json::Value, width: usize) -> Result<String, Refusal> {
-        run_on(pkg, "", root, width)
+    fn run(
+        packages: &PackageMap,
+        root: serde_json::Value,
+        width: usize,
+    ) -> Result<String, Refusal> {
+        run_on(packages, "", root, width)
     }
 
     fn run_on(
-        pkg: &Package,
+        packages: &PackageMap,
+        source: &str,
+        root: serde_json::Value,
+        width: usize,
+    ) -> Result<String, Refusal> {
+        format_tree(packages, "toy", source, root, width)
+    }
+
+    fn format_tree(
+        packages: &PackageMap,
+        language: &str,
         source: &str,
         root: serde_json::Value,
         width: usize,
     ) -> Result<String, Refusal> {
         let tree: TreeDoc = serde_json::from_value(json!({
-            "language": "toy",
+            "language": language,
             "source": source,
             "root": root,
         }))
         .expect("toy tree parses");
-        format(&tree, pkg, width)
+        format(&tree, packages, width)
     }
 
-    fn comments_pkg(comment_gap: Option<usize>, blank_cap: Option<usize>) -> Package {
+    fn comments_pkg(comment_gap: Option<usize>, blank_cap: Option<usize>) -> PackageMap {
         let mut raw = json!({
             "format": "et-doc-rules/1",
             "indent": 2,
@@ -542,7 +580,7 @@ mod tests {
         if let Some(value) = blank_cap {
             raw["blank_cap"] = json!(value);
         }
-        serde_json::from_value(raw).expect("comments package parses")
+        one(serde_json::from_value(raw).expect("comments package parses"))
     }
 
     fn commented_file(children: serde_json::Value, end: usize) -> serde_json::Value {
@@ -619,6 +657,132 @@ mod tests {
         let pkg = toy(json!({}));
         let err = run(&pkg, list(&["a"], false), 80).expect_err("must refuse");
         assert!(err.0.contains("no rule for node type `list`"), "{}", err.0);
+    }
+
+    #[test]
+    fn language_regions_use_their_rules_and_indent_then_restore_the_enclosing_package() {
+        let block = json!([
+            "seq",
+            ["tok", "outer"],
+            ["indent", ["hard"], ["each", "named", ["hard"]]]
+        ]);
+        let outer: Package = serde_json::from_value(json!({
+            "format": "et-doc-rules/1",
+            "indent": 2,
+            "tokens": ["outer"],
+            "rules": {
+                "outer_block": block,
+                "outer_again": block,
+                "region": ["verbatim"]
+            }
+        }))
+        .expect("outer package parses");
+        let inner_block = json!([
+            "seq",
+            ["tok", "inner"],
+            ["indent", ["hard"], ["each", "named", ["hard"]]]
+        ]);
+        let inner: Package = serde_json::from_value(json!({
+            "format": "et-doc-rules/1",
+            "indent": 4,
+            "tokens": ["inner"],
+            "rules": {
+                "region": inner_block,
+                "inner_again": inner_block
+            }
+        }))
+        .expect("inner package parses");
+        let packages = PackageMap::from([("outer".to_owned(), outer), ("inner".to_owned(), inner)]);
+        let root = json!({
+            "type": "outer_block", "start": 0, "end": 0,
+            "children": [
+                leaf("outer", "outer"),
+                leaf("word", "before"),
+                {
+                    "type": "region", "language": "inner", "start": 0, "end": 0,
+                    "children": [
+                        leaf("inner", "inner"),
+                        leaf("word", "inside"),
+                        {
+                            "type": "outer_again", "language": "outer", "start": 0, "end": 0,
+                            "children": [leaf("outer", "outer"), leaf("word", "back")]
+                        },
+                        {
+                            "type": "inner_again", "start": 0, "end": 0,
+                            "children": [leaf("inner", "inner"), leaf("word", "restored-inner")]
+                        }
+                    ]
+                },
+                {
+                    "type": "outer_again", "start": 0, "end": 0,
+                    "children": [leaf("outer", "outer"), leaf("word", "after")]
+                }
+            ]
+        });
+
+        assert_eq!(
+            format_tree(&packages, "outer", "", root, 80).expect("ok"),
+            "outer\n  before\n  inner\n      inside\n      outer\n        back\n      inner\n          restored-inner\n  outer\n    after\n"
+        );
+    }
+
+    #[test]
+    fn language_regions_use_their_comment_policy() {
+        let outer: Package = serde_json::from_value(json!({
+            "format": "et-doc-rules/1",
+            "indent": 2,
+            "blank_cap": 0,
+            "rules": { "file": ["child", "named"] }
+        }))
+        .expect("outer package parses");
+        let inner: Package = serde_json::from_value(json!({
+            "format": "et-doc-rules/1",
+            "indent": 4,
+            "comments": ["comment"],
+            "comment_gap": 3,
+            "blank_cap": 2,
+            "rules": { "region": ["child", "named"] }
+        }))
+        .expect("inner package parses");
+        let packages = PackageMap::from([("outer".to_owned(), outer), ("inner".to_owned(), inner)]);
+        let source = "x# one\n\n\n\n# two";
+        let root = json!({
+            "type": "file", "start": 0, "end": 15,
+            "children": [{
+                "type": "region", "language": "inner", "start": 0, "end": 15,
+                "children": [
+                    { "type": "word", "start": 0, "end": 1, "text": "x" },
+                    { "type": "comment", "start": 1, "end": 6, "text": "# one" },
+                    { "type": "comment", "start": 10, "end": 15, "text": "# two" }
+                ]
+            }]
+        });
+
+        assert_eq!(
+            format_tree(&packages, "outer", source, root, 80).expect("ok"),
+            "x   # one\n\n\n# two\n"
+        );
+    }
+
+    #[test]
+    fn a_missing_nested_language_package_refuses_and_names_the_language() {
+        let outer: Package = serde_json::from_value(json!({
+            "format": "et-doc-rules/1",
+            "indent": 2,
+            "rules": { "file": ["child", "named"] }
+        }))
+        .expect("outer package parses");
+        let packages = PackageMap::from([("outer".to_owned(), outer)]);
+        let root = json!({
+            "type": "file", "start": 0, "end": 0,
+            "children": [{
+                "type": "word", "language": "missing-toy", "start": 0, "end": 0,
+                "text": "x"
+            }]
+        });
+
+        let error = format_tree(&packages, "outer", "", root, 80).expect_err("must refuse");
+        assert_eq!(error.0, "no package for language `missing-toy`");
     }
 
     #[test]
@@ -700,7 +864,7 @@ mod tests {
 const {{ format }} = require({bundle:?});
 const tree = {{ language: "toy", source: "", root: {{ type: "file", start: 0, end: 0 }} }};
 try {{
-  format(tree, 80, {pkg});
+  format(tree, new Map([["toy", {pkg}]]), 80);
   console.error("js accepted an out-of-range comment gap");
   process.exit(2);
 }} catch (e) {{
@@ -820,15 +984,16 @@ try {{
             },
         }))
         .expect("renamed package parses");
+        let packages = one(pkg);
         let tree = chain_fields(&[("+", "bbb"), ("+", "ccc")], "aaa", "lhs", "op", "rhs");
         assert_eq!(
-            run(&pkg, tree.clone(), 80).expect("ok"),
+            run(&packages, tree.clone(), 80).expect("ok"),
             "aaa + bbb + ccc\n"
         );
-        assert_eq!(run(&pkg, tree, 4).expect("ok"), "aaa\n+ bbb\n+ ccc\n");
+        assert_eq!(run(&packages, tree, 4).expect("ok"), "aaa\n+ bbb\n+ ccc\n");
         // Tightness must read `op` too, or mixed precedence would not split.
         let mixed = chain_fields(&[("*", "bbb"), ("+", "ccc")], "aaa", "lhs", "op", "rhs");
-        assert_eq!(run(&pkg, mixed, 9).expect("ok"), "aaa * bbb\n+ ccc\n");
+        assert_eq!(run(&packages, mixed, 9).expect("ok"), "aaa * bbb\n+ ccc\n");
     }
 
     #[test]
@@ -881,7 +1046,7 @@ try {{
 const {{ format }} = require({bundle:?});
 const tree = {{ language: "toy", source: "", root: {{ type: "file", start: 0, end: 0 }} }};
 try {{
-  format(tree, 80, {pkg});
+  format(tree, new Map([["toy", {pkg}]]), 80);
   console.error("js accepted a bad flatten_fields header");
   process.exit(2);
 }} catch (e) {{
@@ -907,7 +1072,7 @@ try {{
         }
     }
 
-    fn quote_pkg() -> Package {
+    fn quote_pkg() -> PackageMap {
         toy(json!({ "quote": ["verbatim"] }))
     }
 
@@ -1013,7 +1178,7 @@ try {{
             ],
         );
 
-        let rust_err = run_on(&pkg, &source, root.clone(), 80).expect_err("rust must refuse");
+        let rust_err = run_on(&one(pkg), &source, root.clone(), 80).expect_err("rust must refuse");
         assert!(
             rust_err
                 .0
@@ -1029,7 +1194,7 @@ const {{ format }} = require({bundle:?});
 const tree = {{ language: "toy", source: {source}, root: {root} }};
 const pkg = {pkg};
 try {{
-  format(tree, 80, pkg);
+  format(tree, new Map([["toy", pkg]]), 80);
   console.error("js accepted a corrupt verbatim tree");
   process.exit(2);
 }} catch (e) {{
@@ -1053,8 +1218,8 @@ try {{
         assert!(status.success(), "js runtime disagreed (exit {status})");
     }
 
-    fn stmts_pkg(around: serde_json::Value) -> Package {
-        serde_json::from_value(json!({
+    fn stmts_pkg(around: serde_json::Value) -> PackageMap {
+        one(serde_json::from_value(json!({
             "format": "et-doc-rules/1",
             "indent": 2,
             "tokens": ["(", ")", ",", "+", "def", "="],
@@ -1069,7 +1234,7 @@ try {{
                            ["child", "t:num"]],
             },
         }))
-        .expect("stmts package parses")
+        .expect("stmts package parses"))
     }
 
     /// `x = 1` starting at `at`.
@@ -1232,7 +1397,7 @@ try {{
             "children": [assign_at(0, "x", "1"), fn_at(6, "f", None)]
         });
         assert_eq!(
-            run_on(&pkg, source, root, 80).expect("ok"),
+            run_on(&one(pkg), source, root, 80).expect("ok"),
             "x = 1\ndef f\n"
         );
     }

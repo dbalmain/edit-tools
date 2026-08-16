@@ -2,14 +2,34 @@
 "use strict";
 const fs = require("fs");
 const path = require("path");
-const { format } = require(path.join(__dirname, "runtime-js", "bundle.js"));
+const { format, Refusal } = require(path.join(__dirname, "runtime-js", "bundle.js"));
+
+function treeLanguages(tree) {
+  const languages = new Set([tree.language]);
+  const visit = (node) => {
+    if (node.language !== undefined) languages.add(node.language);
+    for (const child of node.children ?? []) visit(child);
+  };
+  visit(tree.root);
+  return languages;
+}
 
 const [treePath, width] = process.argv.slice(2);
 try {
   const tree = JSON.parse(fs.readFileSync(treePath, "utf8"));
   const dir = process.env.FMT_PACKAGES || path.join(__dirname, "packages");
-  const pkg = JSON.parse(fs.readFileSync(path.join(dir, `${tree.language}.json`), "utf8"));
-  process.stdout.write(format(tree, Number(width), pkg));
+  const packages = new Map();
+  for (const language of treeLanguages(tree)) {
+    const packagePath = path.join(dir, `${language}.json`);
+    let raw;
+    try {
+      raw = fs.readFileSync(packagePath, "utf8");
+    } catch (e) {
+      throw new Refusal(`no package for language \`${language}\`: ${e.message}`);
+    }
+    packages.set(language, JSON.parse(raw));
+  }
+  process.stdout.write(format(tree, packages, Number(width)));
 } catch (e) {
   console.error(e.message);
   process.exit(1);

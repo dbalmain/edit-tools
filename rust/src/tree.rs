@@ -1,5 +1,7 @@
 //! The corpus tree format. The harness owns all parsing; we only read.
 
+use std::collections::BTreeSet;
+
 use serde::Deserialize;
 
 #[derive(Deserialize)]
@@ -16,8 +18,7 @@ pub struct TreeDoc {
 pub struct Node {
     #[serde(rename = "type")]
     pub kind: String,
-    // Read by the highlighter; formatter binaries deserialize the same tree.
-    #[allow(dead_code)]
+    /// Starts a formatter/highlighter language region at this node.
     #[serde(default)]
     pub language: Option<String>,
     pub start: usize,
@@ -29,6 +30,23 @@ pub struct Node {
     pub text: Option<String>,
     #[serde(default)]
     pub children: Vec<Node>,
+}
+
+impl TreeDoc {
+    pub fn languages(&self) -> BTreeSet<&str> {
+        fn collect<'a>(node: &'a Node, languages: &mut BTreeSet<&'a str>) {
+            if let Some(language) = node.language.as_deref() {
+                languages.insert(language);
+            }
+            for child in &node.children {
+                collect(child, languages);
+            }
+        }
+
+        let mut languages = BTreeSet::from([self.language.as_str()]);
+        collect(&self.root, &mut languages);
+        languages
+    }
 }
 
 impl Node {

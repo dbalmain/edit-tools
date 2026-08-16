@@ -178,9 +178,21 @@ opcodes**. Degradation for unparseable or unsupported snippets lives in the
 harness and the package (`verbatim`), so the runtime keeps its refuse-rather-
 than-guess rule intact.
 
-The one architectural change — `Indent` carrying its own amount — has landed,
-as an isolated, byte-identical diff. Remaining for this point: the package map
-and the node `language` field.
+The two runtime slices have landed: `Indent` carries its own amount, and the
+formatter now takes a language-to-package map with optional `language`
+boundaries on nodes. Each boundary binds a formatter to that region's package,
+so nested switches restore the enclosing package without mutable language
+state. The CLIs load every language named by the tree.
+
+A missing formatter package is a refusal that names the language. This is
+deliberately opposite to the highlighter, which degrades to empty tables so it
+can keep walking and resume painting at a nested known language. Layout bytes
+cannot be guessed safely; missing colour can. Unsupported or unparseable
+formatter regions still degrade one layer out, by the harness declining to
+stamp `language` and the package using `verbatim`.
+
+Remaining for this point: harness splicing, then the markdown package and
+corpus, in `injection.md`'s order.
 
 ## 7. Is the tree interface actually independent of tree-sitter? — **closed, yes**
 

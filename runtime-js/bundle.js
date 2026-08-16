@@ -855,11 +855,18 @@ function checkVerbatim(fmt, node) {
   walk(node, null);
 }
 
+function packageFor(language, packages) {
+  const pkg = packages.get(language);
+  if (pkg === undefined) throw new Refusal(`no package for language \`${language}\``);
+  return pkg;
+}
+
 class Formatter {
-  constructor(pkg, source) {
-    this.pkg = loadPackage(pkg);
-    this.bytes = new TextEncoder().encode(source ?? "");
-    this.decoder = new TextDecoder();
+  constructor(packages, language, bytes, decoder) {
+    this.pkg = loadPackage(packageFor(language, packages));
+    this.packages = packages;
+    this.bytes = bytes;
+    this.decoder = decoder;
     this.tokens = new Set(this.pkg.tokens ?? []);
     this.comments = new Set(this.pkg.comments ?? []);
     this.descend = new Set(this.pkg.descend ?? []);
@@ -880,6 +887,13 @@ class Formatter {
   }
 
   node(node) {
+    if (node.language !== undefined) {
+      return new Formatter(this.packages, node.language, this.bytes, this.decoder).nodeCurrent(node);
+    }
+    return this.nodeCurrent(node);
+  }
+
+  nodeCurrent(node) {
     if (node.text !== undefined) return text(node.text);
     const rule = this.pkg.rules[node.type];
     if (!rule) throw new Refusal(`package has no rule for node type \`${node.type}\``);
@@ -903,8 +917,9 @@ class Formatter {
 }
 
 /** Format a corpus tree. Throws `Refusal` rather than guessing. */
-function format(tree, cols, pkg) {
-  const fmt = new Formatter(pkg, tree.source);
+function format(tree, packages, cols) {
+  const bytes = new TextEncoder().encode(tree.source ?? "");
+  const fmt = new Formatter(packages, tree.language, bytes, new TextDecoder());
   const out = print(fmt.node(tree.root), cols);
   return `${out.replace(/\n+$/, "")}\n`;
 }

@@ -19,6 +19,7 @@ use std::path::PathBuf;
 use std::process::ExitCode;
 use std::time::Instant;
 
+use eval::PackageMap;
 use pkg::Package;
 use tree::TreeDoc;
 
@@ -58,14 +59,21 @@ fn run() -> Result<u128, Refusal> {
         std::fs::read_to_string(&path).map_err(|error| Refusal(format!("{path}: {error}")))?;
     let tree: TreeDoc =
         serde_json::from_str(&raw).map_err(|error| Refusal(format!("malformed tree: {error}")))?;
-    let package = Package::load(&packages_dir(), &tree.language)?;
+    let directory = packages_dir();
+    let packages = tree
+        .languages()
+        .into_iter()
+        .map(|language| {
+            Package::load(&directory, language).map(|package| (language.to_owned(), package))
+        })
+        .collect::<Result<PackageMap, _>>()?;
 
     for _ in 0..10 {
-        black_box(eval::format(&tree, &package, width)?);
+        black_box(eval::format(&tree, &packages, width)?);
     }
     let started = Instant::now();
     for _ in 0..iterations {
-        black_box(eval::format(&tree, &package, width)?);
+        black_box(eval::format(&tree, &packages, width)?);
     }
     Ok(started.elapsed().as_nanos())
 }
