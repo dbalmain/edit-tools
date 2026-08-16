@@ -116,6 +116,7 @@ def stats_for(m: mf.Manifest) -> dict | None:
         "commented": commented,
         "overflow": overflow,
         "missing": missing,
+        "incomparable": len(m.incomparable),
         "fixed": m.reference_width == "fixed",
         "widths": list(m.widths),
         "reference": m.reference_version,
@@ -127,6 +128,9 @@ def report(name: str, s: dict) -> bool:
     print(f"{name}  --  {n} files, vs {s['reference']}")
     if s["missing"]:
         print(f"  MISSING reference output: {', '.join(s['missing'][:6])}")
+    if s["incomparable"]:
+        print(f"  incomparable         {s['incomparable']}  "
+              f"(gated; out of the agreement denominator)")
 
     per_width = "  ".join(f"@{w} {s['changed'][w]}/{n}" for w in s["widths"])
     print(f"  reference changes    {s['changed_any']}/{n} at some width   ({per_width})")

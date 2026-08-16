@@ -3,8 +3,9 @@
 # then the tree-interface and manifest-driven injection probes.
 #
 # check_gate3.py runs before the scorer on purpose: it establishes that gate 3
-# still accepts every reference formatter and still rejects destruction. A
-# 30/30 from the scorer means nothing if the gate has quietly become a no-op.
+# still accepts every reference formatter (incomparable files skip only that
+# assertion) and still rejects destruction. A 30/30 from the scorer means
+# nothing if the gate has quietly become a no-op.
 #
 # Everything here is hermetic. The reference formatters are run by
 # harness/gen_reference.py, not from this script, and their output is committed.
