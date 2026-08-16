@@ -534,6 +534,7 @@ impl<'a> Ctx<'a> {
         match pred {
             Pred::Count(sel, n) => self.tally(sel, pkg) == *n,
             Pred::ChildCount(parent, child, n) => self.child_tally(parent, child, pkg) == *n,
+            Pred::All(sel, kinds) => self.all_kinds(sel, kinds, pkg),
         }
     }
 
@@ -542,6 +543,13 @@ impl<'a> Ctx<'a> {
         (0..self.items.len())
             .filter(|&i| self.matches(i, sel, pkg))
             .count()
+    }
+
+    /// Vacuous: no `sel` child means every one of them has a listed type.
+    fn all_kinds(&self, sel: &Sel, kinds: &[String], pkg: &Package) -> bool {
+        (0..self.items.len())
+            .filter(|&i| self.matches(i, sel, pkg))
+            .all(|i| kinds.iter().any(|k| self.items[i].node.kind == *k))
     }
 
     fn child_tally(&self, parent: &Sel, child: &Sel, pkg: &Package) -> usize {
@@ -1670,6 +1678,69 @@ try {{
             }]
         });
         assert_eq!(run_on(&pkg, "|", root, 80).expect("ok"), "|\n");
+    }
+
+    fn all_pkg() -> PackageMap {
+        one(serde_json::from_value(json!({
+            "format": "et-doc-rules/1",
+            "indent": 2,
+            "rules": {
+                "file": [
+                    "when", ["all", "named", ["num", "word"]],
+                    ["each", "named", ["seq"]],
+                    []
+                ],
+                "num": ["verbatim"],
+                "word": ["verbatim"]
+            }
+        }))
+        .expect("all predicate parses"))
+    }
+
+    #[test]
+    fn all_holds_vacuously_when_no_child_matches_the_selector() {
+        // Else is `[]` and would refuse leftover children, so a successful
+        // empty format is the empty-case pin: both runtimes must agree.
+        let root = json!({ "type": "file", "start": 0, "end": 0, "children": [] });
+        assert_eq!(run_on(&all_pkg(), "", root, 80).expect("ok"), "\n");
+    }
+
+    #[test]
+    fn all_holds_when_every_selected_child_has_a_listed_type() {
+        let root = json!({
+            "type": "file", "start": 0, "end": 3,
+            "children": [
+                { "type": "num", "start": 0, "end": 1, "text": "1" },
+                { "type": "word", "start": 2, "end": 3, "text": "a" }
+            ]
+        });
+        assert_eq!(run_on(&all_pkg(), "1 a", root, 80).expect("ok"), "1a\n");
+    }
+
+    #[test]
+    fn all_fails_when_one_selected_child_has_an_unlisted_type() {
+        let pkg = one(serde_json::from_value(json!({
+            "format": "et-doc-rules/1",
+            "indent": 2,
+            "rules": {
+                "file": [
+                    "when", ["all", "named", ["num"]],
+                    [],
+                    ["each", "named", ["seq"]]
+                ],
+                "num": ["verbatim"],
+                "word": ["verbatim"]
+            }
+        }))
+        .expect("all predicate parses"));
+        let root = json!({
+            "type": "file", "start": 0, "end": 3,
+            "children": [
+                { "type": "num", "start": 0, "end": 1, "text": "1" },
+                { "type": "word", "start": 2, "end": 3, "text": "a" }
+            ]
+        });
+        assert_eq!(run_on(&pkg, "1 a", root, 80).expect("ok"), "1a\n");
     }
 
     #[test]

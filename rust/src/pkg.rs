@@ -444,6 +444,8 @@ pub enum Sel {
 pub enum Pred {
     Count(Sel, usize),
     ChildCount(Sel, Sel, usize),
+    /// Every `sel` child has a type in the list. Zero matches is true.
+    All(Sel, Vec<String>),
 }
 
 /// One expression of the package language. Eighteen opcodes; see DESIGN.md.
@@ -632,6 +634,9 @@ fn predicate(value: &Value) -> Result<Pred, String> {
             selector(&parts[2])?,
             count(&parts[3])?,
         )),
+        Some("all") if parts.len() == 3 => {
+            Ok(Pred::All(selector(&parts[1])?, node_types(&parts[2])?))
+        }
         _ => Err(format!("unknown predicate {value}")),
     }
 }
@@ -671,6 +676,28 @@ mod tests {
         assert!(
             err.to_string()
                 .contains("unknown package format `et-doc-rules/2`; expected `et-doc-rules/1`"),
+            "{err}"
+        );
+    }
+
+    #[test]
+    fn parses_all_and_refuses_a_non_list_of_kinds() {
+        serde_json::from_value::<Expr>(json!([
+            "when",
+            ["all", "named", ["number", "array"]],
+            ["line"],
+            ["soft"]
+        ]))
+        .expect("all with a list of kinds parses");
+        let err = serde_json::from_value::<Expr>(json!([
+            "when",
+            ["all", "named", "number"],
+            ["line"],
+            ["soft"]
+        ]))
+        .expect_err("kinds must be a list");
+        assert!(
+            err.to_string().contains("expected a list of node types"),
             "{err}"
         );
     }
@@ -830,11 +857,8 @@ mod tests {
 
     #[test]
     fn fill_takes_a_selector_and_separator_expression() {
-        let pkg = macro_package(
-            json!({}),
-            json!({ "list": ["fill", "named", ["line"]] }),
-        )
-        .expect("fill parses");
+        let pkg = macro_package(json!({}), json!({ "list": ["fill", "named", ["line"]] }))
+            .expect("fill parses");
         assert!(matches!(pkg.rules["list"], Expr::Fill(Sel::Named, _)));
 
         let err = refusal(json!({}), json!({ "list": ["fill", "named"] }));

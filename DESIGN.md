@@ -115,10 +115,13 @@ Selectors pick a child: `"f:name"` (tree-sitter field), `"t:identifier"` (node
 type), `"named"` (any type not listed in the package's `tokens`), `"*"`. The
 direct-child predicate is `["count", sel, n]`;
 `["child-count", parent-sel, child-sel, n]` counts the direct children of the
-selected child. Both describe the node, not the cursor. YAML uses the latter to
-distinguish a value `block_node` whose direct child is a block scalar from the
-same wrapper around a nested mapping or sequence, without making rule selection
-depend on comment decoration.
+selected child; `["all", sel, [kinds…]]` is true when every `sel` child has a
+type in `kinds`, including when there are none — "all" is universal, and a
+package that wants "at least one" composes with `count`. All three describe the
+node, not the cursor. YAML uses `child-count` to distinguish a value
+`block_node` whose direct child is a block scalar from the same wrapper around
+a nested mapping or sequence, without making rule selection depend on comment
+decoration. JSON uses `all` to apply `fill` only to numeric arrays.
 
 ### The package header
 
@@ -431,21 +434,15 @@ reference agreement 24/30
 ```
 
 JSON is measured against prettier only since Stage 0 generalised the reference
-comparison, and both divergences are `nested.json`. They have different causes.
-Prettier has a rule this IR still cannot express: an array whose elements are
-**all** arrays or objects is always printed one element per line, whatever the
-width, so `"matrix"` explodes where we keep it flat and it fits. That needs a
-static all-children-kind predicate. Separately, prettier fills
-`long_flat_array` several numbers to a line rather than one per line; the
-`fill` opcode now expresses that per-line width decision. The JSON package
-cannot yet select it safely, because the same array rule also handles strings,
-mixed values and containers and the predicate language cannot say “all children
-are numbers.” Applying fill to every array regresses `scalars.json`; the
-all-child-kind predicate described in `docs/roadmap.md` is the clean follow-up.
-CSS could opt in without that predicate: `font-family` lists contain a
-`string_value` and `box-shadow` / `transition` do not, so `count t:string_value
-0` separates them. That moved CSS from 11/30 to 18/30. The same test would not
-select an unquoted-only family list, and it does not help JSON.
+comparison. Both of `nested.json`'s old divergences are now package rules:
+`["all", "named", ["number"]]` selects `fill` for `long_flat_array` without
+touching mixed `scalars.json`, and `["all", "named", ["array", "object"]]`
+with a `count == 1` fallback explodes `matrix` the way prettier does on this
+corpus. Prettier also refuses to explode an array-of-arrays whose parent is
+itself an array; that needs ancestor context and is not in the IR. CSS
+replaced its `string_value` count proxy with the same predicate — every named
+child a `property_name`, `string_value`, `plain_value` or `important` — so an
+unquoted family list takes `fill` too. No CSS corpus file moved.
 
 The black-agreement figure is worse than this document used to claim, and the
 reason is worth keeping. The submission scored it at width 88 only, where

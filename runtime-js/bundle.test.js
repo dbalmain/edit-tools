@@ -783,6 +783,62 @@ test("child-count can dispatch on a field's wrapped construct", () => {
   assert.equal(runOn(pkg, "|", root, 80), "|\n");
 });
 
+const allPkg = () => ({
+  format: "et-doc-rules/1",
+  indent: 2,
+  rules: {
+    file: [
+      "when", ["all", "named", ["num", "word"]],
+      ["each", "named", ["seq"]],
+      [],
+    ],
+    num: ["verbatim"],
+    word: ["verbatim"],
+  },
+});
+
+test("all holds vacuously when no child matches the selector", () => {
+  // Else is `[]` and would refuse leftover children, so a successful
+  // empty format is the empty-case pin: both runtimes must agree.
+  const root = { type: "file", start: 0, end: 0, children: [] };
+  assert.equal(runOn(allPkg(), "", root, 80), "\n");
+});
+
+test("all holds when every selected child has a listed type", () => {
+  const root = {
+    type: "file", start: 0, end: 3,
+    children: [
+      { type: "num", start: 0, end: 1, text: "1" },
+      { type: "word", start: 2, end: 3, text: "a" },
+    ],
+  };
+  assert.equal(runOn(allPkg(), "1 a", root, 80), "1a\n");
+});
+
+test("all fails when one selected child has an unlisted type", () => {
+  const pkg = {
+    format: "et-doc-rules/1",
+    indent: 2,
+    rules: {
+      file: [
+        "when", ["all", "named", ["num"]],
+        [],
+        ["each", "named", ["seq"]],
+      ],
+      num: ["verbatim"],
+      word: ["verbatim"],
+    },
+  };
+  const root = {
+    type: "file", start: 0, end: 3,
+    children: [
+      { type: "num", start: 0, end: 1, text: "1" },
+      { type: "word", start: 2, end: 3, text: "a" },
+    ],
+  };
+  assert.equal(runOn(pkg, "1 a", root, 80), "1a\n");
+});
+
 test("blank opens before a comment that leads a listed type", () => {
   const source = "x = 1\n# c\ndef f\n";
   const root = {

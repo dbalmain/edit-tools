@@ -140,15 +140,23 @@ function validatePredicate(value) {
   if (!Array.isArray(value)) {
     throw new Refusal(`predicate must be an array, got ${JSON.stringify(value)}`);
   }
-  const valid =
-    (value[0] === "count" && value.length === 3) ||
-    (value[0] === "child-count" && value.length === 4);
-  if (!valid) {
-    throw new Refusal(`unknown predicate ${JSON.stringify(value)}`);
+  if (value[0] === "count" && value.length === 3) {
+    parseSelector(value[1]);
+    count(value[2]);
+    return;
   }
-  parseSelector(value[1]);
-  if (value[0] === "child-count") parseSelector(value[2]);
-  count(value.at(-1));
+  if (value[0] === "child-count" && value.length === 4) {
+    parseSelector(value[1]);
+    parseSelector(value[2]);
+    count(value[3]);
+    return;
+  }
+  if (value[0] === "all" && value.length === 3) {
+    parseSelector(value[1]);
+    nodeTypes(value[2]);
+    return;
+  }
+  throw new Refusal(`unknown predicate ${JSON.stringify(value)}`);
 }
 
 function validateExpr(value) {
@@ -731,6 +739,15 @@ class Ctx {
     return n;
   }
 
+  /** Vacuous: no `sel` child means every one of them has a listed type. */
+  allKinds(sel, kinds) {
+    for (let i = 0; i < this.items.length; i++) {
+      if (!this.matches(i, sel)) continue;
+      if (!kinds.includes(this.items[i].node.type)) return false;
+    }
+    return true;
+  }
+
   eval(expr) {
     if (!Array.isArray(expr)) throw new Refusal(`expression must be an array, got ${expr}`);
     const [op, ...rest] = expr;
@@ -826,6 +843,7 @@ class Ctx {
       }
       return count === childN;
     }
+    if (op === "all") return this.allKinds(parseSelector(raw), childRaw);
     throw new Refusal(`unknown predicate \`${op}\``);
   }
 
