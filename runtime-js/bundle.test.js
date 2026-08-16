@@ -665,6 +665,130 @@ test("blank without a type list is still only a cap", () => {
   assert.equal(runOn(pkg, source, root, 80), "x = 1\ndef f\n");
 });
 
+test("after comments inside indent keep the indent", () => {
+  const pkg = {
+    format: "et-doc-rules/1",
+    indent: 2,
+    comments: ["comment"],
+    tokens: ["def"],
+    rules: {
+      file: ["seq", ["tok", "def"], ["child", "t:body"]],
+      body: ["indent", ["hard"], ["each", "named", ["hard"]]],
+    },
+  };
+  const source = "def\n  x\n  # c\n";
+  const root = {
+    type: "file", start: 0, end: 13,
+    children: [
+      { type: "def", start: 0, end: 3, text: "def" },
+      {
+        type: "body", start: 4, end: 13,
+        children: [
+          { type: "name", start: 6, end: 7, text: "x" },
+          { type: "comment", start: 10, end: 13, text: "# c" },
+        ],
+      },
+    ],
+  };
+  assert.equal(runOn(pkg, source, root, 80), "def\n  x\n  # c\n");
+});
+
+test("trail comma precedes an own-line comment before the closer", () => {
+  const pkg = {
+    format: "et-doc-rules/1",
+    indent: 2,
+    tokens: ["(", ")", ","],
+    comments: ["comment"],
+    rules: {
+      list: [
+        "group", ["tok", "("],
+        ["indent", ["soft"],
+          ["each", "named", ["seq", ["tok", ","], ["line"]]],
+          ["trail", ",", "*"]],
+        ["soft"], ["tok", ")"],
+      ],
+    },
+  };
+  const source = "(a\n# c\n)";
+  const root = {
+    type: "list", start: 0, end: 9,
+    children: [
+      { type: "(", start: 0, end: 1, text: "(" },
+      { type: "name", start: 1, end: 2, text: "a" },
+      { type: "comment", start: 3, end: 6, text: "# c" },
+      { type: ")", start: 7, end: 8, text: ")" },
+    ],
+  };
+  assert.equal(runOn(pkg, source, root, 4), "(\n  a,\n  # c\n)\n");
+});
+
+test("a flat rule keeps an own-line comment before the closer", () => {
+  const pkg = {
+    format: "et-doc-rules/1",
+    indent: 2,
+    tokens: ["[", "]", ","],
+    comments: ["comment"],
+    rules: {
+      array: [
+        "seq", ["tok", "["],
+        ["each", "named", ["seq", ["tok", ","], ["sp"]]],
+        ["trail", ",", "*"], ["tok", "]"],
+      ],
+    },
+  };
+  const source = "a = [\n  1,\n  # a comment before the closer\n]\n";
+  const root = {
+    type: "array", start: 4, end: 44,
+    children: [
+      { type: "[", start: 4, end: 5, text: "[" },
+      { type: "integer", start: 8, end: 9, text: "1" },
+      { type: ",", start: 9, end: 10, text: "," },
+      {
+        type: "comment", start: 13, end: 42,
+        text: "# a comment before the closer",
+      },
+      { type: "]", start: 43, end: 44, text: "]" },
+    ],
+  };
+  assert.equal(
+    runOn(pkg, source, root, 80),
+    "[1,\n# a comment before the closer\n]\n",
+  );
+});
+
+test("blank at end of a rule preserves trailing trivia", () => {
+  const pkg = {
+    format: "et-doc-rules/1",
+    indent: 2,
+    tokens: ["["],
+    rules: {
+      file: ["each", "named", ["seq", ["hard"], ["blank", 2]]],
+      table: ["seq", ["tok", "["], ["child", "named"], ["blank", 2]],
+    },
+  };
+  const source = "[a\n\n[b\n";
+  const root = {
+    type: "file", start: 0, end: 7,
+    children: [
+      {
+        type: "table", start: 0, end: 4,
+        children: [
+          { type: "[", start: 0, end: 1, text: "[" },
+          { type: "name", start: 1, end: 2, text: "a" },
+        ],
+      },
+      {
+        type: "table", start: 4, end: 7,
+        children: [
+          { type: "[", start: 4, end: 5, text: "[" },
+          { type: "name", start: 5, end: 6, text: "b" },
+        ],
+      },
+    ],
+  };
+  assert.equal(runOn(pkg, source, root, 80), "[a\n\n[b\n");
+});
+
 // Expansion is memoised on the package object, because it is work proportional
 // to the package rather than the tree. These pin the two ways that can go wrong.
 
