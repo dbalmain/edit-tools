@@ -29,8 +29,19 @@ when it is deliberately declined.
 
 ## 1. Sibling-width alignment
 
-**Status:** open · **Cost:** global · **Languages:** TOML (3 accepted
-divergences), Go (expected, stage A in flight)
+**Status:** open, **decision needed** · **Cost:** global · **Languages:** Go (6
+of its 10 divergences), TOML (3 of its 7)
+
+**Go is merged and this is now a measured number, not an estimate.** Stage D
+verified every one of the six claimed cases hunk by hunk rather than sampling:
+`alignment`, `iota`, `kitchen`, `nesting`, `strings` and `structs` are alignment
+padding and nothing else.
+
+> **Go's agreement ceiling without alignment is 10/16 — 62.5%.**
+
+Two independent methods agreed on the fraction before that: stage B's GOROOT
+proxy scan (2,733 of 5,957 files showing alignment-like padding) and stage C's
+per-hunk count (6 of 16 corpus files, 37.5%). Different evidence, same answer.
 
 A rule cannot inspect a sibling's _rendered_ width, so it cannot pad one node to
 line up with another. The runtime deliberately exposes no way to do it.
@@ -395,7 +406,39 @@ the benefit is measured, and two languages already want it.
 
 ## 9. Comment placement cannot see the surrounding syntax
 
-**Status:** open · **Cost:** contextual · **Languages:** CSS
+**Status:** open, **promoted** · **Cost:** contextual · **Languages:** CSS,
+YAML, Go — and TOML retrospectively
+
+**Three languages have now needed a runtime change to comment attachment, and a
+reviewer has identified the shared root cause.** That makes this the
+best-corroborated entry after alignment, and unlike alignment it has never been
+costed.
+
+The symptoms looked unrelated, which is why it took three:
+
+| Language | Symptom                                                                                                        | Fix               |
+| -------- | -------------------------------------------------------------------------------------------------------------- | ----------------- |
+| TOML     | a comment absorbed the closing `]`, producing invalid source                                                   | stage E, +242 B   |
+| CSS      | comments escaped a descend node with no named host                                                             | `51ea32e`, +149 B |
+| Go       | `statement_list`'s range swallows the trailing newline, so an own-line comment before `}` attached as a suffix | `93338c9`, +180 B |
+
+Go's stage D named the common cause: **runtime-owned comment attachment depends
+on grammar-shaped node ranges.** Comments are trivia the runtime places, and
+where it places them is decided by byte ranges each grammar draws differently.
+So every new grammar is a fresh chance to place one wrongly, and the failure is
+found by a corpus rather than by a rule.
+
+That reframes 571 B of runtime growth: it is not three bug fixes, it is one
+architectural gap paid for three times. A fourth language should be expected to
+pay it again.
+
+The original CSS observation — that a rule cannot say which neighbour a comment
+belongs to, because prettier decides from surrounding syntax — is the same gap
+seen from the package side rather than the runtime side.
+
+**Decide when:** before round 3. Three languages and 571 B is past the point
+where "fix it again next time" is the cheaper option, and Markdown in round 4 is
+a comment-dense language whose whole premise is nesting other grammars.
 
 Comments are runtime-owned trivia. A rule cannot say which neighbour a comment
 belongs to, and prettier decides that from the syntax around it: an own-line
@@ -524,6 +567,40 @@ to: _if you need an override, extend the default rather than replace it._
 **Decide when:** YAML's stage E, which is building exactly this. The register
 entry stays open until some language other than YAML is asked the question and
 answers it.
+
+**Go was the first asked, and answered no**, which is the outcome to expect from
+most languages: semicolon insertion changes the reparse structure so gate 3
+catches it, and a raw string literal's interior sits inside a protected CST node
+and is emitted verbatim. A negative from a language that plausibly could have
+had one is worth recording — it is what stops this entry becoming a vague fear.
+
+## 13. A package cannot delete a token the reference deletes
+
+**Status:** open · **Cost:** local · **Languages:** Go
+
+gofmt removes redundant parentheses and statement semicolons. Gate 3 permits it
+— the reparse is unchanged and the tokens are anonymous — but **no opcode can
+express the deletion.** A rule either emits a token or refuses at the cursor;
+there is no declared consume-without-emit.
+
+Found at Go's stage D. It is the mirror image of the linearity invariant: the
+formatter may not _invent_ token text, and everyone has internalised that, but
+nothing said it may not _drop_ a token the grammar marks as removable — and the
+IR happens not to let it.
+
+Worth separating from entry 4, which it superficially resembles. Entry 4 is
+about rewrites we have decided a package may **never** perform, so the corpus
+omits them. This is a rewrite a package **may** perform — gate 3 says so — and
+simply cannot. The first is a measurement decision; this is a missing opcode.
+
+Cheap, if it is wanted: a `drop` that advances the cursor past a named token
+without emitting. The risk is obvious and is why it needs deciding rather than
+just building — an opcode that deletes source is one typo away from destroying
+it, and its only protection would be gate 3, which this round has caught out
+three times.
+
+**Decide when:** a second language wants it. Go can live without it; the
+divergences it causes are a small part of the 10.
 
 ---
 
