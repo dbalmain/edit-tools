@@ -665,6 +665,41 @@ test("blank keeps the exact gap after a declared leaf spelling", () => {
   assert.equal(runOn(pkg, eofSource, eofRoot, 80), eofSource);
 });
 
+test("blank still caps after a subtree that merely contains the spelling", () => {
+  // The `|+` is buried mid-subtree, so the gap that follows the subtree is
+  // ordinary trivia belonging to the next item, not scalar content.
+  const pkg = {
+    format: "et-doc-rules/1",
+    indent: 2,
+    rules: {
+      file: [
+        "seq",
+        ["each", "named", ["seq", ["hard"], ["blank", 1, [], ["|+"]]]],
+        ["blank", 1, [], ["|+"]],
+      ],
+      pair: ["verbatim"],
+    },
+  };
+  const source = "|+ tail\n\n\nnext";
+  const root = {
+    type: "file", start: 0, end: 14,
+    children: [
+      {
+        type: "pair", start: 0, end: 7,
+        children: [
+          { type: "|", start: 0, end: 2, text: "|+" },
+          { type: "word", start: 3, end: 7, text: "tail" },
+        ],
+      },
+      {
+        type: "pair", start: 10, end: 14,
+        children: [{ type: "word", start: 10, end: 14, text: "next" }],
+      },
+    ],
+  };
+  assert.equal(runOn(pkg, source, root, 80), "|+ tail\n\nnext\n");
+});
+
 test("child-count can dispatch on a field's wrapped construct", () => {
   const pkg = {
     format: "et-doc-rules/1",

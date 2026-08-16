@@ -593,9 +593,12 @@ function afterDocs(fmt, comments) {
 
 // ---------------------------------------------------------------- evaluation
 
-function containsLeafText(node, spellings) {
-  if (node.text !== undefined && spellings.includes(node.text)) return true;
-  return (node.children ?? []).some((child) => containsLeafText(child, spellings));
+// Rightmost spine only: a gap after a subtree that merely contains the
+// spelling belongs to a later sibling, not to the token.
+function endsWithLeafText(node, spellings) {
+  const kids = node.children ?? [];
+  if (kids.length > 0) return endsWithLeafText(kids[kids.length - 1], spellings);
+  return node.text !== undefined && spellings.includes(node.text);
 }
 
 function selectorMatches(fmt, node, sel) {
@@ -671,7 +674,7 @@ class Ctx {
 
   keepsGap(spellings) {
     if (!spellings || spellings.length === 0 || this.cursor === 0) return false;
-    return containsLeafText(this.items[this.cursor - 1].node, spellings);
+    return endsWithLeafText(this.items[this.cursor - 1].node, spellings);
   }
 
   /** Predicates describe the node, not the cursor: count over every child. */

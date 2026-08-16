@@ -323,13 +323,14 @@ impl<'a> Ctx<'a> {
     /// Some grammars leave semantic line endings outside the node whose token
     /// declares them. YAML's `|+` is the motivating case: the exact newlines
     /// live in the gap after the block-scalar pair. A package may name the
-    /// declaring leaf spelling; only that preceding subtree bypasses the cap.
+    /// declaring leaf spelling; the gap bypasses the cap only when that leaf
+    /// ends the preceding item, since only then is the gap the token's own.
     fn keeps_gap(&self, spellings: &[String]) -> bool {
         if spellings.is_empty() || self.cursor == 0 {
             return false;
         }
         let prev = self.items[self.cursor - 1].node;
-        contains_leaf_text(prev, spellings)
+        ends_with_leaf_text(prev, spellings)
     }
 
     fn take(&mut self, sel: &Sel, f: &Fmt<'a>) -> Result<usize, Refusal> {
@@ -595,14 +596,16 @@ impl<'a> Ctx<'a> {
     }
 }
 
-fn contains_leaf_text(node: &Node, spellings: &[String]) -> bool {
-    node.text
-        .as_ref()
-        .is_some_and(|text| spellings.iter().any(|spelling| spelling == text))
-        || node
-            .children
-            .iter()
-            .any(|child| contains_leaf_text(child, spellings))
+/// Walk the rightmost spine: the declaring token must be the last leaf of the
+/// subtree, or the gap after the subtree belongs to a later sibling instead.
+fn ends_with_leaf_text(node: &Node, spellings: &[String]) -> bool {
+    match node.children.last() {
+        Some(last) => ends_with_leaf_text(last, spellings),
+        None => node
+            .text
+            .as_ref()
+            .is_some_and(|text| spellings.iter().any(|spelling| spelling == text)),
+    }
 }
 
 fn node_matches(node: &Node, sel: &Sel, pkg: &Package) -> bool {
@@ -1553,6 +1556,49 @@ try {{
             }]
         });
         assert_eq!(run_on(&pkg, source, root, 80).expect("ok"), source);
+    }
+
+    #[test]
+    fn blank_still_caps_after_a_subtree_that_merely_contains_the_spelling() {
+        // The `|+` is buried mid-subtree, so the gap that follows the subtree
+        // is ordinary trivia belonging to the next item, not scalar content.
+        let pkg = one(serde_json::from_value(json!({
+            "format": "et-doc-rules/1",
+            "indent": 2,
+            "rules": {
+                "file": [
+                    "seq",
+                    ["each", "named",
+                     ["seq", ["hard"], ["blank", 1, [], ["|+"]]]],
+                    ["blank", 1, [], ["|+"]]
+                ],
+                "pair": ["verbatim"]
+            }
+        }))
+        .expect("semantic-gap package parses"));
+        let source = "|+ tail\n\n\nnext";
+        let root = json!({
+            "type": "file", "start": 0, "end": 14,
+            "children": [
+                {
+                    "type": "pair", "start": 0, "end": 7,
+                    "children": [
+                        { "type": "|", "start": 0, "end": 2, "text": "|+" },
+                        { "type": "word", "start": 3, "end": 7, "text": "tail" }
+                    ]
+                },
+                {
+                    "type": "pair", "start": 10, "end": 14,
+                    "children": [
+                        { "type": "word", "start": 10, "end": 14, "text": "next" }
+                    ]
+                }
+            ]
+        });
+        assert_eq!(
+            run_on(&pkg, source, root, 80).expect("ok"),
+            "|+ tail\n\nnext\n"
+        );
     }
 
     #[test]
