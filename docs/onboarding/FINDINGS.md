@@ -89,6 +89,27 @@ feature, not a cheap partial.
 So the honest choice is now binary: build real alignment, or accept that Go and
 every aligning reference has a hard agreement ceiling. There is no cheap middle.
 
+### Rust priced it far lower, and that reshapes the entry
+
+Rust's stage A (2026-08-17) is the third independent price, and it is the first
+one that argues *against*:
+
+- **2 of 15 files (13.3%)** show observable alignment — `structs.rs` aligns
+  field comments, `comments.rs` aligns an own-line comment with the preceding
+  trailing-comment column.
+- **1 of 15 files** shows true sibling-width *field* alignment.
+
+Against Go's 6 of 16 (37.5%), that is roughly a third of the rate, and most of
+what Rust does have is trailing-comment alignment rather than the field-and-
+value alignment that makes gofmt output recognisable.
+
+So the honest summary changed shape: **alignment is largely a Go cost, not a
+general one.** Go 37.5%, TOML 3 of 7 accepted divergences (all comment columns),
+Rust 13.3%. That does not weaken Go's case — 40–45% of real Go files would
+diverge permanently — but it does mean the global-cost feature buys one language
+most of its value, and the register should say so rather than implying every
+aligning reference pays equally.
+
 **Decide when:** now, in principle — Go's stage C should be started with the
 answer known, because a package written as if alignment might arrive later looks
 different from one written to concede it.
