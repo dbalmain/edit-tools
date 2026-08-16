@@ -45,7 +45,8 @@ markdown in the scored corpus before its package exists. The pinned
 `tree-sitter-markdown==0.5.1` Python binding exposes both `language()` (block)
 and `inline_language()` (inline). Fences, their `info_string`, and their
 `code_fence_content` are all present in the block tree, so the host manifest
-selects `language()` and this slice does not need the included-range second pass.
+selects `language()` and this slice does not need the included-range second
+pass.
 
 ### 2. The runtime takes a package _map_ — **done**
 
@@ -97,7 +98,7 @@ place for free.
 
 **No new opcode.** The markdown package's fence rule is ordinary:
 
-````json
+```json
 "fenced_code_block": [
   "seq",
   ["child", "t:fenced_code_block_delimiter"],
@@ -106,7 +107,7 @@ place for free.
   ["child", "*"],
   ["hard"], ["child", "t:fenced_code_block_delimiter"]
 ]
-````
+```
 
 The block grammar gives these children types rather than field names and inserts
 a zero-width `block_continuation` after the opening line, so the fixture rule
@@ -202,6 +203,36 @@ highlighter invent its own.
 Steps 1 and 2 are runtime work and belong to whoever owns the runtime. Steps 3
 and 4 are a language round and can go to a builder.
 
+### What step 3 found that step 4 must solve
+
+Run the probe fixture through both CLIs and the injected fence is right while
+the verbatim ones each gain a blank line before their closing delimiter:
+
+````text
+```json
+{ "outer": { "items": [1, 2] } }
+```
+
+```
+no language
+
+```
+````
+
+That is the fixture package's doing, not the runtime's, and it is a real tension
+rather than a typo. **`code_fence_content`'s extent includes the newline that
+ends the last content line; an injected region's formatted output does not.** So
+a single `fenced_code_block` rule emitting `["hard"]` before the closing
+delimiter is correct for a formatted child and one line too generous for a
+`verbatim` one.
+
+The fixture package leaves it wrong on purpose — it exists to prove the
+machinery, and `probe_injection.py` asserts Rust/JS identity rather than
+blessing the bytes. The real markdown package has to resolve it. Whether that is
+a `when` on the child, a trailing-newline convention for `verbatim`, or the
+harness narrowing the content extent is step 4's call; what step 4 must not do
+is discover it from a corpus diff.
+
 ### What step 2 settled that step 3 must obey
 
 **The package switches _before_ the stamped node's own rule is looked up.** The
@@ -213,8 +244,8 @@ rule, which it does not have, and the runtime refuses.
 So `gen_trees.py` should splice the embedded parse's **root** node in as the
 child and stamp the language on that — a JSON `document`, which the JSON package
 does have a rule for. The alternative, a bridge rule in every embedded package
-naming the host's node types, couples each guest to every host that might contain
-it and is the wrong shape.
+naming the host's node types, couples each guest to every host that might
+contain it and is the wrong shape.
 
 **Comment policy follows the region.** Comments inside a stamped subtree use the
 embedded package's `comments`, `comment_gap` and `blank_cap`; a comment sitting
