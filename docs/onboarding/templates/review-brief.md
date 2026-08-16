@@ -141,7 +141,11 @@ whether the package is right. Budget your effort here:
 
 - **Verdict**: `merge` | `merge after fixes` (state the fixes you applied and
   that you re-verified) | `escalate`
-- **Runtime edits**: one verdict line each, plus your freeze recommendation.
+- **Runtime edits**: one verdict line each — `warranted` / `unnecessary` /
+  `needs-redesign` — with its own gzip figure. `unnecessary` is a **retroactive
+  freeze for this run**: say so, revert the edit, and require the package to be
+  expressed without it. That is yours to decide; do not ask, and do not propose
+  a standing freeze on future rounds (Dave declined one — see `LEDGER.md`).
 - **Design findings**: the design limits this language exposed, stated as
   capabilities the IR lacks rather than as bugs. The orchestrator forwards
   these; they are the point of the exercise.

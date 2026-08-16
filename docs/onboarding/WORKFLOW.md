@@ -89,9 +89,9 @@ this section is now the description of what a builder is working against.
 
    **At a manifest-declared injection boundary, ownership recurses.** The host's
    generic structure masks the opaque content node, and an ordered embedded
-   signature uses the guest manifest's structural checker and extras policy.
-   The host extras walk stops at the boundary, so a guest comment is checked by
-   its guest grammar. A region with no info string, an unknown alias, or a failed
+   signature uses the guest manifest's structural checker and extras policy. The
+   host extras walk stops at the boundary, so a guest comment is checked by its
+   guest grammar. A region with no info string, an unknown alias, or a failed
    grammar parse is compared as exact bytes, matching the formatter's
    conservative verbatim path. If a stronger guest gate rejects a region that
    tree-sitter accepts, gate 3 also uses exact bytes rather than certifying it.
@@ -128,9 +128,9 @@ this section is now the description of what a builder is working against.
    duplication. Candidates count only when they reparse cleanly and the generic
    signature changes. This arm rejected both original overrides: ordered
    `json.loads` accepted numeric and string respellings (`42` → `42.0`,
-   `"value"` → `"\u0076alue"`), and `ast.dump` accepted the same classes
-   (`8080` → `8_080`, `"POST"` → `'POST'`). Python and JSON now select the
-   generic default.
+   `"value"` → `"\u0076alue"`), and `ast.dump` accepted the same classes (`8080`
+   → `8_080`, `"POST"` → `'POST'`). Python and JSON now select the generic
+   default.
 
 ### The manifest schema
 
@@ -182,11 +182,10 @@ equivalent_kinds = []                 # kinds that are the same thing under a di
 not a list in `gen_trees.py`; `injections` is optional and describes a host
 grammar's extraction shape. `harness/languages/python.toml` and `json.toml` are
 the two worked examples and carry the reasoning for each field they set. Every
-field is validated on load:
-an unknown key, an unpinned grammar, a `name` that does not match the filename,
-a `{width}` placeholder that a `"fixed"` reference would never use, and a
-`"fixed"` reference with more than one width are all one-line errors naming the
-file and the field.
+field is validated on load: an unknown key, an unpinned grammar, a `name` that
+does not match the filename, a `{width}` placeholder that a `"fixed"` reference
+would never use, and a `"fixed"` reference with more than one width are all
+one-line errors naming the file and the field.
 
 ### Field names that changed from the first sketch of this doc
 
@@ -279,7 +278,13 @@ Mechanically that means:
 - Every runtime edit appears in the report with the case for it: what the
   package could not express, what was tried first, what the size cost is.
 - The stage-D reviewer verdicts each edit **warranted / unnecessary /
-  needs-redesign**, and states whether it now recommends a freeze.
+  needs-redesign**. A verdict of `unnecessary` is a **retroactive freeze for
+  that run**: the edit is reverted and the package must be expressed without it,
+  or the run escalates. The reviewer holds that power directly — it does not
+  need to ask.
+- **There is no standing freeze**, and a reviewer should not propose one; Dave
+  declined that in round 1 (see `LEDGER.md`). The question at stage D is always
+  "was _this_ edit warranted", never "should builders still be allowed to edit".
 - Runtime edits **land as their own commit**, sequenced by the orchestrator
   between rounds — not merged silently with a language package.
 - After any runtime change merges, **every already-merged language is
