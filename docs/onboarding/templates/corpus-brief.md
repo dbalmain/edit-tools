@@ -291,8 +291,12 @@ Write `corpus/reports/{{LANG}}/corpus-report.md`:
   changes at all, and how many differ between your two widths. A corpus where
   most files are byte-identical input to output is not probing anything; report
   the number rather than making the reviewer compute it.
-- **the reference's own overflow count** — `score.py` prints it as "its own
-  overflow: N" — with the causes broken out. **The reference is allowed to
+- **the reference's own overflow count** — run
+  `./harness/corpus_stats.py --language {{LANG}}`, which prints it per width
+  along with the three corpus-quality counts above, so none of them has to be
+  computed by hand. (`score.py` also prints it as "its own overflow: N", but
+  only once a package exists; at stage A it filters your language out before it
+  computes anything.) Break the causes out in the report. **The reference is allowed to
   overrun its own target width, and they all do.** taplo overruns on 8 line-runs
   across the TOML corpus, one of which it _manufactures_: it pads a 66-character
   line out to 107 in order to align a comment. Without this number in the

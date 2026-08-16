@@ -8,29 +8,40 @@ building · `D` package review · `E`/`F` escalated · **merged** · **blocked**
 
 ## Board
 
-| Language   | Tier | Round | Builder | Status | Grammar                | Reference                         |
-| ---------- | ---- | ----- | ------- | ------ | ---------------------- | --------------------------------- |
-| JSON       | T1   | —     | —       | merged | tree_sitter_json       | prettier                          |
-| Python     | T2   | —     | —       | merged | tree_sitter_python     | black                             |
-| TOML       | T1   | 1     | grok    | merged | tree-sitter-toml       | taplo 0.10.0                      |
-| YAML       | T1   | 2     | DS+grok+Terra | -      | tree_sitter_yaml       | prettier                          |
-| CSS        | T1   | 2     | grok+agy | -      | tree_sitter_css        | prettier                          |
-| Go         | T2   | 2     | DS+agy  | -      | tree_sitter_go         | gofmt                             |
-| Rust       | T2   | 3     | tbd     | -      | tree_sitter_rust       | rustfmt                           |
-| Kotlin     | T2   | 3     | tbd     | -      | tree_sitter_kotlin     | ktfmt                             |
-| JavaScript | T2   | 3     | tbd     | -      | tree_sitter_javascript | prettier                          |
-| Markdown   | T2   | 4     | tbd     | -      | tree_sitter_markdown   | prettier                          |
-| TypeScript | T2   | 4     | tbd     | -      | tree_sitter_typescript | prettier                          |
-| XML        | T3   | 4     | tbd     | -      | tree_sitter_xml        | prettier (`@prettier/plugin-xml`) |
-| HTML       | T3   | 4     | tbd     | -      | tree_sitter_html       | prettier                          |
-| Ruby       | T4   | 5     | tbd     | -      | tree_sitter_ruby       | syntax_tree                       |
-| Scheme     | T4   | 5     | tbd     | -      | tree_sitter_scheme     | emacs `scheme-mode`               |
-| Haskell    | T4   | 5     | tbd     | -      | tree_sitter_haskell    | ormolu                            |
-| Aven       | T4   | 6     | tbd     | -      | **none — see below**   | `aven fmt`                        |
+| Language   | Tier | Round | Builder       | Status | Grammar                | Reference                         |
+| ---------- | ---- | ----- | ------------- | ------ | ---------------------- | --------------------------------- |
+| JSON       | T1   | —     | —             | merged | tree_sitter_json       | prettier                          |
+| Python     | T2   | —     | —             | merged | tree_sitter_python     | black                             |
+| TOML       | T1   | 1     | grok          | merged | tree-sitter-toml       | taplo 0.10.0                      |
+| YAML       | T1   | 2     | DS+grok+Terra | A (rework) | tree_sitter_yaml       | prettier                          |
+| CSS        | T1   | 2     | grok          | B      | tree_sitter_css        | prettier                          |
+| Go         | T2   | 2     | DS            | A      | tree_sitter_go         | gofmt                             |
+| Rust       | T2   | 3     | tbd           | -      | tree_sitter_rust       | rustfmt                           |
+| Kotlin     | T2   | 3     | tbd           | -      | tree_sitter_kotlin     | ktfmt                             |
+| JavaScript | T2   | 3     | tbd           | -      | tree_sitter_javascript | prettier                          |
+| Markdown   | T2   | 4     | tbd           | -      | tree_sitter_markdown   | prettier                          |
+| TypeScript | T2   | 4     | tbd           | -      | tree_sitter_typescript | prettier                          |
+| XML        | T3   | 4     | tbd           | -      | tree_sitter_xml        | prettier (`@prettier/plugin-xml`) |
+| HTML       | T3   | 4     | tbd           | -      | tree_sitter_html       | prettier                          |
+| Ruby       | T4   | 5     | tbd           | -      | tree_sitter_ruby       | syntax_tree                       |
+| Scheme     | T4   | 5     | tbd           | -      | tree_sitter_scheme     | emacs `scheme-mode`               |
+| Haskell    | T4   | 5     | tbd           | -      | tree_sitter_haskell    | ormolu                            |
+| Aven       | T4   | 6     | tbd           | -      | **none — see below**   | `aven fmt`                        |
 
 Grammar package names are the orchestrator's guess from PyPI naming convention.
 Stage A confirms or corrects each one and records the pin in the manifest; a
 wrong guess here is a template delta, not a failure.
+
+**agy (Gemini 3.7 Flash) is not in round 2, and not by choice.** It was
+allocated the second CSS and Go seats. In headless mode it auto-denies any tool
+needing the `command` permission and exits 0 having done nothing — a 303-byte
+log that looks exactly like a launch that worked. The two documented fixes are
+`--dangerously-skip-permissions` or a `permissions.allow` list in
+`~/.gemini/antigravity-cli/settings.json`; the first is blocked here and the
+second is a standing, global widening of what every future agy session may run,
+so it is with Dave. `--mode accept-edits` is **not** sufficient — it covers
+edits, not commands. The worktrees `lang-css-agy` and `lang-go-agy` are cut and
+waiting.
 
 ## Known stresses, placed deliberately
 
