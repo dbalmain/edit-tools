@@ -299,6 +299,9 @@ function flattenFields(pkg) {
 
 function buildPackage(pkg) {
   validatePackageFormat(pkg);
+  if (pkg.alignment !== undefined && pkg.alignment !== "go") {
+    throw new Refusal(`unknown alignment mode \`${pkg.alignment}\`; expected \`go\``);
+  }
   const comment_gap = gapField(pkg, "comment_gap");
   const blank_cap = gapField(pkg, "blank_cap");
   const flatten_fields = flattenFields(pkg);
@@ -517,6 +520,196 @@ function print(doc, cols) {
     stack = suffixes.reverse();
     suffixes = [];
   }
+}
+
+// ------------------------------------------------ experimental alignment
+
+// This spike deliberately measures the smallest real second pass, not a
+// general alignment IR. Blank lines split runs; struct fields, const/var
+// assignments, and trailing comments have independent rendered-text schemas.
+
+function goLineInfo(line, state) {
+  const beganRaw = state.raw;
+  let quote = state.raw ? "`" : "";
+  let escaped = false;
+  let comment = -1;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (quote === "`") {
+      if (ch === "`") {
+        quote = "";
+        state.raw = false;
+      }
+    } else if (quote !== "") {
+      if (escaped) escaped = false;
+      else if (ch === "\\") escaped = true;
+      else if (ch === quote) quote = "";
+    } else if (ch === "`") {
+      quote = "`";
+      state.raw = true;
+    } else if (ch === '"' || ch === "'") quote = ch;
+    else if (ch === "/" && line[i + 1] === "/") {
+      comment = i;
+      break;
+    }
+  }
+  const code = line.slice(0, comment < 0 ? line.length : comment).trimEnd();
+  let at = 0;
+  while (code[at] === " " || code[at] === "\t") at++;
+  return {
+    indent: code.slice(0, at),
+    body: code.slice(at),
+    comment: comment < 0 ? undefined : line.slice(comment),
+    multilineRaw: beganRaw || state.raw,
+  };
+}
+
+function goCells(value) {
+  const cells = [];
+  let start = -1;
+  let quote = "";
+  let escaped = false;
+  for (let i = 0; i < value.length; i++) {
+    const ch = value[i];
+    if (quote === "`") {
+      if (ch === "`") quote = "";
+    } else if (quote !== "") {
+      if (escaped) escaped = false;
+      else if (ch === "\\") escaped = true;
+      else if (ch === quote) quote = "";
+    } else if (ch === "`" || ch === '"' || ch === "'") quote = ch;
+    else if (ch === " " || ch === "\t") {
+      if (start >= 0) cells.push(value.slice(start, i));
+      start = -1;
+      continue;
+    }
+    if (start < 0) start = i;
+  }
+  if (start >= 0) cells.push(value.slice(start));
+  return cells;
+}
+
+function goAssignmentAt(value) {
+  let quote = "";
+  let escaped = false;
+  for (let i = 0; i < value.length; i++) {
+    const ch = value[i];
+    if (quote === "`") {
+      if (ch === "`") quote = "";
+    } else if (quote !== "") {
+      if (escaped) escaped = false;
+      else if (ch === "\\") escaped = true;
+      else if (ch === quote) quote = "";
+    } else if (ch === "`" || ch === '"' || ch === "'") quote = ch;
+    else if (ch === "=") return i;
+  }
+  return -1;
+}
+
+function goRender(info, body, target) {
+  const padding = info.comment === undefined ? "" : " ".repeat(target - width(body) + 1);
+  return `${info.indent}${body}${padding}${info.comment ?? ""}`;
+}
+
+function goAlignFields(lines, infos, run) {
+  const rows = run.map((at) => [at, goCells(infos[at].body)]).filter(([, cells]) => cells.length >= 2);
+  if (rows.length < 2) return;
+  const count = Math.max(...rows.map(([, cells]) => cells.length));
+  const maxima = Array(Math.max(count - 1, 0)).fill(0);
+  for (const [, cells] of rows) {
+    cells.slice(0, -1).forEach((cell, column) => {
+      maxima[column] = Math.max(maxima[column], width(cell));
+    });
+  }
+  const bodies = rows.map(([, cells]) => cells.map((cell, column) =>
+    column + 1 < cells.length ? `${cell}${" ".repeat(maxima[column] - width(cell) + 1)}` : cell,
+  ).join(""));
+  const target = Math.max(...bodies.map(width));
+  rows.forEach(([at], row) => { lines[at] = goRender(infos[at], bodies[row], target); });
+}
+
+function goAlignAssignments(lines, infos, run) {
+  const rows = run.map((at) => {
+    const equal = goAssignmentAt(infos[at].body);
+    return equal < 0 ? undefined : [
+      at,
+      infos[at].body.slice(0, equal).trimEnd(),
+      infos[at].body.slice(equal + 1).trimStart(),
+    ];
+  }).filter((row) => row !== undefined);
+  if (rows.length < 2) return;
+  const lhsWidth = Math.max(...rows.map(([, lhs]) => width(lhs)));
+  const bodies = rows.map(([, lhs, rhs]) =>
+    `${lhs}${" ".repeat(lhsWidth - width(lhs) + 1)}= ${rhs}`,
+  );
+  const target = Math.max(...bodies.map(width));
+  rows.forEach(([at], row) => { lines[at] = goRender(infos[at], bodies[row], target); });
+}
+
+function goAlignBlocks(lines) {
+  const state = { raw: false };
+  const infos = lines.map((line) => goLineInfo(line, state));
+  let block;
+  let run = [];
+  const flush = () => {
+    if (block?.kind === "fields") goAlignFields(lines, infos, run);
+    else if (block?.kind === "assignments") goAlignAssignments(lines, infos, run);
+    run = [];
+  };
+  for (let at = 0; at < lines.length; at++) {
+    const info = infos[at];
+    if (block !== undefined) {
+      const close = info.indent === block.indent &&
+        ((block.kind === "fields" && info.body === "}") ||
+         (block.kind === "assignments" && info.body === ")"));
+      if (close) {
+        flush();
+        block = undefined;
+      } else if (info.multilineRaw || info.body === "") flush();
+      else run.push(at);
+      continue;
+    }
+    if (info.multilineRaw) continue;
+    if (info.body.endsWith("struct {")) block = { kind: "fields", indent: info.indent };
+    else if (info.body === "const (" || info.body === "var (") {
+      block = { kind: "assignments", indent: info.indent };
+    }
+  }
+  if (block !== undefined) flush();
+}
+
+function goAlignComments(lines) {
+  const state = { raw: false };
+  const infos = lines.map((line) => goLineInfo(line, state));
+  let run = [];
+  let indent;
+  const flush = () => {
+    const commented = run.filter((at) => infos[at].comment !== undefined);
+    if (commented.length >= 2) {
+      const target = Math.max(...commented.map((at) => width(infos[at].body)));
+      commented.forEach((at) => { lines[at] = goRender(infos[at], infos[at].body, target); });
+    }
+    run = [];
+  };
+  for (let at = 0; at < lines.length; at++) {
+    const info = infos[at];
+    const boundary = info.multilineRaw || info.body === "" || (indent !== undefined && indent !== info.indent);
+    if (boundary) {
+      flush();
+      indent = undefined;
+      if (info.multilineRaw || info.body === "") continue;
+    }
+    if (indent === undefined) indent = info.indent;
+    run.push(at);
+  }
+  flush();
+}
+
+function alignGo(input) {
+  const lines = input.split("\n");
+  goAlignBlocks(lines);
+  goAlignComments(lines);
+  return lines.join("\n");
 }
 
 // ------------------------------------------------------- comment attachment
@@ -1142,7 +1335,8 @@ class Formatter {
 function format(tree, packages, cols) {
   const bytes = new TextEncoder().encode(tree.source ?? "");
   const fmt = new Formatter(packages, tree.language, bytes, new TextDecoder());
-  const out = print(fmt.node(tree.root), cols);
+  let out = print(fmt.node(tree.root), cols);
+  if (fmt.pkg.alignment === "go") out = alignGo(out);
   if (fmt.semanticEof) {
     const suffix = (tree.source ?? "").match(/(?:\r\n|\r|\n)+$/)?.[0] ?? "";
     return `${out.replace(/[\r\n]+$/, "")}${suffix}`;

@@ -47,6 +47,9 @@ impl TryFrom<String> for PackageFormat {
 #[serde(try_from = "RawPackage")]
 pub struct Package {
     pub indent: usize,
+    /// Experimental rendered-text alignment. The only spike implementation
+    /// is `go`; omitting this field leaves the printer byte-for-byte alone.
+    pub alignment: Option<String>,
     /// Whether one indent level is a tab rather than `indent` spaces. gofmt
     /// is the first reference whose house style is tab-indented.
     #[serde(default)]
@@ -90,6 +93,8 @@ struct RawPackage {
     _format: PackageFormat,
     indent: usize,
     #[serde(default)]
+    alignment: Option<String>,
+    #[serde(default)]
     tab_indent: bool,
     #[serde(default)]
     tokens: HashSet<String>,
@@ -127,12 +132,19 @@ impl TryFrom<RawPackage> for Package {
             }
         }
         let flatten_fields = flatten_fields(raw.flatten_fields)?;
+        if raw.alignment.as_deref().is_some_and(|value| value != "go") {
+            return Err(format!(
+                "unknown alignment mode `{}`; expected `go`",
+                raw.alignment.as_deref().unwrap_or_default()
+            ));
+        }
         let rules = expand_rules(&raw.defs, raw.rules)?
             .into_iter()
             .map(|(name, value)| Ok((name, Expr::try_from(value)?)))
             .collect::<Result<_, String>>()?;
         Ok(Self {
             indent: raw.indent,
+            alignment: raw.alignment,
             tab_indent: raw.tab_indent,
             tokens: raw.tokens,
             comments: raw.comments,
