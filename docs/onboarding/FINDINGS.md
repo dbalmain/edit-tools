@@ -415,8 +415,8 @@ the next, and it decides per line rather than per group.
 asked for by CSS's stage-C builder, corroborated independently against JSON
 before any reviewer saw it, and then costed at CSS's stage D.
 
-JSON's _only_ outstanding divergence is this gap, and it gets both directions
-wrong at once:
+JSON's only outstanding file exposes two gaps, and the combined diff gets both
+directions wrong at once:
 
 ```
 ours                                   prettier
@@ -433,10 +433,14 @@ ours                                   prettier
 ```
 
 Implementation corrected the diagnosis: these are two prettier behaviours, not
-one. `fill` accounts for packing the short primitives in `long_flat_array`.
+one. `fill` accounts for packing the numeric literals in `long_flat_array`.
 `matrix` is the separately deferred static test from `docs/roadmap.md` pile A:
 all of an array's children are arrays or objects. It needs an all-child-kind
 predicate and an always-broken package branch, not a different fill algorithm.
+That predicate is also required to opt JSON into fill safely: prettier does not
+fill a mixed scalar array after its first overlong string. Applying fill to all
+arrays fixed `long_flat_array` at both widths but regressed `scalars.json` at
+both, moving JSON from **4/6 to 2/6**. The experiment was reverted.
 
 Stage D's costing, which is what makes this decidable:
 
@@ -444,9 +448,9 @@ Stage D's costing, which is what makes this decidable:
 | ------------------------------- | -------------------------------------------------- |
 | Same construct in CSS and JSON? | Yes for per-line packing; `matrix` is a second shape |
 | Divergences it contributes to   | **13 of 21** (CSS)                                 |
-| Divergences it fully resolves   | **9 of 21** (CSS); JSON packing, not `matrix`       |
+| Divergences it fully resolves   | **9 of 21** (CSS); JSON awaits an all-kind predicate |
 | Cost on this register's scale   | **local**                                          |
-| Effect on merged packages       | Additive — JSON opts in, TOML and python unchanged |
+| Effect on merged packages       | Additive — no package opts in at this boundary     |
 
 Local is the important word. It needs a new Doc node and one printer case using
 the width state the runtime already carries: no sibling measurement, no second

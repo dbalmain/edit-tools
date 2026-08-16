@@ -127,14 +127,14 @@ ordinary:
 than broken-if-it-does-not-fit. No printer change, no new opcode class, and the
 predicate is as inspectable as `count`.
 
-**Deferred, deliberately, as of 2026-08-16.** Cheap is not the same as worth
-doing. Adding this predicate to match prettier on `matrix` buys **nothing
-measurable** — `matrix` and `deep` share a file and we currently match prettier
-on `deep`, so agreement stays 4/6 either way. And two languages cannot tell
-"this reads better everywhere" from "this suits JSON". See
-[house-style.md](house-style.md): the trigger is a corpus spanning YAML, CSS,
-TOML and Go, at which point the rule can be measured across every language at
-once rather than argued from one file.
+**Reopened by `fill`, but deliberately not folded into that slice.** The
+predicate now buys something measurable beyond the `matrix` house-style choice:
+it is the only honest way to select numeric-only arrays for fill. Applying fill
+to every JSON array fixed `long_flat_array` but regressed the mixed
+`scalars.json`, taking agreement from 4/6 to 2/6. With `all`, the package can
+choose numeric fill, container explosion, and the ordinary array rule without
+guessing from corpus-specific counts. That is a separate local feature and a
+separate decision.
 
 Pile A remains the right _classification_ — these limits are cheap to lift when
 we want them lifted. What changed is the assumption that cheap therefore means
@@ -147,7 +147,9 @@ to put several numbers on a line rather than one per line (the second JSON
 construct, `long_flat_array`). Built on 2026-08-17 after CSS priced it: **+365 B
 gzip** across the hand-written JS runtime, with a byte-identical Rust mirror.
 The opcode is `["fill", sel, sep]`, parallel to `each`; its separator chooses
-flat or break independently per line.
+flat or break independently per line. JSON did not opt in: its grammar uses one
+array node type for numeric, string, mixed and container arrays, and the current
+predicate set cannot prove that every element is numeric.
 
 ### Pile C — trying two layouts and picking one
 

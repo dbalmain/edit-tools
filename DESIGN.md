@@ -437,9 +437,11 @@ Prettier has a rule this IR still cannot express: an array whose elements are
 width, so `"matrix"` explodes where we keep it flat and it fits. That needs a
 static all-children-kind predicate. Separately, prettier fills
 `long_flat_array` several numbers to a line rather than one per line; the
-`fill` opcode now expresses that per-line width decision. Because both cases
-share one corpus file, fixing the latter alone does not necessarily move the
-file-level agreement count.
+`fill` opcode now expresses that per-line width decision. The JSON package
+cannot yet select it safely, because the same array rule also handles strings,
+mixed values and containers and the predicate language cannot say “all children
+are numbers.” Applying fill to every array regresses `scalars.json`; the
+all-child-kind predicate described in `docs/roadmap.md` is the clean follow-up.
 
 The black-agreement figure is worse than this document used to claim, and the
 reason is worth keeping. The submission scored it at width 88 only, where
