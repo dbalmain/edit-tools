@@ -71,10 +71,9 @@ has no single correct `tab`.
 whichever package built it. `print` has no `tab` argument. The amount is
 relative (`ind + n`), so a single-package document is unchanged.
 
-It removed an argument rather than adding one. It also buys something
-unrelated: a language whose continuation lines indent differently from its
-block bodies becomes expressible, which is a `LANGUAGES.md` "known stress" for
-Haskell.
+It removed an argument rather than adding one. It also buys something unrelated:
+a language whose continuation lines indent differently from its block bodies
+becomes expressible, which is a `LANGUAGES.md` "known stress" for Haskell.
 
 ### 4. Nothing else
 
@@ -169,8 +168,8 @@ highlighter invent its own.
 ## Suggested order
 
 1. `Indent` carries its own amount — **done**. Independent of everything else,
-   small, and it removes a printer argument. Done first and alone, so the
-   diff is reviewable against a byte-identical corpus.
+   small, and it removes a printer argument. Done first and alone, so the diff
+   is reviewable against a byte-identical corpus.
 2. Package map plus the node `language` field — **done**. Covered by
    two-language unit toys in both runtimes; no grammar or corpus work.
 3. Harness splicing in `gen_trees.py`, with markdown + JavaScript as the first
@@ -180,3 +179,25 @@ highlighter invent its own.
 
 Steps 1 and 2 are runtime work and belong to whoever owns the runtime. Steps 3
 and 4 are a language round and can go to a builder.
+
+### What step 2 settled that step 3 must obey
+
+**The package switches _before_ the stamped node's own rule is looked up.** The
+stamped node is therefore the first node of the new region, and the embedded
+package must have a rule for **its** type. Stamping `language: "javascript"` on
+a markdown `code_fence_content` asks the JavaScript package for a
+`code_fence_content` rule, which it will never have, and the runtime refuses.
+
+So `gen_trees.py` should splice the embedded parse's **root** node in as the
+child and stamp the language on that — a JavaScript `program`, which the
+JavaScript package does have a rule for. The alternative, a bridge rule in every
+embedded package naming the host's node types, couples each guest to every host
+that might contain it and is the wrong shape.
+
+**Comment policy follows the region.** Comments inside a stamped subtree use the
+embedded package's `comments`, `comment_gap` and `blank_cap`; a comment sitting
+outside the stamped node stays with the enclosing language, even when it is
+adjacent to the fence. That is the right split, but it means a fence's
+surrounding blank lines are the host's business and its interior blank lines are
+the guest's — worth stating in the markdown brief so a builder does not discover
+it from a diff.

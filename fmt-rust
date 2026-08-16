@@ -1,3 +1,5 @@
 #!/bin/sh
 here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-FMT_PACKAGES="$here/packages" exec "$here/rust/target/release/docfmt" "$@"
+# Honour an override so an experiment can point both CLIs at its own packages;
+# fmt-js already does. Unset, this is the shipped directory as before.
+FMT_PACKAGES="${FMT_PACKAGES:-$here/packages}" exec "$here/rust/target/release/docfmt" "$@"
