@@ -66,12 +66,13 @@ preserves — `0.5` vs a rewritten `.5`, `#fff` vs `#ffffff`, `url("x")` vs
 The generic named-node comparison is the right oracle; extras still cover
 comments.
 
-One empty-rule case did fail the default, and that is a fact about the grammar
-rather than a reason to write an override. An empty `block` has no named
-children (`{` and `}` are anonymous), so the generic signature compares the
-raw text `{}` against prettier's `{\n}`. Declaring `block` transparent would
-be wrong — a block is structural. The corpus writes the empty rule already
-expanded; the rewrite is recorded under surprises.
+Before the round-2 gate fix, an empty-rule case failed the default because an
+empty `block` has only anonymous children (`{` and `}`). The old signature
+compared the block's raw source span, making whitespace between those tokens
+significant. The generic gate now compares the anonymous token spellings and
+ignores only the inter-token layout. `normalisation.css` therefore includes
+both `.empty {}` and `.spaced-empty { }`; prettier expands both, and the default
+gate accepts the rewrite without making `block` transparent.
 
 `check_gate3.py --language css`: 30 reference outputs accepted, 60 destructive
 mutations rejected, 0 wrapper kinds needed. The adversarial arm reported 460
@@ -103,7 +104,7 @@ Required probes:
   spaces around `{` `}` `:` `;`, padding inside a value, no space around
   combinators, leading indent, a tab, a run of spaces before a trailing
   comment, `1rem!important`, a packed multi-declaration rule, extra blank
-  lines. The empty rule is already expanded (see gate 3 above).
+  lines, a compact empty rule, and an empty rule with a space between braces.
 - `kitchen.css` — `@import`, custom properties, a selector list, a family
   list, `@media` with `grid-template-areas` and native nesting, `@supports`
   with `minmax()`, `!important`, a vendor prefix.
@@ -267,7 +268,9 @@ suffix either way.
 Spacing, delimiter padding, indentation — `normalisation.css`, rewritten at
 every width:
 
-- declaration blocks always expand; `a{color:red}` becomes a four-line rule
+- declaration blocks always expand; `a{color:red}` becomes a three-line rule
+- empty blocks expand too; both `.empty {}` and `.spaced-empty { }` become a
+  brace pair on separate lines
 - one space after `:`, none before; one space after `;` vanishes because
   the semicolon ends the line
 - spaces around combinators (`>`, `+`, `~`)

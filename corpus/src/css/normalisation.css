@@ -9,9 +9,9 @@ a{color:red}
 .d { color:red     /* many spaces before this trailing comment */ }
 .e{font-size:1rem!important}
 
-/* empty rule, already expanded */
-.empty {
-}
+/* empty rules, including whitespace between anonymous tokens */
+.empty {}
+.spaced-empty { }
 
 .packed{color:red;background:blue;margin:0}
 
