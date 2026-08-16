@@ -512,7 +512,15 @@ def main() -> int:
             f"{family}={count}" for family, count in sorted(counts.items())
         ) or "none"
         package = PACKAGES / f"{name}.json"
-        state = f"{m.gate3} override" if m.gate3 != "default" else "generic default"
+        # The oracle *is* the generic default, so for a language that selects
+        # it there is nothing to compare and the count proves nothing. Say that
+        # rather than print a reassuring number: a check that reports activity
+        # while testing nothing is the shape of defect this arm exists to fix.
+        state = (
+            f"{m.gate3} override"
+            if m.gate3 != "default"
+            else "generic default -- arm inert, nothing to compare against"
+        )
         if not package.is_file():
             state += "; package pending, not scored"
         print(f"  adversarial {name}: {total} useful mutation(s) "
