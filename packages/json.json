@@ -7,6 +7,16 @@
   "optional_parens": [],
   "precedence": {},
 
+  "defs": {
+    "fitting_array": [
+      "group",
+      ["tok", "["],
+      ["indent", ["soft"], ["$", 0]],
+      ["soft"],
+      ["tok", "]"]
+    ]
+  },
+
   "rules": {
     "document": ["child", "named"],
 
@@ -32,15 +42,30 @@
       ["count", "named", 0],
       ["seq", ["tok", "["], ["tok", "]"]],
       [
-        "group",
-        ["tok", "["],
+        "when",
+        ["all", "named", ["number"]],
+        ["use", "fitting_array", ["fill", "named", ["seq", ["tok", ","], ["line"]]]],
         [
-          "indent",
-          ["soft"],
-          ["each", "named", ["seq", ["tok", ","], ["line"]]]
-        ],
-        ["soft"],
-        ["tok", "]"]
+          "when",
+          ["all", "named", ["array", "object"]],
+          [
+            "when",
+            ["count", "named", 1],
+            ["use", "fitting_array", ["each", "named", ["seq", ["tok", ","], ["line"]]]],
+            [
+              "seq",
+              ["tok", "["],
+              [
+                "indent",
+                ["hard"],
+                ["each", "named", ["seq", ["tok", ","], ["hard"]]]
+              ],
+              ["hard"],
+              ["tok", "]"]
+            ]
+          ],
+          ["use", "fitting_array", ["each", "named", ["seq", ["tok", ","], ["line"]]]]
+        ]
       ]
     ],
 
