@@ -665,19 +665,22 @@ test("blank keeps the exact gap after a declared leaf spelling", () => {
   assert.equal(runOn(pkg, eofSource, eofRoot, 80), eofSource);
 });
 
-test("descendant-count can dispatch on a wrapped construct", () => {
+test("child-count can dispatch on a field's wrapped construct", () => {
   const pkg = {
     format: "et-doc-rules/1",
     indent: 2,
     rules: {
-      file: ["when", ["descendant-count", "t:block_scalar", 1], ["child", "named"], []],
+      file: [
+        "when", ["child-count", "f:value", "t:block_scalar", 1],
+        ["child", "named"], [],
+      ],
       wrapper: ["verbatim"],
     },
   };
   const root = {
     type: "file", start: 0, end: 1,
     children: [{
-      type: "wrapper", start: 0, end: 1,
+      type: "wrapper", field: "value", start: 0, end: 1,
       children: [{
         type: "block_scalar", start: 0, end: 1,
         children: [{ type: "|", start: 0, end: 1, text: "|" }],

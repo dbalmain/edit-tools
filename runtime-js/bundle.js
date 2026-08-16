@@ -140,11 +140,15 @@ function validatePredicate(value) {
   if (!Array.isArray(value)) {
     throw new Refusal(`predicate must be an array, got ${JSON.stringify(value)}`);
   }
-  if (value.length !== 3 || !["count", "descendant-count"].includes(value[0])) {
+  const valid =
+    (value[0] === "count" && value.length === 3) ||
+    (value[0] === "child-count" && value.length === 4);
+  if (!valid) {
     throw new Refusal(`unknown predicate ${JSON.stringify(value)}`);
   }
   parseSelector(value[1]);
-  count(value[2]);
+  if (value[0] === "child-count") parseSelector(value[2]);
+  count(value.at(-1));
 }
 
 function validateExpr(value) {
@@ -586,15 +590,6 @@ function selectorMatches(fmt, node, sel) {
   return true;
 }
 
-function descendantTally(fmt, node, sel) {
-  let count = 0;
-  for (const child of node.children ?? []) {
-    if (selectorMatches(fmt, child, sel)) count++;
-    count += descendantTally(fmt, child, sel);
-  }
-  return count;
-}
-
 function parseSelector(raw) {
   if (typeof raw !== "string") throw new Refusal(`selector must be a string, got ${raw}`);
   if (raw.startsWith("f:")) return { field: raw.slice(2) };
@@ -744,10 +739,19 @@ class Ctx {
 
   test(pred) {
     if (!Array.isArray(pred)) throw new Refusal(`predicate must be an array, got ${pred}`);
-    const [op, raw, n] = pred;
-    if (op === "count") return this.tally(parseSelector(raw)) === n;
-    if (op === "descendant-count") {
-      return descendantTally(this.fmt, this.node, parseSelector(raw)) === n;
+    const [op, raw, childRaw, childN] = pred;
+    if (op === "count") return this.tally(parseSelector(raw)) === childRaw;
+    if (op === "child-count") {
+      const parent = parseSelector(raw);
+      const child = parseSelector(childRaw);
+      let count = 0;
+      for (const item of this.items) {
+        if (!selectorMatches(this.fmt, item.node, parent)) continue;
+        for (const node of item.node.children ?? []) {
+          if (selectorMatches(this.fmt, node, child)) count++;
+        }
+      }
+      return count === childN;
     }
     throw new Refusal(`unknown predicate \`${op}\``);
   }

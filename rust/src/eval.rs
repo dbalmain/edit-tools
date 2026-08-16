@@ -479,7 +479,7 @@ impl<'a> Ctx<'a> {
     fn test(&self, pred: &Pred, pkg: &Package) -> bool {
         match pred {
             Pred::Count(sel, n) => self.tally(sel, pkg) == *n,
-            Pred::DescendantCount(sel, n) => descendant_tally(self.node, sel, pkg) == *n,
+            Pred::ChildCount(parent, child, n) => self.child_tally(parent, child, pkg) == *n,
         }
     }
 
@@ -487,6 +487,15 @@ impl<'a> Ctx<'a> {
     fn tally(&self, sel: &Sel, pkg: &Package) -> usize {
         (0..self.items.len())
             .filter(|&i| self.matches(i, sel, pkg))
+            .count()
+    }
+
+    fn child_tally(&self, parent: &Sel, child: &Sel, pkg: &Package) -> usize {
+        self.items
+            .iter()
+            .filter(|item| node_matches(item.node, parent, pkg))
+            .flat_map(|item| &item.node.children)
+            .filter(|node| node_matches(node, child, pkg))
             .count()
     }
 
@@ -560,20 +569,13 @@ fn contains_leaf_text(node: &Node, spellings: &[String]) -> bool {
             .any(|child| contains_leaf_text(child, spellings))
 }
 
-fn descendant_tally(node: &Node, sel: &Sel, pkg: &Package) -> usize {
-    fn matches(node: &Node, sel: &Sel, pkg: &Package) -> bool {
-        match sel {
-            Sel::Field(name) => node.field.as_deref() == Some(name.as_str()),
-            Sel::Type(kind) => node.kind == *kind,
-            Sel::Named => !pkg.is_token(&node.kind),
-            Sel::Any => true,
-        }
+fn node_matches(node: &Node, sel: &Sel, pkg: &Package) -> bool {
+    match sel {
+        Sel::Field(name) => node.field.as_deref() == Some(name.as_str()),
+        Sel::Type(kind) => node.kind == *kind,
+        Sel::Named => !pkg.is_token(&node.kind),
+        Sel::Any => true,
     }
-
-    node.children
-        .iter()
-        .map(|child| usize::from(matches(child, sel, pkg)) + descendant_tally(child, sel, pkg))
-        .sum()
 }
 
 fn tightness(pkg: &Package, node: &Node) -> i64 {
@@ -1518,13 +1520,13 @@ try {{
     }
 
     #[test]
-    fn descendant_count_can_dispatch_on_a_wrapped_construct() {
+    fn child_count_can_dispatch_on_a_fields_wrapped_construct() {
         let pkg = one(serde_json::from_value(json!({
             "format": "et-doc-rules/1",
             "indent": 2,
             "rules": {
                 "file": [
-                    "when", ["descendant-count", "t:block_scalar", 1],
+                    "when", ["child-count", "f:value", "t:block_scalar", 1],
                     ["child", "named"], []
                 ],
                 "wrapper": ["verbatim"]
@@ -1534,7 +1536,7 @@ try {{
         let root = json!({
             "type": "file", "start": 0, "end": 1,
             "children": [{
-                "type": "wrapper", "start": 0, "end": 1,
+                "type": "wrapper", "field": "value", "start": 0, "end": 1,
                 "children": [{
                     "type": "block_scalar", "start": 0, "end": 1,
                     "children": [

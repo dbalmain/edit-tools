@@ -425,7 +425,7 @@ pub enum Sel {
 #[derive(Debug)]
 pub enum Pred {
     Count(Sel, usize),
-    DescendantCount(Sel, usize),
+    ChildCount(Sel, Sel, usize),
 }
 
 /// One expression of the package language. Eighteen opcodes; see DESIGN.md.
@@ -595,9 +595,10 @@ fn predicate(value: &Value) -> Result<Pred, String> {
         Some("count") if parts.len() == 3 => {
             Ok(Pred::Count(selector(&parts[1])?, count(&parts[2])?))
         }
-        Some("descendant-count") if parts.len() == 3 => Ok(Pred::DescendantCount(
+        Some("child-count") if parts.len() == 4 => Ok(Pred::ChildCount(
             selector(&parts[1])?,
-            count(&parts[2])?,
+            selector(&parts[2])?,
+            count(&parts[3])?,
         )),
         _ => Err(format!("unknown predicate {value}")),
     }

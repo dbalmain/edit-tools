@@ -104,11 +104,12 @@ Every opcode that emits a child **consumes** it. See _linearity_ below.
 
 Selectors pick a child: `"f:name"` (tree-sitter field), `"t:identifier"` (node
 type), `"named"` (any type not listed in the package's `tokens`), `"*"`. The
-direct-child predicate is `["count", sel, n]`; `["descendant-count", sel, n]`
-applies the same selector recursively. Both describe the node, not the cursor.
-YAML uses the latter to distinguish a `block_node` containing a block scalar
-from the same wrapper containing a nested mapping or sequence, without making
-rule selection depend on comment decoration.
+direct-child predicate is `["count", sel, n]`;
+`["child-count", parent-sel, child-sel, n]` counts the direct children of the
+selected child. Both describe the node, not the cursor. YAML uses the latter to
+distinguish a value `block_node` whose direct child is a block scalar from the
+same wrapper around a nested mapping or sequence, without making rule selection
+depend on comment decoration.
 
 ### The package header
 

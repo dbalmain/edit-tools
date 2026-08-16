@@ -100,8 +100,13 @@
         "f:value",
         [
           "when",
-          ["descendant-count", "t:block_scalar", 1],
-          ["seq", ["sp"], ["child", "f:value"]],
+          ["child-count", "f:value", "t:block_scalar", 1],
+          [
+            "when",
+            ["child-count", "f:value", "t:tag", 0],
+            ["seq", ["sp"], ["child", "f:value"]],
+            ["indent", ["hard"], ["child", "f:value"]]
+          ],
           [
             "when",
             ["count", "t:block_node", 1],
