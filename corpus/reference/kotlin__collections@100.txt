@@ -1,0 +1,18 @@
+// listOf / mapOf / destructuring, and COMPLETE trailing-comma policy.
+
+fun demo(pair: Pair<Int, String>) {
+    val short = listOf(1, 2, 3) // stays flat
+    val dropped = listOf(1, 2, 3) // trailing comma on a fitting list is removed
+    val xs =
+        listOf(
+            1,
+            2,
+            3,
+        ) // already broken: COMPLETE adds the trailing commas
+    val config = mapOf("host" to "localhost", "port" to 8080, "debug" to true)
+    val (id, name) = pair // destructuring
+    val built = buildList {
+        add(id)
+        add(name.length)
+    }
+}

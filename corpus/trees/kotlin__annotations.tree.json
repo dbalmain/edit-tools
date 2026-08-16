@@ -1,0 +1,897 @@
+{
+ "language": "kotlin",
+ "source_file": "corpus/src/kotlin/annotations.kt",
+ "source": "// Stacked annotations and use-site targets. Written on one line so the\n// grammar attaches them as modifiers; own-line stacks parse as siblings.\n\n@JvmStatic @Throws(IOException::class) fun demo(@param:Min(0) count:Int) {} // stacked + use-site\n\n@Deprecated(\"use other\",ReplaceWith(\"other()\")) fun old():String=\"gone\"\n\nclass Holder(@get:JvmName(\"readValue\") val value:Int)\n\nannotation class Min(val n:Int)\n",
+ "root": {
+  "type": "source_file",
+  "start": 0,
+  "end": 406,
+  "children": [
+   {
+    "type": "line_comment",
+    "start": 0,
+    "end": 71,
+    "text": "// Stacked annotations and use-site targets. Written on one line so the"
+   },
+   {
+    "type": "line_comment",
+    "start": 72,
+    "end": 145,
+    "text": "// grammar attaches them as modifiers; own-line stacks parse as siblings."
+   },
+   {
+    "type": "function_declaration",
+    "start": 147,
+    "end": 222,
+    "children": [
+     {
+      "type": "modifiers",
+      "start": 147,
+      "end": 185,
+      "children": [
+       {
+        "type": "annotation",
+        "start": 147,
+        "end": 157,
+        "children": [
+         {
+          "type": "@",
+          "start": 147,
+          "end": 148,
+          "text": "@"
+         },
+         {
+          "type": "user_type",
+          "start": 148,
+          "end": 157,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 148,
+            "end": 157,
+            "text": "JvmStatic"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "annotation",
+        "start": 158,
+        "end": 185,
+        "children": [
+         {
+          "type": "@",
+          "start": 158,
+          "end": 159,
+          "text": "@"
+         },
+         {
+          "type": "constructor_invocation",
+          "start": 159,
+          "end": 185,
+          "children": [
+           {
+            "type": "user_type",
+            "start": 159,
+            "end": 165,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 159,
+              "end": 165,
+              "text": "Throws"
+             }
+            ]
+           },
+           {
+            "type": "value_arguments",
+            "start": 165,
+            "end": 185,
+            "children": [
+             {
+              "type": "(",
+              "start": 165,
+              "end": 166,
+              "text": "("
+             },
+             {
+              "type": "value_argument",
+              "start": 166,
+              "end": 184,
+              "children": [
+               {
+                "type": "navigation_expression",
+                "start": 166,
+                "end": 184,
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 166,
+                  "end": 177,
+                  "text": "IOException"
+                 },
+                 {
+                  "type": "::",
+                  "start": 177,
+                  "end": 179,
+                  "text": "::"
+                 },
+                 {
+                  "type": "identifier",
+                  "start": 179,
+                  "end": 184,
+                  "text": "class"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ")",
+              "start": 184,
+              "end": 185,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "fun",
+      "start": 186,
+      "end": 189,
+      "text": "fun"
+     },
+     {
+      "type": "identifier",
+      "start": 190,
+      "end": 194,
+      "field": "name",
+      "text": "demo"
+     },
+     {
+      "type": "function_value_parameters",
+      "start": 194,
+      "end": 219,
+      "children": [
+       {
+        "type": "(",
+        "start": 194,
+        "end": 195,
+        "text": "("
+       },
+       {
+        "type": "parameter_modifiers",
+        "start": 195,
+        "end": 208,
+        "children": [
+         {
+          "type": "annotation",
+          "start": 195,
+          "end": 208,
+          "children": [
+           {
+            "type": "@",
+            "start": 195,
+            "end": 196,
+            "text": "@"
+           },
+           {
+            "type": "use_site_target",
+            "start": 196,
+            "end": 202,
+            "children": [
+             {
+              "type": "param",
+              "start": 196,
+              "end": 201,
+              "text": "param"
+             },
+             {
+              "type": ":",
+              "start": 201,
+              "end": 202,
+              "text": ":"
+             }
+            ]
+           },
+           {
+            "type": "constructor_invocation",
+            "start": 202,
+            "end": 208,
+            "children": [
+             {
+              "type": "user_type",
+              "start": 202,
+              "end": 205,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 202,
+                "end": 205,
+                "text": "Min"
+               }
+              ]
+             },
+             {
+              "type": "value_arguments",
+              "start": 205,
+              "end": 208,
+              "children": [
+               {
+                "type": "(",
+                "start": 205,
+                "end": 206,
+                "text": "("
+               },
+               {
+                "type": "value_argument",
+                "start": 206,
+                "end": 207,
+                "children": [
+                 {
+                  "type": "number_literal",
+                  "start": 206,
+                  "end": 207,
+                  "text": "0"
+                 }
+                ]
+               },
+               {
+                "type": ")",
+                "start": 207,
+                "end": 208,
+                "text": ")"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "parameter",
+        "start": 209,
+        "end": 218,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 209,
+          "end": 214,
+          "text": "count"
+         },
+         {
+          "type": ":",
+          "start": 214,
+          "end": 215,
+          "text": ":"
+         },
+         {
+          "type": "user_type",
+          "start": 215,
+          "end": 218,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 215,
+            "end": 218,
+            "text": "Int"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ")",
+        "start": 218,
+        "end": 219,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "function_body",
+      "start": 220,
+      "end": 222,
+      "children": [
+       {
+        "type": "block",
+        "start": 220,
+        "end": 222,
+        "children": [
+         {
+          "type": "{",
+          "start": 220,
+          "end": 221,
+          "text": "{"
+         },
+         {
+          "type": "}",
+          "start": 221,
+          "end": 222,
+          "text": "}"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "line_comment",
+    "start": 223,
+    "end": 244,
+    "text": "// stacked + use-site"
+   },
+   {
+    "type": "function_declaration",
+    "start": 246,
+    "end": 317,
+    "children": [
+     {
+      "type": "modifiers",
+      "start": 246,
+      "end": 293,
+      "children": [
+       {
+        "type": "annotation",
+        "start": 246,
+        "end": 293,
+        "children": [
+         {
+          "type": "@",
+          "start": 246,
+          "end": 247,
+          "text": "@"
+         },
+         {
+          "type": "constructor_invocation",
+          "start": 247,
+          "end": 293,
+          "children": [
+           {
+            "type": "user_type",
+            "start": 247,
+            "end": 257,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 247,
+              "end": 257,
+              "text": "Deprecated"
+             }
+            ]
+           },
+           {
+            "type": "value_arguments",
+            "start": 257,
+            "end": 293,
+            "children": [
+             {
+              "type": "(",
+              "start": 257,
+              "end": 258,
+              "text": "("
+             },
+             {
+              "type": "value_argument",
+              "start": 258,
+              "end": 269,
+              "children": [
+               {
+                "type": "string_literal",
+                "start": 258,
+                "end": 269,
+                "children": [
+                 {
+                  "type": "\"",
+                  "start": 258,
+                  "end": 259,
+                  "text": "\""
+                 },
+                 {
+                  "type": "string_content",
+                  "start": 259,
+                  "end": 268,
+                  "text": "use other"
+                 },
+                 {
+                  "type": "\"",
+                  "start": 268,
+                  "end": 269,
+                  "text": "\""
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 269,
+              "end": 270,
+              "text": ","
+             },
+             {
+              "type": "value_argument",
+              "start": 270,
+              "end": 292,
+              "children": [
+               {
+                "type": "call_expression",
+                "start": 270,
+                "end": 292,
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 270,
+                  "end": 281,
+                  "text": "ReplaceWith"
+                 },
+                 {
+                  "type": "value_arguments",
+                  "start": 281,
+                  "end": 292,
+                  "children": [
+                   {
+                    "type": "(",
+                    "start": 281,
+                    "end": 282,
+                    "text": "("
+                   },
+                   {
+                    "type": "value_argument",
+                    "start": 282,
+                    "end": 291,
+                    "children": [
+                     {
+                      "type": "string_literal",
+                      "start": 282,
+                      "end": 291,
+                      "children": [
+                       {
+                        "type": "\"",
+                        "start": 282,
+                        "end": 283,
+                        "text": "\""
+                       },
+                       {
+                        "type": "string_content",
+                        "start": 283,
+                        "end": 290,
+                        "text": "other()"
+                       },
+                       {
+                        "type": "\"",
+                        "start": 290,
+                        "end": 291,
+                        "text": "\""
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   {
+                    "type": ")",
+                    "start": 291,
+                    "end": 292,
+                    "text": ")"
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ")",
+              "start": 292,
+              "end": 293,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "fun",
+      "start": 294,
+      "end": 297,
+      "text": "fun"
+     },
+     {
+      "type": "identifier",
+      "start": 298,
+      "end": 301,
+      "field": "name",
+      "text": "old"
+     },
+     {
+      "type": "function_value_parameters",
+      "start": 301,
+      "end": 303,
+      "children": [
+       {
+        "type": "(",
+        "start": 301,
+        "end": 302,
+        "text": "("
+       },
+       {
+        "type": ")",
+        "start": 302,
+        "end": 303,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": ":",
+      "start": 303,
+      "end": 304,
+      "text": ":"
+     },
+     {
+      "type": "user_type",
+      "start": 304,
+      "end": 310,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 304,
+        "end": 310,
+        "text": "String"
+       }
+      ]
+     },
+     {
+      "type": "function_body",
+      "start": 310,
+      "end": 317,
+      "children": [
+       {
+        "type": "=",
+        "start": 310,
+        "end": 311,
+        "text": "="
+       },
+       {
+        "type": "string_literal",
+        "start": 311,
+        "end": 317,
+        "children": [
+         {
+          "type": "\"",
+          "start": 311,
+          "end": 312,
+          "text": "\""
+         },
+         {
+          "type": "string_content",
+          "start": 312,
+          "end": 316,
+          "text": "gone"
+         },
+         {
+          "type": "\"",
+          "start": 316,
+          "end": 317,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "class_declaration",
+    "start": 319,
+    "end": 372,
+    "children": [
+     {
+      "type": "class",
+      "start": 319,
+      "end": 324,
+      "text": "class"
+     },
+     {
+      "type": "identifier",
+      "start": 325,
+      "end": 331,
+      "field": "name",
+      "text": "Holder"
+     },
+     {
+      "type": "primary_constructor",
+      "start": 331,
+      "end": 372,
+      "children": [
+       {
+        "type": "class_parameters",
+        "start": 331,
+        "end": 372,
+        "children": [
+         {
+          "type": "(",
+          "start": 331,
+          "end": 332,
+          "text": "("
+         },
+         {
+          "type": "class_parameter",
+          "start": 332,
+          "end": 371,
+          "children": [
+           {
+            "type": "modifiers",
+            "start": 332,
+            "end": 357,
+            "children": [
+             {
+              "type": "annotation",
+              "start": 332,
+              "end": 357,
+              "children": [
+               {
+                "type": "@",
+                "start": 332,
+                "end": 333,
+                "text": "@"
+               },
+               {
+                "type": "use_site_target",
+                "start": 333,
+                "end": 337,
+                "children": [
+                 {
+                  "type": "get",
+                  "start": 333,
+                  "end": 336,
+                  "text": "get"
+                 },
+                 {
+                  "type": ":",
+                  "start": 336,
+                  "end": 337,
+                  "text": ":"
+                 }
+                ]
+               },
+               {
+                "type": "constructor_invocation",
+                "start": 337,
+                "end": 357,
+                "children": [
+                 {
+                  "type": "user_type",
+                  "start": 337,
+                  "end": 344,
+                  "children": [
+                   {
+                    "type": "identifier",
+                    "start": 337,
+                    "end": 344,
+                    "text": "JvmName"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "value_arguments",
+                  "start": 344,
+                  "end": 357,
+                  "children": [
+                   {
+                    "type": "(",
+                    "start": 344,
+                    "end": 345,
+                    "text": "("
+                   },
+                   {
+                    "type": "value_argument",
+                    "start": 345,
+                    "end": 356,
+                    "children": [
+                     {
+                      "type": "string_literal",
+                      "start": 345,
+                      "end": 356,
+                      "children": [
+                       {
+                        "type": "\"",
+                        "start": 345,
+                        "end": 346,
+                        "text": "\""
+                       },
+                       {
+                        "type": "string_content",
+                        "start": 346,
+                        "end": 355,
+                        "text": "readValue"
+                       },
+                       {
+                        "type": "\"",
+                        "start": 355,
+                        "end": 356,
+                        "text": "\""
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   {
+                    "type": ")",
+                    "start": 356,
+                    "end": 357,
+                    "text": ")"
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "val",
+            "start": 358,
+            "end": 361,
+            "text": "val"
+           },
+           {
+            "type": "identifier",
+            "start": 362,
+            "end": 367,
+            "text": "value"
+           },
+           {
+            "type": ":",
+            "start": 367,
+            "end": 368,
+            "text": ":"
+           },
+           {
+            "type": "user_type",
+            "start": 368,
+            "end": 371,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 368,
+              "end": 371,
+              "text": "Int"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ")",
+          "start": 371,
+          "end": 372,
+          "text": ")"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "class_declaration",
+    "start": 374,
+    "end": 405,
+    "children": [
+     {
+      "type": "modifiers",
+      "start": 374,
+      "end": 384,
+      "children": [
+       {
+        "type": "class_modifier",
+        "start": 374,
+        "end": 384,
+        "children": [
+         {
+          "type": "annotation",
+          "start": 374,
+          "end": 384,
+          "text": "annotation"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "class",
+      "start": 385,
+      "end": 390,
+      "text": "class"
+     },
+     {
+      "type": "identifier",
+      "start": 391,
+      "end": 394,
+      "field": "name",
+      "text": "Min"
+     },
+     {
+      "type": "primary_constructor",
+      "start": 394,
+      "end": 405,
+      "children": [
+       {
+        "type": "class_parameters",
+        "start": 394,
+        "end": 405,
+        "children": [
+         {
+          "type": "(",
+          "start": 394,
+          "end": 395,
+          "text": "("
+         },
+         {
+          "type": "class_parameter",
+          "start": 395,
+          "end": 404,
+          "children": [
+           {
+            "type": "val",
+            "start": 395,
+            "end": 398,
+            "text": "val"
+           },
+           {
+            "type": "identifier",
+            "start": 399,
+            "end": 400,
+            "text": "n"
+           },
+           {
+            "type": ":",
+            "start": 400,
+            "end": 401,
+            "text": ":"
+           },
+           {
+            "type": "user_type",
+            "start": 401,
+            "end": 404,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 401,
+              "end": 404,
+              "text": "Int"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ")",
+          "start": 404,
+          "end": 405,
+          "text": ")"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

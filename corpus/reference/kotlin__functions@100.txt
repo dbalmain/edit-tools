@@ -1,0 +1,25 @@
+// Named and default arguments, extensions, infix, operator, vararg.
+
+fun build(host: String = "localhost", port: Int = 8080, debug: Boolean = false): String {
+    return "$host:$port" // defaulted
+}
+
+fun String.shout(): String = this.uppercase() // extension
+
+infix fun Int.times(word: String): String = word.repeat(this)
+
+operator fun Point.plus(other: Point): Point = Point(x + other.x, y + other.y)
+
+fun join(prefix: String, vararg parts: String): String {
+    return parts.joinToString(prefix = prefix)
+}
+
+fun demo() {
+    val built = build(port = 443, host = "example.com") // named, reordered
+    val yelled = "hi".shout()
+    val repeated = 3 times "na"
+    val summed = Point(1, 2) + Point(3, 4)
+    val joined = join(":", "a", "b", "c")
+}
+
+data class Point(val x: Int, val y: Int)

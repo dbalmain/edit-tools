@@ -1,0 +1,33 @@
+// Containers inside containers. Outer calls must break; inners that fit stay flat.
+
+fun demo() {
+    val nested =
+        listOf(
+            listOf(1, 2, 3),
+            listOf(4, 5, 6),
+            listOf(7, 8, 9),
+            listOf(10, 11, 12),
+            listOf(13, 14, 15),
+            listOf(16, 17, 18),
+        )
+
+    // a child listOf(1, 2, 3) fits with room to spare inside a broken parent
+    val result =
+        processRecords(
+            listOf(1, 2, 3),
+            options = mapOf("timeout" to 30),
+            extra = listOf("alpha", "beta", "gamma", "delta", "epsilon", "zeta", "eta", "theta"),
+        )
+
+    val config =
+        mapOf(
+            "primary" to mapOf("host" to "localhost", "port" to 8080),
+            "replica" to mapOf("host" to "backup", "port" to 8081),
+            "canary" to mapOf("host" to "edge", "port" to 8082),
+        )
+
+    val tree =
+        Node(1, listOf(Node(2, listOf()), Node(3, listOf(Node(4, listOf()), Node(5, listOf())))))
+}
+
+class Node(val value: Int, val children: List<Node>)

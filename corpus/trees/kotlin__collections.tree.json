@@ -1,0 +1,1065 @@
+{
+ "language": "kotlin",
+ "source_file": "corpus/src/kotlin/collections.kt",
+ "source": "// listOf / mapOf / destructuring, and COMPLETE trailing-comma policy.\n\nfun demo(pair: Pair<Int, String>) {\n    val short = listOf(1, 2, 3) // stays flat\n    val dropped = listOf(1, 2, 3,) // trailing comma on a fitting list is removed\n    val xs = listOf(\n        1,\n        2,\n        3,\n    ) // already broken: COMPLETE adds the trailing commas\n    val config = mapOf(\"host\" to \"localhost\", \"port\" to 8080, \"debug\" to true)\n    val (id, name) = pair // destructuring\n    val built = buildList {\n        add(id)\n        add(name.length)\n    }\n}\n",
+ "root": {
+  "type": "source_file",
+  "start": 0,
+  "end": 548,
+  "children": [
+   {
+    "type": "line_comment",
+    "start": 0,
+    "end": 70,
+    "text": "// listOf / mapOf / destructuring, and COMPLETE trailing-comma policy."
+   },
+   {
+    "type": "function_declaration",
+    "start": 72,
+    "end": 547,
+    "children": [
+     {
+      "type": "fun",
+      "start": 72,
+      "end": 75,
+      "text": "fun"
+     },
+     {
+      "type": "identifier",
+      "start": 76,
+      "end": 80,
+      "field": "name",
+      "text": "demo"
+     },
+     {
+      "type": "function_value_parameters",
+      "start": 80,
+      "end": 105,
+      "children": [
+       {
+        "type": "(",
+        "start": 80,
+        "end": 81,
+        "text": "("
+       },
+       {
+        "type": "parameter",
+        "start": 81,
+        "end": 104,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 81,
+          "end": 85,
+          "text": "pair"
+         },
+         {
+          "type": ":",
+          "start": 85,
+          "end": 86,
+          "text": ":"
+         },
+         {
+          "type": "user_type",
+          "start": 87,
+          "end": 104,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 87,
+            "end": 91,
+            "text": "Pair"
+           },
+           {
+            "type": "type_arguments",
+            "start": 91,
+            "end": 104,
+            "children": [
+             {
+              "type": "<",
+              "start": 91,
+              "end": 92,
+              "text": "<"
+             },
+             {
+              "type": "type_projection",
+              "start": 92,
+              "end": 95,
+              "children": [
+               {
+                "type": "user_type",
+                "start": 92,
+                "end": 95,
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 92,
+                  "end": 95,
+                  "text": "Int"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 95,
+              "end": 96,
+              "text": ","
+             },
+             {
+              "type": "type_projection",
+              "start": 97,
+              "end": 103,
+              "children": [
+               {
+                "type": "user_type",
+                "start": 97,
+                "end": 103,
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 97,
+                  "end": 103,
+                  "text": "String"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ">",
+              "start": 103,
+              "end": 104,
+              "text": ">"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ")",
+        "start": 104,
+        "end": 105,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "function_body",
+      "start": 106,
+      "end": 547,
+      "children": [
+       {
+        "type": "block",
+        "start": 106,
+        "end": 547,
+        "children": [
+         {
+          "type": "{",
+          "start": 106,
+          "end": 107,
+          "text": "{"
+         },
+         {
+          "type": "property_declaration",
+          "start": 112,
+          "end": 139,
+          "children": [
+           {
+            "type": "val",
+            "start": 112,
+            "end": 115,
+            "text": "val"
+           },
+           {
+            "type": "variable_declaration",
+            "start": 116,
+            "end": 121,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 116,
+              "end": 121,
+              "text": "short"
+             }
+            ]
+           },
+           {
+            "type": "=",
+            "start": 122,
+            "end": 123,
+            "text": "="
+           },
+           {
+            "type": "call_expression",
+            "start": 124,
+            "end": 139,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 124,
+              "end": 130,
+              "text": "listOf"
+             },
+             {
+              "type": "value_arguments",
+              "start": 130,
+              "end": 139,
+              "children": [
+               {
+                "type": "(",
+                "start": 130,
+                "end": 131,
+                "text": "("
+               },
+               {
+                "type": "value_argument",
+                "start": 131,
+                "end": 132,
+                "children": [
+                 {
+                  "type": "number_literal",
+                  "start": 131,
+                  "end": 132,
+                  "text": "1"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 132,
+                "end": 133,
+                "text": ","
+               },
+               {
+                "type": "value_argument",
+                "start": 134,
+                "end": 135,
+                "children": [
+                 {
+                  "type": "number_literal",
+                  "start": 134,
+                  "end": 135,
+                  "text": "2"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 135,
+                "end": 136,
+                "text": ","
+               },
+               {
+                "type": "value_argument",
+                "start": 137,
+                "end": 138,
+                "children": [
+                 {
+                  "type": "number_literal",
+                  "start": 137,
+                  "end": 138,
+                  "text": "3"
+                 }
+                ]
+               },
+               {
+                "type": ")",
+                "start": 138,
+                "end": 139,
+                "text": ")"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "line_comment",
+          "start": 140,
+          "end": 153,
+          "text": "// stays flat"
+         },
+         {
+          "type": "property_declaration",
+          "start": 158,
+          "end": 188,
+          "children": [
+           {
+            "type": "val",
+            "start": 158,
+            "end": 161,
+            "text": "val"
+           },
+           {
+            "type": "variable_declaration",
+            "start": 162,
+            "end": 169,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 162,
+              "end": 169,
+              "text": "dropped"
+             }
+            ]
+           },
+           {
+            "type": "=",
+            "start": 170,
+            "end": 171,
+            "text": "="
+           },
+           {
+            "type": "call_expression",
+            "start": 172,
+            "end": 188,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 172,
+              "end": 178,
+              "text": "listOf"
+             },
+             {
+              "type": "value_arguments",
+              "start": 178,
+              "end": 188,
+              "children": [
+               {
+                "type": "(",
+                "start": 178,
+                "end": 179,
+                "text": "("
+               },
+               {
+                "type": "value_argument",
+                "start": 179,
+                "end": 180,
+                "children": [
+                 {
+                  "type": "number_literal",
+                  "start": 179,
+                  "end": 180,
+                  "text": "1"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 180,
+                "end": 181,
+                "text": ","
+               },
+               {
+                "type": "value_argument",
+                "start": 182,
+                "end": 183,
+                "children": [
+                 {
+                  "type": "number_literal",
+                  "start": 182,
+                  "end": 183,
+                  "text": "2"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 183,
+                "end": 184,
+                "text": ","
+               },
+               {
+                "type": "value_argument",
+                "start": 185,
+                "end": 186,
+                "children": [
+                 {
+                  "type": "number_literal",
+                  "start": 185,
+                  "end": 186,
+                  "text": "3"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 186,
+                "end": 187,
+                "text": ","
+               },
+               {
+                "type": ")",
+                "start": 187,
+                "end": 188,
+                "text": ")"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "line_comment",
+          "start": 189,
+          "end": 235,
+          "text": "// trailing comma on a fitting list is removed"
+         },
+         {
+          "type": "property_declaration",
+          "start": 240,
+          "end": 295,
+          "children": [
+           {
+            "type": "val",
+            "start": 240,
+            "end": 243,
+            "text": "val"
+           },
+           {
+            "type": "variable_declaration",
+            "start": 244,
+            "end": 246,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 244,
+              "end": 246,
+              "text": "xs"
+             }
+            ]
+           },
+           {
+            "type": "=",
+            "start": 247,
+            "end": 248,
+            "text": "="
+           },
+           {
+            "type": "call_expression",
+            "start": 249,
+            "end": 295,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 249,
+              "end": 255,
+              "text": "listOf"
+             },
+             {
+              "type": "value_arguments",
+              "start": 255,
+              "end": 295,
+              "children": [
+               {
+                "type": "(",
+                "start": 255,
+                "end": 256,
+                "text": "("
+               },
+               {
+                "type": "value_argument",
+                "start": 265,
+                "end": 266,
+                "children": [
+                 {
+                  "type": "number_literal",
+                  "start": 265,
+                  "end": 266,
+                  "text": "1"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 266,
+                "end": 267,
+                "text": ","
+               },
+               {
+                "type": "value_argument",
+                "start": 276,
+                "end": 277,
+                "children": [
+                 {
+                  "type": "number_literal",
+                  "start": 276,
+                  "end": 277,
+                  "text": "2"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 277,
+                "end": 278,
+                "text": ","
+               },
+               {
+                "type": "value_argument",
+                "start": 287,
+                "end": 288,
+                "children": [
+                 {
+                  "type": "number_literal",
+                  "start": 287,
+                  "end": 288,
+                  "text": "3"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 288,
+                "end": 289,
+                "text": ","
+               },
+               {
+                "type": ")",
+                "start": 294,
+                "end": 295,
+                "text": ")"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "line_comment",
+          "start": 296,
+          "end": 348,
+          "text": "// already broken: COMPLETE adds the trailing commas"
+         },
+         {
+          "type": "property_declaration",
+          "start": 353,
+          "end": 427,
+          "children": [
+           {
+            "type": "val",
+            "start": 353,
+            "end": 356,
+            "text": "val"
+           },
+           {
+            "type": "variable_declaration",
+            "start": 357,
+            "end": 363,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 357,
+              "end": 363,
+              "text": "config"
+             }
+            ]
+           },
+           {
+            "type": "=",
+            "start": 364,
+            "end": 365,
+            "text": "="
+           },
+           {
+            "type": "call_expression",
+            "start": 366,
+            "end": 427,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 366,
+              "end": 371,
+              "text": "mapOf"
+             },
+             {
+              "type": "value_arguments",
+              "start": 371,
+              "end": 427,
+              "children": [
+               {
+                "type": "(",
+                "start": 371,
+                "end": 372,
+                "text": "("
+               },
+               {
+                "type": "value_argument",
+                "start": 372,
+                "end": 393,
+                "children": [
+                 {
+                  "type": "infix_expression",
+                  "start": 372,
+                  "end": 393,
+                  "children": [
+                   {
+                    "type": "string_literal",
+                    "start": 372,
+                    "end": 378,
+                    "children": [
+                     {
+                      "type": "\"",
+                      "start": 372,
+                      "end": 373,
+                      "text": "\""
+                     },
+                     {
+                      "type": "string_content",
+                      "start": 373,
+                      "end": 377,
+                      "text": "host"
+                     },
+                     {
+                      "type": "\"",
+                      "start": 377,
+                      "end": 378,
+                      "text": "\""
+                     }
+                    ]
+                   },
+                   {
+                    "type": "identifier",
+                    "start": 379,
+                    "end": 381,
+                    "text": "to"
+                   },
+                   {
+                    "type": "string_literal",
+                    "start": 382,
+                    "end": 393,
+                    "children": [
+                     {
+                      "type": "\"",
+                      "start": 382,
+                      "end": 383,
+                      "text": "\""
+                     },
+                     {
+                      "type": "string_content",
+                      "start": 383,
+                      "end": 392,
+                      "text": "localhost"
+                     },
+                     {
+                      "type": "\"",
+                      "start": 392,
+                      "end": 393,
+                      "text": "\""
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 393,
+                "end": 394,
+                "text": ","
+               },
+               {
+                "type": "value_argument",
+                "start": 395,
+                "end": 409,
+                "children": [
+                 {
+                  "type": "infix_expression",
+                  "start": 395,
+                  "end": 409,
+                  "children": [
+                   {
+                    "type": "string_literal",
+                    "start": 395,
+                    "end": 401,
+                    "children": [
+                     {
+                      "type": "\"",
+                      "start": 395,
+                      "end": 396,
+                      "text": "\""
+                     },
+                     {
+                      "type": "string_content",
+                      "start": 396,
+                      "end": 400,
+                      "text": "port"
+                     },
+                     {
+                      "type": "\"",
+                      "start": 400,
+                      "end": 401,
+                      "text": "\""
+                     }
+                    ]
+                   },
+                   {
+                    "type": "identifier",
+                    "start": 402,
+                    "end": 404,
+                    "text": "to"
+                   },
+                   {
+                    "type": "number_literal",
+                    "start": 405,
+                    "end": 409,
+                    "text": "8080"
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 409,
+                "end": 410,
+                "text": ","
+               },
+               {
+                "type": "value_argument",
+                "start": 411,
+                "end": 426,
+                "children": [
+                 {
+                  "type": "infix_expression",
+                  "start": 411,
+                  "end": 426,
+                  "children": [
+                   {
+                    "type": "string_literal",
+                    "start": 411,
+                    "end": 418,
+                    "children": [
+                     {
+                      "type": "\"",
+                      "start": 411,
+                      "end": 412,
+                      "text": "\""
+                     },
+                     {
+                      "type": "string_content",
+                      "start": 412,
+                      "end": 417,
+                      "text": "debug"
+                     },
+                     {
+                      "type": "\"",
+                      "start": 417,
+                      "end": 418,
+                      "text": "\""
+                     }
+                    ]
+                   },
+                   {
+                    "type": "identifier",
+                    "start": 419,
+                    "end": 421,
+                    "text": "to"
+                   },
+                   {
+                    "type": "identifier",
+                    "start": 422,
+                    "end": 426,
+                    "text": "true"
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": ")",
+                "start": 426,
+                "end": 427,
+                "text": ")"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "property_declaration",
+          "start": 432,
+          "end": 453,
+          "children": [
+           {
+            "type": "val",
+            "start": 432,
+            "end": 435,
+            "text": "val"
+           },
+           {
+            "type": "multi_variable_declaration",
+            "start": 436,
+            "end": 446,
+            "children": [
+             {
+              "type": "(",
+              "start": 436,
+              "end": 437,
+              "text": "("
+             },
+             {
+              "type": "variable_declaration",
+              "start": 437,
+              "end": 439,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 437,
+                "end": 439,
+                "text": "id"
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 439,
+              "end": 440,
+              "text": ","
+             },
+             {
+              "type": "variable_declaration",
+              "start": 441,
+              "end": 445,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 441,
+                "end": 445,
+                "text": "name"
+               }
+              ]
+             },
+             {
+              "type": ")",
+              "start": 445,
+              "end": 446,
+              "text": ")"
+             }
+            ]
+           },
+           {
+            "type": "=",
+            "start": 447,
+            "end": 448,
+            "text": "="
+           },
+           {
+            "type": "identifier",
+            "start": 449,
+            "end": 453,
+            "text": "pair"
+           }
+          ]
+         },
+         {
+          "type": "line_comment",
+          "start": 454,
+          "end": 470,
+          "text": "// destructuring"
+         },
+         {
+          "type": "property_declaration",
+          "start": 475,
+          "end": 545,
+          "children": [
+           {
+            "type": "val",
+            "start": 475,
+            "end": 478,
+            "text": "val"
+           },
+           {
+            "type": "variable_declaration",
+            "start": 479,
+            "end": 484,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 479,
+              "end": 484,
+              "text": "built"
+             }
+            ]
+           },
+           {
+            "type": "=",
+            "start": 485,
+            "end": 486,
+            "text": "="
+           },
+           {
+            "type": "call_expression",
+            "start": 487,
+            "end": 545,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 487,
+              "end": 496,
+              "text": "buildList"
+             },
+             {
+              "type": "annotated_lambda",
+              "start": 497,
+              "end": 545,
+              "children": [
+               {
+                "type": "lambda_literal",
+                "start": 497,
+                "end": 545,
+                "children": [
+                 {
+                  "type": "{",
+                  "start": 497,
+                  "end": 498,
+                  "text": "{"
+                 },
+                 {
+                  "type": "call_expression",
+                  "start": 507,
+                  "end": 514,
+                  "children": [
+                   {
+                    "type": "identifier",
+                    "start": 507,
+                    "end": 510,
+                    "text": "add"
+                   },
+                   {
+                    "type": "value_arguments",
+                    "start": 510,
+                    "end": 514,
+                    "children": [
+                     {
+                      "type": "(",
+                      "start": 510,
+                      "end": 511,
+                      "text": "("
+                     },
+                     {
+                      "type": "value_argument",
+                      "start": 511,
+                      "end": 513,
+                      "children": [
+                       {
+                        "type": "identifier",
+                        "start": 511,
+                        "end": 513,
+                        "text": "id"
+                       }
+                      ]
+                     },
+                     {
+                      "type": ")",
+                      "start": 513,
+                      "end": 514,
+                      "text": ")"
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 {
+                  "type": "call_expression",
+                  "start": 523,
+                  "end": 539,
+                  "children": [
+                   {
+                    "type": "identifier",
+                    "start": 523,
+                    "end": 526,
+                    "text": "add"
+                   },
+                   {
+                    "type": "value_arguments",
+                    "start": 526,
+                    "end": 539,
+                    "children": [
+                     {
+                      "type": "(",
+                      "start": 526,
+                      "end": 527,
+                      "text": "("
+                     },
+                     {
+                      "type": "value_argument",
+                      "start": 527,
+                      "end": 538,
+                      "children": [
+                       {
+                        "type": "navigation_expression",
+                        "start": 527,
+                        "end": 538,
+                        "children": [
+                         {
+                          "type": "identifier",
+                          "start": 527,
+                          "end": 531,
+                          "text": "name"
+                         },
+                         {
+                          "type": ".",
+                          "start": 531,
+                          "end": 532,
+                          "text": "."
+                         },
+                         {
+                          "type": "identifier",
+                          "start": 532,
+                          "end": 538,
+                          "text": "length"
+                         }
+                        ]
+                       }
+                      ]
+                     },
+                     {
+                      "type": ")",
+                      "start": 538,
+                      "end": 539,
+                      "text": ")"
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 {
+                  "type": "}",
+                  "start": 544,
+                  "end": 545,
+                  "text": "}"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "}",
+          "start": 546,
+          "end": 547,
+          "text": "}"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}
