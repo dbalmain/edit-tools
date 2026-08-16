@@ -110,9 +110,56 @@ diverge permanently — but it does mean the global-cost feature buys one langua
 most of its value, and the register should say so rather than implying every
 aligning reference pays equally.
 
-**Decide when:** now, in principle — Go's stage C should be started with the
-answer known, because a package written as if alignment might arrive later looks
-different from one written to concede it.
+### The spike answered it, and the answer is not the one this entry framed
+
+Built on `spike/alignment` (2026-08-17), measured rather than argued. **The
+recommendation is to decline this entry as an IR capability and handle Go as a
+named exception.** Awaiting Dave.
+
+**What it buys:** Go **6/16 → 12/16**. All six alignment files agree —
+`alignment`, `iota`, `kitchen`, `nesting`, `strings`, `structs`. That is Go's
+ceiling; the remaining four are entries 2 and 10 and have nothing to do with
+alignment. Every other language is **byte-identical**, verified by re-scoring
+with the mode removed from `packages/go.json` as the baseline rather than
+assuming opt-in meant inert.
+
+**What it costs:** runtime **10,680 → 13,307 B, +2,627 B**. The floor is about
+2,400 B — measured, not guessed: deleting two of the three quote-aware scanners
+outright saves only 255 gzip bytes, because gzip already deduplicates
+near-identical text. That is **13% of the 20 KB budget for one language**, with
+nine still to onboard.
+
+**What it did not cost:** the layout algorithm, and this is where the entry was
+wrong. This is not a second pass inside Wadler/Oppen — it is a text post-pass
+that runs after `print()` returns and never touches the printer. The JS mirror
+was also *cheap*, which contradicts the standing assumption that parity is the
+expensive part: the pass is pure `String → String` with no shared types, no IR
+and no evaluator state, so it transliterates mechanically. Gate 1 was green
+first try. Idempotence holds by construction — the pass re-splits on
+whitespace, discarding prior padding — and was confirmed on all 4,816 GOROOT
+files.
+
+### Why "no cheap middle, so build the real thing" pointed at the wrong thing
+
+**The hard part is where the columns start and stop, not how wide they are.**
+Half the work was reproducing policy that has nothing to do with widths:
+`keepTypeColumn`, `DiscardEmptyColumns`, formfeed placement, `extraTabs`, and
+the rule that a row with *fewer cells terminates the column* so the rows below
+start a fresh one — `err error` with no comment splits the comment column in
+two; an embedded field splits the type column. Read out of `go/printer/nodes.go`
+and `text/tabwriter`, not inferred.
+
+A general `column` opcode in the IR would have landed at roughly the first row
+of the table below and stopped. The rejected cheap partial and the general
+feature fail for the *same* reason, which is why this entry's binary framing was
+misleading: it offered "build the real thing" as the safe answer, and the real
+thing would not have worked either.
+
+**Decide when:** now. Recommendation on the table: build the narrow, opt-in,
+explicitly Go-specific post-pass; **decline** sibling-width alignment as an IR
+capability; and refuse the same trade for the second language that asks. TOML's
+three comment-column divergences and Rust's two stay accepted — at ~2,400 B per
+language-specific mode, the second is unaffordable and the third absurd.
 
 ## 2. Ancestor break context
 
@@ -924,6 +971,63 @@ comparison; the general case is a different and much larger decision that only
 
 **Decide when:** (a) with `fill` (entry 8), which touches the same fit
 machinery. (b) when a second language wants it.
+## 16. A 16-file corpus cannot see a 14%-of-the-world bug
+
+**Status:** open, **methodological** · **Cost:** a harness gate ·
+**Languages:** Go, but the lesson is not language-specific
+
+This came out of the alignment spike and it is about **this register's own
+evidence**, so it outranks most of what is above it.
+
+The spike built a fixpoint probe: feed **4,814 gofmt-clean non-test GOROOT
+files** through the alignment pass alone. Because the input is already gofmt
+output, *any* change is a disagreement with gofmt — no false positives, no
+judgement calls.
+
+| version                                                          | real files mangled  |
+| ---------------------------------------------------------------- | ------------------- |
+| first working cut                                                | **682 / 4814 = 14.17%** |
+| + real tabwriter column blocks, merged name lists                | 205 = 4.26%         |
+| + go/printer cell model, `keepTypeColumn`, `DiscardEmptyColumns`  | 67 = 1.39%          |
+| + block comments, `}{` closers, tag/comment slot                 | 49 = 1.02%          |
+| + continuation lines are not siblings                            | **10 = 0.21%**      |
+
+> **All 16 Go corpus files are clean at every single row of that table.** The
+> version that mangles one real Go file in seven scores exactly the same
+> **12/16** as the final one.
+
+The corpus is not bad — it was reviewed twice and it is the reason six alignment
+divergences were found and priced at all. It simply cannot see this *class* of
+bug, because a hand-written 16-file corpus has no way to contain the long tail
+of shapes that a language's real code contains.
+
+### What this does and does not undermine
+
+It does **not** undermine agreement as a measure of *whether a capability is
+needed*. Six files diverging on alignment is a real signal and it was right.
+
+It **does** undermine agreement as a measure of *whether an implementation is
+correct*. Those are different questions and this exercise has been using one
+number for both.
+
+### The fix, and why it should be a gate
+
+A fixpoint probe is cheap and unusually sharp: take a large sample of files the
+reference has already formatted, run our formatter, and diff. Idempotence of the
+reference makes every difference a real defect. It needs no hand-written
+expectations and no review.
+
+The spike's probe was a throwaway script in `/tmp`. Shipping the Go post-pass
+properly means committing it as a **harness check with a vendored sample**,
+because the corpus provably cannot replace it.
+
+Worth asking whether every language should have one. Most references are
+idempotent, and most languages have a large corpus lying around —
+`node_modules` for prettier languages, the standard library for Go and Python.
+The cost is repository weight and runtime, not design.
+
+**Decide when:** with the alignment decision, since the Go probe is the first
+instance and the two ship together.
 ---
 
 ## Closed
