@@ -195,17 +195,10 @@ function validateExpr(value) {
       if (rest.length === 2) nodeTypes(rest[1]);
       return;
     case "each":
+    case "opt":
       arity(2);
       parseSelector(rest[0]);
       validateExpr(rest[1]);
-      return;
-    case "opt":
-      if (rest.length !== 2 && rest.length !== 3) {
-        throw new Refusal(`\`opt\` takes 2 or 3 operands, got ${rest.length}`);
-      }
-      parseSelector(rest[0]);
-      validateExpr(rest[1]);
-      if (rest.length === 3) validateExpr(rest[2]);
       return;
     case "flatten":
       arity(2);
@@ -680,8 +673,7 @@ class Ctx {
       case "verbatim":
         return this.verbatim();
       case "opt":
-        if (this.matches(this.cursor, parseSelector(rest[0]))) return this.eval(rest[1]);
-        return rest.length === 3 ? this.eval(rest[2]) : nil;
+        return this.matches(this.cursor, parseSelector(rest[0])) ? this.eval(rest[1]) : nil;
       case "trail":
         return this.trail(rest[0], parseSelector(rest[1]));
       case "paren":

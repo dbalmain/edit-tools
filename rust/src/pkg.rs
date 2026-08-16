@@ -442,10 +442,7 @@ pub enum Expr {
     Each(Sel, Box<Expr>),
     Tok(String),
     Verbatim,
-    /// `["opt", sel, then]` or `["opt", sel, then, else]`. The else branch is
-    /// how a separator can be "comma and a break, or a space" — CSS value
-    /// lists mix the two under one parent.
-    Opt(Sel, Box<Expr>, Option<Box<Expr>>),
+    Opt(Sel, Box<Expr>),
     Trail(String, Sel),
     Paren(Vec<Expr>),
     AutoParen(Sel),
@@ -522,23 +519,15 @@ impl TryFrom<Value> for Expr {
                 };
                 Ok(Expr::Blank(cap, around))
             }
-            "each" => {
+            "each" | "opt" => {
                 arity(2)?;
                 let sel = selector(&parts[0])?;
-                Ok(Expr::Each(sel, Box::new(Expr::try_from(parts.remove(1))?)))
-            }
-            "opt" => {
-                if parts.len() != 2 && parts.len() != 3 {
-                    return Err(format!("`opt` takes 2 or 3 operands, got {}", parts.len()));
-                }
-                let sel = selector(&parts[0])?;
-                let alt = if parts.len() == 3 {
-                    Some(Box::new(Expr::try_from(parts.remove(2))?))
+                let body = Box::new(Expr::try_from(parts.remove(1))?);
+                Ok(if op == "each" {
+                    Expr::Each(sel, body)
                 } else {
-                    None
-                };
-                let then = Box::new(Expr::try_from(parts.remove(1))?);
-                Ok(Expr::Opt(sel, then, alt))
+                    Expr::Opt(sel, body)
+                })
             }
             "flatten" => {
                 arity(2)?;
