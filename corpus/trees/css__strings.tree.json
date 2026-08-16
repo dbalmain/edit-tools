@@ -1,0 +1,640 @@
+{
+ "language": "css",
+ "source_file": "corpus/src/css/strings.css",
+ "source": "/* Strings, urls, and CSS escapes. None of these wrap. */\n\n.quote {\n  content: \"hello\";\n  content: 'single'; /* prettier double-quotes this */\n  content: 'say \"hi\"';\n  content: \"line\\A break\";\n  content: \"tab\\9 and slash\\\\\";\n  font-family: \"Font With Spaces\";\n  background: url(\"https://example.com/very/long/path/to/an/image.png?query=1&other=2\");\n  background: url(unquoted.png);\n  background: url(\"quoted.png\");\n}\n",
+ "root": {
+  "type": "stylesheet",
+  "start": 0,
+  "end": 417,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 57,
+    "text": "/* Strings, urls, and CSS escapes. None of these wrap. */"
+   },
+   {
+    "type": "rule_set",
+    "start": 59,
+    "end": 416,
+    "children": [
+     {
+      "type": "selectors",
+      "start": 59,
+      "end": 65,
+      "children": [
+       {
+        "type": "class_selector",
+        "start": 59,
+        "end": 65,
+        "children": [
+         {
+          "type": ".",
+          "start": 59,
+          "end": 60,
+          "text": "."
+         },
+         {
+          "type": "class_name",
+          "start": 60,
+          "end": 65,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 60,
+            "end": 65,
+            "text": "quote"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "block",
+      "start": 66,
+      "end": 416,
+      "children": [
+       {
+        "type": "{",
+        "start": 66,
+        "end": 67,
+        "text": "{"
+       },
+       {
+        "type": "declaration",
+        "start": 70,
+        "end": 87,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 70,
+          "end": 77,
+          "text": "content"
+         },
+         {
+          "type": ":",
+          "start": 77,
+          "end": 78,
+          "text": ":"
+         },
+         {
+          "type": "string_value",
+          "start": 79,
+          "end": 86,
+          "children": [
+           {
+            "type": "\"",
+            "start": 79,
+            "end": 80,
+            "text": "\""
+           },
+           {
+            "type": "string_content",
+            "start": 80,
+            "end": 85,
+            "text": "hello"
+           },
+           {
+            "type": "\"",
+            "start": 85,
+            "end": 86,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 86,
+          "end": 87,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "declaration",
+        "start": 90,
+        "end": 108,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 90,
+          "end": 97,
+          "text": "content"
+         },
+         {
+          "type": ":",
+          "start": 97,
+          "end": 98,
+          "text": ":"
+         },
+         {
+          "type": "string_value",
+          "start": 99,
+          "end": 107,
+          "children": [
+           {
+            "type": "'",
+            "start": 99,
+            "end": 100,
+            "text": "'"
+           },
+           {
+            "type": "string_content",
+            "start": 100,
+            "end": 106,
+            "text": "single"
+           },
+           {
+            "type": "'",
+            "start": 106,
+            "end": 107,
+            "text": "'"
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 107,
+          "end": 108,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "comment",
+        "start": 109,
+        "end": 142,
+        "text": "/* prettier double-quotes this */"
+       },
+       {
+        "type": "declaration",
+        "start": 145,
+        "end": 165,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 145,
+          "end": 152,
+          "text": "content"
+         },
+         {
+          "type": ":",
+          "start": 152,
+          "end": 153,
+          "text": ":"
+         },
+         {
+          "type": "string_value",
+          "start": 154,
+          "end": 164,
+          "children": [
+           {
+            "type": "'",
+            "start": 154,
+            "end": 155,
+            "text": "'"
+           },
+           {
+            "type": "string_content",
+            "start": 155,
+            "end": 163,
+            "text": "say \"hi\""
+           },
+           {
+            "type": "'",
+            "start": 163,
+            "end": 164,
+            "text": "'"
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 164,
+          "end": 165,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "declaration",
+        "start": 168,
+        "end": 192,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 168,
+          "end": 175,
+          "text": "content"
+         },
+         {
+          "type": ":",
+          "start": 175,
+          "end": 176,
+          "text": ":"
+         },
+         {
+          "type": "string_value",
+          "start": 177,
+          "end": 191,
+          "children": [
+           {
+            "type": "\"",
+            "start": 177,
+            "end": 178,
+            "text": "\""
+           },
+           {
+            "type": "string_content",
+            "start": 178,
+            "end": 182,
+            "text": "line"
+           },
+           {
+            "type": "escape_sequence",
+            "start": 182,
+            "end": 185,
+            "text": "\\A "
+           },
+           {
+            "type": "string_content",
+            "start": 185,
+            "end": 190,
+            "text": "break"
+           },
+           {
+            "type": "\"",
+            "start": 190,
+            "end": 191,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 191,
+          "end": 192,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "declaration",
+        "start": 195,
+        "end": 224,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 195,
+          "end": 202,
+          "text": "content"
+         },
+         {
+          "type": ":",
+          "start": 202,
+          "end": 203,
+          "text": ":"
+         },
+         {
+          "type": "string_value",
+          "start": 204,
+          "end": 223,
+          "children": [
+           {
+            "type": "\"",
+            "start": 204,
+            "end": 205,
+            "text": "\""
+           },
+           {
+            "type": "string_content",
+            "start": 205,
+            "end": 208,
+            "text": "tab"
+           },
+           {
+            "type": "escape_sequence",
+            "start": 208,
+            "end": 211,
+            "text": "\\9 "
+           },
+           {
+            "type": "string_content",
+            "start": 211,
+            "end": 220,
+            "text": "and slash"
+           },
+           {
+            "type": "escape_sequence",
+            "start": 220,
+            "end": 222,
+            "text": "\\\\"
+           },
+           {
+            "type": "\"",
+            "start": 222,
+            "end": 223,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 223,
+          "end": 224,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "declaration",
+        "start": 227,
+        "end": 259,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 227,
+          "end": 238,
+          "text": "font-family"
+         },
+         {
+          "type": ":",
+          "start": 238,
+          "end": 239,
+          "text": ":"
+         },
+         {
+          "type": "string_value",
+          "start": 240,
+          "end": 258,
+          "children": [
+           {
+            "type": "\"",
+            "start": 240,
+            "end": 241,
+            "text": "\""
+           },
+           {
+            "type": "string_content",
+            "start": 241,
+            "end": 257,
+            "text": "Font With Spaces"
+           },
+           {
+            "type": "\"",
+            "start": 257,
+            "end": 258,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 258,
+          "end": 259,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "declaration",
+        "start": 262,
+        "end": 348,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 262,
+          "end": 272,
+          "text": "background"
+         },
+         {
+          "type": ":",
+          "start": 272,
+          "end": 273,
+          "text": ":"
+         },
+         {
+          "type": "call_expression",
+          "start": 274,
+          "end": 347,
+          "children": [
+           {
+            "type": "function_name",
+            "start": 274,
+            "end": 277,
+            "text": "url"
+           },
+           {
+            "type": "arguments",
+            "start": 277,
+            "end": 347,
+            "children": [
+             {
+              "type": "(",
+              "start": 277,
+              "end": 278,
+              "text": "("
+             },
+             {
+              "type": "string_value",
+              "start": 278,
+              "end": 346,
+              "children": [
+               {
+                "type": "\"",
+                "start": 278,
+                "end": 279,
+                "text": "\""
+               },
+               {
+                "type": "string_content",
+                "start": 279,
+                "end": 345,
+                "text": "https://example.com/very/long/path/to/an/image.png?query=1&other=2"
+               },
+               {
+                "type": "\"",
+                "start": 345,
+                "end": 346,
+                "text": "\""
+               }
+              ]
+             },
+             {
+              "type": ")",
+              "start": 346,
+              "end": 347,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 347,
+          "end": 348,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "declaration",
+        "start": 351,
+        "end": 381,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 351,
+          "end": 361,
+          "text": "background"
+         },
+         {
+          "type": ":",
+          "start": 361,
+          "end": 362,
+          "text": ":"
+         },
+         {
+          "type": "call_expression",
+          "start": 363,
+          "end": 380,
+          "children": [
+           {
+            "type": "function_name",
+            "start": 363,
+            "end": 366,
+            "text": "url"
+           },
+           {
+            "type": "arguments",
+            "start": 366,
+            "end": 380,
+            "children": [
+             {
+              "type": "(",
+              "start": 366,
+              "end": 367,
+              "text": "("
+             },
+             {
+              "type": "plain_value",
+              "start": 367,
+              "end": 379,
+              "text": "unquoted.png"
+             },
+             {
+              "type": ")",
+              "start": 379,
+              "end": 380,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 380,
+          "end": 381,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "declaration",
+        "start": 384,
+        "end": 414,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 384,
+          "end": 394,
+          "text": "background"
+         },
+         {
+          "type": ":",
+          "start": 394,
+          "end": 395,
+          "text": ":"
+         },
+         {
+          "type": "call_expression",
+          "start": 396,
+          "end": 413,
+          "children": [
+           {
+            "type": "function_name",
+            "start": 396,
+            "end": 399,
+            "text": "url"
+           },
+           {
+            "type": "arguments",
+            "start": 399,
+            "end": 413,
+            "children": [
+             {
+              "type": "(",
+              "start": 399,
+              "end": 400,
+              "text": "("
+             },
+             {
+              "type": "string_value",
+              "start": 400,
+              "end": 412,
+              "children": [
+               {
+                "type": "\"",
+                "start": 400,
+                "end": 401,
+                "text": "\""
+               },
+               {
+                "type": "string_content",
+                "start": 401,
+                "end": 411,
+                "text": "quoted.png"
+               },
+               {
+                "type": "\"",
+                "start": 411,
+                "end": 412,
+                "text": "\""
+               }
+              ]
+             },
+             {
+              "type": ")",
+              "start": 412,
+              "end": 413,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 413,
+          "end": 414,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 415,
+        "end": 416,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

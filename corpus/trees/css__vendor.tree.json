@@ -1,0 +1,543 @@
+{
+ "language": "css",
+ "source_file": "corpus/src/css/vendor.css",
+ "source": "/* Vendor-prefixed properties and functions. */\n\n.slide {\n  -webkit-transform: translateX(10px);\n  -moz-transform: translateX(10px);\n  -ms-transform: translateX(10px);\n  transform: translateX(10px);\n  /* prefixed functions wrap at 40 like the rest */\n  background: -webkit-linear-gradient(left, red, blue);\n  background: linear-gradient(to right, red, blue);\n}\n",
+ "root": {
+  "type": "stylesheet",
+  "start": 0,
+  "end": 361,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 47,
+    "text": "/* Vendor-prefixed properties and functions. */"
+   },
+   {
+    "type": "rule_set",
+    "start": 49,
+    "end": 360,
+    "children": [
+     {
+      "type": "selectors",
+      "start": 49,
+      "end": 55,
+      "children": [
+       {
+        "type": "class_selector",
+        "start": 49,
+        "end": 55,
+        "children": [
+         {
+          "type": ".",
+          "start": 49,
+          "end": 50,
+          "text": "."
+         },
+         {
+          "type": "class_name",
+          "start": 50,
+          "end": 55,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 50,
+            "end": 55,
+            "text": "slide"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "block",
+      "start": 56,
+      "end": 360,
+      "children": [
+       {
+        "type": "{",
+        "start": 56,
+        "end": 57,
+        "text": "{"
+       },
+       {
+        "type": "declaration",
+        "start": 60,
+        "end": 96,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 60,
+          "end": 77,
+          "text": "-webkit-transform"
+         },
+         {
+          "type": ":",
+          "start": 77,
+          "end": 78,
+          "text": ":"
+         },
+         {
+          "type": "call_expression",
+          "start": 79,
+          "end": 95,
+          "children": [
+           {
+            "type": "function_name",
+            "start": 79,
+            "end": 89,
+            "text": "translateX"
+           },
+           {
+            "type": "arguments",
+            "start": 89,
+            "end": 95,
+            "children": [
+             {
+              "type": "(",
+              "start": 89,
+              "end": 90,
+              "text": "("
+             },
+             {
+              "type": "integer_value",
+              "start": 90,
+              "end": 94,
+              "children": [
+               {
+                "type": "unit",
+                "start": 92,
+                "end": 94,
+                "text": "px"
+               }
+              ]
+             },
+             {
+              "type": ")",
+              "start": 94,
+              "end": 95,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 95,
+          "end": 96,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "declaration",
+        "start": 99,
+        "end": 132,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 99,
+          "end": 113,
+          "text": "-moz-transform"
+         },
+         {
+          "type": ":",
+          "start": 113,
+          "end": 114,
+          "text": ":"
+         },
+         {
+          "type": "call_expression",
+          "start": 115,
+          "end": 131,
+          "children": [
+           {
+            "type": "function_name",
+            "start": 115,
+            "end": 125,
+            "text": "translateX"
+           },
+           {
+            "type": "arguments",
+            "start": 125,
+            "end": 131,
+            "children": [
+             {
+              "type": "(",
+              "start": 125,
+              "end": 126,
+              "text": "("
+             },
+             {
+              "type": "integer_value",
+              "start": 126,
+              "end": 130,
+              "children": [
+               {
+                "type": "unit",
+                "start": 128,
+                "end": 130,
+                "text": "px"
+               }
+              ]
+             },
+             {
+              "type": ")",
+              "start": 130,
+              "end": 131,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 131,
+          "end": 132,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "declaration",
+        "start": 135,
+        "end": 167,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 135,
+          "end": 148,
+          "text": "-ms-transform"
+         },
+         {
+          "type": ":",
+          "start": 148,
+          "end": 149,
+          "text": ":"
+         },
+         {
+          "type": "call_expression",
+          "start": 150,
+          "end": 166,
+          "children": [
+           {
+            "type": "function_name",
+            "start": 150,
+            "end": 160,
+            "text": "translateX"
+           },
+           {
+            "type": "arguments",
+            "start": 160,
+            "end": 166,
+            "children": [
+             {
+              "type": "(",
+              "start": 160,
+              "end": 161,
+              "text": "("
+             },
+             {
+              "type": "integer_value",
+              "start": 161,
+              "end": 165,
+              "children": [
+               {
+                "type": "unit",
+                "start": 163,
+                "end": 165,
+                "text": "px"
+               }
+              ]
+             },
+             {
+              "type": ")",
+              "start": 165,
+              "end": 166,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 166,
+          "end": 167,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "declaration",
+        "start": 170,
+        "end": 198,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 170,
+          "end": 179,
+          "text": "transform"
+         },
+         {
+          "type": ":",
+          "start": 179,
+          "end": 180,
+          "text": ":"
+         },
+         {
+          "type": "call_expression",
+          "start": 181,
+          "end": 197,
+          "children": [
+           {
+            "type": "function_name",
+            "start": 181,
+            "end": 191,
+            "text": "translateX"
+           },
+           {
+            "type": "arguments",
+            "start": 191,
+            "end": 197,
+            "children": [
+             {
+              "type": "(",
+              "start": 191,
+              "end": 192,
+              "text": "("
+             },
+             {
+              "type": "integer_value",
+              "start": 192,
+              "end": 196,
+              "children": [
+               {
+                "type": "unit",
+                "start": 194,
+                "end": 196,
+                "text": "px"
+               }
+              ]
+             },
+             {
+              "type": ")",
+              "start": 196,
+              "end": 197,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 197,
+          "end": 198,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "comment",
+        "start": 201,
+        "end": 250,
+        "text": "/* prefixed functions wrap at 40 like the rest */"
+       },
+       {
+        "type": "declaration",
+        "start": 253,
+        "end": 306,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 253,
+          "end": 263,
+          "text": "background"
+         },
+         {
+          "type": ":",
+          "start": 263,
+          "end": 264,
+          "text": ":"
+         },
+         {
+          "type": "call_expression",
+          "start": 265,
+          "end": 305,
+          "children": [
+           {
+            "type": "function_name",
+            "start": 265,
+            "end": 288,
+            "text": "-webkit-linear-gradient"
+           },
+           {
+            "type": "arguments",
+            "start": 288,
+            "end": 305,
+            "children": [
+             {
+              "type": "(",
+              "start": 288,
+              "end": 289,
+              "text": "("
+             },
+             {
+              "type": "plain_value",
+              "start": 289,
+              "end": 293,
+              "text": "left"
+             },
+             {
+              "type": ",",
+              "start": 293,
+              "end": 294,
+              "text": ","
+             },
+             {
+              "type": "plain_value",
+              "start": 295,
+              "end": 298,
+              "text": "red"
+             },
+             {
+              "type": ",",
+              "start": 298,
+              "end": 299,
+              "text": ","
+             },
+             {
+              "type": "plain_value",
+              "start": 300,
+              "end": 304,
+              "text": "blue"
+             },
+             {
+              "type": ")",
+              "start": 304,
+              "end": 305,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 305,
+          "end": 306,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "declaration",
+        "start": 309,
+        "end": 358,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 309,
+          "end": 319,
+          "text": "background"
+         },
+         {
+          "type": ":",
+          "start": 319,
+          "end": 320,
+          "text": ":"
+         },
+         {
+          "type": "call_expression",
+          "start": 321,
+          "end": 357,
+          "children": [
+           {
+            "type": "function_name",
+            "start": 321,
+            "end": 336,
+            "text": "linear-gradient"
+           },
+           {
+            "type": "arguments",
+            "start": 336,
+            "end": 357,
+            "children": [
+             {
+              "type": "(",
+              "start": 336,
+              "end": 337,
+              "text": "("
+             },
+             {
+              "type": "plain_value",
+              "start": 337,
+              "end": 339,
+              "text": "to"
+             },
+             {
+              "type": "plain_value",
+              "start": 340,
+              "end": 345,
+              "text": "right"
+             },
+             {
+              "type": ",",
+              "start": 345,
+              "end": 346,
+              "text": ","
+             },
+             {
+              "type": "plain_value",
+              "start": 347,
+              "end": 350,
+              "text": "red"
+             },
+             {
+              "type": ",",
+              "start": 350,
+              "end": 351,
+              "text": ","
+             },
+             {
+              "type": "plain_value",
+              "start": 352,
+              "end": 356,
+              "text": "blue"
+             },
+             {
+              "type": ")",
+              "start": 356,
+              "end": 357,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 357,
+          "end": 358,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 359,
+        "end": 360,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -304,18 +304,144 @@ turns on it. Cheap enough that it does not need a second language to justify it.
 
 ## 7. A rule cannot tell a comment-forced break from a width-forced break
 
-**Status:** open · **Cost:** contextual · **Languages:** YAML
+**Status:** open · **Cost:** contextual · **Languages:** YAML, CSS
 
 prettier uses a **different** flow-collection layout depending on _why_ the
 group broke: a break forced by an interior comment is laid out differently from
 one forced by width. A rule sees only that its group broke.
 
-Reported at YAML stage B and marked as needing stage-C confirmation, so it is
-recorded here as a candidate rather than a finding. If it holds it is a close
-relative of entry 2 — both are the evaluator withholding context from the rule —
-and the two should be costed together rather than separately.
+Reported at YAML stage B as a candidate needing confirmation, and **confirmed at
+CSS stage D**, which hit the same thing independently. It is a close relative of
+entry 2 — both are the evaluator withholding context from the rule — and the two
+should be costed together rather than separately.
 
-**Decide when:** YAML stage C confirms or refutes it.
+**Decide when:** with entry 2, once a third language hits either.
+
+## 8. `fill` — pack as many items per line as fit
+
+**Status:** open, **decision needed** · **Cost:** local · **Languages:** CSS,
+JSON
+
+The IR breaks a group all-or-nothing: every separator breaks, or none does.
+Neither reference does that. prettier packs short items onto a line and wraps to
+the next, and it decides per line rather than per group.
+
+**This is the best-evidenced request in the register, and the cheapest.** It was
+asked for by CSS's stage-C builder, corroborated independently against JSON
+before any reviewer saw it, and then costed at CSS's stage D.
+
+JSON's _only_ outstanding divergence is this gap, and it gets both directions
+wrong at once:
+
+```
+ours                                   prettier
+"matrix": [[1,2,3],[4,5,6],[7,8,9]]    "matrix": [
+                                         [1, 2, 3],
+                                         [4, 5, 6],
+                                         [7, 8, 9]
+                                       ]
+"long_flat_array": [                   "long_flat_array": [
+  100,                                   100, 200, 300, 400, 500, 600,
+  200,                                   700, 800, 900, 1000, 1100, 1200
+  ... one per line ...                 ]
+]
+```
+
+Both lines are one prettier behaviour: fill when the elements are short
+primitives, one-per-line when they are not. Having only all-or-nothing gives us
+each case backwards.
+
+Stage D's costing, which is what makes this decidable:
+
+| Question                        | Answer                                             |
+| ------------------------------- | -------------------------------------------------- |
+| Same construct in CSS and JSON? | Yes — one generalised combinator, no second shape  |
+| Divergences it contributes to   | **13 of 21** (CSS)                                 |
+| Divergences it fully resolves   | **9 of 21** (CSS), and **2 of 2** (JSON)           |
+| Cost on this register's scale   | **local**                                          |
+| Effect on merged packages       | Additive — JSON opts in, TOML and python unchanged |
+
+Local is the important word. It needs a new Doc node and one printer case using
+the width state the runtime already carries: no sibling measurement, no second
+pass, no ancestor state. Wadler/Oppen has a fill combinator already, so this is
+a known quantity rather than a research problem — the exact opposite of entry 1,
+which is global and was just proved to have no cheap partial.
+
+Checked against the other merged languages before recording this, so the
+two-language count is not inflated: python's four divergences are
+operator-precedence breaking, a different gap, and TOML's seven are entries 1, 2
+and 3.
+
+**Decision needed from Dave.** It is the one entry here where the cost is small,
+the benefit is measured, and two languages already want it.
+
+## 9. Comment placement cannot see the surrounding syntax
+
+**Status:** open · **Cost:** contextual · **Languages:** CSS
+
+Comments are runtime-owned trivia. A rule cannot say which neighbour a comment
+belongs to, and prettier decides that from the syntax around it: an own-line
+comment inside a call is glued to the **following** argument, and a comment in a
+selector list pins the list's layout. Our suffix comments flush at the next
+newline instead, so `.lead /* after */ {` becomes `.lead { /* after */`.
+
+Raised at CSS stage B as a candidate and **confirmed at stage D with a package
+to test it against**.
+
+Stage D was explicit that this is **not** entry 1, and the distinction is worth
+keeping: this needs attachment and flush context around adjacent syntax, while
+entry 1 needs _rendered widths_ and a second pass. They look alike because both
+are "the rule cannot see its siblings", and filing them together would hide that
+one is contextual and the other global.
+
+**Decide when:** a second language hits it. TOML's comment divergences are entry
+1, not this.
+
+## 10. A rule cannot vary by where its node appears
+
+**Status:** open · **Cost:** contextual · **Languages:** CSS
+
+Dispatch is on `node.type` alone. CSS needs `binary_query` formatted one way
+under `@media` and another under `@supports` — the same node kind, different
+parent, different correct layout. Stage D disproved the obvious workarounds:
+wrapping `binary_query` globally fixes `@supports` and breaks `@media`.
+
+Stage D was again explicit that this is **not** entry 2. Entry 2 is inheriting
+an ancestor's _break decision_ at layout time; this is selecting a _different
+rule_ by call site, which is a dispatch question and could be answered without
+any layout-time context at all.
+
+This is also the entry the roster predicted. `LANGUAGES.md` flags Scheme as "the
+sharpest possible test" of node-type dispatch, because a Lisp's layout is driven
+by the head of a form rather than the node kind. CSS has arrived at a milder
+version of the same problem three rounds early, which is useful: it means the
+question can be settled before a language exists that cannot work around it.
+
+**Decide when:** before Scheme (round 5), and sooner if a round-3 language hits
+it. Two languages would make it the cheapest of the contextual entries to
+justify.
+
+## 11. Two smaller CSS findings, recorded but not yet argued
+
+**Status:** open · **Cost:** unknown · **Languages:** CSS
+
+Both from CSS stage D, both real, neither yet costed. They are kept together
+because each is currently a single divergence in a single language, which is
+below this register's bar for its own entry:
+
+- **Anonymous heterogeneous-chain grouping.** Moving the selector group outward
+  fixes `selectors.css@40` but forces breaks inside multi-selector lists, and
+  the grammar supplies no fields for the existing `flatten` to work with.
+- **Source-break-sensitive layout.** `grid-template-areas` needs to know where
+  the author put newlines — its interior layout is meaningful — and no rule can
+  reach preserved source breaks.
+
+The second is a close relative of the block-scalar problem in entry 4: content
+whose layout is data. If a third language wants it, it should probably become
+one entry about **layout-as-content** rather than two per-language ones.
+
+**Decide when:** a second language hits either. Recorded now so the first
+sighting is not lost.
 
 ---
 

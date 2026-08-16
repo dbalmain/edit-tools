@@ -1,0 +1,45 @@
+/* Dirty spacing: what prettier rewrites, not what it breaks. */
+
+a {
+  color: red;
+}
+.b {
+  margin: 1px 2px 3px 4px;
+}
+.c {
+  font-family: "Arial", Helvetica, sans-serif;
+}
+#id,
+.cls,
+div > span + p ~ a {
+  display: block;
+}
+.indented {
+  color: blue;
+}
+.tabbed {
+  color: green;
+}
+.d {
+  color: red; /* many spaces before this trailing comment */
+}
+.e {
+  font-size: 1rem !important;
+}
+
+/* empty rules, including whitespace between anonymous tokens */
+.empty {
+}
+.spaced-empty {
+}
+
+.packed {
+  color: red;
+  background: blue;
+  margin: 0;
+}
+
+/* three or more blank lines above; prettier collapses the run */
+.f {
+  color: navy;
+}

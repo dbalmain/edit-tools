@@ -1,0 +1,354 @@
+{
+ "language": "css",
+ "source_file": "corpus/src/css/grid_areas.css",
+ "source": "/* grid-template-areas: author line breaks are the layout. */\n\n.page {\n  display: grid;\n  /* column alignment inside the strings is meaningful */\n  grid-template-areas:\n    \"header header header\"\n    \"nav    main   aside\"\n    \"nav    footer footer\";\n}\n\n.compact {\n  /* stays one line at both widths */\n  grid-template-areas: \"a b c\" \"d e f\";\n}\n",
+ "root": {
+  "type": "stylesheet",
+  "start": 0,
+  "end": 344,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 61,
+    "text": "/* grid-template-areas: author line breaks are the layout. */"
+   },
+   {
+    "type": "rule_set",
+    "start": 63,
+    "end": 251,
+    "children": [
+     {
+      "type": "selectors",
+      "start": 63,
+      "end": 68,
+      "children": [
+       {
+        "type": "class_selector",
+        "start": 63,
+        "end": 68,
+        "children": [
+         {
+          "type": ".",
+          "start": 63,
+          "end": 64,
+          "text": "."
+         },
+         {
+          "type": "class_name",
+          "start": 64,
+          "end": 68,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 64,
+            "end": 68,
+            "text": "page"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "block",
+      "start": 69,
+      "end": 251,
+      "children": [
+       {
+        "type": "{",
+        "start": 69,
+        "end": 70,
+        "text": "{"
+       },
+       {
+        "type": "declaration",
+        "start": 73,
+        "end": 87,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 73,
+          "end": 80,
+          "text": "display"
+         },
+         {
+          "type": ":",
+          "start": 80,
+          "end": 81,
+          "text": ":"
+         },
+         {
+          "type": "plain_value",
+          "start": 82,
+          "end": 86,
+          "text": "grid"
+         },
+         {
+          "type": ";",
+          "start": 86,
+          "end": 87,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "comment",
+        "start": 90,
+        "end": 145,
+        "text": "/* column alignment inside the strings is meaningful */"
+       },
+       {
+        "type": "declaration",
+        "start": 148,
+        "end": 249,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 148,
+          "end": 167,
+          "text": "grid-template-areas"
+         },
+         {
+          "type": ":",
+          "start": 167,
+          "end": 168,
+          "text": ":"
+         },
+         {
+          "type": "string_value",
+          "start": 173,
+          "end": 195,
+          "children": [
+           {
+            "type": "\"",
+            "start": 173,
+            "end": 174,
+            "text": "\""
+           },
+           {
+            "type": "string_content",
+            "start": 174,
+            "end": 194,
+            "text": "header header header"
+           },
+           {
+            "type": "\"",
+            "start": 194,
+            "end": 195,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": "string_value",
+          "start": 200,
+          "end": 221,
+          "children": [
+           {
+            "type": "\"",
+            "start": 200,
+            "end": 201,
+            "text": "\""
+           },
+           {
+            "type": "string_content",
+            "start": 201,
+            "end": 220,
+            "text": "nav    main   aside"
+           },
+           {
+            "type": "\"",
+            "start": 220,
+            "end": 221,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": "string_value",
+          "start": 226,
+          "end": 248,
+          "children": [
+           {
+            "type": "\"",
+            "start": 226,
+            "end": 227,
+            "text": "\""
+           },
+           {
+            "type": "string_content",
+            "start": 227,
+            "end": 247,
+            "text": "nav    footer footer"
+           },
+           {
+            "type": "\"",
+            "start": 247,
+            "end": 248,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 248,
+          "end": 249,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 250,
+        "end": 251,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "rule_set",
+    "start": 253,
+    "end": 343,
+    "children": [
+     {
+      "type": "selectors",
+      "start": 253,
+      "end": 261,
+      "children": [
+       {
+        "type": "class_selector",
+        "start": 253,
+        "end": 261,
+        "children": [
+         {
+          "type": ".",
+          "start": 253,
+          "end": 254,
+          "text": "."
+         },
+         {
+          "type": "class_name",
+          "start": 254,
+          "end": 261,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 254,
+            "end": 261,
+            "text": "compact"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "block",
+      "start": 262,
+      "end": 343,
+      "children": [
+       {
+        "type": "{",
+        "start": 262,
+        "end": 263,
+        "text": "{"
+       },
+       {
+        "type": "comment",
+        "start": 266,
+        "end": 301,
+        "text": "/* stays one line at both widths */"
+       },
+       {
+        "type": "declaration",
+        "start": 304,
+        "end": 341,
+        "children": [
+         {
+          "type": "property_name",
+          "start": 304,
+          "end": 323,
+          "text": "grid-template-areas"
+         },
+         {
+          "type": ":",
+          "start": 323,
+          "end": 324,
+          "text": ":"
+         },
+         {
+          "type": "string_value",
+          "start": 325,
+          "end": 332,
+          "children": [
+           {
+            "type": "\"",
+            "start": 325,
+            "end": 326,
+            "text": "\""
+           },
+           {
+            "type": "string_content",
+            "start": 326,
+            "end": 331,
+            "text": "a b c"
+           },
+           {
+            "type": "\"",
+            "start": 331,
+            "end": 332,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": "string_value",
+          "start": 333,
+          "end": 340,
+          "children": [
+           {
+            "type": "\"",
+            "start": 333,
+            "end": 334,
+            "text": "\""
+           },
+           {
+            "type": "string_content",
+            "start": 334,
+            "end": 339,
+            "text": "d e f"
+           },
+           {
+            "type": "\"",
+            "start": 339,
+            "end": 340,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 340,
+          "end": 341,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 342,
+        "end": 343,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

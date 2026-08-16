@@ -358,6 +358,8 @@ impl<'a> Ctx<'a> {
             return Err(self.refuse(&format!("the token `{want}`")));
         }
         self.cursor += 1;
+        let after = std::mem::take(&mut self.items[at].after);
+        self.pending_after = after;
         Ok(Doc::Concat(vec![
             flushed,
             decorate(f.pkg, &self.items[at], Doc::text(want)),
@@ -1526,6 +1528,47 @@ try {{
         assert_eq!(
             run_on(&one(pkg), source, root, 80).expect("ok"),
             "def\n  x\n  # c\n"
+        );
+    }
+
+    #[test]
+    fn a_comment_only_descend_block_keeps_the_comment_inside() {
+        // CSS `{ /* only comment */ }`: no named host, so the comment
+        // used to dangle in front of `{` and leave the block. Parking it
+        // on the opener lets indent flush it inside.
+        let pkg: Package = serde_json::from_value(json!({
+            "format": "et-doc-rules/1",
+            "indent": 2,
+            "comments": ["comment"],
+            "descend": ["block"],
+            "tokens": ["{", "}"],
+            "rules": {
+                "file": ["child", "t:block"],
+                "block": [
+                    "seq",
+                    ["tok", "{"],
+                    ["indent", ["opt", "named", ["seq", ["hard"], ["each", "named", ["hard"]]]]],
+                    ["hard"],
+                    ["tok", "}"]
+                ]
+            }
+        }))
+        .expect("comment-only block package parses");
+        let source = "{\n  /* c */\n}";
+        let root = json!({
+            "type": "file", "start": 0, "end": 13,
+            "children": [{
+                "type": "block", "start": 0, "end": 13,
+                "children": [
+                    { "type": "{", "start": 0, "end": 1, "text": "{" },
+                    { "type": "comment", "start": 4, "end": 11, "text": "/* c */" },
+                    { "type": "}", "start": 12, "end": 13, "text": "}" }
+                ]
+            }]
+        });
+        assert_eq!(
+            run_on(&one(pkg), source, root, 80).expect("ok"),
+            "{\n  /* c */\n}\n"
         );
     }
 

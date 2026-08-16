@@ -1,0 +1,26 @@
+/* @keyframes: percentages and a from/to pair. */
+
+@keyframes slide-in {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0; /* start hidden */
+  }
+  50% {
+    transform: translateX(-50%)
+      scale(1.05);
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
