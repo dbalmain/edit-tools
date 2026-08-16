@@ -40,7 +40,7 @@ _REQUIRED = ("name", "extensions", "grammar", "grammar_module", "reference",
              "injection_aliases")
 _KNOWN = set(_REQUIRED) | {"grammar_symbol", "gate3_requires",
                            "transparent_wrappers", "equivalent_kinds",
-                           "injections"}
+                           "injections", "incomparable"}
 
 
 class ManifestError(Exception):
@@ -71,6 +71,7 @@ class Manifest:
     gate3_requires: tuple[str, ...]
     transparent_wrappers: frozenset[str]
     equivalent_kinds: tuple[frozenset[str], ...]
+    incomparable: dict[str, str]  # corpus filename -> why the reference rewrite is not scored
     path: Path
 
     @property
@@ -133,6 +134,52 @@ def _injections(raw: dict[str, Any], path: Path) -> tuple[Injection, ...]:
                 )
         out.append(Injection(entry["node"], entry["info"], entry["content"]))
     return tuple(out)
+
+
+def _incomparable(
+    raw: dict[str, Any], name: str, extensions: tuple[str, ...], path: Path
+) -> dict[str, str]:
+    """Files the reference rewrites in a way linearity forbids.
+
+    Optional. A table so the reason is structurally required; a list of names
+    can drift from its comments. Removing an entry (when the construct later
+    becomes comparable) is a one-line delete. The name is a current measurement
+    state, not a permanent exile — do not read it as "excluded forever".
+    """
+    if "incomparable" not in raw:
+        return {}
+    table = raw["incomparable"]
+    if not isinstance(table, dict):
+        raise ManifestError(
+            f"{path.name}: `incomparable` must be a table of "
+            f"`\"filename{extensions[0]}\" = \"reason\"`"
+        )
+    src_dir = ROOT / "corpus" / "src" / name
+    out: dict[str, str] = {}
+    for filename, reason in table.items():
+        key = f"incomparable.{filename}"
+        if not isinstance(filename, str) or Path(filename).name != filename:
+            raise ManifestError(
+                f"{path.name}: `{key}` must be a filename in "
+                f"corpus/src/{name}/, not a path"
+            )
+        if not any(filename.endswith(ext) for ext in extensions):
+            raise ManifestError(
+                f"{path.name}: `{key}` must end in one of this language's "
+                f"extensions {list(extensions)}"
+            )
+        if not isinstance(reason, str) or not reason.strip():
+            raise ManifestError(
+                f"{path.name}: `{key}` needs a non-empty reason "
+                f"(why the reference rewrite is not comparable)"
+            )
+        if not (src_dir / filename).is_file():
+            raise ManifestError(
+                f"{path.name}: `{key}` names a file that does not exist at "
+                f"corpus/src/{name}/{filename}"
+            )
+        out[filename] = reason.strip()
+    return out
 
 
 def parse(path: Path) -> Manifest:
@@ -218,6 +265,7 @@ def parse(path: Path) -> Manifest:
         gate3_requires=tuple(raw.get("gate3_requires", [])),
         transparent_wrappers=frozenset(raw.get("transparent_wrappers", [])),
         equivalent_kinds=tuple(equiv),
+        incomparable=_incomparable(raw, name, extensions, path),
         path=path,
     )
 

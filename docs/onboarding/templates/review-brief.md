@@ -63,6 +63,13 @@ Check, in roughly this order of importance:
 8. **What did the builder change outside `corpus/` and `harness/languages/`?**
    Every such edit needs a reason. Edits to `rust/` or `runtime-js/` at stage A
    are a strong smell.
+9. **Are incomparable files dedicated?** Every `[incomparable]` entry must name
+   a file that exists, give a non-empty reason, and contain **only** the
+   excluded construct. Mixing in otherwise comparable constructs hides them
+   from the agreement denominator; the harness cannot detect that, so this
+   check is yours. Omitting a construct the reference rewrites — rather than
+   declaring a dedicated file — is the older failure this field exists to
+   stop. The `kitchen` file must not be listed.
 
 You **may make small corrections yourself** in the worktree — a wrong pin, a
 missing probe file, a stale number in the report — and re-verify. Anything
@@ -148,9 +155,10 @@ whether the package is right. Budget your effort here:
   perfect. Rust/JS parity perfect. Both are hard.
 - At each measured width, **unreviewed divergence at or below 30% of compared
   files** — equivalently, reference agreement plus accepted reviews at or above
-  70%. Agreement, accepted, stale, and unreviewed remain separate numbers; do
-  not call agreement and accepted review the same thing. Any stale review is a
-  hard failure regardless of the percentage.
+  70%. Agreement, accepted, stale, unreviewed, and excluded remain separate
+  numbers; do not call agreement and accepted review the same thing, and do
+  not put excluded files back in the denominator. Any stale review is a hard
+  failure regardless of the percentage.
 - **Width is a measure, not a gate**, and it is comparative. The scorer prints
   the reference's own overflow count; references overrun their own width, taplo
   included. Do not reject a package for matching its reference's overflow. A
