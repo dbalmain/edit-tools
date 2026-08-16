@@ -1,0 +1,1221 @@
+{
+ "language": "javascript",
+ "source_file": "corpus/src/javascript/sequences.js",
+ "source": "// The construct that overflows a line: long flat lists of several shapes.\n// Numbers pack (prettier fills); identifiers and strings go one per line.\nconst numbers = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200];\n\nconst identifiers = [alpha, beta, gamma, delta, epsilon, zeta, eta, theta, iota, kappa, lambda, mu, nu, xi];\n\nconst strings = [\"red\", \"green\", \"blue\", \"cyan\", \"magenta\", \"yellow\", \"black\", \"white\", \"gray\", \"orange\", \"purple\", \"pink\"];\n\nconst call = render(first_argument, second_argument, third_argument, fourth_argument, fifth_argument, sixth);\n\nconst short = [1, 2, 3, 4, 5];\n",
+ "root": {
+  "type": "program",
+  "start": 0,
+  "end": 638,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 74,
+    "text": "// The construct that overflows a line: long flat lists of several shapes."
+   },
+   {
+    "type": "comment",
+    "start": 75,
+    "end": 149,
+    "text": "// Numbers pack (prettier fills); identifiers and strings go one per line."
+   },
+   {
+    "type": "lexical_declaration",
+    "start": 150,
+    "end": 258,
+    "children": [
+     {
+      "type": "const",
+      "start": 150,
+      "end": 155,
+      "field": "kind",
+      "text": "const"
+     },
+     {
+      "type": "variable_declarator",
+      "start": 156,
+      "end": 257,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 156,
+        "end": 163,
+        "field": "name",
+        "text": "numbers"
+       },
+       {
+        "type": "=",
+        "start": 164,
+        "end": 165,
+        "text": "="
+       },
+       {
+        "type": "array",
+        "start": 166,
+        "end": 257,
+        "field": "value",
+        "children": [
+         {
+          "type": "[",
+          "start": 166,
+          "end": 167,
+          "text": "["
+         },
+         {
+          "type": "number",
+          "start": 167,
+          "end": 169,
+          "text": "10"
+         },
+         {
+          "type": ",",
+          "start": 169,
+          "end": 170,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 171,
+          "end": 173,
+          "text": "20"
+         },
+         {
+          "type": ",",
+          "start": 173,
+          "end": 174,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 175,
+          "end": 177,
+          "text": "30"
+         },
+         {
+          "type": ",",
+          "start": 177,
+          "end": 178,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 179,
+          "end": 181,
+          "text": "40"
+         },
+         {
+          "type": ",",
+          "start": 181,
+          "end": 182,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 183,
+          "end": 185,
+          "text": "50"
+         },
+         {
+          "type": ",",
+          "start": 185,
+          "end": 186,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 187,
+          "end": 189,
+          "text": "60"
+         },
+         {
+          "type": ",",
+          "start": 189,
+          "end": 190,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 191,
+          "end": 193,
+          "text": "70"
+         },
+         {
+          "type": ",",
+          "start": 193,
+          "end": 194,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 195,
+          "end": 197,
+          "text": "80"
+         },
+         {
+          "type": ",",
+          "start": 197,
+          "end": 198,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 199,
+          "end": 201,
+          "text": "90"
+         },
+         {
+          "type": ",",
+          "start": 201,
+          "end": 202,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 203,
+          "end": 206,
+          "text": "100"
+         },
+         {
+          "type": ",",
+          "start": 206,
+          "end": 207,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 208,
+          "end": 211,
+          "text": "110"
+         },
+         {
+          "type": ",",
+          "start": 211,
+          "end": 212,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 213,
+          "end": 216,
+          "text": "120"
+         },
+         {
+          "type": ",",
+          "start": 216,
+          "end": 217,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 218,
+          "end": 221,
+          "text": "130"
+         },
+         {
+          "type": ",",
+          "start": 221,
+          "end": 222,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 223,
+          "end": 226,
+          "text": "140"
+         },
+         {
+          "type": ",",
+          "start": 226,
+          "end": 227,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 228,
+          "end": 231,
+          "text": "150"
+         },
+         {
+          "type": ",",
+          "start": 231,
+          "end": 232,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 233,
+          "end": 236,
+          "text": "160"
+         },
+         {
+          "type": ",",
+          "start": 236,
+          "end": 237,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 238,
+          "end": 241,
+          "text": "170"
+         },
+         {
+          "type": ",",
+          "start": 241,
+          "end": 242,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 243,
+          "end": 246,
+          "text": "180"
+         },
+         {
+          "type": ",",
+          "start": 246,
+          "end": 247,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 248,
+          "end": 251,
+          "text": "190"
+         },
+         {
+          "type": ",",
+          "start": 251,
+          "end": 252,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 253,
+          "end": 256,
+          "text": "200"
+         },
+         {
+          "type": "]",
+          "start": 256,
+          "end": 257,
+          "text": "]"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": ";",
+      "start": 257,
+      "end": 258,
+      "text": ";"
+     }
+    ]
+   },
+   {
+    "type": "lexical_declaration",
+    "start": 260,
+    "end": 368,
+    "children": [
+     {
+      "type": "const",
+      "start": 260,
+      "end": 265,
+      "field": "kind",
+      "text": "const"
+     },
+     {
+      "type": "variable_declarator",
+      "start": 266,
+      "end": 367,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 266,
+        "end": 277,
+        "field": "name",
+        "text": "identifiers"
+       },
+       {
+        "type": "=",
+        "start": 278,
+        "end": 279,
+        "text": "="
+       },
+       {
+        "type": "array",
+        "start": 280,
+        "end": 367,
+        "field": "value",
+        "children": [
+         {
+          "type": "[",
+          "start": 280,
+          "end": 281,
+          "text": "["
+         },
+         {
+          "type": "identifier",
+          "start": 281,
+          "end": 286,
+          "text": "alpha"
+         },
+         {
+          "type": ",",
+          "start": 286,
+          "end": 287,
+          "text": ","
+         },
+         {
+          "type": "identifier",
+          "start": 288,
+          "end": 292,
+          "text": "beta"
+         },
+         {
+          "type": ",",
+          "start": 292,
+          "end": 293,
+          "text": ","
+         },
+         {
+          "type": "identifier",
+          "start": 294,
+          "end": 299,
+          "text": "gamma"
+         },
+         {
+          "type": ",",
+          "start": 299,
+          "end": 300,
+          "text": ","
+         },
+         {
+          "type": "identifier",
+          "start": 301,
+          "end": 306,
+          "text": "delta"
+         },
+         {
+          "type": ",",
+          "start": 306,
+          "end": 307,
+          "text": ","
+         },
+         {
+          "type": "identifier",
+          "start": 308,
+          "end": 315,
+          "text": "epsilon"
+         },
+         {
+          "type": ",",
+          "start": 315,
+          "end": 316,
+          "text": ","
+         },
+         {
+          "type": "identifier",
+          "start": 317,
+          "end": 321,
+          "text": "zeta"
+         },
+         {
+          "type": ",",
+          "start": 321,
+          "end": 322,
+          "text": ","
+         },
+         {
+          "type": "identifier",
+          "start": 323,
+          "end": 326,
+          "text": "eta"
+         },
+         {
+          "type": ",",
+          "start": 326,
+          "end": 327,
+          "text": ","
+         },
+         {
+          "type": "identifier",
+          "start": 328,
+          "end": 333,
+          "text": "theta"
+         },
+         {
+          "type": ",",
+          "start": 333,
+          "end": 334,
+          "text": ","
+         },
+         {
+          "type": "identifier",
+          "start": 335,
+          "end": 339,
+          "text": "iota"
+         },
+         {
+          "type": ",",
+          "start": 339,
+          "end": 340,
+          "text": ","
+         },
+         {
+          "type": "identifier",
+          "start": 341,
+          "end": 346,
+          "text": "kappa"
+         },
+         {
+          "type": ",",
+          "start": 346,
+          "end": 347,
+          "text": ","
+         },
+         {
+          "type": "identifier",
+          "start": 348,
+          "end": 354,
+          "text": "lambda"
+         },
+         {
+          "type": ",",
+          "start": 354,
+          "end": 355,
+          "text": ","
+         },
+         {
+          "type": "identifier",
+          "start": 356,
+          "end": 358,
+          "text": "mu"
+         },
+         {
+          "type": ",",
+          "start": 358,
+          "end": 359,
+          "text": ","
+         },
+         {
+          "type": "identifier",
+          "start": 360,
+          "end": 362,
+          "text": "nu"
+         },
+         {
+          "type": ",",
+          "start": 362,
+          "end": 363,
+          "text": ","
+         },
+         {
+          "type": "identifier",
+          "start": 364,
+          "end": 366,
+          "text": "xi"
+         },
+         {
+          "type": "]",
+          "start": 366,
+          "end": 367,
+          "text": "]"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": ";",
+      "start": 367,
+      "end": 368,
+      "text": ";"
+     }
+    ]
+   },
+   {
+    "type": "lexical_declaration",
+    "start": 370,
+    "end": 494,
+    "children": [
+     {
+      "type": "const",
+      "start": 370,
+      "end": 375,
+      "field": "kind",
+      "text": "const"
+     },
+     {
+      "type": "variable_declarator",
+      "start": 376,
+      "end": 493,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 376,
+        "end": 383,
+        "field": "name",
+        "text": "strings"
+       },
+       {
+        "type": "=",
+        "start": 384,
+        "end": 385,
+        "text": "="
+       },
+       {
+        "type": "array",
+        "start": 386,
+        "end": 493,
+        "field": "value",
+        "children": [
+         {
+          "type": "[",
+          "start": 386,
+          "end": 387,
+          "text": "["
+         },
+         {
+          "type": "string",
+          "start": 387,
+          "end": 392,
+          "children": [
+           {
+            "type": "\"",
+            "start": 387,
+            "end": 388,
+            "text": "\""
+           },
+           {
+            "type": "string_fragment",
+            "start": 388,
+            "end": 391,
+            "text": "red"
+           },
+           {
+            "type": "\"",
+            "start": 391,
+            "end": 392,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 392,
+          "end": 393,
+          "text": ","
+         },
+         {
+          "type": "string",
+          "start": 394,
+          "end": 401,
+          "children": [
+           {
+            "type": "\"",
+            "start": 394,
+            "end": 395,
+            "text": "\""
+           },
+           {
+            "type": "string_fragment",
+            "start": 395,
+            "end": 400,
+            "text": "green"
+           },
+           {
+            "type": "\"",
+            "start": 400,
+            "end": 401,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 401,
+          "end": 402,
+          "text": ","
+         },
+         {
+          "type": "string",
+          "start": 403,
+          "end": 409,
+          "children": [
+           {
+            "type": "\"",
+            "start": 403,
+            "end": 404,
+            "text": "\""
+           },
+           {
+            "type": "string_fragment",
+            "start": 404,
+            "end": 408,
+            "text": "blue"
+           },
+           {
+            "type": "\"",
+            "start": 408,
+            "end": 409,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 409,
+          "end": 410,
+          "text": ","
+         },
+         {
+          "type": "string",
+          "start": 411,
+          "end": 417,
+          "children": [
+           {
+            "type": "\"",
+            "start": 411,
+            "end": 412,
+            "text": "\""
+           },
+           {
+            "type": "string_fragment",
+            "start": 412,
+            "end": 416,
+            "text": "cyan"
+           },
+           {
+            "type": "\"",
+            "start": 416,
+            "end": 417,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 417,
+          "end": 418,
+          "text": ","
+         },
+         {
+          "type": "string",
+          "start": 419,
+          "end": 428,
+          "children": [
+           {
+            "type": "\"",
+            "start": 419,
+            "end": 420,
+            "text": "\""
+           },
+           {
+            "type": "string_fragment",
+            "start": 420,
+            "end": 427,
+            "text": "magenta"
+           },
+           {
+            "type": "\"",
+            "start": 427,
+            "end": 428,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 428,
+          "end": 429,
+          "text": ","
+         },
+         {
+          "type": "string",
+          "start": 430,
+          "end": 438,
+          "children": [
+           {
+            "type": "\"",
+            "start": 430,
+            "end": 431,
+            "text": "\""
+           },
+           {
+            "type": "string_fragment",
+            "start": 431,
+            "end": 437,
+            "text": "yellow"
+           },
+           {
+            "type": "\"",
+            "start": 437,
+            "end": 438,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 438,
+          "end": 439,
+          "text": ","
+         },
+         {
+          "type": "string",
+          "start": 440,
+          "end": 447,
+          "children": [
+           {
+            "type": "\"",
+            "start": 440,
+            "end": 441,
+            "text": "\""
+           },
+           {
+            "type": "string_fragment",
+            "start": 441,
+            "end": 446,
+            "text": "black"
+           },
+           {
+            "type": "\"",
+            "start": 446,
+            "end": 447,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 447,
+          "end": 448,
+          "text": ","
+         },
+         {
+          "type": "string",
+          "start": 449,
+          "end": 456,
+          "children": [
+           {
+            "type": "\"",
+            "start": 449,
+            "end": 450,
+            "text": "\""
+           },
+           {
+            "type": "string_fragment",
+            "start": 450,
+            "end": 455,
+            "text": "white"
+           },
+           {
+            "type": "\"",
+            "start": 455,
+            "end": 456,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 456,
+          "end": 457,
+          "text": ","
+         },
+         {
+          "type": "string",
+          "start": 458,
+          "end": 464,
+          "children": [
+           {
+            "type": "\"",
+            "start": 458,
+            "end": 459,
+            "text": "\""
+           },
+           {
+            "type": "string_fragment",
+            "start": 459,
+            "end": 463,
+            "text": "gray"
+           },
+           {
+            "type": "\"",
+            "start": 463,
+            "end": 464,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 464,
+          "end": 465,
+          "text": ","
+         },
+         {
+          "type": "string",
+          "start": 466,
+          "end": 474,
+          "children": [
+           {
+            "type": "\"",
+            "start": 466,
+            "end": 467,
+            "text": "\""
+           },
+           {
+            "type": "string_fragment",
+            "start": 467,
+            "end": 473,
+            "text": "orange"
+           },
+           {
+            "type": "\"",
+            "start": 473,
+            "end": 474,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 474,
+          "end": 475,
+          "text": ","
+         },
+         {
+          "type": "string",
+          "start": 476,
+          "end": 484,
+          "children": [
+           {
+            "type": "\"",
+            "start": 476,
+            "end": 477,
+            "text": "\""
+           },
+           {
+            "type": "string_fragment",
+            "start": 477,
+            "end": 483,
+            "text": "purple"
+           },
+           {
+            "type": "\"",
+            "start": 483,
+            "end": 484,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 484,
+          "end": 485,
+          "text": ","
+         },
+         {
+          "type": "string",
+          "start": 486,
+          "end": 492,
+          "children": [
+           {
+            "type": "\"",
+            "start": 486,
+            "end": 487,
+            "text": "\""
+           },
+           {
+            "type": "string_fragment",
+            "start": 487,
+            "end": 491,
+            "text": "pink"
+           },
+           {
+            "type": "\"",
+            "start": 491,
+            "end": 492,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": "]",
+          "start": 492,
+          "end": 493,
+          "text": "]"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": ";",
+      "start": 493,
+      "end": 494,
+      "text": ";"
+     }
+    ]
+   },
+   {
+    "type": "lexical_declaration",
+    "start": 496,
+    "end": 605,
+    "children": [
+     {
+      "type": "const",
+      "start": 496,
+      "end": 501,
+      "field": "kind",
+      "text": "const"
+     },
+     {
+      "type": "variable_declarator",
+      "start": 502,
+      "end": 604,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 502,
+        "end": 506,
+        "field": "name",
+        "text": "call"
+       },
+       {
+        "type": "=",
+        "start": 507,
+        "end": 508,
+        "text": "="
+       },
+       {
+        "type": "call_expression",
+        "start": 509,
+        "end": 604,
+        "field": "value",
+        "children": [
+         {
+          "type": "identifier",
+          "start": 509,
+          "end": 515,
+          "field": "function",
+          "text": "render"
+         },
+         {
+          "type": "arguments",
+          "start": 515,
+          "end": 604,
+          "field": "arguments",
+          "children": [
+           {
+            "type": "(",
+            "start": 515,
+            "end": 516,
+            "text": "("
+           },
+           {
+            "type": "identifier",
+            "start": 516,
+            "end": 530,
+            "text": "first_argument"
+           },
+           {
+            "type": ",",
+            "start": 530,
+            "end": 531,
+            "text": ","
+           },
+           {
+            "type": "identifier",
+            "start": 532,
+            "end": 547,
+            "text": "second_argument"
+           },
+           {
+            "type": ",",
+            "start": 547,
+            "end": 548,
+            "text": ","
+           },
+           {
+            "type": "identifier",
+            "start": 549,
+            "end": 563,
+            "text": "third_argument"
+           },
+           {
+            "type": ",",
+            "start": 563,
+            "end": 564,
+            "text": ","
+           },
+           {
+            "type": "identifier",
+            "start": 565,
+            "end": 580,
+            "text": "fourth_argument"
+           },
+           {
+            "type": ",",
+            "start": 580,
+            "end": 581,
+            "text": ","
+           },
+           {
+            "type": "identifier",
+            "start": 582,
+            "end": 596,
+            "text": "fifth_argument"
+           },
+           {
+            "type": ",",
+            "start": 596,
+            "end": 597,
+            "text": ","
+           },
+           {
+            "type": "identifier",
+            "start": 598,
+            "end": 603,
+            "text": "sixth"
+           },
+           {
+            "type": ")",
+            "start": 603,
+            "end": 604,
+            "text": ")"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": ";",
+      "start": 604,
+      "end": 605,
+      "text": ";"
+     }
+    ]
+   },
+   {
+    "type": "lexical_declaration",
+    "start": 607,
+    "end": 637,
+    "children": [
+     {
+      "type": "const",
+      "start": 607,
+      "end": 612,
+      "field": "kind",
+      "text": "const"
+     },
+     {
+      "type": "variable_declarator",
+      "start": 613,
+      "end": 636,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 613,
+        "end": 618,
+        "field": "name",
+        "text": "short"
+       },
+       {
+        "type": "=",
+        "start": 619,
+        "end": 620,
+        "text": "="
+       },
+       {
+        "type": "array",
+        "start": 621,
+        "end": 636,
+        "field": "value",
+        "children": [
+         {
+          "type": "[",
+          "start": 621,
+          "end": 622,
+          "text": "["
+         },
+         {
+          "type": "number",
+          "start": 622,
+          "end": 623,
+          "text": "1"
+         },
+         {
+          "type": ",",
+          "start": 623,
+          "end": 624,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 625,
+          "end": 626,
+          "text": "2"
+         },
+         {
+          "type": ",",
+          "start": 626,
+          "end": 627,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 628,
+          "end": 629,
+          "text": "3"
+         },
+         {
+          "type": ",",
+          "start": 629,
+          "end": 630,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 631,
+          "end": 632,
+          "text": "4"
+         },
+         {
+          "type": ",",
+          "start": 632,
+          "end": 633,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 634,
+          "end": 635,
+          "text": "5"
+         },
+         {
+          "type": "]",
+          "start": 635,
+          "end": 636,
+          "text": "]"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": ";",
+      "start": 636,
+      "end": 637,
+      "text": ";"
+     }
+    ]
+   }
+  ]
+ }
+}

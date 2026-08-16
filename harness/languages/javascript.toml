@@ -1,0 +1,52 @@
+# JavaScript. Schema: docs/onboarding/WORKFLOW.md, "Stage 0".
+name = "javascript"
+extensions = [".js"]
+
+# PyPI name is the orchestrator's tree_sitter_javascript guess after the
+# hyphen-to-underscore swap; the pin is not the guess. 0.7.0 was the guess;
+# the latest release is 0.25.0 (checked against the live index 2026-08-17).
+# Imported as tree_sitter_javascript; the module exports language() (plus
+# HIGHLIGHTS_QUERY, INJECTIONS_QUERY, LOCALS_QUERY, TAGS_QUERY), which
+# returns a tree_sitter.Language capsule.
+grammar = "tree-sitter-javascript==0.25.0"
+grammar_module = "tree_sitter_javascript"
+grammar_symbol = "language"
+
+# Markdown info strings that select this grammar for a fenced region. `js` and
+# `javascript` are both conventional fence spellings (GitHub linguist,
+# prettier's support-info aliases); both are vouched for. `jsx` is TypeScript's
+# (via tree-sitter-typescript), not this grammar's.
+injection_aliases = ["javascript", "js"]
+
+# prettier infers the parser from the filename, so stdin needs a fake one.
+# --no-config is load-bearing: prettier walks cwd and ancestors for .prettierrc
+# / prettier.config.* / a package.json "prettier" key AND reads .editorconfig
+# from the filepath, and every option the command line does not name (singleQuote,
+# semi, tabWidth, trailingComma, ...) is taken from what it finds. --print-width
+# honours {width}, established by diffing 80 vs 40, not by reading --help.
+reference = "npx --yes prettier@3.9.6 --no-config --stdin-filepath x.js --print-width {width}"
+reference_version = "3.9.6"
+reference_width = "flag"
+
+# 80 is prettier's own default, established by bisection: a 20-item number array
+# (81 chars) breaks unprompted and at --print-width 80, and stays flat at
+# --print-width 81. 40 is the narrow width; it forces the break decisions 80
+# lets a package dodge.
+widths = [80, 40]
+
+# The generic default. No override is needed, and the corpus report explains
+# why the data-model-loaders trap does not bite here: tree-sitter-javascript
+# represents both quote styles as one `string` node with an anonymous quote
+# token, so prettier's quote normalisation leaves the named tree unchanged and
+# the generic default already accepts it.
+gate3 = "default"
+
+# Established by running prettier over the corpus, not by reading the grammar.
+# prettier both removes and inserts `parenthesized_expression` around a single
+# expression: it deletes redundant parens (`((1 + 2))` -> `1 + 2`, a nested
+# ternary's parens) and inserts clarifying parens (around `??=` / `&&=` / `||=`
+# assignment expressions, and around mixed-bitwise subexpressions like
+# `mask & value`). In every case the wrapper has exactly one named child, so it
+# is genuinely transparent: `(expr)` is always the same expression as `expr`.
+transparent_wrappers = ["parenthesized_expression"]
+equivalent_kinds = []

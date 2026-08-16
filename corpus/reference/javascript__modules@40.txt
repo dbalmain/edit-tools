@@ -1,0 +1,35 @@
+// ES modules: imports and exports, the statement shapes a module root holds.
+import fs from "fs";
+
+import {
+  readFile,
+  writeFile as persist,
+} from "node:fs/promises";
+
+import * as utils from "./utils.js";
+
+import {
+  first,
+  second,
+  third,
+  fourth,
+  fifth,
+} from "./long-import-list.js";
+
+export const answer = 42;
+
+export function transform(
+  input,
+  options = {},
+) {
+  return input;
+}
+
+export default function main() {
+  return transform(utils.default);
+}
+
+export {
+  namedOne,
+  namedTwo as aliasTwo,
+};
