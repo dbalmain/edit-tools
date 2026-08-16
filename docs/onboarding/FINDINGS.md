@@ -29,8 +29,8 @@ when it is deliberately declined.
 
 ## 1. Sibling-width alignment
 
-**Status:** open, **decision needed** · **Cost:** global · **Languages:** Go (6
-of its 10 divergences), TOML (3 of its 7)
+**Status:** **leaning build** (Dave, 2026-08-17) · **Cost:** global ·
+**Languages:** Go (6 of its 10 divergences), TOML (3 of its 7)
 
 **Go is merged and this is now a measured number, not an estimate.** Stage D
 verified every one of the six claimed cases hunk by hunk rather than sampling:
@@ -146,9 +146,9 @@ welded together in one opcode.
 
 ## 4. The reference rewrites the source, so the corpus cannot contain the case
 
-**Status:** open, **decision needed** · **Cost:** measurement, not IR ·
-**Languages:** YAML (five constructs), CSS (three), Go (one), Python (dodged by
-flag)
+**Status:** **decided — option 2, probe files** (Dave, 2026-08-17) · **Cost:**
+measurement, not IR · **Languages:** YAML (five constructs), CSS (three), Go
+(one), JavaScript (nine, inventoried), Python (dodged by flag)
 
 **This is now the most-confirmed entry in the register, and it was confirmed by
 languages that had no reason to agree.** Three of round 2's four builders hit it
@@ -222,8 +222,9 @@ argue with, and it is the first real one this entry has had.
 2. **Let the corpus hold them as declared non-comparisons.** A manifest field
    marking files the reference is known to mangle; `check_gate3.py` exempts them
    from "the reference must pass", and the scorer counts them separately.
-3. **Relax linearity.** Not seriously proposed. It is the invariant the whole
-   highlighter/formatter split rests on.
+3. **Add a third sanctioned token policy.** Originally written here as "relax
+   linearity — not seriously proposed". **Dave asked for it on 2026-08-17, and
+   the framing was wrong, not the request.** See entry 14.
 
 YAML's stage B argues for **option 2, refined**: one excluded construct per
 dedicated probe file with a required reason, still counting for coverage,
@@ -239,6 +240,18 @@ hole". A comment decays; a probe file that must exist does not.
 **Decision needed from Dave.** This is the one blocking round 2 — YAML's stage B
 returned `rework`, and whether the reworked corpus carries non-comparison probes
 changes what the builder is being asked to write.
+
+**Partly decided, 2026-08-17.** Dave: _"I do want to rewrite quotes. You're
+right that sorting of imports should be out of scope."_ That splits this entry
+cleanly along the line Go's stage D drew:
+
+- **Token-text rewrites** (quotes, and by the same machinery number spellings)
+  become a capability to build — entry 14.
+- **Token reordering** (gofmt's import sorting) stays out of scope permanently.
+  It keeps its place here as a declared, measured omission.
+
+Options 1 and 2 above are therefore still live, but for a smaller residue than
+this entry was originally sized against.
 
 ## 5. Anonymous tokens are only compared when their parent has no named children
 
@@ -370,8 +383,8 @@ once.
 
 ## 8. `fill` — pack as many items per line as fit
 
-**Status:** open, **decision needed** · **Cost:** local · **Languages:** CSS,
-JSON
+**Status:** **decided — build it** (Dave, 2026-08-17) · **Cost:** local ·
+**Languages:** CSS, JSON
 
 The IR breaks a group all-or-nothing: every separator breaks, or none does.
 Neither reference does that. prettier packs short items onto a line and wraps to
@@ -659,6 +672,90 @@ three times.
 
 **Decide when:** a second language wants it. Go can live without it; the
 divergences it causes are a small part of the 10.
+
+## 14. A third sanctioned token policy, for respelling
+
+**Status:** **decided — build it** (Dave, 2026-08-17) · **Cost:** contextual,
+plus a narrow gate change · **Languages:** JavaScript, YAML, CSS, Python, TOML
+
+Dave: _"I do want to rewrite quotes."_ This entry exists because the register
+had that filed under "relax linearity — not seriously proposed", and **that
+framing was wrong.**
+
+### Linearity was never "do not touch tokens"
+
+`DESIGN.md` states it as: a rule's consumed children must be a disjoint, ordered
+partition, and **token mutation is allowed only through enumerated policies**.
+There are already two, and both mutate tokens:
+
+- `trail` adds a separator the source did not have.
+- `autoparen` adds parentheses the source did not have.
+
+So respelling is a **third enumerated policy**, not a broken invariant. The
+architecture already has the shape; what it lacks is the third entry in the
+list. That is a much smaller claim than the one this register was making, and it
+is why the request is reasonable.
+
+`DESIGN.md`'s stated reason for declining still stands as the thing to answer,
+not to dismiss: _"a formatter that can rewrite a token can corrupt one."_ The
+protection has to be real, and it has to be gate 3.
+
+### What it costs, from JavaScript's stage-A inventory
+
+JavaScript's stage A established each rewrite by experiment. The column that
+matters is whether the generic gate already accepts it:
+
+| Rewrite                                    | gate 3      | What is missing              |
+| ------------------------------------------ | ----------- | ---------------------------- |
+| `'hello'` → `"hello"`, fragment unchanged  | **accepts** | only the opcode              |
+| `{ 'hyphen-key': 1 }` → `{ "hyphen-key" }` | **accepts** | only the opcode              |
+| `'it\'s'` → `"it's"` (re-escaping)         | **rejects** | opcode **and** a gate change |
+| `''` → `""` (empty string)                 | **rejects** | opcode **and** a gate change |
+| `0xFF`→`0xff`, `.5`→`0.5`, `1E10`→`1e10`   | **rejects** | opcode **and** a gate change |
+
+Two useful consequences fall out of that table:
+
+- **The simple quote swap needs no gate work at all in JavaScript**, because
+  tree-sitter-javascript represents both quote styles as one `string` node with
+  an anonymous quote token. The blocker there is purely the missing opcode.
+- **Re-escaping is the hard half.** prettier picks the quote that minimises
+  escaping, which means counting occurrences and re-escaping the body — and that
+  is _logic_, not data. A data-only package cannot carry it. It has to live in
+  the runtime, per language family, which is the real cost and the reason this
+  is `contextual` rather than `local`.
+
+Number canonicalisation is the same machinery pointed at a different token, and
+should be built with it rather than as a second entry later.
+
+### The gate change, and why it must not be a loader
+
+For the rejecting rows, gate 3 has to compare a **decoded value** rather than a
+spelling — and that is exactly the shape that was tried twice and removed
+(`tomllib` for TOML, `ast.dump` for python), because a data-model loader
+collapses every spelling distinction at once and is therefore _weaker_.
+
+The composition rule from entry 12 is the guard: an override must be
+`(default_signature, extra)` and so cannot be weaker. Respelling breaks that
+rule by construction — it is a deliberate _weakening_, for one declared class of
+token. So it must be scoped the narrow way round:
+
+> the generic default still compares token text exactly, **except** for node
+> kinds a manifest explicitly declares respellable, where it compares the
+> decoded value.
+
+Narrow, declared per language, and auditable by reading one manifest field. Not
+a loader, and not a blanket relaxation.
+
+### What is explicitly out of scope
+
+Dave, same message: _"You're right that sorting of imports should be out of
+scope."_ **Token reordering stays forbidden permanently.** gofmt's import
+sorting keeps its place in entry 4 as a declared, measured omission. The line is
+now: a policy may respell a token in place; nothing may move one.
+
+**Sequence:** after `fill` (entry 8), which is cheaper and unblocks JSON
+completely. Land it before round 3 reaches stage C, so its packages are written
+against the final policy list rather than retrofitted.
 
 ---
 
