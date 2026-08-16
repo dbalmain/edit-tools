@@ -1,0 +1,1013 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/normalisation.toml",
+ "source": "# Written the way a person writes TOML and taplo does not. Every other file in\n# this corpus probes what taplo *breaks*; this one probes what it *rewrites*.\n# Nothing here is about line width -- each rewrite happens at every width.\n\n# Spacing around `=`, which people align by hand and taplo collapses.\nname     =    \"normalisation\"\nversion=\"0.1.0\"\nenabled       =        true\n\n# Leading indentation, which TOML allows and taplo strips.\n    indented = \"leading whitespace before a root pair\"\n\ttabbed = \"a tab, not spaces\"\n\n# Padding inside array brackets, and spacing around the commas.\npadded = [ 1 , 2 , 3 ]\ntight = [1,2,3]\ntrailing_space_run = [ \"a\" ,  \"b\" ]\n\n# Inline tables are the mirror image: taplo pads them out rather than in.\ncompact = {x=1,y=2}\nhalf_padded = { x = 1,y=2 }\n\n# Runs of spaces before a trailing comment, which taplo re-lays out and then\n# aligns against its siblings.\nport = 8080          # many spaces before this one\nhost = \"localhost\"\t# a tab before this one\n\n# Dotted keys, where the dots may be surrounded by whitespace and are not.\nserver   .   host = \"alpha.example.com\"\nserver.  port = 8080\n\n# Table headers, where the brackets and the dots may both be padded.\n[ owners ]\nprimary = \"platform\"\n\n[ deploy . staging ]\nregion = \"us-east-1\"\n\n\n\n# Three or more blank lines above; taplo caps a run at two.\nreplicas = 2\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 1346,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 78,
+    "text": "# Written the way a person writes TOML and taplo does not. Every other file in"
+   },
+   {
+    "type": "comment",
+    "start": 79,
+    "end": 156,
+    "text": "# this corpus probes what taplo *breaks*; this one probes what it *rewrites*."
+   },
+   {
+    "type": "comment",
+    "start": 157,
+    "end": 231,
+    "text": "# Nothing here is about line width -- each rewrite happens at every width."
+   },
+   {
+    "type": "comment",
+    "start": 233,
+    "end": 302,
+    "text": "# Spacing around `=`, which people align by hand and taplo collapses."
+   },
+   {
+    "type": "pair",
+    "start": 303,
+    "end": 332,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 303,
+      "end": 307,
+      "text": "name"
+     },
+     {
+      "type": "=",
+      "start": 312,
+      "end": 313,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 317,
+      "end": 332,
+      "children": [
+       {
+        "type": "\"",
+        "start": 317,
+        "end": 318,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 331,
+        "end": 332,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 333,
+    "end": 348,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 333,
+      "end": 340,
+      "text": "version"
+     },
+     {
+      "type": "=",
+      "start": 340,
+      "end": 341,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 341,
+      "end": 348,
+      "children": [
+       {
+        "type": "\"",
+        "start": 341,
+        "end": 342,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 347,
+        "end": 348,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 349,
+    "end": 376,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 349,
+      "end": 356,
+      "text": "enabled"
+     },
+     {
+      "type": "=",
+      "start": 363,
+      "end": 364,
+      "text": "="
+     },
+     {
+      "type": "boolean",
+      "start": 372,
+      "end": 376,
+      "text": "true"
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 378,
+    "end": 436,
+    "text": "# Leading indentation, which TOML allows and taplo strips."
+   },
+   {
+    "type": "pair",
+    "start": 441,
+    "end": 491,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 441,
+      "end": 449,
+      "text": "indented"
+     },
+     {
+      "type": "=",
+      "start": 450,
+      "end": 451,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 452,
+      "end": 491,
+      "children": [
+       {
+        "type": "\"",
+        "start": 452,
+        "end": 453,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 490,
+        "end": 491,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 493,
+    "end": 521,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 493,
+      "end": 499,
+      "text": "tabbed"
+     },
+     {
+      "type": "=",
+      "start": 500,
+      "end": 501,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 502,
+      "end": 521,
+      "children": [
+       {
+        "type": "\"",
+        "start": 502,
+        "end": 503,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 520,
+        "end": 521,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 523,
+    "end": 586,
+    "text": "# Padding inside array brackets, and spacing around the commas."
+   },
+   {
+    "type": "pair",
+    "start": 587,
+    "end": 609,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 587,
+      "end": 593,
+      "text": "padded"
+     },
+     {
+      "type": "=",
+      "start": 594,
+      "end": 595,
+      "text": "="
+     },
+     {
+      "type": "array",
+      "start": 596,
+      "end": 609,
+      "children": [
+       {
+        "type": "[",
+        "start": 596,
+        "end": 597,
+        "text": "["
+       },
+       {
+        "type": "integer",
+        "start": 598,
+        "end": 599,
+        "text": "1"
+       },
+       {
+        "type": ",",
+        "start": 600,
+        "end": 601,
+        "text": ","
+       },
+       {
+        "type": "integer",
+        "start": 602,
+        "end": 603,
+        "text": "2"
+       },
+       {
+        "type": ",",
+        "start": 604,
+        "end": 605,
+        "text": ","
+       },
+       {
+        "type": "integer",
+        "start": 606,
+        "end": 607,
+        "text": "3"
+       },
+       {
+        "type": "]",
+        "start": 608,
+        "end": 609,
+        "text": "]"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 610,
+    "end": 625,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 610,
+      "end": 615,
+      "text": "tight"
+     },
+     {
+      "type": "=",
+      "start": 616,
+      "end": 617,
+      "text": "="
+     },
+     {
+      "type": "array",
+      "start": 618,
+      "end": 625,
+      "children": [
+       {
+        "type": "[",
+        "start": 618,
+        "end": 619,
+        "text": "["
+       },
+       {
+        "type": "integer",
+        "start": 619,
+        "end": 620,
+        "text": "1"
+       },
+       {
+        "type": ",",
+        "start": 620,
+        "end": 621,
+        "text": ","
+       },
+       {
+        "type": "integer",
+        "start": 621,
+        "end": 622,
+        "text": "2"
+       },
+       {
+        "type": ",",
+        "start": 622,
+        "end": 623,
+        "text": ","
+       },
+       {
+        "type": "integer",
+        "start": 623,
+        "end": 624,
+        "text": "3"
+       },
+       {
+        "type": "]",
+        "start": 624,
+        "end": 625,
+        "text": "]"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 626,
+    "end": 661,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 626,
+      "end": 644,
+      "text": "trailing_space_run"
+     },
+     {
+      "type": "=",
+      "start": 645,
+      "end": 646,
+      "text": "="
+     },
+     {
+      "type": "array",
+      "start": 647,
+      "end": 661,
+      "children": [
+       {
+        "type": "[",
+        "start": 647,
+        "end": 648,
+        "text": "["
+       },
+       {
+        "type": "string",
+        "start": 649,
+        "end": 652,
+        "children": [
+         {
+          "type": "\"",
+          "start": 649,
+          "end": 650,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 651,
+          "end": 652,
+          "text": "\""
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 653,
+        "end": 654,
+        "text": ","
+       },
+       {
+        "type": "string",
+        "start": 656,
+        "end": 659,
+        "children": [
+         {
+          "type": "\"",
+          "start": 656,
+          "end": 657,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 658,
+          "end": 659,
+          "text": "\""
+         }
+        ]
+       },
+       {
+        "type": "]",
+        "start": 660,
+        "end": 661,
+        "text": "]"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 663,
+    "end": 736,
+    "text": "# Inline tables are the mirror image: taplo pads them out rather than in."
+   },
+   {
+    "type": "pair",
+    "start": 737,
+    "end": 756,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 737,
+      "end": 744,
+      "text": "compact"
+     },
+     {
+      "type": "=",
+      "start": 745,
+      "end": 746,
+      "text": "="
+     },
+     {
+      "type": "inline_table",
+      "start": 747,
+      "end": 756,
+      "children": [
+       {
+        "type": "{",
+        "start": 747,
+        "end": 748,
+        "text": "{"
+       },
+       {
+        "type": "pair",
+        "start": 748,
+        "end": 751,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 748,
+          "end": 749,
+          "text": "x"
+         },
+         {
+          "type": "=",
+          "start": 749,
+          "end": 750,
+          "text": "="
+         },
+         {
+          "type": "integer",
+          "start": 750,
+          "end": 751,
+          "text": "1"
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 751,
+        "end": 752,
+        "text": ","
+       },
+       {
+        "type": "pair",
+        "start": 752,
+        "end": 755,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 752,
+          "end": 753,
+          "text": "y"
+         },
+         {
+          "type": "=",
+          "start": 753,
+          "end": 754,
+          "text": "="
+         },
+         {
+          "type": "integer",
+          "start": 754,
+          "end": 755,
+          "text": "2"
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 755,
+        "end": 756,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 757,
+    "end": 784,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 757,
+      "end": 768,
+      "text": "half_padded"
+     },
+     {
+      "type": "=",
+      "start": 769,
+      "end": 770,
+      "text": "="
+     },
+     {
+      "type": "inline_table",
+      "start": 771,
+      "end": 784,
+      "children": [
+       {
+        "type": "{",
+        "start": 771,
+        "end": 772,
+        "text": "{"
+       },
+       {
+        "type": "pair",
+        "start": 773,
+        "end": 778,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 773,
+          "end": 774,
+          "text": "x"
+         },
+         {
+          "type": "=",
+          "start": 775,
+          "end": 776,
+          "text": "="
+         },
+         {
+          "type": "integer",
+          "start": 777,
+          "end": 778,
+          "text": "1"
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 778,
+        "end": 779,
+        "text": ","
+       },
+       {
+        "type": "pair",
+        "start": 779,
+        "end": 782,
+        "children": [
+         {
+          "type": "bare_key",
+          "start": 779,
+          "end": 780,
+          "text": "y"
+         },
+         {
+          "type": "=",
+          "start": 780,
+          "end": 781,
+          "text": "="
+         },
+         {
+          "type": "integer",
+          "start": 781,
+          "end": 782,
+          "text": "2"
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 783,
+        "end": 784,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 786,
+    "end": 862,
+    "text": "# Runs of spaces before a trailing comment, which taplo re-lays out and then"
+   },
+   {
+    "type": "comment",
+    "start": 863,
+    "end": 893,
+    "text": "# aligns against its siblings."
+   },
+   {
+    "type": "pair",
+    "start": 894,
+    "end": 944,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 894,
+      "end": 898,
+      "text": "port"
+     },
+     {
+      "type": "=",
+      "start": 899,
+      "end": 900,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 901,
+      "end": 905,
+      "text": "8080"
+     },
+     {
+      "type": "comment",
+      "start": 915,
+      "end": 944,
+      "text": "# many spaces before this one"
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 945,
+    "end": 987,
+    "children": [
+     {
+      "type": "bare_key",
+      "start": 945,
+      "end": 949,
+      "text": "host"
+     },
+     {
+      "type": "=",
+      "start": 950,
+      "end": 951,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 952,
+      "end": 963,
+      "children": [
+       {
+        "type": "\"",
+        "start": 952,
+        "end": 953,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 962,
+        "end": 963,
+        "text": "\""
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 964,
+      "end": 987,
+      "text": "# a tab before this one"
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 989,
+    "end": 1063,
+    "text": "# Dotted keys, where the dots may be surrounded by whitespace and are not."
+   },
+   {
+    "type": "pair",
+    "start": 1064,
+    "end": 1103,
+    "children": [
+     {
+      "type": "dotted_key",
+      "start": 1064,
+      "end": 1081,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 1064,
+        "end": 1070,
+        "text": "server"
+       },
+       {
+        "type": ".",
+        "start": 1073,
+        "end": 1074,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 1077,
+        "end": 1081,
+        "text": "host"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 1082,
+      "end": 1083,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 1084,
+      "end": 1103,
+      "children": [
+       {
+        "type": "\"",
+        "start": 1084,
+        "end": 1085,
+        "text": "\""
+       },
+       {
+        "type": "\"",
+        "start": 1102,
+        "end": 1103,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "pair",
+    "start": 1104,
+    "end": 1124,
+    "children": [
+     {
+      "type": "dotted_key",
+      "start": 1104,
+      "end": 1117,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 1104,
+        "end": 1110,
+        "text": "server"
+       },
+       {
+        "type": ".",
+        "start": 1110,
+        "end": 1111,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 1113,
+        "end": 1117,
+        "text": "port"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 1118,
+      "end": 1119,
+      "text": "="
+     },
+     {
+      "type": "integer",
+      "start": 1120,
+      "end": 1124,
+      "text": "8080"
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 1126,
+    "end": 1194,
+    "text": "# Table headers, where the brackets and the dots may both be padded."
+   },
+   {
+    "type": "table",
+    "start": 1195,
+    "end": 1228,
+    "children": [
+     {
+      "type": "[",
+      "start": 1195,
+      "end": 1196,
+      "text": "["
+     },
+     {
+      "type": "bare_key",
+      "start": 1197,
+      "end": 1203,
+      "text": "owners"
+     },
+     {
+      "type": "]",
+      "start": 1204,
+      "end": 1205,
+      "text": "]"
+     },
+     {
+      "type": "pair",
+      "start": 1206,
+      "end": 1226,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 1206,
+        "end": 1213,
+        "text": "primary"
+       },
+       {
+        "type": "=",
+        "start": 1214,
+        "end": 1215,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 1216,
+        "end": 1226,
+        "children": [
+         {
+          "type": "\"",
+          "start": 1216,
+          "end": 1217,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 1225,
+          "end": 1226,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "table",
+    "start": 1228,
+    "end": 1346,
+    "children": [
+     {
+      "type": "[",
+      "start": 1228,
+      "end": 1229,
+      "text": "["
+     },
+     {
+      "type": "dotted_key",
+      "start": 1230,
+      "end": 1246,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 1230,
+        "end": 1236,
+        "text": "deploy"
+       },
+       {
+        "type": ".",
+        "start": 1237,
+        "end": 1238,
+        "text": "."
+       },
+       {
+        "type": "bare_key",
+        "start": 1239,
+        "end": 1246,
+        "text": "staging"
+       }
+      ]
+     },
+     {
+      "type": "]",
+      "start": 1247,
+      "end": 1248,
+      "text": "]"
+     },
+     {
+      "type": "pair",
+      "start": 1249,
+      "end": 1269,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 1249,
+        "end": 1255,
+        "text": "region"
+       },
+       {
+        "type": "=",
+        "start": 1256,
+        "end": 1257,
+        "text": "="
+       },
+       {
+        "type": "string",
+        "start": 1258,
+        "end": 1269,
+        "children": [
+         {
+          "type": "\"",
+          "start": 1258,
+          "end": 1259,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 1268,
+          "end": 1269,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 1273,
+      "end": 1332,
+      "text": "# Three or more blank lines above; taplo caps a run at two."
+     },
+     {
+      "type": "pair",
+      "start": 1333,
+      "end": 1345,
+      "children": [
+       {
+        "type": "bare_key",
+        "start": 1333,
+        "end": 1341,
+        "text": "replicas"
+       },
+       {
+        "type": "=",
+        "start": 1342,
+        "end": 1343,
+        "text": "="
+       },
+       {
+        "type": "integer",
+        "start": 1344,
+        "end": 1345,
+        "text": "2"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

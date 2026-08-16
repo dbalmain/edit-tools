@@ -1,0 +1,42 @@
+# Written the way a person writes TOML and taplo does not. Every other file in
+# this corpus probes what taplo *breaks*; this one probes what it *rewrites*.
+# Nothing here is about line width -- each rewrite happens at every width.
+
+# Spacing around `=`, which people align by hand and taplo collapses.
+name     =    "normalisation"
+version="0.1.0"
+enabled       =        true
+
+# Leading indentation, which TOML allows and taplo strips.
+    indented = "leading whitespace before a root pair"
+	tabbed = "a tab, not spaces"
+
+# Padding inside array brackets, and spacing around the commas.
+padded = [ 1 , 2 , 3 ]
+tight = [1,2,3]
+trailing_space_run = [ "a" ,  "b" ]
+
+# Inline tables are the mirror image: taplo pads them out rather than in.
+compact = {x=1,y=2}
+half_padded = { x = 1,y=2 }
+
+# Runs of spaces before a trailing comment, which taplo re-lays out and then
+# aligns against its siblings.
+port = 8080          # many spaces before this one
+host = "localhost"	# a tab before this one
+
+# Dotted keys, where the dots may be surrounded by whitespace and are not.
+server   .   host = "alpha.example.com"
+server.  port = 8080
+
+# Table headers, where the brackets and the dots may both be padded.
+[ owners ]
+primary = "platform"
+
+[ deploy . staging ]
+region = "us-east-1"
+
+
+
+# Three or more blank lines above; taplo caps a run at two.
+replicas = 2
