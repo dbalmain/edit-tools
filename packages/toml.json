@@ -1,0 +1,95 @@
+{
+  "format": "et-doc-rules/1",
+  "indent": 2,
+
+  "comment_gap": 1,
+  "blank_cap": 2,
+
+  "tokens": [
+    "{", "}", "[", "]", "[[", "]]", ",", "=", ".",
+    "\"", "'", "\"\"\"", "'''",
+    "comment"
+  ],
+
+  "comments": ["comment"],
+  "descend": [],
+  "optional_parens": [],
+  "precedence": {},
+
+  "defs": {
+    "header_block": [
+      "seq",
+      ["tok", ["$", 0]],
+      ["child", "named"],
+      ["tok", ["$", 1]],
+      [
+        "opt",
+        "named",
+        [
+          "seq",
+          ["hard"],
+          ["blank", 2],
+          ["each", "named", ["seq", ["hard"], ["blank", 2]]]
+        ]
+      ],
+      ["blank", 2]
+    ]
+  },
+
+  "rules": {
+    "document": [
+      "seq",
+      ["each", "named", ["seq", ["hard"], ["blank", 2]]],
+      ["blank", 2]
+    ],
+
+    "table": ["use", "header_block", "[", "]"],
+    "table_array_element": ["use", "header_block", "[[", "]]"],
+
+    "pair": [
+      "group",
+      ["child", "named"],
+      ["sp"],
+      ["tok", "="],
+      ["sp"],
+      ["child", "named"]
+    ],
+
+    "dotted_key": ["each", "named", ["tok", "."]],
+
+    "array": [
+      "when",
+      ["count", "named", 0],
+      ["seq", ["tok", "["], ["tok", "]"]],
+      [
+        "seq",
+        ["tok", "["],
+        [
+          "indent",
+          ["soft"],
+          ["each", "named", ["seq", ["tok", ","], ["line"]]],
+          ["trail", ",", "*"]
+        ],
+        ["soft"],
+        ["tok", "]"]
+      ]
+    ],
+
+    "inline_table": [
+      "when",
+      ["count", "t:pair", 0],
+      ["seq", ["tok", "{"], ["tok", "}"]],
+      [
+        "seq",
+        ["tok", "{"],
+        ["sp"],
+        ["each", "t:pair", ["seq", ["tok", ","], ["sp"]]],
+        ["sp"],
+        ["tok", "}"]
+      ]
+    ],
+
+    "string": ["verbatim"],
+    "quoted_key": ["verbatim"]
+  }
+}
