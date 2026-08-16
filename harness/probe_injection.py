@@ -3,7 +3,7 @@
 # requires-python = ">=3.11"
 # dependencies = ["tree-sitter"]
 # ///
-"""Probe manifest-driven Markdown fence splicing through both runtimes."""
+"""Probe Markdown fence splicing through both runtimes and gate 2's reparse."""
 
 from __future__ import annotations
 
@@ -18,6 +18,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import gen_trees  # noqa: E402
 import manifest as mf  # noqa: E402
+import score  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 FIXTURES = ROOT / "harness" / "fixtures" / "injection"
@@ -183,6 +184,34 @@ def main() -> int:
             if text not in rust:
                 raise Failed(f"formatted output lost fixture text {text!r}")
         print(f"  format: rust=js with Markdown+JSON package map ({len(rust)} bytes)")
+
+        round2_doc = score.as_tree_doc(rust, markdown, manifests, parsers)
+        if round2_doc is None:
+            raise Failed("gate 2 could not parse the formatted Markdown")
+        round2_source = rust.encode("utf-8")
+        round2_json = [
+            node
+            for node in walk(round2_doc["root"])
+            if node.get("language") == "json"
+        ]
+        if len(round2_json) != 1 or round2_json[0]["type"] != "document":
+            raise Failed("gate 2 did not splice the clean JSON fence in round 2")
+        check_offsets(round2_doc["root"], round2_source)
+        print("  gate 2: round-two Markdown tree re-spliced the JSON document")
+        round2_tree = tmp_path / "regions-round2.tree.json"
+        round2_tree.write_text(json.dumps(round2_doc, indent=1, ensure_ascii=False) + "\n")
+        rust_again = invoke(RUST_BIN, round2_tree, packages)
+        js_again = invoke(FMT_JS, round2_tree, packages)
+        if rust_again != js_again:
+            raise Failed("Rust and JS disagreed on the round-two spliced tree")
+        if rust_again == rust:
+            print("  gate 2: fixture output is idempotent through the spliced path")
+        else:
+            delta = len(rust_again.encode("utf-8")) - len(rust.encode("utf-8"))
+            print(
+                "  gate 2: fixture blank-line tension remains after re-splicing "
+                f"({delta:+d} bytes)"
+            )
 
     print("\nall injection probes held")
     return 0
