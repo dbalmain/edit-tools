@@ -40,10 +40,9 @@
       ["tok", "}"]
     ],
     "comma_or_space": [
-      "opt",
-      "t:,",
-      ["seq", ["tok", ","], ["line"]],
-      ["sp"]
+      "seq",
+      ["opt", "named", ["sp"]],
+      ["opt", "t:,", ["seq", ["tok", ","], ["line"]]]
     ],
     "combinator": [
       "when",
@@ -174,7 +173,15 @@
       "seq",
       ["child", "t:at_keyword"],
       ["sp"],
-      ["each", "named", ["opt", "t:,", ["seq", ["tok", ","], ["sp"]], ["sp"]]],
+      [
+        "each",
+        "named",
+        [
+          "seq",
+          ["opt", "named", ["sp"]],
+          ["opt", "t:,", ["seq", ["tok", ","], ["sp"]]]
+        ]
+      ],
       ["opt", "t:;", ["tok", ";"]]
     ],
 
