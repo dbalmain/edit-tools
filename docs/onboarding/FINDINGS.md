@@ -404,7 +404,7 @@ once.
 
 ## 8. `fill` — pack as many items per line as fit
 
-**Status:** **decided — build it** (Dave, 2026-08-17) · **Cost:** local ·
+**Status:** **built** (2026-08-17) · **Cost:** local, **+365 B gzip** ·
 **Languages:** CSS, JSON
 
 The IR breaks a group all-or-nothing: every separator breaks, or none does.
@@ -432,17 +432,19 @@ ours                                   prettier
 ]
 ```
 
-Both lines are one prettier behaviour: fill when the elements are short
-primitives, one-per-line when they are not. Having only all-or-nothing gives us
-each case backwards.
+Implementation corrected the diagnosis: these are two prettier behaviours, not
+one. `fill` accounts for packing the short primitives in `long_flat_array`.
+`matrix` is the separately deferred static test from `docs/roadmap.md` pile A:
+all of an array's children are arrays or objects. It needs an all-child-kind
+predicate and an always-broken package branch, not a different fill algorithm.
 
 Stage D's costing, which is what makes this decidable:
 
 | Question                        | Answer                                             |
 | ------------------------------- | -------------------------------------------------- |
-| Same construct in CSS and JSON? | Yes — one generalised combinator, no second shape  |
+| Same construct in CSS and JSON? | Yes for per-line packing; `matrix` is a second shape |
 | Divergences it contributes to   | **13 of 21** (CSS)                                 |
-| Divergences it fully resolves   | **9 of 21** (CSS), and **2 of 2** (JSON)           |
+| Divergences it fully resolves   | **9 of 21** (CSS); JSON packing, not `matrix`       |
 | Cost on this register's scale   | **local**                                          |
 | Effect on merged packages       | Additive — JSON opts in, TOML and python unchanged |
 
@@ -457,8 +459,12 @@ two-language count is not inflated: python's four divergences are
 operator-precedence breaking, a different gap, and TOML's seven are entries 1, 2
 and 3.
 
-**Decision needed from Dave.** It is the one entry here where the cost is small,
-the benefit is measured, and two languages already want it.
+The shipped shape is `["fill", sel, sep]`, deliberately parallel to `each`.
+The evaluator already has exactly the information needed to build alternating
+content and separator Docs, and the printer makes the three ordinary Wadler
+fill choices per line. Hard breaks and `BreakParent` propagate through it, and
+both runtimes retain scalar-value width counting. The runtime-only boundary
+left all six package scores and every non-JSON output unchanged.
 
 ## 9. Comment placement cannot see the surrounding syntax
 

@@ -14,9 +14,8 @@ runtime-js/bundle.js      the JS runtime, one file, no dependencies
 ```
 
 Adding a language means writing one JSON file. It does not mean touching either
-runtime — that is the property the design is built to hold, and the two packages
-here are the evidence: JSON's five rules use the same eighteen opcodes Python's
-seventy-seven do.
+runtime — that is the property the design is built to hold, and the packages
+here are the evidence: their rules use the same small Doc language.
 
 ```sh
 ./build.sh          # compiles the Rust runtime; the JS runtime needs no build
@@ -27,8 +26,8 @@ seventy-seven do.
 
 ## The rule language
 
-An expression is a JSON array whose first element is the opcode. Eighteen
-opcodes, four selectors, one predicate. That is all of it.
+An expression is a JSON array whose first element is the opcode. The set is
+small and closed; an unknown opcode is a load-time refusal in both runtimes.
 
 Repeated rule shapes can be named in `defs` and instantiated with `use`:
 
@@ -51,7 +50,7 @@ Repeated rule shapes can be named in `defs` and instantiated with `use`:
 a token, a selector or a whole expression. Both runtimes expand `use` on the raw
 JSON at package load, before checking the resulting expressions. The evaluator
 therefore knows nothing about macros: expansion can only produce the same
-eighteen opcodes it could already evaluate. Definitions may use other
+checked opcodes it could already evaluate. Definitions may use other
 definitions, but cycles and nesting beyond 32 definitions are refused, as are
 unknown names, bad argument counts and holes outside a definition body.
 
@@ -88,10 +87,20 @@ Every opcode that emits a child **consumes** it. See _linearity_ below.
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------ |
 | `["child", sel]`         | format the child under the cursor, which must match `sel`                                                          |
 | `["each", sel, sep]`     | format every `sel` child in turn, evaluating `sep` between them — `sep` consumes whatever punctuation lies between |
+| `["fill", sel, sep]`     | `each`, but each `sep` independently stays flat or breaks according to whether the next content fits                |
 | `["tok", "s"]`           | the child under the cursor is the token `s`; emit it                                                               |
 | `["opt", sel, e]`        | evaluate `e` only if the child under the cursor matches `sel`                                                      |
 | `["verbatim"]`           | take every child and emit the node's original source text, exactly — after the subtree's offsets check out         |
 | `["flatten", type, sep]` | collect a left-nested operator chain and join it — see below                                                       |
+
+`fill` has the same cursor and separator-consumption contract as `each`, but
+builds an alternating content/separator Doc. At each separator the printer asks
+whether the current and next content fit flat on the remaining line. If both
+fit it keeps the separator flat; if only the current content fits it breaks the
+separator; if the current content itself cannot stay flat it prints that
+content broken too. A `Hard` or `BreakParent` still propagates through a fill to
+force its enclosing group open; that does not turn the fill back into an
+all-or-nothing list.
 
 ### Choice
 
@@ -343,17 +352,15 @@ parses the package into a typed `Expr` enum with `TryFrom<Value>`, so a
 malformed package fails at load with a message; the JS one interprets the arrays
 directly and caches break-propagation on each Doc node at construction, which
 Rust computes once from the finished Doc tree before printing. Same algorithm,
-different idiom, byte-identical output on 30/30 corpus runs.
+different idiom, byte-identical output on all corpus runs.
 
 ## What changed from the proposal, and why
 
-- **Eighteen opcodes, not fourteen.** `suffix` was dropped from the language
-  entirely (the runtime owns comments, so no package needs it) and `ifbreak`
-  never earned a use, but `sp`, `opt`, `verbatim`, `blank`, `trail`, `paren` and
-  `autoparen` were all needed. The growth is in _policies_, not in `when` —
-  which is what the proposal named as the risk. `when` ended up with a single
-  predicate and appears twice in the whole of Python, both times an arity check.
-  The bytecode approach (design C) was not the honest answer.
+- **The opcode set grew where measured cases demanded it.** `suffix` was
+  dropped from the language entirely (the runtime owns comments, so no package
+  needs it) and `ifbreak` never earned a use, but `sp`, `opt`, `verbatim`,
+  `blank`, `trail`, `paren`, `autoparen`, source-mirroring breaks and `fill`
+  were all needed. The bytecode approach (design C) was not the honest answer.
 - **`flatten` needed precedence and a no-indent rule** (above). The proposal had
   neither and would have staircased.
 - **The two-level bracket group replaced `conditionalGroup`.** I said in the
@@ -424,15 +431,15 @@ reference agreement 24/30
 ```
 
 JSON is measured against prettier only since Stage 0 generalised the reference
-comparison, and both divergences are `nested.json`. Prettier has a rule this IR
-has no way to express: an array whose elements are **all** arrays or objects is
-always printed one element per line, whatever the width, so `"matrix"` explodes
-at 88 where we keep it flat and it fits. At 60 prettier additionally fills
-`long_flat_array` several numbers to a line rather than one per line. Both are
-the same missing capability — a group whose break decision depends on the
-_kinds_ of its children rather than on measured width — and it is a fifth entry
-for "What this design cannot do". Recorded, not fixed; it postdates this
-document.
+comparison, and both divergences are `nested.json`. They have different causes.
+Prettier has a rule this IR still cannot express: an array whose elements are
+**all** arrays or objects is always printed one element per line, whatever the
+width, so `"matrix"` explodes where we keep it flat and it fits. That needs a
+static all-children-kind predicate. Separately, prettier fills
+`long_flat_array` several numbers to a line rather than one per line; the
+`fill` opcode now expresses that per-line width decision. Because both cases
+share one corpus file, fixing the latter alone does not necessarily move the
+file-level agreement count.
 
 The black-agreement figure is worse than this document used to claim, and the
 reason is worth keeping. The submission scored it at width 88 only, where

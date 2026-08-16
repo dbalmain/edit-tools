@@ -459,6 +459,7 @@ pub enum Expr {
     Sp,
     Child(Sel),
     Each(Sel, Box<Expr>),
+    Fill(Sel, Box<Expr>),
     Tok(String),
     Verbatim,
     Opt(Sel, Box<Expr>),
@@ -559,14 +560,14 @@ impl TryFrom<Value> for Expr {
                 };
                 Ok(Expr::Blank(cap, around, keep_after))
             }
-            "each" | "opt" => {
+            "each" | "fill" | "opt" => {
                 arity(2)?;
                 let sel = selector(&parts[0])?;
                 let body = Box::new(Expr::try_from(parts.remove(1))?);
-                Ok(if op == "each" {
-                    Expr::Each(sel, body)
-                } else {
-                    Expr::Opt(sel, body)
+                Ok(match op.as_str() {
+                    "each" => Expr::Each(sel, body),
+                    "fill" => Expr::Fill(sel, body),
+                    _ => Expr::Opt(sel, body),
                 })
             }
             "flatten" => {
@@ -825,5 +826,18 @@ mod tests {
             err.contains("expected a list of node types, got \"notalist\""),
             "{err}"
         );
+    }
+
+    #[test]
+    fn fill_takes_a_selector_and_separator_expression() {
+        let pkg = macro_package(
+            json!({}),
+            json!({ "list": ["fill", "named", ["line"]] }),
+        )
+        .expect("fill parses");
+        assert!(matches!(pkg.rules["list"], Expr::Fill(Sel::Named, _)));
+
+        let err = refusal(json!({}), json!({ "list": ["fill", "named"] }));
+        assert!(err.contains("`fill` takes 2 operands, got 1"), "{err}");
     }
 }

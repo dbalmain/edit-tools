@@ -140,15 +140,14 @@ Pile A remains the right _classification_ — these limits are cheap to lift whe
 we want them lifted. What changed is the assumption that cheap therefore means
 now.
 
-### Pile B — `fill`
+### Pile B — `fill` — **built**
 
 A printer primitive, well understood, linear cost, and the thing prettier uses
 to put several numbers on a line rather than one per line (the second JSON
-divergence, `long_flat_array@60`). Bounded work, but it is printer work in both
-runtimes, so it is not free the way pile A is.
-
-Driven by HTML/XML inline content in round 4. **Possibly not by markdown** — see
-`injection.md` on `proseWrap`.
+construct, `long_flat_array`). Built on 2026-08-17 after CSS priced it: **+365 B
+gzip** across the hand-written JS runtime, with a byte-identical Rust mirror.
+The opcode is `["fill", sel, sep]`, parallel to `each`; its separator chooses
+flat or break independently per line.
 
 ### Pile C — trying two layouts and picking one
 
