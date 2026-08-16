@@ -18,6 +18,7 @@ node --test runtime-js/highlight.test.js
 python3 -m unittest discover -s harness
 ./harness/check_gate3.py
 ./harness/score.py .
+./harness/corpus_stats.py
 ./harness/score_highlight.py .
 ./harness/probe_tree_interface.py
 ./harness/probe_injection.py

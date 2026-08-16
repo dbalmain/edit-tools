@@ -77,6 +77,11 @@ pattern.
 | 2026-08-16 | `review-brief.md`                     | Stage B must run both `cmp` loops itself rather than reading the counts out of the report, and must check `widths` against the reference's bisected default                                                                          | TOML stage B passed a corpus the reference changed in 6 of 14 files, and `widths = [88, 60]` against taplo's default of 80       |
 | 2026-08-16 | `corpus-brief.md`                     | Replace reference-output equivalence with the one-way adversarial rule: every useful mutation rejected by the default must also be rejected by an override; zero useful mutations is a failure                                       | The old check certified `tomllib`, `ast.dump`, and ordered `json.loads` on correct inputs while missing their spelling blindness |
 | 2026-08-16 | `corpus-brief.md`                     | The normalisation probe must include an **empty container written with a space** (`f( )`, `{ }`, `[ ]`); if the gate rejects the reference's own output on it, report and stop rather than deleting the probe                        | Round 2 — Go and CSS independently hit a gate-3 defect there that was latent in every merged language                            |
+| 2026-08-16 | `corpus-brief.md / review-brief.md` | Both counts come from `./harness/corpus_stats.py`, not from hand-rolled `cmp` loops, and it prints the reference's own overflow that `score.py` cannot give a language without a package | CSS stage B — the brief told stage-A builders to read a number `score.py` filters their language out before computing |
+| 2026-08-16 | `corpus-brief.md` | A fixed-width reference makes the width-difference and reference-overflow reporting explicitly **N/A** rather than zero; `--stdin-filepath` guidance does not apply to every reference | Go stage B — first `reference_width = "fixed"` language, and two rules read as failures rather than as inapplicable |
+| 2026-08-16 | `corpus-brief.md` | `nix shell nixpkgs#…` is **not** a pinned runner: it follows the caller's registry. Where a bundled tool has no version flag, read the version from the executable's own build metadata and say that is what was done | Go stage B — gofmt ships inside the `go` distribution and has no `-version` |
+| 2026-08-16 | `corpus-brief.md` | The excluded-reference-behaviour inventory must cover token **reordering** as well as token-text rewriting, and must be established by experiment rather than by example | Go stage B — gofmt sorts imports, which linearity forbids for the same reason as a quote rewrite |
+| 2026-08-16 | `corpus-brief.md` | Describe `--parser` and `--stdin-filepath` as alternative prettier parser selectors, and warn that a green generic gate is not evidence that grammar source gaps or anonymous tokens are protected | YAML stage B — two builders drew opposite conclusions about which flag was required, and both read a green gate as protection it did not give |
 
 ## 3. Model scorecard
 
@@ -93,7 +98,75 @@ escalation adds a row.
 | TOML     | codex-Sol | D     | ~20 min    | escalate              | none         | yes (re-scored, reproduced the report exactly) | full, structured | Earned the round. Disproved a design-limit label _by experiment_, and found a runtime defect the corpus never triggered. Recommended the freeze. Left the ledger untracked.                                                            |
 | TOML     | codex-Sol | E     | ~30 min    | merged                | none         | yes                                            | honest stop      | Fixed both blockers, split the runtime commits, re-verified python/json unchanged. **Stopped and asked** rather than resolving a contradiction in my brief -- the right call, and it exposed a real harness gap (resolved vs changed). |
 
-Round 1 was a head-to-head: all four built TOML from the identical brief.
+| CSS | grok | A | ~12 min | pass with fixes | none | yes | full, structured |
+Established prettier's default width by bisection unprompted. Hit the
+empty-block gate-3 defect and **routed around it rather than weakening the
+gate**, saying so in the note. Corpus flatters slightly: 10/15 changed at the
+default width. | | YAML | grok | A | ~14 min | (base for rework) | none | yes |
+full, structured | Best manifest and broadest construct coverage, and the only
+builder that counted comments. Two claims wrong (editorconfig, block-scalar
+gate), both corrected at stage B. Normalisation coverage inadequate at 5/15. | |
+YAML | Terra | A | ~16 min | not selected | none | yes | thin | Authentic
+outputs, but a stale grammar pin (0.7.0 vs 0.7.2) and prettier 3.6.2 where the
+others observed 3.9.6. One commit, not per-boundary. Failed to report that its
+own `documents.yaml` shows prettier deleting both `...` markers. | | YAML |
+DeepSeek | A | ~20 min | corpus adopted | none | yes | full, structured | Much
+the best normalisation strategy (13/14 vs 5/15) and found the broader
+quote-selection behaviour nobody else did. But **self-reported 14/14 was really
+13/14**, `.yml` missing from `extensions`, and its block-scalar gate claim
+false. | | Go | DeepSeek | A | cut off | resumed | none | n/a — died mid-run |
+none | Killed by a `check_gate3` failure that was **the gate's fault, not the
+corpus's**. Left everything uncommitted despite the brief asking for
+green-boundary commits, which is the cost the playbook predicts. | | Go |
+DeepSeek | A′ | ~22 min | pass with fixes | none | yes | full, structured |
+Graded its own previous attempt honestly and rewrote it: comments 4/16 → 16/16,
+`operators.go` was a no-op and was replaced, alignment probe sharpened. Kept the
+`( )` probe that exposed the gate defect. | | CSS | codex-Sol | B | ~8 min |
+pass with fixes | none | yes | full, structured | Verified every count
+independently. Reported the `score.py`-cannot-print-overflow-at-stage-A gap as a
+template delta, which became `corpus_stats.py`. | | Go | codex-Sol | B | ~12 min
+| pass with fixes | none | yes | full, structured | **Priced FINDINGS entry 1**
+with a GOROOT proxy scan, and withdrew its cheap `column` partial with a reason.
+Caught that `nix shell nixpkgs#…` is not an immutable pin, and that gofmt's
+import sorting is an unmeasured exclusion. | | YAML | codex-Sol | B | ~18 min |
+**rework** | none | yes | full, structured | The round's best work. Re-measured
+all three builders and **caught DeepSeek's 14/14 as 13/14**. Found the
+block-scalar source gap — a regression the orchestrator had introduced hours
+earlier. Quantified the entry-4 exclusion at 20.3%. |
+
+Round 1 was a head-to-head on TOML; round 2 ran three languages at once, with
+YAML as its three-way comparison.
+
+### What round 2 says about the models
+
+**The self-reported number is the thing to distrust.** Round 1's lesson was that
+a builder may omit a count; round 2's is that it may get one wrong. DeepSeek
+reported 14/14 and it was 13/14 — a small error, but it was the number its whole
+corpus was being selected on, and only an independent re-measurement found it.
+That is now `corpus_stats.py`'s job rather than a reviewer's `cmp` loop.
+
+**Every builder was honest about what it could not do**, and two were honest in
+the most useful way: grok and Go's DeepSeek both hit a gate-3 failure and
+refused to weaken the gate or delete the probe to get past it. Both were right,
+the gate was wrong, and the round's headline defect came from believing them.
+
+**DeepSeek and grok are complementary rather than ranked.** grok writes the
+better manifest and the broader construct coverage; DeepSeek writes the corpus
+that actually exercises the reference. YAML's merge recommendation is literally
+"grok's base, DeepSeek's normalisation strategy" — which suggests pairing them
+deliberately rather than picking a winner.
+
+**codex-Sol as reviewer keeps paying for itself.** It has now, across two
+rounds, disproved a design-limit label by experiment, found a runtime defect the
+corpus never triggered, caught a builder's arithmetic, and found an orchestrator
+regression introduced hours earlier. No review has yet been wrong.
+
+**Terra is not earning its seat.** Two rounds, two thin done-notes, a stale pin,
+a stale reference version, and one commit where the brief asked for green
+boundaries. Nothing dishonest — just consistently the least useful of the three.
+
+**agy has still produced nothing**, blocked on headless command permissions
+rather than on capability. See `LANGUAGES.md`.
 
 **Closed 2026-08-16.** grok's corpus merged; the other three are abandoned in
 place on their branches. Two defects survived stage B and were caught only when
