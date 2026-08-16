@@ -1,0 +1,26 @@
+pub mod parser {
+    pub mod tokens {
+        pub struct Token {
+            pub kind: Kind,
+            pub text: String,
+        }
+    }
+
+    pub enum Kind {
+        Identifier,
+        Punctuation,
+    }
+}
+
+use crate::parser::tokens::Token;
+use std::fmt;
+
+// Module paths and visibility are characteristic Rust item structure.
+impl fmt::Display for Token {
+    fn fmt(
+        &self,
+        output: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
+        write!(output, "{}", self.text)
+    }
+}

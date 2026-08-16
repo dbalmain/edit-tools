@@ -1,0 +1,487 @@
+{
+ "language": "rust",
+ "source_file": "corpus/src/rust/comments.rs",
+ "source": "// Own-line comment before the first item.\nfn comment_positions() {\n    let first = 1; // trailing comment after a statement\n\n    let values = [\n        // Comment before the first element inside a delimiter.\n        first,\n        second, // trailing comment inside the array\n        // Comment before the closing delimiter.\n    ];\n\n    let record = Record {\n        // Comment before a field.\n        first,\n        second, // trailing comment after a field\n               // Comment immediately before the closing brace.\n    };\n\n    consume(values, record);\n} // trailing comment after the function\n\n// Comment at the end of the file.\n",
+ "root": {
+  "type": "source_file",
+  "start": 0,
+  "end": 638,
+  "children": [
+   {
+    "type": "line_comment",
+    "start": 0,
+    "end": 42,
+    "children": [
+     {
+      "type": "//",
+      "start": 0,
+      "end": 2,
+      "text": "//"
+     }
+    ]
+   },
+   {
+    "type": "function_item",
+    "start": 43,
+    "end": 562,
+    "children": [
+     {
+      "type": "fn",
+      "start": 43,
+      "end": 45,
+      "text": "fn"
+     },
+     {
+      "type": "identifier",
+      "start": 46,
+      "end": 63,
+      "field": "name",
+      "text": "comment_positions"
+     },
+     {
+      "type": "parameters",
+      "start": 63,
+      "end": 65,
+      "field": "parameters",
+      "children": [
+       {
+        "type": "(",
+        "start": 63,
+        "end": 64,
+        "text": "("
+       },
+       {
+        "type": ")",
+        "start": 64,
+        "end": 65,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "block",
+      "start": 66,
+      "end": 562,
+      "field": "body",
+      "children": [
+       {
+        "type": "{",
+        "start": 66,
+        "end": 67,
+        "text": "{"
+       },
+       {
+        "type": "let_declaration",
+        "start": 72,
+        "end": 86,
+        "children": [
+         {
+          "type": "let",
+          "start": 72,
+          "end": 75,
+          "text": "let"
+         },
+         {
+          "type": "identifier",
+          "start": 76,
+          "end": 81,
+          "field": "pattern",
+          "text": "first"
+         },
+         {
+          "type": "=",
+          "start": 82,
+          "end": 83,
+          "text": "="
+         },
+         {
+          "type": "integer_literal",
+          "start": 84,
+          "end": 85,
+          "field": "value",
+          "text": "1"
+         },
+         {
+          "type": ";",
+          "start": 85,
+          "end": 86,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "line_comment",
+        "start": 87,
+        "end": 124,
+        "children": [
+         {
+          "type": "//",
+          "start": 87,
+          "end": 89,
+          "text": "//"
+         }
+        ]
+       },
+       {
+        "type": "let_declaration",
+        "start": 130,
+        "end": 332,
+        "children": [
+         {
+          "type": "let",
+          "start": 130,
+          "end": 133,
+          "text": "let"
+         },
+         {
+          "type": "identifier",
+          "start": 134,
+          "end": 140,
+          "field": "pattern",
+          "text": "values"
+         },
+         {
+          "type": "=",
+          "start": 141,
+          "end": 142,
+          "text": "="
+         },
+         {
+          "type": "array_expression",
+          "start": 143,
+          "end": 331,
+          "field": "value",
+          "children": [
+           {
+            "type": "[",
+            "start": 143,
+            "end": 144,
+            "text": "["
+           },
+           {
+            "type": "line_comment",
+            "start": 153,
+            "end": 208,
+            "children": [
+             {
+              "type": "//",
+              "start": 153,
+              "end": 155,
+              "text": "//"
+             }
+            ]
+           },
+           {
+            "type": "identifier",
+            "start": 217,
+            "end": 222,
+            "text": "first"
+           },
+           {
+            "type": ",",
+            "start": 222,
+            "end": 223,
+            "text": ","
+           },
+           {
+            "type": "identifier",
+            "start": 232,
+            "end": 238,
+            "text": "second"
+           },
+           {
+            "type": ",",
+            "start": 238,
+            "end": 239,
+            "text": ","
+           },
+           {
+            "type": "line_comment",
+            "start": 240,
+            "end": 276,
+            "children": [
+             {
+              "type": "//",
+              "start": 240,
+              "end": 242,
+              "text": "//"
+             }
+            ]
+           },
+           {
+            "type": "line_comment",
+            "start": 285,
+            "end": 325,
+            "children": [
+             {
+              "type": "//",
+              "start": 285,
+              "end": 287,
+              "text": "//"
+             }
+            ]
+           },
+           {
+            "type": "]",
+            "start": 330,
+            "end": 331,
+            "text": "]"
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 331,
+          "end": 332,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "let_declaration",
+        "start": 338,
+        "end": 530,
+        "children": [
+         {
+          "type": "let",
+          "start": 338,
+          "end": 341,
+          "text": "let"
+         },
+         {
+          "type": "identifier",
+          "start": 342,
+          "end": 348,
+          "field": "pattern",
+          "text": "record"
+         },
+         {
+          "type": "=",
+          "start": 349,
+          "end": 350,
+          "text": "="
+         },
+         {
+          "type": "struct_expression",
+          "start": 351,
+          "end": 529,
+          "field": "value",
+          "children": [
+           {
+            "type": "type_identifier",
+            "start": 351,
+            "end": 357,
+            "field": "name",
+            "text": "Record"
+           },
+           {
+            "type": "field_initializer_list",
+            "start": 358,
+            "end": 529,
+            "field": "body",
+            "children": [
+             {
+              "type": "{",
+              "start": 358,
+              "end": 359,
+              "text": "{"
+             },
+             {
+              "type": "line_comment",
+              "start": 368,
+              "end": 394,
+              "children": [
+               {
+                "type": "//",
+                "start": 368,
+                "end": 370,
+                "text": "//"
+               }
+              ]
+             },
+             {
+              "type": "shorthand_field_initializer",
+              "start": 403,
+              "end": 408,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 403,
+                "end": 408,
+                "text": "first"
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 408,
+              "end": 409,
+              "text": ","
+             },
+             {
+              "type": "shorthand_field_initializer",
+              "start": 418,
+              "end": 424,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 418,
+                "end": 424,
+                "text": "second"
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 424,
+              "end": 425,
+              "text": ","
+             },
+             {
+              "type": "line_comment",
+              "start": 426,
+              "end": 459,
+              "children": [
+               {
+                "type": "//",
+                "start": 426,
+                "end": 428,
+                "text": "//"
+               }
+              ]
+             },
+             {
+              "type": "line_comment",
+              "start": 475,
+              "end": 523,
+              "children": [
+               {
+                "type": "//",
+                "start": 475,
+                "end": 477,
+                "text": "//"
+               }
+              ]
+             },
+             {
+              "type": "}",
+              "start": 528,
+              "end": 529,
+              "text": "}"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 529,
+          "end": 530,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "expression_statement",
+        "start": 536,
+        "end": 560,
+        "children": [
+         {
+          "type": "call_expression",
+          "start": 536,
+          "end": 559,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 536,
+            "end": 543,
+            "field": "function",
+            "text": "consume"
+           },
+           {
+            "type": "arguments",
+            "start": 543,
+            "end": 559,
+            "field": "arguments",
+            "children": [
+             {
+              "type": "(",
+              "start": 543,
+              "end": 544,
+              "text": "("
+             },
+             {
+              "type": "identifier",
+              "start": 544,
+              "end": 550,
+              "text": "values"
+             },
+             {
+              "type": ",",
+              "start": 550,
+              "end": 551,
+              "text": ","
+             },
+             {
+              "type": "identifier",
+              "start": 552,
+              "end": 558,
+              "text": "record"
+             },
+             {
+              "type": ")",
+              "start": 558,
+              "end": 559,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 559,
+          "end": 560,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 561,
+        "end": 562,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "line_comment",
+    "start": 563,
+    "end": 601,
+    "children": [
+     {
+      "type": "//",
+      "start": 563,
+      "end": 565,
+      "text": "//"
+     }
+    ]
+   },
+   {
+    "type": "line_comment",
+    "start": 603,
+    "end": 637,
+    "children": [
+     {
+      "type": "//",
+      "start": 603,
+      "end": 605,
+      "text": "//"
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -1,0 +1,22 @@
+// Own-line comment before the first item.
+fn comment_positions() {
+    let first = 1; // trailing comment after a statement
+
+    let values = [
+        // Comment before the first element inside a delimiter.
+        first,
+        second, // trailing comment inside the array
+        // Comment before the closing delimiter.
+    ];
+
+    let record = Record {
+        // Comment before a field.
+        first,
+        second, // trailing comment after a field
+               // Comment immediately before the closing brace.
+    };
+
+    consume(values, record);
+} // trailing comment after the function
+
+// Comment at the end of the file.

@@ -1,0 +1,668 @@
+{
+ "language": "rust",
+ "source_file": "corpus/src/rust/macros.rs",
+ "source": "macro_rules! make_pair {\n    ($name:ident, $value:expr) => {\n        let $name = ($value, stringify!($name));\n    };\n}\n\nfn macro_probe() {\n    make_pair!(answer, 42);\n    make_pair!(message, \"hello\");\n\n    // Macro invocations are Rust-specific syntax with opaque token bodies.\n    let values = vec![answer, message, another_value, yet_another_value];\n    consume(values);\n}\n",
+ "root": {
+  "type": "source_file",
+  "start": 0,
+  "end": 375,
+  "children": [
+   {
+    "type": "macro_definition",
+    "start": 0,
+    "end": 118,
+    "children": [
+     {
+      "type": "macro_rules!",
+      "start": 0,
+      "end": 12,
+      "text": "macro_rules!"
+     },
+     {
+      "type": "identifier",
+      "start": 13,
+      "end": 22,
+      "field": "name",
+      "text": "make_pair"
+     },
+     {
+      "type": "{",
+      "start": 23,
+      "end": 24,
+      "text": "{"
+     },
+     {
+      "type": "macro_rule",
+      "start": 29,
+      "end": 115,
+      "children": [
+       {
+        "type": "token_tree_pattern",
+        "start": 29,
+        "end": 55,
+        "field": "left",
+        "children": [
+         {
+          "type": "(",
+          "start": 29,
+          "end": 30,
+          "text": "("
+         },
+         {
+          "type": "token_binding_pattern",
+          "start": 30,
+          "end": 41,
+          "children": [
+           {
+            "type": "metavariable",
+            "start": 30,
+            "end": 35,
+            "field": "name",
+            "text": "$name"
+           },
+           {
+            "type": ":",
+            "start": 35,
+            "end": 36,
+            "text": ":"
+           },
+           {
+            "type": "fragment_specifier",
+            "start": 36,
+            "end": 41,
+            "field": "type",
+            "children": [
+             {
+              "type": "ident",
+              "start": 36,
+              "end": 41,
+              "text": "ident"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 41,
+          "end": 42,
+          "text": ","
+         },
+         {
+          "type": "token_binding_pattern",
+          "start": 43,
+          "end": 54,
+          "children": [
+           {
+            "type": "metavariable",
+            "start": 43,
+            "end": 49,
+            "field": "name",
+            "text": "$value"
+           },
+           {
+            "type": ":",
+            "start": 49,
+            "end": 50,
+            "text": ":"
+           },
+           {
+            "type": "fragment_specifier",
+            "start": 50,
+            "end": 54,
+            "field": "type",
+            "children": [
+             {
+              "type": "expr",
+              "start": 50,
+              "end": 54,
+              "text": "expr"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ")",
+          "start": 54,
+          "end": 55,
+          "text": ")"
+         }
+        ]
+       },
+       {
+        "type": "=>",
+        "start": 56,
+        "end": 58,
+        "text": "=>"
+       },
+       {
+        "type": "token_tree",
+        "start": 59,
+        "end": 115,
+        "field": "right",
+        "children": [
+         {
+          "type": "{",
+          "start": 59,
+          "end": 60,
+          "text": "{"
+         },
+         {
+          "type": "let",
+          "start": 69,
+          "end": 72,
+          "text": "let"
+         },
+         {
+          "type": "metavariable",
+          "start": 73,
+          "end": 78,
+          "text": "$name"
+         },
+         {
+          "type": "=",
+          "start": 79,
+          "end": 80,
+          "text": "="
+         },
+         {
+          "type": "token_tree",
+          "start": 81,
+          "end": 108,
+          "children": [
+           {
+            "type": "(",
+            "start": 81,
+            "end": 82,
+            "text": "("
+           },
+           {
+            "type": "metavariable",
+            "start": 82,
+            "end": 88,
+            "text": "$value"
+           },
+           {
+            "type": ",",
+            "start": 88,
+            "end": 89,
+            "text": ","
+           },
+           {
+            "type": "identifier",
+            "start": 90,
+            "end": 99,
+            "text": "stringify"
+           },
+           {
+            "type": "!",
+            "start": 99,
+            "end": 100,
+            "text": "!"
+           },
+           {
+            "type": "token_tree",
+            "start": 100,
+            "end": 107,
+            "children": [
+             {
+              "type": "(",
+              "start": 100,
+              "end": 101,
+              "text": "("
+             },
+             {
+              "type": "metavariable",
+              "start": 101,
+              "end": 106,
+              "text": "$name"
+             },
+             {
+              "type": ")",
+              "start": 106,
+              "end": 107,
+              "text": ")"
+             }
+            ]
+           },
+           {
+            "type": ")",
+            "start": 107,
+            "end": 108,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 108,
+          "end": 109,
+          "text": ";"
+         },
+         {
+          "type": "}",
+          "start": 114,
+          "end": 115,
+          "text": "}"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": ";",
+      "start": 115,
+      "end": 116,
+      "text": ";"
+     },
+     {
+      "type": "}",
+      "start": 117,
+      "end": 118,
+      "text": "}"
+     }
+    ]
+   },
+   {
+    "type": "function_item",
+    "start": 120,
+    "end": 374,
+    "children": [
+     {
+      "type": "fn",
+      "start": 120,
+      "end": 122,
+      "text": "fn"
+     },
+     {
+      "type": "identifier",
+      "start": 123,
+      "end": 134,
+      "field": "name",
+      "text": "macro_probe"
+     },
+     {
+      "type": "parameters",
+      "start": 134,
+      "end": 136,
+      "field": "parameters",
+      "children": [
+       {
+        "type": "(",
+        "start": 134,
+        "end": 135,
+        "text": "("
+       },
+       {
+        "type": ")",
+        "start": 135,
+        "end": 136,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "block",
+      "start": 137,
+      "end": 374,
+      "field": "body",
+      "children": [
+       {
+        "type": "{",
+        "start": 137,
+        "end": 138,
+        "text": "{"
+       },
+       {
+        "type": "expression_statement",
+        "start": 143,
+        "end": 166,
+        "children": [
+         {
+          "type": "macro_invocation",
+          "start": 143,
+          "end": 165,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 143,
+            "end": 152,
+            "field": "macro",
+            "text": "make_pair"
+           },
+           {
+            "type": "!",
+            "start": 152,
+            "end": 153,
+            "text": "!"
+           },
+           {
+            "type": "token_tree",
+            "start": 153,
+            "end": 165,
+            "children": [
+             {
+              "type": "(",
+              "start": 153,
+              "end": 154,
+              "text": "("
+             },
+             {
+              "type": "identifier",
+              "start": 154,
+              "end": 160,
+              "text": "answer"
+             },
+             {
+              "type": ",",
+              "start": 160,
+              "end": 161,
+              "text": ","
+             },
+             {
+              "type": "integer_literal",
+              "start": 162,
+              "end": 164,
+              "text": "42"
+             },
+             {
+              "type": ")",
+              "start": 164,
+              "end": 165,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 165,
+          "end": 166,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "expression_statement",
+        "start": 171,
+        "end": 200,
+        "children": [
+         {
+          "type": "macro_invocation",
+          "start": 171,
+          "end": 199,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 171,
+            "end": 180,
+            "field": "macro",
+            "text": "make_pair"
+           },
+           {
+            "type": "!",
+            "start": 180,
+            "end": 181,
+            "text": "!"
+           },
+           {
+            "type": "token_tree",
+            "start": 181,
+            "end": 199,
+            "children": [
+             {
+              "type": "(",
+              "start": 181,
+              "end": 182,
+              "text": "("
+             },
+             {
+              "type": "identifier",
+              "start": 182,
+              "end": 189,
+              "text": "message"
+             },
+             {
+              "type": ",",
+              "start": 189,
+              "end": 190,
+              "text": ","
+             },
+             {
+              "type": "string_literal",
+              "start": 191,
+              "end": 198,
+              "children": [
+               {
+                "type": "\"",
+                "start": 191,
+                "end": 192,
+                "text": "\""
+               },
+               {
+                "type": "string_content",
+                "start": 192,
+                "end": 197,
+                "text": "hello"
+               },
+               {
+                "type": "\"",
+                "start": 197,
+                "end": 198,
+                "text": "\""
+               }
+              ]
+             },
+             {
+              "type": ")",
+              "start": 198,
+              "end": 199,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 199,
+          "end": 200,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "line_comment",
+        "start": 206,
+        "end": 277,
+        "children": [
+         {
+          "type": "//",
+          "start": 206,
+          "end": 208,
+          "text": "//"
+         }
+        ]
+       },
+       {
+        "type": "let_declaration",
+        "start": 282,
+        "end": 351,
+        "children": [
+         {
+          "type": "let",
+          "start": 282,
+          "end": 285,
+          "text": "let"
+         },
+         {
+          "type": "identifier",
+          "start": 286,
+          "end": 292,
+          "field": "pattern",
+          "text": "values"
+         },
+         {
+          "type": "=",
+          "start": 293,
+          "end": 294,
+          "text": "="
+         },
+         {
+          "type": "macro_invocation",
+          "start": 295,
+          "end": 350,
+          "field": "value",
+          "children": [
+           {
+            "type": "identifier",
+            "start": 295,
+            "end": 298,
+            "field": "macro",
+            "text": "vec"
+           },
+           {
+            "type": "!",
+            "start": 298,
+            "end": 299,
+            "text": "!"
+           },
+           {
+            "type": "token_tree",
+            "start": 299,
+            "end": 350,
+            "children": [
+             {
+              "type": "[",
+              "start": 299,
+              "end": 300,
+              "text": "["
+             },
+             {
+              "type": "identifier",
+              "start": 300,
+              "end": 306,
+              "text": "answer"
+             },
+             {
+              "type": ",",
+              "start": 306,
+              "end": 307,
+              "text": ","
+             },
+             {
+              "type": "identifier",
+              "start": 308,
+              "end": 315,
+              "text": "message"
+             },
+             {
+              "type": ",",
+              "start": 315,
+              "end": 316,
+              "text": ","
+             },
+             {
+              "type": "identifier",
+              "start": 317,
+              "end": 330,
+              "text": "another_value"
+             },
+             {
+              "type": ",",
+              "start": 330,
+              "end": 331,
+              "text": ","
+             },
+             {
+              "type": "identifier",
+              "start": 332,
+              "end": 349,
+              "text": "yet_another_value"
+             },
+             {
+              "type": "]",
+              "start": 349,
+              "end": 350,
+              "text": "]"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 350,
+          "end": 351,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "expression_statement",
+        "start": 356,
+        "end": 372,
+        "children": [
+         {
+          "type": "call_expression",
+          "start": 356,
+          "end": 371,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 356,
+            "end": 363,
+            "field": "function",
+            "text": "consume"
+           },
+           {
+            "type": "arguments",
+            "start": 363,
+            "end": 371,
+            "field": "arguments",
+            "children": [
+             {
+              "type": "(",
+              "start": 363,
+              "end": 364,
+              "text": "("
+             },
+             {
+              "type": "identifier",
+              "start": 364,
+              "end": 370,
+              "text": "values"
+             },
+             {
+              "type": ")",
+              "start": 370,
+              "end": 371,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 371,
+          "end": 372,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 373,
+        "end": 374,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}
