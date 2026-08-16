@@ -14,6 +14,9 @@ tight: [1, 2, 3]
 # Flow mappings are the mirror image: prettier pads the braces out.
 compact: { x: 1, y: 2 }
 half: { x: 1, y: 2 }
+# Empty containers exercise the no-named-child gate path.
+empty_sequence: []
+empty_mapping: {}
 
 # Sequence dashes flush with the key, which YAML allows and prettier indents.
 root:

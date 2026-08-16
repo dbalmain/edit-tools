@@ -100,9 +100,10 @@ Required probes:
   reference.
 - `normalisation.yaml` — input written the way a person writes YAML and
   prettier does not: padded `:` , padded / tight flow brackets, unpadded
-  flow braces, flush sequence dashes, a dash-on-its-own-line nested
-  sequence, runs of spaces and a tab before a trailing comment, a source
-  trailing comma, an explicit `?` key, three-or-more blank lines.
+  flow braces, spaced empty `[ ]` / `{ }`, flush sequence dashes, a
+  dash-on-its-own-line nested sequence, runs of spaces and a tab before a
+  trailing comment, a source trailing comma, an explicit `?` key,
+  three-or-more blank lines.
 - `kitchen.yaml` — block mappings, flow collections that reflow, an anchor
   plus merge key, a block scalar, comments in two positions, arrays that
   reflow.
