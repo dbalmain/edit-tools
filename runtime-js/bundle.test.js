@@ -18,7 +18,10 @@ const toy = (rules) => ({
 const leaf = (type, text) => ({ type, start: 0, end: 0, text });
 
 const run = (pkg, root, width) => runOn(pkg, "", root, width);
-const runOn = (pkg, source, root, width) => format({ language: "toy", source, root }, width, pkg);
+const runOn = (pkg, source, root, width) =>
+  format({ language: "toy", source, root }, new Map([["toy", pkg]]), width);
+const formatTree = (rawPackages, language, source, root, width) =>
+  format({ language, source, root }, new Map(Object.entries(rawPackages)), width);
 
 const commentsPkg = (fields = {}) => ({
   format: "et-doc-rules/1",
@@ -99,6 +102,128 @@ test("a rule that ignores a child refuses rather than dropping it", () => {
 
 test("an unknown node type refuses rather than guessing", () => {
   assert.throws(() => run(toy({}), list(["a"], false), 80), /no rule for node type `list`/);
+});
+
+test("language regions use their rules and indent then restore the enclosing package", () => {
+  const outerBlock = [
+    "seq",
+    ["tok", "outer"],
+    ["indent", ["hard"], ["each", "named", ["hard"]]],
+  ];
+  const innerBlock = [
+    "seq",
+    ["tok", "inner"],
+    ["indent", ["hard"], ["each", "named", ["hard"]]],
+  ];
+  const packages = {
+    outer: {
+      format: "et-doc-rules/1",
+      indent: 2,
+      tokens: ["outer"],
+      rules: {
+        outer_block: outerBlock,
+        outer_again: outerBlock,
+        region: ["verbatim"],
+      },
+    },
+    inner: {
+      format: "et-doc-rules/1",
+      indent: 4,
+      tokens: ["inner"],
+      rules: {
+        region: innerBlock,
+        inner_again: innerBlock,
+      },
+    },
+  };
+  const root = {
+    type: "outer_block", start: 0, end: 0,
+    children: [
+      leaf("outer", "outer"),
+      leaf("word", "before"),
+      {
+        type: "region", language: "inner", start: 0, end: 0,
+        children: [
+          leaf("inner", "inner"),
+          leaf("word", "inside"),
+          {
+            type: "outer_again", language: "outer", start: 0, end: 0,
+            children: [leaf("outer", "outer"), leaf("word", "back")],
+          },
+          {
+            type: "inner_again", start: 0, end: 0,
+            children: [leaf("inner", "inner"), leaf("word", "restored-inner")],
+          },
+        ],
+      },
+      {
+        type: "outer_again", start: 0, end: 0,
+        children: [leaf("outer", "outer"), leaf("word", "after")],
+      },
+    ],
+  };
+
+  assert.equal(
+    formatTree(packages, "outer", "", root, 80),
+    "outer\n  before\n  inner\n      inside\n      outer\n        back\n      inner\n          restored-inner\n  outer\n    after\n",
+  );
+});
+
+test("language regions use their comment policy", () => {
+  const packages = {
+    outer: {
+      format: "et-doc-rules/1",
+      indent: 2,
+      blank_cap: 0,
+      rules: { file: ["child", "named"] },
+    },
+    inner: {
+      format: "et-doc-rules/1",
+      indent: 4,
+      comments: ["comment"],
+      comment_gap: 3,
+      blank_cap: 2,
+      rules: { region: ["child", "named"] },
+    },
+  };
+  const source = "x# one\n\n\n\n# two";
+  const root = {
+    type: "file", start: 0, end: 15,
+    children: [{
+      type: "region", language: "inner", start: 0, end: 15,
+      children: [
+        { type: "word", start: 0, end: 1, text: "x" },
+        { type: "comment", start: 1, end: 6, text: "# one" },
+        { type: "comment", start: 10, end: 15, text: "# two" },
+      ],
+    }],
+  };
+
+  assert.equal(
+    formatTree(packages, "outer", source, root, 80),
+    "x   # one\n\n\n# two\n",
+  );
+});
+
+test("a missing nested language package refuses and names the language", () => {
+  const packages = {
+    outer: {
+      format: "et-doc-rules/1",
+      indent: 2,
+      rules: { file: ["child", "named"] },
+    },
+  };
+  const root = {
+    type: "file", start: 0, end: 0,
+    children: [{
+      type: "word", language: "missing-toy", start: 0, end: 0, text: "x",
+    }],
+  };
+
+  assert.throws(
+    () => formatTree(packages, "outer", "", root, 80),
+    (error) => error instanceof Refusal && error.message === "no package for language `missing-toy`",
+  );
 });
 
 test("comment fields default to one", () => {

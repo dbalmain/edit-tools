@@ -34,7 +34,7 @@ the node. The runtime never learns to parse; it continues to only read.
 `rust/src/tree.rs` says "The harness owns all parsing; we only read", and that
 stays true.
 
-### 2. The runtime takes a package _map_
+### 2. The runtime takes a package _map_ — **done**
 
 `format(tree, pkg, width)` becomes `format(tree, packages, width)`, where
 `packages` maps a language name to a loaded package. Dispatch is one line in
@@ -44,6 +44,19 @@ language's package instead.
 A node naming a language with no package in the map is a **refusal**, in the
 same voice as an unknown node type. It is not a silent fallback — see below for
 why that does not hurt.
+
+Both runtimes now resolve the root through the map and create a formatter bound
+to exactly one package for each stamped region. The region formatter shares the
+package map and source bytes, but all package policy — rules, indentation,
+comment handling, descent, token classification and precedence — comes from its
+own package. Returning from the recursive call restores the enclosing formatter
+by construction; there is no mutable current-package state to leak.
+
+The formatter and highlighter deliberately have opposite missing-package
+policies. The formatter refuses and names the language, because guessing can
+change layout bytes. The highlighter walks the same unknown region with empty
+tables, because losing colour is recoverable and a nested known region may still
+paint. Neither behaviour is a fallback to the enclosing package.
 
 ### 3. `indent` carries its own amount — **done**
 
@@ -158,8 +171,8 @@ highlighter invent its own.
 1. `Indent` carries its own amount — **done**. Independent of everything else,
    small, and it removes a printer argument. Done first and alone, so the
    diff is reviewable against a byte-identical corpus.
-2. Package map plus the node `language` field, with a two-language toy fixture
-   in both runtimes — no grammar work, no corpus.
+2. Package map plus the node `language` field — **done**. Covered by
+   two-language unit toys in both runtimes; no grammar or corpus work.
 3. Harness splicing in `gen_trees.py`, with markdown + JavaScript as the first
    real pair.
 4. Markdown package and corpus, as an ordinary onboarding round with an

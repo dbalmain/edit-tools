@@ -16,6 +16,7 @@ use std::fmt;
 use std::path::PathBuf;
 use std::process::ExitCode;
 
+use crate::eval::PackageMap;
 use crate::pkg::Package;
 use crate::tree::TreeDoc;
 
@@ -54,8 +55,15 @@ fn run() -> Result<String, Refusal> {
     let raw = std::fs::read_to_string(&path).map_err(|e| Refusal(format!("{path}: {e}")))?;
     let tree: TreeDoc =
         serde_json::from_str(&raw).map_err(|e| Refusal(format!("malformed tree: {e}")))?;
-    let package = Package::load(&packages_dir(), &tree.language)?;
-    eval::format(&tree, &package, width)
+    let directory = packages_dir();
+    let packages = tree
+        .languages()
+        .into_iter()
+        .map(|language| {
+            Package::load(&directory, language).map(|package| (language.to_owned(), package))
+        })
+        .collect::<Result<PackageMap, _>>()?;
+    eval::format(&tree, &packages, width)
 }
 
 /// Packages ship as data beside the runtime; the wrapper script points here.
