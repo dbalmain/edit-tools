@@ -191,8 +191,16 @@ cannot be guessed safely; missing colour can. Unsupported or unparseable
 formatter regions still degrade one layer out, by the harness declining to
 stamp `language` and the package using `verbatim`.
 
-Remaining for this point: harness splicing, then the markdown package and
-corpus, in `injection.md`'s order.
+Harness splicing has now landed too. Guest info-string aliases and host
+node/info/content shapes live in manifests; `gen_trees.py` parses clean embedded
+regions, rebases every byte offset onto the outer source, replaces the host
+content node with the guest root, and stamps that root. Unsupported and dirty
+regions stay ordinary host content. `probe_injection.py` proves the policy with
+markdown + JSON through both runtimes without adding markdown to scoring.
+
+Remaining for this point: the ordinary markdown onboarding round—its real
+manifest, package and corpus—with gate 3 and idempotence exercised across the
+already-working language boundary.
 
 ## 7. Is the tree interface actually independent of tree-sitter? — **closed, yes**
 

@@ -131,13 +131,6 @@ grammar_symbol = "language"           # optional, defaults to "language"
 # Empty opts out; aliases are unique across all language manifests.
 injection_aliases = ["toml"]
 
-# Optional host shapes. The node has direct info/content children of these types.
-# Markdown will declare this when it onboards; ordinary guest manifests omit it.
-# [[injections]]
-# node = "fenced_code_block"
-# info = "info_string"
-# content = "code_fence_content"
-
 # Shell command. Source on stdin, formatted source on stdout. `{width}` is
 # substituted. Note that some references need a fake filename to infer the
 # language from stdin (`--stdin-filepath x.toml`), and that nothing is installed
@@ -156,6 +149,14 @@ transparent_wrappers = []             # node kinds the formatter may add or remo
                                       # around one child, e.g. parenthesized_expression
 equivalent_kinds = []                 # kinds that are the same thing under a different
                                       # name, e.g. [["pattern_list", "tuple_pattern"]]
+
+# Optional host shapes. Keep these array tables after every root key: TOML keys
+# below [[injections]] would belong to that entry, not to the manifest root.
+# Markdown will declare this when it onboards; ordinary guest manifests omit it.
+# [[injections]]
+# node = "fenced_code_block"
+# info = "info_string"
+# content = "code_fence_content"
 ```
 
 `injection_aliases` is required because info-string spelling is a language fact,

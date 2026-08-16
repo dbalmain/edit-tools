@@ -38,24 +38,102 @@ SRC = ROOT / "corpus" / "src"
 OUT = ROOT / "corpus" / "trees"
 
 
-def convert(node, source: bytes, field: str | None) -> dict:
+def _direct(node, kind: str):
+    return next((child for child in node.children if child.type == kind), None)
+
+
+def _injected_root(
+    node,
+    source: bytes,
+    manifest: mf.Manifest,
+    aliases: dict[str, mf.Manifest],
+    parsers: dict,
+):
+    site = next((site for site in manifest.injections if site.node == node.type), None)
+    if site is None:
+        return None
+
+    info = _direct(node, site.info)
+    content = _direct(node, site.content)
+    if info is None or content is None:
+        return None
+    words = source[info.start_byte : info.end_byte].decode("utf-8").split()
+    guest = aliases.get(words[0]) if words else None
+    parser = parsers.get(guest.name) if guest is not None else None
+    if parser is None:
+        return None
+
+    embedded_source = source[content.start_byte : content.end_byte]
+    root = parser.parse(embedded_source).root_node
+    if check_clean(root, manifest.path):
+        return None
+    return content, embedded_source, root, guest
+
+
+def convert(
+    node,
+    source: bytes,
+    field: str | None,
+    *,
+    base: int = 0,
+    outer_source: bytes | None = None,
+    manifest: mf.Manifest | None = None,
+    aliases: dict[str, mf.Manifest] | None = None,
+    parsers: dict | None = None,
+) -> dict:
     """tree-sitter node -> our boring JSON shape.
 
     Anonymous nodes (punctuation, keywords) are kept: a formatter needs to know
     where the commas and colons were, and dropping them would force every
     submission to reinvent that knowledge in its rules.
+
+    An embedded parse uses offsets relative to its own source. `base` rebases
+    them onto `outer_source`; leaf text is always checked against those outer
+    bytes, so a spliced subtree has exactly the same offset contract as its host.
     """
-    out: dict = {"type": node.type, "start": node.start_byte, "end": node.end_byte}
+    outer_source = source if outer_source is None else outer_source
+    start, end = base + node.start_byte, base + node.end_byte
+    out: dict = {"type": node.type, "start": start, "end": end}
     if field is not None:
         out["field"] = field
 
     if node.children:
-        out["children"] = [
-            convert(child, source, node.field_name_for_child(i))
-            for i, child in enumerate(node.children)
-        ]
+        injected = None
+        if manifest is not None and aliases is not None and parsers is not None:
+            injected = _injected_root(node, source, manifest, aliases, parsers)
+        children = []
+        for i, child in enumerate(node.children):
+            child_field = node.field_name_for_child(i)
+            if injected is not None and child == injected[0]:
+                content, embedded_source, root, guest = injected
+                embedded = convert(
+                    root,
+                    embedded_source,
+                    child_field,
+                    base=base + content.start_byte,
+                    outer_source=outer_source,
+                    manifest=guest,
+                    aliases=aliases,
+                    parsers=parsers,
+                )
+                embedded["language"] = guest.name
+                children.append(embedded)
+            else:
+                children.append(
+                    convert(
+                        child,
+                        source,
+                        child_field,
+                        base=base,
+                        outer_source=outer_source,
+                        manifest=manifest,
+                        aliases=aliases,
+                        parsers=parsers,
+                    )
+                )
+        out["children"] = children
     else:
-        out["text"] = source[node.start_byte : node.end_byte].decode("utf-8")
+        out["text"] = outer_source[start:end].decode("utf-8")
     return out
 
 
@@ -81,13 +159,43 @@ def sources(m: mf.Manifest) -> list[Path]:
     return sorted(found)
 
 
+def parse_doc(
+    m: mf.Manifest,
+    source: bytes,
+    source_file: str,
+    manifests: dict[str, mf.Manifest],
+    parsers: dict,
+) -> tuple[dict, list[str]]:
+    tree = parsers[m.name].parse(source)
+    problems = check_clean(tree.root_node, Path(source_file))
+    doc = {
+        "language": m.name,
+        "source_file": source_file,
+        # Submissions need the original text: byte offsets alone cannot tell
+        # two spaces from two newlines, so blank-line preservation is impossible
+        # without it. The idempotence pass re-emits this field, so a design that
+        # reads it behaves the same in round 2.
+        "source": source.decode("utf-8"),
+        "root": convert(
+            tree.root_node,
+            source,
+            None,
+            manifest=m,
+            aliases=mf.injection_map(manifests),
+            parsers=parsers,
+        ),
+    }
+    return doc, problems
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--language", help="regenerate only this language's trees")
     args = ap.parse_args()
 
-    manifests = mf.bootstrap()
-    manifests = mf.selected(manifests, args.language)
+    known = mf.bootstrap()
+    manifests = mf.selected(known, args.language)
+    parsers = mf.parsers(known)
 
     OUT.mkdir(parents=True, exist_ok=True)
     failures: list[str] = []
@@ -95,7 +203,6 @@ def main() -> int:
     seen: dict[str, Path] = {}
 
     for name, m in manifests.items():
-        parser = mf.parser_for(m)
         for path in sources(m):
             # Two extensions can share a stem (`app.ts` / `app.tsx`); the tree
             # name has no room for both, so say so rather than overwrite.
@@ -107,21 +214,12 @@ def main() -> int:
             seen[key] = path
 
             source = path.read_bytes()
-            tree = parser.parse(source)
-            problems = check_clean(tree.root_node, path)
+            doc, problems = parse_doc(
+                m, source, str(path.relative_to(ROOT)), known, parsers
+            )
             if problems:
                 failures.extend(problems)
                 continue
-            doc = {
-                "language": name,
-                "source_file": str(path.relative_to(ROOT)),
-                # Submissions need the original text: byte offsets alone cannot
-                # tell two spaces from two newlines, so blank-line preservation
-                # is impossible without it. The idempotence pass re-emits this
-                # field, so a design that reads it behaves the same in round 2.
-                "source": source.decode("utf-8"),
-                "root": convert(tree.root_node, source, None),
-            }
             dest = OUT / f"{key}.tree.json"
             dest.write_text(json.dumps(doc, indent=1, ensure_ascii=False) + "\n")
             written += 1

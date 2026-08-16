@@ -1,6 +1,6 @@
 #!/bin/sh
 # Runtime and harness unit suites, then the harness's own checks and scorers,
-# then the tree-interface probe (a hand-rolled JSON parser, no tree-sitter).
+# then the tree-interface and manifest-driven injection probes.
 #
 # check_gate3.py runs before the scorer on purpose: it establishes that gate 3
 # still accepts every reference formatter and still rejects destruction. A
@@ -20,3 +20,4 @@ python3 -m unittest discover -s harness
 ./harness/score.py .
 ./harness/score_highlight.py .
 ./harness/probe_tree_interface.py
+./harness/probe_injection.py

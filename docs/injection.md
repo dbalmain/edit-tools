@@ -1,6 +1,6 @@
 # Injection: one document, several languages
 
-A design note, not an implementation. Prompted by the requirement that a
+A design note and implementation record. Prompted by the requirement that a
 markdown file format and highlight JavaScript inside a ` ```javascript ` fence.
 
 Markdown is not on the roster in `LANGUAGES.md` as an afterthought — it is the
@@ -24,7 +24,7 @@ Today `TreeDoc` carries one `language` at the root and every node below it is
 governed by one package. The change is to let any node carry the same field:
 
 ```json
-{ "type": "code_fence_content", "language": "javascript", "start": …, "children": [ … ] }
+{ "type": "document", "language": "json", "start": …, "children": [ … ] }
 ```
 
 The **harness splices** — `gen_trees.py` parses the outer document, finds the
@@ -33,6 +33,19 @@ rebases the child tree's offsets onto the outer source, and stamps `language` on
 the node. The runtime never learns to parse; it continues to only read.
 `rust/src/tree.rs` says "The harness owns all parsing; we only read", and that
 stays true.
+
+The routing is manifest data in both directions. Every guest declares its exact
+`injection_aliases` (the info-string spellings that select it), and a host
+declares `[[injections]]` entries naming the injection node and its direct info
+and content child types. Alias collisions are a manifest error. There is still
+no language list or markdown node name in `gen_trees.py`.
+
+Step 3 proved this with a fixture-only markdown manifest rather than enrolling
+markdown in the scored corpus before its package exists. The pinned
+`tree-sitter-markdown==0.5.1` Python binding exposes both `language()` (block)
+and `inline_language()` (inline). Fences, their `info_string`, and their
+`code_fence_content` are all present in the block tree, so the host manifest
+selects `language()` and this slice does not need the included-range second pass.
 
 ### 2. The runtime takes a package _map_ — **done**
 
@@ -87,15 +100,21 @@ place for free.
 ````json
 "fenced_code_block": [
   "seq",
-  ["tok", "```"], ["child", "f:info"], ["hard"],
-  ["child", "f:content"],
-  ["hard"], ["tok", "```"]
+  ["child", "t:fenced_code_block_delimiter"],
+  ["opt", "t:info_string", ["child", "t:info_string"]],
+  ["child", "t:block_continuation"], ["hard"],
+  ["child", "*"],
+  ["hard"], ["child", "t:fenced_code_block_delimiter"]
 ]
 ````
 
-`["child", "f:content"]` does the injection, because the _node_ says what
-language it is. The package does not mention JavaScript, and the JavaScript
-package does not know it is inside anything.
+The block grammar gives these children types rather than field names and inserts
+a zero-width `block_continuation` after the opening line, so the fixture rule
+above records the real shape rather than the earlier pseudocode. At the content
+cursor, `["child", "*"]` accepts either the stamped guest root or the original
+unstamped `code_fence_content`. The _node_ says which package formats it. The
+host package does not mention JSON, and the JSON package does not know it is
+inside anything.
 
 ## The part that is genuinely new: not refusing
 
@@ -172,10 +191,13 @@ highlighter invent its own.
    is reviewable against a byte-identical corpus.
 2. Package map plus the node `language` field — **done**. Covered by
    two-language unit toys in both runtimes; no grammar or corpus work.
-3. Harness splicing in `gen_trees.py`, with markdown + JavaScript as the first
-   real pair.
+3. Harness splicing in `gen_trees.py`, with markdown + JSON as the first real
+   pair — **done**. `probe_injection.py` uses a fixture-only markdown manifest
+   and package, so this did not add an unformattable scored language.
 4. Markdown package and corpus, as an ordinary onboarding round with an
-   injection-shaped brief.
+   injection-shaped brief. The machinery is now in place; the round adds the
+   real markdown manifest (including its host shape), package and corpus, then
+   checks gate 3 and idempotence across language boundaries.
 
 Steps 1 and 2 are runtime work and belong to whoever owns the runtime. Steps 3
 and 4 are a language round and can go to a builder.
@@ -184,15 +206,15 @@ and 4 are a language round and can go to a builder.
 
 **The package switches _before_ the stamped node's own rule is looked up.** The
 stamped node is therefore the first node of the new region, and the embedded
-package must have a rule for **its** type. Stamping `language: "javascript"` on
-a markdown `code_fence_content` asks the JavaScript package for a
-`code_fence_content` rule, which it will never have, and the runtime refuses.
+package must have a rule for **its** type. Stamping `language: "json"` on a
+markdown `code_fence_content` asks the JSON package for a `code_fence_content`
+rule, which it does not have, and the runtime refuses.
 
 So `gen_trees.py` should splice the embedded parse's **root** node in as the
-child and stamp the language on that — a JavaScript `program`, which the
-JavaScript package does have a rule for. The alternative, a bridge rule in every
-embedded package naming the host's node types, couples each guest to every host
-that might contain it and is the wrong shape.
+child and stamp the language on that — a JSON `document`, which the JSON package
+does have a rule for. The alternative, a bridge rule in every embedded package
+naming the host's node types, couples each guest to every host that might contain
+it and is the wrong shape.
 
 **Comment policy follows the region.** Comments inside a stamped subtree use the
 embedded package's `comments`, `comment_gap` and `blank_cap`; a comment sitting

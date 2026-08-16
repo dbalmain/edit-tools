@@ -48,10 +48,11 @@ time rather than all at once.
   JavaScript inside a ` ```javascript ` fence is formatted and highlighted as
   JavaScript, which is why it sits with JavaScript in R4 rather than earlier.
   Designed in [../injection.md](../injection.md); `indent` now carries its own
-  column count. A package map still has to land before the round opens. **The injection machinery can be proved before R4 without waiting
-  for it** — markdown containing ` ```json ` needs only the JSON package, which
-  merged in stage 0. Markdown is also the language where refusing is the wrong
-  default: a document with one unparseable snippet must still format.
+  column count, the package map has landed, and the harness machinery is proved
+  before R4 without waiting for JavaScript: `probe_injection.py` formats
+  markdown containing ` ```json ` with the JSON package that merged in stage 0.
+  Markdown is also the language where refusing is the wrong default: a document
+  with one unparseable snippet must still format.
 - **HTML/XML (R4)** — inline vs block elements, and whitespace significance that
   depends on the element. The clearest test of whether a node-type →
   Doc-expression table is expressive enough for markup.

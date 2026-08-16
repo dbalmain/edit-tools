@@ -1,0 +1,25 @@
+{
+  "format": "et-doc-rules/1",
+  "indent": 2,
+  "tokens": ["fenced_code_block_delimiter"],
+  "comments": [],
+  "descend": [],
+  "optional_parens": [],
+  "precedence": {},
+  "rules": {
+    "document": ["each", "*", ["seq"]],
+    "section": ["each", "*", ["seq", ["hard"], ["hard"]]],
+    "fenced_code_block": [
+      "seq",
+      ["child", "t:fenced_code_block_delimiter"],
+      ["opt", "t:info_string", ["child", "t:info_string"]],
+      ["child", "t:block_continuation"],
+      ["hard"],
+      ["child", "*"],
+      ["hard"],
+      ["child", "t:fenced_code_block_delimiter"]
+    ],
+    "info_string": ["verbatim"],
+    "code_fence_content": ["verbatim"]
+  }
+}
