@@ -304,18 +304,36 @@ turns on it. Cheap enough that it does not need a second language to justify it.
 
 ## 7. A rule cannot tell a comment-forced break from a width-forced break
 
-**Status:** open · **Cost:** contextual · **Languages:** YAML, CSS
+**Status:** open · **Cost:** contextual · **Languages:** CSS (**not** YAML — see
+below)
 
-prettier uses a **different** flow-collection layout depending on _why_ the
-group broke: a break forced by an interior comment is laid out differently from
-one forced by width. A rule sees only that its group broke.
+prettier uses a **different** layout depending on _why_ the group broke: a break
+forced by an interior comment is laid out differently from one forced by width.
+A rule sees only that its group broke.
 
-Reported at YAML stage B as a candidate needing confirmation, and **confirmed at
-CSS stage D**, which hit the same thing independently. It is a close relative of
-entry 2 — both are the evaluator withholding context from the rule — and the two
-should be costed together rather than separately.
+### This entry was wrong when written, and YAML disproved it
 
-**Decide when:** with entry 2, once a third language hits either.
+It was opened on YAML stage B's report and marked "needs stage-C confirmation".
+Stage C, with an actual package to test against, refuted it:
+
+> prettier's _broken_ flow layout is the same whether a comment or the width
+> forced it; what differs is whether the collection breaks at all.
+
+Stage D confirmed the refutation against prettier 3.9.6 directly. So YAML never
+had this problem; stage B misread its own evidence.
+
+The entry survives only because **CSS independently reported the same gap** at
+its stage D, on separate evidence. Languages: CSS, and the count is one.
+
+Worth keeping visible rather than quietly editing, because it is the register's
+first false entry and it says something about how the register should be read: a
+finding reported from _corpus_ observation is a hypothesis about the reference,
+and only a package makes it a claim about the IR. That is exactly why "needs
+stage-C confirmation" exists, and it earned its place on the first use.
+
+**Decide when:** a second language genuinely hits it. One divergence in one
+language does not buy an IR feature, and this entry has already been overcounted
+once.
 
 ## 8. `fill` — pack as many items per line as fit
 
@@ -442,6 +460,70 @@ one entry about **layout-as-content** rather than two per-language ones.
 
 **Decide when:** a second language hits either. Recorded now so the first
 sighting is not lost.
+
+## 12. Semantic content can live in the whitespace _between_ two nodes
+
+**Status:** open · **Cost:** gate change, per-language · **Languages:** YAML
+
+**This is the most serious entry in the register, because it is the only one
+where the gate reported success while the formatter destroyed data.**
+
+Formatting `block_scalars.yaml` at width 80 changes the loaded value:
+
+```
+key 'keep':  before 'keep blanks\n\n\n'
+             after  'keep blanks\n\n'
+```
+
+`|+` is YAML's _keep_ chomping indicator — every trailing newline is part of the
+scalar's value. Gate 3 reported 32/32 non-destruction anyway. Found by YAML's
+stage-D reviewer with a real YAML loader; confirmed here on the real corpus
+artefact, and then located exactly:
+
+```
+block_mapping_pair   [0,22)  'keep: |+\n  keep blanks'
+  block_scalar       [6,22)  '|+\n  keep blanks'      <- node ends here
+block_mapping_pair   [25,32) 'next: 1'
+gap between pairs:           '\n\n\n'
+```
+
+The bytes carrying the value are **not inside the `block_scalar` node**. They
+are a whitespace-only gap between two sibling pairs, and the generic default
+drops whitespace-only gaps as layout — which is correct in every other language
+and for every other YAML construct.
+
+So this is **not** the same as the closed entry below. That one was untokenised
+source _inside_ a node's range, and was fixable generically. This is outside
+every node's range and is genuinely whitespace; no amount of care in the generic
+default can distinguish it from indentation without knowing what `|+` means.
+
+### What it costs the gate's promise
+
+Gate 3 is the guarantee that a package cannot corrupt source. That guarantee now
+has a stated exception: **it holds only where meaning lives inside node
+ranges.** Every language should be asked whether it has such a construct, and
+the honest answer for most is no — but nobody was asking, and YAML found it by
+losing data rather than by anyone checking.
+
+### The fix, and the rule it establishes
+
+A per-language `gate3` override, composed as **`default AND extra`** rather than
+as a replacement oracle.
+
+That composition rule is the durable lesson. Two overrides have been tried and
+removed — `tomllib` for TOML and `ast.dump` for python — and both were _weaker_
+than the default, because both were **replacements**: data-model loaders that
+collapse exactly the spelling distinctions a formatter must preserve. An
+override built as "the default, and additionally X" **cannot** be weaker, by
+construction, which is a much better guarantee than an adversarial run that
+merely fails to find a counter-example.
+
+So the corpus brief's advice should sharpen from "expect to stay at `default`"
+to: _if you need an override, extend the default rather than replace it._
+
+**Decide when:** YAML's stage E, which is building exactly this. The register
+entry stays open until some language other than YAML is asked the question and
+answers it.
 
 ---
 
