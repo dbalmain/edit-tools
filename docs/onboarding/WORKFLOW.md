@@ -125,7 +125,8 @@ this section is now the description of what a builder is working against.
 
    As measured today: 0 disagreements between the generic default and both
    `ast.dump` and ordered `json.loads`, over 30 reference outputs, with 36
-   single-language destructive mutations and 11 injection mutations checked.
+   single-language destructive mutations rejected and 11 injection cases
+   checked.
 
 ### The manifest schema
 

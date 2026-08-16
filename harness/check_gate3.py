@@ -240,7 +240,7 @@ def main() -> int:
                 ):
                     failures.append(f"{label}: gate ACCEPTS {what}")
 
-    injection_mutations = check_injection_mutations(
+    injection_cases = check_injection_mutations(
         markdown, bootstrapped, parsers, failures
     )
 
@@ -251,14 +251,14 @@ def main() -> int:
           f"{len(manifests)} language(s); "
           f"{mutations} destructive mutations rejected; "
           f"{disagreements} generic/override disagreement(s); "
-          f"{injection_mutations} injection mutations checked")
+          f"{injection_cases} injection cases checked")
     if failures:
         print(f"{len(failures)} problem(s) -- the gate is wrong, "
               f"or the reference corpus is stale")
         return 1
     if uncompared:
         return 1
-    print("gate 3 accepts every reference formatter and rejects every mutation")
+    print("gate 3 accepts valid formatting and rejects every destructive mutation")
     return 0
 
 
