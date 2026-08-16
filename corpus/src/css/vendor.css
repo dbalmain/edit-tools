@@ -1,0 +1,11 @@
+/* Vendor-prefixed properties and functions, written as a run. */
+
+.slide {
+  -webkit-transform: translateX(10px);
+  -moz-transform: translateX(10px);
+  -ms-transform: translateX(10px);
+  transform: translateX(10px);
+  /* prefixed functions wrap at 40 the same way the unprefixed ones do */
+  background: -webkit-linear-gradient(left, red, blue);
+  background: linear-gradient(to right, red, blue);
+}

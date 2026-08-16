@@ -1,0 +1,20 @@
+/* Written the way a person writes CSS and prettier does not. Every other file
+   probes what prettier *breaks*; this one probes what it *rewrites*.
+   Spacing, delimiter padding, indentation -- not token spelling. */
+
+a{color:red}
+.b  {  margin  :  1px   2px   3px   4px  ;  }
+.c{font-family:"Arial",Helvetica,sans-serif;}
+#id,.cls,div>span+p~a { display:block }
+    .indented { color : blue }
+	.tabbed{color:green}
+.d { color:red     /* many spaces before this trailing comment */ }
+.e{font-size:1rem!important}
+
+.empty {}
+
+.packed{color:red;background:blue;margin:0}
+
+
+/* three or more blank lines above; prettier collapses the run */
+.f { color: navy; }

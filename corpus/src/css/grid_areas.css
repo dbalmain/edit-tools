@@ -1,0 +1,15 @@
+/* grid-template-areas: the internal line breaks are the layout. Prettier
+   preserves author breaks and will not wrap a single-line value at either width. */
+
+.page {
+  display: grid;
+  /* column alignment inside the strings is meaningful */
+  grid-template-areas:
+    "header header header"
+    "nav    main   aside"
+    "nav    footer footer";
+}
+
+.compact {
+  grid-template-areas: "a b c" "d e f"; /* stays on one line at 40 and at 80 */
+}

@@ -1,0 +1,13 @@
+/* Strings, urls, and the escapes CSS actually has. Prettier does not wrap any of these. */
+
+.quote {
+  content: "hello";
+  content: "single"; /* written as double; prettier would rewrite a single-quoted twin */
+  content: 'say "hi"';
+  content: "line\A break";
+  content: "tab\9 and slash\\";
+  font-family: "Font With Spaces";
+  background: url("https://example.com/very/long/path/to/an/image.png?query=1&other=2");
+  background: url(unquoted.png);
+  background: url("quoted.png");
+}
