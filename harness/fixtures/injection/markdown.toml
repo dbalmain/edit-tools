@@ -1,0 +1,20 @@
+name = "markdown"
+extensions = [".md"]
+
+# Fixture-only: Markdown does not join the scored manifests until step 4.
+grammar = "tree-sitter-markdown==0.5.1"
+grammar_module = "tree_sitter_markdown"
+grammar_symbol = "language"
+injection_aliases = []
+
+reference = "unused"
+reference_version = "probe fixture"
+reference_width = "fixed"
+widths = [60]
+gate3 = "default"
+intentional_divergences = []
+
+[[injections]]
+node = "fenced_code_block"
+info = "info_string"
+content = "code_fence_content"
