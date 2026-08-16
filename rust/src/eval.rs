@@ -1573,6 +1573,57 @@ try {{
     }
 
     #[test]
+    fn trailing_trivia_does_not_make_an_own_line_comment_a_suffix() {
+        // tree-sitter-go's statement_list range includes the newline after
+        // the last statement, so an own-line comment before `}` looks
+        // adjacent if suffix detection uses node.end. Content end (last
+        // child) is the right line.
+        let pkg: Package = serde_json::from_value(json!({
+            "format": "et-doc-rules/1",
+            "indent": 2,
+            "comments": ["comment"],
+            "descend": ["statements"],
+            "tokens": ["{", "}"],
+            "rules": {
+                "file": ["child", "t:block"],
+                "block": [
+                    "seq",
+                    ["tok", "{"],
+                    ["child", "t:statements"],
+                    ["indent"],
+                    ["hard"],
+                    ["tok", "}"]
+                ],
+                "statements": ["indent", ["hard"], ["each", "named", ["hard"]]],
+                "name": ["verbatim"]
+            }
+        }))
+        .expect("trivia-suffix package parses");
+        let source = "{\n  x\n  // c\n}";
+        let root = json!({
+            "type": "file", "start": 0, "end": 14,
+            "children": [{
+                "type": "block", "start": 0, "end": 14,
+                "children": [
+                    { "type": "{", "start": 0, "end": 1, "text": "{" },
+                    {
+                        "type": "statements", "start": 4, "end": 6,
+                        "children": [
+                            { "type": "name", "start": 4, "end": 5, "text": "x" }
+                        ]
+                    },
+                    { "type": "comment", "start": 8, "end": 12, "text": "// c" },
+                    { "type": "}", "start": 13, "end": 14, "text": "}" }
+                ]
+            }]
+        });
+        assert_eq!(
+            run_on(&one(pkg), source, root, 80).expect("ok"),
+            "{\n  x\n  // c\n}\n"
+        );
+    }
+
+    #[test]
     fn trail_comma_precedes_an_own_line_comment_before_the_closer() {
         // TOML (and any language whose last list item carries an own-line
         // comment before `]`) must not let that comment swallow the

@@ -73,8 +73,21 @@ pub fn split<'a>(node: &'a Node, src: &[u8], pkg: &Package) -> Split<'a> {
 
         if pkg.comments.contains(&child.kind) {
             let text = child.text.clone().unwrap_or_default();
+            // Suffix only when the comment shares a line with the previous
+            // item's content. A node's range can include trailing trivia
+            // (tree-sitter-go's statement_list swallows the newline after
+            // its last statement), which would make an own-line comment
+            // look adjacent if we used node.end.
+            let share_line = items.last().is_some_and(|last| {
+                let content_end = last
+                    .node
+                    .children
+                    .last()
+                    .map_or(last.node.end, |c| c.end);
+                newlines(src, content_end, child.start) == 0
+            });
             match items.last_mut() {
-                Some(last) if gap == 0 => last.suffix.push(text),
+                Some(last) if share_line => last.suffix.push(text),
                 _ => lead.push(Comment {
                     text,
                     blanks: gap.saturating_sub(1),

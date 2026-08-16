@@ -495,7 +495,15 @@ function splitChildren(fmt, node) {
 
     if (fmt.comments.has(child.type)) {
       const last = items[items.length - 1];
-      if (last && gap === 0) last.suffix.push(child.text);
+      // Suffix only when the comment shares a line with the previous
+      // item's content. A node's range can include trailing trivia
+      // (tree-sitter-go's statement_list swallows the newline after
+      // its last statement), which would make an own-line comment
+      // look adjacent if we used node.end.
+      const kids = last?.node.children ?? [];
+      const contentEnd = kids.length > 0 ? kids[kids.length - 1].end : last?.node.end;
+      const shareLine = last && newlinesBetween(fmt.bytes, contentEnd, child.start) === 0;
+      if (shareLine) last.suffix.push(child.text);
       else lead.push({ text: child.text, blanks: Math.max(gap - 1, 0) });
       continue;
     }
