@@ -2,6 +2,11 @@
 
 Three running records. The orchestrator writes all of them.
 
+The fourth record, [FINDINGS.md](FINDINGS.md), is the one the others exist to
+feed: the capabilities the IR lacks, each paid for by a language that could not
+express something without it. This file tracks what we **changed**; that one
+tracks what we **chose not to**.
+
 ## 1. Runtime changes
 
 Dave's rule: builders may edit `rust/` and `runtime-js/` freely; the reviewer
