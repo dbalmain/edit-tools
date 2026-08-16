@@ -531,6 +531,31 @@ mod tests {
     }
 
     #[test]
+    fn a_continuation_line_is_not_a_sibling() {
+        // gofmt gives each operand of a multi-line expression a single space:
+        // the pieces are one node, not a column of siblings.
+        let got = fixpoint(concat!(
+            "const (\n",
+            "\tflags = a |\n",
+            "\t\tbb | // second\n",
+            "\t\tcccccc | // third\n",
+            "\t\td\n",
+            ")",
+        ));
+        assert_eq!(
+            got,
+            concat!(
+                "const (\n",
+                "\tflags = a |\n",
+                "\t\tbb | // second\n",
+                "\t\tcccccc | // third\n",
+                "\t\td\n",
+                ")",
+            )
+        );
+    }
+
+    #[test]
     fn a_block_comment_closing_mid_line_is_code_not_a_trailing_comment() {
         let got = fixpoint(concat!(
             "func f() {\n",
