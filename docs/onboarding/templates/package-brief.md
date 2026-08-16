@@ -59,6 +59,12 @@ in the package.
    reported rather than demanded — but every divergence must be **classified**,
    and an unclassified divergence fails the slice outright.
 
+Use `./harness/review_formatter.py {{WORKTREE}} --language {{LANG}}` to inspect
+every differing pair. Its terminal form shows both outputs and a unified diff;
+`--json` emits the structured records. Put the record id and hash beside each
+classification in the report. The stage-D reviewer, not the package author,
+records accepted verdicts with `--approve`, a reason, and `--reviewed-by`.
+
 Plus, always: **Rust and JS byte-identical on every file at every width.**
 
 ### Do not over-weight edge cases
@@ -143,8 +149,8 @@ size                    package gzip bytes; runtime gzip bytes; delta vs main
 
 then, in prose:
 
-- **every divergence**, one line each: file, width, classification, one sentence
-  of why
+- **every divergence**, one line each: ledger id and hash, classification, one
+  sentence of why
 - **every runtime edit**, with its case
 - **every harness edit** outside `harness/languages/{{LANG}}.toml`
 - what about {{LANG}} was hardest to express, and what you would want from the
