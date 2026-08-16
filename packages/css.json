@@ -1,0 +1,249 @@
+{
+  "format": "et-doc-rules/1",
+  "indent": 2,
+
+  "comment_gap": 1,
+  "blank_cap": 1,
+
+  "tokens": [
+    "{", "}", "(", ")", "[", "]",
+    ":", ";", ",", ".", "#",
+    "+", "-", ">", "~", "=",
+    "and", "not",
+    "important",
+    "@media", "@import", "@supports", "@keyframes",
+    "\"", "'"
+  ],
+
+  "comments": ["comment"],
+  "descend": ["block", "keyframe_block_list"],
+  "optional_parens": [],
+  "precedence": {},
+
+  "defs": {
+    "braces": [
+      "seq",
+      ["tok", "{"],
+      [
+        "indent",
+        [
+          "opt",
+          "named",
+          [
+            "seq",
+            ["hard"],
+            ["each", "named", ["seq", ["hard"], ["blank", 1]]]
+          ]
+        ]
+      ],
+      ["hard"],
+      ["tok", "}"]
+    ],
+    "comma_or_space": [
+      "opt",
+      "t:,",
+      ["seq", ["tok", ","], ["line"]],
+      ["sp"]
+    ],
+    "combinator": [
+      "when",
+      ["count", "named", 1],
+      ["seq", ["tok", ["$", 0]], ["sp"], ["child", "named"]],
+      [
+        "group",
+        ["child", "named"],
+        ["indent", ["line"], ["tok", ["$", 0]], ["sp"], ["child", "named"]]
+      ]
+    ],
+    "at_block": [
+      "seq",
+      ["tok", ["$", 0]],
+      ["sp"],
+      ["child", "named"],
+      ["sp"],
+      ["child", "t:block"]
+    ]
+  },
+
+  "rules": {
+    "stylesheet": [
+      "seq",
+      ["each", "named", ["seq", ["hard"], ["blank", 1]]],
+      ["blank", 1]
+    ],
+
+    "rule_set": [
+      "seq",
+      ["child", "t:selectors"],
+      ["sp"],
+      ["child", "t:block"]
+    ],
+
+    "selectors": [
+      "each",
+      "named",
+      ["seq", ["tok", ","], ["hard"]]
+    ],
+
+    "block": ["use", "braces"],
+    "keyframe_block_list": ["use", "braces"],
+
+    "declaration": [
+      "seq",
+      ["child", "t:property_name"],
+      ["tok", ":"],
+      [
+        "when",
+        ["count", "named", 2],
+        ["seq", ["sp"], ["child", "named"]],
+        [
+          "group",
+          [
+            "indent",
+            ["line"],
+            [
+              "when",
+              ["count", "t:,", 0],
+              ["each", "named", ["line"]],
+              ["each", "named", ["use", "comma_or_space"]]
+            ]
+          ]
+        ]
+      ],
+      ["opt", "t:important", ["seq", ["sp"], ["child", "t:important"]]],
+      ["opt", "t:;", ["tok", ";"]]
+    ],
+
+    "class_selector": ["seq", ["tok", "."], ["child", "named"]],
+    "id_selector": ["seq", ["tok", "#"], ["child", "named"]],
+    "class_name": ["child", "named"],
+
+    "pseudo_class_selector": [
+      "seq",
+      ["opt", "named", ["child", "named"]],
+      ["tok", ":"],
+      ["child", "t:class_name"],
+      ["opt", "t:arguments", ["child", "t:arguments"]]
+    ],
+
+    "attribute_selector": [
+      "seq",
+      ["child", "named"],
+      ["tok", "["],
+      ["child", "t:attribute_name"],
+      ["opt", "t:=", ["seq", ["tok", "="], ["child", "named"]]],
+      ["tok", "]"]
+    ],
+
+    "descendant_selector": [
+      "group",
+      ["child", "named"],
+      ["indent", ["line"], ["child", "named"]]
+    ],
+    "child_selector": ["use", "combinator", ">"],
+    "adjacent_sibling_selector": ["use", "combinator", "+"],
+    "sibling_selector": ["use", "combinator", "~"],
+
+    "call_expression": [
+      "seq",
+      ["child", "t:function_name"],
+      ["child", "t:arguments"]
+    ],
+
+    "arguments": [
+      "group",
+      ["tok", "("],
+      [
+        "indent",
+        ["soft"],
+        ["each", "named", ["use", "comma_or_space"]]
+      ],
+      ["soft"],
+      ["tok", ")"]
+    ],
+
+    "import_statement": [
+      "seq",
+      ["tok", "@import"],
+      ["sp"],
+      ["each", "named", ["sp"]],
+      ["tok", ";"]
+    ],
+
+    "at_rule": [
+      "seq",
+      ["child", "t:at_keyword"],
+      ["sp"],
+      ["each", "named", ["opt", "t:,", ["seq", ["tok", ","], ["sp"]], ["sp"]]],
+      ["opt", "t:;", ["tok", ";"]]
+    ],
+
+    "media_statement": ["use", "at_block", "@media"],
+    "supports_statement": ["use", "at_block", "@supports"],
+
+    "keyframes_statement": [
+      "seq",
+      ["tok", "@keyframes"],
+      ["sp"],
+      ["child", "t:keyframes_name"],
+      ["sp"],
+      ["child", "t:keyframe_block_list"]
+    ],
+
+    "keyframe_block": [
+      "seq",
+      ["child", "named"],
+      ["sp"],
+      ["child", "t:block"]
+    ],
+
+    "to": ["child", "named"],
+
+    "binary_query": [
+      "seq",
+      ["child", "named"],
+      ["sp"],
+      ["tok", "and"],
+      ["sp"],
+      ["child", "named"]
+    ],
+
+    "feature_query": [
+      "seq",
+      ["tok", "("],
+      ["child", "t:feature_name"],
+      ["tok", ":"],
+      ["sp"],
+      ["child", "named"],
+      ["tok", ")"]
+    ],
+
+    "parenthesized_query": [
+      "seq",
+      ["tok", "("],
+      ["child", "named"],
+      ["tok", ")"]
+    ],
+
+    "unary_query": [
+      "seq",
+      ["tok", "not"],
+      ["sp"],
+      ["child", "named"]
+    ],
+
+    "binary_expression": [
+      "seq",
+      ["child", "named"],
+      ["sp"],
+      ["child", "*"],
+      ["sp"],
+      ["child", "named"]
+    ],
+
+    "integer_value": ["verbatim"],
+    "float_value": ["verbatim"],
+    "color_value": ["verbatim"],
+    "string_value": ["verbatim"]
+  }
+}
