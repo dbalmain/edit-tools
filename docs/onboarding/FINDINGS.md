@@ -425,8 +425,8 @@ explicitly Go-specific post-pass; **decline** sibling-width alignment as an IR
 capability; and refuse the same trade for the second language that asks. TOML's
 three comment-column divergences and Rust's two stay accepted — at ~2,400 B per
 language-specific mode, the second is unaffordable and the third absurd. The
-table above is the trimming order if the 25 KiB budget forces a cut inside the Go
-pass rather than of it.
+table above is the trimming order if the 25 KiB budget forces a cut inside the
+Go pass rather than of it.
 
 ## 2. Ancestor break context
 
@@ -1353,8 +1353,11 @@ of which we would then be tempted to tune. As a discovery tool it needs none of
 that: it can be slow, external, non-hermetic, and run when someone asks.
 
 `harness/probe_alignment.py` is the first instance (`--align-only` reproduces 10
-/ 4814). It is deliberately **not** wired into `test.sh`: it needs a Go
-toolchain and a GOROOT checkout.
+/ 4814). `harness/probe_rust_subwidth.py` is the second, and it found entry 17 —
+a 44.8%-of-real-files gap in a language whose package does not exist yet, which
+is the loop working a stage earlier than it was designed to. Neither is wired
+into `test.sh`: one needs a Go toolchain and a GOROOT checkout, the other a
+rustfmt and a populated cargo registry.
 
 ### What is still open
 
@@ -1373,6 +1376,136 @@ toolchain and a GOROOT checkout.
 **Decide now:** the `house-rule` verdict, before alignment reaches a
 non-aligning language. **Decide later:** per-language probes, when a second
 language's implementation-correctness is in question.
+
+---
+
+## 17. A group fits against the line width; rustfmt has nine widths
+
+**Status:** open · **Cost:** **local** · **Languages:** Rust (44.8% of real
+files), and no other reference onboarded so far
+
+Every reference in the roster so far breaks when a construct does not fit the
+line. **rustfmt does not.** It carries nine width thresholds, and `max_width` is
+only the outermost one:
+
+```text
+max_width                            100
+fn_call_width                         60      chain_width                    60
+attr_fn_like_width                    70      array_width                    60
+struct_lit_width                      18      struct_variant_width           35
+single_line_if_else_max_width         50      single_line_let_else_max_width 50
+short_array_element_width_threshold   10
+```
+
+A `Branch { leaves: [1, 2, 3, 4], label: "north" }` at indent 4 occupies 61 of
+100 columns and rustfmt breaks it anyway, because a struct literal's body may
+not exceed 18. Our `group` asks one question — does the flat form fit the
+remaining columns — so it cannot produce that output **at any width**. It is not
+a tuning problem.
+
+### Measured, not inferred
+
+Three probes, each isolating one knob against rustfmt 1.9.0:
+
+| probe                                                                | default    | one knob raised               |
+| -------------------------------------------------------------------- | ---------- | ----------------------------- |
+| `let b = Branch { leaves: [1, 2, 3, 4], label: "north" };` (61 col)  | breaks     | flat at `struct_lit_width=80` |
+| `let v = items.iter().map(transform)….collect::<Vec<_>>();` (75 col) | breaks     | flat at `chain_width=90`      |
+| the same chain behind an 87-column binding, chain span 35            | stays flat | —                             |
+
+The third is the one that makes this cheap to implement: **the threshold is
+measured against the construct's own span, not the line.** That is exactly what
+a group already measures.
+
+The thresholds are also **fractions of `max_width`**, not constants — the
+26-column struct body above stays broken at `max_width=100` and goes flat at
+200, matching 18%. So a package declares a percentage, not a byte count, and one
+package works at every scored width.
+
+### How much of real Rust this decides
+
+`use_small_heuristics = "Max"` sets all nine thresholds to `max_width` and
+changes nothing else, which makes the measurement a subtraction. Population: a
+1,200-file random sample of `~/.cargo/registry`, non-test, restricted to the 905
+files rustfmt already leaves untouched at its defaults — so, as in entry 16,
+every difference is real by construction.
+
+The tool is committed as `harness/probe_rust_subwidth.py`, the second instance
+of entry 16's discovery loop and the first written before a package existed.
+
+> **405 of 905 rustfmt-clean files — 44.8% — have their layout decided by a
+> sub-width.** Those files are unreachable for us at any line width.
+
+Attribution, from a separate 400-file run raising one knob at a time (147 files
+moved; a file can count against more than one knob):
+
+| knob                                  | files |
+| ------------------------------------- | ----- |
+| `struct_lit_width`                    | 83    |
+| `chain_width`                         | 69    |
+| `fn_call_width`                       | 56    |
+| `short_array_element_width_threshold` | 18    |
+| `attr_fn_like_width`                  | 12    |
+| `single_line_if_else_max_width`       | 12    |
+| `array_width`                         | 8     |
+| `struct_variant_width`                | 0     |
+| `single_line_let_else_max_width`      | 0     |
+
+Three knobs carry it. A package that could express `struct_lit`, `chain` and
+`fn_call` would reach most of the 44.8%.
+
+### The corpus sees one file of fifteen
+
+Running the same subtraction over the Rust corpus: **1 of 15 files at each
+width** — `nesting.rs`, the struct-literal case — has its layout decided by a
+sub-width. 6.7% locally against 44.8% in the wild.
+
+That is entry 16's lesson recurring, found by applying entry 16's method, and it
+is the first time the method has been used on a language _before_ its package
+was written rather than after. It is also actionable: **Rust's stage B should
+add probes for `chain_width` and `fn_call_width`**, which the corpus does not
+exercise at all, before stage C measures anything.
+
+### Why this is local, and what it would cost
+
+`group` already computes the flat width of its own contents in order to ask
+`fits`. The change is a second comparison against a package-declared fraction:
+
+```json
+["group", { "max": 0.18 }, ["seq", …]]
+```
+
+No sibling measurement, no ancestor state, no second pass — the same local-cost
+profile as `fill` (entry 8), which came in at +365 B. This is plausibly cheaper.
+
+Two caveats before anyone builds it:
+
+- **`short_array_element_width_threshold` is not this feature.** It is a
+  per-_element_ test that decides whether an array packs several items per line,
+  which is `fill`'s decision (entry 8), not a group's fit. 18 files.
+- **The Rust package does not exist yet**, so the 44.8% is a prediction about
+  stage C, not a measured divergence count. It is a strong prediction — the
+  output is unreachable at any width — but it is still a prediction.
+
+### The smaller Rust findings, recorded so they are not rediscovered
+
+- **rustfmt inserts braces when a closure body breaks.**
+  `.map(|(i, p)| f(i, p))` becomes `.map(|(i, p)| {\n f(i, p)\n })`. That is
+  token insertion conditioned on layout — the same shape as `autoparen`, whose
+  `paren` helper hardcodes `(` and `)`. Generalising it to a declared delimiter
+  pair is small. Gate 3 already tolerates the wrapper via
+  `transparent_wrappers = ["block"]`, so the gate is not the obstacle; the
+  package's inability to emit it is.
+- **rustfmt reorders `use` declarations.** Permanently excluded — the linearity
+  invariant forbids reordering, and unlike respelling (entry 14) there is no
+  policy shape that would make it safe. `modules.rs` is written in the
+  reference's order so the corpus does not silently absorb it.
+- **Alignment is 2 of 15 files (13.3%)**, against Go's 37.5% — already recorded
+  in entry 1, and the reason that entry says alignment is largely a Go cost.
+
+**Decide when:** at Rust's stage C, which is the first point where the 44.8% can
+be confirmed as a real divergence count rather than a predicted one. Do not
+build it before then.
 
 ---
 
