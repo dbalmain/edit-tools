@@ -95,6 +95,16 @@ test("width counts scalar values, not UTF-16 code units", () => {
   assert.equal(run(pkg, tree, 6), "(🙂🙂🙂\nx)\n");
 });
 
+test("Go alignment respects blank-line runs and matches gofmt", () => {
+  const fs = require("node:fs");
+  const path = require("node:path");
+  const root = path.join(__dirname, "..");
+  const pkg = JSON.parse(fs.readFileSync(path.join(root, "packages", "go.json"), "utf8"));
+  const tree = JSON.parse(fs.readFileSync(path.join(root, "corpus", "trees", "go__alignment.tree.json"), "utf8"));
+  const want = fs.readFileSync(path.join(root, "corpus", "reference", "go__alignment@80.txt"), "utf8");
+  assert.equal(format(tree, new Map([["go", pkg]]), 80), want);
+});
+
 test("fill packs independently per line and counts Unicode scalars", () => {
   const rule = [
     "group", ["tok", "("],
