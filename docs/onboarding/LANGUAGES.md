@@ -16,9 +16,9 @@ building · `D` package review · `E`/`F` escalated · **merged** · **blocked**
 | YAML       | T1   | 2     | DS+grok+Terra | merged | tree_sitter_yaml       | prettier                          |
 | CSS        | T1   | 2     | grok          | merged | tree_sitter_css        | prettier                          |
 | Go         | T2   | 2     | DS+grok       | merged | tree_sitter_go         | gofmt                             |
-| Rust       | T2   | 3     | tbd           | -      | tree_sitter_rust       | rustfmt                           |
-| Kotlin     | T2   | 3     | tbd           | -      | tree_sitter_kotlin     | ktfmt                             |
-| JavaScript | T2   | 3     | tbd           | -      | tree_sitter_javascript | prettier                          |
+| Rust       | T2   | 3     | unrecorded    | B      | tree_sitter_rust       | rustfmt                           |
+| Kotlin     | T2   | 3     | unrecorded    | B      | tree_sitter_kotlin     | ktfmt                             |
+| JavaScript | T2   | 3     | unrecorded    | B      | tree_sitter_javascript | prettier                          |
 | Markdown   | T2   | 4     | tbd           | -      | tree_sitter_markdown   | prettier                          |
 | TypeScript | T2   | 4     | tbd           | -      | tree_sitter_typescript | prettier                          |
 | XML        | T3   | 4     | tbd           | -      | tree_sitter_xml        | prettier (`@prettier/plugin-xml`) |
@@ -31,6 +31,19 @@ building · `D` package review · `E`/`F` escalated · **merged** · **blocked**
 Grammar package names are the orchestrator's guess from PyPI naming convention.
 Stage A confirms or corrects each one and records the pin in the manifest; a
 wrong guess here is a template delta, not a failure.
+
+**Round 3's stage A is complete and unmerged**, on `wt/lang-rust`,
+`wt/lang-kotlin` and `wt/lang-javascript` — corpus, manifest, trees, reference
+output and corpus report for each. The board carried them as `-` for a day after
+they landed, which is the failure this line exists to prevent: **update the
+board at the transition, not at the merge.**
+
+Their builders are recorded as `unrecorded` because none of the three corpus
+reports names the agent that wrote it. That is a template gap, not an
+attribution dispute — a stage-A report should identify its builder the way the
+runtime-change ledger identifies its agent, and `corpus-brief.md` does not ask
+for it. Every earlier round's builder is known only because the orchestrator
+launched them within one session's memory.
 
 **agy (Gemini 3.7 Flash) is not in round 2, and not by choice.** It was
 allocated the second CSS and Go seats. In headless mode it auto-denies any tool

@@ -162,6 +162,31 @@ Fields you must establish rather than guess:
   something renames its node (`pattern_list` → `tuple_pattern` in Python). Same
   rule: add one only when the gate names it.
 
+- `incomparable` — optional. A table of **filename = reason** for files the
+  reference rewrites in a way linearity forbids (prettier turning `'hello'` into
+  `"hello"`, gofmt sorting imports, prettier rewriting `.5` to `0.5`). A file
+  with no reason is a manifest error; a name that does not exist is too. Do
+  **not** leave the construct out of the corpus: put it in its own file and
+  declare it.
+
+  ```toml
+  [incomparable]
+  "quotes.yaml" = "prettier re-quotes to minimise escaping"
+  ```
+
+  The file still counts for gates 0–3 (coverage, Rust/JS parity, idempotence,
+  non-destruction). It skips only the "reference output must itself pass gate 3"
+  assertion, and it is out of the agreement denominator — reported as a fifth
+  count, `excluded`. The name is a current measurement state, not a permanent
+  exile: when the construct later becomes comparable (quote respelling will;
+  import sorting will not), delete the line.
+
+  **One excluded construct per file.** A file that also contains otherwise
+  comparable constructs hides those from measurement. The harness cannot tell a
+  mixed file from a dedicated one — do not treat a green `./test.sh` as evidence
+  of purity. Stage B rejects a mixed file. The `kitchen` file is never
+  incomparable.
+
 ### 2. `corpus/src/{{LANG}}/` — 12 to 16 source files
 
 Each file is named for the single thing it stresses and contains **only** that
@@ -293,6 +318,10 @@ about {{LANG}} and belongs in the report even when you remove the override.
 
 Write `corpus/reports/{{LANG}}/corpus-report.md`:
 
+- **which agent you are**, in the first section, next to the pins. One line —
+  the model or CLI you are running as. Round 3's three reports all landed
+  without it, so the status board cannot say who built them and the scorecard
+  cannot credit them.
 - the manifest, and how you established each field you had to discover
 - the corpus file list, one line each: what it stresses and why it is
   characteristic of {{LANG}}
