@@ -24,6 +24,9 @@ fixtures that gofmt happens to accept.
 measured that number: about 10 / 4814 (0.21%). The full formatter also
 disagrees for reasons that are not alignment (missing node types,
 entries 2 / 10 / 13), so the two modes answer different questions.
+Default mode raises the recursion limit: `cmd/compile` trees are deep
+enough that `json.dump` dies at 1000 frames; a leftover overflow is
+counted unparseable rather than crashing the run.
 
 Not a gate: needs a Go toolchain and a large external tree. `--limit`
 is for iteration. Exit 0 even when files disagree — the headline number
@@ -232,7 +235,10 @@ def thread_parser(manifest: mf.Manifest):
 
 def check_formatter(path: Path, rust: Path, manifest: mf.Manifest) -> tuple[str, str]:
     source = path.read_bytes()
-    doc = parseable(path, source, thread_parser(manifest))
+    try:
+        doc = parseable(path, source, thread_parser(manifest))
+    except RecursionError:
+        return "unparsed", "tree-sitter convert exceeded recursion limit"
     if doc is None:
         return "unparsed", ""
     want = doc["source"]
@@ -244,7 +250,11 @@ def check_formatter(path: Path, rust: Path, manifest: mf.Manifest) -> tuple[str,
         encoding="utf-8",
     ) as tmp:
         tmp_path = Path(tmp.name)
-        json.dump(doc, tmp, ensure_ascii=False, separators=(",", ":"))
+        try:
+            json.dump(doc, tmp, ensure_ascii=False, separators=(",", ":"))
+        except RecursionError:
+            tmp_path.unlink(missing_ok=True)
+            return "unparsed", "tree JSON exceeded recursion limit"
     try:
         got, err = format_tree(tmp_path, rust)
     finally:
@@ -309,6 +319,9 @@ def main() -> int:
         raise Failed("--limit must be >= 0")
     if args.jobs < 1:
         raise Failed("--jobs must be >= 1")
+    # cmd/compile trees are deep enough that the default 1000-frame
+    # limit dies inside json.dump. --align-only never builds a tree.
+    sys.setrecursionlimit(10000)
 
     if args.align_only:
         if not ALIGN_BIN.is_file():
