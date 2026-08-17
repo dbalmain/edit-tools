@@ -63,13 +63,21 @@ Check, in roughly this order of importance:
 8. **What did the builder change outside `corpus/` and `harness/languages/`?**
    Every such edit needs a reason. Edits to `rust/` or `runtime-js/` at stage A
    are a strong smell.
-9. **Are incomparable files dedicated?** Every `[incomparable]` entry must name
-   a file that exists, give a non-empty reason, and contain **only** the
-   excluded construct. Mixing in otherwise comparable constructs hides them from
-   the agreement denominator; the harness cannot detect that, so this check is
-   yours. Omitting a construct the reference rewrites — rather than declaring a
-   dedicated file — is the older failure this field exists to stop. The
-   `kitchen` file must not be listed.
+9. **Which of the reference's behaviours are off by default?** A reference with
+   a documented option that _disables_ a behaviour tells you something the
+   corpus cannot: what the reference chose not to do. rustfmt's
+   `struct_field_align_threshold` and `enum_discrim_align_threshold` both
+   default to `0`, which is the entire reason `alignment: "go"` does not
+   transfer to Rust (FINDINGS 18) — and observing the output alone would only
+   have shown their absence, never that they were deliberate. List them; a
+   reference with none is a valid answer.
+10. **Are incomparable files dedicated?** Every `[incomparable]` entry must name
+    a file that exists, give a non-empty reason, and contain **only** the
+    excluded construct. Mixing in otherwise comparable constructs hides them
+    from the agreement denominator; the harness cannot detect that, so this
+    check is yours. Omitting a construct the reference rewrites — rather than
+    declaring a dedicated file — is the older failure this field exists to stop.
+    The `kitchen` file must not be listed.
 
 You **may make small corrections yourself** in the worktree — a wrong pin, a
 missing probe file, a stale number in the report — and re-verify. Anything
