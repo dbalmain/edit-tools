@@ -119,9 +119,10 @@ this section is now the description of what a builder is working against.
    for every language (files listed in `incomparable` skip only this assertion);
    every override rejects all useful adversarial mutations rejected by the
    generic default; the gate still **rejects** a dropped comment and a dropped
-   token; and Markdown-shaped mutations cannot hide in an opaque host node. The boundary cases cover valid guest reformatting, invalid guest
-   text, changed guest meaning, guest comments, exact-byte fallbacks, and nested
-   hosts. A zero useful-mutation count for an override is a failure, not a pass.
+   token; and Markdown-shaped mutations cannot hide in an opaque host node. The
+   boundary cases cover valid guest reformatting, invalid guest text, changed
+   guest meaning, guest comments, exact-byte fallbacks, and nested hosts. A zero
+   useful-mutation count for an override is a failure, not a pass.
 
    The adversarial families are same-kind leaf replacement, numeric respelling,
    string delimiter/escape respelling, same-kind sibling swapping, and subtree
@@ -307,21 +308,20 @@ Mechanically that means:
 
 ### Size accounting
 
-Current: 10,441 B gzip = 8,312 runtime + 2,129 packages (python + json), against
-a 20 KB budget.
+Current: 19,202 B gzip = 13,396 runtime + 5,806 packages (six languages),
+against a 25 KiB budget — raised from 20 KB on 2026-08-17; see `LEDGER.md` for
+why, and for what the next raise would mean.
 
-Fifteen packages will dominate a single total, and that would punish language
+Fifteen packages will dominate a single total, and that would punish the
+fifteenth language for arriving late. So the reported number is **runtime plus
+this language's own package**, measured against 25 KiB. The all-languages total
+is reported too, as information.
 
-# 15 for arriving late. So the reported number is \*\*runtime + this language's own
-
-package\*\*, measured against 20 KB. The all-languages total is reported too, as
-information.
-
-**20 KB is a soft budget, not a gate.** Dave's rule: going over is not a
+**25 KiB is a soft budget, not a gate.** Dave's rule: going over is not a
 failure, it is a question — _which language features cost the extra bytes?_ So
 the accounting must be **attributable**, and that is the real requirement here.
 Every runtime edit records its own gzip delta in `LEDGER.md` against the
-language and the construct that forced it, so that when the total crosses 20 KB
+language and the construct that forced it, so that when the total crosses 25 KiB
 we can answer "Scheme's head-position dispatch cost 900 bytes, Ruby's block-form
 selection cost 400" rather than "it got bigger".
 

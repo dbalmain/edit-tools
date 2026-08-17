@@ -117,7 +117,9 @@ def main() -> int:
     )
     parser.add_argument(
         "--verdict",
-        choices=("design-limit", "package-bug", "reference-quirk"),
+        # Two of these say "we could not"; two say "we chose not to". The split
+        # matters when a snapshot changes -- see FINDINGS entry 16.
+        choices=("design-limit", "package-bug", "reference-quirk", "house-rule"),
     )
     parser.add_argument("--reason")
     parser.add_argument("--reviewed-by")
