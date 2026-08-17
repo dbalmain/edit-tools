@@ -110,6 +110,11 @@ diverge permanently — but it does mean the global-cost feature buys one langua
 most of its value, and the register should say so rather than implying every
 aligning reference pays equally.
 
+Measurement against real Rust later put the rate lower still — **1.4%** of
+rustfmt-clean crates.io files, a third of them in regions no rule can reach —
+and established that this mode does not transfer at all: see
+[entry 18](#18-alignment-go-on-rust-aligns-exactly-the-lines-rustfmt-leaves-alone).
+
 ### The spike answered it, and the answer is not the one this entry framed
 
 Built on `spike/alignment` (2026-08-17), measured rather than argued. **The
@@ -1506,6 +1511,192 @@ Two caveats before anyone builds it:
 **Decide when:** at Rust's stage C, which is the first point where the 44.8% can
 be confirmed as a real divergence count rather than a predicted one. Do not
 build it before then.
+
+---
+
+## 18. `alignment: "go"` on Rust aligns exactly the lines rustfmt leaves alone
+
+**Status:** open, awaiting Dave · **Cost:** **local** for a Rust mode,
+**structural** for the general form · **Languages:** Rust (1.4% of real files),
+Go (merged), Scheme (unonboarded)
+
+Entry 1 closed with "alignment is largely a Go cost, not a general one", on the
+strength of Rust showing 2 of 15 corpus files against Go's 6 of 16. Dave then
+decided alignment is in as a house rule, which raised the question this entry
+answers: **what does `alignment: "go"` actually do to a language that is not
+Go?**
+
+The answer is worse than "not much". It is **strictly negative**.
+
+### rustfmt aligns one thing, and it is not the thing gofmt aligns
+
+Measured against rustfmt 1.9.0 at `max_width=100`, `--config-path /dev/null`:
+
+| construct                           | gofmt  | rustfmt (default) |
+| ----------------------------------- | ------ | ----------------- |
+| struct field **types**              | aligns | no                |
+| `const` / `var` **values**          | aligns | no                |
+| enum discriminants                  | —      | no                |
+| struct tags                         | aligns | —                 |
+| trailing comments on **statements** | aligns | **no**            |
+| trailing comments on **list items** | **no** | **aligns**        |
+
+rustfmt does have `struct_field_align_threshold` and
+`enum_discrim_align_threshold`, which turn on gofmt-style type and value
+alignment. **Both default to 0**, so neither is reference behaviour.
+
+So the surfaces are almost disjoint, and on the one surface they share —
+trailing comments — the triggers are exact opposites. `goAlign` terminates a run
+at a comma:
+
+```js
+"+-*/%&|^,".includes(info.body[info.body.length - 1]);
+```
+
+and rustfmt's run **requires** one. A row ends in `,` (or is a match arm whose
+body is `{}`); a group closer (`}`, `)`) is excluded; a blank line, an indent
+change, or a row without a comment terminates the run. Those last three are
+gofmt's rules exactly, which is the part worth reusing.
+
+### What `alignment: "go"` does to Rust, measured
+
+The Go mode's `field` and `value` triggers are literal Go text — `struct {` at
+end of line, `const (`, `var (`. Rust's `struct T {` matches none of them, so on
+Rust **only the statement path fires**, which is precisely the case rustfmt
+leaves at one space.
+
+Population as in entry 16: a random crates.io sample, restricted to files
+rustfmt already leaves untouched, so every difference is real by construction.
+
+> **`alignment: "go"` changes 10 of 905 rustfmt-clean files (1.1%), and produces
+> none of rustfmt's alignment.** It is pure added divergence.
+
+That disposes of the cheapest option. It is not that reusing the Go rules buys
+little; it is that it costs and buys nothing.
+
+### A Rust mode, prototyped and priced
+
+`spike/rust-alignment` adds `alignment: "rust"` to `runtime-js/bundle.js` only.
+The JS gzip is the budget number (entry 1), so a JS-only prototype prices the
+feature without paying for a parity the decision may never need. It is **not**
+merged and nothing declares the mode.
+
+| piece                                     |   gzip |
+| ----------------------------------------- | -----: |
+| whole mode                                |  796 B |
+| — of which a Rust lexer                   |  270 B |
+| — of which the width rule                 |   78 B |
+| — of which run detection, trigger, padder | ~450 B |
+
+For comparison, the Go pass is **2,593 B**. The Rust mode is cheaper because
+~2,000 B of scanner, splitter and padder is already spent and gets reused. That
+is the good news, and it is the answer to "can these rules be shared": the
+shared part is **already** shared.
+
+The 270 B is the part that does not share. Rust needs three lexical things Go's
+scanner does not have — block comments that **nest**, `r#"..."#`, and `\`
+continuing a string across a line break — so the scanner is a variant, not a
+reuse. **Every further language pays this again.**
+
+### How well the cheap rule does
+
+Scored two-sided against 3,743 rustfmt-clean files. One-sided is not enough
+here: feeding rustfmt's output straight through only catches _over_-alignment.
+Collapsing every code-to-comment gap to one space and demanding the original
+back catches _under_-alignment too.
+
+| measure                            | result            |
+| ---------------------------------- | ----------------- |
+| files carrying alignment at all    | 53 / 3,743 (1.4%) |
+| over-aligns (changed a clean file) | 13 / 3,743 (0.3%) |
+| restored from collapsed            | 26 / 53           |
+| **unreachable by any rule**        | **19 / 53**       |
+| genuine rule gaps                  | 8 / 53            |
+
+The 19 matter more than the 26. Twelve sit inside macro bodies and seven under
+`#[rustfmt::skip]` — both are regions rustfmt **reprints verbatim**, so the
+spacing is the author's and no alignment rule can reproduce it. On the reachable
+population the cheap rule gets **26 of 34, 76%**.
+
+A first pass measured 92% under-alignment and it was entirely the probe's fault:
+the collapse regex was eating the indentation _inside_ `///` and `//!` doc
+comments. Worth recording because the bug looked exactly like a finding, and the
+only thing that caught it was that 92% was too large to believe.
+
+### The part that does not reduce to a rule
+
+rustfmt's alignment is **width-dependent**, and gofmt's is not — gofmt has no
+`max_width` at all, so its tabwriter is a genuine text post-pass. Two arms
+differing only in the length of one comment:
+
+```rust
+// max_width = 100, both inputs written with a single space
+"arm64ec" => "arm64ec", // https://github.com/rust-lang/rust/issues/131172
+arch if arch.starts_with("aarch64") => "aarch64", // arm64e | arm64_32
+arch if arch.starts_with("arm64") => "aarch64", // aarch64 | aarch64_be
+```
+
+rustfmt aligns none of that. Shorten the first comment and it aligns all three.
+So there is a fit rule — but sweeping the row widths at `max_width` 60, 100 and
+200 shows the trigger tracks `max_width` **without** reducing to "the padded row
+must fit". A short row is aligned where a longer one is not, which is backwards
+from a width cap, and the flip moves with `max_width`.
+
+That is entry 17's shape again: a threshold that is a fraction of `max_width`
+and is measured against the construct rather than the line. **I could not reduce
+it to a single predicate by black-box probing, and I am recording that rather
+than guessing a constant.** The 78 B "width rule" above is an all-or-nothing fit
+test that is demonstrably not what rustfmt does; it is what got 76%.
+
+### The generalisation is a Doc node, not a schema
+
+Dave's instinct — generalise the rules, so Scheme's `let` bindings can align too
+— is right, but the schema is the wrong lever. Widening `alignment` from a named
+mode to a declared policy would parameterise the ~450 B of run-and-pad logic
+that is **already shared**, and would not touch the 270 B lexer that is the
+recurring per-language cost.
+
+The lexer exists only because the pass re-derives, from rendered text, something
+the parser already knew. gofmt does not do this: `go/printer` emits vtab
+characters into the output and `text/tabwriter` aligns on **markers**, never
+re-lexing. Our spike reproduced the tabwriter and skipped the marker.
+
+So the proposal is a `cell` doc node:
+
+- a package writes `["cell"]` where a column may break — it can, because it is
+  building the Doc;
+- `print()` emits a marker instead of measuring anything;
+- one language-independent pass aligns runs of rows over markers, with entry 1's
+  run semantics (contiguity, indent scope, terminate on a missing cell) kept
+  intact.
+
+This is **not** entry 1's rejected `column` opcode. That one padded a whole
+block uniformly and failed for the same reason a naive general feature would;
+the run semantics are what made the Go pass work, and they are preserved here.
+
+What it would buy: no per-language lexer ever again, Scheme `let` and Rust
+comments and Go fields on one mechanism, and alignment that is finally aware of
+the tree rather than guessing at it from text. What it would cost is unmeasured
+— a new Doc node, printer support, and a migration of the Go mode — which is why
+this entry's status is open and its cost is marked **structural**.
+
+### The decision Dave has
+
+1. **Decline for Rust.** 0 B. Loses 1.4% of real files, 2 of 15 corpus files.
+2. **`alignment: "rust"`.** 796 B for ~76% of the reachable cases, and a second
+   named mode with a third one already foreseeable.
+3. **The `cell` node.** Unpriced, replaces both modes, and is the only option
+   that answers "and then Scheme".
+
+Option 1 is not embarrassing: Rust's alignment prevalence is **1.4%** against
+Go's 37.5% of corpus files, and 36% of what alignment there is sits in regions
+no rule can reach. The register's job is to make that comparison, not to prefer
+the feature.
+
+**Do not decide before Rust's stage C**, for entry 17's reason: 1.4% is a
+prediction about a package that does not exist. What stage C can confirm is
+whether alignment is even in Rust's top five divergences — entry 17 says the
+sub-widths are 44.8%, which is thirty times larger.
 
 ---
 
