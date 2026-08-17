@@ -92,12 +92,12 @@ every aligning reference has a hard agreement ceiling. There is no cheap middle.
 ### Rust priced it far lower, and that reshapes the entry
 
 Rust's stage A (2026-08-17) is the third independent price, and it is the first
-one that argues *against*:
+one that argues _against_:
 
 - **2 of 15 files (13.3%)** show observable alignment — `structs.rs` aligns
   field comments, `comments.rs` aligns an own-line comment with the preceding
   trailing-comment column.
-- **1 of 15 files** shows true sibling-width *field* alignment.
+- **1 of 15 files** shows true sibling-width _field_ alignment.
 
 Against Go's 6 of 16 (37.5%), that is roughly a third of the rate, and most of
 what Rust does have is trailing-comment alignment rather than the field-and-
@@ -132,34 +132,284 @@ nine still to onboard.
 **What it did not cost:** the layout algorithm, and this is where the entry was
 wrong. This is not a second pass inside Wadler/Oppen — it is a text post-pass
 that runs after `print()` returns and never touches the printer. The JS mirror
-was also *cheap*, which contradicts the standing assumption that parity is the
+was also _cheap_, which contradicts the standing assumption that parity is the
 expensive part: the pass is pure `String → String` with no shared types, no IR
 and no evaluator state, so it transliterates mechanically. Gate 1 was green
-first try. Idempotence holds by construction — the pass re-splits on
-whitespace, discarding prior padding — and was confirmed on all 4,816 GOROOT
-files.
+first try. Idempotence holds by construction — the pass re-splits on whitespace,
+discarding prior padding — and was confirmed on all 4,816 GOROOT files.
 
 ### Why "no cheap middle, so build the real thing" pointed at the wrong thing
 
 **The hard part is where the columns start and stop, not how wide they are.**
 Half the work was reproducing policy that has nothing to do with widths:
 `keepTypeColumn`, `DiscardEmptyColumns`, formfeed placement, `extraTabs`, and
-the rule that a row with *fewer cells terminates the column* so the rows below
+the rule that a row with _fewer cells terminates the column_ so the rows below
 start a fresh one — `err error` with no comment splits the comment column in
 two; an embedded field splits the type column. Read out of `go/printer/nodes.go`
 and `text/tabwriter`, not inferred.
 
-A general `column` opcode in the IR would have landed at roughly the first row
-of the table below and stopped. The rejected cheap partial and the general
-feature fail for the *same* reason, which is why this entry's binary framing was
+A general `column` opcode in the IR would have padded a whole block uniformly
+and stopped — the tabwriter-blocks row in the table below, 169 / 4814, which the
+16-file corpus cannot see. The rejected cheap partial and the general feature
+fail for the _same_ reason, which is why this entry's binary framing was
 misleading: it offered "build the real thing" as the safe answer, and the real
 thing would not have worked either.
+
+### Each gofmt policy, priced independently (2026-08-17)
+
+Dave asked for this after deciding alignment is in: the pass costs +2,627 B on
+the then-baseline (live runtime is now **13,396 B gzip**, total **19,202 B**)
+and nine languages are still to onboard, so each gofmt-matching policy has to
+earn its bytes.
+
+`harness/probe_alignment.py --align-only` is the committed fixpoint probe.
+Headline on unmodified `main`: **10 mangled / 4,814 checked (0.21%)**, matching
+the spike. The population is `GOROOT/src`, non-test, testdata skipped, then
+`gofmt -l`; the two files gofmt would rewrite are the Nix-generated
+`zdefaultcc.go` stubs. Default mode (the full formatter) is a different question
+— the Go package still refuses node types the stdlib uses
+(`expression_statement`, `type_assertion_expression`, short-var `if`) — and is
+not the number that prices these features.
+
+The probe is one-sided. Input is already gofmt output, so it sees
+_over-alignment_ (we changed a file gofmt left alone) and is blind to
+_under-alignment_ (we would have failed to pad an unaligned file). Removing the
+whole pass therefore scores **0 / 4,814** on the probe and **6 / 16** on the
+corpus. The register's earlier "10/16 ceiling without alignment" was the
+pre-alignment package estimate, not this measurement: the six alignment files
+all break, the four non-alignment divergences stay, six files still agree.
+
+Features were excised independently against unmodified `main`, not cumulatively.
+Gzip is `score.py`'s JS runtime figure; each feature was deleted from
+`bundle.js` for that number. Probe and corpus used the matching excision in
+`align.rs` only. The JS and Rust halves are line-for-line, so the JS gzip is the
+budget number, not an estimate.
+
+The spike grouped some of these as one increment. They are separate functions in
+the code and the numbers are not close, so they are separate rows. Gzip savings
+do not add: the eight policy rows sum to 555 B, the whole pass is 2,593 B, and
+the leftover ~2,000 B is the scanner / splitter / padder the policies sit on.
+
+| feature                             | gzip if removed | probe without it      | corpus                                                                           |
+| ----------------------------------- | --------------: | --------------------- | -------------------------------------------------------------------------------- |
+| whole pass (no alignment)           |         2,593 B | 0 / 4814 (0.00%)      | **6/16** — `alignment`, `iota`, `kitchen`, `nesting`, `strings`, `structs` break |
+| tabwriter column blocks             |             5 B | 169 / 4814 (3.51%)    | 12/16                                                                            |
+| merged name lists (`a, b int`)      |            63 B | 173 / 4814 (3.59%)    | 12/16                                                                            |
+| `keepTypeColumn`                    |           169 B | 37 / 4814 (0.77%)     | 12/16                                                                            |
+| `DiscardEmptyColumns`               |            55 B | 427 / 4814 (8.87%)    | **8/16** — `alignment`, `iota`, `strings`, `structs` break                       |
+| block comments                      |           109 B | 39 / 4814 (0.81%)     | 12/16                                                                            |
+| `}` / `)` group closers             |            39 B | 1,951 / 4814 (40.53%) | 12/16                                                                            |
+| struct-tag / comment slot           |            87 B | 149 / 4814 (3.10%)    | **10/16** — `alignment`, `strings` break                                         |
+| continuation lines are not siblings |            28 B | 49 / 4814 (1.02%)     | 12/16                                                                            |
+
+The 49 / 4814 without continuation matches the spike's incremental last step
+exactly. The 10 leftovers on the full pass are listed under `--verbose`: most
+are a statement-pass comment column on `case` / `return` / `goto`, plus
+`if       !ok {` in `unitchecker.go` and a tag jammed onto a `}` in
+`jsontest/testdata.go`. Not a missing row in this table.
+
+#### Examples
+
+Each snippet is five lines or fewer.
+
+**Whole pass.** Without it the input is unchanged, so the probe is silent and
+the corpus is what pays.
+
+```go
+type T struct {
+	A int
+	Long string
+}
+```
+
+With: `A    int` / `Long string`. Without: as written.
+
+**Tabwriter column blocks.** A shorter row terminates the column. Without this,
+the first column is one block and `Embedded` widens `A`.
+
+```go
+type T struct {
+	A int
+	Embedded
+	Bcd int
+}
+```
+
+With:
+
+```go
+	A int
+	Embedded
+	Bcd  int
+```
+
+Without:
+
+```go
+	A        int
+	Embedded
+	Bcd      int
+```
+
+**Merged name lists.** `r, w` is one cell. Without the merge it is two, and the
+comma becomes padding.
+
+```go
+type T struct {
+	r, w int
+	err error
+}
+```
+
+With: `r, w int` / `err  error`. Without: `r,  w int` / `err error`.
+
+**`keepTypeColumn`.** Inside a value-run, a type on any spec keeps the type
+column for the ones that omit it, so `=` lines up.
+
+```go
+const (
+	a = 1
+	bcd int = 2
+	ef = 3 // c
+)
+```
+
+With:
+
+```go
+	a       = 1
+	bcd int = 2
+	ef      = 3 // c
+```
+
+Without:
+
+```go
+	a   = 1
+	bcd int = 2
+	ef  = 3 // c
+```
+
+**`DiscardEmptyColumns`.** An all-empty column is dropped, not padded as a
+one-space cell. Without it, comments and tags pick up an extra gap.
+
+```go
+const (
+	A = iota // a
+	Bcdefg // b
+)
+```
+
+With: `A      = iota // a` / `Bcdefg        // b`. Without:
+`A      = iota  // a` / `Bcdefg         // b` (the empty type column is now a
+space).
+
+**Block comments.** A multi-line `/* */` is opaque. Without that, the pass
+formats the commented-out text.
+
+```go
+/*
+type T struct {
+	int r;
+	char pad[4];
+*/
+```
+
+With: unchanged. Without: `int  r;` / `char pad[4];`.
+
+**Group closers.** `}` / `)` at the opener's indent ends the run. Without that,
+a following same-indent line with a comment joins the comment column — including
+the closer itself.
+
+```go
+type T struct {
+	A int // a
+	LongName string // b
+} // end
+func init() { // f
+```
+
+With: `} // end` flush against the brace. Without: `}             // end` lined
+up with `// b` and `// f`.
+
+**Struct-tag / comment slot.** Tags are their own cell, and comments sit in the
+extraTabs column go/printer uses. Without it, the tag stays in the type cell.
+
+```go
+type T struct {
+	Tag bool `json:"tag"`
+	X string `json:"x"`
+}
+```
+
+With:
+
+```go
+	Tag bool   `json:"tag"`
+	X   string `json:"x"`
+```
+
+Without:
+
+```go
+	Tag bool `json:"tag"`
+	X   string `json:"x"`
+```
+
+Names still pad; tags do not.
+
+**Continuation lines.** A line ending in a binary operator or comma is one
+expression, not a sibling. Without the skip, the operands become a column.
+
+```go
+const (
+	flags = a |
+		bb | // second
+		cccccc | // third
+		d
+)
+```
+
+With: one space after each operand. Without: `bb     |` / `cccccc |`.
+
+#### What I would drop
+
+If the budget forced a cut, **`keepTypeColumn` is the one I would drop first.**
+169 B — the largest single policy function — for 37 files and no corpus
+movement. What it buys is `=` lining up across mixed typed / untyped const
+specs, which is gofmt house style rather than readability. The without-it form
+is still a column of names.
+
+I would not drop, even under pressure:
+
+- **Group closers** (39 B, 40.53%). Almost free, and without it one file in
+  three grows a comment column across the next declaration.
+- **`DiscardEmptyColumns`** (55 B, 8.87%, four corpus files). The extra gap is
+  visible, and `alignment` / `iota` / `strings` / `structs` all move.
+- **Tabwriter column blocks** (5 B, 169 files). Gzip barely sees the
+  `else close()`. The corpus cannot see it either — same 12/16 as the first cut
+  — which is exactly entry 16's warning.
+- **Block comments** (109 B, 39 files). This is not style. Removing it formats
+  the C inside a `/* */` cgo preamble.
+- **The pass itself.** The probe going to 0/4814 if we remove it is not a
+  saving; it is the probe going blind. Corpus 12/16 → 6/16.
+
+Continuation (28 B) and merged names (63 B) are cheap and the without-it forms
+look wrong (`bb     |`, `r,  w int`). The tag/comment slot is the other
+corpus-moving policy (87 B, `alignment` + `strings`); I would keep it while
+12/16 is the number we are defending.
+
+The ~2,000 B that is not in any policy row is the quote-aware scanners and the
+split/pad loop. Deleting two of the three scanners was already measured at 255
+B, because gzip collapses them. There is no 2,000 B feature hiding there to cut.
 
 **Decide when:** now. Recommendation on the table: build the narrow, opt-in,
 explicitly Go-specific post-pass; **decline** sibling-width alignment as an IR
 capability; and refuse the same trade for the second language that asks. TOML's
 three comment-column divergences and Rust's two stay accepted — at ~2,400 B per
-language-specific mode, the second is unaffordable and the third absurd.
+language-specific mode, the second is unaffordable and the third absurd. The
+table above is the trimming order if the 20 KB budget forces a cut inside the Go
+pass rather than of it.
 
 ## 2. Ancestor break context
 
@@ -452,10 +702,10 @@ once.
 ## 8. `fill` — pack as many items per line as fit
 
 **Status:** **built** (2026-08-17), **CSS opted in** (2026-08-17), **`all`
-unblocked JSON** (2026-08-17) · **Cost:** local, **+365 B gzip** `fill`
-runtime then **+86 B gzip** `all`, **+133 B gzip** JSON package, **+17 B
-gzip** CSS package on top of the earlier **+44 B** ·
-**Languages:** CSS (measured), JSON (measured, 6/6)
+unblocked JSON** (2026-08-17) · **Cost:** local, **+365 B gzip** `fill` runtime
+then **+86 B gzip** `all`, **+133 B gzip** JSON package, **+17 B gzip** CSS
+package on top of the earlier **+44 B** · **Languages:** CSS (measured), JSON
+(measured, 6/6)
 
 The IR breaks a group all-or-nothing: every separator breaks, or none does.
 Neither reference does that. prettier packs short items onto a line and wraps to
@@ -494,13 +744,13 @@ both, moving JSON from **4/6 to 2/6**. The experiment was reverted.
 
 Stage D's costing, which is what makes this decidable:
 
-| Question                        | Answer                                             |
-| ------------------------------- | -------------------------------------------------- |
+| Question                        | Answer                                               |
+| ------------------------------- | ---------------------------------------------------- |
 | Same construct in CSS and JSON? | Yes for per-line packing; `matrix` is a second shape |
-| Divergences it contributes to   | **13 of 21** (CSS, stage-D estimate)               |
-| Divergences it fully resolves   | **9 of 21** estimated; **7 of 19** measured        |
-| Cost on this register's scale   | **local**                                          |
-| Effect on merged packages       | CSS 11/30 → 18/30; JSON 4/6 → 6/6 once `all` landed |
+| Divergences it contributes to   | **13 of 21** (CSS, stage-D estimate)                 |
+| Divergences it fully resolves   | **9 of 21** estimated; **7 of 19** measured          |
+| Cost on this register's scale   | **local**                                            |
+| Effect on merged packages       | CSS 11/30 → 18/30; JSON 4/6 → 6/6 once `all` landed  |
 
 Local is the important word. It needs a new Doc node and one printer case using
 the width state the runtime already carries: no sibling measurement, no second
@@ -513,18 +763,19 @@ two-language count is not inflated: python's four divergences are
 operator-precedence breaking, a different gap, and TOML's seven are entries 1, 2
 and 3.
 
-The shipped shape is `["fill", sel, sep]`, deliberately parallel to `each`.
-The evaluator already has exactly the information needed to build alternating
-content and separator Docs, and the printer makes the three ordinary Wadler
-fill choices per line. Hard breaks and `BreakParent` propagate through it, and
-both runtimes retain scalar-value width counting.
+The shipped shape is `["fill", sel, sep]`, deliberately parallel to `each`. The
+evaluator already has exactly the information needed to build alternating
+content and separator Docs, and the printer makes the three ordinary Wadler fill
+choices per line. Hard breaks and `BreakParent` propagate through it, and both
+runtimes retain scalar-value width counting.
 
 ### CSS measured it, and the 9/21 estimate was optimistic
 
 CSS is the language that asked for `fill` and where stage D costed it. The
 package now uses it in two places, both behind predicates the IR already had:
 
-- Comma-separated declaration values that contain a `string_value` (`font-family`).
+- Comma-separated declaration values that contain a `string_value`
+  (`font-family`).
 - Space-separated declaration values that contain a `call_expression`, hanging
   after the colon (`1px solid color-mix(...)`).
 
@@ -533,35 +784,34 @@ accepted divergences resolved: `nested@80`, `nesting@80`, `nesting@40`,
 `normalisation@40`, `values@80`, `values@40`, `custom_properties@40`. No
 previously-agreeing file moved. The CSS package grew 1,194 → 1,238 B gzip.
 
-The stage-D "fully resolves 9 of 21" figure counted two constructs `fill`
-cannot actually match:
+The stage-D "fully resolves 9 of 21" figure counted two constructs `fill` cannot
+actually match:
 
-- **`calc` both widths.** Hanging fill packs the first two `minmax()` calls
-  and wraps the third *flat*. prettier starts the third *broken* on the
-  current line (`minmax(` then the args). The printer decides from the next
-  item's flat form, so it will not open a group-valued item in broken mode
-  on the remaining width.
-- **`custom_properties@80`.** prettier fills comma-groups (`0 1px 2px
-  rgba(...)` as one item). Our items are named CST children, so filling the
-  list packs past the last comma and explodes the last `rgba()`.
+- **`calc` both widths.** Hanging fill packs the first two `minmax()` calls and
+  wraps the third _flat_. prettier starts the third _broken_ on the current line
+  (`minmax(` then the args). The printer decides from the next item's flat form,
+  so it will not open a group-valued item in broken mode on the remaining width.
+- **`custom_properties@80`.** prettier fills comma-groups (`0 1px 2px rgba(...)`
+  as one item). Our items are named CST children, so filling the list packs past
+  the last comma and explodes the last `rgba()`.
 
 Those are why 9/21 became 7/19, not a package that refused to try. Applying
-`fill` to every comma list — the JSON-shaped opt-in — fixed `font-family`
-and spoiled `box-shadow` / `transition` in the same file, leaving
-`values.css` divergent and making `custom_properties` and `kitchen` worse.
-The `string_value == 0` guard was the existing-predicate way around that
-wall. `["all", "named", ["property_name", "string_value", "plain_value",
-"important"]]` replaced it: declaration has no value field, so `all named`
-has to list `property_name` and `important` or the predicate never fires.
-No corpus file moved (still 18/30). An unquoted-only family list now takes
-the branch; the corpus does not contain one.
+`fill` to every comma list — the JSON-shaped opt-in — fixed `font-family` and
+spoiled `box-shadow` / `transition` in the same file, leaving `values.css`
+divergent and making `custom_properties` and `kitchen` worse. The
+`string_value == 0` guard was the existing-predicate way around that wall.
+`["all", "named", ["property_name", "string_value", "plain_value", "important"]]`
+replaced it: declaration has no value field, so `all named` has to list
+`property_name` and `important` or the predicate never fires. No corpus file
+moved (still 18/30). An unquoted-only family list now takes the branch; the
+corpus does not contain one.
 
-JSON used the same predicate to opt in. `all named [number]` selects fill
-for `long_flat_array` without regressing mixed `scalars.json`. `all named
-[array, object]` plus a `count == 1` fallback explodes `matrix` on this
-corpus (prettier also wants "parent is not an array", which is ancestor
-context and was not built). Agreement **4/6 → 6/6**; both `nested.json`
-reviews retired.
+JSON used the same predicate to opt in. `all named [number]` selects fill for
+`long_flat_array` without regressing mixed `scalars.json`.
+`all named [array, object]` plus a `count == 1` fallback explodes `matrix` on
+this corpus (prettier also wants "parent is not an array", which is ancestor
+context and was not built). Agreement **4/6 → 6/6**; both `nested.json` reviews
+retired.
 
 ## 9. Comment placement cannot see the surrounding syntax
 
@@ -682,7 +932,7 @@ one entry about **layout-as-content** rather than two per-language ones.
 **The first bullet is no longer a single sighting, and should be split out.**
 Reviewing the stage-0 python baseline found `chains.py@60` to be exactly it:
 black treats `a.b().c().d()` as one flat chain that breaks at every dot, and the
-chain is left-nested *alternating* `attribute` and `call` nodes, so `flatten` --
+chain is left-nested _alternating_ `attribute` and `call` nodes, so `flatten` --
 which requires same-type, same-tightness -- cannot collect it. `DESIGN.md`
 already names "method chains at the dots" as a known limit, which means this was
 understood before the register existed and simply never got an entry.
@@ -690,9 +940,9 @@ JavaScript's stage A reports prettier doing the same thing, making three
 languages.
 
 So this is a **heterogeneous-chain `flatten`**: the existing opcode generalised
-from "same type, same tightness" to a declared alternating spine. Probably local,
-since `flatten` already walks a left-nested spine and the change is to what it
-accepts rather than to when it runs -- but nobody has costed it.
+from "same type, same tightness" to a declared alternating spine. Probably
+local, since `flatten` already walks a left-nested spine and the change is to
+what it accepts rather than to when it runs -- but nobody has costed it.
 
 The second bullet (source-break-sensitive layout for `grid-template-areas`) is
 still a single CSS sighting, though Go's `srcline` work is a close relative.
@@ -904,8 +1154,8 @@ against the final policy list rather than retrofitted.
 
 ## 15. The IR commits to one layout per group; the references choose among candidates
 
-**Status:** open · **Cost:** local for the verified case, contextual in general ·
-**Languages:** Python (2 divergences)
+**Status:** open · **Cost:** local for the verified case, contextual in general
+· **Languages:** Python (2 divergences)
 
 A Wadler group has exactly two states: flat if it fits, broken if it does not.
 `fits` is asked once, about the flat form. **The references do not work that
@@ -951,7 +1201,7 @@ if on_error is None or not on_error(   if (
 
 black splits the trailing call bracket in preference to splitting the top-level
 boolean operator. Ours breaks the outermost group first, which is what
-Wadler/Oppen does. This is a *preference order over candidates*, not a fit
+Wadler/Oppen does. This is a _preference order over candidates_, not a fit
 question — which is why it belongs with (a) rather than being its own entry.
 
 ### What it would take
@@ -971,43 +1221,44 @@ comparison; the general case is a different and much larger decision that only
 
 **Decide when:** (a) with `fill` (entry 8), which touches the same fit
 machinery. (b) when a second language wants it.
+
 ## 16. A 16-file corpus cannot see a 14%-of-the-world bug
 
-**Status:** open, **methodological** · **Cost:** a harness gate ·
-**Languages:** Go, but the lesson is not language-specific
+**Status:** open, **methodological** · **Cost:** a harness gate · **Languages:**
+Go, but the lesson is not language-specific
 
 This came out of the alignment spike and it is about **this register's own
 evidence**, so it outranks most of what is above it.
 
 The spike built a fixpoint probe: feed **4,814 gofmt-clean non-test GOROOT
 files** through the alignment pass alone. Because the input is already gofmt
-output, *any* change is a disagreement with gofmt — no false positives, no
+output, _any_ change is a disagreement with gofmt — no false positives, no
 judgement calls.
 
-| version                                                          | real files mangled  |
-| ---------------------------------------------------------------- | ------------------- |
+| version                                                          | real files mangled      |
+| ---------------------------------------------------------------- | ----------------------- |
 | first working cut                                                | **682 / 4814 = 14.17%** |
-| + real tabwriter column blocks, merged name lists                | 205 = 4.26%         |
-| + go/printer cell model, `keepTypeColumn`, `DiscardEmptyColumns`  | 67 = 1.39%          |
-| + block comments, `}{` closers, tag/comment slot                 | 49 = 1.02%          |
-| + continuation lines are not siblings                            | **10 = 0.21%**      |
+| + real tabwriter column blocks, merged name lists                | 205 = 4.26%             |
+| + go/printer cell model, `keepTypeColumn`, `DiscardEmptyColumns` | 67 = 1.39%              |
+| + block comments, `}{` closers, tag/comment slot                 | 49 = 1.02%              |
+| + continuation lines are not siblings                            | **10 = 0.21%**          |
 
 > **All 16 Go corpus files are clean at every single row of that table.** The
 > version that mangles one real Go file in seven scores exactly the same
 > **12/16** as the final one.
 
 The corpus is not bad — it was reviewed twice and it is the reason six alignment
-divergences were found and priced at all. It simply cannot see this *class* of
+divergences were found and priced at all. It simply cannot see this _class_ of
 bug, because a hand-written 16-file corpus has no way to contain the long tail
 of shapes that a language's real code contains.
 
 ### What this does and does not undermine
 
-It does **not** undermine agreement as a measure of *whether a capability is
-needed*. Six files diverging on alignment is a real signal and it was right.
+It does **not** undermine agreement as a measure of _whether a capability is
+needed_. Six files diverging on alignment is a real signal and it was right.
 
-It **does** undermine agreement as a measure of *whether an implementation is
-correct*. Those are different questions and this exercise has been using one
+It **does** undermine agreement as a measure of _whether an implementation is
+correct_. Those are different questions and this exercise has been using one
 number for both.
 
 ### The fix, and why it should be a gate
@@ -1017,17 +1268,19 @@ reference has already formatted, run our formatter, and diff. Idempotence of the
 reference makes every difference a real defect. It needs no hand-written
 expectations and no review.
 
-The spike's probe was a throwaway script in `/tmp`. Shipping the Go post-pass
-properly means committing it as a **harness check with a vendored sample**,
-because the corpus provably cannot replace it.
+The spike's probe was a throwaway script in `/tmp`. It is now
+`harness/probe_alignment.py` (not a gate: it needs a Go toolchain and GOROOT).
+`--align-only` reproduces the 10 / 4814 (0.21%) headline. Whether it becomes a
+gate with a vendored sample is still open; the corpus still cannot replace it.
 
 Worth asking whether every language should have one. Most references are
-idempotent, and most languages have a large corpus lying around —
-`node_modules` for prettier languages, the standard library for Go and Python.
-The cost is repository weight and runtime, not design.
+idempotent, and most languages have a large corpus lying around — `node_modules`
+for prettier languages, the standard library for Go and Python. The cost is
+repository weight and runtime, not design.
 
 **Decide when:** with the alignment decision, since the Go probe is the first
 instance and the two ship together.
+
 ---
 
 ## Closed
