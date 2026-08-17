@@ -1,11 +1,11 @@
 {
  "language": "rust",
  "source_file": "corpus/src/rust/widths.rs",
- "source": "// rustfmt breaks a construct that exceeds its own width even when the line has\n// room to spare (FINDINGS 17). Every construct below fits inside max_width=100\n// flat and is broken anyway. `nesting.rs` shows this incidentally for struct\n// literals; this file probes the three thresholds that decide most real Rust --\n// struct_lit_width 18, chain_width 60, fn_call_width 60 -- plus array_width 60.\n//\n// The comment alignment at the end is the other half: rustfmt aligns trailing\n// comments across a run of list items and nothing else (FINDINGS 18).\n\nfn sub_widths(items: &[i32]) {\n    // Struct literal body is 43 columns; the whole line is 61 of 100.\n    let branch = Branch { leaves: [1, 2, 3, 4], label: \"north\" };\n\n    // Method chain spans 62 columns of a 74-column line.\n    let picked = items.iter().map(double).filter(positive).collect::<Vec<_>>();\n\n    // Call arguments span 64 columns of a 91-column line.\n    let joined = combine(first_argument, second_argument, third_argument, fourth_argument);\n\n    // Array elements span 63 columns of an 82-column line.\n    let names = [alpha, bravo, charlie, delta, echo, foxtrot, golf, hotel, india];\n\n    consume(branch, picked, joined, names);\n}\n\nfn under_every_threshold(items: &[i32]) {\n    // The same four shapes, each inside its own threshold, so they stay flat.\n    let leaf = Leaf { id: 1 };\n    let some = items.iter().map(double).sum::<i32>();\n    let short = combine(first, second, third);\n    let few = [alpha, bravo, charlie];\n    consume(leaf, some, short, few);\n}\n\nstruct Config {\n    retries: u32, // bounded by the caller\n    timeout_ms: u64, // milliseconds, not seconds\n    label: &'static str, // shown in logs\n}\n\n// The alignment run is width-dependent, which is the part a fixed rule misses.\n// At max_width=100 all three arms align. At 60 the third drops out, because\n// padding it would overrun, and the first two align without it -- so the run\n// splits rather than collapsing. The arm with no comment ends the run at both\n// widths.\nfn aligned_arms(code: u32) -> &'static str {\n    match code {\n        1 => \"one\", // aligns at both widths\n        22 => \"twenty-two\", // aligns at both widths\n        333 => \"three-thirty-three\", // joins the run at 100, drops out at 60\n        _ => \"other\",\n    }\n}\n",
+ "source": "// rustfmt breaks a construct that exceeds its own width even when the line has\n// room to spare (FINDINGS 17). Every construct below fits inside max_width=100\n// flat and is broken anyway. `nesting.rs` shows this incidentally for struct\n// literals; this file probes the three thresholds that decide most real Rust --\n// struct_lit_width 18, chain_width 60, fn_call_width 60 -- plus array_width 60.\n//\n// The comment alignment at the end is the other half: rustfmt aligns trailing\n// comments across a run of list items and nothing else (FINDINGS 18).\n\nfn sub_widths(items: &[i32]) {\n    // Struct-literal body is 36 columns, over struct_lit_width 18; line is 65.\n    let branch = Branch { leaves: [1, 2, 3, 4], label: \"north\" };\n\n    // Method chain is 61 columns, over chain_width 60; the whole line is 79.\n    let picked = items.iter().map(double).filter(positive).collect::<Vec<_>>();\n\n    // Call arguments are 64 columns, over fn_call_width 60; the line is 91.\n    let joined = combine(first_argument, second_argument, third_argument, fourth_argument);\n\n    // Array elements are 63 columns, over array_width 60; the line is 82.\n    let names = [alpha, bravo, charlie, delta, echo, foxtrot, golf, hotel, india];\n\n    consume(branch, picked, joined, names);\n}\n\nfn under_every_threshold(items: &[i32]) {\n    // The same four shapes, each inside its own threshold, so they stay flat.\n    let leaf = Leaf { id: 1 };\n    let some = items.iter().map(double).sum::<i32>();\n    let short = combine(first, second, third);\n    let few = [alpha, bravo, charlie];\n    consume(leaf, some, short, few);\n}\n\nstruct Config {\n    retries: u32, // bounded by the caller\n    timeout_ms: u64, // milliseconds, not seconds\n    label: &'static str, // shown in logs\n}\n\n// The alignment run is width-dependent, which is the part a fixed rule misses.\n// At max_width=100 all three arms align. At 60 the third drops out, because\n// padding it would overrun, and the first two align without it -- so the run\n// splits rather than collapsing. The arm with no comment ends the run at both\n// widths.\nfn aligned_arms(code: u32) -> &'static str {\n    match code {\n        1 => \"one\", // aligns at both widths\n        22 => \"twenty-two\", // aligns at both widths\n        333 => \"three-thirty-three\", // joins the run at 100, drops out at 60\n        _ => \"other\",\n    }\n}\n",
  "root": {
   "type": "source_file",
   "start": 0,
-  "end": 2284,
+  "end": 2346,
   "children": [
    {
     "type": "line_comment",
@@ -114,7 +114,7 @@
    {
     "type": "function_item",
     "start": 554,
-    "end": 1203,
+    "end": 1265,
     "children": [
      {
       "type": "fn",
@@ -213,7 +213,7 @@
      {
       "type": "block",
       "start": 583,
-      "end": 1203,
+      "end": 1265,
       "field": "body",
       "children": [
        {
@@ -225,7 +225,7 @@
        {
         "type": "line_comment",
         "start": 589,
-        "end": 655,
+        "end": 664,
         "children": [
          {
           "type": "//",
@@ -237,129 +237,129 @@
        },
        {
         "type": "let_declaration",
-        "start": 660,
-        "end": 721,
+        "start": 669,
+        "end": 730,
         "children": [
          {
           "type": "let",
-          "start": 660,
-          "end": 663,
+          "start": 669,
+          "end": 672,
           "text": "let"
          },
          {
           "type": "identifier",
-          "start": 664,
-          "end": 670,
+          "start": 673,
+          "end": 679,
           "field": "pattern",
           "text": "branch"
          },
          {
           "type": "=",
-          "start": 671,
-          "end": 672,
+          "start": 680,
+          "end": 681,
           "text": "="
          },
          {
           "type": "struct_expression",
-          "start": 673,
-          "end": 720,
+          "start": 682,
+          "end": 729,
           "field": "value",
           "children": [
            {
             "type": "type_identifier",
-            "start": 673,
-            "end": 679,
+            "start": 682,
+            "end": 688,
             "field": "name",
             "text": "Branch"
            },
            {
             "type": "field_initializer_list",
-            "start": 680,
-            "end": 720,
+            "start": 689,
+            "end": 729,
             "field": "body",
             "children": [
              {
               "type": "{",
-              "start": 680,
-              "end": 681,
+              "start": 689,
+              "end": 690,
               "text": "{"
              },
              {
               "type": "field_initializer",
-              "start": 682,
-              "end": 702,
+              "start": 691,
+              "end": 711,
               "children": [
                {
                 "type": "field_identifier",
-                "start": 682,
-                "end": 688,
+                "start": 691,
+                "end": 697,
                 "field": "field",
                 "text": "leaves"
                },
                {
                 "type": ":",
-                "start": 688,
-                "end": 689,
+                "start": 697,
+                "end": 698,
                 "text": ":"
                },
                {
                 "type": "array_expression",
-                "start": 690,
-                "end": 702,
+                "start": 699,
+                "end": 711,
                 "field": "value",
                 "children": [
                  {
                   "type": "[",
-                  "start": 690,
-                  "end": 691,
+                  "start": 699,
+                  "end": 700,
                   "text": "["
-                 },
-                 {
-                  "type": "integer_literal",
-                  "start": 691,
-                  "end": 692,
-                  "text": "1"
-                 },
-                 {
-                  "type": ",",
-                  "start": 692,
-                  "end": 693,
-                  "text": ","
-                 },
-                 {
-                  "type": "integer_literal",
-                  "start": 694,
-                  "end": 695,
-                  "text": "2"
-                 },
-                 {
-                  "type": ",",
-                  "start": 695,
-                  "end": 696,
-                  "text": ","
-                 },
-                 {
-                  "type": "integer_literal",
-                  "start": 697,
-                  "end": 698,
-                  "text": "3"
-                 },
-                 {
-                  "type": ",",
-                  "start": 698,
-                  "end": 699,
-                  "text": ","
                  },
                  {
                   "type": "integer_literal",
                   "start": 700,
                   "end": 701,
+                  "text": "1"
+                 },
+                 {
+                  "type": ",",
+                  "start": 701,
+                  "end": 702,
+                  "text": ","
+                 },
+                 {
+                  "type": "integer_literal",
+                  "start": 703,
+                  "end": 704,
+                  "text": "2"
+                 },
+                 {
+                  "type": ",",
+                  "start": 704,
+                  "end": 705,
+                  "text": ","
+                 },
+                 {
+                  "type": "integer_literal",
+                  "start": 706,
+                  "end": 707,
+                  "text": "3"
+                 },
+                 {
+                  "type": ",",
+                  "start": 707,
+                  "end": 708,
+                  "text": ","
+                 },
+                 {
+                  "type": "integer_literal",
+                  "start": 709,
+                  "end": 710,
                   "text": "4"
                  },
                  {
                   "type": "]",
-                  "start": 701,
-                  "end": 702,
+                  "start": 710,
+                  "end": 711,
                   "text": "]"
                  }
                 ]
@@ -368,50 +368,50 @@
              },
              {
               "type": ",",
-              "start": 702,
-              "end": 703,
+              "start": 711,
+              "end": 712,
               "text": ","
              },
              {
               "type": "field_initializer",
-              "start": 704,
-              "end": 718,
+              "start": 713,
+              "end": 727,
               "children": [
                {
                 "type": "field_identifier",
-                "start": 704,
-                "end": 709,
+                "start": 713,
+                "end": 718,
                 "field": "field",
                 "text": "label"
                },
                {
                 "type": ":",
-                "start": 709,
-                "end": 710,
+                "start": 718,
+                "end": 719,
                 "text": ":"
                },
                {
                 "type": "string_literal",
-                "start": 711,
-                "end": 718,
+                "start": 720,
+                "end": 727,
                 "field": "value",
                 "children": [
                  {
                   "type": "\"",
-                  "start": 711,
-                  "end": 712,
+                  "start": 720,
+                  "end": 721,
                   "text": "\""
                  },
                  {
                   "type": "string_content",
-                  "start": 712,
-                  "end": 717,
+                  "start": 721,
+                  "end": 726,
                   "text": "north"
                  },
                  {
                   "type": "\"",
-                  "start": 717,
-                  "end": 718,
+                  "start": 726,
+                  "end": 727,
                   "text": "\""
                  }
                 ]
@@ -420,8 +420,8 @@
              },
              {
               "type": "}",
-              "start": 719,
-              "end": 720,
+              "start": 728,
+              "end": 729,
               "text": "}"
              }
             ]
@@ -430,120 +430,120 @@
          },
          {
           "type": ";",
-          "start": 720,
-          "end": 721,
+          "start": 729,
+          "end": 730,
           "text": ";"
          }
         ]
        },
        {
         "type": "line_comment",
-        "start": 727,
-        "end": 780,
+        "start": 736,
+        "end": 809,
         "children": [
          {
           "type": "//",
-          "start": 727,
-          "end": 729,
+          "start": 736,
+          "end": 738,
           "text": "//"
          }
         ]
        },
        {
         "type": "let_declaration",
-        "start": 785,
-        "end": 860,
+        "start": 814,
+        "end": 889,
         "children": [
          {
           "type": "let",
-          "start": 785,
-          "end": 788,
+          "start": 814,
+          "end": 817,
           "text": "let"
          },
          {
           "type": "identifier",
-          "start": 789,
-          "end": 795,
+          "start": 818,
+          "end": 824,
           "field": "pattern",
           "text": "picked"
          },
          {
           "type": "=",
-          "start": 796,
-          "end": 797,
+          "start": 825,
+          "end": 826,
           "text": "="
          },
          {
           "type": "call_expression",
-          "start": 798,
-          "end": 859,
+          "start": 827,
+          "end": 888,
           "field": "value",
           "children": [
            {
             "type": "generic_function",
-            "start": 798,
-            "end": 857,
+            "start": 827,
+            "end": 886,
             "field": "function",
             "children": [
              {
               "type": "field_expression",
-              "start": 798,
-              "end": 847,
+              "start": 827,
+              "end": 876,
               "field": "function",
               "children": [
                {
                 "type": "call_expression",
-                "start": 798,
-                "end": 839,
+                "start": 827,
+                "end": 868,
                 "field": "value",
                 "children": [
                  {
                   "type": "field_expression",
-                  "start": 798,
-                  "end": 829,
+                  "start": 827,
+                  "end": 858,
                   "field": "function",
                   "children": [
                    {
                     "type": "call_expression",
-                    "start": 798,
-                    "end": 822,
+                    "start": 827,
+                    "end": 851,
                     "field": "value",
                     "children": [
                      {
                       "type": "field_expression",
-                      "start": 798,
-                      "end": 814,
+                      "start": 827,
+                      "end": 843,
                       "field": "function",
                       "children": [
                        {
                         "type": "call_expression",
-                        "start": 798,
-                        "end": 810,
+                        "start": 827,
+                        "end": 839,
                         "field": "value",
                         "children": [
                          {
                           "type": "field_expression",
-                          "start": 798,
-                          "end": 808,
+                          "start": 827,
+                          "end": 837,
                           "field": "function",
                           "children": [
                            {
                             "type": "identifier",
-                            "start": 798,
-                            "end": 803,
+                            "start": 827,
+                            "end": 832,
                             "field": "value",
                             "text": "items"
                            },
                            {
                             "type": ".",
-                            "start": 803,
-                            "end": 804,
+                            "start": 832,
+                            "end": 833,
                             "text": "."
                            },
                            {
                             "type": "field_identifier",
-                            "start": 804,
-                            "end": 808,
+                            "start": 833,
+                            "end": 837,
                             "field": "field",
                             "text": "iter"
                            }
@@ -551,20 +551,20 @@
                          },
                          {
                           "type": "arguments",
-                          "start": 808,
-                          "end": 810,
+                          "start": 837,
+                          "end": 839,
                           "field": "arguments",
                           "children": [
                            {
                             "type": "(",
-                            "start": 808,
-                            "end": 809,
+                            "start": 837,
+                            "end": 838,
                             "text": "("
                            },
                            {
                             "type": ")",
-                            "start": 809,
-                            "end": 810,
+                            "start": 838,
+                            "end": 839,
                             "text": ")"
                            }
                           ]
@@ -573,14 +573,14 @@
                        },
                        {
                         "type": ".",
-                        "start": 810,
-                        "end": 811,
+                        "start": 839,
+                        "end": 840,
                         "text": "."
                        },
                        {
                         "type": "field_identifier",
-                        "start": 811,
-                        "end": 814,
+                        "start": 840,
+                        "end": 843,
                         "field": "field",
                         "text": "map"
                        }
@@ -588,26 +588,26 @@
                      },
                      {
                       "type": "arguments",
-                      "start": 814,
-                      "end": 822,
+                      "start": 843,
+                      "end": 851,
                       "field": "arguments",
                       "children": [
                        {
                         "type": "(",
-                        "start": 814,
-                        "end": 815,
+                        "start": 843,
+                        "end": 844,
                         "text": "("
                        },
                        {
                         "type": "identifier",
-                        "start": 815,
-                        "end": 821,
+                        "start": 844,
+                        "end": 850,
                         "text": "double"
                        },
                        {
                         "type": ")",
-                        "start": 821,
-                        "end": 822,
+                        "start": 850,
+                        "end": 851,
                         "text": ")"
                        }
                       ]
@@ -616,14 +616,14 @@
                    },
                    {
                     "type": ".",
-                    "start": 822,
-                    "end": 823,
+                    "start": 851,
+                    "end": 852,
                     "text": "."
                    },
                    {
                     "type": "field_identifier",
-                    "start": 823,
-                    "end": 829,
+                    "start": 852,
+                    "end": 858,
                     "field": "field",
                     "text": "filter"
                    }
@@ -631,26 +631,26 @@
                  },
                  {
                   "type": "arguments",
-                  "start": 829,
-                  "end": 839,
+                  "start": 858,
+                  "end": 868,
                   "field": "arguments",
                   "children": [
                    {
                     "type": "(",
-                    "start": 829,
-                    "end": 830,
+                    "start": 858,
+                    "end": 859,
                     "text": "("
                    },
                    {
                     "type": "identifier",
-                    "start": 830,
-                    "end": 838,
+                    "start": 859,
+                    "end": 867,
                     "text": "positive"
                    },
                    {
                     "type": ")",
-                    "start": 838,
-                    "end": 839,
+                    "start": 867,
+                    "end": 868,
                     "text": ")"
                    }
                   ]
@@ -659,14 +659,14 @@
                },
                {
                 "type": ".",
-                "start": 839,
-                "end": 840,
+                "start": 868,
+                "end": 869,
                 "text": "."
                },
                {
                 "type": "field_identifier",
-                "start": 840,
-                "end": 847,
+                "start": 869,
+                "end": 876,
                 "field": "field",
                 "text": "collect"
                }
@@ -674,56 +674,56 @@
              },
              {
               "type": "::",
-              "start": 847,
-              "end": 849,
+              "start": 876,
+              "end": 878,
               "text": "::"
              },
              {
               "type": "type_arguments",
-              "start": 849,
-              "end": 857,
+              "start": 878,
+              "end": 886,
               "field": "type_arguments",
               "children": [
                {
                 "type": "<",
-                "start": 849,
-                "end": 850,
+                "start": 878,
+                "end": 879,
                 "text": "<"
                },
                {
                 "type": "generic_type",
-                "start": 850,
-                "end": 856,
+                "start": 879,
+                "end": 885,
                 "children": [
                  {
                   "type": "type_identifier",
-                  "start": 850,
-                  "end": 853,
+                  "start": 879,
+                  "end": 882,
                   "field": "type",
                   "text": "Vec"
                  },
                  {
                   "type": "type_arguments",
-                  "start": 853,
-                  "end": 856,
+                  "start": 882,
+                  "end": 885,
                   "field": "type_arguments",
                   "children": [
                    {
                     "type": "<",
-                    "start": 853,
-                    "end": 854,
+                    "start": 882,
+                    "end": 883,
                     "text": "<"
                    },
                    {
                     "type": "type_identifier",
-                    "start": 854,
-                    "end": 855,
+                    "start": 883,
+                    "end": 884,
                     "text": "_"
                    },
                    {
                     "type": ">",
-                    "start": 855,
-                    "end": 856,
+                    "start": 884,
+                    "end": 885,
                     "text": ">"
                    }
                   ]
@@ -732,8 +732,8 @@
                },
                {
                 "type": ">",
-                "start": 856,
-                "end": 857,
+                "start": 885,
+                "end": 886,
                 "text": ">"
                }
               ]
@@ -742,20 +742,20 @@
            },
            {
             "type": "arguments",
-            "start": 857,
-            "end": 859,
+            "start": 886,
+            "end": 888,
             "field": "arguments",
             "children": [
              {
               "type": "(",
-              "start": 857,
-              "end": 858,
+              "start": 886,
+              "end": 887,
               "text": "("
              },
              {
               "type": ")",
-              "start": 858,
-              "end": 859,
+              "start": 887,
+              "end": 888,
               "text": ")"
              }
             ]
@@ -764,120 +764,120 @@
          },
          {
           "type": ";",
-          "start": 859,
-          "end": 860,
+          "start": 888,
+          "end": 889,
           "text": ";"
          }
         ]
        },
        {
         "type": "line_comment",
-        "start": 866,
-        "end": 920,
+        "start": 895,
+        "end": 967,
         "children": [
          {
           "type": "//",
-          "start": 866,
-          "end": 868,
+          "start": 895,
+          "end": 897,
           "text": "//"
          }
         ]
        },
        {
         "type": "let_declaration",
-        "start": 925,
-        "end": 1012,
+        "start": 972,
+        "end": 1059,
         "children": [
          {
           "type": "let",
-          "start": 925,
-          "end": 928,
+          "start": 972,
+          "end": 975,
           "text": "let"
          },
          {
           "type": "identifier",
-          "start": 929,
-          "end": 935,
+          "start": 976,
+          "end": 982,
           "field": "pattern",
           "text": "joined"
          },
          {
           "type": "=",
-          "start": 936,
-          "end": 937,
+          "start": 983,
+          "end": 984,
           "text": "="
          },
          {
           "type": "call_expression",
-          "start": 938,
-          "end": 1011,
+          "start": 985,
+          "end": 1058,
           "field": "value",
           "children": [
            {
             "type": "identifier",
-            "start": 938,
-            "end": 945,
+            "start": 985,
+            "end": 992,
             "field": "function",
             "text": "combine"
            },
            {
             "type": "arguments",
-            "start": 945,
-            "end": 1011,
+            "start": 992,
+            "end": 1058,
             "field": "arguments",
             "children": [
              {
               "type": "(",
-              "start": 945,
-              "end": 946,
+              "start": 992,
+              "end": 993,
               "text": "("
              },
              {
               "type": "identifier",
-              "start": 946,
-              "end": 960,
+              "start": 993,
+              "end": 1007,
               "text": "first_argument"
              },
              {
               "type": ",",
-              "start": 960,
-              "end": 961,
+              "start": 1007,
+              "end": 1008,
               "text": ","
              },
              {
               "type": "identifier",
-              "start": 962,
-              "end": 977,
+              "start": 1009,
+              "end": 1024,
               "text": "second_argument"
              },
              {
               "type": ",",
-              "start": 977,
-              "end": 978,
+              "start": 1024,
+              "end": 1025,
               "text": ","
              },
              {
               "type": "identifier",
-              "start": 979,
-              "end": 993,
+              "start": 1026,
+              "end": 1040,
               "text": "third_argument"
              },
              {
               "type": ",",
-              "start": 993,
-              "end": 994,
+              "start": 1040,
+              "end": 1041,
               "text": ","
              },
              {
               "type": "identifier",
-              "start": 995,
-              "end": 1010,
+              "start": 1042,
+              "end": 1057,
               "text": "fourth_argument"
              },
              {
               "type": ")",
-              "start": 1010,
-              "end": 1011,
+              "start": 1057,
+              "end": 1058,
               "text": ")"
              }
             ]
@@ -886,254 +886,254 @@
          },
          {
           "type": ";",
-          "start": 1011,
-          "end": 1012,
+          "start": 1058,
+          "end": 1059,
           "text": ";"
          }
         ]
        },
        {
         "type": "line_comment",
-        "start": 1018,
-        "end": 1073,
+        "start": 1065,
+        "end": 1135,
         "children": [
          {
           "type": "//",
-          "start": 1018,
-          "end": 1020,
+          "start": 1065,
+          "end": 1067,
           "text": "//"
          }
         ]
        },
        {
         "type": "let_declaration",
-        "start": 1078,
-        "end": 1156,
+        "start": 1140,
+        "end": 1218,
         "children": [
          {
           "type": "let",
-          "start": 1078,
-          "end": 1081,
+          "start": 1140,
+          "end": 1143,
           "text": "let"
          },
          {
           "type": "identifier",
-          "start": 1082,
-          "end": 1087,
+          "start": 1144,
+          "end": 1149,
           "field": "pattern",
           "text": "names"
          },
          {
           "type": "=",
-          "start": 1088,
-          "end": 1089,
+          "start": 1150,
+          "end": 1151,
           "text": "="
          },
          {
           "type": "array_expression",
-          "start": 1090,
-          "end": 1155,
+          "start": 1152,
+          "end": 1217,
           "field": "value",
           "children": [
            {
             "type": "[",
-            "start": 1090,
-            "end": 1091,
+            "start": 1152,
+            "end": 1153,
             "text": "["
            },
            {
             "type": "identifier",
-            "start": 1091,
-            "end": 1096,
+            "start": 1153,
+            "end": 1158,
             "text": "alpha"
            },
            {
             "type": ",",
-            "start": 1096,
-            "end": 1097,
+            "start": 1158,
+            "end": 1159,
             "text": ","
            },
            {
             "type": "identifier",
-            "start": 1098,
-            "end": 1103,
+            "start": 1160,
+            "end": 1165,
             "text": "bravo"
            },
            {
             "type": ",",
-            "start": 1103,
-            "end": 1104,
+            "start": 1165,
+            "end": 1166,
             "text": ","
            },
            {
             "type": "identifier",
-            "start": 1105,
-            "end": 1112,
+            "start": 1167,
+            "end": 1174,
             "text": "charlie"
            },
            {
             "type": ",",
-            "start": 1112,
-            "end": 1113,
+            "start": 1174,
+            "end": 1175,
             "text": ","
            },
            {
             "type": "identifier",
-            "start": 1114,
-            "end": 1119,
+            "start": 1176,
+            "end": 1181,
             "text": "delta"
            },
            {
             "type": ",",
-            "start": 1119,
-            "end": 1120,
+            "start": 1181,
+            "end": 1182,
             "text": ","
            },
            {
             "type": "identifier",
-            "start": 1121,
-            "end": 1125,
+            "start": 1183,
+            "end": 1187,
             "text": "echo"
            },
            {
             "type": ",",
-            "start": 1125,
-            "end": 1126,
+            "start": 1187,
+            "end": 1188,
             "text": ","
            },
            {
             "type": "identifier",
-            "start": 1127,
-            "end": 1134,
+            "start": 1189,
+            "end": 1196,
             "text": "foxtrot"
            },
            {
             "type": ",",
-            "start": 1134,
-            "end": 1135,
+            "start": 1196,
+            "end": 1197,
             "text": ","
            },
            {
             "type": "identifier",
-            "start": 1136,
-            "end": 1140,
+            "start": 1198,
+            "end": 1202,
             "text": "golf"
            },
            {
             "type": ",",
-            "start": 1140,
-            "end": 1141,
+            "start": 1202,
+            "end": 1203,
             "text": ","
            },
            {
             "type": "identifier",
-            "start": 1142,
-            "end": 1147,
+            "start": 1204,
+            "end": 1209,
             "text": "hotel"
            },
            {
             "type": ",",
-            "start": 1147,
-            "end": 1148,
+            "start": 1209,
+            "end": 1210,
             "text": ","
            },
            {
             "type": "identifier",
-            "start": 1149,
-            "end": 1154,
+            "start": 1211,
+            "end": 1216,
             "text": "india"
            },
            {
             "type": "]",
-            "start": 1154,
-            "end": 1155,
+            "start": 1216,
+            "end": 1217,
             "text": "]"
            }
           ]
          },
          {
           "type": ";",
-          "start": 1155,
-          "end": 1156,
+          "start": 1217,
+          "end": 1218,
           "text": ";"
          }
         ]
        },
        {
         "type": "expression_statement",
-        "start": 1162,
-        "end": 1201,
+        "start": 1224,
+        "end": 1263,
         "children": [
          {
           "type": "call_expression",
-          "start": 1162,
-          "end": 1200,
+          "start": 1224,
+          "end": 1262,
           "children": [
            {
             "type": "identifier",
-            "start": 1162,
-            "end": 1169,
+            "start": 1224,
+            "end": 1231,
             "field": "function",
             "text": "consume"
            },
            {
             "type": "arguments",
-            "start": 1169,
-            "end": 1200,
+            "start": 1231,
+            "end": 1262,
             "field": "arguments",
             "children": [
              {
               "type": "(",
-              "start": 1169,
-              "end": 1170,
+              "start": 1231,
+              "end": 1232,
               "text": "("
              },
              {
               "type": "identifier",
-              "start": 1170,
-              "end": 1176,
+              "start": 1232,
+              "end": 1238,
               "text": "branch"
              },
              {
               "type": ",",
-              "start": 1176,
-              "end": 1177,
+              "start": 1238,
+              "end": 1239,
               "text": ","
              },
              {
               "type": "identifier",
-              "start": 1178,
-              "end": 1184,
+              "start": 1240,
+              "end": 1246,
               "text": "picked"
              },
              {
               "type": ",",
-              "start": 1184,
-              "end": 1185,
+              "start": 1246,
+              "end": 1247,
               "text": ","
              },
              {
               "type": "identifier",
-              "start": 1186,
-              "end": 1192,
+              "start": 1248,
+              "end": 1254,
               "text": "joined"
              },
              {
               "type": ",",
-              "start": 1192,
-              "end": 1193,
+              "start": 1254,
+              "end": 1255,
               "text": ","
              },
              {
               "type": "identifier",
-              "start": 1194,
-              "end": 1199,
+              "start": 1256,
+              "end": 1261,
               "text": "names"
              },
              {
               "type": ")",
-              "start": 1199,
-              "end": 1200,
+              "start": 1261,
+              "end": 1262,
               "text": ")"
              }
             ]
@@ -1142,16 +1142,16 @@
          },
          {
           "type": ";",
-          "start": 1200,
-          "end": 1201,
+          "start": 1262,
+          "end": 1263,
           "text": ";"
          }
         ]
        },
        {
         "type": "}",
-        "start": 1202,
-        "end": 1203,
+        "start": 1264,
+        "end": 1265,
         "text": "}"
        }
       ]
@@ -1160,87 +1160,87 @@
    },
    {
     "type": "function_item",
-    "start": 1205,
-    "end": 1535,
+    "start": 1267,
+    "end": 1597,
     "children": [
      {
       "type": "fn",
-      "start": 1205,
-      "end": 1207,
+      "start": 1267,
+      "end": 1269,
       "text": "fn"
      },
      {
       "type": "identifier",
-      "start": 1208,
-      "end": 1229,
+      "start": 1270,
+      "end": 1291,
       "field": "name",
       "text": "under_every_threshold"
      },
      {
       "type": "parameters",
-      "start": 1229,
-      "end": 1244,
+      "start": 1291,
+      "end": 1306,
       "field": "parameters",
       "children": [
        {
         "type": "(",
-        "start": 1229,
-        "end": 1230,
+        "start": 1291,
+        "end": 1292,
         "text": "("
        },
        {
         "type": "parameter",
-        "start": 1230,
-        "end": 1243,
+        "start": 1292,
+        "end": 1305,
         "children": [
          {
           "type": "identifier",
-          "start": 1230,
-          "end": 1235,
+          "start": 1292,
+          "end": 1297,
           "field": "pattern",
           "text": "items"
          },
          {
           "type": ":",
-          "start": 1235,
-          "end": 1236,
+          "start": 1297,
+          "end": 1298,
           "text": ":"
          },
          {
           "type": "reference_type",
-          "start": 1237,
-          "end": 1243,
+          "start": 1299,
+          "end": 1305,
           "field": "type",
           "children": [
            {
             "type": "&",
-            "start": 1237,
-            "end": 1238,
+            "start": 1299,
+            "end": 1300,
             "text": "&"
            },
            {
             "type": "array_type",
-            "start": 1238,
-            "end": 1243,
+            "start": 1300,
+            "end": 1305,
             "field": "type",
             "children": [
              {
               "type": "[",
-              "start": 1238,
-              "end": 1239,
+              "start": 1300,
+              "end": 1301,
               "text": "["
              },
              {
               "type": "primitive_type",
-              "start": 1239,
-              "end": 1242,
+              "start": 1301,
+              "end": 1304,
               "field": "element",
               "text": "i32"
              },
              {
               "type": "]",
-              "start": 1242,
-              "end": 1243,
+              "start": 1304,
+              "end": 1305,
               "text": "]"
              }
             ]
@@ -1251,108 +1251,108 @@
        },
        {
         "type": ")",
-        "start": 1243,
-        "end": 1244,
+        "start": 1305,
+        "end": 1306,
         "text": ")"
        }
       ]
      },
      {
       "type": "block",
-      "start": 1245,
-      "end": 1535,
+      "start": 1307,
+      "end": 1597,
       "field": "body",
       "children": [
        {
         "type": "{",
-        "start": 1245,
-        "end": 1246,
+        "start": 1307,
+        "end": 1308,
         "text": "{"
        },
        {
         "type": "line_comment",
-        "start": 1251,
-        "end": 1325,
+        "start": 1313,
+        "end": 1387,
         "children": [
          {
           "type": "//",
-          "start": 1251,
-          "end": 1253,
+          "start": 1313,
+          "end": 1315,
           "text": "//"
          }
         ]
        },
        {
         "type": "let_declaration",
-        "start": 1330,
-        "end": 1356,
+        "start": 1392,
+        "end": 1418,
         "children": [
          {
           "type": "let",
-          "start": 1330,
-          "end": 1333,
+          "start": 1392,
+          "end": 1395,
           "text": "let"
          },
          {
           "type": "identifier",
-          "start": 1334,
-          "end": 1338,
+          "start": 1396,
+          "end": 1400,
           "field": "pattern",
           "text": "leaf"
          },
          {
           "type": "=",
-          "start": 1339,
-          "end": 1340,
+          "start": 1401,
+          "end": 1402,
           "text": "="
          },
          {
           "type": "struct_expression",
-          "start": 1341,
-          "end": 1355,
+          "start": 1403,
+          "end": 1417,
           "field": "value",
           "children": [
            {
             "type": "type_identifier",
-            "start": 1341,
-            "end": 1345,
+            "start": 1403,
+            "end": 1407,
             "field": "name",
             "text": "Leaf"
            },
            {
             "type": "field_initializer_list",
-            "start": 1346,
-            "end": 1355,
+            "start": 1408,
+            "end": 1417,
             "field": "body",
             "children": [
              {
               "type": "{",
-              "start": 1346,
-              "end": 1347,
+              "start": 1408,
+              "end": 1409,
               "text": "{"
              },
              {
               "type": "field_initializer",
-              "start": 1348,
-              "end": 1353,
+              "start": 1410,
+              "end": 1415,
               "children": [
                {
                 "type": "field_identifier",
-                "start": 1348,
-                "end": 1350,
+                "start": 1410,
+                "end": 1412,
                 "field": "field",
                 "text": "id"
                },
                {
                 "type": ":",
-                "start": 1350,
-                "end": 1351,
+                "start": 1412,
+                "end": 1413,
                 "text": ":"
                },
                {
                 "type": "integer_literal",
-                "start": 1352,
-                "end": 1353,
+                "start": 1414,
+                "end": 1415,
                 "field": "value",
                 "text": "1"
                }
@@ -1360,8 +1360,8 @@
              },
              {
               "type": "}",
-              "start": 1354,
-              "end": 1355,
+              "start": 1416,
+              "end": 1417,
               "text": "}"
              }
             ]
@@ -1370,95 +1370,95 @@
          },
          {
           "type": ";",
-          "start": 1355,
-          "end": 1356,
+          "start": 1417,
+          "end": 1418,
           "text": ";"
          }
         ]
        },
        {
         "type": "let_declaration",
-        "start": 1361,
-        "end": 1410,
+        "start": 1423,
+        "end": 1472,
         "children": [
          {
           "type": "let",
-          "start": 1361,
-          "end": 1364,
+          "start": 1423,
+          "end": 1426,
           "text": "let"
          },
          {
           "type": "identifier",
-          "start": 1365,
-          "end": 1369,
+          "start": 1427,
+          "end": 1431,
           "field": "pattern",
           "text": "some"
          },
          {
           "type": "=",
-          "start": 1370,
-          "end": 1371,
+          "start": 1432,
+          "end": 1433,
           "text": "="
          },
          {
           "type": "call_expression",
-          "start": 1372,
-          "end": 1409,
+          "start": 1434,
+          "end": 1471,
           "field": "value",
           "children": [
            {
             "type": "generic_function",
-            "start": 1372,
-            "end": 1407,
+            "start": 1434,
+            "end": 1469,
             "field": "function",
             "children": [
              {
               "type": "field_expression",
-              "start": 1372,
-              "end": 1400,
+              "start": 1434,
+              "end": 1462,
               "field": "function",
               "children": [
                {
                 "type": "call_expression",
-                "start": 1372,
-                "end": 1396,
+                "start": 1434,
+                "end": 1458,
                 "field": "value",
                 "children": [
                  {
                   "type": "field_expression",
-                  "start": 1372,
-                  "end": 1388,
+                  "start": 1434,
+                  "end": 1450,
                   "field": "function",
                   "children": [
                    {
                     "type": "call_expression",
-                    "start": 1372,
-                    "end": 1384,
+                    "start": 1434,
+                    "end": 1446,
                     "field": "value",
                     "children": [
                      {
                       "type": "field_expression",
-                      "start": 1372,
-                      "end": 1382,
+                      "start": 1434,
+                      "end": 1444,
                       "field": "function",
                       "children": [
                        {
                         "type": "identifier",
-                        "start": 1372,
-                        "end": 1377,
+                        "start": 1434,
+                        "end": 1439,
                         "field": "value",
                         "text": "items"
                        },
                        {
                         "type": ".",
-                        "start": 1377,
-                        "end": 1378,
+                        "start": 1439,
+                        "end": 1440,
                         "text": "."
                        },
                        {
                         "type": "field_identifier",
-                        "start": 1378,
-                        "end": 1382,
+                        "start": 1440,
+                        "end": 1444,
                         "field": "field",
                         "text": "iter"
                        }
@@ -1466,20 +1466,20 @@
                      },
                      {
                       "type": "arguments",
-                      "start": 1382,
-                      "end": 1384,
+                      "start": 1444,
+                      "end": 1446,
                       "field": "arguments",
                       "children": [
                        {
                         "type": "(",
-                        "start": 1382,
-                        "end": 1383,
+                        "start": 1444,
+                        "end": 1445,
                         "text": "("
                        },
                        {
                         "type": ")",
-                        "start": 1383,
-                        "end": 1384,
+                        "start": 1445,
+                        "end": 1446,
                         "text": ")"
                        }
                       ]
@@ -1488,14 +1488,14 @@
                    },
                    {
                     "type": ".",
-                    "start": 1384,
-                    "end": 1385,
+                    "start": 1446,
+                    "end": 1447,
                     "text": "."
                    },
                    {
                     "type": "field_identifier",
-                    "start": 1385,
-                    "end": 1388,
+                    "start": 1447,
+                    "end": 1450,
                     "field": "field",
                     "text": "map"
                    }
@@ -1503,26 +1503,26 @@
                  },
                  {
                   "type": "arguments",
-                  "start": 1388,
-                  "end": 1396,
+                  "start": 1450,
+                  "end": 1458,
                   "field": "arguments",
                   "children": [
                    {
                     "type": "(",
-                    "start": 1388,
-                    "end": 1389,
+                    "start": 1450,
+                    "end": 1451,
                     "text": "("
                    },
                    {
                     "type": "identifier",
-                    "start": 1389,
-                    "end": 1395,
+                    "start": 1451,
+                    "end": 1457,
                     "text": "double"
                    },
                    {
                     "type": ")",
-                    "start": 1395,
-                    "end": 1396,
+                    "start": 1457,
+                    "end": 1458,
                     "text": ")"
                    }
                   ]
@@ -1531,14 +1531,14 @@
                },
                {
                 "type": ".",
-                "start": 1396,
-                "end": 1397,
+                "start": 1458,
+                "end": 1459,
                 "text": "."
                },
                {
                 "type": "field_identifier",
-                "start": 1397,
-                "end": 1400,
+                "start": 1459,
+                "end": 1462,
                 "field": "field",
                 "text": "sum"
                }
@@ -1546,32 +1546,32 @@
              },
              {
               "type": "::",
-              "start": 1400,
-              "end": 1402,
+              "start": 1462,
+              "end": 1464,
               "text": "::"
              },
              {
               "type": "type_arguments",
-              "start": 1402,
-              "end": 1407,
+              "start": 1464,
+              "end": 1469,
               "field": "type_arguments",
               "children": [
                {
                 "type": "<",
-                "start": 1402,
-                "end": 1403,
+                "start": 1464,
+                "end": 1465,
                 "text": "<"
                },
                {
                 "type": "primitive_type",
-                "start": 1403,
-                "end": 1406,
+                "start": 1465,
+                "end": 1468,
                 "text": "i32"
                },
                {
                 "type": ">",
-                "start": 1406,
-                "end": 1407,
+                "start": 1468,
+                "end": 1469,
                 "text": ">"
                }
               ]
@@ -1580,20 +1580,20 @@
            },
            {
             "type": "arguments",
-            "start": 1407,
-            "end": 1409,
+            "start": 1469,
+            "end": 1471,
             "field": "arguments",
             "children": [
              {
               "type": "(",
-              "start": 1407,
-              "end": 1408,
+              "start": 1469,
+              "end": 1470,
               "text": "("
              },
              {
               "type": ")",
-              "start": 1408,
-              "end": 1409,
+              "start": 1470,
+              "end": 1471,
               "text": ")"
              }
             ]
@@ -1602,95 +1602,95 @@
          },
          {
           "type": ";",
-          "start": 1409,
-          "end": 1410,
+          "start": 1471,
+          "end": 1472,
           "text": ";"
          }
         ]
        },
        {
         "type": "let_declaration",
-        "start": 1415,
-        "end": 1457,
+        "start": 1477,
+        "end": 1519,
         "children": [
          {
           "type": "let",
-          "start": 1415,
-          "end": 1418,
+          "start": 1477,
+          "end": 1480,
           "text": "let"
          },
          {
           "type": "identifier",
-          "start": 1419,
-          "end": 1424,
+          "start": 1481,
+          "end": 1486,
           "field": "pattern",
           "text": "short"
          },
          {
           "type": "=",
-          "start": 1425,
-          "end": 1426,
+          "start": 1487,
+          "end": 1488,
           "text": "="
          },
          {
           "type": "call_expression",
-          "start": 1427,
-          "end": 1456,
+          "start": 1489,
+          "end": 1518,
           "field": "value",
           "children": [
            {
             "type": "identifier",
-            "start": 1427,
-            "end": 1434,
+            "start": 1489,
+            "end": 1496,
             "field": "function",
             "text": "combine"
            },
            {
             "type": "arguments",
-            "start": 1434,
-            "end": 1456,
+            "start": 1496,
+            "end": 1518,
             "field": "arguments",
             "children": [
              {
               "type": "(",
-              "start": 1434,
-              "end": 1435,
+              "start": 1496,
+              "end": 1497,
               "text": "("
              },
              {
               "type": "identifier",
-              "start": 1435,
-              "end": 1440,
+              "start": 1497,
+              "end": 1502,
               "text": "first"
              },
              {
               "type": ",",
-              "start": 1440,
-              "end": 1441,
+              "start": 1502,
+              "end": 1503,
               "text": ","
              },
              {
               "type": "identifier",
-              "start": 1442,
-              "end": 1448,
+              "start": 1504,
+              "end": 1510,
               "text": "second"
              },
              {
               "type": ",",
-              "start": 1448,
-              "end": 1449,
+              "start": 1510,
+              "end": 1511,
               "text": ","
              },
              {
               "type": "identifier",
-              "start": 1450,
-              "end": 1455,
+              "start": 1512,
+              "end": 1517,
               "text": "third"
              },
              {
               "type": ")",
-              "start": 1455,
-              "end": 1456,
+              "start": 1517,
+              "end": 1518,
               "text": ")"
              }
             ]
@@ -1699,169 +1699,169 @@
          },
          {
           "type": ";",
-          "start": 1456,
-          "end": 1457,
+          "start": 1518,
+          "end": 1519,
           "text": ";"
          }
         ]
        },
        {
         "type": "let_declaration",
-        "start": 1462,
-        "end": 1496,
+        "start": 1524,
+        "end": 1558,
         "children": [
          {
           "type": "let",
-          "start": 1462,
-          "end": 1465,
+          "start": 1524,
+          "end": 1527,
           "text": "let"
          },
          {
           "type": "identifier",
-          "start": 1466,
-          "end": 1469,
+          "start": 1528,
+          "end": 1531,
           "field": "pattern",
           "text": "few"
          },
          {
           "type": "=",
-          "start": 1470,
-          "end": 1471,
+          "start": 1532,
+          "end": 1533,
           "text": "="
          },
          {
           "type": "array_expression",
-          "start": 1472,
-          "end": 1495,
+          "start": 1534,
+          "end": 1557,
           "field": "value",
           "children": [
            {
             "type": "[",
-            "start": 1472,
-            "end": 1473,
+            "start": 1534,
+            "end": 1535,
             "text": "["
            },
            {
             "type": "identifier",
-            "start": 1473,
-            "end": 1478,
+            "start": 1535,
+            "end": 1540,
             "text": "alpha"
            },
            {
             "type": ",",
-            "start": 1478,
-            "end": 1479,
+            "start": 1540,
+            "end": 1541,
             "text": ","
            },
            {
             "type": "identifier",
-            "start": 1480,
-            "end": 1485,
+            "start": 1542,
+            "end": 1547,
             "text": "bravo"
            },
            {
             "type": ",",
-            "start": 1485,
-            "end": 1486,
+            "start": 1547,
+            "end": 1548,
             "text": ","
            },
            {
             "type": "identifier",
-            "start": 1487,
-            "end": 1494,
+            "start": 1549,
+            "end": 1556,
             "text": "charlie"
            },
            {
             "type": "]",
-            "start": 1494,
-            "end": 1495,
+            "start": 1556,
+            "end": 1557,
             "text": "]"
            }
           ]
          },
          {
           "type": ";",
-          "start": 1495,
-          "end": 1496,
+          "start": 1557,
+          "end": 1558,
           "text": ";"
          }
         ]
        },
        {
         "type": "expression_statement",
-        "start": 1501,
-        "end": 1533,
+        "start": 1563,
+        "end": 1595,
         "children": [
          {
           "type": "call_expression",
-          "start": 1501,
-          "end": 1532,
+          "start": 1563,
+          "end": 1594,
           "children": [
            {
             "type": "identifier",
-            "start": 1501,
-            "end": 1508,
+            "start": 1563,
+            "end": 1570,
             "field": "function",
             "text": "consume"
            },
            {
             "type": "arguments",
-            "start": 1508,
-            "end": 1532,
+            "start": 1570,
+            "end": 1594,
             "field": "arguments",
             "children": [
              {
               "type": "(",
-              "start": 1508,
-              "end": 1509,
+              "start": 1570,
+              "end": 1571,
               "text": "("
              },
              {
               "type": "identifier",
-              "start": 1509,
-              "end": 1513,
+              "start": 1571,
+              "end": 1575,
               "text": "leaf"
              },
              {
               "type": ",",
-              "start": 1513,
-              "end": 1514,
+              "start": 1575,
+              "end": 1576,
               "text": ","
              },
              {
               "type": "identifier",
-              "start": 1515,
-              "end": 1519,
+              "start": 1577,
+              "end": 1581,
               "text": "some"
              },
              {
               "type": ",",
-              "start": 1519,
-              "end": 1520,
+              "start": 1581,
+              "end": 1582,
               "text": ","
              },
              {
               "type": "identifier",
-              "start": 1521,
-              "end": 1526,
+              "start": 1583,
+              "end": 1588,
               "text": "short"
              },
              {
               "type": ",",
-              "start": 1526,
-              "end": 1527,
+              "start": 1588,
+              "end": 1589,
               "text": ","
              },
              {
               "type": "identifier",
-              "start": 1528,
-              "end": 1531,
+              "start": 1590,
+              "end": 1593,
               "text": "few"
              },
              {
               "type": ")",
-              "start": 1531,
-              "end": 1532,
+              "start": 1593,
+              "end": 1594,
               "text": ")"
              }
             ]
@@ -1870,16 +1870,16 @@
          },
          {
           "type": ";",
-          "start": 1532,
-          "end": 1533,
+          "start": 1594,
+          "end": 1595,
           "text": ";"
          }
         ]
        },
        {
         "type": "}",
-        "start": 1534,
-        "end": 1535,
+        "start": 1596,
+        "end": 1597,
         "text": "}"
        }
       ]
@@ -1888,56 +1888,56 @@
    },
    {
     "type": "struct_item",
-    "start": 1537,
-    "end": 1689,
+    "start": 1599,
+    "end": 1751,
     "children": [
      {
       "type": "struct",
-      "start": 1537,
-      "end": 1543,
+      "start": 1599,
+      "end": 1605,
       "text": "struct"
      },
      {
       "type": "type_identifier",
-      "start": 1544,
-      "end": 1550,
+      "start": 1606,
+      "end": 1612,
       "field": "name",
       "text": "Config"
      },
      {
       "type": "field_declaration_list",
-      "start": 1551,
-      "end": 1689,
+      "start": 1613,
+      "end": 1751,
       "field": "body",
       "children": [
        {
         "type": "{",
-        "start": 1551,
-        "end": 1552,
+        "start": 1613,
+        "end": 1614,
         "text": "{"
        },
        {
         "type": "field_declaration",
-        "start": 1557,
-        "end": 1569,
+        "start": 1619,
+        "end": 1631,
         "children": [
          {
           "type": "field_identifier",
-          "start": 1557,
-          "end": 1564,
+          "start": 1619,
+          "end": 1626,
           "field": "name",
           "text": "retries"
          },
          {
           "type": ":",
-          "start": 1564,
-          "end": 1565,
+          "start": 1626,
+          "end": 1627,
           "text": ":"
          },
          {
           "type": "primitive_type",
-          "start": 1566,
-          "end": 1569,
+          "start": 1628,
+          "end": 1631,
           "field": "type",
           "text": "u32"
          }
@@ -1945,45 +1945,45 @@
        },
        {
         "type": ",",
-        "start": 1569,
-        "end": 1570,
+        "start": 1631,
+        "end": 1632,
         "text": ","
        },
        {
         "type": "line_comment",
-        "start": 1571,
-        "end": 1595,
+        "start": 1633,
+        "end": 1657,
         "children": [
          {
           "type": "//",
-          "start": 1571,
-          "end": 1573,
+          "start": 1633,
+          "end": 1635,
           "text": "//"
          }
         ]
        },
        {
         "type": "field_declaration",
-        "start": 1600,
-        "end": 1615,
+        "start": 1662,
+        "end": 1677,
         "children": [
          {
           "type": "field_identifier",
-          "start": 1600,
-          "end": 1610,
+          "start": 1662,
+          "end": 1672,
           "field": "name",
           "text": "timeout_ms"
          },
          {
           "type": ":",
-          "start": 1610,
-          "end": 1611,
+          "start": 1672,
+          "end": 1673,
           "text": ":"
          },
          {
           "type": "primitive_type",
-          "start": 1612,
-          "end": 1615,
+          "start": 1674,
+          "end": 1677,
           "field": "type",
           "text": "u64"
          }
@@ -1991,76 +1991,76 @@
        },
        {
         "type": ",",
-        "start": 1615,
-        "end": 1616,
+        "start": 1677,
+        "end": 1678,
         "text": ","
        },
        {
         "type": "line_comment",
-        "start": 1617,
-        "end": 1645,
+        "start": 1679,
+        "end": 1707,
         "children": [
          {
           "type": "//",
-          "start": 1617,
-          "end": 1619,
+          "start": 1679,
+          "end": 1681,
           "text": "//"
          }
         ]
        },
        {
         "type": "field_declaration",
-        "start": 1650,
-        "end": 1669,
+        "start": 1712,
+        "end": 1731,
         "children": [
          {
           "type": "field_identifier",
-          "start": 1650,
-          "end": 1655,
+          "start": 1712,
+          "end": 1717,
           "field": "name",
           "text": "label"
          },
          {
           "type": ":",
-          "start": 1655,
-          "end": 1656,
+          "start": 1717,
+          "end": 1718,
           "text": ":"
          },
          {
           "type": "reference_type",
-          "start": 1657,
-          "end": 1669,
+          "start": 1719,
+          "end": 1731,
           "field": "type",
           "children": [
            {
             "type": "&",
-            "start": 1657,
-            "end": 1658,
+            "start": 1719,
+            "end": 1720,
             "text": "&"
            },
            {
             "type": "lifetime",
-            "start": 1658,
-            "end": 1665,
+            "start": 1720,
+            "end": 1727,
             "children": [
              {
               "type": "'",
-              "start": 1658,
-              "end": 1659,
+              "start": 1720,
+              "end": 1721,
               "text": "'"
              },
              {
               "type": "identifier",
-              "start": 1659,
-              "end": 1665,
+              "start": 1721,
+              "end": 1727,
               "text": "static"
              }
             ]
            },
            {
             "type": "primitive_type",
-            "start": 1666,
-            "end": 1669,
+            "start": 1728,
+            "end": 1731,
             "field": "type",
             "text": "str"
            }
@@ -2070,27 +2070,27 @@
        },
        {
         "type": ",",
-        "start": 1669,
-        "end": 1670,
+        "start": 1731,
+        "end": 1732,
         "text": ","
        },
        {
         "type": "line_comment",
-        "start": 1671,
-        "end": 1687,
+        "start": 1733,
+        "end": 1749,
         "children": [
          {
           "type": "//",
-          "start": 1671,
-          "end": 1673,
+          "start": 1733,
+          "end": 1735,
           "text": "//"
          }
         ]
        },
        {
         "type": "}",
-        "start": 1688,
-        "end": 1689,
+        "start": 1750,
+        "end": 1751,
         "text": "}"
        }
       ]
@@ -2099,121 +2099,121 @@
    },
    {
     "type": "line_comment",
-    "start": 1691,
-    "end": 1770,
+    "start": 1753,
+    "end": 1832,
     "children": [
      {
       "type": "//",
-      "start": 1691,
-      "end": 1693,
+      "start": 1753,
+      "end": 1755,
       "text": "//"
      }
     ]
    },
    {
     "type": "line_comment",
-    "start": 1771,
-    "end": 1847,
+    "start": 1833,
+    "end": 1909,
     "children": [
      {
       "type": "//",
-      "start": 1771,
-      "end": 1773,
+      "start": 1833,
+      "end": 1835,
       "text": "//"
      }
     ]
    },
    {
     "type": "line_comment",
-    "start": 1848,
-    "end": 1925,
+    "start": 1910,
+    "end": 1987,
     "children": [
      {
       "type": "//",
-      "start": 1848,
-      "end": 1850,
+      "start": 1910,
+      "end": 1912,
       "text": "//"
      }
     ]
    },
    {
     "type": "line_comment",
-    "start": 1926,
-    "end": 2004,
+    "start": 1988,
+    "end": 2066,
     "children": [
      {
       "type": "//",
-      "start": 1926,
-      "end": 1928,
+      "start": 1988,
+      "end": 1990,
       "text": "//"
      }
     ]
    },
    {
     "type": "line_comment",
-    "start": 2005,
-    "end": 2015,
+    "start": 2067,
+    "end": 2077,
     "children": [
      {
       "type": "//",
-      "start": 2005,
-      "end": 2007,
+      "start": 2067,
+      "end": 2069,
       "text": "//"
      }
     ]
    },
    {
     "type": "function_item",
-    "start": 2016,
-    "end": 2283,
+    "start": 2078,
+    "end": 2345,
     "children": [
      {
       "type": "fn",
-      "start": 2016,
-      "end": 2018,
+      "start": 2078,
+      "end": 2080,
       "text": "fn"
      },
      {
       "type": "identifier",
-      "start": 2019,
-      "end": 2031,
+      "start": 2081,
+      "end": 2093,
       "field": "name",
       "text": "aligned_arms"
      },
      {
       "type": "parameters",
-      "start": 2031,
-      "end": 2042,
+      "start": 2093,
+      "end": 2104,
       "field": "parameters",
       "children": [
        {
         "type": "(",
-        "start": 2031,
-        "end": 2032,
+        "start": 2093,
+        "end": 2094,
         "text": "("
        },
        {
         "type": "parameter",
-        "start": 2032,
-        "end": 2041,
+        "start": 2094,
+        "end": 2103,
         "children": [
          {
           "type": "identifier",
-          "start": 2032,
-          "end": 2036,
+          "start": 2094,
+          "end": 2098,
           "field": "pattern",
           "text": "code"
          },
          {
           "type": ":",
-          "start": 2036,
-          "end": 2037,
+          "start": 2098,
+          "end": 2099,
           "text": ":"
          },
          {
           "type": "primitive_type",
-          "start": 2038,
-          "end": 2041,
+          "start": 2100,
+          "end": 2103,
           "field": "type",
           "text": "u32"
          }
@@ -2221,53 +2221,53 @@
        },
        {
         "type": ")",
-        "start": 2041,
-        "end": 2042,
+        "start": 2103,
+        "end": 2104,
         "text": ")"
        }
       ]
      },
      {
       "type": "->",
-      "start": 2043,
-      "end": 2045,
+      "start": 2105,
+      "end": 2107,
       "text": "->"
      },
      {
       "type": "reference_type",
-      "start": 2046,
-      "end": 2058,
+      "start": 2108,
+      "end": 2120,
       "field": "return_type",
       "children": [
        {
         "type": "&",
-        "start": 2046,
-        "end": 2047,
+        "start": 2108,
+        "end": 2109,
         "text": "&"
        },
        {
         "type": "lifetime",
-        "start": 2047,
-        "end": 2054,
+        "start": 2109,
+        "end": 2116,
         "children": [
          {
           "type": "'",
-          "start": 2047,
-          "end": 2048,
+          "start": 2109,
+          "end": 2110,
           "text": "'"
          },
          {
           "type": "identifier",
-          "start": 2048,
-          "end": 2054,
+          "start": 2110,
+          "end": 2116,
           "text": "static"
          }
         ]
        },
        {
         "type": "primitive_type",
-        "start": 2055,
-        "end": 2058,
+        "start": 2117,
+        "end": 2120,
         "field": "type",
         "text": "str"
        }
@@ -2275,237 +2275,165 @@
      },
      {
       "type": "block",
-      "start": 2059,
-      "end": 2283,
+      "start": 2121,
+      "end": 2345,
       "field": "body",
       "children": [
        {
         "type": "{",
-        "start": 2059,
-        "end": 2060,
+        "start": 2121,
+        "end": 2122,
         "text": "{"
        },
        {
         "type": "expression_statement",
-        "start": 2065,
-        "end": 2281,
+        "start": 2127,
+        "end": 2343,
         "children": [
          {
           "type": "match_expression",
-          "start": 2065,
-          "end": 2281,
+          "start": 2127,
+          "end": 2343,
           "children": [
            {
             "type": "match",
-            "start": 2065,
-            "end": 2070,
+            "start": 2127,
+            "end": 2132,
             "text": "match"
            },
            {
             "type": "identifier",
-            "start": 2071,
-            "end": 2075,
+            "start": 2133,
+            "end": 2137,
             "field": "value",
             "text": "code"
            },
            {
             "type": "match_block",
-            "start": 2076,
-            "end": 2281,
+            "start": 2138,
+            "end": 2343,
             "field": "body",
             "children": [
              {
               "type": "{",
-              "start": 2076,
-              "end": 2077,
+              "start": 2138,
+              "end": 2139,
               "text": "{"
              },
              {
               "type": "match_arm",
-              "start": 2086,
-              "end": 2097,
+              "start": 2148,
+              "end": 2159,
               "children": [
                {
                 "type": "match_pattern",
-                "start": 2086,
-                "end": 2087,
+                "start": 2148,
+                "end": 2149,
                 "field": "pattern",
                 "children": [
                  {
                   "type": "integer_literal",
-                  "start": 2086,
-                  "end": 2087,
+                  "start": 2148,
+                  "end": 2149,
                   "text": "1"
                  }
                 ]
                },
                {
                 "type": "=>",
-                "start": 2088,
-                "end": 2090,
+                "start": 2150,
+                "end": 2152,
                 "text": "=>"
                },
                {
                 "type": "string_literal",
-                "start": 2091,
-                "end": 2096,
+                "start": 2153,
+                "end": 2158,
                 "field": "value",
                 "children": [
                  {
                   "type": "\"",
-                  "start": 2091,
-                  "end": 2092,
+                  "start": 2153,
+                  "end": 2154,
                   "text": "\""
                  },
                  {
                   "type": "string_content",
-                  "start": 2092,
-                  "end": 2095,
+                  "start": 2154,
+                  "end": 2157,
                   "text": "one"
                  },
                  {
                   "type": "\"",
-                  "start": 2095,
-                  "end": 2096,
+                  "start": 2157,
+                  "end": 2158,
                   "text": "\""
                  }
                 ]
                },
                {
                 "type": ",",
-                "start": 2096,
-                "end": 2097,
+                "start": 2158,
+                "end": 2159,
                 "text": ","
                }
               ]
              },
              {
               "type": "line_comment",
-              "start": 2098,
-              "end": 2122,
+              "start": 2160,
+              "end": 2184,
               "children": [
                {
                 "type": "//",
-                "start": 2098,
-                "end": 2100,
+                "start": 2160,
+                "end": 2162,
                 "text": "//"
                }
               ]
              },
              {
               "type": "match_arm",
-              "start": 2131,
-              "end": 2150,
+              "start": 2193,
+              "end": 2212,
               "children": [
                {
                 "type": "match_pattern",
-                "start": 2131,
-                "end": 2133,
+                "start": 2193,
+                "end": 2195,
                 "field": "pattern",
                 "children": [
                  {
                   "type": "integer_literal",
-                  "start": 2131,
-                  "end": 2133,
+                  "start": 2193,
+                  "end": 2195,
                   "text": "22"
                  }
                 ]
                },
                {
                 "type": "=>",
-                "start": 2134,
-                "end": 2136,
+                "start": 2196,
+                "end": 2198,
                 "text": "=>"
                },
                {
                 "type": "string_literal",
-                "start": 2137,
-                "end": 2149,
-                "field": "value",
-                "children": [
-                 {
-                  "type": "\"",
-                  "start": 2137,
-                  "end": 2138,
-                  "text": "\""
-                 },
-                 {
-                  "type": "string_content",
-                  "start": 2138,
-                  "end": 2148,
-                  "text": "twenty-two"
-                 },
-                 {
-                  "type": "\"",
-                  "start": 2148,
-                  "end": 2149,
-                  "text": "\""
-                 }
-                ]
-               },
-               {
-                "type": ",",
-                "start": 2149,
-                "end": 2150,
-                "text": ","
-               }
-              ]
-             },
-             {
-              "type": "line_comment",
-              "start": 2151,
-              "end": 2175,
-              "children": [
-               {
-                "type": "//",
-                "start": 2151,
-                "end": 2153,
-                "text": "//"
-               }
-              ]
-             },
-             {
-              "type": "match_arm",
-              "start": 2184,
-              "end": 2212,
-              "children": [
-               {
-                "type": "match_pattern",
-                "start": 2184,
-                "end": 2187,
-                "field": "pattern",
-                "children": [
-                 {
-                  "type": "integer_literal",
-                  "start": 2184,
-                  "end": 2187,
-                  "text": "333"
-                 }
-                ]
-               },
-               {
-                "type": "=>",
-                "start": 2188,
-                "end": 2190,
-                "text": "=>"
-               },
-               {
-                "type": "string_literal",
-                "start": 2191,
+                "start": 2199,
                 "end": 2211,
                 "field": "value",
                 "children": [
                  {
                   "type": "\"",
-                  "start": 2191,
-                  "end": 2192,
+                  "start": 2199,
+                  "end": 2200,
                   "text": "\""
                  },
                  {
                   "type": "string_content",
-                  "start": 2192,
+                  "start": 2200,
                   "end": 2210,
-                  "text": "three-thirty-three"
+                  "text": "twenty-two"
                  },
                  {
                   "type": "\"",
@@ -2526,7 +2454,7 @@
              {
               "type": "line_comment",
               "start": 2213,
-              "end": 2253,
+              "end": 2237,
               "children": [
                {
                 "type": "//",
@@ -2538,67 +2466,139 @@
              },
              {
               "type": "match_arm",
-              "start": 2262,
-              "end": 2275,
+              "start": 2246,
+              "end": 2274,
               "children": [
                {
                 "type": "match_pattern",
-                "start": 2262,
-                "end": 2263,
+                "start": 2246,
+                "end": 2249,
                 "field": "pattern",
                 "children": [
                  {
-                  "type": "_",
-                  "start": 2262,
-                  "end": 2263,
-                  "text": "_"
+                  "type": "integer_literal",
+                  "start": 2246,
+                  "end": 2249,
+                  "text": "333"
                  }
                 ]
                },
                {
                 "type": "=>",
-                "start": 2264,
-                "end": 2266,
+                "start": 2250,
+                "end": 2252,
                 "text": "=>"
                },
                {
                 "type": "string_literal",
-                "start": 2267,
-                "end": 2274,
+                "start": 2253,
+                "end": 2273,
                 "field": "value",
                 "children": [
                  {
                   "type": "\"",
-                  "start": 2267,
-                  "end": 2268,
+                  "start": 2253,
+                  "end": 2254,
                   "text": "\""
                  },
                  {
                   "type": "string_content",
-                  "start": 2268,
-                  "end": 2273,
-                  "text": "other"
+                  "start": 2254,
+                  "end": 2272,
+                  "text": "three-thirty-three"
                  },
                  {
                   "type": "\"",
-                  "start": 2273,
-                  "end": 2274,
+                  "start": 2272,
+                  "end": 2273,
                   "text": "\""
                  }
                 ]
                },
                {
                 "type": ",",
-                "start": 2274,
-                "end": 2275,
+                "start": 2273,
+                "end": 2274,
+                "text": ","
+               }
+              ]
+             },
+             {
+              "type": "line_comment",
+              "start": 2275,
+              "end": 2315,
+              "children": [
+               {
+                "type": "//",
+                "start": 2275,
+                "end": 2277,
+                "text": "//"
+               }
+              ]
+             },
+             {
+              "type": "match_arm",
+              "start": 2324,
+              "end": 2337,
+              "children": [
+               {
+                "type": "match_pattern",
+                "start": 2324,
+                "end": 2325,
+                "field": "pattern",
+                "children": [
+                 {
+                  "type": "_",
+                  "start": 2324,
+                  "end": 2325,
+                  "text": "_"
+                 }
+                ]
+               },
+               {
+                "type": "=>",
+                "start": 2326,
+                "end": 2328,
+                "text": "=>"
+               },
+               {
+                "type": "string_literal",
+                "start": 2329,
+                "end": 2336,
+                "field": "value",
+                "children": [
+                 {
+                  "type": "\"",
+                  "start": 2329,
+                  "end": 2330,
+                  "text": "\""
+                 },
+                 {
+                  "type": "string_content",
+                  "start": 2330,
+                  "end": 2335,
+                  "text": "other"
+                 },
+                 {
+                  "type": "\"",
+                  "start": 2335,
+                  "end": 2336,
+                  "text": "\""
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 2336,
+                "end": 2337,
                 "text": ","
                }
               ]
              },
              {
               "type": "}",
-              "start": 2280,
-              "end": 2281,
+              "start": 2342,
+              "end": 2343,
               "text": "}"
              }
             ]
@@ -2609,8 +2609,8 @@
        },
        {
         "type": "}",
-        "start": 2282,
-        "end": 2283,
+        "start": 2344,
+        "end": 2345,
         "text": "}"
        }
       ]

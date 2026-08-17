@@ -8,20 +8,20 @@
 // comments across a run of list items and nothing else (FINDINGS 18).
 
 fn sub_widths(items: &[i32]) {
-    // Struct literal body is 43 columns; the whole line is 61 of 100.
+    // Struct-literal body is 36 columns, over struct_lit_width 18; line is 65.
     let branch = Branch {
         leaves: [1, 2, 3, 4],
         label: "north",
     };
 
-    // Method chain spans 62 columns of a 74-column line.
+    // Method chain is 61 columns, over chain_width 60; the whole line is 79.
     let picked = items
         .iter()
         .map(double)
         .filter(positive)
         .collect::<Vec<_>>();
 
-    // Call arguments span 64 columns of a 91-column line.
+    // Call arguments are 64 columns, over fn_call_width 60; the line is 91.
     let joined = combine(
         first_argument,
         second_argument,
@@ -29,7 +29,7 @@ fn sub_widths(items: &[i32]) {
         fourth_argument,
     );
 
-    // Array elements span 63 columns of an 82-column line.
+    // Array elements are 63 columns, over array_width 60; the line is 82.
     let names = [
         alpha, bravo, charlie, delta, echo, foxtrot, golf,
         hotel, india,
