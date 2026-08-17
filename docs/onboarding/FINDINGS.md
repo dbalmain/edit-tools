@@ -372,7 +372,24 @@ const (
 
 With: one space after each operand. Without: `bb     |` / `cccccc |`.
 
-#### What I would drop
+#### Decided: keep all nine (Dave, 2026-08-17)
+
+Reviewed policy by policy against the table above. Dave's read: **block comments
+and continuation lines are the two he would drop** — and the saving is too small
+to be worth it. Together they are **137 B of 2,593 B**, about 5% of the pass and
+0.7% of the 20 KB budget, against 88 real GOROOT files.
+
+That is the right conclusion for a reason the table makes plain: **the rows do
+not sum.** The eight policies total 555 B while the whole pass is 2,593 B,
+because roughly 2,000 B is the quote-aware scanners and cell machinery every
+policy shares. Trimming policies cannot meaningfully reduce this feature — the
+only decision with real bytes attached is whether to have alignment at all, and
+that one is settled.
+
+So this subsection is now a record of a closed question. Do not re-open it per
+policy; re-open it only if the whole pass comes back up for debate.
+
+#### What the measuring agent would have dropped
 
 If the budget forced a cut, **`keepTypeColumn` is the one I would drop first.**
 169 B — the largest single policy function — for 37 files and no corpus
