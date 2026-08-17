@@ -104,51 +104,41 @@ three piles, not one.
 
 ### Pile A — a static test on the node, with a static answer
 
-Cheap. `when` already exists; the only predicate is `["count", sel, n]`. Some
-"cannot do" entries need nothing more than a second predicate.
+Cheap. `when` already exists; the predicates were `["count", sel, n]` and
+`["child-count", parent-sel, child-sel, n]`. Some "cannot do" entries need
+nothing more than another predicate.
 
-**Worked example — both JSON divergences.** Prettier prints an array whose
-elements are _all_ arrays or objects one-per-line regardless of width, so
-`"matrix"` explodes at width 88 where we keep it flat and it fits. That is not a
-layout choice needing measurement; it is a property of the children, known
-before printing. With one predicate — say `["all", sel, [kinds]]`, true when
-every `sel` child's type is in `kinds` and there is at least one — the rule is
-ordinary:
+**Worked example — both JSON divergences. Built 2026-08-17.**
+`["all", sel, [kinds…]]` is true when every `sel` child has a type in
+`kinds`, including when there are none. The earlier sketch baked in "and
+there is at least one"; that was wrong. "All" is universal, and a package
+that wants a non-empty set composes with `count`. JSON does exactly that
+for `matrix`: `all named [array, object]`, then `count named 1` keeps a
+single nested array compact so `[[[["deeply", "nested"]]]]` does not
+explode. Prettier also refuses to explode an array-of-arrays whose parent
+is an array; that is ancestor context and was not built. On this corpus
+the composition is enough: JSON **4/6 → 6/6**.
 
-```json
-"array": ["when", ["all", "named", ["array", "object"]],
-  ["seq", ["tok", "["],
-    ["indent", ["hard"], ["each", "named", ["seq", ["tok", ","], ["hard"]]]],
-    ["hard"], ["tok", "]"]],
-  <the current width-driven rule>]
-```
+Numeric fill is the other arm: `all named [number]` applies `fill` to
+`long_flat_array` and leaves mixed `scalars.json` on the ordinary group.
 
-`hard` instead of `line`/`soft` is the whole difference: always broken rather
-than broken-if-it-does-not-fit. No printer change, no new opcode class, and the
-predicate is as inspectable as `count`.
+Pile A remains the right _classification_ — these limits are cheap to lift
+when we want them lifted. This one is lifted.
 
-**Deferred, deliberately, as of 2026-08-16.** Cheap is not the same as worth
-doing. Adding this predicate to match prettier on `matrix` buys **nothing
-measurable** — `matrix` and `deep` share a file and we currently match prettier
-on `deep`, so agreement stays 4/6 either way. And two languages cannot tell
-"this reads better everywhere" from "this suits JSON". See
-[house-style.md](house-style.md): the trigger is a corpus spanning YAML, CSS,
-TOML and Go, at which point the rule can be measured across every language at
-once rather than argued from one file.
-
-Pile A remains the right _classification_ — these limits are cheap to lift when
-we want them lifted. What changed is the assumption that cheap therefore means
-now.
-
-### Pile B — `fill`
+### Pile B — `fill` — **built**
 
 A printer primitive, well understood, linear cost, and the thing prettier uses
 to put several numbers on a line rather than one per line (the second JSON
-divergence, `long_flat_array@60`). Bounded work, but it is printer work in both
-runtimes, so it is not free the way pile A is.
-
-Driven by HTML/XML inline content in round 4. **Possibly not by markdown** — see
-`injection.md` on `proseWrap`.
+construct, `long_flat_array`). Built on 2026-08-17 after CSS priced it: **+365 B
+gzip** across the hand-written JS runtime, with a byte-identical Rust mirror.
+The opcode is `["fill", sel, sep]`, parallel to `each`; its separator chooses
+flat or break independently per line. CSS opted in on 2026-08-17: declaration
+`font-family` lists and hanging space-separated call lists, behind existing
+`count` tests. Agreement 11/30 → 18/30; 7 of 19 accepted divergences resolved.
+Stage D's 9/21 was optimistic — `calc`'s last `minmax()` and `--list`'s
+comma-groups are not this fill. JSON opted in once `all` landed: numeric
+arrays take `fill`, container arrays take the always-broken branch, mixed
+arrays keep the ordinary group. Agreement 4/6 → 6/6.
 
 ### Pile C — trying two layouts and picking one
 

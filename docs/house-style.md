@@ -98,8 +98,10 @@ Under this document some divergences are **deliberate** — either a house
 readability rule, or, far more often, a decision that matching the reference is
 not worth the package complexity. The harness cannot say either.
 
-`score.py` reports agreement separately from accepted, stale, and unreviewed
-divergences. A verdict lives in the content-addressed review ledger, not in the
+`score.py` reports agreement separately from accepted, stale, unreviewed, and
+excluded. Excluded files are the ones the reference rewrites in a way
+linearity forbids; they stay in gates 0–3 and sit outside the agreement
+denominator. A verdict lives in the content-addressed review ledger, not in the
 language manifest: changing either our output or the reference output makes the
 old review stale and fails the scorer. The 70% floor applies to agreement plus
 accepted reviews, so a package can correctly decline to chase an edge case

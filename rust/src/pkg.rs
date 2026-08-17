@@ -47,6 +47,9 @@ impl TryFrom<String> for PackageFormat {
 #[serde(try_from = "RawPackage")]
 pub struct Package {
     pub indent: usize,
+    /// Experimental rendered-text alignment. The only spike implementation
+    /// is `go`; omitting this field leaves the printer byte-for-byte alone.
+    pub alignment: Option<String>,
     /// Whether one indent level is a tab rather than `indent` spaces. gofmt
     /// is the first reference whose house style is tab-indented.
     #[serde(default)]
@@ -90,6 +93,8 @@ struct RawPackage {
     _format: PackageFormat,
     indent: usize,
     #[serde(default)]
+    alignment: Option<String>,
+    #[serde(default)]
     tab_indent: bool,
     #[serde(default)]
     tokens: HashSet<String>,
@@ -127,12 +132,19 @@ impl TryFrom<RawPackage> for Package {
             }
         }
         let flatten_fields = flatten_fields(raw.flatten_fields)?;
+        if raw.alignment.as_deref().is_some_and(|value| value != "go") {
+            return Err(format!(
+                "unknown alignment mode `{}`; expected `go`",
+                raw.alignment.as_deref().unwrap_or_default()
+            ));
+        }
         let rules = expand_rules(&raw.defs, raw.rules)?
             .into_iter()
             .map(|(name, value)| Ok((name, Expr::try_from(value)?)))
             .collect::<Result<_, String>>()?;
         Ok(Self {
             indent: raw.indent,
+            alignment: raw.alignment,
             tab_indent: raw.tab_indent,
             tokens: raw.tokens,
             comments: raw.comments,
@@ -444,6 +456,8 @@ pub enum Sel {
 pub enum Pred {
     Count(Sel, usize),
     ChildCount(Sel, Sel, usize),
+    /// Every `sel` child has a type in the list. Zero matches is true.
+    All(Sel, Vec<String>),
 }
 
 /// One expression of the package language. Eighteen opcodes; see DESIGN.md.
@@ -459,6 +473,7 @@ pub enum Expr {
     Sp,
     Child(Sel),
     Each(Sel, Box<Expr>),
+    Fill(Sel, Box<Expr>),
     Tok(String),
     Verbatim,
     Opt(Sel, Box<Expr>),
@@ -559,14 +574,14 @@ impl TryFrom<Value> for Expr {
                 };
                 Ok(Expr::Blank(cap, around, keep_after))
             }
-            "each" | "opt" => {
+            "each" | "fill" | "opt" => {
                 arity(2)?;
                 let sel = selector(&parts[0])?;
                 let body = Box::new(Expr::try_from(parts.remove(1))?);
-                Ok(if op == "each" {
-                    Expr::Each(sel, body)
-                } else {
-                    Expr::Opt(sel, body)
+                Ok(match op.as_str() {
+                    "each" => Expr::Each(sel, body),
+                    "fill" => Expr::Fill(sel, body),
+                    _ => Expr::Opt(sel, body),
                 })
             }
             "flatten" => {
@@ -631,6 +646,9 @@ fn predicate(value: &Value) -> Result<Pred, String> {
             selector(&parts[2])?,
             count(&parts[3])?,
         )),
+        Some("all") if parts.len() == 3 => {
+            Ok(Pred::All(selector(&parts[1])?, node_types(&parts[2])?))
+        }
         _ => Err(format!("unknown predicate {value}")),
     }
 }
@@ -670,6 +688,28 @@ mod tests {
         assert!(
             err.to_string()
                 .contains("unknown package format `et-doc-rules/2`; expected `et-doc-rules/1`"),
+            "{err}"
+        );
+    }
+
+    #[test]
+    fn parses_all_and_refuses_a_non_list_of_kinds() {
+        serde_json::from_value::<Expr>(json!([
+            "when",
+            ["all", "named", ["number", "array"]],
+            ["line"],
+            ["soft"]
+        ]))
+        .expect("all with a list of kinds parses");
+        let err = serde_json::from_value::<Expr>(json!([
+            "when",
+            ["all", "named", "number"],
+            ["line"],
+            ["soft"]
+        ]))
+        .expect_err("kinds must be a list");
+        assert!(
+            err.to_string().contains("expected a list of node types"),
             "{err}"
         );
     }
@@ -825,5 +865,15 @@ mod tests {
             err.contains("expected a list of node types, got \"notalist\""),
             "{err}"
         );
+    }
+
+    #[test]
+    fn fill_takes_a_selector_and_separator_expression() {
+        let pkg = macro_package(json!({}), json!({ "list": ["fill", "named", ["line"]] }))
+            .expect("fill parses");
+        assert!(matches!(pkg.rules["list"], Expr::Fill(Sel::Named, _)));
+
+        let err = refusal(json!({}), json!({ "list": ["fill", "named"] }));
+        assert!(err.contains("`fill` takes 2 operands, got 1"), "{err}");
     }
 }

@@ -11,6 +11,10 @@ pub enum Doc {
     Text(String),
     Concat(Vec<Doc>),
     Group(Box<Doc>),
+    /// Alternating content and whitespace, packed independently per line.
+    /// The tail is `(whitespace, next fill)`; this recursive shape lets the
+    /// printer resume without allocating a shortened fill on every decision.
+    Fill(Box<Doc>, Option<(Box<Doc>, Box<Doc>)>),
     /// Relative indent of one level for line breaks inside. The unit is the
     /// resolved string for that level -- spaces for most languages, a tab for
     /// gofmt -- so nested indents concatenate and a language region can nest a
@@ -40,6 +44,24 @@ impl Doc {
 
     pub fn group(d: Doc) -> Doc {
         Doc::Group(Box::new(d))
+    }
+
+    pub fn fill(parts: Vec<Doc>) -> Doc {
+        let mut parts = parts.into_iter().rev();
+        let Some(last) = parts.next() else {
+            return Doc::nil();
+        };
+        let mut out = Doc::Fill(Box::new(last), None);
+        while let Some(whitespace) = parts.next() {
+            let content = parts
+                .next()
+                .expect("fill parts alternate content and whitespace");
+            out = Doc::Fill(
+                Box::new(content),
+                Some((Box::new(whitespace), Box::new(out))),
+            );
+        }
+        out
     }
 
     #[cfg(test)]
@@ -73,6 +95,14 @@ fn collect_forced(doc: &Doc, forced: &mut Forced) -> bool {
                 forced.insert(std::ptr::from_ref(inner.as_ref()));
             }
             inner_forced
+        }
+        Doc::Fill(content, tail) => {
+            let mut any = collect_forced(content, forced);
+            if let Some((whitespace, next)) = tail {
+                any |= collect_forced(whitespace, forced);
+                any |= collect_forced(next, forced);
+            }
+            any
         }
         Doc::Indent(_, inner) => collect_forced(inner, forced),
         Doc::IfBreak(broken, flat) => {
@@ -115,8 +145,13 @@ fn first_line(s: &str) -> (isize, bool) {
 /// Does `next` fit in `rem` columns, given the work still on the printer's
 /// stack? Measuring the rest of the line -- not just the group -- is what
 /// makes a trailing `)` or a trailing comment count against the budget.
-fn fits(next: Cmd<'_>, rest: &[Cmd<'_>], mut rem: isize, forced: &Forced) -> bool {
-    let mut stack = vec![next];
+fn fits<'a>(
+    mut stack: Vec<Cmd<'a>>,
+    rest: &[Cmd<'a>],
+    mut rem: isize,
+    forced: &Forced,
+    must_be_flat: bool,
+) -> bool {
     let mut rest_at = rest.len();
     loop {
         if rem < 0 {
@@ -142,12 +177,22 @@ fn fits(next: Cmd<'_>, rest: &[Cmd<'_>], mut rem: isize, forced: &Forced) -> boo
             }
             Doc::Concat(ds) => stack.extend(ds.iter().rev().map(|d| (ind.clone(), mode, d))),
             Doc::Group(inner) => {
+                if must_be_flat && forces_break(inner, forced) {
+                    return false;
+                }
                 let m = if forces_break(inner, forced) {
                     Mode::Break
                 } else {
                     mode
                 };
                 stack.push((ind, m, inner));
+            }
+            Doc::Fill(content, tail) => {
+                if let Some((whitespace, next)) = tail {
+                    stack.push((ind.clone(), mode, next));
+                    stack.push((ind.clone(), mode, whitespace));
+                }
+                stack.push((ind, mode, content));
             }
             Doc::Indent(unit, inner) => stack.push((ind + unit.as_str(), mode, inner)),
             Doc::Line => {
@@ -204,8 +249,65 @@ pub fn print(doc: &Doc, width: usize) -> String {
                 Doc::Group(inner) => {
                     let rem = width as isize - pos as isize;
                     let flat = !forces_break(inner, &forced)
-                        && fits((ind.clone(), Mode::Flat, inner), &stack, rem, &forced);
+                        && fits(
+                            vec![(ind.clone(), Mode::Flat, inner)],
+                            &stack,
+                            rem,
+                            &forced,
+                            false,
+                        );
                     stack.push((ind, if flat { Mode::Flat } else { Mode::Break }, inner));
+                }
+                Doc::Fill(content, tail) => {
+                    let rem = width as isize - pos as isize;
+                    let content_fits = fits(
+                        vec![(ind.clone(), Mode::Flat, content)],
+                        &[],
+                        rem,
+                        &forced,
+                        true,
+                    );
+                    let Some((whitespace, next)) = tail else {
+                        stack.push((
+                            ind,
+                            if content_fits {
+                                Mode::Flat
+                            } else {
+                                Mode::Break
+                            },
+                            content,
+                        ));
+                        continue;
+                    };
+                    let Doc::Fill(second, _) = next.as_ref() else {
+                        unreachable!("a fill tail is another fill")
+                    };
+                    let both_fit = fits(
+                        vec![
+                            (ind.clone(), Mode::Flat, second),
+                            (ind.clone(), Mode::Flat, whitespace),
+                            (ind.clone(), Mode::Flat, content),
+                        ],
+                        &[],
+                        rem,
+                        &forced,
+                        true,
+                    );
+                    stack.push((ind.clone(), mode, next));
+                    stack.push((
+                        ind.clone(),
+                        if both_fit { Mode::Flat } else { Mode::Break },
+                        whitespace,
+                    ));
+                    stack.push((
+                        ind,
+                        if content_fits {
+                            Mode::Flat
+                        } else {
+                            Mode::Break
+                        },
+                        content,
+                    ));
                 }
                 Doc::Line | Doc::Soft | Doc::Hard => {
                     let breaking = mode == Mode::Break || matches!(doc, Doc::Hard);
@@ -350,5 +452,47 @@ mod tests {
             ]),
         );
         assert_eq!(print(&doc, 80), "a\n      b");
+    }
+
+    #[test]
+    fn fill_packs_each_line_independently() {
+        let doc = Doc::indent(
+            2,
+            Doc::fill(vec![
+                Doc::text("100"),
+                Doc::Line,
+                Doc::text("200"),
+                Doc::Line,
+                Doc::text("300"),
+                Doc::Line,
+                Doc::text("400"),
+            ]),
+        );
+        assert_eq!(print(&doc, 10), "100 200\n  300 400");
+    }
+
+    #[test]
+    fn fill_counts_astral_characters_as_single_columns() {
+        let doc = Doc::fill(vec![
+            Doc::text("🙂🙂"),
+            Doc::Line,
+            Doc::text("x"),
+            Doc::Line,
+            Doc::text("y"),
+        ]);
+        assert_eq!(print(&doc, 4), "🙂🙂 x\ny");
+    }
+
+    #[test]
+    fn break_parent_reaches_a_group_without_disabling_fill() {
+        let first = Doc::Concat(vec![Doc::text("a"), Doc::BreakParent]);
+        let doc = Doc::group(Doc::fill(vec![
+            first,
+            Doc::Line,
+            Doc::text("b"),
+            Doc::Line,
+            Doc::text("c"),
+        ]));
+        assert_eq!(print(&doc, 3), "a b\nc");
     }
 }

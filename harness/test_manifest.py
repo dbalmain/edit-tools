@@ -66,5 +66,64 @@ class InjectionManifestTests(unittest.TestCase):
             manifest.injection_map({"json": first, "other": second})
 
 
+class IncomparableManifestTests(unittest.TestCase):
+    """A table keyed by filename, so a reason cannot drift off its file."""
+
+    def parse(self, extra: str = "") -> manifest.Manifest:
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        path = Path(tmp.name) / "json.toml"
+        path.write_text(BASE + extra)
+        return manifest.parse(path)
+
+    def test_omitted_table_is_empty(self):
+        self.assertEqual(self.parse().incomparable, {})
+
+    def test_table_records_the_reason(self):
+        parsed = self.parse(
+            '\n[incomparable]\n"basic.json" = "prettier re-quotes to minimise escaping"\n'
+        )
+        self.assertEqual(
+            parsed.incomparable,
+            {"basic.json": "prettier re-quotes to minimise escaping"},
+        )
+
+    def test_empty_reason_is_a_manifest_error(self):
+        with self.assertRaisesRegex(manifest.ManifestError, "non-empty reason"):
+            self.parse('\n[incomparable]\n"basic.json" = ""\n')
+
+    def test_whitespace_only_reason_is_a_manifest_error(self):
+        with self.assertRaisesRegex(manifest.ManifestError, "non-empty reason"):
+            self.parse('\n[incomparable]\n"basic.json" = "   "\n')
+
+    def test_list_instead_of_table_is_a_manifest_error(self):
+        with self.assertRaisesRegex(manifest.ManifestError, "must be a table"):
+            self.parse('\nincomparable = ["basic.json"]\n')
+
+    def test_missing_file_is_a_manifest_error(self):
+        with self.assertRaisesRegex(manifest.ManifestError, "does not exist"):
+            self.parse(
+                '\n[incomparable]\n"no-such-file.json" = '
+                '"prettier rewrites this"\n'
+            )
+
+    def test_path_key_is_a_manifest_error(self):
+        with self.assertRaisesRegex(manifest.ManifestError, "not a path"):
+            self.parse(
+                '\n[incomparable]\n"subdir/basic.json" = "reason"\n'
+            )
+
+    def test_extension_must_match_the_language(self):
+        with self.assertRaisesRegex(manifest.ManifestError, "extensions"):
+            self.parse('\n[incomparable]\n"basic.txt" = "reason"\n')
+
+    def test_merged_languages_declare_none(self):
+        """This slice adds the field, not the files. Six languages stay empty."""
+        loaded = manifest.load_all()
+        self.assertGreaterEqual(len(loaded), 6)
+        for name, parsed in loaded.items():
+            self.assertEqual(parsed.incomparable, {}, name)
+
+
 if __name__ == "__main__":
     unittest.main()

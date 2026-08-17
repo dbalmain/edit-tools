@@ -95,6 +95,74 @@ test("width counts scalar values, not UTF-16 code units", () => {
   assert.equal(run(pkg, tree, 6), "(🙂🙂🙂\nx)\n");
 });
 
+test("Go alignment respects blank-line runs and matches gofmt", () => {
+  const fs = require("node:fs");
+  const path = require("node:path");
+  const root = path.join(__dirname, "..");
+  const pkg = JSON.parse(fs.readFileSync(path.join(root, "packages", "go.json"), "utf8"));
+  const tree = JSON.parse(fs.readFileSync(path.join(root, "corpus", "trees", "go__alignment.tree.json"), "utf8"));
+  const want = fs.readFileSync(path.join(root, "corpus", "reference", "go__alignment@80.txt"), "utf8");
+  assert.equal(format(tree, new Map([["go", pkg]]), 80), want);
+});
+
+test("fill packs independently per line and counts Unicode scalars", () => {
+  const rule = [
+    "group", ["tok", "("],
+    ["indent", ["soft"], ["fill", "named", ["seq", ["tok", ","], ["line"]]]],
+    ["soft"], ["tok", ")"],
+  ];
+  const pkg = toy({ list: rule });
+  assert.equal(
+    run(pkg, list(["100", "200", "300", "400"], false), 12),
+    "(\n  100, 200,\n  300, 400\n)\n",
+  );
+  assert.equal(
+    run(pkg, list(["🙂🙂", "x", "y"], false), 8),
+    "(\n  🙂🙂, x,\n  y\n)\n",
+  );
+});
+
+test("fill is a fixed point for already packed input", () => {
+  const rule = [
+    "group", ["tok", "("],
+    ["indent", ["soft"], ["fill", "named", ["seq", ["tok", ","], ["line"]]]],
+    ["soft"], ["tok", ")"],
+  ];
+  const pkg = toy({ list: rule });
+  const tree = list(["100", "200", "300", "400"], false);
+  const once = runOn(pkg, "(\n  100, 200,\n  300, 400\n)", tree, 12);
+  const twice = runOn(pkg, once, tree, 12);
+  assert.equal(twice, once);
+});
+
+test("a BreakParent reaches through fill without disabling its packing", () => {
+  const pkg = {
+    ...toy({
+      list: [
+        "group", ["tok", "("],
+        ["indent", ["soft"], ["fill", "named", ["seq", ["tok", ","], ["line"]]]],
+        ["soft"], ["tok", ")"],
+      ],
+    }),
+    comments: ["comment"],
+  };
+  const source = "(a,b,c# note)";
+  const root = {
+    type: "list", start: 0, end: 13,
+    children: [
+      span("(", 0, 1, "("),
+      span("name", 1, 2, "a"),
+      span(",", 2, 3, ","),
+      span("name", 3, 4, "b"),
+      span(",", 4, 5, ","),
+      span("name", 5, 6, "c"),
+      span("comment", 6, 12, "# note"),
+      span(")", 12, 13, ")"),
+    ],
+  };
+  assert.equal(runOn(pkg, source, root, 80), "(\n  a, b, c # note\n)\n");
+});
+
 test("a rule that ignores a child refuses rather than dropping it", () => {
   const pkg = toy({ list: ["seq", ["tok", "("]] });
   assert.throws(() => run(pkg, list(["a"], false), 80), (e) => e instanceof Refusal && /left child/.test(e.message));
@@ -723,6 +791,62 @@ test("child-count can dispatch on a field's wrapped construct", () => {
     }],
   };
   assert.equal(runOn(pkg, "|", root, 80), "|\n");
+});
+
+const allPkg = () => ({
+  format: "et-doc-rules/1",
+  indent: 2,
+  rules: {
+    file: [
+      "when", ["all", "named", ["num", "word"]],
+      ["each", "named", ["seq"]],
+      [],
+    ],
+    num: ["verbatim"],
+    word: ["verbatim"],
+  },
+});
+
+test("all holds vacuously when no child matches the selector", () => {
+  // Else is `[]` and would refuse leftover children, so a successful
+  // empty format is the empty-case pin: both runtimes must agree.
+  const root = { type: "file", start: 0, end: 0, children: [] };
+  assert.equal(runOn(allPkg(), "", root, 80), "\n");
+});
+
+test("all holds when every selected child has a listed type", () => {
+  const root = {
+    type: "file", start: 0, end: 3,
+    children: [
+      { type: "num", start: 0, end: 1, text: "1" },
+      { type: "word", start: 2, end: 3, text: "a" },
+    ],
+  };
+  assert.equal(runOn(allPkg(), "1 a", root, 80), "1a\n");
+});
+
+test("all fails when one selected child has an unlisted type", () => {
+  const pkg = {
+    format: "et-doc-rules/1",
+    indent: 2,
+    rules: {
+      file: [
+        "when", ["all", "named", ["num"]],
+        [],
+        ["each", "named", ["seq"]],
+      ],
+      num: ["verbatim"],
+      word: ["verbatim"],
+    },
+  };
+  const root = {
+    type: "file", start: 0, end: 3,
+    children: [
+      { type: "num", start: 0, end: 1, text: "1" },
+      { type: "word", start: 2, end: 3, text: "a" },
+    ],
+  };
+  assert.equal(runOn(pkg, "1 a", root, 80), "1a\n");
 });
 
 test("blank opens before a comment that leads a listed type", () => {
