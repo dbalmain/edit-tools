@@ -2,6 +2,8 @@
 
 #![forbid(unsafe_code)]
 
+#[path = "../align.rs"]
+mod align;
 #[path = "../attach.rs"]
 mod attach;
 #[path = "../doc.rs"]

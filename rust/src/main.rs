@@ -6,6 +6,7 @@
 
 #![forbid(unsafe_code)]
 
+mod align;
 mod attach;
 mod doc;
 mod eval;

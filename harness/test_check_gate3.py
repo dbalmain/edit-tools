@@ -37,6 +37,8 @@ class AssignmentParser:
 
     def parse(self, source: bytes):
         text = source.decode()
+        if "=" not in text:
+            return SimpleNamespace(root_node=Node("ERROR", 0, len(source)))
         number_at = text.index("=") + 1
         root = Node(
             "document",
@@ -67,6 +69,7 @@ def make_manifest(path: Path, name: str, selected_gate: str) -> manifest.Manifes
         gate3_requires=(),
         transparent_wrappers=frozenset(),
         equivalent_kinds=(),
+        incomparable={},
         path=path,
     )
 
@@ -109,7 +112,7 @@ class AdversarialOverrideTests(unittest.TestCase):
                 mock.patch.object(
                     check_gate3,
                     "cases",
-                    return_value=iter((("weak__case@80", "x=1", "x=1"),)),
+                    return_value=iter((("weak__case@80", "x=1", "x=1", False),)),
                 ),
                 mock.patch.object(
                     check_gate3, "check_injection_mutations", return_value=0
@@ -128,6 +131,65 @@ class AdversarialOverrideTests(unittest.TestCase):
         self.assertIn("weak override ACCEPTS", report)
         self.assertIn("number-respell", report)
         self.assertIn("WEAKER", report)
+
+
+def _run_checker(cases, manifest):
+    """Drive main() against a planted language, no injection fixture."""
+    markdown = make_manifest(manifest.path.with_name("markdown.toml"), "markdown", "default")
+    known = {manifest.name: manifest}
+    bootstrapped = {**known, markdown.name: markdown}
+    parsers = {manifest.name: AssignmentParser()}
+    output = io.StringIO()
+    patches = (
+        mock.patch.object(check_gate3.mf, "load_all", return_value=known),
+        mock.patch.object(check_gate3.mf, "parse", return_value=markdown),
+        mock.patch.object(check_gate3.mf, "bootstrap", return_value=bootstrapped),
+        mock.patch.object(check_gate3.mf, "selected", return_value=known),
+        mock.patch.object(check_gate3.mf, "parsers", return_value=parsers),
+        mock.patch.object(check_gate3, "cases", return_value=iter(cases)),
+        mock.patch.object(check_gate3, "check_injection_mutations", return_value=0),
+        mock.patch.object(sys, "argv", ["check_gate3.py"]),
+    )
+    with patches[0], patches[1], patches[2], patches[3], patches[4], \
+            patches[5], patches[6], patches[7], redirect_stdout(output):
+        result = check_gate3.main()
+    return result, output.getvalue()
+
+
+class IncomparableReferenceTests(unittest.TestCase):
+    """Skip only the mirror rule. Source still has to pass; destruction still fires."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.manifest = make_manifest(
+            Path(self.tmp.name) / "weak.toml", "weak", "default"
+        )
+
+    def test_reference_rewrite_fails_when_the_file_is_comparable(self):
+        result, report = _run_checker(
+            (("weak__quotes@80", "x=1", "x=2", False),),
+            self.manifest,
+        )
+        self.assertEqual(result, 1)
+        self.assertIn("FAIL weak__quotes@80:", report)
+
+    def test_reference_rewrite_is_skipped_when_the_file_is_incomparable(self):
+        result, report = _run_checker(
+            (("weak__quotes@80", "x=1", "x=2", True),),
+            self.manifest,
+        )
+        self.assertEqual(result, 0)
+        self.assertNotIn("FAIL", report)
+        self.assertIn("1 reference outputs checked", report)
+
+    def test_incomparable_source_that_fails_its_own_gate_is_still_an_error(self):
+        result, report = _run_checker(
+            (("weak__quotes@80", "not-a-number", "x=1", True),),
+            self.manifest,
+        )
+        self.assertEqual(result, 1)
+        self.assertIn("the *source* does not pass its own gate", report)
 
 
 if __name__ == "__main__":

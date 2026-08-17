@@ -1,5 +1,5 @@
 {
-  "submission": "lang-css-grok",
+  "submission": "feat-fill",
   "gates": {
     "0-coverage": {
       "pass": true,
@@ -27,25 +27,26 @@
     }
   },
   "measures": {
-    "4-overflow-lines": 10,
+    "4-overflow-lines": 11,
     "5-size-gzip": {
-      "js-runtime": 9315,
-      "packages": 1194,
-      "total": 10509,
+      "js-runtime": 10680,
+      "packages": 1238,
+      "total": 11918,
       "per_language": {
         "css": {
-          "package": 1194,
-          "with_runtime": 10509
+          "package": 1238,
+          "with_runtime": 11918
         }
       }
     },
     "6-reference-agreement": {
-      "agreement": 11,
-      "accepted": 19,
+      "agreement": 18,
+      "accepted": 12,
       "stale": 0,
       "unreviewed": 0,
+      "excluded": 0,
       "of": 30,
-      "agreement_fraction": 0.367,
+      "agreement_fraction": 0.6,
       "review_coverage": 1.0,
       "review_threshold": 0.7,
       "review_threshold_met": true,
@@ -53,10 +54,11 @@
         "css": {
           "reference": "3.9.6",
           "waived": false,
-          "agreement": 11,
-          "accepted": 19,
+          "agreement": 18,
+          "accepted": 12,
           "stale": 0,
           "unreviewed": 0,
+          "excluded": 0,
           "of": 30,
           "reference_overflow": 8,
           "missing": [],
@@ -75,26 +77,26 @@
             },
             {
               "case": "calc.css@80",
-              "hash": "ac12c9ad5d96cf7e3fee1a23315525c0af15b3080eba6688fb5d6acc5af72cb6",
+              "hash": "764963acbdbc45b9efc003134c24696939a2dc030d38df1f6a8aaad312cce136",
               "review": {
                 "id": "css/calc.css@80",
-                "hash": "ac12c9ad5d96cf7e3fee1a23315525c0af15b3080eba6688fb5d6acc5af72cb6",
+                "hash": "764963acbdbc45b9efc003134c24696939a2dc030d38df1f6a8aaad312cce136",
                 "verdict": "design limit",
-                "reason": "The IR lacks fill: it cannot pack space-separated call documents while independently allowing the final minmax group to break.",
-                "reviewed_by": "Codex (CSS stage D reviewer)",
-                "reviewed_at": "2026-08-16T12:51:05Z"
+                "reason": "Hanging fill packs the first two minmax() calls and wraps the third flat. prettier starts the third call broken on the same line (minmax( then args). Fill decides from the next item's flat form, so it cannot open a group-valued item in broken mode on the current line.",
+                "reviewed_by": "Grok (CSS fill measurement)",
+                "reviewed_at": "2026-08-16T21:52:59Z"
               }
             },
             {
               "case": "calc.css@40",
-              "hash": "55e8f69a94a5c2fa32ab8b4aa14ad993d43527a3be9cbfb35ec93112e9358994",
+              "hash": "be275fdb66ff6dd750ac3c102dd9f2496e1c569aab8e491c9effee831323133d",
               "review": {
                 "id": "css/calc.css@40",
-                "hash": "55e8f69a94a5c2fa32ab8b4aa14ad993d43527a3be9cbfb35ec93112e9358994",
+                "hash": "be275fdb66ff6dd750ac3c102dd9f2496e1c569aab8e491c9effee831323133d",
                 "verdict": "design limit",
-                "reason": "The IR lacks fill: it cannot pack space-separated call documents while independently choosing which minmax argument groups break.",
-                "reviewed_by": "Codex (CSS stage D reviewer)",
-                "reviewed_at": "2026-08-16T12:51:05Z"
+                "reason": "Same fill limit as @80 at the narrower width: after the first minmax() breaks, fill wraps the remaining calls as flat items rather than starting the last one broken on the current line the way prettier does.",
+                "reviewed_by": "Grok (CSS fill measurement)",
+                "reviewed_at": "2026-08-16T21:53:00Z"
               }
             },
             {
@@ -134,99 +136,39 @@
               }
             },
             {
-              "case": "custom_properties.css@40",
-              "hash": "5e4a68666703f87bffadbad7b52f16ad86777d49f1e97ded43d80351d6101754",
-              "review": {
-                "id": "css/custom_properties.css@40",
-                "hash": "5e4a68666703f87bffadbad7b52f16ad86777d49f1e97ded43d80351d6101754",
-                "verdict": "design limit",
-                "reason": "The two-call hanging branch now matches the margin layout. The remaining difference is fill: rules cannot keep 1px solid together before independently breaking the color-mix call.",
-                "reviewed_by": "Codex (CSS stage E corrective agent)",
-                "reviewed_at": "2026-08-16T13:00:03Z"
-              }
-            },
-            {
               "case": "kitchen.css@80",
-              "hash": "88cb83c9cef539fa56b3337f04f3bf6b8c6d72b550e84c074f5def58e4261ad2",
+              "hash": "efc13672d316f46dda0e858442f555e997ff480e7171eb6118c27bef555f5ed4",
               "review": {
                 "id": "css/kitchen.css@80",
-                "hash": "88cb83c9cef539fa56b3337f04f3bf6b8c6d72b550e84c074f5def58e4261ad2",
+                "hash": "efc13672d316f46dda0e858442f555e997ff480e7171eb6118c27bef555f5ed4",
                 "verdict": "design limit",
-                "reason": "This pair combines missing fill with source-break-sensitive grid-template-areas; rules can inspect neither remaining line capacity nor the preserved newline or property identity needed to choose that layout.",
-                "reviewed_by": "Codex (CSS stage D reviewer)",
-                "reviewed_at": "2026-08-16T12:51:10Z"
+                "reason": "font-family now fills. Remaining: --shadow is a mixed comma/space list whose fill items are tokens, so packing it explodes the last rgba(); grid-template-areas needs source-break-sensitive layout; minmax() hits the same cannot-start-broken-on-this-line fill limit as calc.",
+                "reviewed_by": "Grok (CSS fill measurement)",
+                "reviewed_at": "2026-08-16T21:53:00Z"
               }
             },
             {
               "case": "kitchen.css@40",
-              "hash": "c31b2cc24639b07a809df2b79f05fe1998dfbfdd600de554debd5d7c9dcf7a4d",
+              "hash": "681fe6d256d072054e6c669a75cf40f9c478bd39df94a1d144c40ce0477ad061",
               "review": {
                 "id": "css/kitchen.css@40",
-                "hash": "c31b2cc24639b07a809df2b79f05fe1998dfbfdd600de554debd5d7c9dcf7a4d",
+                "hash": "681fe6d256d072054e6c669a75cf40f9c478bd39df94a1d144c40ce0477ad061",
                 "verdict": "design limit",
-                "reason": "This pair combines missing fill with parent-specific binary_query layout: the global wrapping rule that fixes supports also wraps media.",
-                "reviewed_by": "Codex (CSS stage D reviewer)",
-                "reviewed_at": "2026-08-16T12:51:11Z"
-              }
-            },
-            {
-              "case": "nested.css@80",
-              "hash": "f38834a1967973b35dbd7f1075b3d440def445dc7f7660e48df28e179d1cf394",
-              "review": {
-                "id": "css/nested.css@80",
-                "hash": "f38834a1967973b35dbd7f1075b3d440def445dc7f7660e48df28e179d1cf394",
-                "verdict": "design limit",
-                "reason": "The only difference is fill for font-family; a group can choose only all-flat or one-item-per-line.",
-                "reviewed_by": "Codex (CSS stage D reviewer)",
-                "reviewed_at": "2026-08-16T12:51:11Z"
+                "reason": "font-family now fills. Remaining: parent-specific binary_query layout (supports should wrap, media should not) plus the same minmax() fill-item limit as calc.",
+                "reviewed_by": "Grok (CSS fill measurement)",
+                "reviewed_at": "2026-08-16T21:53:01Z"
               }
             },
             {
               "case": "nested.css@40",
-              "hash": "010ab77f3dba467962001d05b86e06742397db6963f2c7c7dfe3983786967478",
+              "hash": "056f33518d95d887c185ad2de6987679c9a7d1235532bcac786910614cb5dd56",
               "review": {
                 "id": "css/nested.css@40",
-                "hash": "010ab77f3dba467962001d05b86e06742397db6963f2c7c7dfe3983786967478",
+                "hash": "056f33518d95d887c185ad2de6987679c9a7d1235532bcac786910614cb5dd56",
                 "verdict": "design limit",
-                "reason": "This pair combines missing fill for font-family with parent-specific binary_query layout; one node-local query rule cannot keep media flat and break supports.",
-                "reviewed_by": "Codex (CSS stage D reviewer)",
-                "reviewed_at": "2026-08-16T12:51:33Z"
-              }
-            },
-            {
-              "case": "nesting.css@80",
-              "hash": "fac55aeab7dfb64d5f198b1fa4bb592635928e12b9b704508c0187ea3d097b62",
-              "review": {
-                "id": "css/nesting.css@80",
-                "hash": "fac55aeab7dfb64d5f198b1fa4bb592635928e12b9b704508c0187ea3d097b62",
-                "verdict": "design limit",
-                "reason": "The only differences are font-family fills; a group can choose only all-flat or one-item-per-line.",
-                "reviewed_by": "Codex (CSS stage D reviewer)",
-                "reviewed_at": "2026-08-16T12:51:34Z"
-              }
-            },
-            {
-              "case": "nesting.css@40",
-              "hash": "5acfad092aef2c986035fa96cb3460088e82ccecc295212db0b60eb51ef95777",
-              "review": {
-                "id": "css/nesting.css@40",
-                "hash": "5acfad092aef2c986035fa96cb3460088e82ccecc295212db0b60eb51ef95777",
-                "verdict": "design limit",
-                "reason": "The only differences are font-family fills; the IR cannot pack as many family items per line as fit.",
-                "reviewed_by": "Codex (CSS stage D reviewer)",
-                "reviewed_at": "2026-08-16T12:51:34Z"
-              }
-            },
-            {
-              "case": "normalisation.css@40",
-              "hash": "6eba7f9be2d3b3c9da4b01e3da96ffa37db6cdb8c646b2090e1bcb0a14b40f09",
-              "review": {
-                "id": "css/normalisation.css@40",
-                "hash": "6eba7f9be2d3b3c9da4b01e3da96ffa37db6cdb8c646b2090e1bcb0a14b40f09",
-                "verdict": "design limit",
-                "reason": "The package now inserts every missing semicolon. The sole remaining difference is fill for font-family: a group cannot pack as many family items per continuation line as fit.",
-                "reviewed_by": "Codex (CSS stage E corrective agent)",
-                "reviewed_at": "2026-08-16T13:00:06Z"
+                "reason": "font-family now fills. The only remaining difference is parent-specific binary_query layout: one node-local query rule cannot keep media flat and break supports.",
+                "reviewed_by": "Grok (CSS fill measurement)",
+                "reviewed_at": "2026-08-16T21:53:01Z"
               }
             },
             {
@@ -264,38 +206,15 @@
                 "reviewed_by": "Codex (CSS stage E corrective agent)",
                 "reviewed_at": "2026-08-16T13:00:12Z"
               }
-            },
-            {
-              "case": "values.css@80",
-              "hash": "23f85b9cefa02c541a6e72ccd328fef0984c8342e315684fab8570f4dd05191c",
-              "review": {
-                "id": "css/values.css@80",
-                "hash": "23f85b9cefa02c541a6e72ccd328fef0984c8342e315684fab8570f4dd05191c",
-                "verdict": "design limit",
-                "reason": "The IR lacks fill, so font-family can only remain wholly flat or break one item per line.",
-                "reviewed_by": "Codex (CSS stage D reviewer)",
-                "reviewed_at": "2026-08-16T12:51:39Z"
-              }
-            },
-            {
-              "case": "values.css@40",
-              "hash": "c8a40f326d8548f83bab7e17eea34f4a7cfab90c743f57e57a538418704c877d",
-              "review": {
-                "id": "css/values.css@40",
-                "hash": "c8a40f326d8548f83bab7e17eea34f4a7cfab90c743f57e57a538418704c877d",
-                "verdict": "design limit",
-                "reason": "The IR lacks fill, so font-family cannot pack pairs according to the remaining width.",
-                "reviewed_by": "Codex (CSS stage D reviewer)",
-                "reviewed_at": "2026-08-16T12:51:40Z"
-              }
             }
           ],
           "stale_divergences": [],
           "unreviewed_divergences": [],
+          "excluded_files": [],
           "by_width": {
             "80": {
-              "agreement": 7,
-              "accepted": 8,
+              "agreement": 10,
+              "accepted": 5,
               "stale": 0,
               "unreviewed": 0,
               "of": 15,
@@ -303,8 +222,8 @@
               "review_threshold_met": true
             },
             "40": {
-              "agreement": 4,
-              "accepted": 11,
+              "agreement": 8,
+              "accepted": 7,
               "stale": 0,
               "unreviewed": 0,
               "of": 15,
