@@ -307,8 +307,8 @@ function flattenFields(pkg) {
 
 function buildPackage(pkg) {
   validatePackageFormat(pkg);
-  if (pkg.alignment !== undefined && pkg.alignment !== "go") {
-    throw new Refusal(`unknown alignment mode \`${pkg.alignment}\`; expected \`go\``);
+  if (pkg.alignment !== undefined && pkg.alignment !== "go" && pkg.alignment !== "rust") {
+    throw new Refusal(`unknown alignment mode \`${pkg.alignment}\`; expected \`go\` or \`rust\``);
   }
   const comment_gap = gapField(pkg, "comment_gap");
   const blank_cap = gapField(pkg, "blank_cap");
@@ -811,6 +811,99 @@ function alignGo(input) {
   const lines = input.split("\n");
   goAlign(lines, true);
   goAlign(lines, false);
+  return lines.join("\n");
+}
+
+// rustfmt aligns the one thing gofmt refuses to: the trailing comment of a run
+// of sibling *list items*. gofmt's run ends at a comma (goAlign's operator
+// test); rustfmt's run requires one. Rust's lexer needs three things Go's does
+// not -- nesting block comments, `r#"..."#`, and `\` continuing a string over
+// a line break -- so the scanner is a variant rather than a reuse.
+function rustScan(line, state) {
+  const began = state.block > 0 || state.hashes >= 0 || state.cont;
+  let quote = state.cont ? '"' : "";
+  let escaped = false;
+  let comment = -1;
+  state.cont = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (state.block > 0) {
+      if (ch === "/" && line[i + 1] === "*") state.block++, i++;
+      else if (ch === "*" && line[i + 1] === "/") {
+        state.block--;
+        if (state.block === 0 && line.slice(i + 2).trim() !== "") comment = -1;
+        i++;
+      }
+    } else if (state.hashes >= 0) {
+      if (ch === '"' && line.slice(i + 1, i + 1 + state.hashes) === "#".repeat(state.hashes)) {
+        i += state.hashes;
+        state.hashes = -1;
+      }
+    } else if (quote !== "") {
+      if (escaped) escaped = false;
+      else if (ch === "\\") {
+        if (i + 1 === line.length) state.cont = true;
+        escaped = true;
+      } else if (ch === quote) quote = "";
+    } else if (ch === "r" && (line[i + 1] === '"' || line[i + 1] === "#")) {
+      let j = i + 1;
+      while (line[j] === "#") j++;
+      if (line[j] === '"') {
+        state.hashes = j - i - 1;
+        i = j;
+      }
+    } else if (ch === '"') quote = ch;
+    else if (ch === "/" && line[i + 1] === "/") {
+      comment = i;
+      break;
+    } else if (ch === "/" && line[i + 1] === "*") {
+      state.block = 1;
+      if (comment < 0) comment = i;
+      i++;
+    }
+  }
+  const code = line.slice(0, comment < 0 ? line.length : comment).trimEnd();
+  let at = 0;
+  while (code[at] === " " || code[at] === "\t") at++;
+  return {
+    indent: code.slice(0, at),
+    body: code.slice(at),
+    comment: comment < 0 ? "" : line.slice(comment),
+    opaque: began || state.block > 0 || state.hashes >= 0 || state.cont,
+  };
+}
+
+function alignRust(input, cols) {
+  const lines = input.split("\n");
+  const state = { block: 0, hashes: -1, cont: false };
+  const infos = lines.map((line) => rustScan(line, state));
+  let at = [];
+  const flush = () => {
+    if (at.length > 1) {
+      const stop = Math.max(...at.map((i) => width(infos[i].indent) + width(infos[i].body))) + 1;
+      // All or nothing: rustfmt abandons the whole run rather than let padding
+      // push any row past the width. A row already over stays as it is.
+      if (at.every((i) => stop + width(infos[i].comment) <= cols)) {
+        for (const i of at) {
+          const info = infos[i];
+          const gap = stop - width(info.indent) - width(info.body);
+          lines[i] = info.indent + info.body + " ".repeat(gap) + info.comment;
+        }
+      }
+    }
+    at = [];
+  };
+  for (let i = 0; i < lines.length; i++) {
+    const info = infos[i];
+    // A list item, not a statement: it ends in the separator, or is a match
+    // arm whose body is an empty block. A group closer is neither.
+    const item = !info.opaque && info.comment.startsWith("//") &&
+      !info.body.startsWith("}") && !info.body.startsWith(")") &&
+      (info.body.endsWith(",") || info.body.endsWith("{}"));
+    if (!item || (at.length && infos[at[at.length - 1]].indent !== info.indent)) flush();
+    if (item) at.push(i);
+  }
+  flush();
   return lines.join("\n");
 }
 
@@ -1449,6 +1542,7 @@ function format(tree, packages, cols) {
   const fmt = new Formatter(packages, tree.language, bytes, new TextDecoder());
   let out = print(fmt.node(tree.root), cols);
   if (fmt.pkg.alignment === "go") out = alignGo(out);
+  if (fmt.pkg.alignment === "rust") out = alignRust(out, cols);
   if (fmt.semanticEof) {
     const suffix = (tree.source ?? "").match(/(?:\r\n|\r|\n)+$/)?.[0] ?? "";
     return `${out.replace(/[\r\n]+$/, "")}${suffix}`;
