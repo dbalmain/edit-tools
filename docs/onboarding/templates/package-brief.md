@@ -111,7 +111,7 @@ constructs you chose to refuse and why.
 ## Changing the runtime
 
 You may edit `rust/` and `runtime-js/`. Try hard not to: the runtime is shared
-by every language, every byte counts against a 20 KB budget, and other agents
+by every language, every byte counts against a 25 KiB budget, and other agents
 are working in parallel worktrees.
 
 If {{LANG}} genuinely needs something the runtime does not have, add it — and
@@ -130,7 +130,7 @@ varies the width.
 
 Measure the **gzip size delta of each runtime edit separately**, and name the
 {{LANG}} construct that forced it. Not one lump figure for the whole slice. The
-20 KB budget is soft — going over is a question ("which language features cost
+25 KiB budget is soft — going over is a question ("which language features cost
 the bytes?"), not a failure — but that question is only answerable if each edit
 carries its own number and its own cause. A reviewer will judge each edit as
 warranted / unnecessary / needs-redesign, and will push back on the ones that

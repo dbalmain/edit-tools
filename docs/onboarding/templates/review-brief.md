@@ -65,11 +65,11 @@ Check, in roughly this order of importance:
    are a strong smell.
 9. **Are incomparable files dedicated?** Every `[incomparable]` entry must name
    a file that exists, give a non-empty reason, and contain **only** the
-   excluded construct. Mixing in otherwise comparable constructs hides them
-   from the agreement denominator; the harness cannot detect that, so this
-   check is yours. Omitting a construct the reference rewrites — rather than
-   declaring a dedicated file — is the older failure this field exists to
-   stop. The `kitchen` file must not be listed.
+   excluded construct. Mixing in otherwise comparable constructs hides them from
+   the agreement denominator; the harness cannot detect that, so this check is
+   yours. Omitting a construct the reference rewrites — rather than declaring a
+   dedicated file — is the older failure this field exists to stop. The
+   `kitchen` file must not be listed.
 
 You **may make small corrections yourself** in the worktree — a wrong pin, a
 missing probe file, a stale number in the report — and re-verify. Anything
@@ -112,13 +112,22 @@ whether the package is right. Budget your effort here:
    does the difference actually improve readability or cross-language
    consistency enough to justify a house rule? Differing from the reference is
    not a defect by itself, but a vague or weak reason is not a licence to hide
-   one. For unreviewed divergences, a **design limit** mislabelled as a
-   **reference quirk** hides exactly the finding this whole exercise exists to
-   produce. Take two or three "reference quirk" labels and check whether the
-   reference is actually being arbitrary or whether the package simply cannot do
-   it. Be sceptical of that label specifically. Record each accepted
-   classification with the viewer's `--approve`, `--verdict`, `--reason`, and
-   `--reviewed-by` flags; the resulting JSONL diff is part of the review.
+   one.
+
+   The four verdicts fall in two pairs, and the pair is the thing to get right.
+   `design-limit` and `package-bug` say **we could not**; `reference-quirk` and
+   `house-rule` say **we chose not to**. A _we could not_ mislabelled as a _we
+   chose not to_ hides exactly the finding this whole exercise exists to
+   produce, so take two or three of the second pair and check whether the
+   package could actually have done it. Be sceptical of `reference-quirk`
+   specifically: it claims the reference is being **arbitrary**, which is a
+   strong claim and usually the wrong one. When we simply prefer our own layout
+   — alignment being the standing example — the verdict is `house-rule`, and its
+   reason must name the readability or cross-language-consistency argument, not
+   assert one. Record each accepted classification with the viewer's
+   `--approve`, `--verdict`, `--reason`, and `--reviewed-by` flags; the
+   resulting JSONL diff is part of the review.
+
 4. **Verdict each runtime edit**: `warranted` | `unnecessary` |
    `needs-redesign`. A verdict of `unnecessary` is a **retroactive freeze for
    this run**: revert the edit and require the package to be expressed without
@@ -156,9 +165,9 @@ whether the package is right. Budget your effort here:
 - At each measured width, **unreviewed divergence at or below 30% of compared
   files** — equivalently, reference agreement plus accepted reviews at or above
   70%. Agreement, accepted, stale, unreviewed, and excluded remain separate
-  numbers; do not call agreement and accepted review the same thing, and do
-  not put excluded files back in the denominator. Any stale review is a hard
-  failure regardless of the percentage.
+  numbers; do not call agreement and accepted review the same thing, and do not
+  put excluded files back in the denominator. Any stale review is a hard failure
+  regardless of the percentage.
 - **Width is a measure, not a gate**, and it is comparative. The scorer prints
   the reference's own overflow count; references overrun their own width, taplo
   included. Do not reject a package for matching its reference's overflow. A

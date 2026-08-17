@@ -6,7 +6,7 @@ language that could not express something without it.**
 
 Every entry is a decision waiting to be made, and the decision is always the
 same shape — _add this and the runtime grows; leave it out and these files never
-agree with their reference._ Neither answer is automatically right. A 20 KB
+agree with their reference._ Neither answer is automatically right. A 25 KiB
 budget and two hand-written runtimes are the reason the second answer is
 allowed.
 
@@ -126,7 +126,7 @@ assuming opt-in meant inert.
 **What it costs:** runtime **10,680 → 13,307 B, +2,627 B**. The floor is about
 2,400 B — measured, not guessed: deleting two of the three quote-aware scanners
 outright saves only 255 gzip bytes, because gzip already deduplicates
-near-identical text. That is **13% of the 20 KB budget for one language**, with
+near-identical text. That is **13% of the 25 KiB budget for one language**, with
 nine still to onboard.
 
 **What it did not cost:** the layout algorithm, and this is where the entry was
@@ -377,7 +377,7 @@ With: one space after each operand. Without: `bb     |` / `cccccc |`.
 Reviewed policy by policy against the table above. Dave's read: **block comments
 and continuation lines are the two he would drop** — and the saving is too small
 to be worth it. Together they are **137 B of 2,593 B**, about 5% of the pass and
-0.7% of the 20 KB budget, against 88 real GOROOT files.
+0.7% of the 25 KiB budget, against 88 real GOROOT files.
 
 That is the right conclusion for a reason the table makes plain: **the rows do
 not sum.** The eight policies total 555 B while the whole pass is 2,593 B,
@@ -425,7 +425,7 @@ explicitly Go-specific post-pass; **decline** sibling-width alignment as an IR
 capability; and refuse the same trade for the second language that asks. TOML's
 three comment-column divergences and Rust's two stay accepted — at ~2,400 B per
 language-specific mode, the second is unaffordable and the third absurd. The
-table above is the trimming order if the 20 KB budget forces a cut inside the Go
+table above is the trimming order if the 25 KiB budget forces a cut inside the Go
 pass rather than of it.
 
 ## 2. Ancestor break context
@@ -1239,18 +1239,74 @@ comparison; the general case is a different and much larger decision that only
 **Decide when:** (a) with `fill` (entry 8), which touches the same fit
 machinery. (b) when a second language wants it.
 
-## 16. A 16-file corpus cannot see a 14%-of-the-world bug
+## 16. Nothing discovers a case the corpus does not already contain
 
-**Status:** open, **methodological** · **Cost:** a harness gate · **Languages:**
-Go, but the lesson is not language-specific
+**Status:** open, **methodological** · **Cost:** one ledger verdict, plus
+per-language probe corpora · **Languages:** Go found it; the lesson is not
+language-specific
 
-This came out of the alignment spike and it is about **this register's own
-evidence**, so it outranks most of what is above it.
+This one is about **this register's own evidence**, so it outranks most of what
+is above it.
 
-The spike built a fixpoint probe: feed **4,814 gofmt-clean non-test GOROOT
-files** through the alignment pass alone. Because the input is already gofmt
-output, _any_ change is a disagreement with gofmt — no false positives, no
-judgement calls.
+### The model this exercise is actually running
+
+Dave's statement of it (2026-08-17), which the harness already implements more
+of than it looked:
+
+> _"a series of real snippets that (1) show the formatter working as expected,
+> (2) show aspects that differ from the canonical formatter — (a) in a way that
+> we want it to differ, (b) in a way we've accepted as a complexity tradeoff,
+> although we wish it would be better. Every time we change the base model we
+> run the tests again. If any snapshot for 1 or 2a changes, that is a bug. If a
+> 2b snapshot changes, we analyse critically to see if it has made things
+> worse."_
+
+The corpus **is** that snapshot set, and the review ledger **is** the
+classification. The snapshot property is already exact: a record's
+`hash = sha256(our_output + reference_output)`, so any change to either side
+marks it `stale`, and `stale > 0` fails the scorer
+([`harness/score.py:127`](../../harness/score.py)). Nothing silently drifts.
+
+The mapping, and where it is short:
+
+| Dave's class                        | how the harness records it           | state          |
+| ----------------------------------- | ------------------------------------ | -------------- |
+| **1** — works as expected           | agrees with the reference; no record | complete       |
+| **2a** — we differ, and we're right | `reference-quirk`                    | **incomplete** |
+| **2b** — accepted tradeoff          | `design-limit`, `package-bug`        | complete       |
+
+**Class 2a has only half a verdict.** `reference-quirk` says _the reference is
+being arbitrary_. It has nowhere to put the other and more common 2a claim: _the
+reference is defensible and we chose differently anyway, for readability or
+cross-language consistency._ Stage D's own brief asks reviewers to judge exactly
+that — "does the difference improve readability or cross-language consistency
+enough to justify a house rule" — and then offers no verdict named for the
+answer.
+
+The gap is about to bind. Alignment is in **because it reads better**, not
+because gofmt does it (`LEDGER.md`, 2026-08-17). The moment it is turned on for
+a language whose reference does not align, every affected file is a deliberate
+2a divergence, and today it would have to be filed as a `design-limit` (wrong —
+nothing failed) or a `reference-quirk` (wrong — prettier is not being
+arbitrary).
+
+**The fix is one verdict: `house-rule`.** Add it to `review_formatter.py`'s
+`--verdict` choices and to the stage-D brief. It costs nothing at runtime and it
+is the difference between a register that records _what we cannot do_ and one
+that also records _what we chose_.
+
+A second, smaller gap: **staleness is uniform across all three classes.** A 2a
+snapshot changing is a bug; a 2b snapshot changing wants judgement. Both produce
+the same `stale` count and the same re-approval command. Treating them alike is
+the safe default and not worth changing until the noise is real — but it should
+be a deliberate choice rather than an accident of the schema.
+
+### Class 1 is where the corpus goes blind, and the number is not small
+
+The alignment spike built a **fixpoint probe**: feed 4,814 gofmt-clean non-test
+GOROOT files through our alignment pass. The input is already gofmt output, so
+_any_ change is by construction a disagreement — no hand-written expectations,
+no false positives, no judgement calls.
 
 | version                                                          | real files mangled      |
 | ---------------------------------------------------------------- | ----------------------- |
@@ -1260,43 +1316,63 @@ judgement calls.
 | + block comments, `}{` closers, tag/comment slot                 | 49 = 1.02%              |
 | + continuation lines are not siblings                            | **10 = 0.21%**          |
 
-> **All 16 Go corpus files are clean at every single row of that table.** The
-> version that mangles one real Go file in seven scores exactly the same
-> **12/16** as the final one.
+> **All 16 Go corpus files are clean at every row of that table.** The version
+> that mangles one real Go file in seven scores exactly the same **12/16** as
+> the final one.
 
-The corpus is not bad — it was reviewed twice and it is the reason six alignment
-divergences were found and priced at all. It simply cannot see this _class_ of
-bug, because a hand-written 16-file corpus has no way to contain the long tail
-of shapes that a language's real code contains.
+The corpus is not bad. It was reviewed twice and it is the reason six alignment
+divergences were found and priced at all. It cannot see this _class_ of bug
+because 16 hand-written files cannot contain the long tail of shapes real code
+contains — and the missing cases are all class 1, the class with no ledger row
+to go stale.
 
-### What this does and does not undermine
+So agreement is sound as a measure of **whether a capability is needed** — six
+diverging files was a real signal and it was right. It is unsound as a measure
+of **whether an implementation is correct**, and this exercise has been using
+one number for both.
 
-It does **not** undermine agreement as a measure of _whether a capability is
-needed_. Six files diverging on alignment is a real signal and it was right.
+### The probe is a source of snapshots, not a pass/fail gate
 
-It **does** undermine agreement as a measure of _whether an implementation is
-correct_. Those are different questions and this exercise has been using one
-number for both.
+This is the part worth getting right, and it is Dave's framing rather than the
+one this entry was first written with:
 
-### The fix, and why it should be a gate
+> _"we pull code from GitHub, format it with the canonical formatter, look for
+> differences, and see if they classify into the three classes above. If not, we
+> add a new mini sample to exercise that case and decide whether to address it
+> (class 1) or leave it in 2a or 2b."_
 
-A fixpoint probe is cheap and unusually sharp: take a large sample of files the
-reference has already formatted, run our formatter, and diff. Idempotence of the
-reference makes every difference a real defect. It needs no hand-written
-expectations and no review.
+The probe's output is therefore a **queue of candidate corpus files**, and its
+error count is a discovery rate, not a score. A file it flags is not yet a
+failure — it is a shape nobody has classified. The decision about that shape is
+still a human one, and the durable artefact is the small file added to the
+corpus, not the probe run.
 
-The spike's probe was a throwaway script in `/tmp`. It is now
-`harness/probe_alignment.py` (not a gate: it needs a Go toolchain and GOROOT).
-`--align-only` reproduces the 10 / 4814 (0.21%) headline. Whether it becomes a
-gate with a vendored sample is still open; the corpus still cannot replace it.
+That distinction matters because it changes what the probe must be. As a gate it
+would need a vendored sample, hermetic execution, and a stable threshold — all
+of which we would then be tempted to tune. As a discovery tool it needs none of
+that: it can be slow, external, non-hermetic, and run when someone asks.
 
-Worth asking whether every language should have one. Most references are
-idempotent, and most languages have a large corpus lying around — `node_modules`
-for prettier languages, the standard library for Go and Python. The cost is
-repository weight and runtime, not design.
+`harness/probe_alignment.py` is the first instance (`--align-only` reproduces 10
+/ 4814). It is deliberately **not** wired into `test.sh`: it needs a Go
+toolchain and a GOROOT checkout.
 
-**Decide when:** with the alignment decision, since the Go probe is the first
-instance and the two ship together.
+### What is still open
+
+- **Minting the samples.** The probe reports counts and diffs; nothing turns a
+  flagged file into a reduced corpus entry. That reduction — from a 400-line
+  GOROOT file to five lines — is currently manual and is the real cost of the
+  loop.
+- **Per-language probes.** Most references are idempotent and most languages
+  have a large corpus lying around: `node_modules` for the prettier languages,
+  the standard library for Go and Python, crates.io for Rust. The cost is
+  repository weight and wall-clock, not design.
+- **Whether class 1 deserves a stricter check than 2a/2b.** Under Dave's model
+  it does; under the current schema it gets a weaker one, because class 1 has no
+  record at all.
+
+**Decide now:** the `house-rule` verdict, before alignment reaches a
+non-aligning language. **Decide later:** per-language probes, when a second
+language's implementation-correctness is in question.
 
 ---
 

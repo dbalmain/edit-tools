@@ -25,9 +25,24 @@ outputs and unified diff, then approve that exact record:
 ```
 
 Use `--json` on the first command for the machine-readable records consumed by
-the future HTML review surface. Formatter verdicts are `design-limit`,
-`package-bug`, or `reference-quirk`; they are stored with spaces to match the
-stage-C vocabulary.
+the future HTML review surface. They are stored with spaces to match the stage-C
+vocabulary.
+
+Four formatter verdicts, in two pairs. Two say **we could not**:
+
+- `design-limit` — the IR cannot express the reference's layout.
+- `package-bug` — it could, and this package gets it wrong.
+
+Two say **we chose not to**:
+
+- `reference-quirk` — the reference is being arbitrary here.
+- `house-rule` — the reference is defensible and we differ anyway, for
+  readability or cross-language consistency. State which, and why, in
+  `--reason`; "it looks better" is not a reason.
+
+The split is not cosmetic. A `house-rule` output changing is a regression in
+something we decided on purpose; a `design-limit` output changing may just be
+the limit moving. See FINDINGS entry 16.
 
 Highlight goldens use the existing scorer as the approval path. Updating and
 reviewing are deliberately separate commands:
@@ -54,9 +69,9 @@ rather than re-judged:
 ```
 
 That refuses to run while the case is still a divergence, which is the whole
-safety property: a record may only be dropped when what it described is gone.
-A divergence that merely moved must be re-judged with `--approve` -- deleting
-one is exactly the failure the content hash exists to catch. The 70% coverage result for
-unreviewed items is printed as the stage-D merge threshold; it is not one of
+safety property: a record may only be dropped when what it described is gone. A
+divergence that merely moved must be re-judged with `--approve` -- deleting one
+is exactly the failure the content hash exists to catch. The 70% coverage result
+for unreviewed items is printed as the stage-D merge threshold; it is not one of
 the scorer's numbered correctness gates. This keeps an unreviewed baseline
 honest without inventing signatures for it.
