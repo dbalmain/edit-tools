@@ -20,6 +20,13 @@ if ( x ){ y=1 }else{ y=2 }
 
 const trailingSpaces = 1       // lots of spaces before this comment
 
+const beforeGap = 1;
+
+
+
+
+const afterGap = 2;
+
 function indented() {
 		const n = 0;
 		if (n === 0) {

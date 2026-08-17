@@ -16,6 +16,17 @@ const methods = {
   },
 };
 
+// objectWrap defaults to "preserve": an object whose source has a line break
+// after `{` stays expanded even when it would fit flat. The array below is the
+// control -- arrays have no such rule and collapse.
+const preservedBySource = {
+  alpha: 1, beta: 2
+};
+
+const collapsedBySource = [
+  1, 2, 3
+];
+
 const spread = { ...base, ...override, extra: true };
 
 const nested = { outer: { inner: { deep: [1, 2, 3] } }, list: [4, 5, 6] };
