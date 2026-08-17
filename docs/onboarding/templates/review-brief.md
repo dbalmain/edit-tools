@@ -63,15 +63,35 @@ Check, in roughly this order of importance:
 8. **What did the builder change outside `corpus/` and `harness/languages/`?**
    Every such edit needs a reason. Edits to `rust/` or `runtime-js/` at stage A
    are a strong smell.
-9. **Which of the reference's behaviours are off by default?** A reference with
-   a documented option that _disables_ a behaviour tells you something the
-   corpus cannot: what the reference chose not to do. rustfmt's
-   `struct_field_align_threshold` and `enum_discrim_align_threshold` both
-   default to `0`, which is the entire reason `alignment: "go"` does not
-   transfer to Rust (FINDINGS 18) — and observing the output alone would only
-   have shown their absence, never that they were deliberate. List them; a
-   reference with none is a valid answer.
-10. **Are incomparable files dedicated?** Every `[incomparable]` entry must name
+9. **List the reference's options and their defaults.** Not what it does — what
+   it _chose_, which the output cannot tell you. Two shapes, and the second is
+   the one that bites:
+
+   - **A behaviour that is off by default.** rustfmt's
+     `struct_field_align_threshold` and `enum_discrim_align_threshold` both
+     default to `0`, which is the entire reason `alignment: "go"` does not
+     transfer to Rust (FINDINGS 18). Output alone shows their absence, never
+     that the absence was deliberate.
+   - **A behaviour that is on by default, whose _off_ setting is what a naive
+     package would implement.** Call these out specifically. prettier's
+     `objectWrap` defaults to `preserve`: an object literal whose source has a
+     newline after `{` stays expanded **even when it fits flat**. The
+     alternative, `collapse`, is exactly what a plain width-driven `group` does
+     — so a package can model objects as a group, pass the whole corpus, and
+     diverge on real input. A preserved break and a width-driven break are the
+     same bytes, so no diff and no count can separate them.
+
+   Above all, flag **any default that makes layout depend on the input's line
+   breaks rather than on width alone.** The runtime has `srcline`, `srcsoft` and
+   `srctrail` for that, and stage C needs to know it must reach for them. A
+   reference with no such options is a valid answer.
+
+10. **Does every normalisation the report claims have a corpus file forcing
+    it?** Run the report-to-corpus direction, which nothing else checks.
+    `corpus_stats.py` passing is a floor, not a probe audit: JavaScript's stage
+    B added two missing probes and **all four counts stayed identical**, because
+    both were width-insensitive rewrites. Counting cannot see them.
+11. **Are incomparable files dedicated?** Every `[incomparable]` entry must name
     a file that exists, give a non-empty reason, and contain **only** the
     excluded construct. Mixing in otherwise comparable constructs hides them
     from the agreement denominator; the harness cannot detect that, so this

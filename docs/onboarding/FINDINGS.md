@@ -1682,7 +1682,8 @@ this entry's status is open and its cost is marked **structural**.
 
 ### The decision Dave has
 
-1. **Decline for Rust.** 0 B. Loses 1.4% of real files, 2 of 15 corpus files.
+1. **Decline for Rust.** 0 B. Loses 1.4% of real files, 3 of 16 corpus files
+   (`structs.rs`, `comments.rs`, and the `widths.rs` probe added at stage B).
 2. **`alignment: "rust"`.** 796 B for ~76% of the reachable cases, and a second
    named mode with a third one already foreseeable.
 3. **The `cell` node.** Unpriced, replaces both modes, and is the only option
