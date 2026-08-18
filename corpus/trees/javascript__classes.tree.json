@@ -1,0 +1,1907 @@
+{
+ "language": "javascript",
+ "source_file": "corpus/src/javascript/classes.js",
+ "source": "// Classes: declarations, fields, methods, accessors, inheritance, privacy.\nclass Point {\n  constructor(x, y) {\n    this.x = x;\n    this.y = y;\n  }\n  distance(other) {\n    const dx = this.x - other.x;\n    const dy = this.y - other.y;\n    return Math.sqrt(dx * dx + dy * dy);\n  }\n  get magnitude() {\n    return this.distance(new Point(0, 0));\n  }\n  set coords([x, y]) {\n    this.x = x;\n    this.y = y;\n  }\n  static origin() {\n    return new Point(0, 0);\n  }\n}\n\nclass LabeledPoint extends Point {\n  #label = \"unlabeled\";\n  static #count = 0;\n  constructor(x, y, label) {\n    super(x, y);\n    this.#label = label;\n    LabeledPoint.#count += 1;\n  }\n  describe() {\n    return `${this.#label} at (${this.x}, ${this.y})`;\n  }\n}\n",
+ "root": {
+  "type": "program",
+  "start": 0,
+  "end": 721,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 75,
+    "text": "// Classes: declarations, fields, methods, accessors, inheritance, privacy."
+   },
+   {
+    "type": "class_declaration",
+    "start": 76,
+    "end": 458,
+    "children": [
+     {
+      "type": "class",
+      "start": 76,
+      "end": 81,
+      "text": "class"
+     },
+     {
+      "type": "identifier",
+      "start": 82,
+      "end": 87,
+      "field": "name",
+      "text": "Point"
+     },
+     {
+      "type": "class_body",
+      "start": 88,
+      "end": 458,
+      "field": "body",
+      "children": [
+       {
+        "type": "{",
+        "start": 88,
+        "end": 89,
+        "text": "{"
+       },
+       {
+        "type": "method_definition",
+        "start": 92,
+        "end": 147,
+        "field": "member",
+        "children": [
+         {
+          "type": "property_identifier",
+          "start": 92,
+          "end": 103,
+          "field": "name",
+          "text": "constructor"
+         },
+         {
+          "type": "formal_parameters",
+          "start": 103,
+          "end": 109,
+          "field": "parameters",
+          "children": [
+           {
+            "type": "(",
+            "start": 103,
+            "end": 104,
+            "text": "("
+           },
+           {
+            "type": "identifier",
+            "start": 104,
+            "end": 105,
+            "text": "x"
+           },
+           {
+            "type": ",",
+            "start": 105,
+            "end": 106,
+            "text": ","
+           },
+           {
+            "type": "identifier",
+            "start": 107,
+            "end": 108,
+            "text": "y"
+           },
+           {
+            "type": ")",
+            "start": 108,
+            "end": 109,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": "statement_block",
+          "start": 110,
+          "end": 147,
+          "field": "body",
+          "children": [
+           {
+            "type": "{",
+            "start": 110,
+            "end": 111,
+            "text": "{"
+           },
+           {
+            "type": "expression_statement",
+            "start": 116,
+            "end": 127,
+            "children": [
+             {
+              "type": "assignment_expression",
+              "start": 116,
+              "end": 126,
+              "children": [
+               {
+                "type": "member_expression",
+                "start": 116,
+                "end": 122,
+                "field": "left",
+                "children": [
+                 {
+                  "type": "this",
+                  "start": 116,
+                  "end": 120,
+                  "field": "object",
+                  "text": "this"
+                 },
+                 {
+                  "type": ".",
+                  "start": 120,
+                  "end": 121,
+                  "text": "."
+                 },
+                 {
+                  "type": "property_identifier",
+                  "start": 121,
+                  "end": 122,
+                  "field": "property",
+                  "text": "x"
+                 }
+                ]
+               },
+               {
+                "type": "=",
+                "start": 123,
+                "end": 124,
+                "text": "="
+               },
+               {
+                "type": "identifier",
+                "start": 125,
+                "end": 126,
+                "field": "right",
+                "text": "x"
+               }
+              ]
+             },
+             {
+              "type": ";",
+              "start": 126,
+              "end": 127,
+              "text": ";"
+             }
+            ]
+           },
+           {
+            "type": "expression_statement",
+            "start": 132,
+            "end": 143,
+            "children": [
+             {
+              "type": "assignment_expression",
+              "start": 132,
+              "end": 142,
+              "children": [
+               {
+                "type": "member_expression",
+                "start": 132,
+                "end": 138,
+                "field": "left",
+                "children": [
+                 {
+                  "type": "this",
+                  "start": 132,
+                  "end": 136,
+                  "field": "object",
+                  "text": "this"
+                 },
+                 {
+                  "type": ".",
+                  "start": 136,
+                  "end": 137,
+                  "text": "."
+                 },
+                 {
+                  "type": "property_identifier",
+                  "start": 137,
+                  "end": 138,
+                  "field": "property",
+                  "text": "y"
+                 }
+                ]
+               },
+               {
+                "type": "=",
+                "start": 139,
+                "end": 140,
+                "text": "="
+               },
+               {
+                "type": "identifier",
+                "start": 141,
+                "end": 142,
+                "field": "right",
+                "text": "y"
+               }
+              ]
+             },
+             {
+              "type": ";",
+              "start": 142,
+              "end": 143,
+              "text": ";"
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 146,
+            "end": 147,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "method_definition",
+        "start": 150,
+        "end": 278,
+        "field": "member",
+        "children": [
+         {
+          "type": "property_identifier",
+          "start": 150,
+          "end": 158,
+          "field": "name",
+          "text": "distance"
+         },
+         {
+          "type": "formal_parameters",
+          "start": 158,
+          "end": 165,
+          "field": "parameters",
+          "children": [
+           {
+            "type": "(",
+            "start": 158,
+            "end": 159,
+            "text": "("
+           },
+           {
+            "type": "identifier",
+            "start": 159,
+            "end": 164,
+            "text": "other"
+           },
+           {
+            "type": ")",
+            "start": 164,
+            "end": 165,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": "statement_block",
+          "start": 166,
+          "end": 278,
+          "field": "body",
+          "children": [
+           {
+            "type": "{",
+            "start": 166,
+            "end": 167,
+            "text": "{"
+           },
+           {
+            "type": "lexical_declaration",
+            "start": 172,
+            "end": 200,
+            "children": [
+             {
+              "type": "const",
+              "start": 172,
+              "end": 177,
+              "field": "kind",
+              "text": "const"
+             },
+             {
+              "type": "variable_declarator",
+              "start": 178,
+              "end": 199,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 178,
+                "end": 180,
+                "field": "name",
+                "text": "dx"
+               },
+               {
+                "type": "=",
+                "start": 181,
+                "end": 182,
+                "text": "="
+               },
+               {
+                "type": "binary_expression",
+                "start": 183,
+                "end": 199,
+                "field": "value",
+                "children": [
+                 {
+                  "type": "member_expression",
+                  "start": 183,
+                  "end": 189,
+                  "field": "left",
+                  "children": [
+                   {
+                    "type": "this",
+                    "start": 183,
+                    "end": 187,
+                    "field": "object",
+                    "text": "this"
+                   },
+                   {
+                    "type": ".",
+                    "start": 187,
+                    "end": 188,
+                    "text": "."
+                   },
+                   {
+                    "type": "property_identifier",
+                    "start": 188,
+                    "end": 189,
+                    "field": "property",
+                    "text": "x"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "-",
+                  "start": 190,
+                  "end": 191,
+                  "field": "operator",
+                  "text": "-"
+                 },
+                 {
+                  "type": "member_expression",
+                  "start": 192,
+                  "end": 199,
+                  "field": "right",
+                  "children": [
+                   {
+                    "type": "identifier",
+                    "start": 192,
+                    "end": 197,
+                    "field": "object",
+                    "text": "other"
+                   },
+                   {
+                    "type": ".",
+                    "start": 197,
+                    "end": 198,
+                    "text": "."
+                   },
+                   {
+                    "type": "property_identifier",
+                    "start": 198,
+                    "end": 199,
+                    "field": "property",
+                    "text": "x"
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ";",
+              "start": 199,
+              "end": 200,
+              "text": ";"
+             }
+            ]
+           },
+           {
+            "type": "lexical_declaration",
+            "start": 205,
+            "end": 233,
+            "children": [
+             {
+              "type": "const",
+              "start": 205,
+              "end": 210,
+              "field": "kind",
+              "text": "const"
+             },
+             {
+              "type": "variable_declarator",
+              "start": 211,
+              "end": 232,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 211,
+                "end": 213,
+                "field": "name",
+                "text": "dy"
+               },
+               {
+                "type": "=",
+                "start": 214,
+                "end": 215,
+                "text": "="
+               },
+               {
+                "type": "binary_expression",
+                "start": 216,
+                "end": 232,
+                "field": "value",
+                "children": [
+                 {
+                  "type": "member_expression",
+                  "start": 216,
+                  "end": 222,
+                  "field": "left",
+                  "children": [
+                   {
+                    "type": "this",
+                    "start": 216,
+                    "end": 220,
+                    "field": "object",
+                    "text": "this"
+                   },
+                   {
+                    "type": ".",
+                    "start": 220,
+                    "end": 221,
+                    "text": "."
+                   },
+                   {
+                    "type": "property_identifier",
+                    "start": 221,
+                    "end": 222,
+                    "field": "property",
+                    "text": "y"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "-",
+                  "start": 223,
+                  "end": 224,
+                  "field": "operator",
+                  "text": "-"
+                 },
+                 {
+                  "type": "member_expression",
+                  "start": 225,
+                  "end": 232,
+                  "field": "right",
+                  "children": [
+                   {
+                    "type": "identifier",
+                    "start": 225,
+                    "end": 230,
+                    "field": "object",
+                    "text": "other"
+                   },
+                   {
+                    "type": ".",
+                    "start": 230,
+                    "end": 231,
+                    "text": "."
+                   },
+                   {
+                    "type": "property_identifier",
+                    "start": 231,
+                    "end": 232,
+                    "field": "property",
+                    "text": "y"
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ";",
+              "start": 232,
+              "end": 233,
+              "text": ";"
+             }
+            ]
+           },
+           {
+            "type": "return_statement",
+            "start": 238,
+            "end": 274,
+            "children": [
+             {
+              "type": "return",
+              "start": 238,
+              "end": 244,
+              "text": "return"
+             },
+             {
+              "type": "call_expression",
+              "start": 245,
+              "end": 273,
+              "children": [
+               {
+                "type": "member_expression",
+                "start": 245,
+                "end": 254,
+                "field": "function",
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 245,
+                  "end": 249,
+                  "field": "object",
+                  "text": "Math"
+                 },
+                 {
+                  "type": ".",
+                  "start": 249,
+                  "end": 250,
+                  "text": "."
+                 },
+                 {
+                  "type": "property_identifier",
+                  "start": 250,
+                  "end": 254,
+                  "field": "property",
+                  "text": "sqrt"
+                 }
+                ]
+               },
+               {
+                "type": "arguments",
+                "start": 254,
+                "end": 273,
+                "field": "arguments",
+                "children": [
+                 {
+                  "type": "(",
+                  "start": 254,
+                  "end": 255,
+                  "text": "("
+                 },
+                 {
+                  "type": "binary_expression",
+                  "start": 255,
+                  "end": 272,
+                  "children": [
+                   {
+                    "type": "binary_expression",
+                    "start": 255,
+                    "end": 262,
+                    "field": "left",
+                    "children": [
+                     {
+                      "type": "identifier",
+                      "start": 255,
+                      "end": 257,
+                      "field": "left",
+                      "text": "dx"
+                     },
+                     {
+                      "type": "*",
+                      "start": 258,
+                      "end": 259,
+                      "field": "operator",
+                      "text": "*"
+                     },
+                     {
+                      "type": "identifier",
+                      "start": 260,
+                      "end": 262,
+                      "field": "right",
+                      "text": "dx"
+                     }
+                    ]
+                   },
+                   {
+                    "type": "+",
+                    "start": 263,
+                    "end": 264,
+                    "field": "operator",
+                    "text": "+"
+                   },
+                   {
+                    "type": "binary_expression",
+                    "start": 265,
+                    "end": 272,
+                    "field": "right",
+                    "children": [
+                     {
+                      "type": "identifier",
+                      "start": 265,
+                      "end": 267,
+                      "field": "left",
+                      "text": "dy"
+                     },
+                     {
+                      "type": "*",
+                      "start": 268,
+                      "end": 269,
+                      "field": "operator",
+                      "text": "*"
+                     },
+                     {
+                      "type": "identifier",
+                      "start": 270,
+                      "end": 272,
+                      "field": "right",
+                      "text": "dy"
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 {
+                  "type": ")",
+                  "start": 272,
+                  "end": 273,
+                  "text": ")"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ";",
+              "start": 273,
+              "end": 274,
+              "text": ";"
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 277,
+            "end": 278,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "method_definition",
+        "start": 281,
+        "end": 345,
+        "field": "member",
+        "children": [
+         {
+          "type": "get",
+          "start": 281,
+          "end": 284,
+          "text": "get"
+         },
+         {
+          "type": "property_identifier",
+          "start": 285,
+          "end": 294,
+          "field": "name",
+          "text": "magnitude"
+         },
+         {
+          "type": "formal_parameters",
+          "start": 294,
+          "end": 296,
+          "field": "parameters",
+          "children": [
+           {
+            "type": "(",
+            "start": 294,
+            "end": 295,
+            "text": "("
+           },
+           {
+            "type": ")",
+            "start": 295,
+            "end": 296,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": "statement_block",
+          "start": 297,
+          "end": 345,
+          "field": "body",
+          "children": [
+           {
+            "type": "{",
+            "start": 297,
+            "end": 298,
+            "text": "{"
+           },
+           {
+            "type": "return_statement",
+            "start": 303,
+            "end": 341,
+            "children": [
+             {
+              "type": "return",
+              "start": 303,
+              "end": 309,
+              "text": "return"
+             },
+             {
+              "type": "call_expression",
+              "start": 310,
+              "end": 340,
+              "children": [
+               {
+                "type": "member_expression",
+                "start": 310,
+                "end": 323,
+                "field": "function",
+                "children": [
+                 {
+                  "type": "this",
+                  "start": 310,
+                  "end": 314,
+                  "field": "object",
+                  "text": "this"
+                 },
+                 {
+                  "type": ".",
+                  "start": 314,
+                  "end": 315,
+                  "text": "."
+                 },
+                 {
+                  "type": "property_identifier",
+                  "start": 315,
+                  "end": 323,
+                  "field": "property",
+                  "text": "distance"
+                 }
+                ]
+               },
+               {
+                "type": "arguments",
+                "start": 323,
+                "end": 340,
+                "field": "arguments",
+                "children": [
+                 {
+                  "type": "(",
+                  "start": 323,
+                  "end": 324,
+                  "text": "("
+                 },
+                 {
+                  "type": "new_expression",
+                  "start": 324,
+                  "end": 339,
+                  "children": [
+                   {
+                    "type": "new",
+                    "start": 324,
+                    "end": 327,
+                    "text": "new"
+                   },
+                   {
+                    "type": "identifier",
+                    "start": 328,
+                    "end": 333,
+                    "field": "constructor",
+                    "text": "Point"
+                   },
+                   {
+                    "type": "arguments",
+                    "start": 333,
+                    "end": 339,
+                    "field": "arguments",
+                    "children": [
+                     {
+                      "type": "(",
+                      "start": 333,
+                      "end": 334,
+                      "text": "("
+                     },
+                     {
+                      "type": "number",
+                      "start": 334,
+                      "end": 335,
+                      "text": "0"
+                     },
+                     {
+                      "type": ",",
+                      "start": 335,
+                      "end": 336,
+                      "text": ","
+                     },
+                     {
+                      "type": "number",
+                      "start": 337,
+                      "end": 338,
+                      "text": "0"
+                     },
+                     {
+                      "type": ")",
+                      "start": 338,
+                      "end": 339,
+                      "text": ")"
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 {
+                  "type": ")",
+                  "start": 339,
+                  "end": 340,
+                  "text": ")"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ";",
+              "start": 340,
+              "end": 341,
+              "text": ";"
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 344,
+            "end": 345,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "method_definition",
+        "start": 348,
+        "end": 404,
+        "field": "member",
+        "children": [
+         {
+          "type": "set",
+          "start": 348,
+          "end": 351,
+          "text": "set"
+         },
+         {
+          "type": "property_identifier",
+          "start": 352,
+          "end": 358,
+          "field": "name",
+          "text": "coords"
+         },
+         {
+          "type": "formal_parameters",
+          "start": 358,
+          "end": 366,
+          "field": "parameters",
+          "children": [
+           {
+            "type": "(",
+            "start": 358,
+            "end": 359,
+            "text": "("
+           },
+           {
+            "type": "array_pattern",
+            "start": 359,
+            "end": 365,
+            "children": [
+             {
+              "type": "[",
+              "start": 359,
+              "end": 360,
+              "text": "["
+             },
+             {
+              "type": "identifier",
+              "start": 360,
+              "end": 361,
+              "text": "x"
+             },
+             {
+              "type": ",",
+              "start": 361,
+              "end": 362,
+              "text": ","
+             },
+             {
+              "type": "identifier",
+              "start": 363,
+              "end": 364,
+              "text": "y"
+             },
+             {
+              "type": "]",
+              "start": 364,
+              "end": 365,
+              "text": "]"
+             }
+            ]
+           },
+           {
+            "type": ")",
+            "start": 365,
+            "end": 366,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": "statement_block",
+          "start": 367,
+          "end": 404,
+          "field": "body",
+          "children": [
+           {
+            "type": "{",
+            "start": 367,
+            "end": 368,
+            "text": "{"
+           },
+           {
+            "type": "expression_statement",
+            "start": 373,
+            "end": 384,
+            "children": [
+             {
+              "type": "assignment_expression",
+              "start": 373,
+              "end": 383,
+              "children": [
+               {
+                "type": "member_expression",
+                "start": 373,
+                "end": 379,
+                "field": "left",
+                "children": [
+                 {
+                  "type": "this",
+                  "start": 373,
+                  "end": 377,
+                  "field": "object",
+                  "text": "this"
+                 },
+                 {
+                  "type": ".",
+                  "start": 377,
+                  "end": 378,
+                  "text": "."
+                 },
+                 {
+                  "type": "property_identifier",
+                  "start": 378,
+                  "end": 379,
+                  "field": "property",
+                  "text": "x"
+                 }
+                ]
+               },
+               {
+                "type": "=",
+                "start": 380,
+                "end": 381,
+                "text": "="
+               },
+               {
+                "type": "identifier",
+                "start": 382,
+                "end": 383,
+                "field": "right",
+                "text": "x"
+               }
+              ]
+             },
+             {
+              "type": ";",
+              "start": 383,
+              "end": 384,
+              "text": ";"
+             }
+            ]
+           },
+           {
+            "type": "expression_statement",
+            "start": 389,
+            "end": 400,
+            "children": [
+             {
+              "type": "assignment_expression",
+              "start": 389,
+              "end": 399,
+              "children": [
+               {
+                "type": "member_expression",
+                "start": 389,
+                "end": 395,
+                "field": "left",
+                "children": [
+                 {
+                  "type": "this",
+                  "start": 389,
+                  "end": 393,
+                  "field": "object",
+                  "text": "this"
+                 },
+                 {
+                  "type": ".",
+                  "start": 393,
+                  "end": 394,
+                  "text": "."
+                 },
+                 {
+                  "type": "property_identifier",
+                  "start": 394,
+                  "end": 395,
+                  "field": "property",
+                  "text": "y"
+                 }
+                ]
+               },
+               {
+                "type": "=",
+                "start": 396,
+                "end": 397,
+                "text": "="
+               },
+               {
+                "type": "identifier",
+                "start": 398,
+                "end": 399,
+                "field": "right",
+                "text": "y"
+               }
+              ]
+             },
+             {
+              "type": ";",
+              "start": 399,
+              "end": 400,
+              "text": ";"
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 403,
+            "end": 404,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "method_definition",
+        "start": 407,
+        "end": 456,
+        "field": "member",
+        "children": [
+         {
+          "type": "static",
+          "start": 407,
+          "end": 413,
+          "text": "static"
+         },
+         {
+          "type": "property_identifier",
+          "start": 414,
+          "end": 420,
+          "field": "name",
+          "text": "origin"
+         },
+         {
+          "type": "formal_parameters",
+          "start": 420,
+          "end": 422,
+          "field": "parameters",
+          "children": [
+           {
+            "type": "(",
+            "start": 420,
+            "end": 421,
+            "text": "("
+           },
+           {
+            "type": ")",
+            "start": 421,
+            "end": 422,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": "statement_block",
+          "start": 423,
+          "end": 456,
+          "field": "body",
+          "children": [
+           {
+            "type": "{",
+            "start": 423,
+            "end": 424,
+            "text": "{"
+           },
+           {
+            "type": "return_statement",
+            "start": 429,
+            "end": 452,
+            "children": [
+             {
+              "type": "return",
+              "start": 429,
+              "end": 435,
+              "text": "return"
+             },
+             {
+              "type": "new_expression",
+              "start": 436,
+              "end": 451,
+              "children": [
+               {
+                "type": "new",
+                "start": 436,
+                "end": 439,
+                "text": "new"
+               },
+               {
+                "type": "identifier",
+                "start": 440,
+                "end": 445,
+                "field": "constructor",
+                "text": "Point"
+               },
+               {
+                "type": "arguments",
+                "start": 445,
+                "end": 451,
+                "field": "arguments",
+                "children": [
+                 {
+                  "type": "(",
+                  "start": 445,
+                  "end": 446,
+                  "text": "("
+                 },
+                 {
+                  "type": "number",
+                  "start": 446,
+                  "end": 447,
+                  "text": "0"
+                 },
+                 {
+                  "type": ",",
+                  "start": 447,
+                  "end": 448,
+                  "text": ","
+                 },
+                 {
+                  "type": "number",
+                  "start": 449,
+                  "end": 450,
+                  "text": "0"
+                 },
+                 {
+                  "type": ")",
+                  "start": 450,
+                  "end": 451,
+                  "text": ")"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ";",
+              "start": 451,
+              "end": 452,
+              "text": ";"
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 455,
+            "end": 456,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 457,
+        "end": 458,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "class_declaration",
+    "start": 460,
+    "end": 720,
+    "children": [
+     {
+      "type": "class",
+      "start": 460,
+      "end": 465,
+      "text": "class"
+     },
+     {
+      "type": "identifier",
+      "start": 466,
+      "end": 478,
+      "field": "name",
+      "text": "LabeledPoint"
+     },
+     {
+      "type": "class_heritage",
+      "start": 479,
+      "end": 492,
+      "children": [
+       {
+        "type": "extends",
+        "start": 479,
+        "end": 486,
+        "text": "extends"
+       },
+       {
+        "type": "identifier",
+        "start": 487,
+        "end": 492,
+        "text": "Point"
+       }
+      ]
+     },
+     {
+      "type": "class_body",
+      "start": 493,
+      "end": 720,
+      "field": "body",
+      "children": [
+       {
+        "type": "{",
+        "start": 493,
+        "end": 494,
+        "text": "{"
+       },
+       {
+        "type": "field_definition",
+        "start": 497,
+        "end": 517,
+        "field": "member",
+        "children": [
+         {
+          "type": "private_property_identifier",
+          "start": 497,
+          "end": 503,
+          "field": "property",
+          "text": "#label"
+         },
+         {
+          "type": "=",
+          "start": 504,
+          "end": 505,
+          "text": "="
+         },
+         {
+          "type": "string",
+          "start": 506,
+          "end": 517,
+          "field": "value",
+          "children": [
+           {
+            "type": "\"",
+            "start": 506,
+            "end": 507,
+            "text": "\""
+           },
+           {
+            "type": "string_fragment",
+            "start": 507,
+            "end": 516,
+            "text": "unlabeled"
+           },
+           {
+            "type": "\"",
+            "start": 516,
+            "end": 517,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ";",
+        "start": 517,
+        "end": 518,
+        "text": ";"
+       },
+       {
+        "type": "field_definition",
+        "start": 521,
+        "end": 538,
+        "field": "member",
+        "children": [
+         {
+          "type": "static",
+          "start": 521,
+          "end": 527,
+          "text": "static"
+         },
+         {
+          "type": "private_property_identifier",
+          "start": 528,
+          "end": 534,
+          "field": "property",
+          "text": "#count"
+         },
+         {
+          "type": "=",
+          "start": 535,
+          "end": 536,
+          "text": "="
+         },
+         {
+          "type": "number",
+          "start": 537,
+          "end": 538,
+          "field": "value",
+          "text": "0"
+         }
+        ]
+       },
+       {
+        "type": ";",
+        "start": 538,
+        "end": 539,
+        "text": ";"
+       },
+       {
+        "type": "method_definition",
+        "start": 542,
+        "end": 644,
+        "field": "member",
+        "children": [
+         {
+          "type": "property_identifier",
+          "start": 542,
+          "end": 553,
+          "field": "name",
+          "text": "constructor"
+         },
+         {
+          "type": "formal_parameters",
+          "start": 553,
+          "end": 566,
+          "field": "parameters",
+          "children": [
+           {
+            "type": "(",
+            "start": 553,
+            "end": 554,
+            "text": "("
+           },
+           {
+            "type": "identifier",
+            "start": 554,
+            "end": 555,
+            "text": "x"
+           },
+           {
+            "type": ",",
+            "start": 555,
+            "end": 556,
+            "text": ","
+           },
+           {
+            "type": "identifier",
+            "start": 557,
+            "end": 558,
+            "text": "y"
+           },
+           {
+            "type": ",",
+            "start": 558,
+            "end": 559,
+            "text": ","
+           },
+           {
+            "type": "identifier",
+            "start": 560,
+            "end": 565,
+            "text": "label"
+           },
+           {
+            "type": ")",
+            "start": 565,
+            "end": 566,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": "statement_block",
+          "start": 567,
+          "end": 644,
+          "field": "body",
+          "children": [
+           {
+            "type": "{",
+            "start": 567,
+            "end": 568,
+            "text": "{"
+           },
+           {
+            "type": "expression_statement",
+            "start": 573,
+            "end": 585,
+            "children": [
+             {
+              "type": "call_expression",
+              "start": 573,
+              "end": 584,
+              "children": [
+               {
+                "type": "super",
+                "start": 573,
+                "end": 578,
+                "field": "function",
+                "text": "super"
+               },
+               {
+                "type": "arguments",
+                "start": 578,
+                "end": 584,
+                "field": "arguments",
+                "children": [
+                 {
+                  "type": "(",
+                  "start": 578,
+                  "end": 579,
+                  "text": "("
+                 },
+                 {
+                  "type": "identifier",
+                  "start": 579,
+                  "end": 580,
+                  "text": "x"
+                 },
+                 {
+                  "type": ",",
+                  "start": 580,
+                  "end": 581,
+                  "text": ","
+                 },
+                 {
+                  "type": "identifier",
+                  "start": 582,
+                  "end": 583,
+                  "text": "y"
+                 },
+                 {
+                  "type": ")",
+                  "start": 583,
+                  "end": 584,
+                  "text": ")"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ";",
+              "start": 584,
+              "end": 585,
+              "text": ";"
+             }
+            ]
+           },
+           {
+            "type": "expression_statement",
+            "start": 590,
+            "end": 610,
+            "children": [
+             {
+              "type": "assignment_expression",
+              "start": 590,
+              "end": 609,
+              "children": [
+               {
+                "type": "member_expression",
+                "start": 590,
+                "end": 601,
+                "field": "left",
+                "children": [
+                 {
+                  "type": "this",
+                  "start": 590,
+                  "end": 594,
+                  "field": "object",
+                  "text": "this"
+                 },
+                 {
+                  "type": ".",
+                  "start": 594,
+                  "end": 595,
+                  "text": "."
+                 },
+                 {
+                  "type": "private_property_identifier",
+                  "start": 595,
+                  "end": 601,
+                  "field": "property",
+                  "text": "#label"
+                 }
+                ]
+               },
+               {
+                "type": "=",
+                "start": 602,
+                "end": 603,
+                "text": "="
+               },
+               {
+                "type": "identifier",
+                "start": 604,
+                "end": 609,
+                "field": "right",
+                "text": "label"
+               }
+              ]
+             },
+             {
+              "type": ";",
+              "start": 609,
+              "end": 610,
+              "text": ";"
+             }
+            ]
+           },
+           {
+            "type": "expression_statement",
+            "start": 615,
+            "end": 640,
+            "children": [
+             {
+              "type": "augmented_assignment_expression",
+              "start": 615,
+              "end": 639,
+              "children": [
+               {
+                "type": "member_expression",
+                "start": 615,
+                "end": 634,
+                "field": "left",
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 615,
+                  "end": 627,
+                  "field": "object",
+                  "text": "LabeledPoint"
+                 },
+                 {
+                  "type": ".",
+                  "start": 627,
+                  "end": 628,
+                  "text": "."
+                 },
+                 {
+                  "type": "private_property_identifier",
+                  "start": 628,
+                  "end": 634,
+                  "field": "property",
+                  "text": "#count"
+                 }
+                ]
+               },
+               {
+                "type": "+=",
+                "start": 635,
+                "end": 637,
+                "field": "operator",
+                "text": "+="
+               },
+               {
+                "type": "number",
+                "start": 638,
+                "end": 639,
+                "field": "right",
+                "text": "1"
+               }
+              ]
+             },
+             {
+              "type": ";",
+              "start": 639,
+              "end": 640,
+              "text": ";"
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 643,
+            "end": 644,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "method_definition",
+        "start": 647,
+        "end": 718,
+        "field": "member",
+        "children": [
+         {
+          "type": "property_identifier",
+          "start": 647,
+          "end": 655,
+          "field": "name",
+          "text": "describe"
+         },
+         {
+          "type": "formal_parameters",
+          "start": 655,
+          "end": 657,
+          "field": "parameters",
+          "children": [
+           {
+            "type": "(",
+            "start": 655,
+            "end": 656,
+            "text": "("
+           },
+           {
+            "type": ")",
+            "start": 656,
+            "end": 657,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": "statement_block",
+          "start": 658,
+          "end": 718,
+          "field": "body",
+          "children": [
+           {
+            "type": "{",
+            "start": 658,
+            "end": 659,
+            "text": "{"
+           },
+           {
+            "type": "return_statement",
+            "start": 664,
+            "end": 714,
+            "children": [
+             {
+              "type": "return",
+              "start": 664,
+              "end": 670,
+              "text": "return"
+             },
+             {
+              "type": "template_string",
+              "start": 671,
+              "end": 713,
+              "children": [
+               {
+                "type": "`",
+                "start": 671,
+                "end": 672,
+                "text": "`"
+               },
+               {
+                "type": "template_substitution",
+                "start": 672,
+                "end": 686,
+                "children": [
+                 {
+                  "type": "${",
+                  "start": 672,
+                  "end": 674,
+                  "text": "${"
+                 },
+                 {
+                  "type": "member_expression",
+                  "start": 674,
+                  "end": 685,
+                  "children": [
+                   {
+                    "type": "this",
+                    "start": 674,
+                    "end": 678,
+                    "field": "object",
+                    "text": "this"
+                   },
+                   {
+                    "type": ".",
+                    "start": 678,
+                    "end": 679,
+                    "text": "."
+                   },
+                   {
+                    "type": "private_property_identifier",
+                    "start": 679,
+                    "end": 685,
+                    "field": "property",
+                    "text": "#label"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "}",
+                  "start": 685,
+                  "end": 686,
+                  "text": "}"
+                 }
+                ]
+               },
+               {
+                "type": "string_fragment",
+                "start": 686,
+                "end": 691,
+                "text": " at ("
+               },
+               {
+                "type": "template_substitution",
+                "start": 691,
+                "end": 700,
+                "children": [
+                 {
+                  "type": "${",
+                  "start": 691,
+                  "end": 693,
+                  "text": "${"
+                 },
+                 {
+                  "type": "member_expression",
+                  "start": 693,
+                  "end": 699,
+                  "children": [
+                   {
+                    "type": "this",
+                    "start": 693,
+                    "end": 697,
+                    "field": "object",
+                    "text": "this"
+                   },
+                   {
+                    "type": ".",
+                    "start": 697,
+                    "end": 698,
+                    "text": "."
+                   },
+                   {
+                    "type": "property_identifier",
+                    "start": 698,
+                    "end": 699,
+                    "field": "property",
+                    "text": "x"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "}",
+                  "start": 699,
+                  "end": 700,
+                  "text": "}"
+                 }
+                ]
+               },
+               {
+                "type": "string_fragment",
+                "start": 700,
+                "end": 702,
+                "text": ", "
+               },
+               {
+                "type": "template_substitution",
+                "start": 702,
+                "end": 711,
+                "children": [
+                 {
+                  "type": "${",
+                  "start": 702,
+                  "end": 704,
+                  "text": "${"
+                 },
+                 {
+                  "type": "member_expression",
+                  "start": 704,
+                  "end": 710,
+                  "children": [
+                   {
+                    "type": "this",
+                    "start": 704,
+                    "end": 708,
+                    "field": "object",
+                    "text": "this"
+                   },
+                   {
+                    "type": ".",
+                    "start": 708,
+                    "end": 709,
+                    "text": "."
+                   },
+                   {
+                    "type": "property_identifier",
+                    "start": 709,
+                    "end": 710,
+                    "field": "property",
+                    "text": "y"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "}",
+                  "start": 710,
+                  "end": 711,
+                  "text": "}"
+                 }
+                ]
+               },
+               {
+                "type": "string_fragment",
+                "start": 711,
+                "end": 712,
+                "text": ")"
+               },
+               {
+                "type": "`",
+                "start": 712,
+                "end": 713,
+                "text": "`"
+               }
+              ]
+             },
+             {
+              "type": ";",
+              "start": 713,
+              "end": 714,
+              "text": ";"
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 717,
+            "end": 718,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 719,
+        "end": 720,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

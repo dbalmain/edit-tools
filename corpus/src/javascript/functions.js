@@ -1,0 +1,36 @@
+// Function shapes: declarations, expressions, arrows, defaults, rest, async.
+function short(a, b) {
+  return a + b;
+}
+
+function withDefaults(host = "localhost", port = 8080, timeout = 30, retries = 3, verbose = false) {
+  return host;
+}
+
+function variadic(first, ...rest) {
+  return rest.reduce((acc, item) => acc + item, first);
+}
+
+const expression = function (a, b, c) {
+  return a * b * c;
+};
+
+const arrow = (x) => x * 2;
+
+const multiArrow = (first, second, third, fourth) => first + second + third + fourth;
+
+const returnsObject = (name, value, active, timestamp) => ({ name, value, active, timestamp });
+
+async function fetchAll(urls, options = {}) {
+  const results = [];
+  for (const url of urls) {
+    results.push(await fetch(url, options));
+  }
+  return results;
+}
+
+function* counter(start = 0, step = 1, limit = 10) {
+  for (let i = start; i < limit; i += step) {
+    yield i;
+  }
+}

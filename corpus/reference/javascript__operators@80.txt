@@ -1,0 +1,24 @@
+// Operator chains: the left-nested spines a package must flatten, and the
+// precedence boundaries where a chain stops splitting.
+const arithmetic = first + second + third + fourth + fifth + sixth + seventh;
+
+const mixed =
+  alpha + beta * gamma - delta / epsilon + zeta * eta - theta / iota;
+
+const logical = a && b && c && d && e && f && g;
+
+const orChain = first || second || third || fourth || fifth || sixth;
+
+const ternary = condition ? firstResult : secondResult;
+
+const longTernary = someFairlyLongCondition
+  ? primaryResultValue
+  : fallbackResultValue;
+
+const nestedTernary = first ? "a" : second ? "b" : "c";
+
+const comparison = left === right && middle !== other && lower < upper;
+
+const bitwise = flags | ((mask & value) ^ (other << shift));
+
+const unary = -value + !negated * typeof check;

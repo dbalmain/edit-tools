@@ -1,0 +1,40 @@
+// Several constructs interacting: the one file allowed to be messy.
+const options = {
+  timeout: 30,
+  retries: 3,
+  backoff: 1.5,
+  verbose: false,
+};
+
+function process(
+  records,
+  overrides = {},
+) {
+  const settings = {
+    ...options,
+    ...overrides,
+  }; // shallow merge is fine
+  const results = records
+    .filter((r) => r.valid && r.id > 0)
+    .map((r) => ({
+      id: r.id,
+      value: r.value,
+      tags: r.tags
+        .filter((t) => t.visible)
+        .map((t) => t.name),
+    }))
+    .sort((a, b) =>
+      a.id === b.id
+        ? a.value - b.value
+        : a.id - b.id,
+    );
+  return results;
+}
+
+for (let i = 0; i < 10; i += 1) {
+  if (i % 2 === 0) {
+    process([
+      { id: i, value: i * 2, tags: [] },
+    ]);
+  }
+}

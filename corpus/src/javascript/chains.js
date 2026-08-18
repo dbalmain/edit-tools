@@ -1,0 +1,11 @@
+// Method chains: prettier breaks at the dots, and that is a layout no
+// node-type table can express (see DESIGN.md).
+const result = query.filter((x) => x.active).map((x) => x.name).sort().slice(0, 10).join(", ");
+
+const chain = client.request("GET", "/api/users").then((r) => r.json()).then((data) => data.items).catch((err) => handle(err));
+
+const fluent = factory.create().configure({ option: true }).build().initialize().start().run();
+
+const nestedCall = first(second(third(a, b), c), fourth(d, e, f), fifth(g));
+
+const mixed = arr.filter(isValid).map(transform).reduce(combine, initial);
