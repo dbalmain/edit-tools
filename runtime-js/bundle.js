@@ -824,6 +824,25 @@ function alignGo(input) {
 // Each is consumed exactly once and in order, so the partition the linearity
 // invariant asks for still holds.
 
+// Comment nodes are usually leaves with `text`. tree-sitter-rust's
+// `line_comment` / `block_comment` are interior nodes instead (the `//`
+// token is a child; the body is only in the source range). When `text`
+// is missing we slice the source range and strip a trailing newline so
+// a doc comment whose range includes the line ending does not emit an
+// extra blank.
+function commentContentEnd(fmt, node) {
+  let end = node.end;
+  while (end > node.start && (fmt.bytes[end - 1] === 0x0a || fmt.bytes[end - 1] === 0x0d)) {
+    end--;
+  }
+  return end;
+}
+
+function commentText(fmt, node) {
+  if (typeof node.text === "string") return node.text;
+  return fmt.decoder.decode(fmt.bytes.subarray(node.start, commentContentEnd(fmt, node)));
+}
+
 function newlinesBetween(bytes, from, to) {
   let n = 0;
   for (let i = Math.max(from, 0); i < Math.min(to, bytes.length); i++) {
@@ -853,8 +872,12 @@ function splitChildren(fmt, node) {
       const kids = last?.node.children ?? [];
       const contentEnd = kids.length > 0 ? kids[kids.length - 1].end : last?.node.end;
       const shareLine = last && newlinesBetween(fmt.bytes, contentEnd, child.start) === 0;
-      if (shareLine) last.suffix.push(child.text);
-      else lead.push({ text: child.text, blanks: Math.max(gap - 1, 0) });
+      const text = commentText(fmt, child);
+      if (shareLine) last.suffix.push(text);
+      else lead.push({ text, blanks: Math.max(gap - 1, 0) });
+      // A rust doc comment's range includes its line ending. That
+      // newline belongs to the following gap, not to the comment body.
+      prevEnd = commentContentEnd(fmt, child);
       continue;
     }
     // Punctuation cannot carry a leading comment: emitting it there would put

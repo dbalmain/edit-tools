@@ -294,6 +294,58 @@ test("a missing nested language package refuses and names the language", () => {
   );
 });
 
+test("interior comment without text slices source", () => {
+  // tree-sitter-rust's line_comment is an interior node: the `//` token
+  // is a child and there is no `text` on the parent. The body lives
+  // only in the source range. A doc comment's range includes the
+  // trailing newline; that must not become an extra blank line.
+  const source = "x // c\n/// doc\n";
+  const pkg = commentsPkg({ comments: ["line_comment"] });
+  const root = commentedFile([
+    { type: "name", start: 0, end: 1, text: "x" },
+    {
+      type: "line_comment",
+      start: 2,
+      end: 6,
+      children: [{ type: "//", start: 2, end: 4, text: "//" }],
+    },
+    {
+      type: "line_comment",
+      start: 7,
+      end: 15,
+      children: [
+        { type: "//", start: 7, end: 9, text: "//" },
+        { type: "doc_comment", start: 9, end: 15, text: "/ doc\n" },
+      ],
+    },
+  ], 15);
+  assert.equal(runOn(pkg, source, root, 80), "x // c\n/// doc\n");
+});
+
+test("doc comment range newline does not eat the following blank", () => {
+  const source = "//! inner\n\n// own-line\nfn";
+  const pkg = commentsPkg({ comments: ["line_comment"] });
+  const root = commentedFile([
+    {
+      type: "line_comment",
+      start: 0,
+      end: 10,
+      children: [
+        { type: "//", start: 0, end: 2, text: "//" },
+        { type: "doc_comment", start: 2, end: 10, text: "! inner\n" },
+      ],
+    },
+    {
+      type: "line_comment",
+      start: 11,
+      end: 22,
+      children: [{ type: "//", start: 11, end: 13, text: "//" }],
+    },
+    { type: "name", start: 23, end: 25, text: "fn" },
+  ], 25);
+  assert.equal(runOn(pkg, source, root, 80), "//! inner\n\n// own-line\nfn\n");
+});
+
 test("comment fields default to one", () => {
   const source = "x# one\n\n\n# two";
   const root = commentedFile([

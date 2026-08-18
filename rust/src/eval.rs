@@ -1056,6 +1056,90 @@ mod tests {
     }
 
     #[test]
+    fn interior_comment_without_text_slices_source() {
+        // tree-sitter-rust's line_comment is an interior node: the `//` token
+        // is a child and there is no `text` on the parent. The body lives
+        // only in the source range.
+        let source = "x // c\n/// doc\n";
+        let pkg = one(serde_json::from_value(json!({
+            "format": "et-doc-rules/1",
+            "indent": 2,
+            "comments": ["line_comment"],
+            "rules": { "file": ["each", "named", ["hard"]] },
+        }))
+        .expect("interior-comment package parses"));
+        let root = commented_file(
+            json!([
+                { "type": "name", "start": 0, "end": 1, "text": "x" },
+                {
+                    "type": "line_comment",
+                    "start": 2,
+                    "end": 6,
+                    "children": [
+                        { "type": "//", "start": 2, "end": 4, "text": "//" }
+                    ]
+                },
+                {
+                    "type": "line_comment",
+                    "start": 7,
+                    "end": 15,
+                    "children": [
+                        { "type": "//", "start": 7, "end": 9, "text": "//" },
+                        { "type": "doc_comment", "start": 9, "end": 15, "text": "/ doc\n" }
+                    ]
+                },
+            ]),
+            15,
+        );
+        assert_eq!(
+            run_on(&pkg, source, root, 80).expect("ok"),
+            "x // c\n/// doc\n"
+        );
+    }
+
+    #[test]
+    fn doc_comment_range_newline_does_not_eat_the_following_blank() {
+        // tree-sitter-rust includes the line ending in a `///` / `//!`
+        // node's range. That newline is not a consumed gap; a blank line
+        // after the doc comment must still survive.
+        let source = "//! inner\n\n// own-line\nfn";
+        let pkg = one(serde_json::from_value(json!({
+            "format": "et-doc-rules/1",
+            "indent": 2,
+            "comments": ["line_comment"],
+            "rules": { "file": ["each", "named", ["hard"]] },
+        }))
+        .expect("doc-comment-gap package parses"));
+        let root = commented_file(
+            json!([
+                {
+                    "type": "line_comment",
+                    "start": 0,
+                    "end": 10,
+                    "children": [
+                        { "type": "//", "start": 0, "end": 2, "text": "//" },
+                        { "type": "doc_comment", "start": 2, "end": 10, "text": "! inner\n" }
+                    ]
+                },
+                {
+                    "type": "line_comment",
+                    "start": 11,
+                    "end": 22,
+                    "children": [
+                        { "type": "//", "start": 11, "end": 13, "text": "//" }
+                    ]
+                },
+                { "type": "name", "start": 23, "end": 25, "text": "fn" },
+            ]),
+            25,
+        );
+        assert_eq!(
+            run_on(&pkg, source, root, 80).expect("ok"),
+            "//! inner\n\n// own-line\nfn\n"
+        );
+    }
+
+    #[test]
     fn both_runtimes_refuse_the_same_out_of_range_comment_gap() {
         let pkg_json = json!({
             "format": "et-doc-rules/1",
