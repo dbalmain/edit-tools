@@ -1,7 +1,17 @@
 # Review briefs — stages B and D
 
-Issued to an **Opus subagent**. The orchestrator does not read the code; your
-verdict is what it acts on, so state it plainly and put the evidence under it.
+Issued to a **reviewer-lane agent** — see the lane table in `LEDGER.md`, which
+is the authority. codex-Sol is the standing reviewer; DeepSeek and grok are
+builder-lane; the Opus subagent's lane is central fixes and the final sweep, not
+stage B or D. **A reviewer must never be the same family as the builder.**
+
+This header used to read "issued to an Opus subagent", which contradicted that
+table and was followed literally for all three round-3 stage-B reviews. If the
+standing reviewer is unavailable, pick another lane deliberately and record it —
+do not let the template pick for you.
+
+The orchestrator does not read the code; your verdict is what it acts on, so
+state it plainly and put the evidence under it.
 
 Both reviews end with the same two required sections: a **verdict** and a
 **template delta**.
