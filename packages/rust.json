@@ -50,23 +50,6 @@
         ["tok", ["$", 1]]
       ]
     ],
-    "fill_list": [
-      "when",
-      ["count", "named", 0],
-      ["seq", ["tok", ["$", 0]], ["tok", ["$", 1]]],
-      [
-        "group",
-        ["tok", ["$", 0]],
-        [
-          "indent",
-          ["soft"],
-          ["fill", "named", ["seq", ["tok", ","], ["line"]]],
-          ["trail", ",", "named"]
-        ],
-        ["soft"],
-        ["tok", ["$", 1]]
-      ]
-    ],
     "brace_group": [
       "when",
       ["count", "named", 0],
@@ -218,22 +201,13 @@
     "match_block": ["use", "brace_items"],
 
     "let_declaration": [
-      "group",
+      "seq",
       ["tok", "let"],
       ["sp"],
       ["opt", "t:mutable_specifier", ["seq", ["child", "t:mutable_specifier"], ["sp"]]],
       ["child", "f:pattern"],
       ["opt", "t::", ["seq", ["tok", ":"], ["sp"], ["child", "named"]]],
-      [
-        "opt",
-        "t:=",
-        [
-          "seq",
-          ["sp"],
-          ["tok", "="],
-          ["indent", ["line"], ["child", "f:value"]]
-        ]
-      ],
+      ["opt", "t:=", ["seq", ["sp"], ["tok", "="], ["sp"], ["child", "f:value"]]],
       ["tok", ";"]
     ],
 
@@ -274,9 +248,10 @@
     ],
 
     "field_expression": [
-      "group",
+      "seq",
       ["child", "f:value"],
-      ["indent", ["soft"], ["tok", "."], ["child", "f:field"]]
+      ["tok", "."],
+      ["child", "f:field"]
     ],
 
     "generic_function": [
@@ -363,7 +338,7 @@
       [
         "flatten",
         "binary_expression",
-        ["seq", ["indent", ["line"], ["child", "f:operator"], ["sp"]]]
+        ["seq", ["line"], ["child", "f:operator"], ["sp"]]
       ]
     ],
 
