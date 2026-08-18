@@ -31,3 +31,9 @@ widths = [100, 60]
 gate3 = "default"
 transparent_wrappers = ["block"]
 equivalent_kinds = []
+
+# rustfmt deletes a leading `|` on a match arm (match_arm_leading_pipes =
+# Never). A package may not delete a source token, so the reference's output
+# can never be agreed and must sit outside the agreement denominator.
+[incomparable]
+"leading_pipes.rs" = "rustfmt deletes the leading `|` of each match arm (token deletion)"

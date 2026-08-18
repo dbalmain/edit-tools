@@ -118,10 +118,18 @@ class IncomparableManifestTests(unittest.TestCase):
             self.parse('\n[incomparable]\n"basic.txt" = "reason"\n')
 
     def test_merged_languages_declare_none(self):
-        """This slice adds the field, not the files. Six languages stay empty."""
+        """The field landed empty; rust is the first language to use it.
+
+        The six languages the field-addition slice touched still declare none.
+        rust's `leading_pipes.rs` is the first legitimate use and must be the
+        only one.
+        """
         loaded = manifest.load_all()
         self.assertGreaterEqual(len(loaded), 6)
         for name, parsed in loaded.items():
+            if name == "rust":
+                self.assertEqual(list(parsed.incomparable), ["leading_pipes.rs"], name)
+                continue
             self.assertEqual(parsed.incomparable, {}, name)
 
 
