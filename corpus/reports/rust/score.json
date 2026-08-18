@@ -1,0 +1,191 @@
+{
+  "language": "rust",
+  "gate1_idempotence": {
+    "pass": true,
+    "got": 34,
+    "of": 34
+  },
+  "gate2_width": {
+    "pass": true,
+    "overflow_lines": 39,
+    "reference_overflow": 39
+  },
+  "gate3_nondestruction": {
+    "pass": true,
+    "got": 34,
+    "of": 34,
+    "method": "default"
+  },
+  "gate4_agreement": {
+    "by_width": {
+      "100": {
+        "agreement": 10,
+        "of": 16
+      },
+      "60": {
+        "agreement": 6,
+        "of": 16
+      }
+    },
+    "agreement": 16,
+    "of": 32,
+    "accepted": 0,
+    "stale": 0,
+    "unreviewed": 16,
+    "excluded": 1,
+    "review_coverage": 0.5,
+    "review_threshold_met": false,
+    "subwidth_divergences": 8,
+    "subwidth_fraction_of_divergences": 0.5
+  },
+  "rust_js_parity": "identical",
+  "refusals": [],
+  "matching_files": {
+    "100": [
+      "async.rs",
+      "enums.rs",
+      "kitchen.rs",
+      "macros.rs",
+      "modules.rs",
+      "normalize.rs",
+      "patterns.rs",
+      "sequences.rs",
+      "strings.rs",
+      "traits.rs"
+    ],
+    "60": [
+      "async.rs",
+      "enums.rs",
+      "generics.rs",
+      "modules.rs",
+      "sequences.rs",
+      "traits.rs"
+    ]
+  },
+  "size": {
+    "js-runtime": 13695,
+    "packages": 2356,
+    "total": 16051,
+    "per_language": {
+      "rust": {
+        "package": 2356,
+        "with_runtime": 16051
+      }
+    }
+  },
+  "size_delta_vs_main": {
+    "js_runtime_gzip": {
+      "main": 13396,
+      "now": 13695,
+      "delta": 299
+    },
+    "package_gzip": 2356,
+    "per_edit": [
+      {
+        "commit": "5c27edb",
+        "construct": "interior comment text (tree-sitter-rust line_comment / block_comment)",
+        "gzip_delta": 299,
+        "from": 13396,
+        "to": 13695
+      }
+    ]
+  },
+  "divergences": [
+    {
+      "case": "closures.rs@100",
+      "id": "rust/closures.rs@100",
+      "hash": "de67a1091f5524907456a10f20d8ace7fdaffe4df032723ca5111ce07aa875ea",
+      "classification": "design limit"
+    },
+    {
+      "case": "closures.rs@60",
+      "id": "rust/closures.rs@60",
+      "hash": "6ef3e032a9fec45dbeb1ba77fdc3da2b6e3c5ffe9b97826f41663d19f1040ddc",
+      "classification": "design limit"
+    },
+    {
+      "case": "comments.rs@100",
+      "id": "rust/comments.rs@100",
+      "hash": "2e1895bc81cd5eb364b3d203970d82e5571c96e0a802e835899387409086c07e",
+      "classification": "design limit"
+    },
+    {
+      "case": "comments.rs@60",
+      "id": "rust/comments.rs@60",
+      "hash": "09319ae841d8b21123fecdc1852fbd50276e2b7311570bcd439b35426cbf2211",
+      "classification": "design limit"
+    },
+    {
+      "case": "generics.rs@100",
+      "id": "rust/generics.rs@100",
+      "hash": "850bcf405912d794ce77cb4151580b4454b6fef3b8405c847a92df1840e02080",
+      "classification": "design limit"
+    },
+    {
+      "case": "kitchen.rs@60",
+      "id": "rust/kitchen.rs@60",
+      "hash": "a1b98566a67fc9b57e2a4bb597d18985034934e868afddbd95a7e01e3c64da09",
+      "classification": "design limit"
+    },
+    {
+      "case": "macros.rs@60",
+      "id": "rust/macros.rs@60",
+      "hash": "f7dd56b1412010454f04a691a594582de30fa9495a37e5269d0166870991f6a8",
+      "classification": "design limit"
+    },
+    {
+      "case": "nesting.rs@100",
+      "id": "rust/nesting.rs@100",
+      "hash": "73496cc4a30dd73f82d405cd3543cb88ab107ebd20ed48c4d144cad455d8ec95",
+      "classification": "design limit"
+    },
+    {
+      "case": "nesting.rs@60",
+      "id": "rust/nesting.rs@60",
+      "hash": "9b36c57c1547db8cd4d528895fac237119a665ef9b6c69efcb2f93733909042a",
+      "classification": "design limit"
+    },
+    {
+      "case": "normalize.rs@60",
+      "id": "rust/normalize.rs@60",
+      "hash": "f31c8e7f58aad0e380259ba63195ddc61fb615d5c79bb2cc6a1b3f4363a72977",
+      "classification": "design limit"
+    },
+    {
+      "case": "patterns.rs@60",
+      "id": "rust/patterns.rs@60",
+      "hash": "f50435ec8fe4f7ed4e0b1271908c582ea6acfdfc75e5f7d69b430261159d4eb9",
+      "classification": "design limit"
+    },
+    {
+      "case": "strings.rs@60",
+      "id": "rust/strings.rs@60",
+      "hash": "990c0381bb988d21a530de0381b7ed776456ecf66d3d57d750bee14aced27610",
+      "classification": "design limit"
+    },
+    {
+      "case": "structs.rs@100",
+      "id": "rust/structs.rs@100",
+      "hash": "82266bda9c75c01b9734c03e5bb39022d35d1ee86016c7b6a5ef6d199203c784",
+      "classification": "design limit"
+    },
+    {
+      "case": "structs.rs@60",
+      "id": "rust/structs.rs@60",
+      "hash": "373cc106696aa3afceaf491a18fb8e6a8f94eb10d76963820d9d7f2ec9835495",
+      "classification": "design limit"
+    },
+    {
+      "case": "widths.rs@100",
+      "id": "rust/widths.rs@100",
+      "hash": "d5bef39d3e852861c0e97c540c89272faaee8fa8cfdbb89b494d591eea1695ed",
+      "classification": "design limit"
+    },
+    {
+      "case": "widths.rs@60",
+      "id": "rust/widths.rs@60",
+      "hash": "8abe9ec99c8a454ae543c2dd675f2d172da8b739d1a3fb5bd03997efae0fd469",
+      "classification": "design limit"
+    }
+  ]
+}
