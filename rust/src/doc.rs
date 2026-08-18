@@ -37,6 +37,9 @@ pub enum Doc {
     /// A zero-width column break. `print` emits a vertical tab; a later
     /// language-independent pass aligns runs of rows over those markers.
     Cell,
+    /// A section boundary. `print` emits a formfeed; the align pass full-
+    /// tabwrites inside a pair and comment-aligns only outside one.
+    CellBreak,
 }
 
 impl Doc {
@@ -124,7 +127,7 @@ fn collect_forced(doc: &Doc, forced: &mut Forced) -> bool {
             collect_forced(inner, forced);
             false
         }
-        Doc::Text(_) | Doc::Line | Doc::Soft | Doc::Cell => false,
+        Doc::Text(_) | Doc::Line | Doc::Soft | Doc::Cell | Doc::CellBreak => false,
     }
 }
 
@@ -224,7 +227,7 @@ fn fits<'a>(
             // do we: it is the difference between breaking a call and leaving
             // an over-long line behind a `# ...`.
             Doc::Suffix(inner) => stack.push((ind, Mode::Flat, inner)),
-            Doc::BreakParent | Doc::Cell => {}
+            Doc::BreakParent | Doc::Cell | Doc::CellBreak => {}
         }
     }
 }
@@ -356,12 +359,16 @@ pub fn print(doc: &Doc, width: usize) -> String {
                 }
                 Doc::Suffix(inner) => suffixes.push((ind, Mode::Break, inner)),
                 Doc::BreakParent => {}
-                Doc::Cell => {
+                Doc::Cell | Doc::CellBreak => {
                     if !pending.is_empty() {
                         out.push_str(&pending);
                         pending.clear();
                     }
-                    out.push('\u{000B}');
+                    out.push(if matches!(doc, Doc::Cell) {
+                        '\u{000B}'
+                    } else {
+                        '\u{000C}'
+                    });
                 }
             }
         }

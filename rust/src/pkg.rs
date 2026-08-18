@@ -467,7 +467,7 @@ pub enum Pred {
     All(Sel, Vec<String>),
 }
 
-/// One expression of the package language. Nineteen opcodes; see DESIGN.md.
+/// One expression of the package language. Twenty opcodes; see DESIGN.md.
 #[derive(Debug, Deserialize)]
 #[serde(try_from = "Value")]
 pub enum Expr {
@@ -506,6 +506,9 @@ pub enum Expr {
     SrcTrail(String),
     /// A column break. `print` emits a marker; a later pass aligns runs.
     Cell,
+    /// Wrap a grouped declaration so the align pass full-tabwrites it.
+    /// Standalone specs of the same node type stay comment-column only.
+    CellBlock(Vec<Expr>),
 }
 
 impl TryFrom<Value> for Expr {
@@ -535,6 +538,7 @@ impl TryFrom<Value> for Expr {
 
         match op.as_str() {
             "seq" => Ok(Expr::Seq(rest(parts)?)),
+            "cellblock" => Ok(Expr::CellBlock(rest(parts)?)),
             "group" => {
                 let max = match parts.first() {
                     Some(Value::Number(_)) => Some(group_max(&parts.remove(0))?),

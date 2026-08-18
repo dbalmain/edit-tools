@@ -175,6 +175,7 @@ function validateExpr(value) {
     case "seq":
     case "indent":
     case "paren":
+    case "cellblock":
       rest.forEach(validateExpr);
       return;
     case "group": {
@@ -367,6 +368,7 @@ const nil = concat([]);
 const ifBreak = (b, f) => ({ k: "ifBreak", b, f, brk: false });
 const suffix = (d) => ({ k: "suffix", d, brk: false });
 const cell = { k: "cell", brk: false };
+const cellBreak = { k: "cellBreak", brk: false };
 const fillDoc = (parts) => {
   if (parts.length === 0) return nil;
   let next = { k: "fill", content: parts.at(-1), tail: undefined, brk: parts.at(-1).brk };
@@ -444,6 +446,7 @@ function fits(next, rest, rem, mustBeFlat = false) {
         stack.push([ind, FLAT, doc.d]);
         break;
       case "cell":
+      case "cellBreak":
         break;
     }
   }
@@ -542,6 +545,9 @@ function print(doc, cols) {
           break;
         case "cell":
           write("\v");
+          break;
+        case "cellBreak":
+          write("\f");
           break;
       }
     }
@@ -864,9 +870,30 @@ function cellTabwrite(lines, at, rows, indents) {
   });
 }
 
-function alignCells(input) {
-  if (!input.includes(CELL_MARK)) return input;
-  const lines = input.split("\n");
+function joinNonempty(cells) {
+  return cells.filter((cell) => cell !== "").join(" ");
+}
+
+function collapseToCommentCells(lines) {
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (!line.includes(CELL_MARK)) continue;
+    let at = 0;
+    while (line[at] === " " || line[at] === "\t") at++;
+    const cells = line.slice(at).split(CELL_MARK);
+    const last = cells[cells.length - 1] ?? "";
+    const comment = last.startsWith("//") || last.startsWith("/*");
+    const body = joinNonempty(comment ? cells.slice(0, -1) : cells);
+    lines[i] = comment
+      ? `${line.slice(0, at)}${body}${CELL_MARK}${last}`
+      : `${line.slice(0, at)}${body}`;
+  }
+}
+
+function alignChunk(chunk, commentOnly) {
+  if (!chunk.includes(CELL_MARK)) return chunk;
+  const lines = chunk.split("\n");
+  if (commentOnly) collapseToCommentCells(lines);
   const parsed = lines.map((line) => {
     if (!line.includes(CELL_MARK)) return null;
     let at = 0;
@@ -905,6 +932,11 @@ function alignCells(input) {
   });
   flush();
   return lines.join("\n");
+}
+
+function alignCells(input) {
+  if (!input.includes(CELL_MARK) && !input.includes("\f")) return input;
+  return input.split("\f").map((chunk, i) => alignChunk(chunk, i % 2 === 0)).join("");
 }
 
 // ------------------------------------------------------- comment attachment
@@ -1186,6 +1218,8 @@ class Ctx {
         return this.srcBreak(nil);
       case "cell":
         return cell;
+      case "cellblock":
+        return concat([cellBreak, ...rest.map((e) => this.eval(e)), cellBreak]);
       case "srctrail":
         return this.srctrail(rest[0]);
       case "child":

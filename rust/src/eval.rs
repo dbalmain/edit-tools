@@ -263,6 +263,12 @@ impl<'a> Ctx<'a> {
             Expr::SrcSoft => Ok(self.src_break(Doc::nil())),
             Expr::SrcTrail(sep) => self.srctrail(sep, f),
             Expr::Cell => Ok(Doc::Cell),
+            Expr::CellBlock(es) => {
+                let mut parts = vec![Doc::CellBreak];
+                parts.extend(self.eval_all(es, f)?);
+                parts.push(Doc::CellBreak);
+                Ok(Doc::Concat(parts))
+            }
             Expr::Child(sel) => self.child(sel, f),
             Expr::Each(sel, sep) => self.each(sel, sep, f),
             Expr::Fill(sel, sep) => self.fill(sel, sep, f),

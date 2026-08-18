@@ -439,16 +439,72 @@ pub fn go(input: &str) -> String {
 /// unmarked line, an indent change, or a group closer (`}` / `)` as the
 /// first cell) ends the run. A row with fewer cells terminates that column
 /// so the rows below start a fresh one. An all-empty column is discarded.
+///
+/// Formfeed (`["cellblock"]`) sections get the full tabwriter. Outside
+/// them, interior markers collapse to spaces and only a trailing comment
+/// cell participates — the same spec rule can serve a grouped `const (`
+/// and a standalone `const x = 1`.
 pub fn cells(input: &str) -> String {
-    if !input.contains(MARK) {
+    if !input.contains(MARK) && !input.contains(FORMFEED) {
         return input.to_owned();
     }
-    let mut lines: Vec<String> = input.split('\n').map(str::to_owned).collect();
+    input
+        .split(FORMFEED)
+        .enumerate()
+        .map(|(i, chunk)| align_chunk(chunk, i % 2 == 0))
+        .collect()
+}
+
+const MARK: char = '\u{000B}';
+const FORMFEED: char = '\u{000C}';
+
+fn align_chunk(chunk: &str, comment_only: bool) -> String {
+    if !chunk.contains(MARK) {
+        return chunk.to_owned();
+    }
+    let mut lines: Vec<String> = chunk.split('\n').map(str::to_owned).collect();
+    if comment_only {
+        collapse_to_comment_cells(&mut lines);
+    }
     align_cells(&mut lines);
     lines.join("\n")
 }
 
-const MARK: char = '\u{000B}';
+fn collapse_to_comment_cells(lines: &mut [String]) {
+    for line in lines.iter_mut() {
+        if !line.contains(MARK) {
+            continue;
+        }
+        let indent_len = line
+            .as_bytes()
+            .iter()
+            .take_while(|byte| matches!(byte, b' ' | b'\t'))
+            .count();
+        let cells: Vec<&str> = line[indent_len..].split(MARK).collect();
+        let last = *cells.last().unwrap_or(&"");
+        let comment = last.starts_with("//") || last.starts_with("/*");
+        let body = if comment {
+            join_nonempty(&cells[..cells.len().saturating_sub(1)])
+        } else {
+            join_nonempty(&cells)
+        };
+        let indent = line[..indent_len].to_owned();
+        *line = if comment {
+            format!("{indent}{body}{MARK}{last}")
+        } else {
+            format!("{indent}{body}")
+        };
+    }
+}
+
+fn join_nonempty(cells: &[&str]) -> String {
+    cells
+        .iter()
+        .copied()
+        .filter(|cell| !cell.is_empty())
+        .collect::<Vec<_>>()
+        .join(" ")
+}
 
 struct Marked {
     indent: String,
@@ -745,9 +801,14 @@ mod tests {
         once
     }
 
+    /// Grouped declarations sit inside a `cellblock` pair of formfeeds.
+    fn blocked(inner: &str) -> String {
+        format!("\u{000C}{inner}\u{000C}")
+    }
+
     #[test]
     fn cells_pad_marked_runs_and_a_blank_line_resets() {
-        let got = cell_fixpoint(concat!(
+        let got = cell_fixpoint(&blocked(concat!(
             "type T struct {\n",
             "\tA\u{000B}int\n",
             "\tLong\u{000B}string\n",
@@ -755,7 +816,7 @@ mod tests {
             "\tTag\u{000B}bool\u{000B}`json:\"tag\"`\n",
             "\tX\u{000B}string\u{000B}`json:\"x\"`\n",
             "}",
-        ));
+        )));
         assert_eq!(
             got,
             concat!(
@@ -772,7 +833,7 @@ mod tests {
 
     #[test]
     fn cells_a_shorter_row_terminates_a_column() {
-        let got = cell_fixpoint(concat!(
+        let got = cell_fixpoint(&blocked(concat!(
             "type T struct {\n",
             "\tA\u{000B}int\n",
             "\tEmbedded\n",
@@ -782,7 +843,7 @@ mod tests {
             "\tlast\u{000B}int\u{000B}// last\n",
             "\tmore\u{000B}int\u{000B}// more\n",
             "}",
-        ));
+        )));
         assert_eq!(
             got,
             concat!(
@@ -801,13 +862,13 @@ mod tests {
 
     #[test]
     fn cells_empty_type_slots_keep_the_equals_column() {
-        let got = cell_fixpoint(concat!(
+        let got = cell_fixpoint(&blocked(concat!(
             "const (\n",
             "\ta\u{000B}\u{000B}= 1\n",
             "\tbcd\u{000B}int\u{000B}= 2\n",
             "\tef\u{000B}\u{000B}= 3\u{000B}// c\n",
             ")",
-        ));
+        )));
         assert_eq!(
             got,
             concat!(
@@ -822,12 +883,12 @@ mod tests {
 
     #[test]
     fn cells_discard_an_all_empty_column() {
-        let got = cell_fixpoint(concat!(
+        let got = cell_fixpoint(&blocked(concat!(
             "const (\n",
             "\tA\u{000B}\u{000B}= iota\u{000B}// a\n",
             "\tBcdefg\u{000B}\u{000B}\u{000B}// b\n",
             ")",
-        ));
+        )));
         assert_eq!(
             got,
             concat!(
@@ -841,14 +902,14 @@ mod tests {
 
     #[test]
     fn cells_an_unmarked_continuation_is_not_a_sibling() {
-        let got = cell_fixpoint(concat!(
+        let got = cell_fixpoint(&blocked(concat!(
             "const (\n",
             "\tflags\u{000B}\u{000B}= a |\n",
             "\t\tbb | // second\n",
             "\t\tcccccc | // third\n",
             "\t\td\n",
             ")",
-        ));
+        )));
         assert_eq!(
             got,
             concat!(
@@ -864,13 +925,13 @@ mod tests {
 
     #[test]
     fn cells_a_closer_does_not_join_the_comment_column() {
-        let got = cell_fixpoint(concat!(
+        let got = cell_fixpoint(&blocked(concat!(
             "type T struct {\n",
             "\tA\u{000B}int\u{000B}// a\n",
             "\tLongName\u{000B}string\u{000B}// b\n",
             "}\u{000B}// end\n",
             "func init() {\u{000B}// f\n",
-        ));
+        )));
         assert_eq!(
             got,
             concat!(
