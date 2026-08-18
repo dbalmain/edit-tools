@@ -55,18 +55,6 @@
       ["soft"],
       ["tok", ["$", 2]]
     ],
-    "fill_list": [
-      "group",
-      ["tok", ["$", 0]],
-      [
-        "indent",
-        ["soft"],
-        ["fill", "named", ["seq", ["tok", ["$", 1]], ["line"]]],
-        ["trail", ["$", 1], "named"]
-      ],
-      ["soft"],
-      ["tok", ["$", 2]]
-    ],
     "padded_list": [
       "group",
       ["tok", ["$", 0]],
@@ -91,20 +79,41 @@
       ["line"],
       ["tok", "}"]
     ],
-    "call_args": [
+    "one_preserve": [
       "group",
-      ["tok", "("],
+      ["tok", "{"],
+      [
+        "indent",
+        ["srcbreak"],
+        ["child", "named"],
+        ["trail", ",", "*"]
+      ],
+      ["line"],
+      ["tok", "}"]
+    ],
+    "one_list": [
+      "group",
+      ["tok", ["$", 0]],
       [
         "indent",
         ["soft"],
-        [
-          "group",
-          ["each", "named", ["seq", ["tok", ","], ["line"]]],
-          ["trail", ",", "named"]
-        ]
+        ["child", "named"],
+        ["trail", ["$", 1], "*"]
       ],
       ["soft"],
-      ["tok", ")"]
+      ["tok", ["$", 2]]
+    ],
+    "one_padded": [
+      "group",
+      ["tok", ["$", 0]],
+      [
+        "indent",
+        ["line"],
+        ["child", "named"],
+        ["trail", ["$", 1], "*"]
+      ],
+      ["line"],
+      ["tok", ["$", 2]]
     ],
     "assign": [
       "group",
@@ -131,7 +140,29 @@
       ["each", "t:variable_declarator", ["seq", ["tok", ","], ["sp"]]],
       ["opt", "t:;", ["tok", ";"]]
     ],
-    "variable_declarator": ["use", "assign", "f:name", "f:value"],
+    "variable_declarator": [
+      "when",
+      ["count", "t:binary_expression", 1],
+      ["use", "assign", "f:name", "f:value"],
+      [
+        "when",
+        ["count", "t:string", 1],
+        ["use", "assign", "f:name", "f:value"],
+        [
+          "when",
+          ["count", "t:object_pattern", 1],
+          ["use", "assign", "f:name", "f:value"],
+          [
+            "seq",
+            ["child", "f:name"],
+            ["sp"],
+            ["tok", "="],
+            ["sp"],
+            ["child", "f:value"]
+          ]
+        ]
+      ]
+    ],
 
     "array": [
       "when",
@@ -140,14 +171,19 @@
       [
         "when",
         ["all", "named", ["number"]],
-        ["use", "list", "[", ",", "]"],
+        [
+          "when",
+          ["count", "named", 1],
+          ["use", "one_list", "[", ",", "]"],
+          ["use", "list", "[", ",", "]"]
+        ],
         [
           "when",
           ["all", "named", ["array"]],
           [
             "when",
             ["count", "named", 1],
-            ["use", "list", "[", ",", "]"],
+            ["use", "one_list", "[", ",", "]"],
             [
               "group",
               ["tok", "["],
@@ -161,7 +197,12 @@
               ["tok", "]"]
             ]
           ],
-          ["use", "list", "[", ",", "]"]
+          [
+            "when",
+            ["count", "named", 1],
+            ["use", "one_list", "[", ",", "]"],
+            ["use", "list", "[", ",", "]"]
+          ]
         ]
       ]
     ],
@@ -170,13 +211,23 @@
       "when",
       ["count", "named", 0],
       ["seq", ["tok", "{"], ["tok", "}"]],
-      ["use", "preserve_object"]
+      [
+        "when",
+        ["count", "named", 1],
+        ["use", "one_preserve"],
+        ["use", "preserve_object"]
+      ]
     ],
     "object_pattern": [
       "when",
       ["count", "named", 0],
       ["seq", ["tok", "{"], ["tok", "}"]],
-      ["use", "padded_list", "{", ",", "}"]
+      [
+        "when",
+        ["count", "named", 1],
+        ["use", "one_padded", "{", ",", "}"],
+        ["use", "padded_list", "{", ",", "}"]
+      ]
     ],
     "pair": [
       "seq",
@@ -200,8 +251,22 @@
       ["child", "named"],
       ["tok", "]"]
     ],
-    "assignment_pattern": ["use", "assign", "f:left", "f:right"],
-    "object_assignment_pattern": ["use", "assign", "f:left", "f:right"],
+    "assignment_pattern": [
+      "seq",
+      ["child", "f:left"],
+      ["sp"],
+      ["tok", "="],
+      ["sp"],
+      ["child", "f:right"]
+    ],
+    "object_assignment_pattern": [
+      "seq",
+      ["child", "f:left"],
+      ["sp"],
+      ["tok", "="],
+      ["sp"],
+      ["child", "f:right"]
+    ],
 
     "array_pattern": [
       "group",
@@ -256,8 +321,28 @@
       ["opt", "f:optional_chain", ["child", "f:optional_chain"]],
       ["child", "f:arguments"]
     ],
-    "arguments": ["use", "call_args"],
-    "formal_parameters": ["use", "call_args"],
+    "arguments": [
+      "when",
+      ["count", "named", 0],
+      ["seq", ["tok", "("], ["tok", ")"]],
+      [
+        "when",
+        ["count", "named", 1],
+        ["use", "one_list", "(", ",", ")"],
+        ["use", "list", "(", ",", ")"]
+      ]
+    ],
+    "formal_parameters": [
+      "when",
+      ["count", "named", 0],
+      ["seq", ["tok", "("], ["tok", ")"]],
+      [
+        "when",
+        ["count", "named", 1],
+        ["use", "one_list", "(", ",", ")"],
+        ["use", "list", "(", ",", ")"]
+      ]
+    ],
     "import": ["tok", "import"],
 
     "new_expression": [
@@ -269,11 +354,16 @@
     ],
 
     "parenthesized_expression": [
-      "group",
-      ["tok", "("],
-      ["indent", ["soft"], ["child", "named"]],
-      ["soft"],
-      ["tok", ")"]
+      "when",
+      ["count", "t:object", 1],
+      ["seq", ["tok", "("], ["child", "named"], ["tok", ")"]],
+      [
+        "group",
+        ["tok", "("],
+        ["indent", ["soft"], ["child", "named"]],
+        ["soft"],
+        ["tok", ")"]
+      ]
     ],
 
     "binary_expression": [
@@ -293,7 +383,14 @@
     "await_expression": ["use", "kw_unary", "await"],
     "yield_expression": ["use", "kw_unary", "yield"],
 
-    "assignment_expression": ["use", "assign", "f:left", "f:right"],
+    "assignment_expression": [
+      "seq",
+      ["child", "f:left"],
+      ["sp"],
+      ["tok", "="],
+      ["sp"],
+      ["child", "f:right"]
+    ],
     "augmented_assignment_expression": [
       "group",
       ["child", "f:left"],
@@ -518,7 +615,17 @@
         "when",
         ["count", "t:statement_block", 1],
         ["seq", ["sp"], ["child", "f:body"]],
-        ["group", ["indent", ["line"], ["child", "f:body"]]]
+        [
+          "when",
+          ["count", "t:parenthesized_expression", 1],
+          ["seq", ["sp"], ["child", "f:body"]],
+          [
+            "when",
+            ["count", "t:arrow_function", 1],
+            ["seq", ["sp"], ["child", "f:body"]],
+            ["group", ["indent", ["line"], ["child", "f:body"]]]
+          ]
+        ]
       ]
     ],
 
@@ -580,7 +687,12 @@
       ["opt", "t:;", ["tok", ";"]]
     ],
     "import_clause": ["child", "named"],
-    "named_imports": ["use", "padded_list", "{", ",", "}"],
+    "named_imports": [
+      "when",
+      ["count", "named", 1],
+      ["use", "one_padded", "{", ",", "}"],
+      ["use", "padded_list", "{", ",", "}"]
+    ],
     "namespace_import": [
       "seq",
       ["tok", "*"],
@@ -604,7 +716,12 @@
       ["opt", "f:declaration", ["child", "f:declaration"]],
       ["opt", "t:;", ["tok", ";"]]
     ],
-    "export_clause": ["use", "padded_list", "{", ",", "}"],
+    "export_clause": [
+      "when",
+      ["count", "named", 1],
+      ["use", "one_padded", "{", ",", "}"],
+      ["use", "padded_list", "{", ",", "}"]
+    ],
     "export_specifier": [
       "seq",
       ["child", "f:name"],
