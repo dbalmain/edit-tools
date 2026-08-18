@@ -77,5 +77,10 @@ equivalent_kinds = []
 # denominator rather than out of the corpus. Verified: the four imports in
 # `imports.kt` come back in a different order, and gate 3 rejects the rewrite
 # with `leaf text 'kotlin' became 'java'`.
+#
+# The `distinct` half of that function also de-duplicates duplicate imports,
+# which is deletion (FINDINGS 13), not reordering; no corpus file triggers it,
+# so it stays unmeasured rather than riding on this exclusion. `imports.kt`
+# holds four *distinct* imports, so it probes sorting alone.
 [incomparable]
 "imports.kt" = "ktfmt sorts imports and has no flag to stop it"

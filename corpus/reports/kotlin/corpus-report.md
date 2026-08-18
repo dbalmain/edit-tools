@@ -56,9 +56,13 @@ load-bearing, not decorative — `check_gate3.py --verbose` prints
 `incomparable (reference rewrite skipped) kotlin__imports@100`, and without the
 manifest entry that same case is a hard failure.
 
-Unused-import deletion stays out, deliberately: it is a second, separable
-construct (deletion, not reordering), and putting it in `imports.kt` would make
-that file mixed. It remains unmeasured.
+Two deletion constructs stay out, deliberately, because putting either in
+`imports.kt` would make that file mixed. Unused-import removal (covered above)
+has a disable flag. Import **de-duplication** — the `distinct` half of
+`sortedAndDistinctImports` — has none, and fires only on a duplicate import
+line, which no file here has. Both are deletions (FINDINGS 13), not reordering,
+so they are the wrong reason to mark `imports.kt` incomparable and are instead
+left unmeasured.
 
 ### Width is 100, and there is no flag for it
 
