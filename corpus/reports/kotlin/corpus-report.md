@@ -60,7 +60,10 @@ Two deletion constructs stay out, deliberately, because putting either in
 `imports.kt` would make that file mixed. Unused-import removal (covered above)
 has a disable flag. Import **de-duplication** — the `distinct` half of
 `sortedAndDistinctImports` — has none, and fires only on a duplicate import
-line, which no file here has. Both are deletions (FINDINGS 13), not reordering,
+line, which no file here has. Both are deletions, not reordering — but not
+FINDINGS 13's kind: entry 13 is about deletions gate 3 **permits** (anonymous
+tokens, reparse unchanged), and dropping a duplicate import removes a *named*
+node that gate 3 rejects. That is FINDINGS 4's territory,
 so they are the wrong reason to mark `imports.kt` incomparable and are instead
 left unmeasured.
 

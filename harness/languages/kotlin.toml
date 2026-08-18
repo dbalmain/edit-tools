@@ -79,7 +79,9 @@ equivalent_kinds = []
 # with `leaf text 'kotlin' became 'java'`.
 #
 # The `distinct` half of that function also de-duplicates duplicate imports,
-# which is deletion (FINDINGS 13), not reordering; no corpus file triggers it,
+# which is deletion, not reordering, and a *different* exclusion: it removes a
+# named import node, which gate 3 rejects, so it is FINDINGS 4's territory and
+# not 13's (13 is the deletions gate 3 permits). No corpus file triggers it,
 # so it stays unmeasured rather than riding on this exclusion. `imports.kt`
 # holds four *distinct* imports, so it probes sorting alone.
 [incomparable]
