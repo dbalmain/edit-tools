@@ -84,6 +84,23 @@
         ["tok", ["$", 1]]
       ]
     ],
+    "paren_open": [
+      "when",
+      ["count", "named", 0],
+      ["seq", ["tok", ["$", 0]], ["tok", ["$", 1]]],
+      [
+        "seq",
+        ["tok", ["$", 0]],
+        [
+          "indent",
+          ["soft"],
+          ["each", "named", ["seq", ["tok", ","], ["line"]]],
+          ["trail", ",", "named"]
+        ],
+        ["soft"],
+        ["tok", ["$", 1]]
+      ]
+    ],
     "brace_items": [
       "when",
       ["count", "named", 0],
@@ -133,17 +150,20 @@
 
     "function_item": [
       "seq",
-      ["use", "vis"],
-      ["opt", "t:function_modifiers", ["seq", ["child", "t:function_modifiers"], ["sp"]]],
-      ["tok", "fn"],
-      ["sp"],
-      ["child", "f:name"],
-      ["opt", "f:type_parameters", ["child", "f:type_parameters"]],
-      ["child", "f:parameters"],
       [
-        "opt",
-        "t:->",
-        ["seq", ["sp"], ["tok", "->"], ["sp"], ["child", "f:return_type"]]
+        "group",
+        ["use", "vis"],
+        ["opt", "t:function_modifiers", ["seq", ["child", "t:function_modifiers"], ["sp"]]],
+        ["tok", "fn"],
+        ["sp"],
+        ["child", "f:name"],
+        ["opt", "f:type_parameters", ["child", "f:type_parameters"]],
+        ["child", "f:parameters"],
+        [
+          "opt",
+          "t:->",
+          ["seq", ["sp"], ["tok", "->"], ["sp"], ["child", "f:return_type"]]
+        ]
       ],
       [
         "when",
@@ -154,7 +174,7 @@
     ],
 
     "function_signature_item": [
-      "seq",
+      "group",
       ["tok", "fn"],
       ["sp"],
       ["child", "f:name"],
@@ -171,7 +191,7 @@
     "function_modifiers": ["each", "*", ["sp"]],
     "visibility_modifier": ["each", "*", ["seq"]],
 
-    "parameters": ["use", "paren_list", "(", ")"],
+    "parameters": ["use", "paren_open", "(", ")"],
     "arguments": ["use", "paren_list", "(", ")"],
 
     "parameter": [
@@ -397,7 +417,7 @@
     "type_parameter": ["child", "f:name"],
 
     "function_type": [
-      "seq",
+      "group",
       ["child", "f:trait"],
       ["child", "f:parameters"],
       [

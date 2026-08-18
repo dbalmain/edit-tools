@@ -7,7 +7,7 @@ gate 3 non-destruction  pass   (34/34, method default)
 gate 4 agreement        10/16 @ width 100,  7/16 @ width 60
 rust/js parity          identical (34/34)
 refusals                none
-size                    package 2450 B gzip; runtime 13695 B gzip
+size                    package 2505 B gzip; runtime 13695 B gzip
                         (+299 interior comment text, vs main 13396)
 ```
 
@@ -86,10 +86,13 @@ Every remaining pair is classified. Hashes are the current content hashes.
   open. rustfmt collapses the signature because it fits. FINDINGS 3. Not
   a package bug: dropping `trail` cannot delete the comma.
 
-- `rust/kitchen.rs@60` `a1b98566a67fc9b5…64da09` — **design limit**. The
-  remaining hunks are the method chain (FINDINGS 11 / 17) and rustfmt
-  putting `{` on the next line after a long `=>`. One rule cannot be
-  "space before `{`" and "newline before `{` when the arm header broke".
+- `rust/kitchen.rs@60` `22d4cb3ad7db0f7a…7bf97a` — **design limit**. The
+  trait-method signature now matches: `parameters` is ungrouped and the
+  signature is one `group`, so rustfmt's Tall layout (break params when
+  the whole line does not fit) falls out. Remaining hunks are the method
+  chain (FINDINGS 11 / 17) and rustfmt putting `{` on the next line after
+  a long `=>`. One rule cannot be "space before `{`" and "newline before
+  `{` when the arm header broke".
 
 - `rust/nesting.rs@100` `73496cc4a30dd73f…d8ec95` — **design limit**.
   `Branch { leaves: [1, 2, 3, 4], label: "north" }` fits `max_width` and
