@@ -21,9 +21,6 @@ pub fn format(tree: &TreeDoc, packages: &PackageMap, width: usize) -> Result<Str
     let doc = fmt.node(&tree.root)?;
     let mut out = crate::doc::print(&doc, width);
     out = crate::align::cells(&out);
-    if fmt.pkg.alignment.as_deref() == Some("go") {
-        out = crate::align::go(&out);
-    }
     if fmt.semantic_eof.get() {
         while out.ends_with(['\r', '\n']) {
             out.pop();
