@@ -249,6 +249,7 @@ impl<'a> Ctx<'a> {
             Expr::Sp => Ok(Doc::text(" ")),
             Expr::SrcLine => Ok(self.src_break(Doc::text(" "))),
             Expr::SrcSoft => Ok(self.src_break(Doc::nil())),
+            Expr::SrcBreak => Ok(self.src_break(Doc::Line)),
             Expr::SrcTrail(sep) => self.srctrail(sep, f),
             Expr::Child(sel) => self.child(sel, f),
             Expr::Each(sel, sep) => self.each(sel, sep, f),
@@ -1125,6 +1126,62 @@ try {{
         assert_eq!(
             run(&pkg, list(&["a", "b"], true).clone(), 80).expect("ok"),
             "(\n  a,\n  b,\n)\n"
+        );
+    }
+
+    #[test]
+    fn srcbreak_stays_expanded_when_the_source_broke_but_still_obeys_width() {
+        // A bracketed literal whose open break is `srcbreak`: a source line break
+        // after the opener forces it open (prettier's `objectWrap: preserve`),
+        // while a source-flat literal still collapses or breaks by width.
+        let obj_rule = json!([
+            "group",
+            ["tok", "("],
+            [
+                "indent",
+                ["srcbreak"],
+                ["each", "named", ["seq", ["tok", ","], ["line"]]],
+                ["trail", ",", "named"]
+            ],
+            ["line"],
+            ["tok", ")"]
+        ]);
+        let pkg = toy(json!({ "obj": obj_rule }));
+
+        let source = "(\n  a,\n  b\n)";
+        let root = json!({ "type": "obj", "start": 0, "end": source.len(), "children": [
+            span("(", 0, 1, "("),
+            span("a", 4, 5, "a"),
+            span(",", 5, 6, ","),
+            span("b", 8, 9, "b"),
+            span(")", 10, 11, ")"),
+        ]});
+        assert_eq!(
+            run_on(&pkg, source, root, 80).expect("ok"),
+            "(\n  a,\n  b,\n)\n"
+        );
+
+        let source = "(a, b)";
+        let root = json!({ "type": "obj", "start": 0, "end": source.len(), "children": [
+            span("(", 0, 1, "("),
+            span("a", 1, 2, "a"),
+            span(",", 2, 3, ","),
+            span("b", 4, 5, "b"),
+            span(")", 5, 6, ")"),
+        ]});
+        assert_eq!(run_on(&pkg, source, root, 80).expect("ok"), "( a, b )\n");
+
+        let source = "(aaaaa, bbbbb)";
+        let root = json!({ "type": "obj", "start": 0, "end": source.len(), "children": [
+            span("(", 0, 1, "("),
+            span("aaaaa", 1, 6, "aaaaa"),
+            span(",", 6, 7, ","),
+            span("bbbbb", 8, 13, "bbbbb"),
+            span(")", 13, 14, ")"),
+        ]});
+        assert_eq!(
+            run_on(&pkg, source, root, 6).expect("ok"),
+            "(\n  aaaaa,\n  bbbbb,\n)\n"
         );
     }
 

@@ -185,6 +185,7 @@ function validateExpr(value) {
     case "verbatim":
     case "srcline":
     case "srcsoft":
+    case "srcbreak":
       arity(0);
       return;
     case "child":
@@ -1062,6 +1063,8 @@ class Ctx {
         return this.srcBreak(text(" "));
       case "srcsoft":
         return this.srcBreak(nil);
+      case "srcbreak":
+        return this.srcBreak(line);
       case "srctrail":
         return this.srctrail(rest[0]);
       case "child":

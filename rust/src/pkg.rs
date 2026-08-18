@@ -491,6 +491,9 @@ pub enum Expr {
     SrcLine,
     /// `SrcLine`'s nothing-when-flat sibling.
     SrcSoft,
+    /// `SrcLine`'s group-sensitive sibling: a `Line` that is `Hard` when the
+    /// source had a line break before the cursor.
+    SrcBreak,
     /// The trailing-separator policy for a source-driven list (gofmt): consume
     /// the separator if the source has one, and emit it only when the source
     /// had a line break before the following token.
@@ -534,6 +537,7 @@ impl TryFrom<Value> for Expr {
             "verbatim" => arity(0).map(|()| Expr::Verbatim),
             "srcline" => arity(0).map(|()| Expr::SrcLine),
             "srcsoft" => arity(0).map(|()| Expr::SrcSoft),
+            "srcbreak" => arity(0).map(|()| Expr::SrcBreak),
             "srctrail" => {
                 arity(1)?;
                 Ok(Expr::SrcTrail(literal(&parts[0])?))
