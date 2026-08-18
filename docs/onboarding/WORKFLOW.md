@@ -416,13 +416,26 @@ prints its usage text and exits 0, having run nothing. Exit 0 plus a log that
 grows to a few KB looks exactly like a launch that worked. Generate the prompt
 with `sed -n '/^---$/,$p' | tail -n +2`.
 
-Two more substitution traps, both found the hard way:
+**Assert that no placeholder survives.** Round 3's stage-C launch substituted
+`{{LANG}}` and `{{WORKTREE}}` and silently left `{{STAGE_B_VERDICT}}` in place —
+directly under the heading "Corrections from review", followed by "Apply these
+first". Three agents were launched against it. The prompt looked right in every
+respect a human skim checks: correct language, correct worktree, correct branch.
+
+The generator must `grep -c '{{'` its own output and refuse to launch on a
+non-zero count. A placeholder is invisible precisely because it is well-formed;
+nothing downstream will complain about it.
+
+Three more substitution traps, all found the hard way:
 
 - **Anchor the branch rewrite.** The worktree path contains the branch name as a
   substring (`editor-tools-wt/lang-toml`), so a bare `s|wt/lang-toml|…|g`
   rewrites the path too and points the agent at a directory that does not exist.
   Substitute the backticked form.
 - **Substitute `{{WORKTREE}}` after any branch rewrite**, not before.
+- **Enumerate the template's placeholders rather than the ones you remember.**
+  `grep -o '{{[A-Z_]*}}' <template> | sort -u` is the list; hard-coding two of
+  three is how the above happened.
 
 Worktrees: `/home/dave/w/editor-tools-wt/lang-<name>/` on `wt/lang-<name>`,
 based on `main`. One language per worktree, one agent per worktree, always.
