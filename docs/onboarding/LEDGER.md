@@ -127,6 +127,31 @@ for the same reason, the question stops being "is this feature worth it" and
 becomes "is a downloadable-package design with two hand-written runtimes still
 the right shape".
 
+### Standing decisions
+
+Recorded here because they bind a stage that has not run yet, and would
+otherwise live only in a chat log.
+
+**Match prettier's `objectWrap: preserve`** — Dave, 2026-08-18. JavaScript's
+stage B found that prettier's object-literal break decision is
+**source-sensitive, not width-driven**: an object whose source has a newline
+after `{` stays expanded even when it fits flat. The alternative, `collapse`,
+is what a plain width `group` implements, so the naive package is the wrong
+one. Dave's call is to match the default rather than declare the divergence.
+The runtime already has `srcline` / `srcsoft` / `srctrail` for exactly this, so
+this is a stage-C instruction, not a findings entry. What makes it dangerous is
+that a preserved break and a width break are the same bytes: a package that
+gets it wrong passes the whole corpus and diverges on real input.
+
+**JSX enters the corpus, but not yet** — Dave, 2026-08-18. JavaScript's stage B
+established that JSX is reachable rather than excluded: tree-sitter-javascript
+0.25.0 parses it, prettier formats it inside `.js` with no flag, and gate 3
+accepts the attribute layout (the added parens are the already-transparent
+`parenthesized_expression`). Only `jsx_text` refilling rejects. Deferred until
+**after HTML and XML** in round 4, on the grounds that JSX is an
+attribute-and-element layout problem and those two languages will have settled
+that shape first. Revisit at round 4's close, not before.
+
 ## 2. Template revisions
 
 Every stage-B and stage-D review ends with a template delta. Applied deltas go
