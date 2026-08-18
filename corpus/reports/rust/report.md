@@ -51,6 +51,15 @@ to sample their frequency. The package confirms the prediction's *shape*:
 `group` keeps every one of those constructs flat at width 100, and rustfmt
 breaks them anyway. No package-level expression reached the sub-width output.
 
+**File-agreement ceiling without new IR: 17/32 (53%).** Every remaining pair
+is a named finding (`trail` pin, one-item `trail`, `fits` vs trailing
+comments, mid-expression `/* */`, heterogeneous chains, sub-widths,
+alignment, `=> {` after a broken arm header). Sub-widths alone would win
+`nesting.rs` (2 pairs) and still leave `widths.rs` on alignment, so 19/32
+and 11/16 @100 / 8/16 @60 — still under the 12/16 floor. Hitting 70% of
+*files* needs more than entry 17. Hitting 70% of *pairs after stage D
+accepts the classified limits* is already how TOML closed.
+
 ## Agreement
 
 Matching files: `async`, `enums`, `macros`, `modules`, `normalize@100`,
