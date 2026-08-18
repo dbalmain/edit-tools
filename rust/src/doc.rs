@@ -11,6 +11,9 @@ pub enum Doc {
     Text(String),
     Concat(Vec<Doc>),
     Group(Box<Doc>),
+    /// Like `Group`, and also breaks when the flat span exceeds `round(max * width)`.
+    /// `max` is a fraction of the printer width, not a column count.
+    GroupMax(f64, Box<Doc>),
     /// Alternating content and whitespace, packed independently per line.
     /// The tail is `(whitespace, next fill)`; this recursive shape lets the
     /// printer resume without allocating a shortened fill on every decision.
@@ -44,6 +47,10 @@ impl Doc {
 
     pub fn group(d: Doc) -> Doc {
         Doc::Group(Box::new(d))
+    }
+
+    pub fn group_max(d: Doc, max: f64) -> Doc {
+        Doc::GroupMax(max, Box::new(d))
     }
 
     pub fn fill(parts: Vec<Doc>) -> Doc {
@@ -89,7 +96,7 @@ fn collect_forced(doc: &Doc, forced: &mut Forced) -> bool {
             }
             any
         }
-        Doc::Group(inner) => {
+        Doc::Group(inner) | Doc::GroupMax(_, inner) => {
             let inner_forced = collect_forced(inner, forced);
             if inner_forced {
                 forced.insert(std::ptr::from_ref(inner.as_ref()));
@@ -176,7 +183,7 @@ fn fits<'a>(
                 }
             }
             Doc::Concat(ds) => stack.extend(ds.iter().rev().map(|d| (ind.clone(), mode, d))),
-            Doc::Group(inner) => {
+            Doc::Group(inner) | Doc::GroupMax(_, inner) => {
                 if must_be_flat && forces_break(inner, forced) {
                     return false;
                 }
@@ -246,9 +253,9 @@ pub fn print(doc: &Doc, width: usize) -> String {
                 }
                 Doc::Concat(ds) => stack.extend(ds.iter().rev().map(|d| (ind.clone(), mode, d))),
                 Doc::Indent(unit, inner) => stack.push((ind + unit.as_str(), mode, inner)),
-                Doc::Group(inner) => {
+                Doc::Group(inner) | Doc::GroupMax(_, inner) => {
                     let rem = width as isize - pos as isize;
-                    let flat = !forces_break(inner, &forced)
+                    let mut flat = !forces_break(inner, &forced)
                         && fits(
                             vec![(ind.clone(), Mode::Flat, inner)],
                             &stack,
@@ -256,6 +263,18 @@ pub fn print(doc: &Doc, width: usize) -> String {
                             &forced,
                             false,
                         );
+                    if flat {
+                        if let Doc::GroupMax(max, _) = doc {
+                            let cap = (max * width as f64).round() as isize;
+                            flat = fits(
+                                vec![(ind.clone(), Mode::Flat, inner)],
+                                &[],
+                                cap,
+                                &forced,
+                                false,
+                            );
+                        }
+                    }
                     stack.push((ind, if flat { Mode::Flat } else { Mode::Break }, inner));
                 }
                 Doc::Fill(content, tail) => {
@@ -494,5 +513,57 @@ mod tests {
             Doc::text("c"),
         ]));
         assert_eq!(print(&doc, 3), "a b\nc");
+    }
+
+    fn capped_pair(left: &str, right: &str, max: f64) -> Doc {
+        Doc::group_max(seq(vec![Doc::text(left), Doc::Line, Doc::text(right)]), max)
+    }
+
+    #[test]
+    fn a_capped_group_breaks_when_its_own_span_exceeds_the_fraction() {
+        // Flat form is "leaves: [1, 2, 3, 4]" (20 columns). At width 80 the
+        // line has room, but 0.18 * 80 = 14, so the cap opens the group.
+        let doc = || capped_pair("leaves:", "[1, 2, 3, 4]", 0.18);
+        assert_eq!(print(&doc(), 80), "leaves:\n[1, 2, 3, 4]");
+        assert_eq!(
+            print(
+                &Doc::group(seq(vec![
+                    Doc::text("leaves:"),
+                    Doc::Line,
+                    Doc::text("[1, 2, 3, 4]"),
+                ])),
+                80
+            ),
+            "leaves: [1, 2, 3, 4]"
+        );
+    }
+
+    #[test]
+    fn a_capped_group_stays_flat_when_its_span_is_under_the_fraction() {
+        // "id: 1" is 5 columns; 0.18 * 80 = 14.
+        assert_eq!(print(&capped_pair("id:", "1", 0.18), 80), "id: 1");
+    }
+
+    #[test]
+    fn a_group_cap_measures_the_construct_not_the_rest_of_the_line() {
+        // "id: 1" (5) is under the 14-column cap. The 70-column trailer would
+        // trip the cap if we measured the whole line; rustfmt does not.
+        let doc = seq(vec![
+            capped_pair("id:", "1", 0.18),
+            Doc::text("X".repeat(70)),
+        ]);
+        assert_eq!(print(&doc, 80), format!("id: 1{}", "X".repeat(70)));
+    }
+
+    #[test]
+    fn a_capped_group_still_breaks_when_the_line_is_full() {
+        // Own span is under the cap; remaining columns are not. The group
+        // opens in place — Wadler does not insert a break before it — so
+        // `id:` stays on the prefix line and `1` drops.
+        let doc = seq(vec![
+            Doc::text("X".repeat(78)),
+            capped_pair("id:", "1", 0.18),
+        ]);
+        assert_eq!(print(&doc, 80), format!("{}id:\n1", "X".repeat(78)));
     }
 }

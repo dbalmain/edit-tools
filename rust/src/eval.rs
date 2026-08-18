@@ -237,7 +237,13 @@ impl<'a> Ctx<'a> {
     fn eval(&mut self, expr: &Expr, f: &Fmt<'a>) -> Result<Doc, Refusal> {
         match expr {
             Expr::Seq(es) => Ok(Doc::Concat(self.eval_all(es, f)?)),
-            Expr::Group(es) => Ok(Doc::group(Doc::Concat(self.eval_all(es, f)?))),
+            Expr::Group(max, es) => {
+                let inner = Doc::Concat(self.eval_all(es, f)?);
+                Ok(match max {
+                    Some(n) => Doc::group_max(inner, *n),
+                    None => Doc::group(inner),
+                })
+            }
             Expr::Indent(es) => {
                 let mut parts = self.eval_all(es, f)?;
                 parts.push(self.flush_after(f));
@@ -1181,6 +1187,35 @@ try {{
             .status()
             .expect("spawn node");
         assert!(status.success(), "js runtime disagreed (exit {status})");
+    }
+
+    #[test]
+    fn a_group_fraction_breaks_a_construct_that_still_fits_the_line() {
+        let pkg = toy(json!({
+            "list": [
+                "group",
+                0.18,
+                ["tok", "("],
+                [
+                    "indent",
+                    ["soft"],
+                    ["each", "named", ["seq", ["tok", ","], ["line"]]],
+                    ["trail", ",", "named"]
+                ],
+                ["soft"],
+                ["tok", ")"]
+            ]
+        }));
+        // "(aaaa, bbbb)" is 12 columns; 0.18 * 80 = 14, so this stays flat.
+        assert_eq!(
+            run(&pkg, list(&["aaaa", "bbbb"], false), 80).expect("ok"),
+            "(aaaa, bbbb)\n"
+        );
+        // "(aaaaaa, bbbbbb)" is 16 columns — under 80, over 14.
+        assert_eq!(
+            run(&pkg, list(&["aaaaaa", "bbbbbb"], false), 80).expect("ok"),
+            "(\n  aaaaaa,\n  bbbbbb,\n)\n"
+        );
     }
 
     #[test]

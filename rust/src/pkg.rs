@@ -465,7 +465,9 @@ pub enum Pred {
 #[serde(try_from = "Value")]
 pub enum Expr {
     Seq(Vec<Expr>),
-    Group(Vec<Expr>),
+    /// Optional leading fraction is a cap: the group also breaks when its
+    /// own flat span exceeds `round(max * width)`.
+    Group(Option<f64>, Vec<Expr>),
     Indent(Vec<Expr>),
     Line,
     Soft,
@@ -524,7 +526,13 @@ impl TryFrom<Value> for Expr {
 
         match op.as_str() {
             "seq" => Ok(Expr::Seq(rest(parts)?)),
-            "group" => Ok(Expr::Group(rest(parts)?)),
+            "group" => {
+                let max = match parts.first() {
+                    Some(Value::Number(_)) => Some(group_max(&parts.remove(0))?),
+                    _ => None,
+                };
+                Ok(Expr::Group(max, rest(parts)?))
+            }
             "indent" => Ok(Expr::Indent(rest(parts)?)),
             "paren" => Ok(Expr::Paren(rest(parts)?)),
             "line" => arity(0).map(|()| Expr::Line),
@@ -601,6 +609,21 @@ impl TryFrom<Value> for Expr {
             }
             _ => Err(format!("unknown opcode `{op}`")),
         }
+    }
+}
+
+fn group_max(value: &Value) -> Result<f64, String> {
+    let Some(n) = value.as_f64() else {
+        return Err(format!(
+            "`group` max must be a fraction in (0, 1], got {value}"
+        ));
+    };
+    if n.is_finite() && n > 0.0 && n <= 1.0 {
+        Ok(n)
+    } else {
+        Err(format!(
+            "`group` max must be a fraction in (0, 1], got {value}"
+        ))
     }
 }
 
@@ -865,6 +888,30 @@ mod tests {
             err.contains("expected a list of node types, got \"notalist\""),
             "{err}"
         );
+    }
+
+    #[test]
+    fn group_accepts_an_optional_fraction_cap() {
+        let pkg = macro_package(json!({}), json!({ "list": ["group", 0.18, ["line"]] }))
+            .expect("capped group parses");
+        assert!(
+            matches!(pkg.rules["list"], Expr::Group(Some(max), _) if (max - 0.18).abs() < 1e-9)
+        );
+
+        let plain = macro_package(json!({}), json!({ "list": ["group", ["line"]] }))
+            .expect("plain group still parses");
+        assert!(matches!(plain.rules["list"], Expr::Group(None, _)));
+    }
+
+    #[test]
+    fn group_refuses_a_cap_outside_unit_interval() {
+        for bad in [json!(0), json!(1.1), json!(18), json!(-0.18)] {
+            let err = refusal(json!({}), json!({ "list": ["group", bad, ["line"]] }));
+            assert!(
+                err.contains("`group` max must be a fraction in (0, 1]"),
+                "{err}"
+            );
+        }
     }
 
     #[test]
