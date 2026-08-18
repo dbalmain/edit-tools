@@ -20,4 +20,12 @@ fun between() {
     // trailing comment at the end of a block
 }
 
+fun widthOfATrailingComment() {
+    // A trailing comment counts toward its line's width, so a comment can be
+    // what forces a break. The first line is exactly 100 columns and stays
+    // flat; the second is 101 and ktfmt breaks the assignment to fit it.
+    val fits = listOf(a00, a01, a02, a03, a04, a05, a06, a07, a08, a09, a10) // fits at exactly 100.
+    val forced = listOf(a00, a01, a02, a03, a04, a05, a06, a07, a08, a09, a10) // one column past 100
+}
+
 // Comment at the end of the file.

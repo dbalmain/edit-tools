@@ -1,54 +1,90 @@
 {
  "language": "kotlin",
  "source_file": "corpus/src/kotlin/annotations.kt",
- "source": "// Stacked annotations and use-site targets. Written on one line so the\n// grammar attaches them as modifiers; own-line stacks parse as siblings.\n\n@JvmStatic @Throws(IOException::class) fun demo(@param:Min(0) count:Int) {} // stacked + use-site\n\n@Deprecated(\"use other\",ReplaceWith(\"other()\")) fun old():String=\"gone\"\n\nclass Holder(@get:JvmName(\"readValue\") val value:Int)\n\nannotation class Min(val n:Int)\n",
+ "source": "// Stacked annotations and use-site targets. Written attached, on one line,\n// because tree-sitter-kotlin 1.1.0 parses an own-line annotation as a\n// sibling `annotated_expression` in some surrounding contexts and as a\n// `modifiers` child in others -- it is not \"stacked splits, single\n// attaches\". ktfmt joins an own-line stack onto the declaration, so where\n// the grammar splits, the join changes the named tree and gate 3 rejects\n// the reference output. Own-line annotations are therefore unmeasured\n// (FINDINGS 4). See the report for the contexts that were tried.\n\n@JvmStatic @Throws(IOException::class) fun demo(@param:Min(0) count:Int) {} // stacked + use-site\n\n@Deprecated(\"use other\",ReplaceWith(\"other()\")) fun old():String=\"gone\"\n\nclass Holder(@get:JvmName(\"readValue\") val value:Int)\n\nannotation class Min(val n:Int)\n",
  "root": {
   "type": "source_file",
   "start": 0,
-  "end": 406,
+  "end": 833,
   "children": [
    {
     "type": "line_comment",
     "start": 0,
-    "end": 71,
-    "text": "// Stacked annotations and use-site targets. Written on one line so the"
+    "end": 75,
+    "text": "// Stacked annotations and use-site targets. Written attached, on one line,"
    },
    {
     "type": "line_comment",
-    "start": 72,
-    "end": 145,
-    "text": "// grammar attaches them as modifiers; own-line stacks parse as siblings."
+    "start": 76,
+    "end": 146,
+    "text": "// because tree-sitter-kotlin 1.1.0 parses an own-line annotation as a"
+   },
+   {
+    "type": "line_comment",
+    "start": 147,
+    "end": 218,
+    "text": "// sibling `annotated_expression` in some surrounding contexts and as a"
+   },
+   {
+    "type": "line_comment",
+    "start": 219,
+    "end": 286,
+    "text": "// `modifiers` child in others -- it is not \"stacked splits, single"
+   },
+   {
+    "type": "line_comment",
+    "start": 287,
+    "end": 361,
+    "text": "// attaches\". ktfmt joins an own-line stack onto the declaration, so where"
+   },
+   {
+    "type": "line_comment",
+    "start": 362,
+    "end": 435,
+    "text": "// the grammar splits, the join changes the named tree and gate 3 rejects"
+   },
+   {
+    "type": "line_comment",
+    "start": 436,
+    "end": 506,
+    "text": "// the reference output. Own-line annotations are therefore unmeasured"
+   },
+   {
+    "type": "line_comment",
+    "start": 507,
+    "end": 572,
+    "text": "// (FINDINGS 4). See the report for the contexts that were tried."
    },
    {
     "type": "function_declaration",
-    "start": 147,
-    "end": 222,
+    "start": 574,
+    "end": 649,
     "children": [
      {
       "type": "modifiers",
-      "start": 147,
-      "end": 185,
+      "start": 574,
+      "end": 612,
       "children": [
        {
         "type": "annotation",
-        "start": 147,
-        "end": 157,
+        "start": 574,
+        "end": 584,
         "children": [
          {
           "type": "@",
-          "start": 147,
-          "end": 148,
+          "start": 574,
+          "end": 575,
           "text": "@"
          },
          {
           "type": "user_type",
-          "start": 148,
-          "end": 157,
+          "start": 575,
+          "end": 584,
           "children": [
            {
             "type": "identifier",
-            "start": 148,
-            "end": 157,
+            "start": 575,
+            "end": 584,
             "text": "JvmStatic"
            }
           ]
@@ -57,70 +93,70 @@
        },
        {
         "type": "annotation",
-        "start": 158,
-        "end": 185,
+        "start": 585,
+        "end": 612,
         "children": [
          {
           "type": "@",
-          "start": 158,
-          "end": 159,
+          "start": 585,
+          "end": 586,
           "text": "@"
          },
          {
           "type": "constructor_invocation",
-          "start": 159,
-          "end": 185,
+          "start": 586,
+          "end": 612,
           "children": [
            {
             "type": "user_type",
-            "start": 159,
-            "end": 165,
+            "start": 586,
+            "end": 592,
             "children": [
              {
               "type": "identifier",
-              "start": 159,
-              "end": 165,
+              "start": 586,
+              "end": 592,
               "text": "Throws"
              }
             ]
            },
            {
             "type": "value_arguments",
-            "start": 165,
-            "end": 185,
+            "start": 592,
+            "end": 612,
             "children": [
              {
               "type": "(",
-              "start": 165,
-              "end": 166,
+              "start": 592,
+              "end": 593,
               "text": "("
              },
              {
               "type": "value_argument",
-              "start": 166,
-              "end": 184,
+              "start": 593,
+              "end": 611,
               "children": [
                {
                 "type": "navigation_expression",
-                "start": 166,
-                "end": 184,
+                "start": 593,
+                "end": 611,
                 "children": [
                  {
                   "type": "identifier",
-                  "start": 166,
-                  "end": 177,
+                  "start": 593,
+                  "end": 604,
                   "text": "IOException"
                  },
                  {
                   "type": "::",
-                  "start": 177,
-                  "end": 179,
+                  "start": 604,
+                  "end": 606,
                   "text": "::"
                  },
                  {
                   "type": "identifier",
-                  "start": 179,
-                  "end": 184,
+                  "start": 606,
+                  "end": 611,
                   "text": "class"
                  }
                 ]
@@ -129,8 +165,8 @@
              },
              {
               "type": ")",
-              "start": 184,
-              "end": 185,
+              "start": 611,
+              "end": 612,
               "text": ")"
              }
             ]
@@ -143,109 +179,109 @@
      },
      {
       "type": "fun",
-      "start": 186,
-      "end": 189,
+      "start": 613,
+      "end": 616,
       "text": "fun"
      },
      {
       "type": "identifier",
-      "start": 190,
-      "end": 194,
+      "start": 617,
+      "end": 621,
       "field": "name",
       "text": "demo"
      },
      {
       "type": "function_value_parameters",
-      "start": 194,
-      "end": 219,
+      "start": 621,
+      "end": 646,
       "children": [
        {
         "type": "(",
-        "start": 194,
-        "end": 195,
+        "start": 621,
+        "end": 622,
         "text": "("
        },
        {
         "type": "parameter_modifiers",
-        "start": 195,
-        "end": 208,
+        "start": 622,
+        "end": 635,
         "children": [
          {
           "type": "annotation",
-          "start": 195,
-          "end": 208,
+          "start": 622,
+          "end": 635,
           "children": [
            {
             "type": "@",
-            "start": 195,
-            "end": 196,
+            "start": 622,
+            "end": 623,
             "text": "@"
            },
            {
             "type": "use_site_target",
-            "start": 196,
-            "end": 202,
+            "start": 623,
+            "end": 629,
             "children": [
              {
               "type": "param",
-              "start": 196,
-              "end": 201,
+              "start": 623,
+              "end": 628,
               "text": "param"
              },
              {
               "type": ":",
-              "start": 201,
-              "end": 202,
+              "start": 628,
+              "end": 629,
               "text": ":"
              }
             ]
            },
            {
             "type": "constructor_invocation",
-            "start": 202,
-            "end": 208,
+            "start": 629,
+            "end": 635,
             "children": [
              {
               "type": "user_type",
-              "start": 202,
-              "end": 205,
+              "start": 629,
+              "end": 632,
               "children": [
                {
                 "type": "identifier",
-                "start": 202,
-                "end": 205,
+                "start": 629,
+                "end": 632,
                 "text": "Min"
                }
               ]
              },
              {
               "type": "value_arguments",
-              "start": 205,
-              "end": 208,
+              "start": 632,
+              "end": 635,
               "children": [
                {
                 "type": "(",
-                "start": 205,
-                "end": 206,
+                "start": 632,
+                "end": 633,
                 "text": "("
                },
                {
                 "type": "value_argument",
-                "start": 206,
-                "end": 207,
+                "start": 633,
+                "end": 634,
                 "children": [
                  {
                   "type": "number_literal",
-                  "start": 206,
-                  "end": 207,
+                  "start": 633,
+                  "end": 634,
                   "text": "0"
                  }
                 ]
                },
                {
                 "type": ")",
-                "start": 207,
-                "end": 208,
+                "start": 634,
+                "end": 635,
                 "text": ")"
                }
               ]
@@ -258,30 +294,30 @@
        },
        {
         "type": "parameter",
-        "start": 209,
-        "end": 218,
+        "start": 636,
+        "end": 645,
         "children": [
          {
           "type": "identifier",
-          "start": 209,
-          "end": 214,
+          "start": 636,
+          "end": 641,
           "text": "count"
          },
          {
           "type": ":",
-          "start": 214,
-          "end": 215,
+          "start": 641,
+          "end": 642,
           "text": ":"
          },
          {
           "type": "user_type",
-          "start": 215,
-          "end": 218,
+          "start": 642,
+          "end": 645,
           "children": [
            {
             "type": "identifier",
-            "start": 215,
-            "end": 218,
+            "start": 642,
+            "end": 645,
             "text": "Int"
            }
           ]
@@ -290,32 +326,32 @@
        },
        {
         "type": ")",
-        "start": 218,
-        "end": 219,
+        "start": 645,
+        "end": 646,
         "text": ")"
        }
       ]
      },
      {
       "type": "function_body",
-      "start": 220,
-      "end": 222,
+      "start": 647,
+      "end": 649,
       "children": [
        {
         "type": "block",
-        "start": 220,
-        "end": 222,
+        "start": 647,
+        "end": 649,
         "children": [
          {
           "type": "{",
-          "start": 220,
-          "end": 221,
+          "start": 647,
+          "end": 648,
           "text": "{"
          },
          {
           "type": "}",
-          "start": 221,
-          "end": 222,
+          "start": 648,
+          "end": 649,
           "text": "}"
          }
         ]
@@ -326,86 +362,86 @@
    },
    {
     "type": "line_comment",
-    "start": 223,
-    "end": 244,
+    "start": 650,
+    "end": 671,
     "text": "// stacked + use-site"
    },
    {
     "type": "function_declaration",
-    "start": 246,
-    "end": 317,
+    "start": 673,
+    "end": 744,
     "children": [
      {
       "type": "modifiers",
-      "start": 246,
-      "end": 293,
+      "start": 673,
+      "end": 720,
       "children": [
        {
         "type": "annotation",
-        "start": 246,
-        "end": 293,
+        "start": 673,
+        "end": 720,
         "children": [
          {
           "type": "@",
-          "start": 246,
-          "end": 247,
+          "start": 673,
+          "end": 674,
           "text": "@"
          },
          {
           "type": "constructor_invocation",
-          "start": 247,
-          "end": 293,
+          "start": 674,
+          "end": 720,
           "children": [
            {
             "type": "user_type",
-            "start": 247,
-            "end": 257,
+            "start": 674,
+            "end": 684,
             "children": [
              {
               "type": "identifier",
-              "start": 247,
-              "end": 257,
+              "start": 674,
+              "end": 684,
               "text": "Deprecated"
              }
             ]
            },
            {
             "type": "value_arguments",
-            "start": 257,
-            "end": 293,
+            "start": 684,
+            "end": 720,
             "children": [
              {
               "type": "(",
-              "start": 257,
-              "end": 258,
+              "start": 684,
+              "end": 685,
               "text": "("
              },
              {
               "type": "value_argument",
-              "start": 258,
-              "end": 269,
+              "start": 685,
+              "end": 696,
               "children": [
                {
                 "type": "string_literal",
-                "start": 258,
-                "end": 269,
+                "start": 685,
+                "end": 696,
                 "children": [
                  {
                   "type": "\"",
-                  "start": 258,
-                  "end": 259,
+                  "start": 685,
+                  "end": 686,
                   "text": "\""
                  },
                  {
                   "type": "string_content",
-                  "start": 259,
-                  "end": 268,
+                  "start": 686,
+                  "end": 695,
                   "text": "use other"
                  },
                  {
                   "type": "\"",
-                  "start": 268,
-                  "end": 269,
+                  "start": 695,
+                  "end": 696,
                   "text": "\""
                  }
                 ]
@@ -414,63 +450,63 @@
              },
              {
               "type": ",",
-              "start": 269,
-              "end": 270,
+              "start": 696,
+              "end": 697,
               "text": ","
              },
              {
               "type": "value_argument",
-              "start": 270,
-              "end": 292,
+              "start": 697,
+              "end": 719,
               "children": [
                {
                 "type": "call_expression",
-                "start": 270,
-                "end": 292,
+                "start": 697,
+                "end": 719,
                 "children": [
                  {
                   "type": "identifier",
-                  "start": 270,
-                  "end": 281,
+                  "start": 697,
+                  "end": 708,
                   "text": "ReplaceWith"
                  },
                  {
                   "type": "value_arguments",
-                  "start": 281,
-                  "end": 292,
+                  "start": 708,
+                  "end": 719,
                   "children": [
                    {
                     "type": "(",
-                    "start": 281,
-                    "end": 282,
+                    "start": 708,
+                    "end": 709,
                     "text": "("
                    },
                    {
                     "type": "value_argument",
-                    "start": 282,
-                    "end": 291,
+                    "start": 709,
+                    "end": 718,
                     "children": [
                      {
                       "type": "string_literal",
-                      "start": 282,
-                      "end": 291,
+                      "start": 709,
+                      "end": 718,
                       "children": [
                        {
                         "type": "\"",
-                        "start": 282,
-                        "end": 283,
+                        "start": 709,
+                        "end": 710,
                         "text": "\""
                        },
                        {
                         "type": "string_content",
-                        "start": 283,
-                        "end": 290,
+                        "start": 710,
+                        "end": 717,
                         "text": "other()"
                        },
                        {
                         "type": "\"",
-                        "start": 290,
-                        "end": 291,
+                        "start": 717,
+                        "end": 718,
                         "text": "\""
                        }
                       ]
@@ -479,8 +515,8 @@
                    },
                    {
                     "type": ")",
-                    "start": 291,
-                    "end": 292,
+                    "start": 718,
+                    "end": 719,
                     "text": ")"
                    }
                   ]
@@ -491,8 +527,8 @@
              },
              {
               "type": ")",
-              "start": 292,
-              "end": 293,
+              "start": 719,
+              "end": 720,
               "text": ")"
              }
             ]
@@ -505,87 +541,87 @@
      },
      {
       "type": "fun",
-      "start": 294,
-      "end": 297,
+      "start": 721,
+      "end": 724,
       "text": "fun"
      },
      {
       "type": "identifier",
-      "start": 298,
-      "end": 301,
+      "start": 725,
+      "end": 728,
       "field": "name",
       "text": "old"
      },
      {
       "type": "function_value_parameters",
-      "start": 301,
-      "end": 303,
+      "start": 728,
+      "end": 730,
       "children": [
        {
         "type": "(",
-        "start": 301,
-        "end": 302,
+        "start": 728,
+        "end": 729,
         "text": "("
        },
        {
         "type": ")",
-        "start": 302,
-        "end": 303,
+        "start": 729,
+        "end": 730,
         "text": ")"
        }
       ]
      },
      {
       "type": ":",
-      "start": 303,
-      "end": 304,
+      "start": 730,
+      "end": 731,
       "text": ":"
      },
      {
       "type": "user_type",
-      "start": 304,
-      "end": 310,
+      "start": 731,
+      "end": 737,
       "children": [
        {
         "type": "identifier",
-        "start": 304,
-        "end": 310,
+        "start": 731,
+        "end": 737,
         "text": "String"
        }
       ]
      },
      {
       "type": "function_body",
-      "start": 310,
-      "end": 317,
+      "start": 737,
+      "end": 744,
       "children": [
        {
         "type": "=",
-        "start": 310,
-        "end": 311,
+        "start": 737,
+        "end": 738,
         "text": "="
        },
        {
         "type": "string_literal",
-        "start": 311,
-        "end": 317,
+        "start": 738,
+        "end": 744,
         "children": [
          {
           "type": "\"",
-          "start": 311,
-          "end": 312,
+          "start": 738,
+          "end": 739,
           "text": "\""
          },
          {
           "type": "string_content",
-          "start": 312,
-          "end": 316,
+          "start": 739,
+          "end": 743,
           "text": "gone"
          },
          {
           "type": "\"",
-          "start": 316,
-          "end": 317,
+          "start": 743,
+          "end": 744,
           "text": "\""
          }
         ]
@@ -596,133 +632,133 @@
    },
    {
     "type": "class_declaration",
-    "start": 319,
-    "end": 372,
+    "start": 746,
+    "end": 799,
     "children": [
      {
       "type": "class",
-      "start": 319,
-      "end": 324,
+      "start": 746,
+      "end": 751,
       "text": "class"
      },
      {
       "type": "identifier",
-      "start": 325,
-      "end": 331,
+      "start": 752,
+      "end": 758,
       "field": "name",
       "text": "Holder"
      },
      {
       "type": "primary_constructor",
-      "start": 331,
-      "end": 372,
+      "start": 758,
+      "end": 799,
       "children": [
        {
         "type": "class_parameters",
-        "start": 331,
-        "end": 372,
+        "start": 758,
+        "end": 799,
         "children": [
          {
           "type": "(",
-          "start": 331,
-          "end": 332,
+          "start": 758,
+          "end": 759,
           "text": "("
          },
          {
           "type": "class_parameter",
-          "start": 332,
-          "end": 371,
+          "start": 759,
+          "end": 798,
           "children": [
            {
             "type": "modifiers",
-            "start": 332,
-            "end": 357,
+            "start": 759,
+            "end": 784,
             "children": [
              {
               "type": "annotation",
-              "start": 332,
-              "end": 357,
+              "start": 759,
+              "end": 784,
               "children": [
                {
                 "type": "@",
-                "start": 332,
-                "end": 333,
+                "start": 759,
+                "end": 760,
                 "text": "@"
                },
                {
                 "type": "use_site_target",
-                "start": 333,
-                "end": 337,
+                "start": 760,
+                "end": 764,
                 "children": [
                  {
                   "type": "get",
-                  "start": 333,
-                  "end": 336,
+                  "start": 760,
+                  "end": 763,
                   "text": "get"
                  },
                  {
                   "type": ":",
-                  "start": 336,
-                  "end": 337,
+                  "start": 763,
+                  "end": 764,
                   "text": ":"
                  }
                 ]
                },
                {
                 "type": "constructor_invocation",
-                "start": 337,
-                "end": 357,
+                "start": 764,
+                "end": 784,
                 "children": [
                  {
                   "type": "user_type",
-                  "start": 337,
-                  "end": 344,
+                  "start": 764,
+                  "end": 771,
                   "children": [
                    {
                     "type": "identifier",
-                    "start": 337,
-                    "end": 344,
+                    "start": 764,
+                    "end": 771,
                     "text": "JvmName"
                    }
                   ]
                  },
                  {
                   "type": "value_arguments",
-                  "start": 344,
-                  "end": 357,
+                  "start": 771,
+                  "end": 784,
                   "children": [
                    {
                     "type": "(",
-                    "start": 344,
-                    "end": 345,
+                    "start": 771,
+                    "end": 772,
                     "text": "("
                    },
                    {
                     "type": "value_argument",
-                    "start": 345,
-                    "end": 356,
+                    "start": 772,
+                    "end": 783,
                     "children": [
                      {
                       "type": "string_literal",
-                      "start": 345,
-                      "end": 356,
+                      "start": 772,
+                      "end": 783,
                       "children": [
                        {
                         "type": "\"",
-                        "start": 345,
-                        "end": 346,
+                        "start": 772,
+                        "end": 773,
                         "text": "\""
                        },
                        {
                         "type": "string_content",
-                        "start": 346,
-                        "end": 355,
+                        "start": 773,
+                        "end": 782,
                         "text": "readValue"
                        },
                        {
                         "type": "\"",
-                        "start": 355,
-                        "end": 356,
+                        "start": 782,
+                        "end": 783,
                         "text": "\""
                        }
                       ]
@@ -731,8 +767,8 @@
                    },
                    {
                     "type": ")",
-                    "start": 356,
-                    "end": 357,
+                    "start": 783,
+                    "end": 784,
                     "text": ")"
                    }
                   ]
@@ -745,31 +781,31 @@
            },
            {
             "type": "val",
-            "start": 358,
-            "end": 361,
+            "start": 785,
+            "end": 788,
             "text": "val"
            },
            {
             "type": "identifier",
-            "start": 362,
-            "end": 367,
+            "start": 789,
+            "end": 794,
             "text": "value"
            },
            {
             "type": ":",
-            "start": 367,
-            "end": 368,
+            "start": 794,
+            "end": 795,
             "text": ":"
            },
            {
             "type": "user_type",
-            "start": 368,
-            "end": 371,
+            "start": 795,
+            "end": 798,
             "children": [
              {
               "type": "identifier",
-              "start": 368,
-              "end": 371,
+              "start": 795,
+              "end": 798,
               "text": "Int"
              }
             ]
@@ -778,8 +814,8 @@
          },
          {
           "type": ")",
-          "start": 371,
-          "end": 372,
+          "start": 798,
+          "end": 799,
           "text": ")"
          }
         ]
@@ -790,23 +826,23 @@
    },
    {
     "type": "class_declaration",
-    "start": 374,
-    "end": 405,
+    "start": 801,
+    "end": 832,
     "children": [
      {
       "type": "modifiers",
-      "start": 374,
-      "end": 384,
+      "start": 801,
+      "end": 811,
       "children": [
        {
         "type": "class_modifier",
-        "start": 374,
-        "end": 384,
+        "start": 801,
+        "end": 811,
         "children": [
          {
           "type": "annotation",
-          "start": 374,
-          "end": 384,
+          "start": 801,
+          "end": 811,
           "text": "annotation"
          }
         ]
@@ -815,65 +851,65 @@
      },
      {
       "type": "class",
-      "start": 385,
-      "end": 390,
+      "start": 812,
+      "end": 817,
       "text": "class"
      },
      {
       "type": "identifier",
-      "start": 391,
-      "end": 394,
+      "start": 818,
+      "end": 821,
       "field": "name",
       "text": "Min"
      },
      {
       "type": "primary_constructor",
-      "start": 394,
-      "end": 405,
+      "start": 821,
+      "end": 832,
       "children": [
        {
         "type": "class_parameters",
-        "start": 394,
-        "end": 405,
+        "start": 821,
+        "end": 832,
         "children": [
          {
           "type": "(",
-          "start": 394,
-          "end": 395,
+          "start": 821,
+          "end": 822,
           "text": "("
          },
          {
           "type": "class_parameter",
-          "start": 395,
-          "end": 404,
+          "start": 822,
+          "end": 831,
           "children": [
            {
             "type": "val",
-            "start": 395,
-            "end": 398,
+            "start": 822,
+            "end": 825,
             "text": "val"
            },
            {
             "type": "identifier",
-            "start": 399,
-            "end": 400,
+            "start": 826,
+            "end": 827,
             "text": "n"
            },
            {
             "type": ":",
-            "start": 400,
-            "end": 401,
+            "start": 827,
+            "end": 828,
             "text": ":"
            },
            {
             "type": "user_type",
-            "start": 401,
-            "end": 404,
+            "start": 828,
+            "end": 831,
             "children": [
              {
               "type": "identifier",
-              "start": 401,
-              "end": 404,
+              "start": 828,
+              "end": 831,
               "text": "Int"
              }
             ]
@@ -882,8 +918,8 @@
          },
          {
           "type": ")",
-          "start": 404,
-          "end": 405,
+          "start": 831,
+          "end": 832,
           "text": ")"
          }
         ]

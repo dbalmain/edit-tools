@@ -117,12 +117,18 @@ class IncomparableManifestTests(unittest.TestCase):
         with self.assertRaisesRegex(manifest.ManifestError, "extensions"):
             self.parse('\n[incomparable]\n"basic.txt" = "reason"\n')
 
-    def test_merged_languages_declare_none(self):
-        """This slice adds the field, not the files. Six languages stay empty."""
+    def test_the_six_languages_that_predate_the_field_declare_none(self):
+        """The field was added after these six were merged and none of them
+        needed it. Naming them keeps that true without forbidding the field to
+        every language onboarded afterwards: kotlin is its first legitimate
+        user (ktfmt sorts imports unconditionally, with no flag to stop it),
+        and the original blanket assertion made declaring it a test failure."""
+        predating = {"css", "go", "json", "python", "toml", "yaml"}
         loaded = manifest.load_all()
         self.assertGreaterEqual(len(loaded), 6)
-        for name, parsed in loaded.items():
-            self.assertEqual(parsed.incomparable, {}, name)
+        self.assertTrue(predating <= set(loaded), predating - set(loaded))
+        for name in sorted(predating):
+            self.assertEqual(loaded[name].incomparable, {}, name)
 
 
 if __name__ == "__main__":

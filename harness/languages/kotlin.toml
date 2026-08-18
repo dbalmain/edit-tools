@@ -69,3 +69,13 @@ gate3 = "default"
 
 transparent_wrappers = []
 equivalent_kinds = []
+
+# ktfmt sorts imports unconditionally: `sortedAndDistinctImports` always runs
+# and there is no flag to disable it (unlike unused-import removal, which
+# `--do-not-remove-unused-imports` turns off). Reordering statements is a move
+# a linear formatter cannot make, so the construct goes out of the agreement
+# denominator rather than out of the corpus. Verified: the four imports in
+# `imports.kt` come back in a different order, and gate 3 rejects the rewrite
+# with `leaf text 'kotlin' became 'java'`.
+[incomparable]
+"imports.kt" = "ktfmt sorts imports and has no flag to stop it"

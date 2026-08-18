@@ -1,0 +1,647 @@
+{
+ "language": "kotlin",
+ "source_file": "corpus/src/kotlin/imports.kt",
+ "source": "// Import order. ktfmt always sorts imports -- `sortedAndDistinctImports` has\n// no disable flag, unlike unused-import removal -- and a linear formatter\n// cannot reorder statements, so this file is declared `incomparable`.\n// Every import here is used, so it probes sorting alone.\n\nimport kotlin.math.max\nimport java.util.ArrayList\nimport kotlin.math.min\nimport java.io.File\n\nfun demo(file: File): Int {\n    val xs = ArrayList<Int>()\n    return max(min(xs.size, 1), file.name.length)\n}\n",
+ "root": {
+  "type": "source_file",
+  "start": 0,
+  "end": 487,
+  "children": [
+   {
+    "type": "line_comment",
+    "start": 0,
+    "end": 77,
+    "text": "// Import order. ktfmt always sorts imports -- `sortedAndDistinctImports` has"
+   },
+   {
+    "type": "line_comment",
+    "start": 78,
+    "end": 152,
+    "text": "// no disable flag, unlike unused-import removal -- and a linear formatter"
+   },
+   {
+    "type": "line_comment",
+    "start": 153,
+    "end": 223,
+    "text": "// cannot reorder statements, so this file is declared `incomparable`."
+   },
+   {
+    "type": "line_comment",
+    "start": 224,
+    "end": 281,
+    "text": "// Every import here is used, so it probes sorting alone."
+   },
+   {
+    "type": "import",
+    "start": 283,
+    "end": 305,
+    "children": [
+     {
+      "type": "import",
+      "start": 283,
+      "end": 289,
+      "text": "import"
+     },
+     {
+      "type": "qualified_identifier",
+      "start": 290,
+      "end": 305,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 290,
+        "end": 296,
+        "text": "kotlin"
+       },
+       {
+        "type": ".",
+        "start": 296,
+        "end": 297,
+        "text": "."
+       },
+       {
+        "type": "identifier",
+        "start": 297,
+        "end": 301,
+        "text": "math"
+       },
+       {
+        "type": ".",
+        "start": 301,
+        "end": 302,
+        "text": "."
+       },
+       {
+        "type": "identifier",
+        "start": 302,
+        "end": 305,
+        "text": "max"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "import",
+    "start": 306,
+    "end": 332,
+    "children": [
+     {
+      "type": "import",
+      "start": 306,
+      "end": 312,
+      "text": "import"
+     },
+     {
+      "type": "qualified_identifier",
+      "start": 313,
+      "end": 332,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 313,
+        "end": 317,
+        "text": "java"
+       },
+       {
+        "type": ".",
+        "start": 317,
+        "end": 318,
+        "text": "."
+       },
+       {
+        "type": "identifier",
+        "start": 318,
+        "end": 322,
+        "text": "util"
+       },
+       {
+        "type": ".",
+        "start": 322,
+        "end": 323,
+        "text": "."
+       },
+       {
+        "type": "identifier",
+        "start": 323,
+        "end": 332,
+        "text": "ArrayList"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "import",
+    "start": 333,
+    "end": 355,
+    "children": [
+     {
+      "type": "import",
+      "start": 333,
+      "end": 339,
+      "text": "import"
+     },
+     {
+      "type": "qualified_identifier",
+      "start": 340,
+      "end": 355,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 340,
+        "end": 346,
+        "text": "kotlin"
+       },
+       {
+        "type": ".",
+        "start": 346,
+        "end": 347,
+        "text": "."
+       },
+       {
+        "type": "identifier",
+        "start": 347,
+        "end": 351,
+        "text": "math"
+       },
+       {
+        "type": ".",
+        "start": 351,
+        "end": 352,
+        "text": "."
+       },
+       {
+        "type": "identifier",
+        "start": 352,
+        "end": 355,
+        "text": "min"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "import",
+    "start": 356,
+    "end": 375,
+    "children": [
+     {
+      "type": "import",
+      "start": 356,
+      "end": 362,
+      "text": "import"
+     },
+     {
+      "type": "qualified_identifier",
+      "start": 363,
+      "end": 375,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 363,
+        "end": 367,
+        "text": "java"
+       },
+       {
+        "type": ".",
+        "start": 367,
+        "end": 368,
+        "text": "."
+       },
+       {
+        "type": "identifier",
+        "start": 368,
+        "end": 370,
+        "text": "io"
+       },
+       {
+        "type": ".",
+        "start": 370,
+        "end": 371,
+        "text": "."
+       },
+       {
+        "type": "identifier",
+        "start": 371,
+        "end": 375,
+        "text": "File"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "function_declaration",
+    "start": 377,
+    "end": 486,
+    "children": [
+     {
+      "type": "fun",
+      "start": 377,
+      "end": 380,
+      "text": "fun"
+     },
+     {
+      "type": "identifier",
+      "start": 381,
+      "end": 385,
+      "field": "name",
+      "text": "demo"
+     },
+     {
+      "type": "function_value_parameters",
+      "start": 385,
+      "end": 397,
+      "children": [
+       {
+        "type": "(",
+        "start": 385,
+        "end": 386,
+        "text": "("
+       },
+       {
+        "type": "parameter",
+        "start": 386,
+        "end": 396,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 386,
+          "end": 390,
+          "text": "file"
+         },
+         {
+          "type": ":",
+          "start": 390,
+          "end": 391,
+          "text": ":"
+         },
+         {
+          "type": "user_type",
+          "start": 392,
+          "end": 396,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 392,
+            "end": 396,
+            "text": "File"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ")",
+        "start": 396,
+        "end": 397,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": ":",
+      "start": 397,
+      "end": 398,
+      "text": ":"
+     },
+     {
+      "type": "user_type",
+      "start": 399,
+      "end": 402,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 399,
+        "end": 402,
+        "text": "Int"
+       }
+      ]
+     },
+     {
+      "type": "function_body",
+      "start": 403,
+      "end": 486,
+      "children": [
+       {
+        "type": "block",
+        "start": 403,
+        "end": 486,
+        "children": [
+         {
+          "type": "{",
+          "start": 403,
+          "end": 404,
+          "text": "{"
+         },
+         {
+          "type": "property_declaration",
+          "start": 409,
+          "end": 434,
+          "children": [
+           {
+            "type": "val",
+            "start": 409,
+            "end": 412,
+            "text": "val"
+           },
+           {
+            "type": "variable_declaration",
+            "start": 413,
+            "end": 415,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 413,
+              "end": 415,
+              "text": "xs"
+             }
+            ]
+           },
+           {
+            "type": "=",
+            "start": 416,
+            "end": 417,
+            "text": "="
+           },
+           {
+            "type": "call_expression",
+            "start": 418,
+            "end": 434,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 418,
+              "end": 427,
+              "text": "ArrayList"
+             },
+             {
+              "type": "type_arguments",
+              "start": 427,
+              "end": 432,
+              "children": [
+               {
+                "type": "<",
+                "start": 427,
+                "end": 428,
+                "text": "<"
+               },
+               {
+                "type": "type_projection",
+                "start": 428,
+                "end": 431,
+                "children": [
+                 {
+                  "type": "user_type",
+                  "start": 428,
+                  "end": 431,
+                  "children": [
+                   {
+                    "type": "identifier",
+                    "start": 428,
+                    "end": 431,
+                    "text": "Int"
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": ">",
+                "start": 431,
+                "end": 432,
+                "text": ">"
+               }
+              ]
+             },
+             {
+              "type": "value_arguments",
+              "start": 432,
+              "end": 434,
+              "children": [
+               {
+                "type": "(",
+                "start": 432,
+                "end": 433,
+                "text": "("
+               },
+               {
+                "type": ")",
+                "start": 433,
+                "end": 434,
+                "text": ")"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "return_expression",
+          "start": 439,
+          "end": 484,
+          "children": [
+           {
+            "type": "return",
+            "start": 439,
+            "end": 445,
+            "text": "return"
+           },
+           {
+            "type": "call_expression",
+            "start": 446,
+            "end": 484,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 446,
+              "end": 449,
+              "text": "max"
+             },
+             {
+              "type": "value_arguments",
+              "start": 449,
+              "end": 484,
+              "children": [
+               {
+                "type": "(",
+                "start": 449,
+                "end": 450,
+                "text": "("
+               },
+               {
+                "type": "value_argument",
+                "start": 450,
+                "end": 465,
+                "children": [
+                 {
+                  "type": "call_expression",
+                  "start": 450,
+                  "end": 465,
+                  "children": [
+                   {
+                    "type": "identifier",
+                    "start": 450,
+                    "end": 453,
+                    "text": "min"
+                   },
+                   {
+                    "type": "value_arguments",
+                    "start": 453,
+                    "end": 465,
+                    "children": [
+                     {
+                      "type": "(",
+                      "start": 453,
+                      "end": 454,
+                      "text": "("
+                     },
+                     {
+                      "type": "value_argument",
+                      "start": 454,
+                      "end": 461,
+                      "children": [
+                       {
+                        "type": "navigation_expression",
+                        "start": 454,
+                        "end": 461,
+                        "children": [
+                         {
+                          "type": "identifier",
+                          "start": 454,
+                          "end": 456,
+                          "text": "xs"
+                         },
+                         {
+                          "type": ".",
+                          "start": 456,
+                          "end": 457,
+                          "text": "."
+                         },
+                         {
+                          "type": "identifier",
+                          "start": 457,
+                          "end": 461,
+                          "text": "size"
+                         }
+                        ]
+                       }
+                      ]
+                     },
+                     {
+                      "type": ",",
+                      "start": 461,
+                      "end": 462,
+                      "text": ","
+                     },
+                     {
+                      "type": "value_argument",
+                      "start": 463,
+                      "end": 464,
+                      "children": [
+                       {
+                        "type": "number_literal",
+                        "start": 463,
+                        "end": 464,
+                        "text": "1"
+                       }
+                      ]
+                     },
+                     {
+                      "type": ")",
+                      "start": 464,
+                      "end": 465,
+                      "text": ")"
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 465,
+                "end": 466,
+                "text": ","
+               },
+               {
+                "type": "value_argument",
+                "start": 467,
+                "end": 483,
+                "children": [
+                 {
+                  "type": "navigation_expression",
+                  "start": 467,
+                  "end": 483,
+                  "children": [
+                   {
+                    "type": "navigation_expression",
+                    "start": 467,
+                    "end": 476,
+                    "children": [
+                     {
+                      "type": "identifier",
+                      "start": 467,
+                      "end": 471,
+                      "text": "file"
+                     },
+                     {
+                      "type": ".",
+                      "start": 471,
+                      "end": 472,
+                      "text": "."
+                     },
+                     {
+                      "type": "identifier",
+                      "start": 472,
+                      "end": 476,
+                      "text": "name"
+                     }
+                    ]
+                   },
+                   {
+                    "type": ".",
+                    "start": 476,
+                    "end": 477,
+                    "text": "."
+                   },
+                   {
+                    "type": "identifier",
+                    "start": 477,
+                    "end": 483,
+                    "text": "length"
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": ")",
+                "start": 483,
+                "end": 484,
+                "text": ")"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "}",
+          "start": 485,
+          "end": 486,
+          "text": "}"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}
