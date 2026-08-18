@@ -16,9 +16,9 @@ building · `D` package review · `E`/`F` escalated · **merged** · **blocked**
 | YAML       | T1   | 2     | DS+grok+Terra | merged | tree_sitter_yaml       | prettier                          |
 | CSS        | T1   | 2     | grok          | merged | tree_sitter_css        | prettier                          |
 | Go         | T2   | 2     | DS+grok       | merged | tree_sitter_go         | gofmt                             |
-| Rust       | T2   | 3     | unrecorded    | B      | tree_sitter_rust       | rustfmt                           |
-| Kotlin     | T2   | 3     | unrecorded    | B      | tree_sitter_kotlin     | ktfmt                             |
-| JavaScript | T2   | 3     | unrecorded    | B      | tree_sitter_javascript | prettier                          |
+| Rust       | T2   | 3     | unrecorded    | C      | tree_sitter_rust       | rustfmt                           |
+| Kotlin     | T2   | 3     | unrecorded    | C      | tree_sitter_kotlin     | ktfmt                             |
+| JavaScript | T2   | 3     | unrecorded    | C      | tree_sitter_javascript | prettier                          |
 | Markdown   | T2   | 4     | tbd           | -      | tree_sitter_markdown   | prettier                          |
 | TypeScript | T2   | 4     | tbd           | -      | tree_sitter_typescript | prettier                          |
 | XML        | T3   | 4     | tbd           | -      | tree_sitter_xml        | prettier (`@prettier/plugin-xml`) |
@@ -32,20 +32,25 @@ Grammar package names are the orchestrator's guess from PyPI naming convention.
 Stage A confirms or corrects each one and records the pin in the manifest; a
 wrong guess here is a template delta, not a failure.
 
-**Round 3 stage B, 2026-08-18 — one finished, two cut off.** All three ran as
-Opus subagents in their own worktrees. The session limit killed two of them
-mid-review; their partial work is committed on their branches and is **not** a
-verdict.
+**Round 3 stage B is complete and merged, 2026-08-18.** All three passed and
+all three are on `main`. Two were cut off by a session limit mid-review and
+resumed on DeepSeek; the Opus subagent runs that started them were off-lane —
+see `LEDGER.md`, "Reviewer lane".
 
-| Language   | Stage B          | State                                                                                                   |
-| ---------- | ---------------- | ------------------------------------------------------------------------------------------------------- |
-| JavaScript | **complete**     | `pass with fixes applied`. Two probes added, two template deltas, JSX deferred to round 4. Ready for C. |
-| Rust       | **cut off**      | One commit landed (comment lexicon, `use` forms). Report edits uncommitted. Verdict never written.      |
-| Kotlin     | **cut off**      | No commit; a dirty tree with a good `[incomparable]` finding. Verdict never written.                    |
+| Language   | Verdict                  | Reviewer            | Cross-check                    |
+| ---------- | ------------------------ | ------------------- | ------------------------------ |
+| JavaScript | `pass with fixes applied` | Opus (off-lane)     | orchestrator merge review      |
+| Kotlin     | `pass with fixes applied` | Opus → DeepSeek     | grok, then orchestrator        |
+| Rust       | `pass with fixes applied` | Opus → DeepSeek     | orchestrator merge review      |
 
-Neither cut-off review reached its own required output, so **neither is a pass**.
-Resume them rather than treating the partial work as reviewed — a dead agent's
-last words describe intent, not state.
+Each found something the others could not have: JavaScript that prettier's
+`objectWrap` defaults to `preserve`, so a width-driven `group` is the wrong
+model for objects; Kotlin that ktfmt's `sortedAndDistinctImports` is two
+exclusions, sorting *and* de-duplication, not one; Rust that `FINDINGS` 4 was
+already decided and the leading-`|` deletion needed a dedicated
+`[incomparable]` probe rather than another deferral to Dave.
+
+**Next: stage C for all three.**
 
 **Round 3's stage A is complete and unmerged**, on `wt/lang-rust`,
 `wt/lang-kotlin` and `wt/lang-javascript` — corpus, manifest, trees, reference
