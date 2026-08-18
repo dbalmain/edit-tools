@@ -1,0 +1,1212 @@
+{
+ "language": "kotlin",
+ "source_file": "corpus/src/kotlin/control_flow.kt",
+ "source": "// if/for/while/try as expressions, plus a labeled loop.\n\nfun sign(x:Int):String=if (x>0) \"pos\" else if (x<0) \"neg\" else \"zero\"\n\nfun demo(items:List<Int>):Int {\n    var total=0\n    loop@ for (item in items) { // labeled\n        if(item<0) continue@loop\n        if(item==0) break@loop\n        total+=item\n    }\n    var n=items.size\n    while(n>0){\n        n-=1\n    }\n    val parsed=try{ items.first() } catch(e:NoSuchElementException){ -1 } finally { n=0 } // try is an expression\n    return parsed\n}\n",
+ "root": {
+  "type": "source_file",
+  "start": 0,
+  "end": 500,
+  "children": [
+   {
+    "type": "line_comment",
+    "start": 0,
+    "end": 56,
+    "text": "// if/for/while/try as expressions, plus a labeled loop."
+   },
+   {
+    "type": "function_declaration",
+    "start": 58,
+    "end": 127,
+    "children": [
+     {
+      "type": "fun",
+      "start": 58,
+      "end": 61,
+      "text": "fun"
+     },
+     {
+      "type": "identifier",
+      "start": 62,
+      "end": 66,
+      "field": "name",
+      "text": "sign"
+     },
+     {
+      "type": "function_value_parameters",
+      "start": 66,
+      "end": 73,
+      "children": [
+       {
+        "type": "(",
+        "start": 66,
+        "end": 67,
+        "text": "("
+       },
+       {
+        "type": "parameter",
+        "start": 67,
+        "end": 72,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 67,
+          "end": 68,
+          "text": "x"
+         },
+         {
+          "type": ":",
+          "start": 68,
+          "end": 69,
+          "text": ":"
+         },
+         {
+          "type": "user_type",
+          "start": 69,
+          "end": 72,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 69,
+            "end": 72,
+            "text": "Int"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ")",
+        "start": 72,
+        "end": 73,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": ":",
+      "start": 73,
+      "end": 74,
+      "text": ":"
+     },
+     {
+      "type": "user_type",
+      "start": 74,
+      "end": 80,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 74,
+        "end": 80,
+        "text": "String"
+       }
+      ]
+     },
+     {
+      "type": "function_body",
+      "start": 80,
+      "end": 127,
+      "children": [
+       {
+        "type": "=",
+        "start": 80,
+        "end": 81,
+        "text": "="
+       },
+       {
+        "type": "if_expression",
+        "start": 81,
+        "end": 127,
+        "children": [
+         {
+          "type": "if",
+          "start": 81,
+          "end": 83,
+          "text": "if"
+         },
+         {
+          "type": "(",
+          "start": 84,
+          "end": 85,
+          "text": "("
+         },
+         {
+          "type": "binary_expression",
+          "start": 85,
+          "end": 88,
+          "field": "condition",
+          "children": [
+           {
+            "type": "identifier",
+            "start": 85,
+            "end": 86,
+            "field": "left",
+            "text": "x"
+           },
+           {
+            "type": ">",
+            "start": 86,
+            "end": 87,
+            "field": "operator",
+            "text": ">"
+           },
+           {
+            "type": "number_literal",
+            "start": 87,
+            "end": 88,
+            "field": "right",
+            "text": "0"
+           }
+          ]
+         },
+         {
+          "type": ")",
+          "start": 88,
+          "end": 89,
+          "text": ")"
+         },
+         {
+          "type": "string_literal",
+          "start": 90,
+          "end": 95,
+          "children": [
+           {
+            "type": "\"",
+            "start": 90,
+            "end": 91,
+            "text": "\""
+           },
+           {
+            "type": "string_content",
+            "start": 91,
+            "end": 94,
+            "text": "pos"
+           },
+           {
+            "type": "\"",
+            "start": 94,
+            "end": 95,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": "else",
+          "start": 96,
+          "end": 100,
+          "text": "else"
+         },
+         {
+          "type": "if_expression",
+          "start": 101,
+          "end": 127,
+          "children": [
+           {
+            "type": "if",
+            "start": 101,
+            "end": 103,
+            "text": "if"
+           },
+           {
+            "type": "(",
+            "start": 104,
+            "end": 105,
+            "text": "("
+           },
+           {
+            "type": "binary_expression",
+            "start": 105,
+            "end": 108,
+            "field": "condition",
+            "children": [
+             {
+              "type": "identifier",
+              "start": 105,
+              "end": 106,
+              "field": "left",
+              "text": "x"
+             },
+             {
+              "type": "<",
+              "start": 106,
+              "end": 107,
+              "field": "operator",
+              "text": "<"
+             },
+             {
+              "type": "number_literal",
+              "start": 107,
+              "end": 108,
+              "field": "right",
+              "text": "0"
+             }
+            ]
+           },
+           {
+            "type": ")",
+            "start": 108,
+            "end": 109,
+            "text": ")"
+           },
+           {
+            "type": "string_literal",
+            "start": 110,
+            "end": 115,
+            "children": [
+             {
+              "type": "\"",
+              "start": 110,
+              "end": 111,
+              "text": "\""
+             },
+             {
+              "type": "string_content",
+              "start": 111,
+              "end": 114,
+              "text": "neg"
+             },
+             {
+              "type": "\"",
+              "start": 114,
+              "end": 115,
+              "text": "\""
+             }
+            ]
+           },
+           {
+            "type": "else",
+            "start": 116,
+            "end": 120,
+            "text": "else"
+           },
+           {
+            "type": "string_literal",
+            "start": 121,
+            "end": 127,
+            "children": [
+             {
+              "type": "\"",
+              "start": 121,
+              "end": 122,
+              "text": "\""
+             },
+             {
+              "type": "string_content",
+              "start": 122,
+              "end": 126,
+              "text": "zero"
+             },
+             {
+              "type": "\"",
+              "start": 126,
+              "end": 127,
+              "text": "\""
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "function_declaration",
+    "start": 129,
+    "end": 499,
+    "children": [
+     {
+      "type": "fun",
+      "start": 129,
+      "end": 132,
+      "text": "fun"
+     },
+     {
+      "type": "identifier",
+      "start": 133,
+      "end": 137,
+      "field": "name",
+      "text": "demo"
+     },
+     {
+      "type": "function_value_parameters",
+      "start": 137,
+      "end": 154,
+      "children": [
+       {
+        "type": "(",
+        "start": 137,
+        "end": 138,
+        "text": "("
+       },
+       {
+        "type": "parameter",
+        "start": 138,
+        "end": 153,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 138,
+          "end": 143,
+          "text": "items"
+         },
+         {
+          "type": ":",
+          "start": 143,
+          "end": 144,
+          "text": ":"
+         },
+         {
+          "type": "user_type",
+          "start": 144,
+          "end": 153,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 144,
+            "end": 148,
+            "text": "List"
+           },
+           {
+            "type": "type_arguments",
+            "start": 148,
+            "end": 153,
+            "children": [
+             {
+              "type": "<",
+              "start": 148,
+              "end": 149,
+              "text": "<"
+             },
+             {
+              "type": "type_projection",
+              "start": 149,
+              "end": 152,
+              "children": [
+               {
+                "type": "user_type",
+                "start": 149,
+                "end": 152,
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 149,
+                  "end": 152,
+                  "text": "Int"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ">",
+              "start": 152,
+              "end": 153,
+              "text": ">"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ")",
+        "start": 153,
+        "end": 154,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": ":",
+      "start": 154,
+      "end": 155,
+      "text": ":"
+     },
+     {
+      "type": "user_type",
+      "start": 155,
+      "end": 158,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 155,
+        "end": 158,
+        "text": "Int"
+       }
+      ]
+     },
+     {
+      "type": "function_body",
+      "start": 159,
+      "end": 499,
+      "children": [
+       {
+        "type": "block",
+        "start": 159,
+        "end": 499,
+        "children": [
+         {
+          "type": "{",
+          "start": 159,
+          "end": 160,
+          "text": "{"
+         },
+         {
+          "type": "property_declaration",
+          "start": 165,
+          "end": 176,
+          "children": [
+           {
+            "type": "var",
+            "start": 165,
+            "end": 168,
+            "text": "var"
+           },
+           {
+            "type": "variable_declaration",
+            "start": 169,
+            "end": 174,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 169,
+              "end": 174,
+              "text": "total"
+             }
+            ]
+           },
+           {
+            "type": "=",
+            "start": 174,
+            "end": 175,
+            "text": "="
+           },
+           {
+            "type": "number_literal",
+            "start": 175,
+            "end": 176,
+            "text": "0"
+           }
+          ]
+         },
+         {
+          "type": "for_statement",
+          "start": 181,
+          "end": 309,
+          "children": [
+           {
+            "type": "label",
+            "start": 181,
+            "end": 186,
+            "text": "loop@"
+           },
+           {
+            "type": "for",
+            "start": 187,
+            "end": 190,
+            "text": "for"
+           },
+           {
+            "type": "(",
+            "start": 191,
+            "end": 192,
+            "text": "("
+           },
+           {
+            "type": "variable_declaration",
+            "start": 192,
+            "end": 196,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 192,
+              "end": 196,
+              "text": "item"
+             }
+            ]
+           },
+           {
+            "type": "in",
+            "start": 197,
+            "end": 199,
+            "text": "in"
+           },
+           {
+            "type": "identifier",
+            "start": 200,
+            "end": 205,
+            "text": "items"
+           },
+           {
+            "type": ")",
+            "start": 205,
+            "end": 206,
+            "text": ")"
+           },
+           {
+            "type": "block",
+            "start": 207,
+            "end": 309,
+            "children": [
+             {
+              "type": "{",
+              "start": 207,
+              "end": 208,
+              "text": "{"
+             },
+             {
+              "type": "line_comment",
+              "start": 209,
+              "end": 219,
+              "text": "// labeled"
+             },
+             {
+              "type": "if_expression",
+              "start": 228,
+              "end": 252,
+              "children": [
+               {
+                "type": "if",
+                "start": 228,
+                "end": 230,
+                "text": "if"
+               },
+               {
+                "type": "(",
+                "start": 230,
+                "end": 231,
+                "text": "("
+               },
+               {
+                "type": "binary_expression",
+                "start": 231,
+                "end": 237,
+                "field": "condition",
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 231,
+                  "end": 235,
+                  "field": "left",
+                  "text": "item"
+                 },
+                 {
+                  "type": "<",
+                  "start": 235,
+                  "end": 236,
+                  "field": "operator",
+                  "text": "<"
+                 },
+                 {
+                  "type": "number_literal",
+                  "start": 236,
+                  "end": 237,
+                  "field": "right",
+                  "text": "0"
+                 }
+                ]
+               },
+               {
+                "type": ")",
+                "start": 237,
+                "end": 238,
+                "text": ")"
+               },
+               {
+                "type": "labeled_expression",
+                "start": 239,
+                "end": 252,
+                "children": [
+                 {
+                  "type": "label",
+                  "start": 239,
+                  "end": 248,
+                  "text": "continue@"
+                 },
+                 {
+                  "type": "identifier",
+                  "start": 248,
+                  "end": 252,
+                  "text": "loop"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": "if_expression",
+              "start": 261,
+              "end": 283,
+              "children": [
+               {
+                "type": "if",
+                "start": 261,
+                "end": 263,
+                "text": "if"
+               },
+               {
+                "type": "(",
+                "start": 263,
+                "end": 264,
+                "text": "("
+               },
+               {
+                "type": "binary_expression",
+                "start": 264,
+                "end": 271,
+                "field": "condition",
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 264,
+                  "end": 268,
+                  "field": "left",
+                  "text": "item"
+                 },
+                 {
+                  "type": "==",
+                  "start": 268,
+                  "end": 270,
+                  "field": "operator",
+                  "text": "=="
+                 },
+                 {
+                  "type": "number_literal",
+                  "start": 270,
+                  "end": 271,
+                  "field": "right",
+                  "text": "0"
+                 }
+                ]
+               },
+               {
+                "type": ")",
+                "start": 271,
+                "end": 272,
+                "text": ")"
+               },
+               {
+                "type": "labeled_expression",
+                "start": 273,
+                "end": 283,
+                "children": [
+                 {
+                  "type": "label",
+                  "start": 273,
+                  "end": 279,
+                  "text": "break@"
+                 },
+                 {
+                  "type": "identifier",
+                  "start": 279,
+                  "end": 283,
+                  "text": "loop"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": "assignment",
+              "start": 292,
+              "end": 303,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 292,
+                "end": 297,
+                "field": "left",
+                "text": "total"
+               },
+               {
+                "type": "+=",
+                "start": 297,
+                "end": 299,
+                "field": "operator",
+                "text": "+="
+               },
+               {
+                "type": "identifier",
+                "start": 299,
+                "end": 303,
+                "field": "right",
+                "text": "item"
+               }
+              ]
+             },
+             {
+              "type": "}",
+              "start": 308,
+              "end": 309,
+              "text": "}"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "property_declaration",
+          "start": 314,
+          "end": 330,
+          "children": [
+           {
+            "type": "var",
+            "start": 314,
+            "end": 317,
+            "text": "var"
+           },
+           {
+            "type": "variable_declaration",
+            "start": 318,
+            "end": 319,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 318,
+              "end": 319,
+              "text": "n"
+             }
+            ]
+           },
+           {
+            "type": "=",
+            "start": 319,
+            "end": 320,
+            "text": "="
+           },
+           {
+            "type": "navigation_expression",
+            "start": 320,
+            "end": 330,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 320,
+              "end": 325,
+              "text": "items"
+             },
+             {
+              "type": ".",
+              "start": 325,
+              "end": 326,
+              "text": "."
+             },
+             {
+              "type": "identifier",
+              "start": 326,
+              "end": 330,
+              "text": "size"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "while_statement",
+          "start": 335,
+          "end": 365,
+          "children": [
+           {
+            "type": "while",
+            "start": 335,
+            "end": 340,
+            "text": "while"
+           },
+           {
+            "type": "(",
+            "start": 340,
+            "end": 341,
+            "text": "("
+           },
+           {
+            "type": "binary_expression",
+            "start": 341,
+            "end": 344,
+            "field": "condition",
+            "children": [
+             {
+              "type": "identifier",
+              "start": 341,
+              "end": 342,
+              "field": "left",
+              "text": "n"
+             },
+             {
+              "type": ">",
+              "start": 342,
+              "end": 343,
+              "field": "operator",
+              "text": ">"
+             },
+             {
+              "type": "number_literal",
+              "start": 343,
+              "end": 344,
+              "field": "right",
+              "text": "0"
+             }
+            ]
+           },
+           {
+            "type": ")",
+            "start": 344,
+            "end": 345,
+            "text": ")"
+           },
+           {
+            "type": "block",
+            "start": 345,
+            "end": 365,
+            "children": [
+             {
+              "type": "{",
+              "start": 345,
+              "end": 346,
+              "text": "{"
+             },
+             {
+              "type": "assignment",
+              "start": 355,
+              "end": 359,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 355,
+                "end": 356,
+                "field": "left",
+                "text": "n"
+               },
+               {
+                "type": "-=",
+                "start": 356,
+                "end": 358,
+                "field": "operator",
+                "text": "-="
+               },
+               {
+                "type": "number_literal",
+                "start": 358,
+                "end": 359,
+                "field": "right",
+                "text": "1"
+               }
+              ]
+             },
+             {
+              "type": "}",
+              "start": 364,
+              "end": 365,
+              "text": "}"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "property_declaration",
+          "start": 370,
+          "end": 455,
+          "children": [
+           {
+            "type": "val",
+            "start": 370,
+            "end": 373,
+            "text": "val"
+           },
+           {
+            "type": "variable_declaration",
+            "start": 374,
+            "end": 380,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 374,
+              "end": 380,
+              "text": "parsed"
+             }
+            ]
+           },
+           {
+            "type": "=",
+            "start": 380,
+            "end": 381,
+            "text": "="
+           },
+           {
+            "type": "try_expression",
+            "start": 381,
+            "end": 455,
+            "children": [
+             {
+              "type": "try",
+              "start": 381,
+              "end": 384,
+              "text": "try"
+             },
+             {
+              "type": "block",
+              "start": 384,
+              "end": 401,
+              "children": [
+               {
+                "type": "{",
+                "start": 384,
+                "end": 385,
+                "text": "{"
+               },
+               {
+                "type": "call_expression",
+                "start": 386,
+                "end": 399,
+                "children": [
+                 {
+                  "type": "navigation_expression",
+                  "start": 386,
+                  "end": 397,
+                  "children": [
+                   {
+                    "type": "identifier",
+                    "start": 386,
+                    "end": 391,
+                    "text": "items"
+                   },
+                   {
+                    "type": ".",
+                    "start": 391,
+                    "end": 392,
+                    "text": "."
+                   },
+                   {
+                    "type": "identifier",
+                    "start": 392,
+                    "end": 397,
+                    "text": "first"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "value_arguments",
+                  "start": 397,
+                  "end": 399,
+                  "children": [
+                   {
+                    "type": "(",
+                    "start": 397,
+                    "end": 398,
+                    "text": "("
+                   },
+                   {
+                    "type": ")",
+                    "start": 398,
+                    "end": 399,
+                    "text": ")"
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": "}",
+                "start": 400,
+                "end": 401,
+                "text": "}"
+               }
+              ]
+             },
+             {
+              "type": "catch_block",
+              "start": 402,
+              "end": 439,
+              "children": [
+               {
+                "type": "catch",
+                "start": 402,
+                "end": 407,
+                "text": "catch"
+               },
+               {
+                "type": "(",
+                "start": 407,
+                "end": 408,
+                "text": "("
+               },
+               {
+                "type": "identifier",
+                "start": 408,
+                "end": 409,
+                "text": "e"
+               },
+               {
+                "type": ":",
+                "start": 409,
+                "end": 410,
+                "text": ":"
+               },
+               {
+                "type": "user_type",
+                "start": 410,
+                "end": 432,
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 410,
+                  "end": 432,
+                  "text": "NoSuchElementException"
+                 }
+                ]
+               },
+               {
+                "type": ")",
+                "start": 432,
+                "end": 433,
+                "text": ")"
+               },
+               {
+                "type": "block",
+                "start": 433,
+                "end": 439,
+                "children": [
+                 {
+                  "type": "{",
+                  "start": 433,
+                  "end": 434,
+                  "text": "{"
+                 },
+                 {
+                  "type": "unary_expression",
+                  "start": 435,
+                  "end": 437,
+                  "children": [
+                   {
+                    "type": "-",
+                    "start": 435,
+                    "end": 436,
+                    "field": "operator",
+                    "text": "-"
+                   },
+                   {
+                    "type": "number_literal",
+                    "start": 436,
+                    "end": 437,
+                    "field": "argument",
+                    "text": "1"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "}",
+                  "start": 438,
+                  "end": 439,
+                  "text": "}"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": "finally_block",
+              "start": 440,
+              "end": 455,
+              "children": [
+               {
+                "type": "finally",
+                "start": 440,
+                "end": 447,
+                "text": "finally"
+               },
+               {
+                "type": "block",
+                "start": 448,
+                "end": 455,
+                "children": [
+                 {
+                  "type": "{",
+                  "start": 448,
+                  "end": 449,
+                  "text": "{"
+                 },
+                 {
+                  "type": "assignment",
+                  "start": 450,
+                  "end": 453,
+                  "children": [
+                   {
+                    "type": "identifier",
+                    "start": 450,
+                    "end": 451,
+                    "field": "left",
+                    "text": "n"
+                   },
+                   {
+                    "type": "=",
+                    "start": 451,
+                    "end": 452,
+                    "field": "operator",
+                    "text": "="
+                   },
+                   {
+                    "type": "number_literal",
+                    "start": 452,
+                    "end": 453,
+                    "field": "right",
+                    "text": "0"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "}",
+                  "start": 454,
+                  "end": 455,
+                  "text": "}"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "line_comment",
+          "start": 456,
+          "end": 479,
+          "text": "// try is an expression"
+         },
+         {
+          "type": "return_expression",
+          "start": 484,
+          "end": 497,
+          "children": [
+           {
+            "type": "return",
+            "start": 484,
+            "end": 490,
+            "text": "return"
+           },
+           {
+            "type": "identifier",
+            "start": 491,
+            "end": 497,
+            "text": "parsed"
+           }
+          ]
+         },
+         {
+          "type": "}",
+          "start": 498,
+          "end": 499,
+          "text": "}"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

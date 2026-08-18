@@ -1,0 +1,933 @@
+{
+ "language": "kotlin",
+ "source_file": "corpus/src/kotlin/annotations.kt",
+ "source": "// Stacked annotations and use-site targets. Written attached, on one line,\n// because tree-sitter-kotlin 1.1.0 parses an own-line annotation as a\n// sibling `annotated_expression` in some surrounding contexts and as a\n// `modifiers` child in others -- it is not \"stacked splits, single\n// attaches\". ktfmt joins an own-line stack onto the declaration, so where\n// the grammar splits, the join changes the named tree and gate 3 rejects\n// the reference output. Own-line annotations are therefore unmeasured\n// (FINDINGS 4). See the report for the contexts that were tried.\n\n@JvmStatic @Throws(IOException::class) fun demo(@param:Min(0) count:Int) {} // stacked + use-site\n\n@Deprecated(\"use other\",ReplaceWith(\"other()\")) fun old():String=\"gone\"\n\nclass Holder(@get:JvmName(\"readValue\") val value:Int)\n\nannotation class Min(val n:Int)\n",
+ "root": {
+  "type": "source_file",
+  "start": 0,
+  "end": 833,
+  "children": [
+   {
+    "type": "line_comment",
+    "start": 0,
+    "end": 75,
+    "text": "// Stacked annotations and use-site targets. Written attached, on one line,"
+   },
+   {
+    "type": "line_comment",
+    "start": 76,
+    "end": 146,
+    "text": "// because tree-sitter-kotlin 1.1.0 parses an own-line annotation as a"
+   },
+   {
+    "type": "line_comment",
+    "start": 147,
+    "end": 218,
+    "text": "// sibling `annotated_expression` in some surrounding contexts and as a"
+   },
+   {
+    "type": "line_comment",
+    "start": 219,
+    "end": 286,
+    "text": "// `modifiers` child in others -- it is not \"stacked splits, single"
+   },
+   {
+    "type": "line_comment",
+    "start": 287,
+    "end": 361,
+    "text": "// attaches\". ktfmt joins an own-line stack onto the declaration, so where"
+   },
+   {
+    "type": "line_comment",
+    "start": 362,
+    "end": 435,
+    "text": "// the grammar splits, the join changes the named tree and gate 3 rejects"
+   },
+   {
+    "type": "line_comment",
+    "start": 436,
+    "end": 506,
+    "text": "// the reference output. Own-line annotations are therefore unmeasured"
+   },
+   {
+    "type": "line_comment",
+    "start": 507,
+    "end": 572,
+    "text": "// (FINDINGS 4). See the report for the contexts that were tried."
+   },
+   {
+    "type": "function_declaration",
+    "start": 574,
+    "end": 649,
+    "children": [
+     {
+      "type": "modifiers",
+      "start": 574,
+      "end": 612,
+      "children": [
+       {
+        "type": "annotation",
+        "start": 574,
+        "end": 584,
+        "children": [
+         {
+          "type": "@",
+          "start": 574,
+          "end": 575,
+          "text": "@"
+         },
+         {
+          "type": "user_type",
+          "start": 575,
+          "end": 584,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 575,
+            "end": 584,
+            "text": "JvmStatic"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "annotation",
+        "start": 585,
+        "end": 612,
+        "children": [
+         {
+          "type": "@",
+          "start": 585,
+          "end": 586,
+          "text": "@"
+         },
+         {
+          "type": "constructor_invocation",
+          "start": 586,
+          "end": 612,
+          "children": [
+           {
+            "type": "user_type",
+            "start": 586,
+            "end": 592,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 586,
+              "end": 592,
+              "text": "Throws"
+             }
+            ]
+           },
+           {
+            "type": "value_arguments",
+            "start": 592,
+            "end": 612,
+            "children": [
+             {
+              "type": "(",
+              "start": 592,
+              "end": 593,
+              "text": "("
+             },
+             {
+              "type": "value_argument",
+              "start": 593,
+              "end": 611,
+              "children": [
+               {
+                "type": "navigation_expression",
+                "start": 593,
+                "end": 611,
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 593,
+                  "end": 604,
+                  "text": "IOException"
+                 },
+                 {
+                  "type": "::",
+                  "start": 604,
+                  "end": 606,
+                  "text": "::"
+                 },
+                 {
+                  "type": "identifier",
+                  "start": 606,
+                  "end": 611,
+                  "text": "class"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ")",
+              "start": 611,
+              "end": 612,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "fun",
+      "start": 613,
+      "end": 616,
+      "text": "fun"
+     },
+     {
+      "type": "identifier",
+      "start": 617,
+      "end": 621,
+      "field": "name",
+      "text": "demo"
+     },
+     {
+      "type": "function_value_parameters",
+      "start": 621,
+      "end": 646,
+      "children": [
+       {
+        "type": "(",
+        "start": 621,
+        "end": 622,
+        "text": "("
+       },
+       {
+        "type": "parameter_modifiers",
+        "start": 622,
+        "end": 635,
+        "children": [
+         {
+          "type": "annotation",
+          "start": 622,
+          "end": 635,
+          "children": [
+           {
+            "type": "@",
+            "start": 622,
+            "end": 623,
+            "text": "@"
+           },
+           {
+            "type": "use_site_target",
+            "start": 623,
+            "end": 629,
+            "children": [
+             {
+              "type": "param",
+              "start": 623,
+              "end": 628,
+              "text": "param"
+             },
+             {
+              "type": ":",
+              "start": 628,
+              "end": 629,
+              "text": ":"
+             }
+            ]
+           },
+           {
+            "type": "constructor_invocation",
+            "start": 629,
+            "end": 635,
+            "children": [
+             {
+              "type": "user_type",
+              "start": 629,
+              "end": 632,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 629,
+                "end": 632,
+                "text": "Min"
+               }
+              ]
+             },
+             {
+              "type": "value_arguments",
+              "start": 632,
+              "end": 635,
+              "children": [
+               {
+                "type": "(",
+                "start": 632,
+                "end": 633,
+                "text": "("
+               },
+               {
+                "type": "value_argument",
+                "start": 633,
+                "end": 634,
+                "children": [
+                 {
+                  "type": "number_literal",
+                  "start": 633,
+                  "end": 634,
+                  "text": "0"
+                 }
+                ]
+               },
+               {
+                "type": ")",
+                "start": 634,
+                "end": 635,
+                "text": ")"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "parameter",
+        "start": 636,
+        "end": 645,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 636,
+          "end": 641,
+          "text": "count"
+         },
+         {
+          "type": ":",
+          "start": 641,
+          "end": 642,
+          "text": ":"
+         },
+         {
+          "type": "user_type",
+          "start": 642,
+          "end": 645,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 642,
+            "end": 645,
+            "text": "Int"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ")",
+        "start": 645,
+        "end": 646,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "function_body",
+      "start": 647,
+      "end": 649,
+      "children": [
+       {
+        "type": "block",
+        "start": 647,
+        "end": 649,
+        "children": [
+         {
+          "type": "{",
+          "start": 647,
+          "end": 648,
+          "text": "{"
+         },
+         {
+          "type": "}",
+          "start": 648,
+          "end": 649,
+          "text": "}"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "line_comment",
+    "start": 650,
+    "end": 671,
+    "text": "// stacked + use-site"
+   },
+   {
+    "type": "function_declaration",
+    "start": 673,
+    "end": 744,
+    "children": [
+     {
+      "type": "modifiers",
+      "start": 673,
+      "end": 720,
+      "children": [
+       {
+        "type": "annotation",
+        "start": 673,
+        "end": 720,
+        "children": [
+         {
+          "type": "@",
+          "start": 673,
+          "end": 674,
+          "text": "@"
+         },
+         {
+          "type": "constructor_invocation",
+          "start": 674,
+          "end": 720,
+          "children": [
+           {
+            "type": "user_type",
+            "start": 674,
+            "end": 684,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 674,
+              "end": 684,
+              "text": "Deprecated"
+             }
+            ]
+           },
+           {
+            "type": "value_arguments",
+            "start": 684,
+            "end": 720,
+            "children": [
+             {
+              "type": "(",
+              "start": 684,
+              "end": 685,
+              "text": "("
+             },
+             {
+              "type": "value_argument",
+              "start": 685,
+              "end": 696,
+              "children": [
+               {
+                "type": "string_literal",
+                "start": 685,
+                "end": 696,
+                "children": [
+                 {
+                  "type": "\"",
+                  "start": 685,
+                  "end": 686,
+                  "text": "\""
+                 },
+                 {
+                  "type": "string_content",
+                  "start": 686,
+                  "end": 695,
+                  "text": "use other"
+                 },
+                 {
+                  "type": "\"",
+                  "start": 695,
+                  "end": 696,
+                  "text": "\""
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 696,
+              "end": 697,
+              "text": ","
+             },
+             {
+              "type": "value_argument",
+              "start": 697,
+              "end": 719,
+              "children": [
+               {
+                "type": "call_expression",
+                "start": 697,
+                "end": 719,
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 697,
+                  "end": 708,
+                  "text": "ReplaceWith"
+                 },
+                 {
+                  "type": "value_arguments",
+                  "start": 708,
+                  "end": 719,
+                  "children": [
+                   {
+                    "type": "(",
+                    "start": 708,
+                    "end": 709,
+                    "text": "("
+                   },
+                   {
+                    "type": "value_argument",
+                    "start": 709,
+                    "end": 718,
+                    "children": [
+                     {
+                      "type": "string_literal",
+                      "start": 709,
+                      "end": 718,
+                      "children": [
+                       {
+                        "type": "\"",
+                        "start": 709,
+                        "end": 710,
+                        "text": "\""
+                       },
+                       {
+                        "type": "string_content",
+                        "start": 710,
+                        "end": 717,
+                        "text": "other()"
+                       },
+                       {
+                        "type": "\"",
+                        "start": 717,
+                        "end": 718,
+                        "text": "\""
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   {
+                    "type": ")",
+                    "start": 718,
+                    "end": 719,
+                    "text": ")"
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ")",
+              "start": 719,
+              "end": 720,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "fun",
+      "start": 721,
+      "end": 724,
+      "text": "fun"
+     },
+     {
+      "type": "identifier",
+      "start": 725,
+      "end": 728,
+      "field": "name",
+      "text": "old"
+     },
+     {
+      "type": "function_value_parameters",
+      "start": 728,
+      "end": 730,
+      "children": [
+       {
+        "type": "(",
+        "start": 728,
+        "end": 729,
+        "text": "("
+       },
+       {
+        "type": ")",
+        "start": 729,
+        "end": 730,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": ":",
+      "start": 730,
+      "end": 731,
+      "text": ":"
+     },
+     {
+      "type": "user_type",
+      "start": 731,
+      "end": 737,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 731,
+        "end": 737,
+        "text": "String"
+       }
+      ]
+     },
+     {
+      "type": "function_body",
+      "start": 737,
+      "end": 744,
+      "children": [
+       {
+        "type": "=",
+        "start": 737,
+        "end": 738,
+        "text": "="
+       },
+       {
+        "type": "string_literal",
+        "start": 738,
+        "end": 744,
+        "children": [
+         {
+          "type": "\"",
+          "start": 738,
+          "end": 739,
+          "text": "\""
+         },
+         {
+          "type": "string_content",
+          "start": 739,
+          "end": 743,
+          "text": "gone"
+         },
+         {
+          "type": "\"",
+          "start": 743,
+          "end": 744,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "class_declaration",
+    "start": 746,
+    "end": 799,
+    "children": [
+     {
+      "type": "class",
+      "start": 746,
+      "end": 751,
+      "text": "class"
+     },
+     {
+      "type": "identifier",
+      "start": 752,
+      "end": 758,
+      "field": "name",
+      "text": "Holder"
+     },
+     {
+      "type": "primary_constructor",
+      "start": 758,
+      "end": 799,
+      "children": [
+       {
+        "type": "class_parameters",
+        "start": 758,
+        "end": 799,
+        "children": [
+         {
+          "type": "(",
+          "start": 758,
+          "end": 759,
+          "text": "("
+         },
+         {
+          "type": "class_parameter",
+          "start": 759,
+          "end": 798,
+          "children": [
+           {
+            "type": "modifiers",
+            "start": 759,
+            "end": 784,
+            "children": [
+             {
+              "type": "annotation",
+              "start": 759,
+              "end": 784,
+              "children": [
+               {
+                "type": "@",
+                "start": 759,
+                "end": 760,
+                "text": "@"
+               },
+               {
+                "type": "use_site_target",
+                "start": 760,
+                "end": 764,
+                "children": [
+                 {
+                  "type": "get",
+                  "start": 760,
+                  "end": 763,
+                  "text": "get"
+                 },
+                 {
+                  "type": ":",
+                  "start": 763,
+                  "end": 764,
+                  "text": ":"
+                 }
+                ]
+               },
+               {
+                "type": "constructor_invocation",
+                "start": 764,
+                "end": 784,
+                "children": [
+                 {
+                  "type": "user_type",
+                  "start": 764,
+                  "end": 771,
+                  "children": [
+                   {
+                    "type": "identifier",
+                    "start": 764,
+                    "end": 771,
+                    "text": "JvmName"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "value_arguments",
+                  "start": 771,
+                  "end": 784,
+                  "children": [
+                   {
+                    "type": "(",
+                    "start": 771,
+                    "end": 772,
+                    "text": "("
+                   },
+                   {
+                    "type": "value_argument",
+                    "start": 772,
+                    "end": 783,
+                    "children": [
+                     {
+                      "type": "string_literal",
+                      "start": 772,
+                      "end": 783,
+                      "children": [
+                       {
+                        "type": "\"",
+                        "start": 772,
+                        "end": 773,
+                        "text": "\""
+                       },
+                       {
+                        "type": "string_content",
+                        "start": 773,
+                        "end": 782,
+                        "text": "readValue"
+                       },
+                       {
+                        "type": "\"",
+                        "start": 782,
+                        "end": 783,
+                        "text": "\""
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   {
+                    "type": ")",
+                    "start": 783,
+                    "end": 784,
+                    "text": ")"
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "val",
+            "start": 785,
+            "end": 788,
+            "text": "val"
+           },
+           {
+            "type": "identifier",
+            "start": 789,
+            "end": 794,
+            "text": "value"
+           },
+           {
+            "type": ":",
+            "start": 794,
+            "end": 795,
+            "text": ":"
+           },
+           {
+            "type": "user_type",
+            "start": 795,
+            "end": 798,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 795,
+              "end": 798,
+              "text": "Int"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ")",
+          "start": 798,
+          "end": 799,
+          "text": ")"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "class_declaration",
+    "start": 801,
+    "end": 832,
+    "children": [
+     {
+      "type": "modifiers",
+      "start": 801,
+      "end": 811,
+      "children": [
+       {
+        "type": "class_modifier",
+        "start": 801,
+        "end": 811,
+        "children": [
+         {
+          "type": "annotation",
+          "start": 801,
+          "end": 811,
+          "text": "annotation"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "class",
+      "start": 812,
+      "end": 817,
+      "text": "class"
+     },
+     {
+      "type": "identifier",
+      "start": 818,
+      "end": 821,
+      "field": "name",
+      "text": "Min"
+     },
+     {
+      "type": "primary_constructor",
+      "start": 821,
+      "end": 832,
+      "children": [
+       {
+        "type": "class_parameters",
+        "start": 821,
+        "end": 832,
+        "children": [
+         {
+          "type": "(",
+          "start": 821,
+          "end": 822,
+          "text": "("
+         },
+         {
+          "type": "class_parameter",
+          "start": 822,
+          "end": 831,
+          "children": [
+           {
+            "type": "val",
+            "start": 822,
+            "end": 825,
+            "text": "val"
+           },
+           {
+            "type": "identifier",
+            "start": 826,
+            "end": 827,
+            "text": "n"
+           },
+           {
+            "type": ":",
+            "start": 827,
+            "end": 828,
+            "text": ":"
+           },
+           {
+            "type": "user_type",
+            "start": 828,
+            "end": 831,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 828,
+              "end": 831,
+              "text": "Int"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ")",
+          "start": 831,
+          "end": 832,
+          "text": ")"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

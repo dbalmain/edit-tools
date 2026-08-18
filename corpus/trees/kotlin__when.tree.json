@@ -1,0 +1,822 @@
+{
+ "language": "kotlin",
+ "source_file": "corpus/src/kotlin/when.kt",
+ "source": "// when is Kotlin's exhaustiveness-shaped dispatch expression.\n\nfun classify(x: Any): String =\n    when (x) { // subject\n        is String -> x.uppercase()\n        is Int -> x + 1\n        0, 1, 2 -> \"small\" // comma-separated conditions\n        in 10..20 -> \"mid\"\n        !in 100..200 -> \"not-large\"\n        else -> \"other\"\n    }\n\nfun noSubject(flag: Boolean): Int {\n    return when {\n        flag -> 1\n        else -> 0 // no-subject when\n    }\n}\n",
+ "root": {
+  "type": "source_file",
+  "start": 0,
+  "end": 448,
+  "children": [
+   {
+    "type": "line_comment",
+    "start": 0,
+    "end": 62,
+    "text": "// when is Kotlin's exhaustiveness-shaped dispatch expression."
+   },
+   {
+    "type": "function_declaration",
+    "start": 64,
+    "end": 329,
+    "children": [
+     {
+      "type": "fun",
+      "start": 64,
+      "end": 67,
+      "text": "fun"
+     },
+     {
+      "type": "identifier",
+      "start": 68,
+      "end": 76,
+      "field": "name",
+      "text": "classify"
+     },
+     {
+      "type": "function_value_parameters",
+      "start": 76,
+      "end": 84,
+      "children": [
+       {
+        "type": "(",
+        "start": 76,
+        "end": 77,
+        "text": "("
+       },
+       {
+        "type": "parameter",
+        "start": 77,
+        "end": 83,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 77,
+          "end": 78,
+          "text": "x"
+         },
+         {
+          "type": ":",
+          "start": 78,
+          "end": 79,
+          "text": ":"
+         },
+         {
+          "type": "user_type",
+          "start": 80,
+          "end": 83,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 80,
+            "end": 83,
+            "text": "Any"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ")",
+        "start": 83,
+        "end": 84,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": ":",
+      "start": 84,
+      "end": 85,
+      "text": ":"
+     },
+     {
+      "type": "user_type",
+      "start": 86,
+      "end": 92,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 86,
+        "end": 92,
+        "text": "String"
+       }
+      ]
+     },
+     {
+      "type": "function_body",
+      "start": 93,
+      "end": 329,
+      "children": [
+       {
+        "type": "=",
+        "start": 93,
+        "end": 94,
+        "text": "="
+       },
+       {
+        "type": "when_expression",
+        "start": 99,
+        "end": 329,
+        "children": [
+         {
+          "type": "when",
+          "start": 99,
+          "end": 103,
+          "text": "when"
+         },
+         {
+          "type": "when_subject",
+          "start": 104,
+          "end": 107,
+          "children": [
+           {
+            "type": "(",
+            "start": 104,
+            "end": 105,
+            "text": "("
+           },
+           {
+            "type": "identifier",
+            "start": 105,
+            "end": 106,
+            "text": "x"
+           },
+           {
+            "type": ")",
+            "start": 106,
+            "end": 107,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": "{",
+          "start": 108,
+          "end": 109,
+          "text": "{"
+         },
+         {
+          "type": "line_comment",
+          "start": 110,
+          "end": 120,
+          "text": "// subject"
+         },
+         {
+          "type": "when_entry",
+          "start": 129,
+          "end": 155,
+          "children": [
+           {
+            "type": "type_test",
+            "start": 129,
+            "end": 138,
+            "field": "condition",
+            "children": [
+             {
+              "type": "is",
+              "start": 129,
+              "end": 131,
+              "text": "is"
+             },
+             {
+              "type": "user_type",
+              "start": 132,
+              "end": 138,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 132,
+                "end": 138,
+                "text": "String"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "->",
+            "start": 139,
+            "end": 141,
+            "text": "->"
+           },
+           {
+            "type": "call_expression",
+            "start": 142,
+            "end": 155,
+            "children": [
+             {
+              "type": "navigation_expression",
+              "start": 142,
+              "end": 153,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 142,
+                "end": 143,
+                "text": "x"
+               },
+               {
+                "type": ".",
+                "start": 143,
+                "end": 144,
+                "text": "."
+               },
+               {
+                "type": "identifier",
+                "start": 144,
+                "end": 153,
+                "text": "uppercase"
+               }
+              ]
+             },
+             {
+              "type": "value_arguments",
+              "start": 153,
+              "end": 155,
+              "children": [
+               {
+                "type": "(",
+                "start": 153,
+                "end": 154,
+                "text": "("
+               },
+               {
+                "type": ")",
+                "start": 154,
+                "end": 155,
+                "text": ")"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "when_entry",
+          "start": 164,
+          "end": 179,
+          "children": [
+           {
+            "type": "type_test",
+            "start": 164,
+            "end": 170,
+            "field": "condition",
+            "children": [
+             {
+              "type": "is",
+              "start": 164,
+              "end": 166,
+              "text": "is"
+             },
+             {
+              "type": "user_type",
+              "start": 167,
+              "end": 170,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 167,
+                "end": 170,
+                "text": "Int"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "->",
+            "start": 171,
+            "end": 173,
+            "text": "->"
+           },
+           {
+            "type": "binary_expression",
+            "start": 174,
+            "end": 179,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 174,
+              "end": 175,
+              "field": "left",
+              "text": "x"
+             },
+             {
+              "type": "+",
+              "start": 176,
+              "end": 177,
+              "field": "operator",
+              "text": "+"
+             },
+             {
+              "type": "number_literal",
+              "start": 178,
+              "end": 179,
+              "field": "right",
+              "text": "1"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "when_entry",
+          "start": 188,
+          "end": 236,
+          "children": [
+           {
+            "type": "number_literal",
+            "start": 188,
+            "end": 189,
+            "field": "condition",
+            "text": "0"
+           },
+           {
+            "type": ",",
+            "start": 189,
+            "end": 190,
+            "text": ","
+           },
+           {
+            "type": "number_literal",
+            "start": 191,
+            "end": 192,
+            "field": "condition",
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 192,
+            "end": 193,
+            "text": ","
+           },
+           {
+            "type": "number_literal",
+            "start": 194,
+            "end": 195,
+            "field": "condition",
+            "text": "2"
+           },
+           {
+            "type": "->",
+            "start": 196,
+            "end": 198,
+            "text": "->"
+           },
+           {
+            "type": "string_literal",
+            "start": 199,
+            "end": 206,
+            "children": [
+             {
+              "type": "\"",
+              "start": 199,
+              "end": 200,
+              "text": "\""
+             },
+             {
+              "type": "string_content",
+              "start": 200,
+              "end": 205,
+              "text": "small"
+             },
+             {
+              "type": "\"",
+              "start": 205,
+              "end": 206,
+              "text": "\""
+             }
+            ]
+           },
+           {
+            "type": "line_comment",
+            "start": 207,
+            "end": 236,
+            "text": "// comma-separated conditions"
+           }
+          ]
+         },
+         {
+          "type": "when_entry",
+          "start": 245,
+          "end": 263,
+          "children": [
+           {
+            "type": "range_test",
+            "start": 245,
+            "end": 254,
+            "field": "condition",
+            "children": [
+             {
+              "type": "in",
+              "start": 245,
+              "end": 247,
+              "text": "in"
+             },
+             {
+              "type": "range_expression",
+              "start": 248,
+              "end": 254,
+              "children": [
+               {
+                "type": "number_literal",
+                "start": 248,
+                "end": 250,
+                "text": "10"
+               },
+               {
+                "type": "..",
+                "start": 250,
+                "end": 252,
+                "text": ".."
+               },
+               {
+                "type": "number_literal",
+                "start": 252,
+                "end": 254,
+                "text": "20"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "->",
+            "start": 255,
+            "end": 257,
+            "text": "->"
+           },
+           {
+            "type": "string_literal",
+            "start": 258,
+            "end": 263,
+            "children": [
+             {
+              "type": "\"",
+              "start": 258,
+              "end": 259,
+              "text": "\""
+             },
+             {
+              "type": "string_content",
+              "start": 259,
+              "end": 262,
+              "text": "mid"
+             },
+             {
+              "type": "\"",
+              "start": 262,
+              "end": 263,
+              "text": "\""
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "when_entry",
+          "start": 272,
+          "end": 299,
+          "children": [
+           {
+            "type": "range_test",
+            "start": 272,
+            "end": 284,
+            "field": "condition",
+            "children": [
+             {
+              "type": "!in",
+              "start": 272,
+              "end": 275,
+              "text": "!in"
+             },
+             {
+              "type": "range_expression",
+              "start": 276,
+              "end": 284,
+              "children": [
+               {
+                "type": "number_literal",
+                "start": 276,
+                "end": 279,
+                "text": "100"
+               },
+               {
+                "type": "..",
+                "start": 279,
+                "end": 281,
+                "text": ".."
+               },
+               {
+                "type": "number_literal",
+                "start": 281,
+                "end": 284,
+                "text": "200"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "->",
+            "start": 285,
+            "end": 287,
+            "text": "->"
+           },
+           {
+            "type": "string_literal",
+            "start": 288,
+            "end": 299,
+            "children": [
+             {
+              "type": "\"",
+              "start": 288,
+              "end": 289,
+              "text": "\""
+             },
+             {
+              "type": "string_content",
+              "start": 289,
+              "end": 298,
+              "text": "not-large"
+             },
+             {
+              "type": "\"",
+              "start": 298,
+              "end": 299,
+              "text": "\""
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "when_entry",
+          "start": 308,
+          "end": 323,
+          "children": [
+           {
+            "type": "else",
+            "start": 308,
+            "end": 312,
+            "text": "else"
+           },
+           {
+            "type": "->",
+            "start": 313,
+            "end": 315,
+            "text": "->"
+           },
+           {
+            "type": "string_literal",
+            "start": 316,
+            "end": 323,
+            "children": [
+             {
+              "type": "\"",
+              "start": 316,
+              "end": 317,
+              "text": "\""
+             },
+             {
+              "type": "string_content",
+              "start": 317,
+              "end": 322,
+              "text": "other"
+             },
+             {
+              "type": "\"",
+              "start": 322,
+              "end": 323,
+              "text": "\""
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "}",
+          "start": 328,
+          "end": 329,
+          "text": "}"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "function_declaration",
+    "start": 331,
+    "end": 447,
+    "children": [
+     {
+      "type": "fun",
+      "start": 331,
+      "end": 334,
+      "text": "fun"
+     },
+     {
+      "type": "identifier",
+      "start": 335,
+      "end": 344,
+      "field": "name",
+      "text": "noSubject"
+     },
+     {
+      "type": "function_value_parameters",
+      "start": 344,
+      "end": 359,
+      "children": [
+       {
+        "type": "(",
+        "start": 344,
+        "end": 345,
+        "text": "("
+       },
+       {
+        "type": "parameter",
+        "start": 345,
+        "end": 358,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 345,
+          "end": 349,
+          "text": "flag"
+         },
+         {
+          "type": ":",
+          "start": 349,
+          "end": 350,
+          "text": ":"
+         },
+         {
+          "type": "user_type",
+          "start": 351,
+          "end": 358,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 351,
+            "end": 358,
+            "text": "Boolean"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ")",
+        "start": 358,
+        "end": 359,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": ":",
+      "start": 359,
+      "end": 360,
+      "text": ":"
+     },
+     {
+      "type": "user_type",
+      "start": 361,
+      "end": 364,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 361,
+        "end": 364,
+        "text": "Int"
+       }
+      ]
+     },
+     {
+      "type": "function_body",
+      "start": 365,
+      "end": 447,
+      "children": [
+       {
+        "type": "block",
+        "start": 365,
+        "end": 447,
+        "children": [
+         {
+          "type": "{",
+          "start": 365,
+          "end": 366,
+          "text": "{"
+         },
+         {
+          "type": "return_expression",
+          "start": 371,
+          "end": 445,
+          "children": [
+           {
+            "type": "return",
+            "start": 371,
+            "end": 377,
+            "text": "return"
+           },
+           {
+            "type": "when_expression",
+            "start": 378,
+            "end": 445,
+            "children": [
+             {
+              "type": "when",
+              "start": 378,
+              "end": 382,
+              "text": "when"
+             },
+             {
+              "type": "{",
+              "start": 383,
+              "end": 384,
+              "text": "{"
+             },
+             {
+              "type": "when_entry",
+              "start": 393,
+              "end": 402,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 393,
+                "end": 397,
+                "field": "condition",
+                "text": "flag"
+               },
+               {
+                "type": "->",
+                "start": 398,
+                "end": 400,
+                "text": "->"
+               },
+               {
+                "type": "number_literal",
+                "start": 401,
+                "end": 402,
+                "text": "1"
+               }
+              ]
+             },
+             {
+              "type": "when_entry",
+              "start": 411,
+              "end": 439,
+              "children": [
+               {
+                "type": "else",
+                "start": 411,
+                "end": 415,
+                "text": "else"
+               },
+               {
+                "type": "->",
+                "start": 416,
+                "end": 418,
+                "text": "->"
+               },
+               {
+                "type": "number_literal",
+                "start": 419,
+                "end": 420,
+                "text": "0"
+               },
+               {
+                "type": "line_comment",
+                "start": 421,
+                "end": 439,
+                "text": "// no-subject when"
+               }
+              ]
+             },
+             {
+              "type": "}",
+              "start": 444,
+              "end": 445,
+              "text": "}"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "}",
+          "start": 446,
+          "end": 447,
+          "text": "}"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

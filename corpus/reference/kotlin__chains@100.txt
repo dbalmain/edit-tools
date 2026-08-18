@@ -1,0 +1,20 @@
+// Safe-call / Elvis spines and method chains that break at the dots.
+
+fun cityOf(user: User?): String = user?.profile?.address?.city ?: "unknown"
+
+fun demo(user: User?, items: List<Item>): String {
+    val city = user?.profile?.address?.city?.uppercase()?.trim()?.take(10) ?: defaultCity
+    val names =
+        items.filter { it.isActive }.map { it.name }.sortedBy { it.length }.take(10).joinToString()
+    return city + names // both spines
+}
+
+class User(val profile: Profile?)
+
+class Profile(val address: Address?)
+
+class Address(val city: String)
+
+class Item(val name: String, val isActive: Boolean)
+
+val defaultCity = "nowhere"
