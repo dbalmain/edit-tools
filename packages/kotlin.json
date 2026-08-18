@@ -1,0 +1,631 @@
+{
+  "format": "et-doc-rules/1",
+  "indent": 4,
+  "comment_gap": 1,
+  "blank_cap": 1,
+
+  "tokens": [
+    "(", ")", "[", "]", "{", "}",
+    ",", ":", "::", ".", "..", ";",
+    "=", "==", "!=", "<", ">",
+    "+", "-", "*", "+=", "-=", "->",
+    "?", "?.", "?:", "@", "!",
+    "\"", "\"\"\"", "$", "${", "'",
+    "fun", "val", "var",
+    "class", "interface", "object", "companion",
+    "if", "else", "when", "for", "while",
+    "try", "catch", "finally", "return",
+    "in", "!in", "is", "where", "this",
+    "data", "sealed", "enum", "const", "private",
+    "inline", "infix", "operator", "out", "vararg",
+    "param", "get",
+    "line_comment", "block_comment"
+  ],
+
+  "comments": ["line_comment", "block_comment"],
+  "descend": ["block", "class_body", "enum_class_body", "lambda_literal"],
+  "optional_parens": [],
+  "precedence": {},
+
+  "defs": {
+    "paren_list": [
+      "when",
+      ["count", "named", 0],
+      ["seq", ["tok", "("], ["tok", ")"]],
+      [
+        "group",
+        ["tok", "("],
+        [
+          "indent",
+          ["soft"],
+          ["each", "named", ["seq", ["tok", ","], ["line"]]],
+          ["trail", ",", "named"]
+        ],
+        ["soft"],
+        ["tok", ")"]
+      ]
+    ],
+    "angle_list": [
+      "seq",
+      ["tok", "<"],
+      ["each", "named", ["seq", ["tok", ","], ["sp"]]],
+      ["tok", ">"]
+    ],
+    "stmt_block": [
+      "when",
+      ["count", "named", 0],
+      ["seq", ["tok", "{"], ["tok", "}"]],
+      [
+        "seq",
+        ["tok", "{"],
+        [
+          "indent",
+          ["hard"],
+          [
+            "each",
+            "named",
+            [
+              "seq",
+              ["hard"],
+              [
+                "blank",
+                1,
+                [
+                  "class_declaration",
+                  "object_declaration",
+                  "companion_object",
+                  "function_declaration"
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["hard"],
+        ["tok", "}"]
+      ]
+    ],
+    "kw_block": [
+      "seq",
+      ["tok", ["$", 0]],
+      ["sp"],
+      ["tok", "("],
+      ["child", "named"],
+      ["tok", ")"],
+      ["sp"],
+      ["child", "named"]
+    ]
+  },
+
+  "rules": {
+    "source_file": [
+      "each",
+      "named",
+      [
+        "seq",
+        ["hard"],
+        [
+          "blank",
+          1,
+          [
+            "class_declaration",
+            "object_declaration",
+            "function_declaration"
+          ]
+        ]
+      ]
+    ],
+
+    "import": [
+      "seq",
+      ["tok", "import"],
+      ["sp"],
+      ["child", "t:qualified_identifier"]
+    ],
+    "qualified_identifier": ["each", "named", ["tok", "."]],
+
+    "function_declaration": [
+      "seq",
+      ["opt", "t:modifiers", ["seq", ["child", "t:modifiers"], ["sp"]]],
+      ["tok", "fun"],
+      ["sp"],
+      ["opt", "t:type_parameters", ["seq", ["child", "t:type_parameters"], ["sp"]]],
+      ["opt", "t:user_type", ["seq", ["child", "t:user_type"], ["tok", "."]]],
+      ["child", "t:identifier"],
+      ["child", "t:function_value_parameters"],
+      [
+        "opt",
+        "t::",
+        ["seq", ["tok", ":"], ["sp"], ["child", "named"]]
+      ],
+      ["opt", "t:type_constraints", ["seq", ["sp"], ["child", "t:type_constraints"]]],
+      ["opt", "t:function_body", ["seq", ["sp"], ["child", "t:function_body"]]]
+    ],
+    "function_body": [
+      "when",
+      ["count", "t:=", 1],
+      ["group", ["tok", "="], ["indent", ["line"], ["child", "named"]]],
+      ["child", "t:block"]
+    ],
+    "function_value_parameters": [
+      "when",
+      ["count", "t:parameter", 0],
+      ["seq", ["tok", "("], ["tok", ")"]],
+      [
+        "group",
+        ["tok", "("],
+        [
+          "indent",
+          ["soft"],
+          [
+            "opt",
+            "t:parameter_modifiers",
+            ["seq", ["child", "t:parameter_modifiers"], ["sp"]]
+          ],
+          [
+            "each",
+            "t:parameter",
+            [
+              "seq",
+              [
+                "opt",
+                "t:=",
+                ["seq", ["sp"], ["tok", "="], ["sp"], ["child", "named"]]
+              ],
+              ["tok", ","],
+              ["line"],
+              [
+                "opt",
+                "t:parameter_modifiers",
+                ["seq", ["child", "t:parameter_modifiers"], ["sp"]]
+              ]
+            ]
+          ],
+          [
+            "opt",
+            "t:=",
+            ["seq", ["sp"], ["tok", "="], ["sp"], ["child", "named"]]
+          ],
+          ["trail", ",", "t:parameter"]
+        ],
+        ["soft"],
+        ["tok", ")"]
+      ]
+    ],
+    "parameter": [
+      "seq",
+      ["child", "t:identifier"],
+      ["tok", ":"],
+      ["sp"],
+      ["child", "named"]
+    ],
+    "parameter_modifiers": ["child", "*"],
+    "parameter_modifier": ["child", "*"],
+
+    "property_declaration": [
+      "group",
+      ["opt", "t:modifiers", ["seq", ["child", "t:modifiers"], ["sp"]]],
+      ["when", ["count", "t:val", 1], ["tok", "val"], ["tok", "var"]],
+      ["sp"],
+      ["child", "named"],
+      [
+        "opt",
+        "t:=",
+        [
+          "when",
+          ["child-count", "t:call_expression", "t:annotated_lambda", 1],
+          ["seq", ["sp"], ["tok", "="], ["sp"], ["child", "named"]],
+          [
+            "when",
+            ["count", "t:multiline_string_literal", 1],
+            ["seq", ["sp"], ["tok", "="], ["indent", ["hard"], ["child", "named"]]],
+            ["seq", ["sp"], ["tok", "="], ["indent", ["line"], ["child", "named"]]]
+          ]
+        ]
+      ]
+    ],
+    "variable_declaration": [
+      "seq",
+      ["child", "t:identifier"],
+      ["opt", "t::", ["seq", ["tok", ":"], ["sp"], ["child", "named"]]]
+    ],
+    "multi_variable_declaration": [
+      "seq",
+      ["tok", "("],
+      [
+        "each",
+        "t:variable_declaration",
+        ["seq", ["tok", ","], ["sp"]]
+      ],
+      ["tok", ")"]
+    ],
+
+    "class_declaration": [
+      "seq",
+      ["opt", "t:modifiers", ["seq", ["child", "t:modifiers"], ["sp"]]],
+      [
+        "when",
+        ["count", "t:interface", 1],
+        ["tok", "interface"],
+        ["tok", "class"]
+      ],
+      ["sp"],
+      ["child", "t:identifier"],
+      ["opt", "t:type_parameters", ["child", "t:type_parameters"]],
+      ["opt", "t:primary_constructor", ["child", "t:primary_constructor"]],
+      [
+        "opt",
+        "t::",
+        ["seq", ["sp"], ["tok", ":"], ["sp"], ["child", "t:delegation_specifiers"]]
+      ],
+      ["opt", "t:class_body", ["seq", ["sp"], ["child", "t:class_body"]]],
+      ["opt", "t:enum_class_body", ["seq", ["sp"], ["child", "t:enum_class_body"]]]
+    ],
+    "primary_constructor": ["child", "t:class_parameters"],
+    "class_parameters": ["use", "paren_list"],
+    "class_parameter": [
+      "seq",
+      ["opt", "t:modifiers", ["seq", ["child", "t:modifiers"], ["sp"]]],
+      ["when", ["count", "t:val", 1], ["tok", "val"], ["tok", "var"]],
+      ["sp"],
+      ["child", "t:identifier"],
+      ["tok", ":"],
+      ["sp"],
+      ["child", "named"],
+      [
+        "opt",
+        "t:=",
+        ["seq", ["sp"], ["tok", "="], ["sp"], ["child", "named"]]
+      ]
+    ],
+    "class_body": ["use", "stmt_block"],
+    "object_declaration": [
+      "seq",
+      ["tok", "object"],
+      ["sp"],
+      ["child", "t:identifier"],
+      [
+        "opt",
+        "t::",
+        ["seq", ["sp"], ["tok", ":"], ["sp"], ["child", "t:delegation_specifiers"]]
+      ],
+      ["opt", "t:class_body", ["seq", ["sp"], ["child", "t:class_body"]]]
+    ],
+    "companion_object": [
+      "seq",
+      ["tok", "companion"],
+      ["sp"],
+      ["tok", "object"],
+      ["opt", "t:class_body", ["seq", ["sp"], ["child", "t:class_body"]]]
+    ],
+    "enum_class_body": [
+      "seq",
+      ["tok", "{"],
+      [
+        "indent",
+        ["hard"],
+        ["each", "t:enum_entry", ["seq", ["tok", ","], ["hard"]]],
+        ["trail", ",", "t:enum_entry"]
+      ],
+      ["hard"],
+      ["tok", "}"]
+    ],
+    "enum_entry": ["child", "t:identifier"],
+    "delegation_specifiers": [
+      "each",
+      "named",
+      ["seq", ["tok", ","], ["sp"]]
+    ],
+    "delegation_specifier": ["child", "named"],
+    "constructor_invocation": [
+      "seq",
+      ["child", "t:user_type"],
+      ["child", "t:value_arguments"]
+    ],
+
+    "block": ["use", "stmt_block"],
+
+    "call_expression": [
+      "seq",
+      ["child", "named"],
+      ["opt", "t:type_arguments", ["child", "t:type_arguments"]],
+      ["opt", "t:value_arguments", ["child", "t:value_arguments"]],
+      [
+        "opt",
+        "t:annotated_lambda",
+        ["seq", ["sp"], ["child", "t:annotated_lambda"]]
+      ]
+    ],
+    "value_arguments": ["use", "paren_list"],
+    "value_argument": [
+      "seq",
+      ["child", "named"],
+      [
+        "opt",
+        "t:=",
+        ["seq", ["sp"], ["tok", "="], ["sp"], ["child", "named"]]
+      ]
+    ],
+    "annotated_lambda": ["child", "t:lambda_literal"],
+    "lambda_literal": [
+      "seq",
+      ["tok", "{"],
+      [
+        "when",
+        ["count", "t:lambda_parameters", 1],
+        [
+          "seq",
+          ["sp"],
+          ["child", "t:lambda_parameters"],
+          ["sp"],
+          ["tok", "->"],
+          ["sp"],
+          ["child", "named"],
+          ["sp"]
+        ],
+        [
+          "when",
+          ["count", "named", 0],
+          ["seq"],
+          [
+            "seq",
+            ["indent", ["srcline"], ["each", "named", ["srcline"]]],
+            ["srcline"]
+          ]
+        ]
+      ],
+      ["tok", "}"]
+    ],
+    "lambda_parameters": [
+      "each",
+      "named",
+      ["seq", ["tok", ","], ["sp"]]
+    ],
+
+    "if_expression": [
+      "seq",
+      ["tok", "if"],
+      ["sp"],
+      ["tok", "("],
+      ["child", "named"],
+      ["tok", ")"],
+      ["sp"],
+      ["child", "named"],
+      [
+        "opt",
+        "t:else",
+        ["seq", ["sp"], ["tok", "else"], ["sp"], ["child", "named"]]
+      ]
+    ],
+    "when_expression": [
+      "seq",
+      ["tok", "when"],
+      ["opt", "t:when_subject", ["seq", ["sp"], ["child", "t:when_subject"]]],
+      ["sp"],
+      ["tok", "{"],
+      ["indent", ["hard"], ["each", "named", ["hard"]]],
+      ["hard"],
+      ["tok", "}"]
+    ],
+    "when_subject": [
+      "seq",
+      ["tok", "("],
+      ["child", "named"],
+      ["tok", ")"]
+    ],
+    "when_entry": [
+      "when",
+      ["count", "t:,", 0],
+      [
+        "seq",
+        [
+          "when",
+          ["count", "t:else", 1],
+          ["tok", "else"],
+          ["child", "named"]
+        ],
+        ["sp"],
+        ["tok", "->"],
+        ["sp"],
+        ["child", "named"]
+      ],
+      [
+        "seq",
+        ["child", "named"],
+        ["opt", "t:,", ["seq", ["tok", ","], ["hard"], ["child", "named"]]],
+        ["opt", "t:,", ["seq", ["tok", ","], ["hard"], ["child", "named"]]],
+        ["opt", "t:,", ["seq", ["tok", ","], ["hard"], ["child", "named"]]],
+        ["sp"],
+        ["tok", "->"],
+        ["sp"],
+        ["child", "named"]
+      ]
+    ],
+    "for_statement": [
+      "seq",
+      ["opt", "t:label", ["seq", ["child", "t:label"], ["sp"]]],
+      ["tok", "for"],
+      ["sp"],
+      ["tok", "("],
+      ["child", "t:variable_declaration"],
+      ["sp"],
+      ["tok", "in"],
+      ["sp"],
+      ["child", "named"],
+      ["tok", ")"],
+      ["sp"],
+      ["child", "named"]
+    ],
+    "while_statement": ["use", "kw_block", "while"],
+    "try_expression": [
+      "seq",
+      ["tok", "try"],
+      ["sp"],
+      ["child", "t:block"],
+      [
+        "opt",
+        "t:catch_block",
+        ["seq", ["sp"], ["child", "t:catch_block"]]
+      ],
+      [
+        "opt",
+        "t:finally_block",
+        ["seq", ["sp"], ["child", "t:finally_block"]]
+      ]
+    ],
+    "catch_block": [
+      "seq",
+      ["tok", "catch"],
+      ["sp"],
+      ["tok", "("],
+      ["child", "t:identifier"],
+      ["tok", ":"],
+      ["sp"],
+      ["child", "named"],
+      ["tok", ")"],
+      ["sp"],
+      ["child", "t:block"]
+    ],
+    "finally_block": [
+      "seq",
+      ["tok", "finally"],
+      ["sp"],
+      ["child", "t:block"]
+    ],
+
+    "return_expression": [
+      "seq",
+      ["tok", "return"],
+      ["opt", "named", ["seq", ["sp"], ["child", "named"]]]
+    ],
+    "assignment": ["each", "*", ["sp"]],
+    "binary_expression": [
+      "seq",
+      ["child", "named"],
+      ["sp"],
+      ["child", "*"],
+      ["sp"],
+      ["child", "named"]
+    ],
+    "infix_expression": [
+      "seq",
+      ["child", "named"],
+      ["sp"],
+      ["child", "t:identifier"],
+      ["sp"],
+      ["child", "named"]
+    ],
+    "unary_expression": ["each", "*", ["seq"]],
+    "navigation_expression": ["each", "*", ["seq"]],
+    "index_expression": [
+      "seq",
+      ["child", "named"],
+      ["tok", "["],
+      ["child", "named"],
+      ["tok", "]"]
+    ],
+    "parenthesized_expression": [
+      "seq",
+      ["tok", "("],
+      ["child", "named"],
+      ["tok", ")"]
+    ],
+    "this_expression": ["child", "t:this"],
+    "labeled_expression": [
+      "seq",
+      ["child", "t:label"],
+      ["child", "t:identifier"]
+    ],
+    "is_expression": [
+      "seq",
+      ["child", "named"],
+      ["sp"],
+      ["tok", "is"],
+      ["sp"],
+      ["child", "named"]
+    ],
+    "type_test": ["seq", ["tok", "is"], ["sp"], ["child", "named"]],
+    "range_test": [
+      "when",
+      ["count", "t:!in", 1],
+      ["seq", ["tok", "!in"], ["sp"], ["child", "named"]],
+      ["seq", ["tok", "in"], ["sp"], ["child", "named"]]
+    ],
+    "range_expression": [
+      "seq",
+      ["child", "named"],
+      ["tok", ".."],
+      ["child", "named"]
+    ],
+
+    "user_type": [
+      "seq",
+      ["child", "t:identifier"],
+      ["opt", "t:type_arguments", ["child", "t:type_arguments"]]
+    ],
+    "nullable_type": ["seq", ["child", "t:user_type"], ["tok", "?"]],
+    "type_arguments": ["use", "angle_list"],
+    "type_parameters": ["use", "angle_list"],
+    "type_parameter": [
+      "seq",
+      [
+        "opt",
+        "t:type_parameter_modifiers",
+        ["seq", ["child", "t:type_parameter_modifiers"], ["sp"]]
+      ],
+      ["child", "t:identifier"]
+    ],
+    "type_parameter_modifiers": ["child", "*"],
+    "type_projection": [
+      "when",
+      ["count", "t:*", 1],
+      ["tok", "*"],
+      ["child", "named"]
+    ],
+    "type_constraints": [
+      "seq",
+      ["tok", "where"],
+      ["sp"],
+      ["each", "t:type_constraint", ["seq", ["tok", ","], ["sp"]]]
+    ],
+    "type_constraint": [
+      "seq",
+      ["child", "t:identifier"],
+      ["sp"],
+      ["tok", ":"],
+      ["sp"],
+      ["child", "named"]
+    ],
+    "function_type": [
+      "seq",
+      ["child", "t:function_type_parameters"],
+      ["sp"],
+      ["tok", "->"],
+      ["sp"],
+      ["child", "named"]
+    ],
+    "function_type_parameters": [
+      "seq",
+      ["tok", "("],
+      ["each", "named", ["seq", ["tok", ","], ["sp"]]],
+      ["tok", ")"]
+    ],
+
+    "modifiers": ["each", "named", ["sp"]],
+    "class_modifier": ["child", "*"],
+    "function_modifier": ["child", "*"],
+    "property_modifier": ["child", "*"],
+    "variance_modifier": ["child", "*"],
+    "visibility_modifier": ["child", "*"],
+    "annotation": [
+      "seq",
+      ["tok", "@"],
+      ["opt", "t:use_site_target", ["child", "t:use_site_target"]],
+      ["child", "named"]
+    ],
+    "use_site_target": ["each", "*", ["seq"]],
+
+    "string_literal": ["verbatim"],
+    "multiline_string_literal": ["verbatim"],
+    "character_literal": ["verbatim"]
+  }
+}
