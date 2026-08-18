@@ -3,6 +3,9 @@
 #[path = "../align.rs"]
 mod align;
 
+// Compiled here so clippy sees the marker pass in this binary too.
+const _: fn(&str) -> String = align::cells;
+
 use std::io::{self, Read};
 
 fn main() {

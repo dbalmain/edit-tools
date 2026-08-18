@@ -50,6 +50,10 @@ pub struct Package {
     /// Experimental rendered-text alignment. The only spike implementation
     /// is `go`; omitting this field leaves the printer byte-for-byte alone.
     pub alignment: Option<String>,
+    /// Trailing comments on named nodes become their own cell. Tokens
+    /// (`}` / `)`) keep a one-space gap so a closer cannot join a column.
+    #[serde(default)]
+    pub comment_cells: bool,
     /// Whether one indent level is a tab rather than `indent` spaces. gofmt
     /// is the first reference whose house style is tab-indented.
     #[serde(default)]
@@ -94,6 +98,8 @@ struct RawPackage {
     indent: usize,
     #[serde(default)]
     alignment: Option<String>,
+    #[serde(default)]
+    comment_cells: bool,
     #[serde(default)]
     tab_indent: bool,
     #[serde(default)]
@@ -145,6 +151,7 @@ impl TryFrom<RawPackage> for Package {
         Ok(Self {
             indent: raw.indent,
             alignment: raw.alignment,
+            comment_cells: raw.comment_cells,
             tab_indent: raw.tab_indent,
             tokens: raw.tokens,
             comments: raw.comments,
@@ -460,7 +467,7 @@ pub enum Pred {
     All(Sel, Vec<String>),
 }
 
-/// One expression of the package language. Eighteen opcodes; see DESIGN.md.
+/// One expression of the package language. Nineteen opcodes; see DESIGN.md.
 #[derive(Debug, Deserialize)]
 #[serde(try_from = "Value")]
 pub enum Expr {
@@ -497,6 +504,8 @@ pub enum Expr {
     /// the separator if the source has one, and emit it only when the source
     /// had a line break before the following token.
     SrcTrail(String),
+    /// A column break. `print` emits a marker; a later pass aligns runs.
+    Cell,
 }
 
 impl TryFrom<Value> for Expr {
@@ -542,6 +551,7 @@ impl TryFrom<Value> for Expr {
             "verbatim" => arity(0).map(|()| Expr::Verbatim),
             "srcline" => arity(0).map(|()| Expr::SrcLine),
             "srcsoft" => arity(0).map(|()| Expr::SrcSoft),
+            "cell" => arity(0).map(|()| Expr::Cell),
             "srctrail" => {
                 arity(1)?;
                 Ok(Expr::SrcTrail(literal(&parts[0])?))
@@ -912,6 +922,19 @@ mod tests {
                 "{err}"
             );
         }
+    }
+
+    #[test]
+    fn cell_is_a_nullary_opcode() {
+        let pkg = macro_package(json!({}), json!({ "list": ["seq", ["cell"], ["line"]] }))
+            .expect("cell parses");
+        let Expr::Seq(parts) = &pkg.rules["list"] else {
+            panic!("seq");
+        };
+        assert!(matches!(parts.as_slice(), [Expr::Cell, Expr::Line]));
+
+        let err = refusal(json!({}), json!({ "list": ["cell", "x"] }));
+        assert!(err.contains("`cell` takes 0 operands, got 1"), "{err}");
     }
 
     #[test]

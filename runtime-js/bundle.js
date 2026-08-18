@@ -189,6 +189,7 @@ function validateExpr(value) {
     case "verbatim":
     case "srcline":
     case "srcsoft":
+    case "cell":
       arity(0);
       return;
     case "child":
@@ -365,6 +366,7 @@ const breakParent = { k: "breakParent", brk: true };
 const nil = concat([]);
 const ifBreak = (b, f) => ({ k: "ifBreak", b, f, brk: false });
 const suffix = (d) => ({ k: "suffix", d, brk: false });
+const cell = { k: "cell", brk: false };
 const fillDoc = (parts) => {
   if (parts.length === 0) return nil;
   let next = { k: "fill", content: parts.at(-1), tail: undefined, brk: parts.at(-1).brk };
@@ -440,6 +442,8 @@ function fits(next, rest, rem, mustBeFlat = false) {
       // Black counts a trailing comment against the line budget, and so do we.
       case "suffix":
         stack.push([ind, FLAT, doc.d]);
+        break;
+      case "cell":
         break;
     }
   }
@@ -535,6 +539,9 @@ function print(doc, cols) {
           break;
         case "suffix":
           suffixes.push([ind, BREAK, d.d]);
+          break;
+        case "cell":
+          write("\v");
           break;
       }
     }
@@ -828,6 +835,78 @@ function alignGo(input) {
   return lines.join("\n");
 }
 
+const CELL_MARK = "\v";
+
+function cellTabwrite(lines, at, rows, indents) {
+  const columns = Math.max(0, ...rows.map((cells) => cells.length)) - 1;
+  const pad = rows.map((cells) => Array(cells.length).fill(0));
+  for (let c = 0; c < columns; c++) {
+    let block = [];
+    const close = () => {
+      let wide = 0;
+      for (const row of block) wide = Math.max(wide, width(rows[row][c]));
+      if (wide > 0) for (const row of block) pad[row][c] = wide + 1;
+      block = [];
+    };
+    for (let row = 0; row < rows.length; row++) {
+      if (rows[row].length > c + 1) block.push(row);
+      else close();
+    }
+    close();
+  }
+  rows.forEach((cells, row) => {
+    let out = indents[row];
+    cells.forEach((cell, c) => {
+      out += cell;
+      if (c + 1 < cells.length) out += " ".repeat(pad[row][c] - width(cell));
+    });
+    lines[at[row]] = out;
+  });
+}
+
+function alignCells(input) {
+  if (!input.includes(CELL_MARK)) return input;
+  const lines = input.split("\n");
+  const parsed = lines.map((line) => {
+    if (!line.includes(CELL_MARK)) return null;
+    let at = 0;
+    while (line[at] === " " || line[at] === "\t") at++;
+    const cells = line.slice(at).split(CELL_MARK);
+    const first = cells[0] ?? "";
+    return {
+      indent: line.slice(0, at),
+      cells,
+      closer: first.startsWith("}") || first.startsWith(")"),
+    };
+  });
+  let at = [];
+  let rows = [];
+  let indents = [];
+  const flush = () => {
+    if (at.length > 0) cellTabwrite(lines, at, rows, indents);
+    at = [];
+    rows = [];
+    indents = [];
+  };
+  parsed.forEach((row, i) => {
+    if (row === null) {
+      flush();
+      return;
+    }
+    if (row.closer) {
+      flush();
+      cellTabwrite(lines, [i], [row.cells], [row.indent]);
+      return;
+    }
+    if (at.length > 0 && indents[0] !== row.indent) flush();
+    at.push(i);
+    rows.push(row.cells);
+    indents.push(row.indent);
+  });
+  flush();
+  return lines.join("\n");
+}
+
 // ------------------------------------------------------- comment attachment
 
 // Comments arrive as ordinary children. The runtime -- not the package --
@@ -953,7 +1032,10 @@ function decorate(fmt, item, inner) {
   if (sink && parts.length > 0) parts = [indent(fmt.indentUnit, concat(parts))];
   parts.push(inner);
   const gap = " ".repeat(fmt.commentGap);
-  for (const s of item.suffix) parts.push(suffix(text(`${gap}${s}`)));
+  const commentCells = fmt.pkg.comment_cells === true && !fmt.tokens.has(item.node.type);
+  for (const s of item.suffix) {
+    parts.push(suffix(commentCells ? concat([cell, text(s)]) : text(`${gap}${s}`)));
+  }
   parts.push(breakParent);
   return concat(parts);
 }
@@ -1102,6 +1184,8 @@ class Ctx {
         return this.srcBreak(text(" "));
       case "srcsoft":
         return this.srcBreak(nil);
+      case "cell":
+        return cell;
       case "srctrail":
         return this.srctrail(rest[0]);
       case "child":
@@ -1488,6 +1572,7 @@ function format(tree, packages, cols) {
   const bytes = new TextEncoder().encode(tree.source ?? "");
   const fmt = new Formatter(packages, tree.language, bytes, new TextDecoder());
   let out = print(fmt.node(tree.root), cols);
+  out = alignCells(out);
   if (fmt.pkg.alignment === "go") out = alignGo(out);
   if (fmt.semanticEof) {
     const suffix = (tree.source ?? "").match(/(?:\r\n|\r|\n)+$/)?.[0] ?? "";

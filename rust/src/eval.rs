@@ -20,6 +20,7 @@ pub fn format(tree: &TreeDoc, packages: &PackageMap, width: usize) -> Result<Str
     let fmt = Fmt::for_language(&tree.language, packages, tree.source.as_bytes())?;
     let doc = fmt.node(&tree.root)?;
     let mut out = crate::doc::print(&doc, width);
+    out = crate::align::cells(&out);
     if fmt.pkg.alignment.as_deref() == Some("go") {
         out = crate::align::go(&out);
     }
@@ -138,7 +139,12 @@ fn decorate(pkg: &Package, item: &Item<'_>, inner: Doc) -> Doc {
     parts.push(inner);
     let gap = " ".repeat(pkg.comment_gap);
     for text in &item.suffix {
-        parts.push(Doc::Suffix(Box::new(Doc::text(format!("{gap}{text}")))));
+        let body = if pkg.comment_cells && !pkg.is_token(&item.node.kind) {
+            Doc::Concat(vec![Doc::Cell, Doc::text(text.as_str())])
+        } else {
+            Doc::text(format!("{gap}{text}"))
+        };
+        parts.push(Doc::Suffix(Box::new(body)));
     }
     parts.push(Doc::BreakParent);
     Doc::Concat(parts)
@@ -256,6 +262,7 @@ impl<'a> Ctx<'a> {
             Expr::SrcLine => Ok(self.src_break(Doc::text(" "))),
             Expr::SrcSoft => Ok(self.src_break(Doc::nil())),
             Expr::SrcTrail(sep) => self.srctrail(sep, f),
+            Expr::Cell => Ok(Doc::Cell),
             Expr::Child(sel) => self.child(sel, f),
             Expr::Each(sel, sep) => self.each(sel, sep, f),
             Expr::Fill(sel, sep) => self.fill(sel, sep, f),

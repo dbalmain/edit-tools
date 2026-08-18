@@ -34,6 +34,9 @@ pub enum Doc {
     Suffix(Box<Doc>),
     /// Forces enclosing groups to break without emitting anything.
     BreakParent,
+    /// A zero-width column break. `print` emits a vertical tab; a later
+    /// language-independent pass aligns runs of rows over those markers.
+    Cell,
 }
 
 impl Doc {
@@ -121,7 +124,7 @@ fn collect_forced(doc: &Doc, forced: &mut Forced) -> bool {
             collect_forced(inner, forced);
             false
         }
-        Doc::Text(_) | Doc::Line | Doc::Soft => false,
+        Doc::Text(_) | Doc::Line | Doc::Soft | Doc::Cell => false,
     }
 }
 
@@ -221,7 +224,7 @@ fn fits<'a>(
             // do we: it is the difference between breaking a call and leaving
             // an over-long line behind a `# ...`.
             Doc::Suffix(inner) => stack.push((ind, Mode::Flat, inner)),
-            Doc::BreakParent => {}
+            Doc::BreakParent | Doc::Cell => {}
         }
     }
 }
@@ -353,6 +356,13 @@ pub fn print(doc: &Doc, width: usize) -> String {
                 }
                 Doc::Suffix(inner) => suffixes.push((ind, Mode::Break, inner)),
                 Doc::BreakParent => {}
+                Doc::Cell => {
+                    if !pending.is_empty() {
+                        out.push_str(&pending);
+                        pending.clear();
+                    }
+                    out.push('\u{000B}');
+                }
             }
         }
         if suffixes.is_empty() {
@@ -565,5 +575,17 @@ mod tests {
             capped_pair("id:", "1", 0.18),
         ]);
         assert_eq!(print(&doc, 80), format!("{}id:\n1", "X".repeat(78)));
+    }
+
+    #[test]
+    fn a_cell_is_a_zero_width_marker() {
+        let doc = Doc::group(seq(vec![
+            Doc::text("ab"),
+            Doc::Cell,
+            Doc::Line,
+            Doc::text("c"),
+        ]));
+        assert_eq!(print(&doc, 4), "ab\u{000B} c");
+        assert_eq!(print(&doc, 3), "ab\u{000B}\nc");
     }
 }
