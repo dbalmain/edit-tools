@@ -17,7 +17,6 @@
     "pub", "async", "await", "where",
     "type", "mut", "const", "unsafe", "static", "ref",
     "macro_rules!",
-    "line_comment", "block_comment",
     "//", "/*", "*/"
   ],
 
@@ -45,6 +44,57 @@
           "indent",
           ["soft"],
           ["each", "named", ["seq", ["tok", ","], ["line"]]],
+          ["trail", ",", "named"]
+        ],
+        ["soft"],
+        ["tok", ["$", 1]]
+      ]
+    ],
+    "fill_list": [
+      "when",
+      ["count", "named", 0],
+      ["seq", ["tok", ["$", 0]], ["tok", ["$", 1]]],
+      [
+        "group",
+        ["tok", ["$", 0]],
+        [
+          "indent",
+          ["soft"],
+          ["fill", "named", ["seq", ["tok", ","], ["line"]]],
+          ["trail", ",", "named"]
+        ],
+        ["soft"],
+        ["tok", ["$", 1]]
+      ]
+    ],
+    "brace_group": [
+      "when",
+      ["count", "named", 0],
+      ["seq", ["tok", "{"], ["tok", "}"]],
+      [
+        "group",
+        ["tok", "{"],
+        [
+          "indent",
+          ["line"],
+          ["each", "named", ["seq", ["tok", ","], ["line"]]],
+          ["trail", ",", "named"]
+        ],
+        ["line"],
+        ["tok", "}"]
+      ]
+    ],
+    "paren_fill": [
+      "when",
+      ["count", "named", 0],
+      ["seq", ["tok", ["$", 0]], ["tok", ["$", 1]]],
+      [
+        "group",
+        ["tok", ["$", 0]],
+        [
+          "indent",
+          ["soft"],
+          ["fill", "named", ["seq", ["tok", ","], ["line"]]],
           ["trail", ",", "named"]
         ],
         ["soft"],
@@ -112,9 +162,12 @@
         "t:->",
         ["seq", ["sp"], ["tok", "->"], ["sp"], ["child", "f:return_type"]]
       ],
-      ["opt", "t:where_clause", ["child", "t:where_clause"]],
-      ["sp"],
-      ["child", "f:body"]
+      [
+        "when",
+        ["count", "t:where_clause", 1],
+        ["seq", ["child", "t:where_clause"], ["hard"], ["child", "f:body"]],
+        ["seq", ["sp"], ["child", "f:body"]]
+      ]
     ],
 
     "function_signature_item": [
@@ -156,17 +209,31 @@
     ],
 
     "block": ["use", "brace_items"],
-    "declaration_list": ["use", "brace_items"],
+    "declaration_list": [
+      "when",
+      ["count", "named", 0],
+      ["seq", ["tok", "{"], ["hard"], ["tok", "}"]],
+      ["use", "brace_items"]
+    ],
     "match_block": ["use", "brace_items"],
 
     "let_declaration": [
-      "seq",
+      "group",
       ["tok", "let"],
       ["sp"],
       ["opt", "t:mutable_specifier", ["seq", ["child", "t:mutable_specifier"], ["sp"]]],
       ["child", "f:pattern"],
       ["opt", "t::", ["seq", ["tok", ":"], ["sp"], ["child", "named"]]],
-      ["opt", "t:=", ["seq", ["sp"], ["tok", "="], ["sp"], ["child", "f:value"]]],
+      [
+        "opt",
+        "t:=",
+        [
+          "seq",
+          ["sp"],
+          ["tok", "="],
+          ["indent", ["line"], ["child", "f:value"]]
+        ]
+      ],
       ["tok", ";"]
     ],
 
@@ -176,7 +243,12 @@
       ["opt", "t:;", ["tok", ";"]]
     ],
 
-    "array_expression": ["use", "paren_list", "[", "]"],
+    "array_expression": [
+      "when",
+      ["all", "named", ["identifier", "integer_literal"]],
+      ["use", "paren_fill", "[", "]"],
+      ["use", "paren_list", "[", "]"]
+    ],
 
     "tuple_expression": [
       "when",
@@ -188,7 +260,12 @@
     "unit_expression": ["seq", ["tok", "("], ["tok", ")"]],
     "unit_type": ["seq", ["tok", "("], ["tok", ")"]],
     "tuple_type": ["use", "paren_list", "(", ")"],
-    "tuple_pattern": ["use", "paren_list", "(", ")"],
+    "tuple_pattern": [
+      "seq",
+      ["tok", "("],
+      ["each", "named", ["seq", ["tok", ","], ["sp"]]],
+      ["tok", ")"]
+    ],
 
     "call_expression": [
       "seq",
@@ -197,10 +274,9 @@
     ],
 
     "field_expression": [
-      "seq",
+      "group",
       ["child", "f:value"],
-      ["tok", "."],
-      ["child", "f:field"]
+      ["indent", ["soft"], ["tok", "."], ["child", "f:field"]]
     ],
 
     "generic_function": [
@@ -265,11 +341,14 @@
 
     "match_pattern": [
       "seq",
-      ["child", "named"],
+      ["child", "*"],
       [
         "opt",
         "t:if",
-        ["seq", ["sp"], ["tok", "if"], ["sp"], ["child", "f:condition"]]
+        [
+          "group",
+          ["indent", ["line"], ["tok", "if"], ["sp"], ["child", "f:condition"]]
+        ]
       ]
     ],
 
@@ -284,7 +363,7 @@
       [
         "flatten",
         "binary_expression",
-        ["seq", ["line"], ["child", "f:operator"], ["sp"]]
+        ["seq", ["indent", ["line"], ["child", "f:operator"], ["sp"]]]
       ]
     ],
 
@@ -396,21 +475,27 @@
       ["sp"],
       ["child", "f:name"],
       ["opt", "f:bounds", ["child", "f:bounds"]],
-      ["opt", "t:where_clause", ["child", "t:where_clause"]],
-      ["sp"],
-      ["child", "f:body"]
+      [
+        "when",
+        ["count", "t:where_clause", 1],
+        ["seq", ["child", "t:where_clause"], ["hard"], ["child", "f:body"]],
+        ["seq", ["sp"], ["child", "f:body"]]
+      ]
     ],
 
     "impl_item": [
       "seq",
       ["tok", "impl"],
+      ["opt", "f:type_parameters", ["child", "f:type_parameters"]],
       ["sp"],
-      ["opt", "f:type_parameters", ["seq", ["child", "f:type_parameters"], ["sp"]]],
       ["opt", "f:trait", ["seq", ["child", "f:trait"], ["sp"], ["tok", "for"], ["sp"]]],
       ["child", "f:type"],
-      ["opt", "t:where_clause", ["child", "t:where_clause"]],
-      ["sp"],
-      ["child", "f:body"]
+      [
+        "when",
+        ["count", "t:where_clause", 1],
+        ["seq", ["child", "t:where_clause"], ["hard"], ["child", "f:body"]],
+        ["seq", ["sp"], ["child", "f:body"]]
+      ]
     ],
 
     "mod_item": [
@@ -423,7 +508,23 @@
       ["child", "f:body"]
     ],
 
-    "field_declaration_list": ["use", "brace_comma"],
+    "field_declaration_list": [
+      "when",
+      ["count", "named", 0],
+      ["seq", ["tok", "{"], ["tok", "}"]],
+      [
+        "group",
+        ["tok", "{"],
+        [
+          "indent",
+          ["line"],
+          ["each", "named", ["seq", ["tok", ","], ["line"]]],
+          ["trail", ",", "named"]
+        ],
+        ["line"],
+        ["tok", "}"]
+      ]
+    ],
     "enum_variant_list": ["use", "brace_comma"],
 
     "field_declaration": [
@@ -465,23 +566,7 @@
       ["child", "f:body"]
     ],
 
-    "field_initializer_list": [
-      "when",
-      ["count", "named", 0],
-      ["seq", ["tok", "{"], ["tok", "}"]],
-      [
-        "group",
-        ["tok", "{"],
-        [
-          "indent",
-          ["line"],
-          ["each", "named", ["seq", ["tok", ","], ["line"]]],
-          ["trail", ",", "named"]
-        ],
-        ["line"],
-        ["tok", "}"]
-      ]
-    ],
+    "field_initializer_list": ["use", "brace_group"],
 
     "field_initializer": [
       "seq",
@@ -497,23 +582,21 @@
       "seq",
       ["child", "f:type"],
       ["sp"],
-      ["tok", "{"],
       [
-        "indent",
-        ["soft"],
-        ["each", "named", ["seq", ["tok", ","], ["line"]]],
-        ["trail", ",", "named"]
-      ],
-      ["soft"],
-      ["tok", "}"]
+        "group",
+        ["tok", "{"],
+        ["sp"],
+        ["each", "named", ["seq", ["tok", ","], ["sp"]]],
+        ["sp"],
+        ["tok", "}"]
+      ]
     ],
 
     "tuple_struct_pattern": [
       "seq",
       ["child", "f:type"],
       ["tok", "("],
-      ["each", "named", ["seq", ["tok", ","], ["line"]]],
-      ["trail", ",", "named"],
+      ["each", "named", ["seq", ["tok", ","], ["sp"]]],
       ["tok", ")"]
     ],
 
@@ -571,7 +654,18 @@
       ["child", "f:alias"]
     ],
 
-    "use_list": ["use", "paren_list", "{", "}"],
+    "use_list": [
+      "group",
+      ["tok", "{"],
+      [
+        "indent",
+        ["soft"],
+        ["fill", "named", ["seq", ["tok", ","], ["line"]]],
+        ["trail", ",", "named"]
+      ],
+      ["soft"],
+      ["tok", "}"]
+    ],
 
     "scoped_use_list": [
       "seq",
@@ -630,7 +724,36 @@
       ["child", "named"]
     ],
 
-    "token_tree": ["verbatim"],
+    "token_tree": [
+      "when",
+      ["count", "t:.", 0],
+      [
+        "when",
+        ["count", "t:!", 0],
+        [
+          "when",
+          [
+            "all",
+            "named",
+            ["identifier", "integer_literal", "string_literal", "self", "metavariable"]
+          ],
+          [
+            "when",
+            ["count", "t:[", 1],
+            ["use", "paren_list", "[", "]"],
+            [
+              "when",
+              ["count", "t:(", 1],
+              ["use", "paren_list", "(", ")"],
+              ["use", "paren_list", "{", "}"]
+            ]
+          ],
+          ["verbatim"]
+        ],
+        ["verbatim"]
+      ],
+      ["verbatim"]
+    ],
     "macro_definition": ["verbatim"],
     "macro_rule": ["verbatim"],
     "token_tree_pattern": ["verbatim"],
