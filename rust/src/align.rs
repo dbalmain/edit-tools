@@ -366,4 +366,18 @@ mod tests {
             )
         );
     }
+
+    #[test]
+    fn cells_same_width_values_still_space_the_comment() {
+        let got = cell_fixpoint(&blocked(concat!(
+            "const (\n",
+            "\tV_CC\u{000B}\u{000B}= 1 << 0\u{000B}// xCC\n",
+            "\tV_V\u{000B}\u{000B}= 1 << 1\u{000B}// xV\n",
+            ")",
+        )));
+        assert!(
+            got.contains("= 1 << 1 //"),
+            "missing space before comment: {got:?}"
+        );
+    }
 }

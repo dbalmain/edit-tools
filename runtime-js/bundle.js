@@ -544,6 +544,11 @@ function print(doc, cols) {
           write("\v");
           break;
         case "cellBreak":
+          if (suffixes.length > 0) {
+            stack.push(cmd, ...suffixes.reverse());
+            suffixes = [];
+            break;
+          }
           write("\f");
           break;
       }

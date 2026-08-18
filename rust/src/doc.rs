@@ -359,16 +359,27 @@ pub fn print(doc: &Doc, width: usize) -> String {
                 }
                 Doc::Suffix(inner) => suffixes.push((ind, Mode::Break, inner)),
                 Doc::BreakParent => {}
-                Doc::Cell | Doc::CellBreak => {
+                Doc::Cell => {
                     if !pending.is_empty() {
                         out.push_str(&pending);
                         pending.clear();
                     }
-                    out.push(if matches!(doc, Doc::Cell) {
-                        '\u{000B}'
-                    } else {
-                        '\u{000C}'
-                    });
+                    out.push('\u{000B}');
+                }
+                Doc::CellBreak => {
+                    // A section boundary is the end of the current line's
+                    // tabwriter row. Flush suffixes first so a trailing
+                    // comment is not stranded after the formfeed.
+                    if !suffixes.is_empty() {
+                        stack.push((ind, mode, doc));
+                        stack.extend(suffixes.drain(..).rev());
+                        continue;
+                    }
+                    if !pending.is_empty() {
+                        out.push_str(&pending);
+                        pending.clear();
+                    }
+                    out.push('\u{000C}');
                 }
             }
         }
@@ -594,5 +605,15 @@ mod tests {
         ]));
         assert_eq!(print(&doc, 4), "ab\u{000B} c");
         assert_eq!(print(&doc, 3), "ab\u{000B}\nc");
+    }
+
+    #[test]
+    fn a_cell_break_flushes_suffixes_before_the_formfeed() {
+        let doc = seq(vec![
+            Doc::text("x"),
+            Doc::Suffix(Box::new(seq(vec![Doc::Cell, Doc::text("// c")]))),
+            Doc::CellBreak,
+        ]);
+        assert_eq!(print(&doc, 80), "x\u{000B}// c\u{000C}");
     }
 }
