@@ -173,11 +173,15 @@ function validateExpr(value) {
   };
   switch (op) {
     case "seq":
-    case "group":
     case "indent":
     case "paren":
       rest.forEach(validateExpr);
       return;
+    case "group": {
+      const body = typeof rest[0] === "number" ? (parseGroupMax(rest[0]), rest.slice(1)) : rest;
+      body.forEach(validateExpr);
+      return;
+    }
     case "line":
     case "soft":
     case "hard":
@@ -345,7 +349,14 @@ function buildPackage(pkg) {
 // parent through an explicit `breakParent` instead.
 const text = (s) => ({ k: "text", s, brk: false });
 const concat = (parts) => ({ k: "concat", parts, brk: parts.some((p) => p.brk) });
-const group = (d) => ({ k: "group", d, brk: d.brk });
+const group = (d, max) => (max == null ? { k: "group", d, brk: d.brk } : { k: "group", d, brk: d.brk, max });
+
+function parseGroupMax(value) {
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0 || value > 1) {
+    throw new Refusal(`\`group\` max must be a fraction in (0, 1], got ${JSON.stringify(value)}`);
+  }
+  return value;
+}
 const indent = (unit, d) => ({ k: "indent", unit, d, brk: d.brk });
 const line = { k: "line", brk: false };
 const soft = { k: "soft", brk: false };
@@ -469,7 +480,10 @@ function print(doc, cols) {
           stack.push([ind + d.unit, mode, d.d]);
           break;
         case "group": {
-          const flat = !d.brk && fits([ind, FLAT, d.d], stack, cols - pos);
+          let flat = !d.brk && fits([ind, FLAT, d.d], stack, cols - pos);
+          if (flat && d.max != null) {
+            flat = fits([ind, FLAT, d.d], [], Math.round(d.max * cols));
+          }
           stack.push([ind, flat ? FLAT : BREAK, d.d]);
           break;
         }
@@ -1066,8 +1080,11 @@ class Ctx {
         return nil;
       case "seq":
         return concat(rest.map((e) => this.eval(e)));
-      case "group":
-        return group(concat(rest.map((e) => this.eval(e))));
+      case "group": {
+        const max = typeof rest[0] === "number" ? parseGroupMax(rest[0]) : undefined;
+        const body = max === undefined ? rest : rest.slice(1);
+        return group(concat(body.map((e) => this.eval(e))), max);
+      }
       case "indent":
         return indent(
           this.fmt.indentUnit,
