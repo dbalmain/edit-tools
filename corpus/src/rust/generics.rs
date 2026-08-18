@@ -1,0 +1,17 @@
+fn transform<T, U, F>(
+    values: &[T],
+    fallback: U,
+    mut convert: F,
+) -> Result<Vec<U>, TransformError>
+where
+    T: Clone + Send + Sync,
+    U: Clone + Default + Send,
+    F: FnMut(T, &U) -> Result<U, TransformError>,
+{
+    let mut output = Vec::with_capacity(values.len());
+    for value in values {
+        output.push(convert(value.clone(), &fallback)?);
+    }
+    // The where clause is intentionally long enough to test rustfmt's fallback.
+    Ok(output)
+}

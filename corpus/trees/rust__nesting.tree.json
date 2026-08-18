@@ -1,0 +1,1801 @@
+{
+ "language": "rust",
+ "source_file": "corpus/src/rust/nesting.rs",
+ "source": "struct Branch {\n    leaves: [i32; 4],\n    label: &'static str,\n}\n\nstruct Root {\n    branches: [Branch; 3],\n    metadata: (&'static str, [i32; 3]),\n}\n\nfn nested_values() {\n    // The outer array breaks while each small child array still fits flat.\n    let matrix = [\n        [1, 2],\n        [3, 4],\n        [5, 6],\n        [7, 8],\n        [9, 10],\n        [11, 12],\n        [13, 14],\n        [15, 16],\n        [17, 18],\n        [19, 20],\n    ];\n    let root = Root {\n        branches: [\n            Branch { leaves: [1, 2, 3, 4], label: \"north\" },\n            Branch { leaves: [5, 6, 7, 8], label: \"south\" },\n            Branch { leaves: [9, 10, 11, 12], label: \"west\" },\n        ],\n        metadata: (\"deep\", [13, 14, 15]),\n    };\n    consume(matrix, root);\n}\n",
+ "root": {
+  "type": "source_file",
+  "start": 0,
+  "end": 760,
+  "children": [
+   {
+    "type": "struct_item",
+    "start": 0,
+    "end": 64,
+    "children": [
+     {
+      "type": "struct",
+      "start": 0,
+      "end": 6,
+      "text": "struct"
+     },
+     {
+      "type": "type_identifier",
+      "start": 7,
+      "end": 13,
+      "field": "name",
+      "text": "Branch"
+     },
+     {
+      "type": "field_declaration_list",
+      "start": 14,
+      "end": 64,
+      "field": "body",
+      "children": [
+       {
+        "type": "{",
+        "start": 14,
+        "end": 15,
+        "text": "{"
+       },
+       {
+        "type": "field_declaration",
+        "start": 20,
+        "end": 36,
+        "children": [
+         {
+          "type": "field_identifier",
+          "start": 20,
+          "end": 26,
+          "field": "name",
+          "text": "leaves"
+         },
+         {
+          "type": ":",
+          "start": 26,
+          "end": 27,
+          "text": ":"
+         },
+         {
+          "type": "array_type",
+          "start": 28,
+          "end": 36,
+          "field": "type",
+          "children": [
+           {
+            "type": "[",
+            "start": 28,
+            "end": 29,
+            "text": "["
+           },
+           {
+            "type": "primitive_type",
+            "start": 29,
+            "end": 32,
+            "field": "element",
+            "text": "i32"
+           },
+           {
+            "type": ";",
+            "start": 32,
+            "end": 33,
+            "text": ";"
+           },
+           {
+            "type": "integer_literal",
+            "start": 34,
+            "end": 35,
+            "field": "length",
+            "text": "4"
+           },
+           {
+            "type": "]",
+            "start": 35,
+            "end": 36,
+            "text": "]"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 36,
+        "end": 37,
+        "text": ","
+       },
+       {
+        "type": "field_declaration",
+        "start": 42,
+        "end": 61,
+        "children": [
+         {
+          "type": "field_identifier",
+          "start": 42,
+          "end": 47,
+          "field": "name",
+          "text": "label"
+         },
+         {
+          "type": ":",
+          "start": 47,
+          "end": 48,
+          "text": ":"
+         },
+         {
+          "type": "reference_type",
+          "start": 49,
+          "end": 61,
+          "field": "type",
+          "children": [
+           {
+            "type": "&",
+            "start": 49,
+            "end": 50,
+            "text": "&"
+           },
+           {
+            "type": "lifetime",
+            "start": 50,
+            "end": 57,
+            "children": [
+             {
+              "type": "'",
+              "start": 50,
+              "end": 51,
+              "text": "'"
+             },
+             {
+              "type": "identifier",
+              "start": 51,
+              "end": 57,
+              "text": "static"
+             }
+            ]
+           },
+           {
+            "type": "primitive_type",
+            "start": 58,
+            "end": 61,
+            "field": "type",
+            "text": "str"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 61,
+        "end": 62,
+        "text": ","
+       },
+       {
+        "type": "}",
+        "start": 63,
+        "end": 64,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "struct_item",
+    "start": 66,
+    "end": 148,
+    "children": [
+     {
+      "type": "struct",
+      "start": 66,
+      "end": 72,
+      "text": "struct"
+     },
+     {
+      "type": "type_identifier",
+      "start": 73,
+      "end": 77,
+      "field": "name",
+      "text": "Root"
+     },
+     {
+      "type": "field_declaration_list",
+      "start": 78,
+      "end": 148,
+      "field": "body",
+      "children": [
+       {
+        "type": "{",
+        "start": 78,
+        "end": 79,
+        "text": "{"
+       },
+       {
+        "type": "field_declaration",
+        "start": 84,
+        "end": 105,
+        "children": [
+         {
+          "type": "field_identifier",
+          "start": 84,
+          "end": 92,
+          "field": "name",
+          "text": "branches"
+         },
+         {
+          "type": ":",
+          "start": 92,
+          "end": 93,
+          "text": ":"
+         },
+         {
+          "type": "array_type",
+          "start": 94,
+          "end": 105,
+          "field": "type",
+          "children": [
+           {
+            "type": "[",
+            "start": 94,
+            "end": 95,
+            "text": "["
+           },
+           {
+            "type": "type_identifier",
+            "start": 95,
+            "end": 101,
+            "field": "element",
+            "text": "Branch"
+           },
+           {
+            "type": ";",
+            "start": 101,
+            "end": 102,
+            "text": ";"
+           },
+           {
+            "type": "integer_literal",
+            "start": 103,
+            "end": 104,
+            "field": "length",
+            "text": "3"
+           },
+           {
+            "type": "]",
+            "start": 104,
+            "end": 105,
+            "text": "]"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 105,
+        "end": 106,
+        "text": ","
+       },
+       {
+        "type": "field_declaration",
+        "start": 111,
+        "end": 145,
+        "children": [
+         {
+          "type": "field_identifier",
+          "start": 111,
+          "end": 119,
+          "field": "name",
+          "text": "metadata"
+         },
+         {
+          "type": ":",
+          "start": 119,
+          "end": 120,
+          "text": ":"
+         },
+         {
+          "type": "tuple_type",
+          "start": 121,
+          "end": 145,
+          "field": "type",
+          "children": [
+           {
+            "type": "(",
+            "start": 121,
+            "end": 122,
+            "text": "("
+           },
+           {
+            "type": "reference_type",
+            "start": 122,
+            "end": 134,
+            "children": [
+             {
+              "type": "&",
+              "start": 122,
+              "end": 123,
+              "text": "&"
+             },
+             {
+              "type": "lifetime",
+              "start": 123,
+              "end": 130,
+              "children": [
+               {
+                "type": "'",
+                "start": 123,
+                "end": 124,
+                "text": "'"
+               },
+               {
+                "type": "identifier",
+                "start": 124,
+                "end": 130,
+                "text": "static"
+               }
+              ]
+             },
+             {
+              "type": "primitive_type",
+              "start": 131,
+              "end": 134,
+              "field": "type",
+              "text": "str"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 134,
+            "end": 135,
+            "text": ","
+           },
+           {
+            "type": "array_type",
+            "start": 136,
+            "end": 144,
+            "children": [
+             {
+              "type": "[",
+              "start": 136,
+              "end": 137,
+              "text": "["
+             },
+             {
+              "type": "primitive_type",
+              "start": 137,
+              "end": 140,
+              "field": "element",
+              "text": "i32"
+             },
+             {
+              "type": ";",
+              "start": 140,
+              "end": 141,
+              "text": ";"
+             },
+             {
+              "type": "integer_literal",
+              "start": 142,
+              "end": 143,
+              "field": "length",
+              "text": "3"
+             },
+             {
+              "type": "]",
+              "start": 143,
+              "end": 144,
+              "text": "]"
+             }
+            ]
+           },
+           {
+            "type": ")",
+            "start": 144,
+            "end": 145,
+            "text": ")"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 145,
+        "end": 146,
+        "text": ","
+       },
+       {
+        "type": "}",
+        "start": 147,
+        "end": 148,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "function_item",
+    "start": 150,
+    "end": 759,
+    "children": [
+     {
+      "type": "fn",
+      "start": 150,
+      "end": 152,
+      "text": "fn"
+     },
+     {
+      "type": "identifier",
+      "start": 153,
+      "end": 166,
+      "field": "name",
+      "text": "nested_values"
+     },
+     {
+      "type": "parameters",
+      "start": 166,
+      "end": 168,
+      "field": "parameters",
+      "children": [
+       {
+        "type": "(",
+        "start": 166,
+        "end": 167,
+        "text": "("
+       },
+       {
+        "type": ")",
+        "start": 167,
+        "end": 168,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "block",
+      "start": 169,
+      "end": 759,
+      "field": "body",
+      "children": [
+       {
+        "type": "{",
+        "start": 169,
+        "end": 170,
+        "text": "{"
+       },
+       {
+        "type": "line_comment",
+        "start": 175,
+        "end": 246,
+        "children": [
+         {
+          "type": "//",
+          "start": 175,
+          "end": 177,
+          "text": "//"
+         }
+        ]
+       },
+       {
+        "type": "let_declaration",
+        "start": 251,
+        "end": 443,
+        "children": [
+         {
+          "type": "let",
+          "start": 251,
+          "end": 254,
+          "text": "let"
+         },
+         {
+          "type": "identifier",
+          "start": 255,
+          "end": 261,
+          "field": "pattern",
+          "text": "matrix"
+         },
+         {
+          "type": "=",
+          "start": 262,
+          "end": 263,
+          "text": "="
+         },
+         {
+          "type": "array_expression",
+          "start": 264,
+          "end": 442,
+          "field": "value",
+          "children": [
+           {
+            "type": "[",
+            "start": 264,
+            "end": 265,
+            "text": "["
+           },
+           {
+            "type": "array_expression",
+            "start": 274,
+            "end": 280,
+            "children": [
+             {
+              "type": "[",
+              "start": 274,
+              "end": 275,
+              "text": "["
+             },
+             {
+              "type": "integer_literal",
+              "start": 275,
+              "end": 276,
+              "text": "1"
+             },
+             {
+              "type": ",",
+              "start": 276,
+              "end": 277,
+              "text": ","
+             },
+             {
+              "type": "integer_literal",
+              "start": 278,
+              "end": 279,
+              "text": "2"
+             },
+             {
+              "type": "]",
+              "start": 279,
+              "end": 280,
+              "text": "]"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 280,
+            "end": 281,
+            "text": ","
+           },
+           {
+            "type": "array_expression",
+            "start": 290,
+            "end": 296,
+            "children": [
+             {
+              "type": "[",
+              "start": 290,
+              "end": 291,
+              "text": "["
+             },
+             {
+              "type": "integer_literal",
+              "start": 291,
+              "end": 292,
+              "text": "3"
+             },
+             {
+              "type": ",",
+              "start": 292,
+              "end": 293,
+              "text": ","
+             },
+             {
+              "type": "integer_literal",
+              "start": 294,
+              "end": 295,
+              "text": "4"
+             },
+             {
+              "type": "]",
+              "start": 295,
+              "end": 296,
+              "text": "]"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 296,
+            "end": 297,
+            "text": ","
+           },
+           {
+            "type": "array_expression",
+            "start": 306,
+            "end": 312,
+            "children": [
+             {
+              "type": "[",
+              "start": 306,
+              "end": 307,
+              "text": "["
+             },
+             {
+              "type": "integer_literal",
+              "start": 307,
+              "end": 308,
+              "text": "5"
+             },
+             {
+              "type": ",",
+              "start": 308,
+              "end": 309,
+              "text": ","
+             },
+             {
+              "type": "integer_literal",
+              "start": 310,
+              "end": 311,
+              "text": "6"
+             },
+             {
+              "type": "]",
+              "start": 311,
+              "end": 312,
+              "text": "]"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 312,
+            "end": 313,
+            "text": ","
+           },
+           {
+            "type": "array_expression",
+            "start": 322,
+            "end": 328,
+            "children": [
+             {
+              "type": "[",
+              "start": 322,
+              "end": 323,
+              "text": "["
+             },
+             {
+              "type": "integer_literal",
+              "start": 323,
+              "end": 324,
+              "text": "7"
+             },
+             {
+              "type": ",",
+              "start": 324,
+              "end": 325,
+              "text": ","
+             },
+             {
+              "type": "integer_literal",
+              "start": 326,
+              "end": 327,
+              "text": "8"
+             },
+             {
+              "type": "]",
+              "start": 327,
+              "end": 328,
+              "text": "]"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 328,
+            "end": 329,
+            "text": ","
+           },
+           {
+            "type": "array_expression",
+            "start": 338,
+            "end": 345,
+            "children": [
+             {
+              "type": "[",
+              "start": 338,
+              "end": 339,
+              "text": "["
+             },
+             {
+              "type": "integer_literal",
+              "start": 339,
+              "end": 340,
+              "text": "9"
+             },
+             {
+              "type": ",",
+              "start": 340,
+              "end": 341,
+              "text": ","
+             },
+             {
+              "type": "integer_literal",
+              "start": 342,
+              "end": 344,
+              "text": "10"
+             },
+             {
+              "type": "]",
+              "start": 344,
+              "end": 345,
+              "text": "]"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 345,
+            "end": 346,
+            "text": ","
+           },
+           {
+            "type": "array_expression",
+            "start": 355,
+            "end": 363,
+            "children": [
+             {
+              "type": "[",
+              "start": 355,
+              "end": 356,
+              "text": "["
+             },
+             {
+              "type": "integer_literal",
+              "start": 356,
+              "end": 358,
+              "text": "11"
+             },
+             {
+              "type": ",",
+              "start": 358,
+              "end": 359,
+              "text": ","
+             },
+             {
+              "type": "integer_literal",
+              "start": 360,
+              "end": 362,
+              "text": "12"
+             },
+             {
+              "type": "]",
+              "start": 362,
+              "end": 363,
+              "text": "]"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 363,
+            "end": 364,
+            "text": ","
+           },
+           {
+            "type": "array_expression",
+            "start": 373,
+            "end": 381,
+            "children": [
+             {
+              "type": "[",
+              "start": 373,
+              "end": 374,
+              "text": "["
+             },
+             {
+              "type": "integer_literal",
+              "start": 374,
+              "end": 376,
+              "text": "13"
+             },
+             {
+              "type": ",",
+              "start": 376,
+              "end": 377,
+              "text": ","
+             },
+             {
+              "type": "integer_literal",
+              "start": 378,
+              "end": 380,
+              "text": "14"
+             },
+             {
+              "type": "]",
+              "start": 380,
+              "end": 381,
+              "text": "]"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 381,
+            "end": 382,
+            "text": ","
+           },
+           {
+            "type": "array_expression",
+            "start": 391,
+            "end": 399,
+            "children": [
+             {
+              "type": "[",
+              "start": 391,
+              "end": 392,
+              "text": "["
+             },
+             {
+              "type": "integer_literal",
+              "start": 392,
+              "end": 394,
+              "text": "15"
+             },
+             {
+              "type": ",",
+              "start": 394,
+              "end": 395,
+              "text": ","
+             },
+             {
+              "type": "integer_literal",
+              "start": 396,
+              "end": 398,
+              "text": "16"
+             },
+             {
+              "type": "]",
+              "start": 398,
+              "end": 399,
+              "text": "]"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 399,
+            "end": 400,
+            "text": ","
+           },
+           {
+            "type": "array_expression",
+            "start": 409,
+            "end": 417,
+            "children": [
+             {
+              "type": "[",
+              "start": 409,
+              "end": 410,
+              "text": "["
+             },
+             {
+              "type": "integer_literal",
+              "start": 410,
+              "end": 412,
+              "text": "17"
+             },
+             {
+              "type": ",",
+              "start": 412,
+              "end": 413,
+              "text": ","
+             },
+             {
+              "type": "integer_literal",
+              "start": 414,
+              "end": 416,
+              "text": "18"
+             },
+             {
+              "type": "]",
+              "start": 416,
+              "end": 417,
+              "text": "]"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 417,
+            "end": 418,
+            "text": ","
+           },
+           {
+            "type": "array_expression",
+            "start": 427,
+            "end": 435,
+            "children": [
+             {
+              "type": "[",
+              "start": 427,
+              "end": 428,
+              "text": "["
+             },
+             {
+              "type": "integer_literal",
+              "start": 428,
+              "end": 430,
+              "text": "19"
+             },
+             {
+              "type": ",",
+              "start": 430,
+              "end": 431,
+              "text": ","
+             },
+             {
+              "type": "integer_literal",
+              "start": 432,
+              "end": 434,
+              "text": "20"
+             },
+             {
+              "type": "]",
+              "start": 434,
+              "end": 435,
+              "text": "]"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 435,
+            "end": 436,
+            "text": ","
+           },
+           {
+            "type": "]",
+            "start": 441,
+            "end": 442,
+            "text": "]"
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 442,
+          "end": 443,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "let_declaration",
+        "start": 448,
+        "end": 730,
+        "children": [
+         {
+          "type": "let",
+          "start": 448,
+          "end": 451,
+          "text": "let"
+         },
+         {
+          "type": "identifier",
+          "start": 452,
+          "end": 456,
+          "field": "pattern",
+          "text": "root"
+         },
+         {
+          "type": "=",
+          "start": 457,
+          "end": 458,
+          "text": "="
+         },
+         {
+          "type": "struct_expression",
+          "start": 459,
+          "end": 729,
+          "field": "value",
+          "children": [
+           {
+            "type": "type_identifier",
+            "start": 459,
+            "end": 463,
+            "field": "name",
+            "text": "Root"
+           },
+           {
+            "type": "field_initializer_list",
+            "start": 464,
+            "end": 729,
+            "field": "body",
+            "children": [
+             {
+              "type": "{",
+              "start": 464,
+              "end": 465,
+              "text": "{"
+             },
+             {
+              "type": "field_initializer",
+              "start": 474,
+              "end": 680,
+              "children": [
+               {
+                "type": "field_identifier",
+                "start": 474,
+                "end": 482,
+                "field": "field",
+                "text": "branches"
+               },
+               {
+                "type": ":",
+                "start": 482,
+                "end": 483,
+                "text": ":"
+               },
+               {
+                "type": "array_expression",
+                "start": 484,
+                "end": 680,
+                "field": "value",
+                "children": [
+                 {
+                  "type": "[",
+                  "start": 484,
+                  "end": 485,
+                  "text": "["
+                 },
+                 {
+                  "type": "struct_expression",
+                  "start": 498,
+                  "end": 545,
+                  "children": [
+                   {
+                    "type": "type_identifier",
+                    "start": 498,
+                    "end": 504,
+                    "field": "name",
+                    "text": "Branch"
+                   },
+                   {
+                    "type": "field_initializer_list",
+                    "start": 505,
+                    "end": 545,
+                    "field": "body",
+                    "children": [
+                     {
+                      "type": "{",
+                      "start": 505,
+                      "end": 506,
+                      "text": "{"
+                     },
+                     {
+                      "type": "field_initializer",
+                      "start": 507,
+                      "end": 527,
+                      "children": [
+                       {
+                        "type": "field_identifier",
+                        "start": 507,
+                        "end": 513,
+                        "field": "field",
+                        "text": "leaves"
+                       },
+                       {
+                        "type": ":",
+                        "start": 513,
+                        "end": 514,
+                        "text": ":"
+                       },
+                       {
+                        "type": "array_expression",
+                        "start": 515,
+                        "end": 527,
+                        "field": "value",
+                        "children": [
+                         {
+                          "type": "[",
+                          "start": 515,
+                          "end": 516,
+                          "text": "["
+                         },
+                         {
+                          "type": "integer_literal",
+                          "start": 516,
+                          "end": 517,
+                          "text": "1"
+                         },
+                         {
+                          "type": ",",
+                          "start": 517,
+                          "end": 518,
+                          "text": ","
+                         },
+                         {
+                          "type": "integer_literal",
+                          "start": 519,
+                          "end": 520,
+                          "text": "2"
+                         },
+                         {
+                          "type": ",",
+                          "start": 520,
+                          "end": 521,
+                          "text": ","
+                         },
+                         {
+                          "type": "integer_literal",
+                          "start": 522,
+                          "end": 523,
+                          "text": "3"
+                         },
+                         {
+                          "type": ",",
+                          "start": 523,
+                          "end": 524,
+                          "text": ","
+                         },
+                         {
+                          "type": "integer_literal",
+                          "start": 525,
+                          "end": 526,
+                          "text": "4"
+                         },
+                         {
+                          "type": "]",
+                          "start": 526,
+                          "end": 527,
+                          "text": "]"
+                         }
+                        ]
+                       }
+                      ]
+                     },
+                     {
+                      "type": ",",
+                      "start": 527,
+                      "end": 528,
+                      "text": ","
+                     },
+                     {
+                      "type": "field_initializer",
+                      "start": 529,
+                      "end": 543,
+                      "children": [
+                       {
+                        "type": "field_identifier",
+                        "start": 529,
+                        "end": 534,
+                        "field": "field",
+                        "text": "label"
+                       },
+                       {
+                        "type": ":",
+                        "start": 534,
+                        "end": 535,
+                        "text": ":"
+                       },
+                       {
+                        "type": "string_literal",
+                        "start": 536,
+                        "end": 543,
+                        "field": "value",
+                        "children": [
+                         {
+                          "type": "\"",
+                          "start": 536,
+                          "end": 537,
+                          "text": "\""
+                         },
+                         {
+                          "type": "string_content",
+                          "start": 537,
+                          "end": 542,
+                          "text": "north"
+                         },
+                         {
+                          "type": "\"",
+                          "start": 542,
+                          "end": 543,
+                          "text": "\""
+                         }
+                        ]
+                       }
+                      ]
+                     },
+                     {
+                      "type": "}",
+                      "start": 544,
+                      "end": 545,
+                      "text": "}"
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 {
+                  "type": ",",
+                  "start": 545,
+                  "end": 546,
+                  "text": ","
+                 },
+                 {
+                  "type": "struct_expression",
+                  "start": 559,
+                  "end": 606,
+                  "children": [
+                   {
+                    "type": "type_identifier",
+                    "start": 559,
+                    "end": 565,
+                    "field": "name",
+                    "text": "Branch"
+                   },
+                   {
+                    "type": "field_initializer_list",
+                    "start": 566,
+                    "end": 606,
+                    "field": "body",
+                    "children": [
+                     {
+                      "type": "{",
+                      "start": 566,
+                      "end": 567,
+                      "text": "{"
+                     },
+                     {
+                      "type": "field_initializer",
+                      "start": 568,
+                      "end": 588,
+                      "children": [
+                       {
+                        "type": "field_identifier",
+                        "start": 568,
+                        "end": 574,
+                        "field": "field",
+                        "text": "leaves"
+                       },
+                       {
+                        "type": ":",
+                        "start": 574,
+                        "end": 575,
+                        "text": ":"
+                       },
+                       {
+                        "type": "array_expression",
+                        "start": 576,
+                        "end": 588,
+                        "field": "value",
+                        "children": [
+                         {
+                          "type": "[",
+                          "start": 576,
+                          "end": 577,
+                          "text": "["
+                         },
+                         {
+                          "type": "integer_literal",
+                          "start": 577,
+                          "end": 578,
+                          "text": "5"
+                         },
+                         {
+                          "type": ",",
+                          "start": 578,
+                          "end": 579,
+                          "text": ","
+                         },
+                         {
+                          "type": "integer_literal",
+                          "start": 580,
+                          "end": 581,
+                          "text": "6"
+                         },
+                         {
+                          "type": ",",
+                          "start": 581,
+                          "end": 582,
+                          "text": ","
+                         },
+                         {
+                          "type": "integer_literal",
+                          "start": 583,
+                          "end": 584,
+                          "text": "7"
+                         },
+                         {
+                          "type": ",",
+                          "start": 584,
+                          "end": 585,
+                          "text": ","
+                         },
+                         {
+                          "type": "integer_literal",
+                          "start": 586,
+                          "end": 587,
+                          "text": "8"
+                         },
+                         {
+                          "type": "]",
+                          "start": 587,
+                          "end": 588,
+                          "text": "]"
+                         }
+                        ]
+                       }
+                      ]
+                     },
+                     {
+                      "type": ",",
+                      "start": 588,
+                      "end": 589,
+                      "text": ","
+                     },
+                     {
+                      "type": "field_initializer",
+                      "start": 590,
+                      "end": 604,
+                      "children": [
+                       {
+                        "type": "field_identifier",
+                        "start": 590,
+                        "end": 595,
+                        "field": "field",
+                        "text": "label"
+                       },
+                       {
+                        "type": ":",
+                        "start": 595,
+                        "end": 596,
+                        "text": ":"
+                       },
+                       {
+                        "type": "string_literal",
+                        "start": 597,
+                        "end": 604,
+                        "field": "value",
+                        "children": [
+                         {
+                          "type": "\"",
+                          "start": 597,
+                          "end": 598,
+                          "text": "\""
+                         },
+                         {
+                          "type": "string_content",
+                          "start": 598,
+                          "end": 603,
+                          "text": "south"
+                         },
+                         {
+                          "type": "\"",
+                          "start": 603,
+                          "end": 604,
+                          "text": "\""
+                         }
+                        ]
+                       }
+                      ]
+                     },
+                     {
+                      "type": "}",
+                      "start": 605,
+                      "end": 606,
+                      "text": "}"
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 {
+                  "type": ",",
+                  "start": 606,
+                  "end": 607,
+                  "text": ","
+                 },
+                 {
+                  "type": "struct_expression",
+                  "start": 620,
+                  "end": 669,
+                  "children": [
+                   {
+                    "type": "type_identifier",
+                    "start": 620,
+                    "end": 626,
+                    "field": "name",
+                    "text": "Branch"
+                   },
+                   {
+                    "type": "field_initializer_list",
+                    "start": 627,
+                    "end": 669,
+                    "field": "body",
+                    "children": [
+                     {
+                      "type": "{",
+                      "start": 627,
+                      "end": 628,
+                      "text": "{"
+                     },
+                     {
+                      "type": "field_initializer",
+                      "start": 629,
+                      "end": 652,
+                      "children": [
+                       {
+                        "type": "field_identifier",
+                        "start": 629,
+                        "end": 635,
+                        "field": "field",
+                        "text": "leaves"
+                       },
+                       {
+                        "type": ":",
+                        "start": 635,
+                        "end": 636,
+                        "text": ":"
+                       },
+                       {
+                        "type": "array_expression",
+                        "start": 637,
+                        "end": 652,
+                        "field": "value",
+                        "children": [
+                         {
+                          "type": "[",
+                          "start": 637,
+                          "end": 638,
+                          "text": "["
+                         },
+                         {
+                          "type": "integer_literal",
+                          "start": 638,
+                          "end": 639,
+                          "text": "9"
+                         },
+                         {
+                          "type": ",",
+                          "start": 639,
+                          "end": 640,
+                          "text": ","
+                         },
+                         {
+                          "type": "integer_literal",
+                          "start": 641,
+                          "end": 643,
+                          "text": "10"
+                         },
+                         {
+                          "type": ",",
+                          "start": 643,
+                          "end": 644,
+                          "text": ","
+                         },
+                         {
+                          "type": "integer_literal",
+                          "start": 645,
+                          "end": 647,
+                          "text": "11"
+                         },
+                         {
+                          "type": ",",
+                          "start": 647,
+                          "end": 648,
+                          "text": ","
+                         },
+                         {
+                          "type": "integer_literal",
+                          "start": 649,
+                          "end": 651,
+                          "text": "12"
+                         },
+                         {
+                          "type": "]",
+                          "start": 651,
+                          "end": 652,
+                          "text": "]"
+                         }
+                        ]
+                       }
+                      ]
+                     },
+                     {
+                      "type": ",",
+                      "start": 652,
+                      "end": 653,
+                      "text": ","
+                     },
+                     {
+                      "type": "field_initializer",
+                      "start": 654,
+                      "end": 667,
+                      "children": [
+                       {
+                        "type": "field_identifier",
+                        "start": 654,
+                        "end": 659,
+                        "field": "field",
+                        "text": "label"
+                       },
+                       {
+                        "type": ":",
+                        "start": 659,
+                        "end": 660,
+                        "text": ":"
+                       },
+                       {
+                        "type": "string_literal",
+                        "start": 661,
+                        "end": 667,
+                        "field": "value",
+                        "children": [
+                         {
+                          "type": "\"",
+                          "start": 661,
+                          "end": 662,
+                          "text": "\""
+                         },
+                         {
+                          "type": "string_content",
+                          "start": 662,
+                          "end": 666,
+                          "text": "west"
+                         },
+                         {
+                          "type": "\"",
+                          "start": 666,
+                          "end": 667,
+                          "text": "\""
+                         }
+                        ]
+                       }
+                      ]
+                     },
+                     {
+                      "type": "}",
+                      "start": 668,
+                      "end": 669,
+                      "text": "}"
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 {
+                  "type": ",",
+                  "start": 669,
+                  "end": 670,
+                  "text": ","
+                 },
+                 {
+                  "type": "]",
+                  "start": 679,
+                  "end": 680,
+                  "text": "]"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 680,
+              "end": 681,
+              "text": ","
+             },
+             {
+              "type": "field_initializer",
+              "start": 690,
+              "end": 722,
+              "children": [
+               {
+                "type": "field_identifier",
+                "start": 690,
+                "end": 698,
+                "field": "field",
+                "text": "metadata"
+               },
+               {
+                "type": ":",
+                "start": 698,
+                "end": 699,
+                "text": ":"
+               },
+               {
+                "type": "tuple_expression",
+                "start": 700,
+                "end": 722,
+                "field": "value",
+                "children": [
+                 {
+                  "type": "(",
+                  "start": 700,
+                  "end": 701,
+                  "text": "("
+                 },
+                 {
+                  "type": "string_literal",
+                  "start": 701,
+                  "end": 707,
+                  "children": [
+                   {
+                    "type": "\"",
+                    "start": 701,
+                    "end": 702,
+                    "text": "\""
+                   },
+                   {
+                    "type": "string_content",
+                    "start": 702,
+                    "end": 706,
+                    "text": "deep"
+                   },
+                   {
+                    "type": "\"",
+                    "start": 706,
+                    "end": 707,
+                    "text": "\""
+                   }
+                  ]
+                 },
+                 {
+                  "type": ",",
+                  "start": 707,
+                  "end": 708,
+                  "text": ","
+                 },
+                 {
+                  "type": "array_expression",
+                  "start": 709,
+                  "end": 721,
+                  "children": [
+                   {
+                    "type": "[",
+                    "start": 709,
+                    "end": 710,
+                    "text": "["
+                   },
+                   {
+                    "type": "integer_literal",
+                    "start": 710,
+                    "end": 712,
+                    "text": "13"
+                   },
+                   {
+                    "type": ",",
+                    "start": 712,
+                    "end": 713,
+                    "text": ","
+                   },
+                   {
+                    "type": "integer_literal",
+                    "start": 714,
+                    "end": 716,
+                    "text": "14"
+                   },
+                   {
+                    "type": ",",
+                    "start": 716,
+                    "end": 717,
+                    "text": ","
+                   },
+                   {
+                    "type": "integer_literal",
+                    "start": 718,
+                    "end": 720,
+                    "text": "15"
+                   },
+                   {
+                    "type": "]",
+                    "start": 720,
+                    "end": 721,
+                    "text": "]"
+                   }
+                  ]
+                 },
+                 {
+                  "type": ")",
+                  "start": 721,
+                  "end": 722,
+                  "text": ")"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 722,
+              "end": 723,
+              "text": ","
+             },
+             {
+              "type": "}",
+              "start": 728,
+              "end": 729,
+              "text": "}"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 729,
+          "end": 730,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "expression_statement",
+        "start": 735,
+        "end": 757,
+        "children": [
+         {
+          "type": "call_expression",
+          "start": 735,
+          "end": 756,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 735,
+            "end": 742,
+            "field": "function",
+            "text": "consume"
+           },
+           {
+            "type": "arguments",
+            "start": 742,
+            "end": 756,
+            "field": "arguments",
+            "children": [
+             {
+              "type": "(",
+              "start": 742,
+              "end": 743,
+              "text": "("
+             },
+             {
+              "type": "identifier",
+              "start": 743,
+              "end": 749,
+              "text": "matrix"
+             },
+             {
+              "type": ",",
+              "start": 749,
+              "end": 750,
+              "text": ","
+             },
+             {
+              "type": "identifier",
+              "start": 751,
+              "end": 755,
+              "text": "root"
+             },
+             {
+              "type": ")",
+              "start": 755,
+              "end": 756,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 756,
+          "end": 757,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 758,
+        "end": 759,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

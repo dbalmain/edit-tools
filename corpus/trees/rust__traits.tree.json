@@ -1,0 +1,814 @@
+{
+ "language": "rust",
+ "source_file": "corpus/src/rust/traits.rs",
+ "source": "trait Renderable {\n    type Output;\n\n    fn render(&self, width: usize) -> Self::Output;\n}\n\ntrait CachedRenderable: Renderable\nwhere\n    Self::Output: Clone,\n{\n    fn render_cached(&self, width: usize) -> Self::Output {\n        // The default method combines a bound and a nested call.\n        self.render(width).clone()\n    }\n}\n\nimpl<T> CachedRenderable for T\nwhere\n    T: Renderable,\n    T::Output: Clone,\n{\n}\n",
+ "root": {
+  "type": "source_file",
+  "start": 0,
+  "end": 412,
+  "children": [
+   {
+    "type": "trait_item",
+    "start": 0,
+    "end": 90,
+    "children": [
+     {
+      "type": "trait",
+      "start": 0,
+      "end": 5,
+      "text": "trait"
+     },
+     {
+      "type": "type_identifier",
+      "start": 6,
+      "end": 16,
+      "field": "name",
+      "text": "Renderable"
+     },
+     {
+      "type": "declaration_list",
+      "start": 17,
+      "end": 90,
+      "field": "body",
+      "children": [
+       {
+        "type": "{",
+        "start": 17,
+        "end": 18,
+        "text": "{"
+       },
+       {
+        "type": "associated_type",
+        "start": 23,
+        "end": 35,
+        "children": [
+         {
+          "type": "type",
+          "start": 23,
+          "end": 27,
+          "text": "type"
+         },
+         {
+          "type": "type_identifier",
+          "start": 28,
+          "end": 34,
+          "field": "name",
+          "text": "Output"
+         },
+         {
+          "type": ";",
+          "start": 34,
+          "end": 35,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "function_signature_item",
+        "start": 41,
+        "end": 88,
+        "children": [
+         {
+          "type": "fn",
+          "start": 41,
+          "end": 43,
+          "text": "fn"
+         },
+         {
+          "type": "identifier",
+          "start": 44,
+          "end": 50,
+          "field": "name",
+          "text": "render"
+         },
+         {
+          "type": "parameters",
+          "start": 50,
+          "end": 71,
+          "field": "parameters",
+          "children": [
+           {
+            "type": "(",
+            "start": 50,
+            "end": 51,
+            "text": "("
+           },
+           {
+            "type": "self_parameter",
+            "start": 51,
+            "end": 56,
+            "children": [
+             {
+              "type": "&",
+              "start": 51,
+              "end": 52,
+              "text": "&"
+             },
+             {
+              "type": "self",
+              "start": 52,
+              "end": 56,
+              "text": "self"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 56,
+            "end": 57,
+            "text": ","
+           },
+           {
+            "type": "parameter",
+            "start": 58,
+            "end": 70,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 58,
+              "end": 63,
+              "field": "pattern",
+              "text": "width"
+             },
+             {
+              "type": ":",
+              "start": 63,
+              "end": 64,
+              "text": ":"
+             },
+             {
+              "type": "primitive_type",
+              "start": 65,
+              "end": 70,
+              "field": "type",
+              "text": "usize"
+             }
+            ]
+           },
+           {
+            "type": ")",
+            "start": 70,
+            "end": 71,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": "->",
+          "start": 72,
+          "end": 74,
+          "text": "->"
+         },
+         {
+          "type": "scoped_type_identifier",
+          "start": 75,
+          "end": 87,
+          "field": "return_type",
+          "children": [
+           {
+            "type": "identifier",
+            "start": 75,
+            "end": 79,
+            "field": "path",
+            "text": "Self"
+           },
+           {
+            "type": "::",
+            "start": 79,
+            "end": 81,
+            "text": "::"
+           },
+           {
+            "type": "type_identifier",
+            "start": 81,
+            "end": 87,
+            "field": "name",
+            "text": "Output"
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 87,
+          "end": 88,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 89,
+        "end": 90,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "trait_item",
+    "start": 92,
+    "end": 328,
+    "children": [
+     {
+      "type": "trait",
+      "start": 92,
+      "end": 97,
+      "text": "trait"
+     },
+     {
+      "type": "type_identifier",
+      "start": 98,
+      "end": 114,
+      "field": "name",
+      "text": "CachedRenderable"
+     },
+     {
+      "type": "trait_bounds",
+      "start": 114,
+      "end": 126,
+      "field": "bounds",
+      "children": [
+       {
+        "type": ":",
+        "start": 114,
+        "end": 115,
+        "text": ":"
+       },
+       {
+        "type": "type_identifier",
+        "start": 116,
+        "end": 126,
+        "text": "Renderable"
+       }
+      ]
+     },
+     {
+      "type": "where_clause",
+      "start": 127,
+      "end": 157,
+      "children": [
+       {
+        "type": "where",
+        "start": 127,
+        "end": 132,
+        "text": "where"
+       },
+       {
+        "type": "where_predicate",
+        "start": 137,
+        "end": 156,
+        "children": [
+         {
+          "type": "scoped_type_identifier",
+          "start": 137,
+          "end": 149,
+          "field": "left",
+          "children": [
+           {
+            "type": "identifier",
+            "start": 137,
+            "end": 141,
+            "field": "path",
+            "text": "Self"
+           },
+           {
+            "type": "::",
+            "start": 141,
+            "end": 143,
+            "text": "::"
+           },
+           {
+            "type": "type_identifier",
+            "start": 143,
+            "end": 149,
+            "field": "name",
+            "text": "Output"
+           }
+          ]
+         },
+         {
+          "type": "trait_bounds",
+          "start": 149,
+          "end": 156,
+          "field": "bounds",
+          "children": [
+           {
+            "type": ":",
+            "start": 149,
+            "end": 150,
+            "text": ":"
+           },
+           {
+            "type": "type_identifier",
+            "start": 151,
+            "end": 156,
+            "text": "Clone"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 156,
+        "end": 157,
+        "text": ","
+       }
+      ]
+     },
+     {
+      "type": "declaration_list",
+      "start": 158,
+      "end": 328,
+      "field": "body",
+      "children": [
+       {
+        "type": "{",
+        "start": 158,
+        "end": 159,
+        "text": "{"
+       },
+       {
+        "type": "function_item",
+        "start": 164,
+        "end": 326,
+        "children": [
+         {
+          "type": "fn",
+          "start": 164,
+          "end": 166,
+          "text": "fn"
+         },
+         {
+          "type": "identifier",
+          "start": 167,
+          "end": 180,
+          "field": "name",
+          "text": "render_cached"
+         },
+         {
+          "type": "parameters",
+          "start": 180,
+          "end": 201,
+          "field": "parameters",
+          "children": [
+           {
+            "type": "(",
+            "start": 180,
+            "end": 181,
+            "text": "("
+           },
+           {
+            "type": "self_parameter",
+            "start": 181,
+            "end": 186,
+            "children": [
+             {
+              "type": "&",
+              "start": 181,
+              "end": 182,
+              "text": "&"
+             },
+             {
+              "type": "self",
+              "start": 182,
+              "end": 186,
+              "text": "self"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 186,
+            "end": 187,
+            "text": ","
+           },
+           {
+            "type": "parameter",
+            "start": 188,
+            "end": 200,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 188,
+              "end": 193,
+              "field": "pattern",
+              "text": "width"
+             },
+             {
+              "type": ":",
+              "start": 193,
+              "end": 194,
+              "text": ":"
+             },
+             {
+              "type": "primitive_type",
+              "start": 195,
+              "end": 200,
+              "field": "type",
+              "text": "usize"
+             }
+            ]
+           },
+           {
+            "type": ")",
+            "start": 200,
+            "end": 201,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": "->",
+          "start": 202,
+          "end": 204,
+          "text": "->"
+         },
+         {
+          "type": "scoped_type_identifier",
+          "start": 205,
+          "end": 217,
+          "field": "return_type",
+          "children": [
+           {
+            "type": "identifier",
+            "start": 205,
+            "end": 209,
+            "field": "path",
+            "text": "Self"
+           },
+           {
+            "type": "::",
+            "start": 209,
+            "end": 211,
+            "text": "::"
+           },
+           {
+            "type": "type_identifier",
+            "start": 211,
+            "end": 217,
+            "field": "name",
+            "text": "Output"
+           }
+          ]
+         },
+         {
+          "type": "block",
+          "start": 218,
+          "end": 326,
+          "field": "body",
+          "children": [
+           {
+            "type": "{",
+            "start": 218,
+            "end": 219,
+            "text": "{"
+           },
+           {
+            "type": "line_comment",
+            "start": 228,
+            "end": 285,
+            "children": [
+             {
+              "type": "//",
+              "start": 228,
+              "end": 230,
+              "text": "//"
+             }
+            ]
+           },
+           {
+            "type": "call_expression",
+            "start": 294,
+            "end": 320,
+            "children": [
+             {
+              "type": "field_expression",
+              "start": 294,
+              "end": 318,
+              "field": "function",
+              "children": [
+               {
+                "type": "call_expression",
+                "start": 294,
+                "end": 312,
+                "field": "value",
+                "children": [
+                 {
+                  "type": "field_expression",
+                  "start": 294,
+                  "end": 305,
+                  "field": "function",
+                  "children": [
+                   {
+                    "type": "self",
+                    "start": 294,
+                    "end": 298,
+                    "field": "value",
+                    "text": "self"
+                   },
+                   {
+                    "type": ".",
+                    "start": 298,
+                    "end": 299,
+                    "text": "."
+                   },
+                   {
+                    "type": "field_identifier",
+                    "start": 299,
+                    "end": 305,
+                    "field": "field",
+                    "text": "render"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "arguments",
+                  "start": 305,
+                  "end": 312,
+                  "field": "arguments",
+                  "children": [
+                   {
+                    "type": "(",
+                    "start": 305,
+                    "end": 306,
+                    "text": "("
+                   },
+                   {
+                    "type": "identifier",
+                    "start": 306,
+                    "end": 311,
+                    "text": "width"
+                   },
+                   {
+                    "type": ")",
+                    "start": 311,
+                    "end": 312,
+                    "text": ")"
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": ".",
+                "start": 312,
+                "end": 313,
+                "text": "."
+               },
+               {
+                "type": "field_identifier",
+                "start": 313,
+                "end": 318,
+                "field": "field",
+                "text": "clone"
+               }
+              ]
+             },
+             {
+              "type": "arguments",
+              "start": 318,
+              "end": 320,
+              "field": "arguments",
+              "children": [
+               {
+                "type": "(",
+                "start": 318,
+                "end": 319,
+                "text": "("
+               },
+               {
+                "type": ")",
+                "start": 319,
+                "end": 320,
+                "text": ")"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 325,
+            "end": 326,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 327,
+        "end": 328,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "impl_item",
+    "start": 330,
+    "end": 411,
+    "children": [
+     {
+      "type": "impl",
+      "start": 330,
+      "end": 334,
+      "text": "impl"
+     },
+     {
+      "type": "type_parameters",
+      "start": 334,
+      "end": 337,
+      "field": "type_parameters",
+      "children": [
+       {
+        "type": "<",
+        "start": 334,
+        "end": 335,
+        "text": "<"
+       },
+       {
+        "type": "type_parameter",
+        "start": 335,
+        "end": 336,
+        "children": [
+         {
+          "type": "type_identifier",
+          "start": 335,
+          "end": 336,
+          "field": "name",
+          "text": "T"
+         }
+        ]
+       },
+       {
+        "type": ">",
+        "start": 336,
+        "end": 337,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "type_identifier",
+      "start": 338,
+      "end": 354,
+      "field": "trait",
+      "text": "CachedRenderable"
+     },
+     {
+      "type": "for",
+      "start": 355,
+      "end": 358,
+      "text": "for"
+     },
+     {
+      "type": "type_identifier",
+      "start": 359,
+      "end": 360,
+      "field": "type",
+      "text": "T"
+     },
+     {
+      "type": "where_clause",
+      "start": 361,
+      "end": 407,
+      "children": [
+       {
+        "type": "where",
+        "start": 361,
+        "end": 366,
+        "text": "where"
+       },
+       {
+        "type": "where_predicate",
+        "start": 371,
+        "end": 384,
+        "children": [
+         {
+          "type": "type_identifier",
+          "start": 371,
+          "end": 372,
+          "field": "left",
+          "text": "T"
+         },
+         {
+          "type": "trait_bounds",
+          "start": 372,
+          "end": 384,
+          "field": "bounds",
+          "children": [
+           {
+            "type": ":",
+            "start": 372,
+            "end": 373,
+            "text": ":"
+           },
+           {
+            "type": "type_identifier",
+            "start": 374,
+            "end": 384,
+            "text": "Renderable"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 384,
+        "end": 385,
+        "text": ","
+       },
+       {
+        "type": "where_predicate",
+        "start": 390,
+        "end": 406,
+        "children": [
+         {
+          "type": "scoped_type_identifier",
+          "start": 390,
+          "end": 399,
+          "field": "left",
+          "children": [
+           {
+            "type": "identifier",
+            "start": 390,
+            "end": 391,
+            "field": "path",
+            "text": "T"
+           },
+           {
+            "type": "::",
+            "start": 391,
+            "end": 393,
+            "text": "::"
+           },
+           {
+            "type": "type_identifier",
+            "start": 393,
+            "end": 399,
+            "field": "name",
+            "text": "Output"
+           }
+          ]
+         },
+         {
+          "type": "trait_bounds",
+          "start": 399,
+          "end": 406,
+          "field": "bounds",
+          "children": [
+           {
+            "type": ":",
+            "start": 399,
+            "end": 400,
+            "text": ":"
+           },
+           {
+            "type": "type_identifier",
+            "start": 401,
+            "end": 406,
+            "text": "Clone"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 406,
+        "end": 407,
+        "text": ","
+       }
+      ]
+     },
+     {
+      "type": "declaration_list",
+      "start": 408,
+      "end": 411,
+      "field": "body",
+      "children": [
+       {
+        "type": "{",
+        "start": 408,
+        "end": 409,
+        "text": "{"
+       },
+       {
+        "type": "}",
+        "start": 410,
+        "end": 411,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

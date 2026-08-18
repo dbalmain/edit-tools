@@ -1,0 +1,837 @@
+{
+ "language": "rust",
+ "source_file": "corpus/src/rust/structs.rs",
+ "source": "#[derive(Clone, Debug, PartialEq)]\nstruct Settings {\n    short: bool, // enable the short path\n    much_longer_setting_name: String, // preserve the user's label\n    retries: u32, // number of attempts\n    timeout_millis: u64, // network timeout\n}\n\nimpl Settings {\n    fn with_defaults() -> Self {\n        Self {\n            short: true,\n            much_longer_setting_name: String::from(\"default\"),\n            retries: 3,\n            timeout_millis: 5000,\n        }\n    }\n}\n\nfn struct_probe(settings: Settings) {\n    // Trailing comments make rustfmt align sibling fields.\n    consume(settings);\n}\n",
+ "root": {
+  "type": "source_file",
+  "start": 0,
+  "end": 601,
+  "children": [
+   {
+    "type": "attribute_item",
+    "start": 0,
+    "end": 34,
+    "children": [
+     {
+      "type": "#",
+      "start": 0,
+      "end": 1,
+      "text": "#"
+     },
+     {
+      "type": "[",
+      "start": 1,
+      "end": 2,
+      "text": "["
+     },
+     {
+      "type": "attribute",
+      "start": 2,
+      "end": 33,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 2,
+        "end": 8,
+        "text": "derive"
+       },
+       {
+        "type": "token_tree",
+        "start": 8,
+        "end": 33,
+        "field": "arguments",
+        "children": [
+         {
+          "type": "(",
+          "start": 8,
+          "end": 9,
+          "text": "("
+         },
+         {
+          "type": "identifier",
+          "start": 9,
+          "end": 14,
+          "text": "Clone"
+         },
+         {
+          "type": ",",
+          "start": 14,
+          "end": 15,
+          "text": ","
+         },
+         {
+          "type": "identifier",
+          "start": 16,
+          "end": 21,
+          "text": "Debug"
+         },
+         {
+          "type": ",",
+          "start": 21,
+          "end": 22,
+          "text": ","
+         },
+         {
+          "type": "identifier",
+          "start": 23,
+          "end": 32,
+          "text": "PartialEq"
+         },
+         {
+          "type": ")",
+          "start": 32,
+          "end": 33,
+          "text": ")"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "]",
+      "start": 33,
+      "end": 34,
+      "text": "]"
+     }
+    ]
+   },
+   {
+    "type": "struct_item",
+    "start": 35,
+    "end": 247,
+    "children": [
+     {
+      "type": "struct",
+      "start": 35,
+      "end": 41,
+      "text": "struct"
+     },
+     {
+      "type": "type_identifier",
+      "start": 42,
+      "end": 50,
+      "field": "name",
+      "text": "Settings"
+     },
+     {
+      "type": "field_declaration_list",
+      "start": 51,
+      "end": 247,
+      "field": "body",
+      "children": [
+       {
+        "type": "{",
+        "start": 51,
+        "end": 52,
+        "text": "{"
+       },
+       {
+        "type": "field_declaration",
+        "start": 57,
+        "end": 68,
+        "children": [
+         {
+          "type": "field_identifier",
+          "start": 57,
+          "end": 62,
+          "field": "name",
+          "text": "short"
+         },
+         {
+          "type": ":",
+          "start": 62,
+          "end": 63,
+          "text": ":"
+         },
+         {
+          "type": "primitive_type",
+          "start": 64,
+          "end": 68,
+          "field": "type",
+          "text": "bool"
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 68,
+        "end": 69,
+        "text": ","
+       },
+       {
+        "type": "line_comment",
+        "start": 70,
+        "end": 94,
+        "children": [
+         {
+          "type": "//",
+          "start": 70,
+          "end": 72,
+          "text": "//"
+         }
+        ]
+       },
+       {
+        "type": "field_declaration",
+        "start": 99,
+        "end": 131,
+        "children": [
+         {
+          "type": "field_identifier",
+          "start": 99,
+          "end": 123,
+          "field": "name",
+          "text": "much_longer_setting_name"
+         },
+         {
+          "type": ":",
+          "start": 123,
+          "end": 124,
+          "text": ":"
+         },
+         {
+          "type": "type_identifier",
+          "start": 125,
+          "end": 131,
+          "field": "type",
+          "text": "String"
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 131,
+        "end": 132,
+        "text": ","
+       },
+       {
+        "type": "line_comment",
+        "start": 133,
+        "end": 161,
+        "children": [
+         {
+          "type": "//",
+          "start": 133,
+          "end": 135,
+          "text": "//"
+         }
+        ]
+       },
+       {
+        "type": "field_declaration",
+        "start": 166,
+        "end": 178,
+        "children": [
+         {
+          "type": "field_identifier",
+          "start": 166,
+          "end": 173,
+          "field": "name",
+          "text": "retries"
+         },
+         {
+          "type": ":",
+          "start": 173,
+          "end": 174,
+          "text": ":"
+         },
+         {
+          "type": "primitive_type",
+          "start": 175,
+          "end": 178,
+          "field": "type",
+          "text": "u32"
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 178,
+        "end": 179,
+        "text": ","
+       },
+       {
+        "type": "line_comment",
+        "start": 180,
+        "end": 201,
+        "children": [
+         {
+          "type": "//",
+          "start": 180,
+          "end": 182,
+          "text": "//"
+         }
+        ]
+       },
+       {
+        "type": "field_declaration",
+        "start": 206,
+        "end": 225,
+        "children": [
+         {
+          "type": "field_identifier",
+          "start": 206,
+          "end": 220,
+          "field": "name",
+          "text": "timeout_millis"
+         },
+         {
+          "type": ":",
+          "start": 220,
+          "end": 221,
+          "text": ":"
+         },
+         {
+          "type": "primitive_type",
+          "start": 222,
+          "end": 225,
+          "field": "type",
+          "text": "u64"
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 225,
+        "end": 226,
+        "text": ","
+       },
+       {
+        "type": "line_comment",
+        "start": 227,
+        "end": 245,
+        "children": [
+         {
+          "type": "//",
+          "start": 227,
+          "end": 229,
+          "text": "//"
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 246,
+        "end": 247,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "impl_item",
+    "start": 249,
+    "end": 476,
+    "children": [
+     {
+      "type": "impl",
+      "start": 249,
+      "end": 253,
+      "text": "impl"
+     },
+     {
+      "type": "type_identifier",
+      "start": 254,
+      "end": 262,
+      "field": "type",
+      "text": "Settings"
+     },
+     {
+      "type": "declaration_list",
+      "start": 263,
+      "end": 476,
+      "field": "body",
+      "children": [
+       {
+        "type": "{",
+        "start": 263,
+        "end": 264,
+        "text": "{"
+       },
+       {
+        "type": "function_item",
+        "start": 269,
+        "end": 474,
+        "children": [
+         {
+          "type": "fn",
+          "start": 269,
+          "end": 271,
+          "text": "fn"
+         },
+         {
+          "type": "identifier",
+          "start": 272,
+          "end": 285,
+          "field": "name",
+          "text": "with_defaults"
+         },
+         {
+          "type": "parameters",
+          "start": 285,
+          "end": 287,
+          "field": "parameters",
+          "children": [
+           {
+            "type": "(",
+            "start": 285,
+            "end": 286,
+            "text": "("
+           },
+           {
+            "type": ")",
+            "start": 286,
+            "end": 287,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": "->",
+          "start": 288,
+          "end": 290,
+          "text": "->"
+         },
+         {
+          "type": "type_identifier",
+          "start": 291,
+          "end": 295,
+          "field": "return_type",
+          "text": "Self"
+         },
+         {
+          "type": "block",
+          "start": 296,
+          "end": 474,
+          "field": "body",
+          "children": [
+           {
+            "type": "{",
+            "start": 296,
+            "end": 297,
+            "text": "{"
+           },
+           {
+            "type": "struct_expression",
+            "start": 306,
+            "end": 468,
+            "children": [
+             {
+              "type": "type_identifier",
+              "start": 306,
+              "end": 310,
+              "field": "name",
+              "text": "Self"
+             },
+             {
+              "type": "field_initializer_list",
+              "start": 311,
+              "end": 468,
+              "field": "body",
+              "children": [
+               {
+                "type": "{",
+                "start": 311,
+                "end": 312,
+                "text": "{"
+               },
+               {
+                "type": "field_initializer",
+                "start": 325,
+                "end": 336,
+                "children": [
+                 {
+                  "type": "field_identifier",
+                  "start": 325,
+                  "end": 330,
+                  "field": "field",
+                  "text": "short"
+                 },
+                 {
+                  "type": ":",
+                  "start": 330,
+                  "end": 331,
+                  "text": ":"
+                 },
+                 {
+                  "type": "boolean_literal",
+                  "start": 332,
+                  "end": 336,
+                  "field": "value",
+                  "children": [
+                   {
+                    "type": "true",
+                    "start": 332,
+                    "end": 336,
+                    "text": "true"
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 336,
+                "end": 337,
+                "text": ","
+               },
+               {
+                "type": "field_initializer",
+                "start": 350,
+                "end": 399,
+                "children": [
+                 {
+                  "type": "field_identifier",
+                  "start": 350,
+                  "end": 374,
+                  "field": "field",
+                  "text": "much_longer_setting_name"
+                 },
+                 {
+                  "type": ":",
+                  "start": 374,
+                  "end": 375,
+                  "text": ":"
+                 },
+                 {
+                  "type": "call_expression",
+                  "start": 376,
+                  "end": 399,
+                  "field": "value",
+                  "children": [
+                   {
+                    "type": "scoped_identifier",
+                    "start": 376,
+                    "end": 388,
+                    "field": "function",
+                    "children": [
+                     {
+                      "type": "identifier",
+                      "start": 376,
+                      "end": 382,
+                      "field": "path",
+                      "text": "String"
+                     },
+                     {
+                      "type": "::",
+                      "start": 382,
+                      "end": 384,
+                      "text": "::"
+                     },
+                     {
+                      "type": "identifier",
+                      "start": 384,
+                      "end": 388,
+                      "field": "name",
+                      "text": "from"
+                     }
+                    ]
+                   },
+                   {
+                    "type": "arguments",
+                    "start": 388,
+                    "end": 399,
+                    "field": "arguments",
+                    "children": [
+                     {
+                      "type": "(",
+                      "start": 388,
+                      "end": 389,
+                      "text": "("
+                     },
+                     {
+                      "type": "string_literal",
+                      "start": 389,
+                      "end": 398,
+                      "children": [
+                       {
+                        "type": "\"",
+                        "start": 389,
+                        "end": 390,
+                        "text": "\""
+                       },
+                       {
+                        "type": "string_content",
+                        "start": 390,
+                        "end": 397,
+                        "text": "default"
+                       },
+                       {
+                        "type": "\"",
+                        "start": 397,
+                        "end": 398,
+                        "text": "\""
+                       }
+                      ]
+                     },
+                     {
+                      "type": ")",
+                      "start": 398,
+                      "end": 399,
+                      "text": ")"
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 399,
+                "end": 400,
+                "text": ","
+               },
+               {
+                "type": "field_initializer",
+                "start": 413,
+                "end": 423,
+                "children": [
+                 {
+                  "type": "field_identifier",
+                  "start": 413,
+                  "end": 420,
+                  "field": "field",
+                  "text": "retries"
+                 },
+                 {
+                  "type": ":",
+                  "start": 420,
+                  "end": 421,
+                  "text": ":"
+                 },
+                 {
+                  "type": "integer_literal",
+                  "start": 422,
+                  "end": 423,
+                  "field": "value",
+                  "text": "3"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 423,
+                "end": 424,
+                "text": ","
+               },
+               {
+                "type": "field_initializer",
+                "start": 437,
+                "end": 457,
+                "children": [
+                 {
+                  "type": "field_identifier",
+                  "start": 437,
+                  "end": 451,
+                  "field": "field",
+                  "text": "timeout_millis"
+                 },
+                 {
+                  "type": ":",
+                  "start": 451,
+                  "end": 452,
+                  "text": ":"
+                 },
+                 {
+                  "type": "integer_literal",
+                  "start": 453,
+                  "end": 457,
+                  "field": "value",
+                  "text": "5000"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 457,
+                "end": 458,
+                "text": ","
+               },
+               {
+                "type": "}",
+                "start": 467,
+                "end": 468,
+                "text": "}"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 473,
+            "end": 474,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 475,
+        "end": 476,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "function_item",
+    "start": 478,
+    "end": 600,
+    "children": [
+     {
+      "type": "fn",
+      "start": 478,
+      "end": 480,
+      "text": "fn"
+     },
+     {
+      "type": "identifier",
+      "start": 481,
+      "end": 493,
+      "field": "name",
+      "text": "struct_probe"
+     },
+     {
+      "type": "parameters",
+      "start": 493,
+      "end": 513,
+      "field": "parameters",
+      "children": [
+       {
+        "type": "(",
+        "start": 493,
+        "end": 494,
+        "text": "("
+       },
+       {
+        "type": "parameter",
+        "start": 494,
+        "end": 512,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 494,
+          "end": 502,
+          "field": "pattern",
+          "text": "settings"
+         },
+         {
+          "type": ":",
+          "start": 502,
+          "end": 503,
+          "text": ":"
+         },
+         {
+          "type": "type_identifier",
+          "start": 504,
+          "end": 512,
+          "field": "type",
+          "text": "Settings"
+         }
+        ]
+       },
+       {
+        "type": ")",
+        "start": 512,
+        "end": 513,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "block",
+      "start": 514,
+      "end": 600,
+      "field": "body",
+      "children": [
+       {
+        "type": "{",
+        "start": 514,
+        "end": 515,
+        "text": "{"
+       },
+       {
+        "type": "line_comment",
+        "start": 520,
+        "end": 575,
+        "children": [
+         {
+          "type": "//",
+          "start": 520,
+          "end": 522,
+          "text": "//"
+         }
+        ]
+       },
+       {
+        "type": "expression_statement",
+        "start": 580,
+        "end": 598,
+        "children": [
+         {
+          "type": "call_expression",
+          "start": 580,
+          "end": 597,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 580,
+            "end": 587,
+            "field": "function",
+            "text": "consume"
+           },
+           {
+            "type": "arguments",
+            "start": 587,
+            "end": 597,
+            "field": "arguments",
+            "children": [
+             {
+              "type": "(",
+              "start": 587,
+              "end": 588,
+              "text": "("
+             },
+             {
+              "type": "identifier",
+              "start": 588,
+              "end": 596,
+              "text": "settings"
+             },
+             {
+              "type": ")",
+              "start": 596,
+              "end": 597,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 597,
+          "end": 598,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 599,
+        "end": 600,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

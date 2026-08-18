@@ -1,0 +1,13 @@
+fn string_literals() {
+    let escaped = "quotes: \" and backslash: \\ and newline: \n";
+    let raw = r###"raw text with "quotes" and \slashes\"###;
+    let multiline = "first line
+second line
+third line";
+    let byte_string = b"bytes\x20with\tescapes";
+    let character = '\n';
+    let long = "a string literal that is deliberately too long to fit on a narrow rustfmt line and must remain one token";
+
+    // String interiors are opaque even when their enclosing expression breaks.
+    use_strings(escaped, raw, multiline, byte_string, character, long);
+}

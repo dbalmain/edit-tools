@@ -1,0 +1,33 @@
+#[derive(Debug)]
+enum Action {
+    Add { key: String, value: i64 },
+    Remove(String),
+}
+
+trait Store {
+    fn apply(&mut self, action: Action) -> Result<(), StoreError>;
+}
+
+async fn process<S, F>(store: &mut S, actions: Vec<Action>, notify: F) -> Result<(), StoreError>
+where
+    S: Store + Send,
+    F: Fn(&Action) -> bool,
+{
+    let mut pending = Vec::new();
+    for action in actions {
+        match &action {
+            Action::Add { key, value } if !key.is_empty() && *value >= 0 => {
+                pending.push(action);
+            }
+            Action::Remove(key) if notify(&action) => {
+                // A trailing comment, a guard, and a nested call interact here.
+                store.apply(Action::Remove(key.clone())).await?;
+            }
+            _ => {}
+        }
+    }
+    for action in pending {
+        store.apply(action).await?;
+    }
+    Ok(())
+}

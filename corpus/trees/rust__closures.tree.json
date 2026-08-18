@@ -1,0 +1,1024 @@
+{
+ "language": "rust",
+ "source_file": "corpus/src/rust/closures.rs",
+ "source": "fn closure_chain(records: Vec<Record>) {\n    let visible = records\n        .iter()\n        .filter(|record| record.is_visible())\n        .filter_map(|record| record.payload())\n        .map(|payload| transform_payload(payload))\n        .enumerate()\n        .map(|(index, payload)| format_record(index, payload))\n        .collect::<Vec<_>>();\n\n    // The closure body fits, while the chain needs to break at narrow width.\n    consume(visible);\n}\n",
+ "root": {
+  "type": "source_file",
+  "start": 0,
+  "end": 444,
+  "children": [
+   {
+    "type": "function_item",
+    "start": 0,
+    "end": 443,
+    "children": [
+     {
+      "type": "fn",
+      "start": 0,
+      "end": 2,
+      "text": "fn"
+     },
+     {
+      "type": "identifier",
+      "start": 3,
+      "end": 16,
+      "field": "name",
+      "text": "closure_chain"
+     },
+     {
+      "type": "parameters",
+      "start": 16,
+      "end": 38,
+      "field": "parameters",
+      "children": [
+       {
+        "type": "(",
+        "start": 16,
+        "end": 17,
+        "text": "("
+       },
+       {
+        "type": "parameter",
+        "start": 17,
+        "end": 37,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 17,
+          "end": 24,
+          "field": "pattern",
+          "text": "records"
+         },
+         {
+          "type": ":",
+          "start": 24,
+          "end": 25,
+          "text": ":"
+         },
+         {
+          "type": "generic_type",
+          "start": 26,
+          "end": 37,
+          "field": "type",
+          "children": [
+           {
+            "type": "type_identifier",
+            "start": 26,
+            "end": 29,
+            "field": "type",
+            "text": "Vec"
+           },
+           {
+            "type": "type_arguments",
+            "start": 29,
+            "end": 37,
+            "field": "type_arguments",
+            "children": [
+             {
+              "type": "<",
+              "start": 29,
+              "end": 30,
+              "text": "<"
+             },
+             {
+              "type": "type_identifier",
+              "start": 30,
+              "end": 36,
+              "text": "Record"
+             },
+             {
+              "type": ">",
+              "start": 36,
+              "end": 37,
+              "text": ">"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ")",
+        "start": 37,
+        "end": 38,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "block",
+      "start": 39,
+      "end": 443,
+      "field": "body",
+      "children": [
+       {
+        "type": "{",
+        "start": 39,
+        "end": 40,
+        "text": "{"
+       },
+       {
+        "type": "let_declaration",
+        "start": 45,
+        "end": 340,
+        "children": [
+         {
+          "type": "let",
+          "start": 45,
+          "end": 48,
+          "text": "let"
+         },
+         {
+          "type": "identifier",
+          "start": 49,
+          "end": 56,
+          "field": "pattern",
+          "text": "visible"
+         },
+         {
+          "type": "=",
+          "start": 57,
+          "end": 58,
+          "text": "="
+         },
+         {
+          "type": "call_expression",
+          "start": 59,
+          "end": 339,
+          "field": "value",
+          "children": [
+           {
+            "type": "generic_function",
+            "start": 59,
+            "end": 337,
+            "field": "function",
+            "children": [
+             {
+              "type": "field_expression",
+              "start": 59,
+              "end": 327,
+              "field": "function",
+              "children": [
+               {
+                "type": "call_expression",
+                "start": 59,
+                "end": 310,
+                "field": "value",
+                "children": [
+                 {
+                  "type": "field_expression",
+                  "start": 59,
+                  "end": 260,
+                  "field": "function",
+                  "children": [
+                   {
+                    "type": "call_expression",
+                    "start": 59,
+                    "end": 247,
+                    "field": "value",
+                    "children": [
+                     {
+                      "type": "field_expression",
+                      "start": 59,
+                      "end": 245,
+                      "field": "function",
+                      "children": [
+                       {
+                        "type": "call_expression",
+                        "start": 59,
+                        "end": 226,
+                        "field": "value",
+                        "children": [
+                         {
+                          "type": "field_expression",
+                          "start": 59,
+                          "end": 188,
+                          "field": "function",
+                          "children": [
+                           {
+                            "type": "call_expression",
+                            "start": 59,
+                            "end": 175,
+                            "field": "value",
+                            "children": [
+                             {
+                              "type": "field_expression",
+                              "start": 59,
+                              "end": 148,
+                              "field": "function",
+                              "children": [
+                               {
+                                "type": "call_expression",
+                                "start": 59,
+                                "end": 128,
+                                "field": "value",
+                                "children": [
+                                 {
+                                  "type": "field_expression",
+                                  "start": 59,
+                                  "end": 98,
+                                  "field": "function",
+                                  "children": [
+                                   {
+                                    "type": "call_expression",
+                                    "start": 59,
+                                    "end": 82,
+                                    "field": "value",
+                                    "children": [
+                                     {
+                                      "type": "field_expression",
+                                      "start": 59,
+                                      "end": 80,
+                                      "field": "function",
+                                      "children": [
+                                       {
+                                        "type": "identifier",
+                                        "start": 59,
+                                        "end": 66,
+                                        "field": "value",
+                                        "text": "records"
+                                       },
+                                       {
+                                        "type": ".",
+                                        "start": 75,
+                                        "end": 76,
+                                        "text": "."
+                                       },
+                                       {
+                                        "type": "field_identifier",
+                                        "start": 76,
+                                        "end": 80,
+                                        "field": "field",
+                                        "text": "iter"
+                                       }
+                                      ]
+                                     },
+                                     {
+                                      "type": "arguments",
+                                      "start": 80,
+                                      "end": 82,
+                                      "field": "arguments",
+                                      "children": [
+                                       {
+                                        "type": "(",
+                                        "start": 80,
+                                        "end": 81,
+                                        "text": "("
+                                       },
+                                       {
+                                        "type": ")",
+                                        "start": 81,
+                                        "end": 82,
+                                        "text": ")"
+                                       }
+                                      ]
+                                     }
+                                    ]
+                                   },
+                                   {
+                                    "type": ".",
+                                    "start": 91,
+                                    "end": 92,
+                                    "text": "."
+                                   },
+                                   {
+                                    "type": "field_identifier",
+                                    "start": 92,
+                                    "end": 98,
+                                    "field": "field",
+                                    "text": "filter"
+                                   }
+                                  ]
+                                 },
+                                 {
+                                  "type": "arguments",
+                                  "start": 98,
+                                  "end": 128,
+                                  "field": "arguments",
+                                  "children": [
+                                   {
+                                    "type": "(",
+                                    "start": 98,
+                                    "end": 99,
+                                    "text": "("
+                                   },
+                                   {
+                                    "type": "closure_expression",
+                                    "start": 99,
+                                    "end": 127,
+                                    "children": [
+                                     {
+                                      "type": "closure_parameters",
+                                      "start": 99,
+                                      "end": 107,
+                                      "field": "parameters",
+                                      "children": [
+                                       {
+                                        "type": "|",
+                                        "start": 99,
+                                        "end": 100,
+                                        "text": "|"
+                                       },
+                                       {
+                                        "type": "identifier",
+                                        "start": 100,
+                                        "end": 106,
+                                        "text": "record"
+                                       },
+                                       {
+                                        "type": "|",
+                                        "start": 106,
+                                        "end": 107,
+                                        "text": "|"
+                                       }
+                                      ]
+                                     },
+                                     {
+                                      "type": "call_expression",
+                                      "start": 108,
+                                      "end": 127,
+                                      "field": "body",
+                                      "children": [
+                                       {
+                                        "type": "field_expression",
+                                        "start": 108,
+                                        "end": 125,
+                                        "field": "function",
+                                        "children": [
+                                         {
+                                          "type": "identifier",
+                                          "start": 108,
+                                          "end": 114,
+                                          "field": "value",
+                                          "text": "record"
+                                         },
+                                         {
+                                          "type": ".",
+                                          "start": 114,
+                                          "end": 115,
+                                          "text": "."
+                                         },
+                                         {
+                                          "type": "field_identifier",
+                                          "start": 115,
+                                          "end": 125,
+                                          "field": "field",
+                                          "text": "is_visible"
+                                         }
+                                        ]
+                                       },
+                                       {
+                                        "type": "arguments",
+                                        "start": 125,
+                                        "end": 127,
+                                        "field": "arguments",
+                                        "children": [
+                                         {
+                                          "type": "(",
+                                          "start": 125,
+                                          "end": 126,
+                                          "text": "("
+                                         },
+                                         {
+                                          "type": ")",
+                                          "start": 126,
+                                          "end": 127,
+                                          "text": ")"
+                                         }
+                                        ]
+                                       }
+                                      ]
+                                     }
+                                    ]
+                                   },
+                                   {
+                                    "type": ")",
+                                    "start": 127,
+                                    "end": 128,
+                                    "text": ")"
+                                   }
+                                  ]
+                                 }
+                                ]
+                               },
+                               {
+                                "type": ".",
+                                "start": 137,
+                                "end": 138,
+                                "text": "."
+                               },
+                               {
+                                "type": "field_identifier",
+                                "start": 138,
+                                "end": 148,
+                                "field": "field",
+                                "text": "filter_map"
+                               }
+                              ]
+                             },
+                             {
+                              "type": "arguments",
+                              "start": 148,
+                              "end": 175,
+                              "field": "arguments",
+                              "children": [
+                               {
+                                "type": "(",
+                                "start": 148,
+                                "end": 149,
+                                "text": "("
+                               },
+                               {
+                                "type": "closure_expression",
+                                "start": 149,
+                                "end": 174,
+                                "children": [
+                                 {
+                                  "type": "closure_parameters",
+                                  "start": 149,
+                                  "end": 157,
+                                  "field": "parameters",
+                                  "children": [
+                                   {
+                                    "type": "|",
+                                    "start": 149,
+                                    "end": 150,
+                                    "text": "|"
+                                   },
+                                   {
+                                    "type": "identifier",
+                                    "start": 150,
+                                    "end": 156,
+                                    "text": "record"
+                                   },
+                                   {
+                                    "type": "|",
+                                    "start": 156,
+                                    "end": 157,
+                                    "text": "|"
+                                   }
+                                  ]
+                                 },
+                                 {
+                                  "type": "call_expression",
+                                  "start": 158,
+                                  "end": 174,
+                                  "field": "body",
+                                  "children": [
+                                   {
+                                    "type": "field_expression",
+                                    "start": 158,
+                                    "end": 172,
+                                    "field": "function",
+                                    "children": [
+                                     {
+                                      "type": "identifier",
+                                      "start": 158,
+                                      "end": 164,
+                                      "field": "value",
+                                      "text": "record"
+                                     },
+                                     {
+                                      "type": ".",
+                                      "start": 164,
+                                      "end": 165,
+                                      "text": "."
+                                     },
+                                     {
+                                      "type": "field_identifier",
+                                      "start": 165,
+                                      "end": 172,
+                                      "field": "field",
+                                      "text": "payload"
+                                     }
+                                    ]
+                                   },
+                                   {
+                                    "type": "arguments",
+                                    "start": 172,
+                                    "end": 174,
+                                    "field": "arguments",
+                                    "children": [
+                                     {
+                                      "type": "(",
+                                      "start": 172,
+                                      "end": 173,
+                                      "text": "("
+                                     },
+                                     {
+                                      "type": ")",
+                                      "start": 173,
+                                      "end": 174,
+                                      "text": ")"
+                                     }
+                                    ]
+                                   }
+                                  ]
+                                 }
+                                ]
+                               },
+                               {
+                                "type": ")",
+                                "start": 174,
+                                "end": 175,
+                                "text": ")"
+                               }
+                              ]
+                             }
+                            ]
+                           },
+                           {
+                            "type": ".",
+                            "start": 184,
+                            "end": 185,
+                            "text": "."
+                           },
+                           {
+                            "type": "field_identifier",
+                            "start": 185,
+                            "end": 188,
+                            "field": "field",
+                            "text": "map"
+                           }
+                          ]
+                         },
+                         {
+                          "type": "arguments",
+                          "start": 188,
+                          "end": 226,
+                          "field": "arguments",
+                          "children": [
+                           {
+                            "type": "(",
+                            "start": 188,
+                            "end": 189,
+                            "text": "("
+                           },
+                           {
+                            "type": "closure_expression",
+                            "start": 189,
+                            "end": 225,
+                            "children": [
+                             {
+                              "type": "closure_parameters",
+                              "start": 189,
+                              "end": 198,
+                              "field": "parameters",
+                              "children": [
+                               {
+                                "type": "|",
+                                "start": 189,
+                                "end": 190,
+                                "text": "|"
+                               },
+                               {
+                                "type": "identifier",
+                                "start": 190,
+                                "end": 197,
+                                "text": "payload"
+                               },
+                               {
+                                "type": "|",
+                                "start": 197,
+                                "end": 198,
+                                "text": "|"
+                               }
+                              ]
+                             },
+                             {
+                              "type": "call_expression",
+                              "start": 199,
+                              "end": 225,
+                              "field": "body",
+                              "children": [
+                               {
+                                "type": "identifier",
+                                "start": 199,
+                                "end": 216,
+                                "field": "function",
+                                "text": "transform_payload"
+                               },
+                               {
+                                "type": "arguments",
+                                "start": 216,
+                                "end": 225,
+                                "field": "arguments",
+                                "children": [
+                                 {
+                                  "type": "(",
+                                  "start": 216,
+                                  "end": 217,
+                                  "text": "("
+                                 },
+                                 {
+                                  "type": "identifier",
+                                  "start": 217,
+                                  "end": 224,
+                                  "text": "payload"
+                                 },
+                                 {
+                                  "type": ")",
+                                  "start": 224,
+                                  "end": 225,
+                                  "text": ")"
+                                 }
+                                ]
+                               }
+                              ]
+                             }
+                            ]
+                           },
+                           {
+                            "type": ")",
+                            "start": 225,
+                            "end": 226,
+                            "text": ")"
+                           }
+                          ]
+                         }
+                        ]
+                       },
+                       {
+                        "type": ".",
+                        "start": 235,
+                        "end": 236,
+                        "text": "."
+                       },
+                       {
+                        "type": "field_identifier",
+                        "start": 236,
+                        "end": 245,
+                        "field": "field",
+                        "text": "enumerate"
+                       }
+                      ]
+                     },
+                     {
+                      "type": "arguments",
+                      "start": 245,
+                      "end": 247,
+                      "field": "arguments",
+                      "children": [
+                       {
+                        "type": "(",
+                        "start": 245,
+                        "end": 246,
+                        "text": "("
+                       },
+                       {
+                        "type": ")",
+                        "start": 246,
+                        "end": 247,
+                        "text": ")"
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   {
+                    "type": ".",
+                    "start": 256,
+                    "end": 257,
+                    "text": "."
+                   },
+                   {
+                    "type": "field_identifier",
+                    "start": 257,
+                    "end": 260,
+                    "field": "field",
+                    "text": "map"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "arguments",
+                  "start": 260,
+                  "end": 310,
+                  "field": "arguments",
+                  "children": [
+                   {
+                    "type": "(",
+                    "start": 260,
+                    "end": 261,
+                    "text": "("
+                   },
+                   {
+                    "type": "closure_expression",
+                    "start": 261,
+                    "end": 309,
+                    "children": [
+                     {
+                      "type": "closure_parameters",
+                      "start": 261,
+                      "end": 279,
+                      "field": "parameters",
+                      "children": [
+                       {
+                        "type": "|",
+                        "start": 261,
+                        "end": 262,
+                        "text": "|"
+                       },
+                       {
+                        "type": "tuple_pattern",
+                        "start": 262,
+                        "end": 278,
+                        "children": [
+                         {
+                          "type": "(",
+                          "start": 262,
+                          "end": 263,
+                          "text": "("
+                         },
+                         {
+                          "type": "identifier",
+                          "start": 263,
+                          "end": 268,
+                          "text": "index"
+                         },
+                         {
+                          "type": ",",
+                          "start": 268,
+                          "end": 269,
+                          "text": ","
+                         },
+                         {
+                          "type": "identifier",
+                          "start": 270,
+                          "end": 277,
+                          "text": "payload"
+                         },
+                         {
+                          "type": ")",
+                          "start": 277,
+                          "end": 278,
+                          "text": ")"
+                         }
+                        ]
+                       },
+                       {
+                        "type": "|",
+                        "start": 278,
+                        "end": 279,
+                        "text": "|"
+                       }
+                      ]
+                     },
+                     {
+                      "type": "call_expression",
+                      "start": 280,
+                      "end": 309,
+                      "field": "body",
+                      "children": [
+                       {
+                        "type": "identifier",
+                        "start": 280,
+                        "end": 293,
+                        "field": "function",
+                        "text": "format_record"
+                       },
+                       {
+                        "type": "arguments",
+                        "start": 293,
+                        "end": 309,
+                        "field": "arguments",
+                        "children": [
+                         {
+                          "type": "(",
+                          "start": 293,
+                          "end": 294,
+                          "text": "("
+                         },
+                         {
+                          "type": "identifier",
+                          "start": 294,
+                          "end": 299,
+                          "text": "index"
+                         },
+                         {
+                          "type": ",",
+                          "start": 299,
+                          "end": 300,
+                          "text": ","
+                         },
+                         {
+                          "type": "identifier",
+                          "start": 301,
+                          "end": 308,
+                          "text": "payload"
+                         },
+                         {
+                          "type": ")",
+                          "start": 308,
+                          "end": 309,
+                          "text": ")"
+                         }
+                        ]
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   {
+                    "type": ")",
+                    "start": 309,
+                    "end": 310,
+                    "text": ")"
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": ".",
+                "start": 319,
+                "end": 320,
+                "text": "."
+               },
+               {
+                "type": "field_identifier",
+                "start": 320,
+                "end": 327,
+                "field": "field",
+                "text": "collect"
+               }
+              ]
+             },
+             {
+              "type": "::",
+              "start": 327,
+              "end": 329,
+              "text": "::"
+             },
+             {
+              "type": "type_arguments",
+              "start": 329,
+              "end": 337,
+              "field": "type_arguments",
+              "children": [
+               {
+                "type": "<",
+                "start": 329,
+                "end": 330,
+                "text": "<"
+               },
+               {
+                "type": "generic_type",
+                "start": 330,
+                "end": 336,
+                "children": [
+                 {
+                  "type": "type_identifier",
+                  "start": 330,
+                  "end": 333,
+                  "field": "type",
+                  "text": "Vec"
+                 },
+                 {
+                  "type": "type_arguments",
+                  "start": 333,
+                  "end": 336,
+                  "field": "type_arguments",
+                  "children": [
+                   {
+                    "type": "<",
+                    "start": 333,
+                    "end": 334,
+                    "text": "<"
+                   },
+                   {
+                    "type": "type_identifier",
+                    "start": 334,
+                    "end": 335,
+                    "text": "_"
+                   },
+                   {
+                    "type": ">",
+                    "start": 335,
+                    "end": 336,
+                    "text": ">"
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": ">",
+                "start": 336,
+                "end": 337,
+                "text": ">"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "arguments",
+            "start": 337,
+            "end": 339,
+            "field": "arguments",
+            "children": [
+             {
+              "type": "(",
+              "start": 337,
+              "end": 338,
+              "text": "("
+             },
+             {
+              "type": ")",
+              "start": 338,
+              "end": 339,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 339,
+          "end": 340,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "line_comment",
+        "start": 346,
+        "end": 419,
+        "children": [
+         {
+          "type": "//",
+          "start": 346,
+          "end": 348,
+          "text": "//"
+         }
+        ]
+       },
+       {
+        "type": "expression_statement",
+        "start": 424,
+        "end": 441,
+        "children": [
+         {
+          "type": "call_expression",
+          "start": 424,
+          "end": 440,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 424,
+            "end": 431,
+            "field": "function",
+            "text": "consume"
+           },
+           {
+            "type": "arguments",
+            "start": 431,
+            "end": 440,
+            "field": "arguments",
+            "children": [
+             {
+              "type": "(",
+              "start": 431,
+              "end": 432,
+              "text": "("
+             },
+             {
+              "type": "identifier",
+              "start": 432,
+              "end": 439,
+              "text": "visible"
+             },
+             {
+              "type": ")",
+              "start": 439,
+              "end": 440,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 440,
+          "end": 441,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 442,
+        "end": 443,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

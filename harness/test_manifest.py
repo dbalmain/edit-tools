@@ -120,9 +120,13 @@ class IncomparableManifestTests(unittest.TestCase):
     def test_the_six_languages_that_predate_the_field_declare_none(self):
         """The field was added after these six were merged and none of them
         needed it. Naming them keeps that true without forbidding the field to
-        every language onboarded afterwards: kotlin is its first legitimate
-        user (ktfmt sorts imports unconditionally, with no flag to stop it),
-        and the original blanket assertion made declaring it a test failure."""
+        every language onboarded afterwards -- kotlin and rust are both
+        legitimate users, and the original blanket assertion made declaring it
+        a test failure.
+
+        Pinning the six by name rather than special-casing each new user is
+        deliberate: this assertion is about the six, and it should not need
+        editing again every time a language earns the field."""
         predating = {"css", "go", "json", "python", "toml", "yaml"}
         loaded = manifest.load_all()
         self.assertGreaterEqual(len(loaded), 6)

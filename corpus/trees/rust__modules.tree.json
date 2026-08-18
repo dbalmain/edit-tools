@@ -1,0 +1,1463 @@
+{
+ "language": "rust",
+ "source_file": "corpus/src/rust/modules.rs",
+ "source": "pub mod parser {\n    pub mod tokens {\n        pub struct Token {\n            pub kind: Kind,\n            pub text: String,\n        }\n    }\n\n    pub enum Kind {\n        Identifier,\n        Punctuation,\n    }\n}\n\n// The use forms are written in rustfmt's own order: it sorts import siblings,\n// which linearity forbids a package from reproducing, so only their layout is\n// measured here. The braced group is 85 columns, so it breaks at width 60 and\n// stays flat at 100.\npub use crate::parser::tokens::Token as PublicToken;\nuse crate::parser::tokens::{Token, TokenBuffer, TokenCursor, TokenKind, TokenStream};\nuse crate::parser::Kind as TokenCategory;\nuse std::collections::hash_map::{self, Entry, HashMap};\nuse std::fmt;\nuse std::io::prelude::*;\n\n// Module paths and visibility are characteristic Rust item structure.\nimpl fmt::Display for Token {\n    fn fmt(&self, output: &mut fmt::Formatter<'_>) -> fmt::Result {\n        write!(output, \"{}\", self.text)\n    }\n}\n",
+ "root": {
+  "type": "source_file",
+  "start": 0,
+  "end": 963,
+  "children": [
+   {
+    "type": "mod_item",
+    "start": 0,
+    "end": 208,
+    "children": [
+     {
+      "type": "visibility_modifier",
+      "start": 0,
+      "end": 3,
+      "children": [
+       {
+        "type": "pub",
+        "start": 0,
+        "end": 3,
+        "text": "pub"
+       }
+      ]
+     },
+     {
+      "type": "mod",
+      "start": 4,
+      "end": 7,
+      "text": "mod"
+     },
+     {
+      "type": "identifier",
+      "start": 8,
+      "end": 14,
+      "field": "name",
+      "text": "parser"
+     },
+     {
+      "type": "declaration_list",
+      "start": 15,
+      "end": 208,
+      "field": "body",
+      "children": [
+       {
+        "type": "{",
+        "start": 15,
+        "end": 16,
+        "text": "{"
+       },
+       {
+        "type": "mod_item",
+        "start": 21,
+        "end": 138,
+        "children": [
+         {
+          "type": "visibility_modifier",
+          "start": 21,
+          "end": 24,
+          "children": [
+           {
+            "type": "pub",
+            "start": 21,
+            "end": 24,
+            "text": "pub"
+           }
+          ]
+         },
+         {
+          "type": "mod",
+          "start": 25,
+          "end": 28,
+          "text": "mod"
+         },
+         {
+          "type": "identifier",
+          "start": 29,
+          "end": 35,
+          "field": "name",
+          "text": "tokens"
+         },
+         {
+          "type": "declaration_list",
+          "start": 36,
+          "end": 138,
+          "field": "body",
+          "children": [
+           {
+            "type": "{",
+            "start": 36,
+            "end": 37,
+            "text": "{"
+           },
+           {
+            "type": "struct_item",
+            "start": 46,
+            "end": 132,
+            "children": [
+             {
+              "type": "visibility_modifier",
+              "start": 46,
+              "end": 49,
+              "children": [
+               {
+                "type": "pub",
+                "start": 46,
+                "end": 49,
+                "text": "pub"
+               }
+              ]
+             },
+             {
+              "type": "struct",
+              "start": 50,
+              "end": 56,
+              "text": "struct"
+             },
+             {
+              "type": "type_identifier",
+              "start": 57,
+              "end": 62,
+              "field": "name",
+              "text": "Token"
+             },
+             {
+              "type": "field_declaration_list",
+              "start": 63,
+              "end": 132,
+              "field": "body",
+              "children": [
+               {
+                "type": "{",
+                "start": 63,
+                "end": 64,
+                "text": "{"
+               },
+               {
+                "type": "field_declaration",
+                "start": 77,
+                "end": 91,
+                "children": [
+                 {
+                  "type": "visibility_modifier",
+                  "start": 77,
+                  "end": 80,
+                  "children": [
+                   {
+                    "type": "pub",
+                    "start": 77,
+                    "end": 80,
+                    "text": "pub"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "field_identifier",
+                  "start": 81,
+                  "end": 85,
+                  "field": "name",
+                  "text": "kind"
+                 },
+                 {
+                  "type": ":",
+                  "start": 85,
+                  "end": 86,
+                  "text": ":"
+                 },
+                 {
+                  "type": "type_identifier",
+                  "start": 87,
+                  "end": 91,
+                  "field": "type",
+                  "text": "Kind"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 91,
+                "end": 92,
+                "text": ","
+               },
+               {
+                "type": "field_declaration",
+                "start": 105,
+                "end": 121,
+                "children": [
+                 {
+                  "type": "visibility_modifier",
+                  "start": 105,
+                  "end": 108,
+                  "children": [
+                   {
+                    "type": "pub",
+                    "start": 105,
+                    "end": 108,
+                    "text": "pub"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "field_identifier",
+                  "start": 109,
+                  "end": 113,
+                  "field": "name",
+                  "text": "text"
+                 },
+                 {
+                  "type": ":",
+                  "start": 113,
+                  "end": 114,
+                  "text": ":"
+                 },
+                 {
+                  "type": "type_identifier",
+                  "start": 115,
+                  "end": 121,
+                  "field": "type",
+                  "text": "String"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 121,
+                "end": 122,
+                "text": ","
+               },
+               {
+                "type": "}",
+                "start": 131,
+                "end": 132,
+                "text": "}"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 137,
+            "end": 138,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "enum_item",
+        "start": 144,
+        "end": 206,
+        "children": [
+         {
+          "type": "visibility_modifier",
+          "start": 144,
+          "end": 147,
+          "children": [
+           {
+            "type": "pub",
+            "start": 144,
+            "end": 147,
+            "text": "pub"
+           }
+          ]
+         },
+         {
+          "type": "enum",
+          "start": 148,
+          "end": 152,
+          "text": "enum"
+         },
+         {
+          "type": "type_identifier",
+          "start": 153,
+          "end": 157,
+          "field": "name",
+          "text": "Kind"
+         },
+         {
+          "type": "enum_variant_list",
+          "start": 158,
+          "end": 206,
+          "field": "body",
+          "children": [
+           {
+            "type": "{",
+            "start": 158,
+            "end": 159,
+            "text": "{"
+           },
+           {
+            "type": "enum_variant",
+            "start": 168,
+            "end": 178,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 168,
+              "end": 178,
+              "field": "name",
+              "text": "Identifier"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 178,
+            "end": 179,
+            "text": ","
+           },
+           {
+            "type": "enum_variant",
+            "start": 188,
+            "end": 199,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 188,
+              "end": 199,
+              "field": "name",
+              "text": "Punctuation"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 199,
+            "end": 200,
+            "text": ","
+           },
+           {
+            "type": "}",
+            "start": 205,
+            "end": 206,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 207,
+        "end": 208,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "line_comment",
+    "start": 210,
+    "end": 288,
+    "children": [
+     {
+      "type": "//",
+      "start": 210,
+      "end": 212,
+      "text": "//"
+     }
+    ]
+   },
+   {
+    "type": "line_comment",
+    "start": 289,
+    "end": 367,
+    "children": [
+     {
+      "type": "//",
+      "start": 289,
+      "end": 291,
+      "text": "//"
+     }
+    ]
+   },
+   {
+    "type": "line_comment",
+    "start": 368,
+    "end": 446,
+    "children": [
+     {
+      "type": "//",
+      "start": 368,
+      "end": 370,
+      "text": "//"
+     }
+    ]
+   },
+   {
+    "type": "line_comment",
+    "start": 447,
+    "end": 468,
+    "children": [
+     {
+      "type": "//",
+      "start": 447,
+      "end": 449,
+      "text": "//"
+     }
+    ]
+   },
+   {
+    "type": "use_declaration",
+    "start": 469,
+    "end": 521,
+    "children": [
+     {
+      "type": "visibility_modifier",
+      "start": 469,
+      "end": 472,
+      "children": [
+       {
+        "type": "pub",
+        "start": 469,
+        "end": 472,
+        "text": "pub"
+       }
+      ]
+     },
+     {
+      "type": "use",
+      "start": 473,
+      "end": 476,
+      "text": "use"
+     },
+     {
+      "type": "use_as_clause",
+      "start": 477,
+      "end": 520,
+      "field": "argument",
+      "children": [
+       {
+        "type": "scoped_identifier",
+        "start": 477,
+        "end": 505,
+        "field": "path",
+        "children": [
+         {
+          "type": "scoped_identifier",
+          "start": 477,
+          "end": 498,
+          "field": "path",
+          "children": [
+           {
+            "type": "scoped_identifier",
+            "start": 477,
+            "end": 490,
+            "field": "path",
+            "children": [
+             {
+              "type": "crate",
+              "start": 477,
+              "end": 482,
+              "field": "path",
+              "text": "crate"
+             },
+             {
+              "type": "::",
+              "start": 482,
+              "end": 484,
+              "text": "::"
+             },
+             {
+              "type": "identifier",
+              "start": 484,
+              "end": 490,
+              "field": "name",
+              "text": "parser"
+             }
+            ]
+           },
+           {
+            "type": "::",
+            "start": 490,
+            "end": 492,
+            "text": "::"
+           },
+           {
+            "type": "identifier",
+            "start": 492,
+            "end": 498,
+            "field": "name",
+            "text": "tokens"
+           }
+          ]
+         },
+         {
+          "type": "::",
+          "start": 498,
+          "end": 500,
+          "text": "::"
+         },
+         {
+          "type": "identifier",
+          "start": 500,
+          "end": 505,
+          "field": "name",
+          "text": "Token"
+         }
+        ]
+       },
+       {
+        "type": "as",
+        "start": 506,
+        "end": 508,
+        "text": "as"
+       },
+       {
+        "type": "identifier",
+        "start": 509,
+        "end": 520,
+        "field": "alias",
+        "text": "PublicToken"
+       }
+      ]
+     },
+     {
+      "type": ";",
+      "start": 520,
+      "end": 521,
+      "text": ";"
+     }
+    ]
+   },
+   {
+    "type": "use_declaration",
+    "start": 522,
+    "end": 607,
+    "children": [
+     {
+      "type": "use",
+      "start": 522,
+      "end": 525,
+      "text": "use"
+     },
+     {
+      "type": "scoped_use_list",
+      "start": 526,
+      "end": 606,
+      "field": "argument",
+      "children": [
+       {
+        "type": "scoped_identifier",
+        "start": 526,
+        "end": 547,
+        "field": "path",
+        "children": [
+         {
+          "type": "scoped_identifier",
+          "start": 526,
+          "end": 539,
+          "field": "path",
+          "children": [
+           {
+            "type": "crate",
+            "start": 526,
+            "end": 531,
+            "field": "path",
+            "text": "crate"
+           },
+           {
+            "type": "::",
+            "start": 531,
+            "end": 533,
+            "text": "::"
+           },
+           {
+            "type": "identifier",
+            "start": 533,
+            "end": 539,
+            "field": "name",
+            "text": "parser"
+           }
+          ]
+         },
+         {
+          "type": "::",
+          "start": 539,
+          "end": 541,
+          "text": "::"
+         },
+         {
+          "type": "identifier",
+          "start": 541,
+          "end": 547,
+          "field": "name",
+          "text": "tokens"
+         }
+        ]
+       },
+       {
+        "type": "::",
+        "start": 547,
+        "end": 549,
+        "text": "::"
+       },
+       {
+        "type": "use_list",
+        "start": 549,
+        "end": 606,
+        "field": "list",
+        "children": [
+         {
+          "type": "{",
+          "start": 549,
+          "end": 550,
+          "text": "{"
+         },
+         {
+          "type": "identifier",
+          "start": 550,
+          "end": 555,
+          "text": "Token"
+         },
+         {
+          "type": ",",
+          "start": 555,
+          "end": 556,
+          "text": ","
+         },
+         {
+          "type": "identifier",
+          "start": 557,
+          "end": 568,
+          "text": "TokenBuffer"
+         },
+         {
+          "type": ",",
+          "start": 568,
+          "end": 569,
+          "text": ","
+         },
+         {
+          "type": "identifier",
+          "start": 570,
+          "end": 581,
+          "text": "TokenCursor"
+         },
+         {
+          "type": ",",
+          "start": 581,
+          "end": 582,
+          "text": ","
+         },
+         {
+          "type": "identifier",
+          "start": 583,
+          "end": 592,
+          "text": "TokenKind"
+         },
+         {
+          "type": ",",
+          "start": 592,
+          "end": 593,
+          "text": ","
+         },
+         {
+          "type": "identifier",
+          "start": 594,
+          "end": 605,
+          "text": "TokenStream"
+         },
+         {
+          "type": "}",
+          "start": 605,
+          "end": 606,
+          "text": "}"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": ";",
+      "start": 606,
+      "end": 607,
+      "text": ";"
+     }
+    ]
+   },
+   {
+    "type": "use_declaration",
+    "start": 608,
+    "end": 649,
+    "children": [
+     {
+      "type": "use",
+      "start": 608,
+      "end": 611,
+      "text": "use"
+     },
+     {
+      "type": "use_as_clause",
+      "start": 612,
+      "end": 648,
+      "field": "argument",
+      "children": [
+       {
+        "type": "scoped_identifier",
+        "start": 612,
+        "end": 631,
+        "field": "path",
+        "children": [
+         {
+          "type": "scoped_identifier",
+          "start": 612,
+          "end": 625,
+          "field": "path",
+          "children": [
+           {
+            "type": "crate",
+            "start": 612,
+            "end": 617,
+            "field": "path",
+            "text": "crate"
+           },
+           {
+            "type": "::",
+            "start": 617,
+            "end": 619,
+            "text": "::"
+           },
+           {
+            "type": "identifier",
+            "start": 619,
+            "end": 625,
+            "field": "name",
+            "text": "parser"
+           }
+          ]
+         },
+         {
+          "type": "::",
+          "start": 625,
+          "end": 627,
+          "text": "::"
+         },
+         {
+          "type": "identifier",
+          "start": 627,
+          "end": 631,
+          "field": "name",
+          "text": "Kind"
+         }
+        ]
+       },
+       {
+        "type": "as",
+        "start": 632,
+        "end": 634,
+        "text": "as"
+       },
+       {
+        "type": "identifier",
+        "start": 635,
+        "end": 648,
+        "field": "alias",
+        "text": "TokenCategory"
+       }
+      ]
+     },
+     {
+      "type": ";",
+      "start": 648,
+      "end": 649,
+      "text": ";"
+     }
+    ]
+   },
+   {
+    "type": "use_declaration",
+    "start": 650,
+    "end": 705,
+    "children": [
+     {
+      "type": "use",
+      "start": 650,
+      "end": 653,
+      "text": "use"
+     },
+     {
+      "type": "scoped_use_list",
+      "start": 654,
+      "end": 704,
+      "field": "argument",
+      "children": [
+       {
+        "type": "scoped_identifier",
+        "start": 654,
+        "end": 680,
+        "field": "path",
+        "children": [
+         {
+          "type": "scoped_identifier",
+          "start": 654,
+          "end": 670,
+          "field": "path",
+          "children": [
+           {
+            "type": "identifier",
+            "start": 654,
+            "end": 657,
+            "field": "path",
+            "text": "std"
+           },
+           {
+            "type": "::",
+            "start": 657,
+            "end": 659,
+            "text": "::"
+           },
+           {
+            "type": "identifier",
+            "start": 659,
+            "end": 670,
+            "field": "name",
+            "text": "collections"
+           }
+          ]
+         },
+         {
+          "type": "::",
+          "start": 670,
+          "end": 672,
+          "text": "::"
+         },
+         {
+          "type": "identifier",
+          "start": 672,
+          "end": 680,
+          "field": "name",
+          "text": "hash_map"
+         }
+        ]
+       },
+       {
+        "type": "::",
+        "start": 680,
+        "end": 682,
+        "text": "::"
+       },
+       {
+        "type": "use_list",
+        "start": 682,
+        "end": 704,
+        "field": "list",
+        "children": [
+         {
+          "type": "{",
+          "start": 682,
+          "end": 683,
+          "text": "{"
+         },
+         {
+          "type": "self",
+          "start": 683,
+          "end": 687,
+          "text": "self"
+         },
+         {
+          "type": ",",
+          "start": 687,
+          "end": 688,
+          "text": ","
+         },
+         {
+          "type": "identifier",
+          "start": 689,
+          "end": 694,
+          "text": "Entry"
+         },
+         {
+          "type": ",",
+          "start": 694,
+          "end": 695,
+          "text": ","
+         },
+         {
+          "type": "identifier",
+          "start": 696,
+          "end": 703,
+          "text": "HashMap"
+         },
+         {
+          "type": "}",
+          "start": 703,
+          "end": 704,
+          "text": "}"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": ";",
+      "start": 704,
+      "end": 705,
+      "text": ";"
+     }
+    ]
+   },
+   {
+    "type": "use_declaration",
+    "start": 706,
+    "end": 719,
+    "children": [
+     {
+      "type": "use",
+      "start": 706,
+      "end": 709,
+      "text": "use"
+     },
+     {
+      "type": "scoped_identifier",
+      "start": 710,
+      "end": 718,
+      "field": "argument",
+      "children": [
+       {
+        "type": "identifier",
+        "start": 710,
+        "end": 713,
+        "field": "path",
+        "text": "std"
+       },
+       {
+        "type": "::",
+        "start": 713,
+        "end": 715,
+        "text": "::"
+       },
+       {
+        "type": "identifier",
+        "start": 715,
+        "end": 718,
+        "field": "name",
+        "text": "fmt"
+       }
+      ]
+     },
+     {
+      "type": ";",
+      "start": 718,
+      "end": 719,
+      "text": ";"
+     }
+    ]
+   },
+   {
+    "type": "use_declaration",
+    "start": 720,
+    "end": 744,
+    "children": [
+     {
+      "type": "use",
+      "start": 720,
+      "end": 723,
+      "text": "use"
+     },
+     {
+      "type": "use_wildcard",
+      "start": 724,
+      "end": 743,
+      "field": "argument",
+      "children": [
+       {
+        "type": "scoped_identifier",
+        "start": 724,
+        "end": 740,
+        "children": [
+         {
+          "type": "scoped_identifier",
+          "start": 724,
+          "end": 731,
+          "field": "path",
+          "children": [
+           {
+            "type": "identifier",
+            "start": 724,
+            "end": 727,
+            "field": "path",
+            "text": "std"
+           },
+           {
+            "type": "::",
+            "start": 727,
+            "end": 729,
+            "text": "::"
+           },
+           {
+            "type": "identifier",
+            "start": 729,
+            "end": 731,
+            "field": "name",
+            "text": "io"
+           }
+          ]
+         },
+         {
+          "type": "::",
+          "start": 731,
+          "end": 733,
+          "text": "::"
+         },
+         {
+          "type": "identifier",
+          "start": 733,
+          "end": 740,
+          "field": "name",
+          "text": "prelude"
+         }
+        ]
+       },
+       {
+        "type": "::",
+        "start": 740,
+        "end": 742,
+        "text": "::"
+       },
+       {
+        "type": "*",
+        "start": 742,
+        "end": 743,
+        "text": "*"
+       }
+      ]
+     },
+     {
+      "type": ";",
+      "start": 743,
+      "end": 744,
+      "text": ";"
+     }
+    ]
+   },
+   {
+    "type": "line_comment",
+    "start": 746,
+    "end": 816,
+    "children": [
+     {
+      "type": "//",
+      "start": 746,
+      "end": 748,
+      "text": "//"
+     }
+    ]
+   },
+   {
+    "type": "impl_item",
+    "start": 817,
+    "end": 962,
+    "children": [
+     {
+      "type": "impl",
+      "start": 817,
+      "end": 821,
+      "text": "impl"
+     },
+     {
+      "type": "scoped_type_identifier",
+      "start": 822,
+      "end": 834,
+      "field": "trait",
+      "children": [
+       {
+        "type": "identifier",
+        "start": 822,
+        "end": 825,
+        "field": "path",
+        "text": "fmt"
+       },
+       {
+        "type": "::",
+        "start": 825,
+        "end": 827,
+        "text": "::"
+       },
+       {
+        "type": "type_identifier",
+        "start": 827,
+        "end": 834,
+        "field": "name",
+        "text": "Display"
+       }
+      ]
+     },
+     {
+      "type": "for",
+      "start": 835,
+      "end": 838,
+      "text": "for"
+     },
+     {
+      "type": "type_identifier",
+      "start": 839,
+      "end": 844,
+      "field": "type",
+      "text": "Token"
+     },
+     {
+      "type": "declaration_list",
+      "start": 845,
+      "end": 962,
+      "field": "body",
+      "children": [
+       {
+        "type": "{",
+        "start": 845,
+        "end": 846,
+        "text": "{"
+       },
+       {
+        "type": "function_item",
+        "start": 851,
+        "end": 960,
+        "children": [
+         {
+          "type": "fn",
+          "start": 851,
+          "end": 853,
+          "text": "fn"
+         },
+         {
+          "type": "identifier",
+          "start": 854,
+          "end": 857,
+          "field": "name",
+          "text": "fmt"
+         },
+         {
+          "type": "parameters",
+          "start": 857,
+          "end": 897,
+          "field": "parameters",
+          "children": [
+           {
+            "type": "(",
+            "start": 857,
+            "end": 858,
+            "text": "("
+           },
+           {
+            "type": "self_parameter",
+            "start": 858,
+            "end": 863,
+            "children": [
+             {
+              "type": "&",
+              "start": 858,
+              "end": 859,
+              "text": "&"
+             },
+             {
+              "type": "self",
+              "start": 859,
+              "end": 863,
+              "text": "self"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 863,
+            "end": 864,
+            "text": ","
+           },
+           {
+            "type": "parameter",
+            "start": 865,
+            "end": 896,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 865,
+              "end": 871,
+              "field": "pattern",
+              "text": "output"
+             },
+             {
+              "type": ":",
+              "start": 871,
+              "end": 872,
+              "text": ":"
+             },
+             {
+              "type": "reference_type",
+              "start": 873,
+              "end": 896,
+              "field": "type",
+              "children": [
+               {
+                "type": "&",
+                "start": 873,
+                "end": 874,
+                "text": "&"
+               },
+               {
+                "type": "mutable_specifier",
+                "start": 874,
+                "end": 877,
+                "text": "mut"
+               },
+               {
+                "type": "generic_type",
+                "start": 878,
+                "end": 896,
+                "field": "type",
+                "children": [
+                 {
+                  "type": "scoped_type_identifier",
+                  "start": 878,
+                  "end": 892,
+                  "field": "type",
+                  "children": [
+                   {
+                    "type": "identifier",
+                    "start": 878,
+                    "end": 881,
+                    "field": "path",
+                    "text": "fmt"
+                   },
+                   {
+                    "type": "::",
+                    "start": 881,
+                    "end": 883,
+                    "text": "::"
+                   },
+                   {
+                    "type": "type_identifier",
+                    "start": 883,
+                    "end": 892,
+                    "field": "name",
+                    "text": "Formatter"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "type_arguments",
+                  "start": 892,
+                  "end": 896,
+                  "field": "type_arguments",
+                  "children": [
+                   {
+                    "type": "<",
+                    "start": 892,
+                    "end": 893,
+                    "text": "<"
+                   },
+                   {
+                    "type": "lifetime",
+                    "start": 893,
+                    "end": 895,
+                    "children": [
+                     {
+                      "type": "'",
+                      "start": 893,
+                      "end": 894,
+                      "text": "'"
+                     },
+                     {
+                      "type": "identifier",
+                      "start": 894,
+                      "end": 895,
+                      "text": "_"
+                     }
+                    ]
+                   },
+                   {
+                    "type": ">",
+                    "start": 895,
+                    "end": 896,
+                    "text": ">"
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ")",
+            "start": 896,
+            "end": 897,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": "->",
+          "start": 898,
+          "end": 900,
+          "text": "->"
+         },
+         {
+          "type": "scoped_type_identifier",
+          "start": 901,
+          "end": 912,
+          "field": "return_type",
+          "children": [
+           {
+            "type": "identifier",
+            "start": 901,
+            "end": 904,
+            "field": "path",
+            "text": "fmt"
+           },
+           {
+            "type": "::",
+            "start": 904,
+            "end": 906,
+            "text": "::"
+           },
+           {
+            "type": "type_identifier",
+            "start": 906,
+            "end": 912,
+            "field": "name",
+            "text": "Result"
+           }
+          ]
+         },
+         {
+          "type": "block",
+          "start": 913,
+          "end": 960,
+          "field": "body",
+          "children": [
+           {
+            "type": "{",
+            "start": 913,
+            "end": 914,
+            "text": "{"
+           },
+           {
+            "type": "macro_invocation",
+            "start": 923,
+            "end": 954,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 923,
+              "end": 928,
+              "field": "macro",
+              "text": "write"
+             },
+             {
+              "type": "!",
+              "start": 928,
+              "end": 929,
+              "text": "!"
+             },
+             {
+              "type": "token_tree",
+              "start": 929,
+              "end": 954,
+              "children": [
+               {
+                "type": "(",
+                "start": 929,
+                "end": 930,
+                "text": "("
+               },
+               {
+                "type": "identifier",
+                "start": 930,
+                "end": 936,
+                "text": "output"
+               },
+               {
+                "type": ",",
+                "start": 936,
+                "end": 937,
+                "text": ","
+               },
+               {
+                "type": "string_literal",
+                "start": 938,
+                "end": 942,
+                "children": [
+                 {
+                  "type": "\"",
+                  "start": 938,
+                  "end": 939,
+                  "text": "\""
+                 },
+                 {
+                  "type": "string_content",
+                  "start": 939,
+                  "end": 941,
+                  "text": "{}"
+                 },
+                 {
+                  "type": "\"",
+                  "start": 941,
+                  "end": 942,
+                  "text": "\""
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 942,
+                "end": 943,
+                "text": ","
+               },
+               {
+                "type": "self",
+                "start": 944,
+                "end": 948,
+                "text": "self"
+               },
+               {
+                "type": ".",
+                "start": 948,
+                "end": 949,
+                "text": "."
+               },
+               {
+                "type": "identifier",
+                "start": 949,
+                "end": 953,
+                "text": "text"
+               },
+               {
+                "type": ")",
+                "start": 953,
+                "end": 954,
+                "text": ")"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 959,
+            "end": 960,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 961,
+        "end": 962,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -1,0 +1,39 @@
+# Rust. Schema: docs/onboarding/WORKFLOW.md, "Stage 0".
+name = "rust"
+extensions = [".rs"]
+
+# Verified with `uv run --with tree-sitter-rust==0.24.0`: the distribution is
+# `tree-sitter-rust`, the importable module is `tree_sitter_rust`, and it exports
+# `language()`.
+grammar = "tree-sitter-rust==0.24.0"
+grammar_module = "tree_sitter_rust"
+grammar_symbol = "language"
+
+# Canonical fenced info string plus Rust's conventional short alias.
+injection_aliases = ["rust", "rs"]
+
+# `--emit stdout` is the stdin/stdout interface. Rust 2021 syntax occurs in the
+# corpus, so the edition is explicit. `--config-path /dev/null` prevents
+# rustfmt.toml/.rustfmt.toml discovery in cwd or ancestors; max_width is the
+# only remaining configuration source and is supplied below.
+reference = "rustfmt --emit stdout --edition 2021 --config-path /dev/null --config max_width={width}"
+reference_version = "rustfmt 1.9.0"
+reference_width = "flag"
+
+# rustfmt's unprompted max_width was established experimentally at 100: the
+# boundary probe matched the no-flag output at max_width=100/101 and changed at
+# 99/102. 60 is the narrow layout probe.
+widths = [100, 60]
+
+# The generic structural signature is strict enough for Rust; no valid
+# rustfmt gives a closure expression body a one-child `block` when that body
+# breaks at narrow width; the gate named this wrapper on the first run.
+gate3 = "default"
+transparent_wrappers = ["block"]
+equivalent_kinds = []
+
+# rustfmt deletes a leading `|` on a match arm (match_arm_leading_pipes =
+# Never). A package may not delete a source token, so the reference's output
+# can never be agreed and must sit outside the agreement denominator.
+[incomparable]
+"leading_pipes.rs" = "rustfmt deletes the leading `|` of each match arm (token deletion)"

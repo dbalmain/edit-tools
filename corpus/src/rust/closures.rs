@@ -1,0 +1,13 @@
+fn closure_chain(records: Vec<Record>) {
+    let visible = records
+        .iter()
+        .filter(|record| record.is_visible())
+        .filter_map(|record| record.payload())
+        .map(|payload| transform_payload(payload))
+        .enumerate()
+        .map(|(index, payload)| format_record(index, payload))
+        .collect::<Vec<_>>();
+
+    // The closure body fits, while the chain needs to break at narrow width.
+    consume(visible);
+}

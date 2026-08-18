@@ -1,0 +1,664 @@
+{
+ "language": "rust",
+ "source_file": "corpus/src/rust/sequences.rs",
+ "source": "fn sequence_probe() {\n    let total = first_value\n        + second_value\n        + third_value\n        + fourth_value\n        + fifth_value\n        + sixth_value\n        + seventh_value\n        + eighth_value\n        + ninth_value;\n\n    // A long call and a long tuple exercise different sequence policies.\n    let result = combine(\n        first_argument,\n        second_argument,\n        third_argument,\n        fourth_argument,\n        fifth_argument,\n        sixth_argument,\n        seventh_argument,\n        eighth_argument,\n    );\n    let tuple = (\n        first_element,\n        second_element,\n        third_element,\n        fourth_element,\n        fifth_element,\n        sixth_element,\n    );\n    consume(total, result, tuple);\n}\n",
+ "root": {
+  "type": "source_file",
+  "start": 0,
+  "end": 739,
+  "children": [
+   {
+    "type": "function_item",
+    "start": 0,
+    "end": 738,
+    "children": [
+     {
+      "type": "fn",
+      "start": 0,
+      "end": 2,
+      "text": "fn"
+     },
+     {
+      "type": "identifier",
+      "start": 3,
+      "end": 17,
+      "field": "name",
+      "text": "sequence_probe"
+     },
+     {
+      "type": "parameters",
+      "start": 17,
+      "end": 19,
+      "field": "parameters",
+      "children": [
+       {
+        "type": "(",
+        "start": 17,
+        "end": 18,
+        "text": "("
+       },
+       {
+        "type": ")",
+        "start": 18,
+        "end": 19,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "block",
+      "start": 20,
+      "end": 738,
+      "field": "body",
+      "children": [
+       {
+        "type": "{",
+        "start": 20,
+        "end": 21,
+        "text": "{"
+       },
+       {
+        "type": "let_declaration",
+        "start": 26,
+        "end": 231,
+        "children": [
+         {
+          "type": "let",
+          "start": 26,
+          "end": 29,
+          "text": "let"
+         },
+         {
+          "type": "identifier",
+          "start": 30,
+          "end": 35,
+          "field": "pattern",
+          "text": "total"
+         },
+         {
+          "type": "=",
+          "start": 36,
+          "end": 37,
+          "text": "="
+         },
+         {
+          "type": "binary_expression",
+          "start": 38,
+          "end": 230,
+          "field": "value",
+          "children": [
+           {
+            "type": "binary_expression",
+            "start": 38,
+            "end": 208,
+            "field": "left",
+            "children": [
+             {
+              "type": "binary_expression",
+              "start": 38,
+              "end": 185,
+              "field": "left",
+              "children": [
+               {
+                "type": "binary_expression",
+                "start": 38,
+                "end": 161,
+                "field": "left",
+                "children": [
+                 {
+                  "type": "binary_expression",
+                  "start": 38,
+                  "end": 139,
+                  "field": "left",
+                  "children": [
+                   {
+                    "type": "binary_expression",
+                    "start": 38,
+                    "end": 117,
+                    "field": "left",
+                    "children": [
+                     {
+                      "type": "binary_expression",
+                      "start": 38,
+                      "end": 94,
+                      "field": "left",
+                      "children": [
+                       {
+                        "type": "binary_expression",
+                        "start": 38,
+                        "end": 72,
+                        "field": "left",
+                        "children": [
+                         {
+                          "type": "identifier",
+                          "start": 38,
+                          "end": 49,
+                          "field": "left",
+                          "text": "first_value"
+                         },
+                         {
+                          "type": "+",
+                          "start": 58,
+                          "end": 59,
+                          "field": "operator",
+                          "text": "+"
+                         },
+                         {
+                          "type": "identifier",
+                          "start": 60,
+                          "end": 72,
+                          "field": "right",
+                          "text": "second_value"
+                         }
+                        ]
+                       },
+                       {
+                        "type": "+",
+                        "start": 81,
+                        "end": 82,
+                        "field": "operator",
+                        "text": "+"
+                       },
+                       {
+                        "type": "identifier",
+                        "start": 83,
+                        "end": 94,
+                        "field": "right",
+                        "text": "third_value"
+                       }
+                      ]
+                     },
+                     {
+                      "type": "+",
+                      "start": 103,
+                      "end": 104,
+                      "field": "operator",
+                      "text": "+"
+                     },
+                     {
+                      "type": "identifier",
+                      "start": 105,
+                      "end": 117,
+                      "field": "right",
+                      "text": "fourth_value"
+                     }
+                    ]
+                   },
+                   {
+                    "type": "+",
+                    "start": 126,
+                    "end": 127,
+                    "field": "operator",
+                    "text": "+"
+                   },
+                   {
+                    "type": "identifier",
+                    "start": 128,
+                    "end": 139,
+                    "field": "right",
+                    "text": "fifth_value"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "+",
+                  "start": 148,
+                  "end": 149,
+                  "field": "operator",
+                  "text": "+"
+                 },
+                 {
+                  "type": "identifier",
+                  "start": 150,
+                  "end": 161,
+                  "field": "right",
+                  "text": "sixth_value"
+                 }
+                ]
+               },
+               {
+                "type": "+",
+                "start": 170,
+                "end": 171,
+                "field": "operator",
+                "text": "+"
+               },
+               {
+                "type": "identifier",
+                "start": 172,
+                "end": 185,
+                "field": "right",
+                "text": "seventh_value"
+               }
+              ]
+             },
+             {
+              "type": "+",
+              "start": 194,
+              "end": 195,
+              "field": "operator",
+              "text": "+"
+             },
+             {
+              "type": "identifier",
+              "start": 196,
+              "end": 208,
+              "field": "right",
+              "text": "eighth_value"
+             }
+            ]
+           },
+           {
+            "type": "+",
+            "start": 217,
+            "end": 218,
+            "field": "operator",
+            "text": "+"
+           },
+           {
+            "type": "identifier",
+            "start": 219,
+            "end": 230,
+            "field": "right",
+            "text": "ninth_value"
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 230,
+          "end": 231,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "line_comment",
+        "start": 237,
+        "end": 306,
+        "children": [
+         {
+          "type": "//",
+          "start": 237,
+          "end": 239,
+          "text": "//"
+         }
+        ]
+       },
+       {
+        "type": "let_declaration",
+        "start": 311,
+        "end": 536,
+        "children": [
+         {
+          "type": "let",
+          "start": 311,
+          "end": 314,
+          "text": "let"
+         },
+         {
+          "type": "identifier",
+          "start": 315,
+          "end": 321,
+          "field": "pattern",
+          "text": "result"
+         },
+         {
+          "type": "=",
+          "start": 322,
+          "end": 323,
+          "text": "="
+         },
+         {
+          "type": "call_expression",
+          "start": 324,
+          "end": 535,
+          "field": "value",
+          "children": [
+           {
+            "type": "identifier",
+            "start": 324,
+            "end": 331,
+            "field": "function",
+            "text": "combine"
+           },
+           {
+            "type": "arguments",
+            "start": 331,
+            "end": 535,
+            "field": "arguments",
+            "children": [
+             {
+              "type": "(",
+              "start": 331,
+              "end": 332,
+              "text": "("
+             },
+             {
+              "type": "identifier",
+              "start": 341,
+              "end": 355,
+              "text": "first_argument"
+             },
+             {
+              "type": ",",
+              "start": 355,
+              "end": 356,
+              "text": ","
+             },
+             {
+              "type": "identifier",
+              "start": 365,
+              "end": 380,
+              "text": "second_argument"
+             },
+             {
+              "type": ",",
+              "start": 380,
+              "end": 381,
+              "text": ","
+             },
+             {
+              "type": "identifier",
+              "start": 390,
+              "end": 404,
+              "text": "third_argument"
+             },
+             {
+              "type": ",",
+              "start": 404,
+              "end": 405,
+              "text": ","
+             },
+             {
+              "type": "identifier",
+              "start": 414,
+              "end": 429,
+              "text": "fourth_argument"
+             },
+             {
+              "type": ",",
+              "start": 429,
+              "end": 430,
+              "text": ","
+             },
+             {
+              "type": "identifier",
+              "start": 439,
+              "end": 453,
+              "text": "fifth_argument"
+             },
+             {
+              "type": ",",
+              "start": 453,
+              "end": 454,
+              "text": ","
+             },
+             {
+              "type": "identifier",
+              "start": 463,
+              "end": 477,
+              "text": "sixth_argument"
+             },
+             {
+              "type": ",",
+              "start": 477,
+              "end": 478,
+              "text": ","
+             },
+             {
+              "type": "identifier",
+              "start": 487,
+              "end": 503,
+              "text": "seventh_argument"
+             },
+             {
+              "type": ",",
+              "start": 503,
+              "end": 504,
+              "text": ","
+             },
+             {
+              "type": "identifier",
+              "start": 513,
+              "end": 528,
+              "text": "eighth_argument"
+             },
+             {
+              "type": ",",
+              "start": 528,
+              "end": 529,
+              "text": ","
+             },
+             {
+              "type": ")",
+              "start": 534,
+              "end": 535,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 535,
+          "end": 536,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "let_declaration",
+        "start": 541,
+        "end": 701,
+        "children": [
+         {
+          "type": "let",
+          "start": 541,
+          "end": 544,
+          "text": "let"
+         },
+         {
+          "type": "identifier",
+          "start": 545,
+          "end": 550,
+          "field": "pattern",
+          "text": "tuple"
+         },
+         {
+          "type": "=",
+          "start": 551,
+          "end": 552,
+          "text": "="
+         },
+         {
+          "type": "tuple_expression",
+          "start": 553,
+          "end": 700,
+          "field": "value",
+          "children": [
+           {
+            "type": "(",
+            "start": 553,
+            "end": 554,
+            "text": "("
+           },
+           {
+            "type": "identifier",
+            "start": 563,
+            "end": 576,
+            "text": "first_element"
+           },
+           {
+            "type": ",",
+            "start": 576,
+            "end": 577,
+            "text": ","
+           },
+           {
+            "type": "identifier",
+            "start": 586,
+            "end": 600,
+            "text": "second_element"
+           },
+           {
+            "type": ",",
+            "start": 600,
+            "end": 601,
+            "text": ","
+           },
+           {
+            "type": "identifier",
+            "start": 610,
+            "end": 623,
+            "text": "third_element"
+           },
+           {
+            "type": ",",
+            "start": 623,
+            "end": 624,
+            "text": ","
+           },
+           {
+            "type": "identifier",
+            "start": 633,
+            "end": 647,
+            "text": "fourth_element"
+           },
+           {
+            "type": ",",
+            "start": 647,
+            "end": 648,
+            "text": ","
+           },
+           {
+            "type": "identifier",
+            "start": 657,
+            "end": 670,
+            "text": "fifth_element"
+           },
+           {
+            "type": ",",
+            "start": 670,
+            "end": 671,
+            "text": ","
+           },
+           {
+            "type": "identifier",
+            "start": 680,
+            "end": 693,
+            "text": "sixth_element"
+           },
+           {
+            "type": ",",
+            "start": 693,
+            "end": 694,
+            "text": ","
+           },
+           {
+            "type": ")",
+            "start": 699,
+            "end": 700,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 700,
+          "end": 701,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "expression_statement",
+        "start": 706,
+        "end": 736,
+        "children": [
+         {
+          "type": "call_expression",
+          "start": 706,
+          "end": 735,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 706,
+            "end": 713,
+            "field": "function",
+            "text": "consume"
+           },
+           {
+            "type": "arguments",
+            "start": 713,
+            "end": 735,
+            "field": "arguments",
+            "children": [
+             {
+              "type": "(",
+              "start": 713,
+              "end": 714,
+              "text": "("
+             },
+             {
+              "type": "identifier",
+              "start": 714,
+              "end": 719,
+              "text": "total"
+             },
+             {
+              "type": ",",
+              "start": 719,
+              "end": 720,
+              "text": ","
+             },
+             {
+              "type": "identifier",
+              "start": 721,
+              "end": 727,
+              "text": "result"
+             },
+             {
+              "type": ",",
+              "start": 727,
+              "end": 728,
+              "text": ","
+             },
+             {
+              "type": "identifier",
+              "start": 729,
+              "end": 734,
+              "text": "tuple"
+             },
+             {
+              "type": ")",
+              "start": 734,
+              "end": 735,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 735,
+          "end": 736,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 737,
+        "end": 738,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}
