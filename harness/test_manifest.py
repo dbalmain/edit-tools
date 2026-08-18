@@ -117,20 +117,22 @@ class IncomparableManifestTests(unittest.TestCase):
         with self.assertRaisesRegex(manifest.ManifestError, "extensions"):
             self.parse('\n[incomparable]\n"basic.txt" = "reason"\n')
 
-    def test_merged_languages_declare_none(self):
-        """The field landed empty; rust is the first language to use it.
+    def test_the_six_languages_that_predate_the_field_declare_none(self):
+        """The field was added after these six were merged and none of them
+        needed it. Naming them keeps that true without forbidding the field to
+        every language onboarded afterwards -- kotlin and rust are both
+        legitimate users, and the original blanket assertion made declaring it
+        a test failure.
 
-        The six languages the field-addition slice touched still declare none.
-        rust's `leading_pipes.rs` is the first legitimate use and must be the
-        only one.
-        """
+        Pinning the six by name rather than special-casing each new user is
+        deliberate: this assertion is about the six, and it should not need
+        editing again every time a language earns the field."""
+        predating = {"css", "go", "json", "python", "toml", "yaml"}
         loaded = manifest.load_all()
         self.assertGreaterEqual(len(loaded), 6)
-        for name, parsed in loaded.items():
-            if name == "rust":
-                self.assertEqual(list(parsed.incomparable), ["leading_pipes.rs"], name)
-                continue
-            self.assertEqual(parsed.incomparable, {}, name)
+        self.assertTrue(predating <= set(loaded), predating - set(loaded))
+        for name in sorted(predating):
+            self.assertEqual(loaded[name].incomparable, {}, name)
 
 
 if __name__ == "__main__":

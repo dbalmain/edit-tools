@@ -1,0 +1,1308 @@
+{
+ "language": "kotlin",
+ "source_file": "corpus/src/kotlin/normalisation.kt",
+ "source": "// Dirty spacing: what ktfmt rewrites, not what it breaks.\n\nfun  normalise( a : Int ,b:Int ):Int{\nval result=a + b*  2\nreturn(result)\n}\n\nfun empty( ) { // empty parameter list written with a space\nval xs = listOf( ) // empty call with a space inside\nval ys = mapOf( )\nval zs = setOf(  )\n}\n\nfun padded( ) {\nval x = listOf( 1,2,3 )\nif ( x != null ) { println(x) } else { println(0) }\n}\n\nval trailingSpaces = 1       // lots of spaces before this comment\n\nfun indented() {\n        val n = 0\n        if(n==0){\n                println(n)\n        }\n}\n\nval semis = 1; val two = 2; val three = 3\n",
+ "root": {
+  "type": "source_file",
+  "start": 0,
+  "end": 588,
+  "children": [
+   {
+    "type": "line_comment",
+    "start": 0,
+    "end": 58,
+    "text": "// Dirty spacing: what ktfmt rewrites, not what it breaks."
+   },
+   {
+    "type": "function_declaration",
+    "start": 60,
+    "end": 135,
+    "children": [
+     {
+      "type": "fun",
+      "start": 60,
+      "end": 63,
+      "text": "fun"
+     },
+     {
+      "type": "identifier",
+      "start": 65,
+      "end": 74,
+      "field": "name",
+      "text": "normalise"
+     },
+     {
+      "type": "function_value_parameters",
+      "start": 74,
+      "end": 92,
+      "children": [
+       {
+        "type": "(",
+        "start": 74,
+        "end": 75,
+        "text": "("
+       },
+       {
+        "type": "parameter",
+        "start": 76,
+        "end": 83,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 76,
+          "end": 77,
+          "text": "a"
+         },
+         {
+          "type": ":",
+          "start": 78,
+          "end": 79,
+          "text": ":"
+         },
+         {
+          "type": "user_type",
+          "start": 80,
+          "end": 83,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 80,
+            "end": 83,
+            "text": "Int"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 84,
+        "end": 85,
+        "text": ","
+       },
+       {
+        "type": "parameter",
+        "start": 85,
+        "end": 90,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 85,
+          "end": 86,
+          "text": "b"
+         },
+         {
+          "type": ":",
+          "start": 86,
+          "end": 87,
+          "text": ":"
+         },
+         {
+          "type": "user_type",
+          "start": 87,
+          "end": 90,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 87,
+            "end": 90,
+            "text": "Int"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ")",
+        "start": 91,
+        "end": 92,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": ":",
+      "start": 92,
+      "end": 93,
+      "text": ":"
+     },
+     {
+      "type": "user_type",
+      "start": 93,
+      "end": 96,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 93,
+        "end": 96,
+        "text": "Int"
+       }
+      ]
+     },
+     {
+      "type": "function_body",
+      "start": 96,
+      "end": 135,
+      "children": [
+       {
+        "type": "block",
+        "start": 96,
+        "end": 135,
+        "children": [
+         {
+          "type": "{",
+          "start": 96,
+          "end": 97,
+          "text": "{"
+         },
+         {
+          "type": "property_declaration",
+          "start": 98,
+          "end": 118,
+          "children": [
+           {
+            "type": "val",
+            "start": 98,
+            "end": 101,
+            "text": "val"
+           },
+           {
+            "type": "variable_declaration",
+            "start": 102,
+            "end": 108,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 102,
+              "end": 108,
+              "text": "result"
+             }
+            ]
+           },
+           {
+            "type": "=",
+            "start": 108,
+            "end": 109,
+            "text": "="
+           },
+           {
+            "type": "binary_expression",
+            "start": 109,
+            "end": 118,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 109,
+              "end": 110,
+              "field": "left",
+              "text": "a"
+             },
+             {
+              "type": "+",
+              "start": 111,
+              "end": 112,
+              "field": "operator",
+              "text": "+"
+             },
+             {
+              "type": "binary_expression",
+              "start": 113,
+              "end": 118,
+              "field": "right",
+              "children": [
+               {
+                "type": "identifier",
+                "start": 113,
+                "end": 114,
+                "field": "left",
+                "text": "b"
+               },
+               {
+                "type": "*",
+                "start": 114,
+                "end": 115,
+                "field": "operator",
+                "text": "*"
+               },
+               {
+                "type": "number_literal",
+                "start": 117,
+                "end": 118,
+                "field": "right",
+                "text": "2"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "return_expression",
+          "start": 119,
+          "end": 133,
+          "children": [
+           {
+            "type": "return",
+            "start": 119,
+            "end": 125,
+            "text": "return"
+           },
+           {
+            "type": "parenthesized_expression",
+            "start": 125,
+            "end": 133,
+            "children": [
+             {
+              "type": "(",
+              "start": 125,
+              "end": 126,
+              "text": "("
+             },
+             {
+              "type": "identifier",
+              "start": 126,
+              "end": 132,
+              "text": "result"
+             },
+             {
+              "type": ")",
+              "start": 132,
+              "end": 133,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "}",
+          "start": 134,
+          "end": 135,
+          "text": "}"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "function_declaration",
+    "start": 137,
+    "end": 288,
+    "children": [
+     {
+      "type": "fun",
+      "start": 137,
+      "end": 140,
+      "text": "fun"
+     },
+     {
+      "type": "identifier",
+      "start": 141,
+      "end": 146,
+      "field": "name",
+      "text": "empty"
+     },
+     {
+      "type": "function_value_parameters",
+      "start": 146,
+      "end": 149,
+      "children": [
+       {
+        "type": "(",
+        "start": 146,
+        "end": 147,
+        "text": "("
+       },
+       {
+        "type": ")",
+        "start": 148,
+        "end": 149,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "function_body",
+      "start": 150,
+      "end": 288,
+      "children": [
+       {
+        "type": "block",
+        "start": 150,
+        "end": 288,
+        "children": [
+         {
+          "type": "{",
+          "start": 150,
+          "end": 151,
+          "text": "{"
+         },
+         {
+          "type": "line_comment",
+          "start": 152,
+          "end": 196,
+          "text": "// empty parameter list written with a space"
+         },
+         {
+          "type": "property_declaration",
+          "start": 197,
+          "end": 215,
+          "children": [
+           {
+            "type": "val",
+            "start": 197,
+            "end": 200,
+            "text": "val"
+           },
+           {
+            "type": "variable_declaration",
+            "start": 201,
+            "end": 203,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 201,
+              "end": 203,
+              "text": "xs"
+             }
+            ]
+           },
+           {
+            "type": "=",
+            "start": 204,
+            "end": 205,
+            "text": "="
+           },
+           {
+            "type": "call_expression",
+            "start": 206,
+            "end": 215,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 206,
+              "end": 212,
+              "text": "listOf"
+             },
+             {
+              "type": "value_arguments",
+              "start": 212,
+              "end": 215,
+              "children": [
+               {
+                "type": "(",
+                "start": 212,
+                "end": 213,
+                "text": "("
+               },
+               {
+                "type": ")",
+                "start": 214,
+                "end": 215,
+                "text": ")"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "line_comment",
+          "start": 216,
+          "end": 249,
+          "text": "// empty call with a space inside"
+         },
+         {
+          "type": "property_declaration",
+          "start": 250,
+          "end": 267,
+          "children": [
+           {
+            "type": "val",
+            "start": 250,
+            "end": 253,
+            "text": "val"
+           },
+           {
+            "type": "variable_declaration",
+            "start": 254,
+            "end": 256,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 254,
+              "end": 256,
+              "text": "ys"
+             }
+            ]
+           },
+           {
+            "type": "=",
+            "start": 257,
+            "end": 258,
+            "text": "="
+           },
+           {
+            "type": "call_expression",
+            "start": 259,
+            "end": 267,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 259,
+              "end": 264,
+              "text": "mapOf"
+             },
+             {
+              "type": "value_arguments",
+              "start": 264,
+              "end": 267,
+              "children": [
+               {
+                "type": "(",
+                "start": 264,
+                "end": 265,
+                "text": "("
+               },
+               {
+                "type": ")",
+                "start": 266,
+                "end": 267,
+                "text": ")"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "property_declaration",
+          "start": 268,
+          "end": 286,
+          "children": [
+           {
+            "type": "val",
+            "start": 268,
+            "end": 271,
+            "text": "val"
+           },
+           {
+            "type": "variable_declaration",
+            "start": 272,
+            "end": 274,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 272,
+              "end": 274,
+              "text": "zs"
+             }
+            ]
+           },
+           {
+            "type": "=",
+            "start": 275,
+            "end": 276,
+            "text": "="
+           },
+           {
+            "type": "call_expression",
+            "start": 277,
+            "end": 286,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 277,
+              "end": 282,
+              "text": "setOf"
+             },
+             {
+              "type": "value_arguments",
+              "start": 282,
+              "end": 286,
+              "children": [
+               {
+                "type": "(",
+                "start": 282,
+                "end": 283,
+                "text": "("
+               },
+               {
+                "type": ")",
+                "start": 285,
+                "end": 286,
+                "text": ")"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "}",
+          "start": 287,
+          "end": 288,
+          "text": "}"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "function_declaration",
+    "start": 290,
+    "end": 383,
+    "children": [
+     {
+      "type": "fun",
+      "start": 290,
+      "end": 293,
+      "text": "fun"
+     },
+     {
+      "type": "identifier",
+      "start": 294,
+      "end": 300,
+      "field": "name",
+      "text": "padded"
+     },
+     {
+      "type": "function_value_parameters",
+      "start": 300,
+      "end": 303,
+      "children": [
+       {
+        "type": "(",
+        "start": 300,
+        "end": 301,
+        "text": "("
+       },
+       {
+        "type": ")",
+        "start": 302,
+        "end": 303,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "function_body",
+      "start": 304,
+      "end": 383,
+      "children": [
+       {
+        "type": "block",
+        "start": 304,
+        "end": 383,
+        "children": [
+         {
+          "type": "{",
+          "start": 304,
+          "end": 305,
+          "text": "{"
+         },
+         {
+          "type": "property_declaration",
+          "start": 306,
+          "end": 329,
+          "children": [
+           {
+            "type": "val",
+            "start": 306,
+            "end": 309,
+            "text": "val"
+           },
+           {
+            "type": "variable_declaration",
+            "start": 310,
+            "end": 311,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 310,
+              "end": 311,
+              "text": "x"
+             }
+            ]
+           },
+           {
+            "type": "=",
+            "start": 312,
+            "end": 313,
+            "text": "="
+           },
+           {
+            "type": "call_expression",
+            "start": 314,
+            "end": 329,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 314,
+              "end": 320,
+              "text": "listOf"
+             },
+             {
+              "type": "value_arguments",
+              "start": 320,
+              "end": 329,
+              "children": [
+               {
+                "type": "(",
+                "start": 320,
+                "end": 321,
+                "text": "("
+               },
+               {
+                "type": "value_argument",
+                "start": 322,
+                "end": 323,
+                "children": [
+                 {
+                  "type": "number_literal",
+                  "start": 322,
+                  "end": 323,
+                  "text": "1"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 323,
+                "end": 324,
+                "text": ","
+               },
+               {
+                "type": "value_argument",
+                "start": 324,
+                "end": 325,
+                "children": [
+                 {
+                  "type": "number_literal",
+                  "start": 324,
+                  "end": 325,
+                  "text": "2"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 325,
+                "end": 326,
+                "text": ","
+               },
+               {
+                "type": "value_argument",
+                "start": 326,
+                "end": 327,
+                "children": [
+                 {
+                  "type": "number_literal",
+                  "start": 326,
+                  "end": 327,
+                  "text": "3"
+                 }
+                ]
+               },
+               {
+                "type": ")",
+                "start": 328,
+                "end": 329,
+                "text": ")"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "if_expression",
+          "start": 330,
+          "end": 381,
+          "children": [
+           {
+            "type": "if",
+            "start": 330,
+            "end": 332,
+            "text": "if"
+           },
+           {
+            "type": "(",
+            "start": 333,
+            "end": 334,
+            "text": "("
+           },
+           {
+            "type": "binary_expression",
+            "start": 335,
+            "end": 344,
+            "field": "condition",
+            "children": [
+             {
+              "type": "identifier",
+              "start": 335,
+              "end": 336,
+              "field": "left",
+              "text": "x"
+             },
+             {
+              "type": "!=",
+              "start": 337,
+              "end": 339,
+              "field": "operator",
+              "text": "!="
+             },
+             {
+              "type": "identifier",
+              "start": 340,
+              "end": 344,
+              "field": "right",
+              "text": "null"
+             }
+            ]
+           },
+           {
+            "type": ")",
+            "start": 345,
+            "end": 346,
+            "text": ")"
+           },
+           {
+            "type": "block",
+            "start": 347,
+            "end": 361,
+            "children": [
+             {
+              "type": "{",
+              "start": 347,
+              "end": 348,
+              "text": "{"
+             },
+             {
+              "type": "call_expression",
+              "start": 349,
+              "end": 359,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 349,
+                "end": 356,
+                "text": "println"
+               },
+               {
+                "type": "value_arguments",
+                "start": 356,
+                "end": 359,
+                "children": [
+                 {
+                  "type": "(",
+                  "start": 356,
+                  "end": 357,
+                  "text": "("
+                 },
+                 {
+                  "type": "value_argument",
+                  "start": 357,
+                  "end": 358,
+                  "children": [
+                   {
+                    "type": "identifier",
+                    "start": 357,
+                    "end": 358,
+                    "text": "x"
+                   }
+                  ]
+                 },
+                 {
+                  "type": ")",
+                  "start": 358,
+                  "end": 359,
+                  "text": ")"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": "}",
+              "start": 360,
+              "end": 361,
+              "text": "}"
+             }
+            ]
+           },
+           {
+            "type": "else",
+            "start": 362,
+            "end": 366,
+            "text": "else"
+           },
+           {
+            "type": "block",
+            "start": 367,
+            "end": 381,
+            "children": [
+             {
+              "type": "{",
+              "start": 367,
+              "end": 368,
+              "text": "{"
+             },
+             {
+              "type": "call_expression",
+              "start": 369,
+              "end": 379,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 369,
+                "end": 376,
+                "text": "println"
+               },
+               {
+                "type": "value_arguments",
+                "start": 376,
+                "end": 379,
+                "children": [
+                 {
+                  "type": "(",
+                  "start": 376,
+                  "end": 377,
+                  "text": "("
+                 },
+                 {
+                  "type": "value_argument",
+                  "start": 377,
+                  "end": 378,
+                  "children": [
+                   {
+                    "type": "number_literal",
+                    "start": 377,
+                    "end": 378,
+                    "text": "0"
+                   }
+                  ]
+                 },
+                 {
+                  "type": ")",
+                  "start": 378,
+                  "end": 379,
+                  "text": ")"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": "}",
+              "start": 380,
+              "end": 381,
+              "text": "}"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "}",
+          "start": 382,
+          "end": 383,
+          "text": "}"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "property_declaration",
+    "start": 385,
+    "end": 407,
+    "children": [
+     {
+      "type": "val",
+      "start": 385,
+      "end": 388,
+      "text": "val"
+     },
+     {
+      "type": "variable_declaration",
+      "start": 389,
+      "end": 403,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 389,
+        "end": 403,
+        "text": "trailingSpaces"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 404,
+      "end": 405,
+      "text": "="
+     },
+     {
+      "type": "number_literal",
+      "start": 406,
+      "end": 407,
+      "text": "1"
+     }
+    ]
+   },
+   {
+    "type": "line_comment",
+    "start": 414,
+    "end": 451,
+    "text": "// lots of spaces before this comment"
+   },
+   {
+    "type": "function_declaration",
+    "start": 453,
+    "end": 544,
+    "children": [
+     {
+      "type": "fun",
+      "start": 453,
+      "end": 456,
+      "text": "fun"
+     },
+     {
+      "type": "identifier",
+      "start": 457,
+      "end": 465,
+      "field": "name",
+      "text": "indented"
+     },
+     {
+      "type": "function_value_parameters",
+      "start": 465,
+      "end": 467,
+      "children": [
+       {
+        "type": "(",
+        "start": 465,
+        "end": 466,
+        "text": "("
+       },
+       {
+        "type": ")",
+        "start": 466,
+        "end": 467,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "function_body",
+      "start": 468,
+      "end": 544,
+      "children": [
+       {
+        "type": "block",
+        "start": 468,
+        "end": 544,
+        "children": [
+         {
+          "type": "{",
+          "start": 468,
+          "end": 469,
+          "text": "{"
+         },
+         {
+          "type": "property_declaration",
+          "start": 478,
+          "end": 487,
+          "children": [
+           {
+            "type": "val",
+            "start": 478,
+            "end": 481,
+            "text": "val"
+           },
+           {
+            "type": "variable_declaration",
+            "start": 482,
+            "end": 483,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 482,
+              "end": 483,
+              "text": "n"
+             }
+            ]
+           },
+           {
+            "type": "=",
+            "start": 484,
+            "end": 485,
+            "text": "="
+           },
+           {
+            "type": "number_literal",
+            "start": 486,
+            "end": 487,
+            "text": "0"
+           }
+          ]
+         },
+         {
+          "type": "if_expression",
+          "start": 496,
+          "end": 542,
+          "children": [
+           {
+            "type": "if",
+            "start": 496,
+            "end": 498,
+            "text": "if"
+           },
+           {
+            "type": "(",
+            "start": 498,
+            "end": 499,
+            "text": "("
+           },
+           {
+            "type": "binary_expression",
+            "start": 499,
+            "end": 503,
+            "field": "condition",
+            "children": [
+             {
+              "type": "identifier",
+              "start": 499,
+              "end": 500,
+              "field": "left",
+              "text": "n"
+             },
+             {
+              "type": "==",
+              "start": 500,
+              "end": 502,
+              "field": "operator",
+              "text": "=="
+             },
+             {
+              "type": "number_literal",
+              "start": 502,
+              "end": 503,
+              "field": "right",
+              "text": "0"
+             }
+            ]
+           },
+           {
+            "type": ")",
+            "start": 503,
+            "end": 504,
+            "text": ")"
+           },
+           {
+            "type": "block",
+            "start": 504,
+            "end": 542,
+            "children": [
+             {
+              "type": "{",
+              "start": 504,
+              "end": 505,
+              "text": "{"
+             },
+             {
+              "type": "call_expression",
+              "start": 522,
+              "end": 532,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 522,
+                "end": 529,
+                "text": "println"
+               },
+               {
+                "type": "value_arguments",
+                "start": 529,
+                "end": 532,
+                "children": [
+                 {
+                  "type": "(",
+                  "start": 529,
+                  "end": 530,
+                  "text": "("
+                 },
+                 {
+                  "type": "value_argument",
+                  "start": 530,
+                  "end": 531,
+                  "children": [
+                   {
+                    "type": "identifier",
+                    "start": 530,
+                    "end": 531,
+                    "text": "n"
+                   }
+                  ]
+                 },
+                 {
+                  "type": ")",
+                  "start": 531,
+                  "end": 532,
+                  "text": ")"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": "}",
+              "start": 541,
+              "end": 542,
+              "text": "}"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "}",
+          "start": 543,
+          "end": 544,
+          "text": "}"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "property_declaration",
+    "start": 546,
+    "end": 559,
+    "children": [
+     {
+      "type": "val",
+      "start": 546,
+      "end": 549,
+      "text": "val"
+     },
+     {
+      "type": "variable_declaration",
+      "start": 550,
+      "end": 555,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 550,
+        "end": 555,
+        "text": "semis"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 556,
+      "end": 557,
+      "text": "="
+     },
+     {
+      "type": "number_literal",
+      "start": 558,
+      "end": 559,
+      "text": "1"
+     }
+    ]
+   },
+   {
+    "type": "property_declaration",
+    "start": 561,
+    "end": 572,
+    "children": [
+     {
+      "type": "val",
+      "start": 561,
+      "end": 564,
+      "text": "val"
+     },
+     {
+      "type": "variable_declaration",
+      "start": 565,
+      "end": 568,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 565,
+        "end": 568,
+        "text": "two"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 569,
+      "end": 570,
+      "text": "="
+     },
+     {
+      "type": "number_literal",
+      "start": 571,
+      "end": 572,
+      "text": "2"
+     }
+    ]
+   },
+   {
+    "type": "property_declaration",
+    "start": 574,
+    "end": 587,
+    "children": [
+     {
+      "type": "val",
+      "start": 574,
+      "end": 577,
+      "text": "val"
+     },
+     {
+      "type": "variable_declaration",
+      "start": 578,
+      "end": 583,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 578,
+        "end": 583,
+        "text": "three"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 584,
+      "end": 585,
+      "text": "="
+     },
+     {
+      "type": "number_literal",
+      "start": 586,
+      "end": 587,
+      "text": "3"
+     }
+    ]
+   }
+  ]
+ }
+}
