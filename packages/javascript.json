@@ -78,6 +78,14 @@
 
     "string": ["verbatim"],
 
+    "member_expression": [
+      "seq",
+      ["child", "f:object"],
+      ["opt", "t:.", ["tok", "."]],
+      ["opt", "f:optional_chain", ["child", "f:optional_chain"]],
+      ["child", "f:property"]
+    ],
+
     "call_expression": ["seq", ["child", "f:function"], ["child", "f:arguments"]],
     "arguments": [
       "group",
