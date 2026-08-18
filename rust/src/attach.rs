@@ -9,6 +9,12 @@
 //!
 //! They are consumed exactly once and in order, so the partition the linearity
 //! invariant asks for still holds; the package simply never sees them.
+//!
+//! Comment nodes are usually leaves with `text`. tree-sitter-rust's
+//! `line_comment` / `block_comment` are interior nodes instead (the `//` token
+//! is a child; the body is only in the source range). When `text` is missing
+//! we slice `source[start..end]` and strip a trailing newline so a doc
+//! comment whose range includes the line ending does not emit an extra blank.
 
 use crate::pkg::Package;
 use crate::tree::Node;
@@ -39,6 +45,25 @@ impl Item<'_> {
     pub fn decorated(&self) -> bool {
         !self.lead.is_empty() || !self.suffix.is_empty() || !self.after.is_empty()
     }
+}
+
+fn comment_text(node: &Node, src: &[u8]) -> String {
+    if let Some(text) = &node.text {
+        return text.clone();
+    }
+    let end = comment_content_end(node, src);
+    let Some(bytes) = src.get(node.start..end) else {
+        return String::new();
+    };
+    std::str::from_utf8(bytes).unwrap_or("").to_string()
+}
+
+fn comment_content_end(node: &Node, src: &[u8]) -> usize {
+    let mut end = node.end.min(src.len());
+    while end > node.start && matches!(src[end - 1], b'\n' | b'\r') {
+        end -= 1;
+    }
+    end
 }
 
 fn newlines(src: &[u8], from: usize, to: usize) -> usize {
@@ -72,7 +97,7 @@ pub fn split<'a>(node: &'a Node, src: &[u8], pkg: &Package) -> Split<'a> {
         prev_end = child.end;
 
         if pkg.comments.contains(&child.kind) {
-            let text = child.text.clone().unwrap_or_default();
+            let text = comment_text(child, src);
             // Suffix only when the comment shares a line with the previous
             // item's content. A node's range can include trailing trivia
             // (tree-sitter-go's statement_list swallows the newline after
@@ -89,6 +114,10 @@ pub fn split<'a>(node: &'a Node, src: &[u8], pkg: &Package) -> Split<'a> {
                     blanks: gap.saturating_sub(1),
                 }),
             }
+            // A rust doc comment's range includes its line ending. That
+            // newline belongs to the following gap, not to the comment
+            // body (already stripped from `text`).
+            prev_end = comment_content_end(child, src);
             continue;
         }
         let blanks = gap.saturating_sub(1);
