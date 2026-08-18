@@ -363,6 +363,32 @@ there costs all fifteen languages) and a **final sweep before Fable**.
 A reviewer must never be the same family as the builder: Sol does not review
 codex-built slices. Terra's work goes to grok or Opus.
 
+**Codex is out until 06:51 Saturday 2026-08-22, so the standing reviewer is
+unavailable.** Dave's replacement, 2026-08-18, and it is a structural change
+rather than a stopgap:
+
+> **grok and DeepSeek review each other's work, and the orchestrator does the
+> merge-into-main review itself.**
+
+Three consequences worth stating, because none of them is obvious:
+
+- **The lanes stop being builder-lane and reviewer-lane.** Both agents do both,
+  alternating per slice. The never-the-same-family rule is what makes it safe,
+  and it now does real work instead of being a formality — it is the only thing
+  stopping an agent reviewing its own corpus.
+- **The orchestrator becomes the last gate, not a router.** Everything above
+  merged on a reviewer's verdict. Now the merge review is mine, so a bad verdict
+  is my failure rather than a reviewer's. That is the point: it puts the
+  expensive read at the one place a mistake is unrecoverable, and off the two
+  places it is cheap to repeat.
+- **The scorecard gains a column it did not have.** Neither grok nor DeepSeek
+  has ever reviewed. Their review quality is uncalibrated, and the pairing means
+  every slice now produces a data point on it. Record it.
+
+Opus subagents stay off stage B and D — the round-1 token arithmetic below has
+not changed — but the orchestrator's own merge review is a deliberate exception
+to that, and is bounded by being one read per language rather than three.
+
 Columns worth being precise about:
 
 - **Gates honest?** — did a claimed-green gate turn out to be green. The single
@@ -385,6 +411,10 @@ Columns worth being precise about:
 | agy             | `agy`      | Gemini Flash 3.7, effort `med` | builder (from R2)          |
 | codex-Sol       | `codex`    | `gpt-5.6-sol`, effort `high`   | reviewer (B/D), escalation |
 | Opus subagent   | Agent tool | Opus                           | central fixes, final sweep |
+
+**Superseded while codex is out** (see "Reviewer lane" above): grok and DeepSeek
+both build and both review, never the same slice, and the orchestrator does the
+merge review. The table above is the standing arrangement to return to.
 
 `codex-Luna` was dropped after round 1 — not for the `tomllib` gate, which was a
 brief defect and is forgiven, but for reporting "no changes outside corpus"
