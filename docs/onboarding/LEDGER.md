@@ -307,6 +307,22 @@ boundaries. Nothing dishonest — just consistently the least useful of the thre
 **agy has still produced nothing**, blocked on headless command permissions
 rather than on capability. See `LANGUAGES.md`.
 
+**Third seat, third nothing (2026-08-19).** Round 3 gave agy the `cell` doc-node
+spike — a self-contained brief in `spike/cell-node-agy`, deliberately written to
+need no prior project context, run manually by Dave so the permission problem
+could not bite. It hit a usage limit that resets in 109 hours, so the head-to-head
+with grok never ran.
+
+Note what this does and does not say. Three allocations have produced no
+artefact, and the reasons were different every time: a permissions default in
+round 2, a quota wall in round 3. **Neither was a capability result**, so there
+is still no evidence about whether agy can do this work — which is itself the
+finding. A seat that costs a worktree and a brief and returns no signal is not
+free, and the brief is the expensive half. The next allocation should be one
+where a quota wall costs an hour rather than a round: a bounded review, not an
+open-ended spike. The branch and brief stay on disk, valid, for whenever the
+quota returns.
+
 **Closed 2026-08-16.** grok's corpus merged; the other three are abandoned in
 place on their branches. Two defects survived stage B and were caught only when
 the orchestrator audited the artefact before launching stage C — both are
