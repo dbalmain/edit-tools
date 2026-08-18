@@ -1705,7 +1705,8 @@ sub-widths are 44.8%, which is thirty times larger.
 
 ## 19. Three references sort imports, and sorting is not what linearity forbids
 
-**Status:** open, newly raised · **Cost:** **contextual**, plus a declared
+**Status:** open · **backlogged by Dave, 2026-08-18** — raised, registered, and
+deliberately not scheduled · **Cost:** **contextual**, plus a declared
 comparator per language · **Languages:** Go, Rust, Kotlin — and **not**
 JavaScript or TypeScript
 
