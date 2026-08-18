@@ -401,6 +401,42 @@ Columns worth being precise about:
   model that reaches for the runtime when a package expression would do is
   telling you something about its judgement.
 
+### Round 3 stage C: DeepSeek could not start, grok could
+
+Recorded because it is the sharpest calibration signal either agent has
+produced, and it is about **method**, not knowledge.
+
+**DeepSeek V4 Pro, three runs on Kotlin, three empty worktrees.** Each spent its
+whole budget printing corpus trees as JSON — the files are thousands of lines
+each — and each process ended before a single file was written. Run 2 was told
+explicitly not to print trees and did it anyway. Run 3 was told again, given a
+one-line query snippet to use instead, and told the runtime blocker was already
+fixed; it also produced nothing. Reassigned to grok after the third.
+
+The same agent had **passed both stage-B reviews it was given**, one of them
+overturning a previous reviewer's deferral by checking a document. So this is
+not a capability ceiling. Stage B is bounded — read, verify, write a verdict.
+Stage C is open-ended, and DeepSeek did not self-limit its exploration.
+
+**grok, on the same brief for Rust, delivered a complete stage C**: a package,
+a runtime fix with its own case and a measured +299 B, a report, a `score.json`,
+and the entry-17 number the slice existed to produce. It also died twice
+mid-run, but each run had **committed** before dying, so the work chained.
+
+Two lessons, both general:
+
+- **"Commit before you are ready" is the instruction that mattered**, not any
+  amount of task description. It converts an early exit from total loss into
+  partial progress, and it is the difference between grok's nine commits and
+  DeepSeek's zero.
+- **A model that passes a bounded task can still fail an open-ended one.** Lane
+  assignment should follow task *shape*, not a single quality ranking. On this
+  evidence DeepSeek is a reviewer and grok is a builder, which happens to match
+  the lane table this round tried to replace.
+
+Both are still uncalibrated as reviewers of each other; that experiment is
+unaffected.
+
 ### Agents under comparison
 
 | Agent           | CLI        | Model                          | Lane                       |
