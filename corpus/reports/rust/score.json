@@ -7,7 +7,7 @@
   },
   "gate2_width": {
     "pass": true,
-    "overflow_lines": 39,
+    "overflow_lines": 38,
     "reference_overflow": 39
   },
   "gate3_nondestruction": {
@@ -23,20 +23,20 @@
         "of": 16
       },
       "60": {
-        "agreement": 6,
+        "agreement": 7,
         "of": 16
       }
     },
-    "agreement": 16,
+    "agreement": 17,
     "of": 32,
     "accepted": 0,
     "stale": 0,
-    "unreviewed": 16,
+    "unreviewed": 15,
     "excluded": 1,
-    "review_coverage": 0.5,
+    "review_coverage": 0.531,
     "review_threshold_met": false,
-    "subwidth_divergences": 8,
-    "subwidth_fraction_of_divergences": 0.5
+    "subwidth_divergences": 7,
+    "subwidth_fraction_of_divergences": 0.467
   },
   "rust_js_parity": "identical",
   "refusals": [],
@@ -57,6 +57,7 @@
       "async.rs",
       "enums.rs",
       "generics.rs",
+      "macros.rs",
       "modules.rs",
       "sequences.rs",
       "traits.rs"
@@ -64,12 +65,12 @@
   },
   "size": {
     "js-runtime": 13695,
-    "packages": 2356,
-    "total": 16051,
+    "packages": 2450,
+    "total": 16145,
     "per_language": {
       "rust": {
-        "package": 2356,
-        "with_runtime": 16051
+        "package": 2450,
+        "with_runtime": 16145
       }
     }
   },
@@ -79,7 +80,7 @@
       "now": 13695,
       "delta": 299
     },
-    "package_gzip": 2356,
+    "package_gzip": 2450,
     "per_edit": [
       {
         "commit": "5c27edb",
@@ -94,13 +95,13 @@
     {
       "case": "closures.rs@100",
       "id": "rust/closures.rs@100",
-      "hash": "de67a1091f5524907456a10f20d8ace7fdaffe4df032723ca5111ce07aa875ea",
+      "hash": "46383e8472adc162edb44c2e1aee998fceb83ca29541202be96495cb623798e4",
       "classification": "design limit"
     },
     {
       "case": "closures.rs@60",
       "id": "rust/closures.rs@60",
-      "hash": "6ef3e032a9fec45dbeb1ba77fdc3da2b6e3c5ffe9b97826f41663d19f1040ddc",
+      "hash": "c912c8165d1e9a64e1ded1aba279772cfd1efeaceb8c3d8f4ecb0481e03da893",
       "classification": "design limit"
     },
     {
@@ -125,12 +126,6 @@
       "case": "kitchen.rs@60",
       "id": "rust/kitchen.rs@60",
       "hash": "a1b98566a67fc9b57e2a4bb597d18985034934e868afddbd95a7e01e3c64da09",
-      "classification": "design limit"
-    },
-    {
-      "case": "macros.rs@60",
-      "id": "rust/macros.rs@60",
-      "hash": "f7dd56b1412010454f04a691a594582de30fa9495a37e5269d0166870991f6a8",
       "classification": "design limit"
     },
     {
@@ -184,7 +179,7 @@
     {
       "case": "widths.rs@60",
       "id": "rust/widths.rs@60",
-      "hash": "8abe9ec99c8a454ae543c2dd675f2d172da8b739d1a3fb5bd03997efae0fd469",
+      "hash": "af4713b3e3f121382d655379e04303b0af0bf5400ef012c6c8abe81235afec0f",
       "classification": "design limit"
     }
   ]

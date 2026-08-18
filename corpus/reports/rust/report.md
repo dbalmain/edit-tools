@@ -2,19 +2,19 @@
 
 ```
 gate 1 idempotence      pass   (34/34)
-gate 2 width            pass   (39 overflow lines; rustfmt also 39)
+gate 2 width            pass   (38 overflow lines; rustfmt 39)
 gate 3 non-destruction  pass   (34/34, method default)
-gate 4 agreement        10/16 @ width 100,  6/16 @ width 60
+gate 4 agreement        10/16 @ width 100,  7/16 @ width 60
 rust/js parity          identical (34/34)
 refusals                none
-size                    package 2356 B gzip; runtime 13695 B gzip
+size                    package 2450 B gzip; runtime 13695 B gzip
                         (+299 interior comment text, vs main 13396)
 ```
 
 Scored 34/34 coverage, 34/34 rust/js, 34/34 idempotence, 34/34 non-destruction.
 `leading_pipes.rs` is excluded from the agreement denominator (token deletion);
-it still formats, is idempotent, and passes gate 3. Raw agreement is 16/32
-(50%). Review coverage is 50% until stage D records verdicts.
+it still formats, is idempotent, and passes gate 3. Raw agreement is 17/32
+(53.1%). Review coverage is 53.1% until stage D records verdicts.
 
 `STAGE_B_VERDICT` in the brief was an empty placeholder. Stage B's fixes were
 already on the branch; nothing further to apply.
@@ -26,7 +26,7 @@ padding is rustfmt's extra and is not encoded — FINDINGS 18, do not set
 
 ## Entry 17: how much of the divergence is sub-widths
 
-**8 of 16 scored divergences (50%) have a rustfmt sub-width as a necessary
+**7 of 15 scored divergences (46.7%) have a rustfmt sub-width as a necessary
 cause.** Measured on this package, not inferred.
 
 | pair | knob | only sub-width? |
@@ -35,11 +35,14 @@ cause.** Measured on this package, not inferred.
 | `widths.rs` @100 and @60 | all four knobs | yes (plus alignment on the comment run) |
 | `closures.rs` @100 and @60 | `chain_width` 60 | no — also FINDINGS 11 |
 | `kitchen.rs` @60 | `chain_width` 60 | no — also FINDINGS 11 |
-| `macros.rs` @60 | `array_width` 60 on `vec!` | no — `token_tree` is verbatim |
 
-4 of 16 (25%) are *only* sub-widths: `nesting` at both widths, and the four
+4 of 15 (26.7%) are *only* sub-widths: `nesting` at both widths, and the four
 constructs in `widths.rs` (alignment on that file is a second, smaller hunk).
-The other 4 need a second capability even if sub-widths landed.
+The other 3 need a second capability even if sub-widths landed.
+
+`macros.rs@60` was on an earlier cut of this table (`array_width` on a
+verbatim `vec!`). A comma-only `token_tree` walk now matches rustfmt there,
+so it is no longer a divergence and is not in the 7.
 
 That is the corpus number for entry 17. It is smaller than the 44.8% of real
 rustfmt-clean files because this corpus is 16 comparable files, not 905, and
@@ -50,20 +53,21 @@ breaks them anyway. No package-level expression reached the sub-width output.
 
 ## Agreement
 
-Matching files: `async`, `enums`, `macros@100`, `modules`, `normalize@100`,
-`patterns@100`, `sequences`, `strings@100`, `traits`, `generics@60`.
+Matching files: `async`, `enums`, `macros`, `modules`, `normalize@100`,
+`patterns@100`, `sequences`, `strings@100`, `traits`, `generics@60`,
+`kitchen@100`.
 
 ## Divergences
 
 Every remaining pair is classified. Hashes are the current content hashes.
 
-- `rust/closures.rs@100` `de67a1091f552490…875ea` — **design limit**. Method
+- `rust/closures.rs@100` `46383e8472adc162…3798e4` — **design limit**. Method
   chains are a left-nested alternation of `field_expression` and
-  `call_expression`. `flatten` walks one type. The package groups before `.`,
-  so the chain staircases and rustfmt's `chain_width` 60 is unreachable.
-  FINDINGS 11 and 17.
+  `call_expression`. `flatten` walks one type. A prettier-style soft-dot
+  group staircased and still missed `chain_width` 60, so the package keeps
+  the chain flat. FINDINGS 11 and 17.
 
-- `rust/closures.rs@60` `6ef3e032a9fec45d…040ddc` — **design limit**. Same
+- `rust/closures.rs@60` `c912c8165d1e9a64…03da893` — **design limit**. Same
   chain. At 60 rustfmt also wraps the last closure body in a `{ }` block; a
   package may not insert those tokens (and must not remove a `block` —
   `{ x; }` is `()`).
@@ -86,12 +90,6 @@ Every remaining pair is classified. Hashes are the current content hashes.
   remaining hunks are the method chain (FINDINGS 11 / 17) and rustfmt
   putting `{` on the next line after a long `=>`. One rule cannot be
   "space before `{`" and "newline before `{` when the arm header broke".
-
-- `rust/macros.rs@60` `f7dd56b141201045…91f6a8` — **design limit**.
-  `token_tree` is untyped soup (`self . identifier` next to `,` lists).
-  `verbatim` keeps the source. rustfmt breaks `vec!` under `array_width`.
-  A typed walk that handles one `vec!` and also `write!(output, "{}",
-  self.text)` is the house-style one-file rule.
 
 - `rust/nesting.rs@100` `73496cc4a30dd73f…d8ec95` — **design limit**.
   `Branch { leaves: [1, 2, 3, 4], label: "north" }` fits `max_width` and
@@ -131,7 +129,7 @@ Every remaining pair is classified. Hashes are the current content hashes.
   widths). The `Config` fields and `aligned_arms` comments are FINDINGS
   18. The `under_every_threshold` controls stay flat, as required.
 
-- `rust/widths.rs@60` `8abe9ec99c8a454a…0fd469` — **design limit**. Same
+- `rust/widths.rs@60` `af4713b3e3f12138…5afec0f` — **design limit**. Same
   four knobs (now also over `max_width` for the chain/call/array) plus
   the width-dependent alignment split. Entry 17 and 18 in one file.
 
@@ -151,9 +149,13 @@ comments then become siblings every parent must consume, and
 `let x = /* c */ 2` cannot stay mid-expression anyway. The slice is the
 smaller change that lets the existing attachment pass work.
 
-No second house-style constant turned up. `comment_gap` and `blank_cap`
-are the ones the brief named; rustfmt wants 1 of each. Indent 4 is
-already a package field.
+`comment_gap` and `blank_cap` are the ones the brief named; rustfmt
+wants 1 of each. The other house-style constants already in the runtime
+are FINDINGS 3 (`trail` pins a source trailing comma, and will not add
+one for a one-item list) and FINDINGS 6 (`fits` counts a trailing
+comment). Both are black's answer; rustfmt disagrees. They are
+classified on `generics.rs@100`, `patterns.rs@60`, `structs.rs@60`, and
+`normalize.rs@60` rather than worked around.
 
 ## Harness edits
 
@@ -165,12 +167,16 @@ Two things, and they are not the same.
 
 **Sub-widths (entry 17).** `group` asks whether the flat form fits the
 remaining line. rustfmt asks a different question per construct, against
-that construct's own span, at a fraction of `max_width`. 50% of this
-corpus's divergences have that as a cause. If I could ask for one thing
-it would be a package-declared sub-width on `group` — a percentage of
-`max_width`, measured on the group's own span. That is what the register
-already sketches. I did not try to fake it with a nested group: the
-output is unreachable at any line width.
+that construct's own span, at a fraction of `max_width`. 7 of 15
+remaining divergences (46.7%) have that as a cause. If I could ask for
+one thing it would be a package-declared sub-width on `group` — a
+percentage of `max_width`, measured on the group's own span. That is
+what the register already sketches. I did not try to fake it with a
+nested group: the output is unreachable at any line width.
+
+`flatten` *can* indent operator continuations (`indent` around the
+separator's `line`). That matched `sequences.rs` at both widths. It is
+not a substitute for sub-widths.
 
 **Method chains (FINDINGS 11).** Even with sub-widths, `a.b().c().d()`
 is an alternating spine `flatten` cannot collect. Rust lives in method
@@ -190,6 +196,6 @@ register, not as an opportunistic rust-only edit.
   its fixes on the branch. The instruction to "apply these first, commit"
   had nothing to apply.
 - The 405/905 (44.8%) figure is a *real-file* prediction. The corpus
-  number is 8/16 divergences, and the brief already said that. Useful to
+  number is 7/15 divergences, and the brief already said that. Useful to
   say again next time so a builder does not try to make the corpus match
   44.8%.
