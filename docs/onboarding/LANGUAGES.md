@@ -32,6 +32,21 @@ Grammar package names are the orchestrator's guess from PyPI naming convention.
 Stage A confirms or corrects each one and records the pin in the manifest; a
 wrong guess here is a template delta, not a failure.
 
+**Round 3 stage B, 2026-08-18 — one finished, two cut off.** All three ran as
+Opus subagents in their own worktrees. The session limit killed two of them
+mid-review; their partial work is committed on their branches and is **not** a
+verdict.
+
+| Language   | Stage B          | State                                                                                                   |
+| ---------- | ---------------- | ------------------------------------------------------------------------------------------------------- |
+| JavaScript | **complete**     | `pass with fixes applied`. Two probes added, two template deltas, JSX deferred to round 4. Ready for C. |
+| Rust       | **cut off**      | One commit landed (comment lexicon, `use` forms). Report edits uncommitted. Verdict never written.      |
+| Kotlin     | **cut off**      | No commit; a dirty tree with a good `[incomparable]` finding. Verdict never written.                    |
+
+Neither cut-off review reached its own required output, so **neither is a pass**.
+Resume them rather than treating the partial work as reviewed — a dead agent's
+last words describe intent, not state.
+
 **Round 3's stage A is complete and unmerged**, on `wt/lang-rust`,
 `wt/lang-kotlin` and `wt/lang-javascript` — corpus, manifest, trees, reference
 output and corpus report for each. The board carried them as `-` for a day after

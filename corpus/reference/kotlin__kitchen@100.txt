@@ -1,0 +1,26 @@
+// Several constructs interacting; the one file allowed to be messy.
+
+import kotlin.math.max
+
+data class Record(val id: Int, val name: String, val tags: List<String>)
+
+fun process(records: List<Record>, options: Map<String, Int> = mapOf()): List<String> {
+    val timeout = options["timeout"] ?: 30
+    val results = buildList {
+        for (record in records) {
+            if (!record.name.startsWith("a")) continue
+            val label =
+                when (record.id) {
+                    in 0..9 -> "small"
+                    else -> record.name.uppercase() // other
+                }
+            add(label)
+            foo(record.id) { println(it) }
+        }
+    }
+    return results.filter { it.length < timeout }.sortedBy { it }.take(max(1, results.size))
+}
+
+fun foo(x: Int, block: (Int) -> Unit) {
+    block(x)
+}

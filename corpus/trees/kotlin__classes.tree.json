@@ -1,0 +1,1305 @@
+{
+ "language": "kotlin",
+ "source_file": "corpus/src/kotlin/classes.kt",
+ "source": "// data, sealed, enum, object, companion: Kotlin's type-declaration surface.\n\ndata class User(val id: Int, val name: String, val email: String) // primary constructor\n\nsealed class Result {\n    data class Ok(val value: String) : Result()\n    data class Err(val cause: String) : Result()\n    object Empty : Result()\n}\n\nenum class Color {\n    RED,\n    GREEN,\n    BLUE, // trailing member\n}\n\nobject Registry {\n    const val version: Int = 1\n\n    companion object {\n        fun create(): Registry = Registry // companion factory\n    }\n}\n\nclass Counter(private var n: Int = 0) {\n    fun inc(): Int {\n        n += 1\n        return n\n    }\n}\n",
+ "root": {
+  "type": "source_file",
+  "start": 0,
+  "end": 635,
+  "children": [
+   {
+    "type": "line_comment",
+    "start": 0,
+    "end": 76,
+    "text": "// data, sealed, enum, object, companion: Kotlin's type-declaration surface."
+   },
+   {
+    "type": "class_declaration",
+    "start": 78,
+    "end": 143,
+    "children": [
+     {
+      "type": "modifiers",
+      "start": 78,
+      "end": 82,
+      "children": [
+       {
+        "type": "class_modifier",
+        "start": 78,
+        "end": 82,
+        "children": [
+         {
+          "type": "data",
+          "start": 78,
+          "end": 82,
+          "text": "data"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "class",
+      "start": 83,
+      "end": 88,
+      "text": "class"
+     },
+     {
+      "type": "identifier",
+      "start": 89,
+      "end": 93,
+      "field": "name",
+      "text": "User"
+     },
+     {
+      "type": "primary_constructor",
+      "start": 93,
+      "end": 143,
+      "children": [
+       {
+        "type": "class_parameters",
+        "start": 93,
+        "end": 143,
+        "children": [
+         {
+          "type": "(",
+          "start": 93,
+          "end": 94,
+          "text": "("
+         },
+         {
+          "type": "class_parameter",
+          "start": 94,
+          "end": 105,
+          "children": [
+           {
+            "type": "val",
+            "start": 94,
+            "end": 97,
+            "text": "val"
+           },
+           {
+            "type": "identifier",
+            "start": 98,
+            "end": 100,
+            "text": "id"
+           },
+           {
+            "type": ":",
+            "start": 100,
+            "end": 101,
+            "text": ":"
+           },
+           {
+            "type": "user_type",
+            "start": 102,
+            "end": 105,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 102,
+              "end": 105,
+              "text": "Int"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 105,
+          "end": 106,
+          "text": ","
+         },
+         {
+          "type": "class_parameter",
+          "start": 107,
+          "end": 123,
+          "children": [
+           {
+            "type": "val",
+            "start": 107,
+            "end": 110,
+            "text": "val"
+           },
+           {
+            "type": "identifier",
+            "start": 111,
+            "end": 115,
+            "text": "name"
+           },
+           {
+            "type": ":",
+            "start": 115,
+            "end": 116,
+            "text": ":"
+           },
+           {
+            "type": "user_type",
+            "start": 117,
+            "end": 123,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 117,
+              "end": 123,
+              "text": "String"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 123,
+          "end": 124,
+          "text": ","
+         },
+         {
+          "type": "class_parameter",
+          "start": 125,
+          "end": 142,
+          "children": [
+           {
+            "type": "val",
+            "start": 125,
+            "end": 128,
+            "text": "val"
+           },
+           {
+            "type": "identifier",
+            "start": 129,
+            "end": 134,
+            "text": "email"
+           },
+           {
+            "type": ":",
+            "start": 134,
+            "end": 135,
+            "text": ":"
+           },
+           {
+            "type": "user_type",
+            "start": 136,
+            "end": 142,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 136,
+              "end": 142,
+              "text": "String"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ")",
+          "start": 142,
+          "end": 143,
+          "text": ")"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "line_comment",
+    "start": 144,
+    "end": 166,
+    "text": "// primary constructor"
+   },
+   {
+    "type": "class_declaration",
+    "start": 168,
+    "end": 316,
+    "children": [
+     {
+      "type": "modifiers",
+      "start": 168,
+      "end": 174,
+      "children": [
+       {
+        "type": "class_modifier",
+        "start": 168,
+        "end": 174,
+        "children": [
+         {
+          "type": "sealed",
+          "start": 168,
+          "end": 174,
+          "text": "sealed"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "class",
+      "start": 175,
+      "end": 180,
+      "text": "class"
+     },
+     {
+      "type": "identifier",
+      "start": 181,
+      "end": 187,
+      "field": "name",
+      "text": "Result"
+     },
+     {
+      "type": "class_body",
+      "start": 188,
+      "end": 316,
+      "children": [
+       {
+        "type": "{",
+        "start": 188,
+        "end": 189,
+        "text": "{"
+       },
+       {
+        "type": "class_declaration",
+        "start": 194,
+        "end": 237,
+        "children": [
+         {
+          "type": "modifiers",
+          "start": 194,
+          "end": 198,
+          "children": [
+           {
+            "type": "class_modifier",
+            "start": 194,
+            "end": 198,
+            "children": [
+             {
+              "type": "data",
+              "start": 194,
+              "end": 198,
+              "text": "data"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "class",
+          "start": 199,
+          "end": 204,
+          "text": "class"
+         },
+         {
+          "type": "identifier",
+          "start": 205,
+          "end": 207,
+          "field": "name",
+          "text": "Ok"
+         },
+         {
+          "type": "primary_constructor",
+          "start": 207,
+          "end": 226,
+          "children": [
+           {
+            "type": "class_parameters",
+            "start": 207,
+            "end": 226,
+            "children": [
+             {
+              "type": "(",
+              "start": 207,
+              "end": 208,
+              "text": "("
+             },
+             {
+              "type": "class_parameter",
+              "start": 208,
+              "end": 225,
+              "children": [
+               {
+                "type": "val",
+                "start": 208,
+                "end": 211,
+                "text": "val"
+               },
+               {
+                "type": "identifier",
+                "start": 212,
+                "end": 217,
+                "text": "value"
+               },
+               {
+                "type": ":",
+                "start": 217,
+                "end": 218,
+                "text": ":"
+               },
+               {
+                "type": "user_type",
+                "start": 219,
+                "end": 225,
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 219,
+                  "end": 225,
+                  "text": "String"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ")",
+              "start": 225,
+              "end": 226,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ":",
+          "start": 227,
+          "end": 228,
+          "text": ":"
+         },
+         {
+          "type": "delegation_specifiers",
+          "start": 229,
+          "end": 237,
+          "children": [
+           {
+            "type": "delegation_specifier",
+            "start": 229,
+            "end": 237,
+            "children": [
+             {
+              "type": "constructor_invocation",
+              "start": 229,
+              "end": 237,
+              "children": [
+               {
+                "type": "user_type",
+                "start": 229,
+                "end": 235,
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 229,
+                  "end": 235,
+                  "text": "Result"
+                 }
+                ]
+               },
+               {
+                "type": "value_arguments",
+                "start": 235,
+                "end": 237,
+                "children": [
+                 {
+                  "type": "(",
+                  "start": 235,
+                  "end": 236,
+                  "text": "("
+                 },
+                 {
+                  "type": ")",
+                  "start": 236,
+                  "end": 237,
+                  "text": ")"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "class_declaration",
+        "start": 242,
+        "end": 286,
+        "children": [
+         {
+          "type": "modifiers",
+          "start": 242,
+          "end": 246,
+          "children": [
+           {
+            "type": "class_modifier",
+            "start": 242,
+            "end": 246,
+            "children": [
+             {
+              "type": "data",
+              "start": 242,
+              "end": 246,
+              "text": "data"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "class",
+          "start": 247,
+          "end": 252,
+          "text": "class"
+         },
+         {
+          "type": "identifier",
+          "start": 253,
+          "end": 256,
+          "field": "name",
+          "text": "Err"
+         },
+         {
+          "type": "primary_constructor",
+          "start": 256,
+          "end": 275,
+          "children": [
+           {
+            "type": "class_parameters",
+            "start": 256,
+            "end": 275,
+            "children": [
+             {
+              "type": "(",
+              "start": 256,
+              "end": 257,
+              "text": "("
+             },
+             {
+              "type": "class_parameter",
+              "start": 257,
+              "end": 274,
+              "children": [
+               {
+                "type": "val",
+                "start": 257,
+                "end": 260,
+                "text": "val"
+               },
+               {
+                "type": "identifier",
+                "start": 261,
+                "end": 266,
+                "text": "cause"
+               },
+               {
+                "type": ":",
+                "start": 266,
+                "end": 267,
+                "text": ":"
+               },
+               {
+                "type": "user_type",
+                "start": 268,
+                "end": 274,
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 268,
+                  "end": 274,
+                  "text": "String"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ")",
+              "start": 274,
+              "end": 275,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ":",
+          "start": 276,
+          "end": 277,
+          "text": ":"
+         },
+         {
+          "type": "delegation_specifiers",
+          "start": 278,
+          "end": 286,
+          "children": [
+           {
+            "type": "delegation_specifier",
+            "start": 278,
+            "end": 286,
+            "children": [
+             {
+              "type": "constructor_invocation",
+              "start": 278,
+              "end": 286,
+              "children": [
+               {
+                "type": "user_type",
+                "start": 278,
+                "end": 284,
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 278,
+                  "end": 284,
+                  "text": "Result"
+                 }
+                ]
+               },
+               {
+                "type": "value_arguments",
+                "start": 284,
+                "end": 286,
+                "children": [
+                 {
+                  "type": "(",
+                  "start": 284,
+                  "end": 285,
+                  "text": "("
+                 },
+                 {
+                  "type": ")",
+                  "start": 285,
+                  "end": 286,
+                  "text": ")"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "object_declaration",
+        "start": 291,
+        "end": 314,
+        "children": [
+         {
+          "type": "object",
+          "start": 291,
+          "end": 297,
+          "text": "object"
+         },
+         {
+          "type": "identifier",
+          "start": 298,
+          "end": 303,
+          "field": "name",
+          "text": "Empty"
+         },
+         {
+          "type": ":",
+          "start": 304,
+          "end": 305,
+          "text": ":"
+         },
+         {
+          "type": "delegation_specifiers",
+          "start": 306,
+          "end": 314,
+          "children": [
+           {
+            "type": "delegation_specifier",
+            "start": 306,
+            "end": 314,
+            "children": [
+             {
+              "type": "constructor_invocation",
+              "start": 306,
+              "end": 314,
+              "children": [
+               {
+                "type": "user_type",
+                "start": 306,
+                "end": 312,
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 306,
+                  "end": 312,
+                  "text": "Result"
+                 }
+                ]
+               },
+               {
+                "type": "value_arguments",
+                "start": 312,
+                "end": 314,
+                "children": [
+                 {
+                  "type": "(",
+                  "start": 312,
+                  "end": 313,
+                  "text": "("
+                 },
+                 {
+                  "type": ")",
+                  "start": 313,
+                  "end": 314,
+                  "text": ")"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 315,
+        "end": 316,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "class_declaration",
+    "start": 318,
+    "end": 387,
+    "children": [
+     {
+      "type": "modifiers",
+      "start": 318,
+      "end": 322,
+      "children": [
+       {
+        "type": "class_modifier",
+        "start": 318,
+        "end": 322,
+        "children": [
+         {
+          "type": "enum",
+          "start": 318,
+          "end": 322,
+          "text": "enum"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "class",
+      "start": 323,
+      "end": 328,
+      "text": "class"
+     },
+     {
+      "type": "identifier",
+      "start": 329,
+      "end": 334,
+      "field": "name",
+      "text": "Color"
+     },
+     {
+      "type": "enum_class_body",
+      "start": 335,
+      "end": 387,
+      "children": [
+       {
+        "type": "{",
+        "start": 335,
+        "end": 336,
+        "text": "{"
+       },
+       {
+        "type": "enum_entry",
+        "start": 341,
+        "end": 344,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 341,
+          "end": 344,
+          "text": "RED"
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 344,
+        "end": 345,
+        "text": ","
+       },
+       {
+        "type": "enum_entry",
+        "start": 350,
+        "end": 355,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 350,
+          "end": 355,
+          "text": "GREEN"
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 355,
+        "end": 356,
+        "text": ","
+       },
+       {
+        "type": "enum_entry",
+        "start": 361,
+        "end": 365,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 361,
+          "end": 365,
+          "text": "BLUE"
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 365,
+        "end": 366,
+        "text": ","
+       },
+       {
+        "type": "line_comment",
+        "start": 367,
+        "end": 385,
+        "text": "// trailing member"
+       },
+       {
+        "type": "}",
+        "start": 386,
+        "end": 387,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "object_declaration",
+    "start": 389,
+    "end": 532,
+    "children": [
+     {
+      "type": "object",
+      "start": 389,
+      "end": 395,
+      "text": "object"
+     },
+     {
+      "type": "identifier",
+      "start": 396,
+      "end": 404,
+      "field": "name",
+      "text": "Registry"
+     },
+     {
+      "type": "class_body",
+      "start": 405,
+      "end": 532,
+      "children": [
+       {
+        "type": "{",
+        "start": 405,
+        "end": 406,
+        "text": "{"
+       },
+       {
+        "type": "property_declaration",
+        "start": 411,
+        "end": 437,
+        "children": [
+         {
+          "type": "modifiers",
+          "start": 411,
+          "end": 416,
+          "children": [
+           {
+            "type": "property_modifier",
+            "start": 411,
+            "end": 416,
+            "children": [
+             {
+              "type": "const",
+              "start": 411,
+              "end": 416,
+              "text": "const"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "val",
+          "start": 417,
+          "end": 420,
+          "text": "val"
+         },
+         {
+          "type": "variable_declaration",
+          "start": 421,
+          "end": 433,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 421,
+            "end": 428,
+            "text": "version"
+           },
+           {
+            "type": ":",
+            "start": 428,
+            "end": 429,
+            "text": ":"
+           },
+           {
+            "type": "user_type",
+            "start": 430,
+            "end": 433,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 430,
+              "end": 433,
+              "text": "Int"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "=",
+          "start": 434,
+          "end": 435,
+          "text": "="
+         },
+         {
+          "type": "number_literal",
+          "start": 436,
+          "end": 437,
+          "text": "1"
+         }
+        ]
+       },
+       {
+        "type": "companion_object",
+        "start": 443,
+        "end": 530,
+        "children": [
+         {
+          "type": "companion",
+          "start": 443,
+          "end": 452,
+          "text": "companion"
+         },
+         {
+          "type": "object",
+          "start": 453,
+          "end": 459,
+          "text": "object"
+         },
+         {
+          "type": "class_body",
+          "start": 460,
+          "end": 530,
+          "children": [
+           {
+            "type": "{",
+            "start": 460,
+            "end": 461,
+            "text": "{"
+           },
+           {
+            "type": "function_declaration",
+            "start": 470,
+            "end": 503,
+            "children": [
+             {
+              "type": "fun",
+              "start": 470,
+              "end": 473,
+              "text": "fun"
+             },
+             {
+              "type": "identifier",
+              "start": 474,
+              "end": 480,
+              "field": "name",
+              "text": "create"
+             },
+             {
+              "type": "function_value_parameters",
+              "start": 480,
+              "end": 482,
+              "children": [
+               {
+                "type": "(",
+                "start": 480,
+                "end": 481,
+                "text": "("
+               },
+               {
+                "type": ")",
+                "start": 481,
+                "end": 482,
+                "text": ")"
+               }
+              ]
+             },
+             {
+              "type": ":",
+              "start": 482,
+              "end": 483,
+              "text": ":"
+             },
+             {
+              "type": "user_type",
+              "start": 484,
+              "end": 492,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 484,
+                "end": 492,
+                "text": "Registry"
+               }
+              ]
+             },
+             {
+              "type": "function_body",
+              "start": 493,
+              "end": 503,
+              "children": [
+               {
+                "type": "=",
+                "start": 493,
+                "end": 494,
+                "text": "="
+               },
+               {
+                "type": "identifier",
+                "start": 495,
+                "end": 503,
+                "text": "Registry"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "line_comment",
+            "start": 504,
+            "end": 524,
+            "text": "// companion factory"
+           },
+           {
+            "type": "}",
+            "start": 529,
+            "end": 530,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 531,
+        "end": 532,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "class_declaration",
+    "start": 534,
+    "end": 634,
+    "children": [
+     {
+      "type": "class",
+      "start": 534,
+      "end": 539,
+      "text": "class"
+     },
+     {
+      "type": "identifier",
+      "start": 540,
+      "end": 547,
+      "field": "name",
+      "text": "Counter"
+     },
+     {
+      "type": "primary_constructor",
+      "start": 547,
+      "end": 571,
+      "children": [
+       {
+        "type": "class_parameters",
+        "start": 547,
+        "end": 571,
+        "children": [
+         {
+          "type": "(",
+          "start": 547,
+          "end": 548,
+          "text": "("
+         },
+         {
+          "type": "class_parameter",
+          "start": 548,
+          "end": 570,
+          "children": [
+           {
+            "type": "modifiers",
+            "start": 548,
+            "end": 555,
+            "children": [
+             {
+              "type": "visibility_modifier",
+              "start": 548,
+              "end": 555,
+              "children": [
+               {
+                "type": "private",
+                "start": 548,
+                "end": 555,
+                "text": "private"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "var",
+            "start": 556,
+            "end": 559,
+            "text": "var"
+           },
+           {
+            "type": "identifier",
+            "start": 560,
+            "end": 561,
+            "text": "n"
+           },
+           {
+            "type": ":",
+            "start": 561,
+            "end": 562,
+            "text": ":"
+           },
+           {
+            "type": "user_type",
+            "start": 563,
+            "end": 566,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 563,
+              "end": 566,
+              "text": "Int"
+             }
+            ]
+           },
+           {
+            "type": "=",
+            "start": 567,
+            "end": 568,
+            "text": "="
+           },
+           {
+            "type": "number_literal",
+            "start": 569,
+            "end": 570,
+            "text": "0"
+           }
+          ]
+         },
+         {
+          "type": ")",
+          "start": 570,
+          "end": 571,
+          "text": ")"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "class_body",
+      "start": 572,
+      "end": 634,
+      "children": [
+       {
+        "type": "{",
+        "start": 572,
+        "end": 573,
+        "text": "{"
+       },
+       {
+        "type": "function_declaration",
+        "start": 578,
+        "end": 632,
+        "children": [
+         {
+          "type": "fun",
+          "start": 578,
+          "end": 581,
+          "text": "fun"
+         },
+         {
+          "type": "identifier",
+          "start": 582,
+          "end": 585,
+          "field": "name",
+          "text": "inc"
+         },
+         {
+          "type": "function_value_parameters",
+          "start": 585,
+          "end": 587,
+          "children": [
+           {
+            "type": "(",
+            "start": 585,
+            "end": 586,
+            "text": "("
+           },
+           {
+            "type": ")",
+            "start": 586,
+            "end": 587,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": ":",
+          "start": 587,
+          "end": 588,
+          "text": ":"
+         },
+         {
+          "type": "user_type",
+          "start": 589,
+          "end": 592,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 589,
+            "end": 592,
+            "text": "Int"
+           }
+          ]
+         },
+         {
+          "type": "function_body",
+          "start": 593,
+          "end": 632,
+          "children": [
+           {
+            "type": "block",
+            "start": 593,
+            "end": 632,
+            "children": [
+             {
+              "type": "{",
+              "start": 593,
+              "end": 594,
+              "text": "{"
+             },
+             {
+              "type": "assignment",
+              "start": 603,
+              "end": 609,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 603,
+                "end": 604,
+                "field": "left",
+                "text": "n"
+               },
+               {
+                "type": "+=",
+                "start": 605,
+                "end": 607,
+                "field": "operator",
+                "text": "+="
+               },
+               {
+                "type": "number_literal",
+                "start": 608,
+                "end": 609,
+                "field": "right",
+                "text": "1"
+               }
+              ]
+             },
+             {
+              "type": "return_expression",
+              "start": 618,
+              "end": 626,
+              "children": [
+               {
+                "type": "return",
+                "start": 618,
+                "end": 624,
+                "text": "return"
+               },
+               {
+                "type": "identifier",
+                "start": 625,
+                "end": 626,
+                "text": "n"
+               }
+              ]
+             },
+             {
+              "type": "}",
+              "start": 631,
+              "end": 632,
+              "text": "}"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 633,
+        "end": 634,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

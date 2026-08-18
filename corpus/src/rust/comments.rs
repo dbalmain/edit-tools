@@ -1,0 +1,39 @@
+//! Inner doc comment, which only a module's first position accepts.
+
+// Own-line comment before the first item.
+
+/// Outer doc comment. rustfmt never reflows one, so this line overruns at 60.
+///
+/// A second doc paragraph, and a doc comment on the field below.
+struct Record {
+    /// Doc comment attached to a field.
+    first: u32,
+    second: u32,
+}
+
+/** Block doc comment on an item. */
+fn comment_positions() {
+    let first = 1; // trailing comment after a statement
+
+    /* Own-line block comment. */
+    let second = /* block comment inside an expression */ 2;
+    let third = 3; /* trailing block comment */
+
+    let values = [
+        // Comment before the first element inside a delimiter.
+        first,
+        second, // trailing comment inside the array
+        // Comment before the closing delimiter.
+    ];
+
+    let record = Record {
+        // Comment before a field.
+        first,
+        second, // trailing comment after a field
+               // Comment immediately before the closing brace.
+    };
+
+    consume(values, record, third);
+} // trailing comment after the function
+
+// Comment at the end of the file.

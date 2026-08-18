@@ -1,0 +1,796 @@
+{
+ "language": "rust",
+ "source_file": "corpus/src/rust/normalize.rs",
+ "source": "fn normalize_spacing(){\n    let values = [ 1 ,2,3,4 ]; // uneven padding before a trailing comment\n    let empty_array = [ ];\n    let empty_call = collect( );\n    let empty_block = { };\n    let empty_tuple = ( );\n    let pairs = [ (1,2) ,(3,4),(5,6) ];\n    if values.len( )>0{consume(empty_array,empty_call,empty_block,empty_tuple,pairs);}\n}\n",
+ "root": {
+  "type": "source_file",
+  "start": 0,
+  "end": 342,
+  "children": [
+   {
+    "type": "function_item",
+    "start": 0,
+    "end": 341,
+    "children": [
+     {
+      "type": "fn",
+      "start": 0,
+      "end": 2,
+      "text": "fn"
+     },
+     {
+      "type": "identifier",
+      "start": 3,
+      "end": 20,
+      "field": "name",
+      "text": "normalize_spacing"
+     },
+     {
+      "type": "parameters",
+      "start": 20,
+      "end": 22,
+      "field": "parameters",
+      "children": [
+       {
+        "type": "(",
+        "start": 20,
+        "end": 21,
+        "text": "("
+       },
+       {
+        "type": ")",
+        "start": 21,
+        "end": 22,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "block",
+      "start": 22,
+      "end": 341,
+      "field": "body",
+      "children": [
+       {
+        "type": "{",
+        "start": 22,
+        "end": 23,
+        "text": "{"
+       },
+       {
+        "type": "let_declaration",
+        "start": 28,
+        "end": 54,
+        "children": [
+         {
+          "type": "let",
+          "start": 28,
+          "end": 31,
+          "text": "let"
+         },
+         {
+          "type": "identifier",
+          "start": 32,
+          "end": 38,
+          "field": "pattern",
+          "text": "values"
+         },
+         {
+          "type": "=",
+          "start": 39,
+          "end": 40,
+          "text": "="
+         },
+         {
+          "type": "array_expression",
+          "start": 41,
+          "end": 53,
+          "field": "value",
+          "children": [
+           {
+            "type": "[",
+            "start": 41,
+            "end": 42,
+            "text": "["
+           },
+           {
+            "type": "integer_literal",
+            "start": 43,
+            "end": 44,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 45,
+            "end": 46,
+            "text": ","
+           },
+           {
+            "type": "integer_literal",
+            "start": 46,
+            "end": 47,
+            "text": "2"
+           },
+           {
+            "type": ",",
+            "start": 47,
+            "end": 48,
+            "text": ","
+           },
+           {
+            "type": "integer_literal",
+            "start": 48,
+            "end": 49,
+            "text": "3"
+           },
+           {
+            "type": ",",
+            "start": 49,
+            "end": 50,
+            "text": ","
+           },
+           {
+            "type": "integer_literal",
+            "start": 50,
+            "end": 51,
+            "text": "4"
+           },
+           {
+            "type": "]",
+            "start": 52,
+            "end": 53,
+            "text": "]"
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 53,
+          "end": 54,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "line_comment",
+        "start": 55,
+        "end": 98,
+        "children": [
+         {
+          "type": "//",
+          "start": 55,
+          "end": 57,
+          "text": "//"
+         }
+        ]
+       },
+       {
+        "type": "let_declaration",
+        "start": 103,
+        "end": 125,
+        "children": [
+         {
+          "type": "let",
+          "start": 103,
+          "end": 106,
+          "text": "let"
+         },
+         {
+          "type": "identifier",
+          "start": 107,
+          "end": 118,
+          "field": "pattern",
+          "text": "empty_array"
+         },
+         {
+          "type": "=",
+          "start": 119,
+          "end": 120,
+          "text": "="
+         },
+         {
+          "type": "array_expression",
+          "start": 121,
+          "end": 124,
+          "field": "value",
+          "children": [
+           {
+            "type": "[",
+            "start": 121,
+            "end": 122,
+            "text": "["
+           },
+           {
+            "type": "]",
+            "start": 123,
+            "end": 124,
+            "text": "]"
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 124,
+          "end": 125,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "let_declaration",
+        "start": 130,
+        "end": 158,
+        "children": [
+         {
+          "type": "let",
+          "start": 130,
+          "end": 133,
+          "text": "let"
+         },
+         {
+          "type": "identifier",
+          "start": 134,
+          "end": 144,
+          "field": "pattern",
+          "text": "empty_call"
+         },
+         {
+          "type": "=",
+          "start": 145,
+          "end": 146,
+          "text": "="
+         },
+         {
+          "type": "call_expression",
+          "start": 147,
+          "end": 157,
+          "field": "value",
+          "children": [
+           {
+            "type": "identifier",
+            "start": 147,
+            "end": 154,
+            "field": "function",
+            "text": "collect"
+           },
+           {
+            "type": "arguments",
+            "start": 154,
+            "end": 157,
+            "field": "arguments",
+            "children": [
+             {
+              "type": "(",
+              "start": 154,
+              "end": 155,
+              "text": "("
+             },
+             {
+              "type": ")",
+              "start": 156,
+              "end": 157,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 157,
+          "end": 158,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "let_declaration",
+        "start": 163,
+        "end": 185,
+        "children": [
+         {
+          "type": "let",
+          "start": 163,
+          "end": 166,
+          "text": "let"
+         },
+         {
+          "type": "identifier",
+          "start": 167,
+          "end": 178,
+          "field": "pattern",
+          "text": "empty_block"
+         },
+         {
+          "type": "=",
+          "start": 179,
+          "end": 180,
+          "text": "="
+         },
+         {
+          "type": "block",
+          "start": 181,
+          "end": 184,
+          "field": "value",
+          "children": [
+           {
+            "type": "{",
+            "start": 181,
+            "end": 182,
+            "text": "{"
+           },
+           {
+            "type": "}",
+            "start": 183,
+            "end": 184,
+            "text": "}"
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 184,
+          "end": 185,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "let_declaration",
+        "start": 190,
+        "end": 212,
+        "children": [
+         {
+          "type": "let",
+          "start": 190,
+          "end": 193,
+          "text": "let"
+         },
+         {
+          "type": "identifier",
+          "start": 194,
+          "end": 205,
+          "field": "pattern",
+          "text": "empty_tuple"
+         },
+         {
+          "type": "=",
+          "start": 206,
+          "end": 207,
+          "text": "="
+         },
+         {
+          "type": "unit_expression",
+          "start": 208,
+          "end": 211,
+          "field": "value",
+          "children": [
+           {
+            "type": "(",
+            "start": 208,
+            "end": 209,
+            "text": "("
+           },
+           {
+            "type": ")",
+            "start": 210,
+            "end": 211,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 211,
+          "end": 212,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "let_declaration",
+        "start": 217,
+        "end": 252,
+        "children": [
+         {
+          "type": "let",
+          "start": 217,
+          "end": 220,
+          "text": "let"
+         },
+         {
+          "type": "identifier",
+          "start": 221,
+          "end": 226,
+          "field": "pattern",
+          "text": "pairs"
+         },
+         {
+          "type": "=",
+          "start": 227,
+          "end": 228,
+          "text": "="
+         },
+         {
+          "type": "array_expression",
+          "start": 229,
+          "end": 251,
+          "field": "value",
+          "children": [
+           {
+            "type": "[",
+            "start": 229,
+            "end": 230,
+            "text": "["
+           },
+           {
+            "type": "tuple_expression",
+            "start": 231,
+            "end": 236,
+            "children": [
+             {
+              "type": "(",
+              "start": 231,
+              "end": 232,
+              "text": "("
+             },
+             {
+              "type": "integer_literal",
+              "start": 232,
+              "end": 233,
+              "text": "1"
+             },
+             {
+              "type": ",",
+              "start": 233,
+              "end": 234,
+              "text": ","
+             },
+             {
+              "type": "integer_literal",
+              "start": 234,
+              "end": 235,
+              "text": "2"
+             },
+             {
+              "type": ")",
+              "start": 235,
+              "end": 236,
+              "text": ")"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 237,
+            "end": 238,
+            "text": ","
+           },
+           {
+            "type": "tuple_expression",
+            "start": 238,
+            "end": 243,
+            "children": [
+             {
+              "type": "(",
+              "start": 238,
+              "end": 239,
+              "text": "("
+             },
+             {
+              "type": "integer_literal",
+              "start": 239,
+              "end": 240,
+              "text": "3"
+             },
+             {
+              "type": ",",
+              "start": 240,
+              "end": 241,
+              "text": ","
+             },
+             {
+              "type": "integer_literal",
+              "start": 241,
+              "end": 242,
+              "text": "4"
+             },
+             {
+              "type": ")",
+              "start": 242,
+              "end": 243,
+              "text": ")"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 243,
+            "end": 244,
+            "text": ","
+           },
+           {
+            "type": "tuple_expression",
+            "start": 244,
+            "end": 249,
+            "children": [
+             {
+              "type": "(",
+              "start": 244,
+              "end": 245,
+              "text": "("
+             },
+             {
+              "type": "integer_literal",
+              "start": 245,
+              "end": 246,
+              "text": "5"
+             },
+             {
+              "type": ",",
+              "start": 246,
+              "end": 247,
+              "text": ","
+             },
+             {
+              "type": "integer_literal",
+              "start": 247,
+              "end": 248,
+              "text": "6"
+             },
+             {
+              "type": ")",
+              "start": 248,
+              "end": 249,
+              "text": ")"
+             }
+            ]
+           },
+           {
+            "type": "]",
+            "start": 250,
+            "end": 251,
+            "text": "]"
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 251,
+          "end": 252,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "expression_statement",
+        "start": 257,
+        "end": 339,
+        "children": [
+         {
+          "type": "if_expression",
+          "start": 257,
+          "end": 339,
+          "children": [
+           {
+            "type": "if",
+            "start": 257,
+            "end": 259,
+            "text": "if"
+           },
+           {
+            "type": "binary_expression",
+            "start": 260,
+            "end": 275,
+            "field": "condition",
+            "children": [
+             {
+              "type": "call_expression",
+              "start": 260,
+              "end": 273,
+              "field": "left",
+              "children": [
+               {
+                "type": "field_expression",
+                "start": 260,
+                "end": 270,
+                "field": "function",
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 260,
+                  "end": 266,
+                  "field": "value",
+                  "text": "values"
+                 },
+                 {
+                  "type": ".",
+                  "start": 266,
+                  "end": 267,
+                  "text": "."
+                 },
+                 {
+                  "type": "field_identifier",
+                  "start": 267,
+                  "end": 270,
+                  "field": "field",
+                  "text": "len"
+                 }
+                ]
+               },
+               {
+                "type": "arguments",
+                "start": 270,
+                "end": 273,
+                "field": "arguments",
+                "children": [
+                 {
+                  "type": "(",
+                  "start": 270,
+                  "end": 271,
+                  "text": "("
+                 },
+                 {
+                  "type": ")",
+                  "start": 272,
+                  "end": 273,
+                  "text": ")"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ">",
+              "start": 273,
+              "end": 274,
+              "field": "operator",
+              "text": ">"
+             },
+             {
+              "type": "integer_literal",
+              "start": 274,
+              "end": 275,
+              "field": "right",
+              "text": "0"
+             }
+            ]
+           },
+           {
+            "type": "block",
+            "start": 275,
+            "end": 339,
+            "field": "consequence",
+            "children": [
+             {
+              "type": "{",
+              "start": 275,
+              "end": 276,
+              "text": "{"
+             },
+             {
+              "type": "expression_statement",
+              "start": 276,
+              "end": 338,
+              "children": [
+               {
+                "type": "call_expression",
+                "start": 276,
+                "end": 337,
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 276,
+                  "end": 283,
+                  "field": "function",
+                  "text": "consume"
+                 },
+                 {
+                  "type": "arguments",
+                  "start": 283,
+                  "end": 337,
+                  "field": "arguments",
+                  "children": [
+                   {
+                    "type": "(",
+                    "start": 283,
+                    "end": 284,
+                    "text": "("
+                   },
+                   {
+                    "type": "identifier",
+                    "start": 284,
+                    "end": 295,
+                    "text": "empty_array"
+                   },
+                   {
+                    "type": ",",
+                    "start": 295,
+                    "end": 296,
+                    "text": ","
+                   },
+                   {
+                    "type": "identifier",
+                    "start": 296,
+                    "end": 306,
+                    "text": "empty_call"
+                   },
+                   {
+                    "type": ",",
+                    "start": 306,
+                    "end": 307,
+                    "text": ","
+                   },
+                   {
+                    "type": "identifier",
+                    "start": 307,
+                    "end": 318,
+                    "text": "empty_block"
+                   },
+                   {
+                    "type": ",",
+                    "start": 318,
+                    "end": 319,
+                    "text": ","
+                   },
+                   {
+                    "type": "identifier",
+                    "start": 319,
+                    "end": 330,
+                    "text": "empty_tuple"
+                   },
+                   {
+                    "type": ",",
+                    "start": 330,
+                    "end": 331,
+                    "text": ","
+                   },
+                   {
+                    "type": "identifier",
+                    "start": 331,
+                    "end": 336,
+                    "text": "pairs"
+                   },
+                   {
+                    "type": ")",
+                    "start": 336,
+                    "end": 337,
+                    "text": ")"
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": ";",
+                "start": 337,
+                "end": 338,
+                "text": ";"
+               }
+              ]
+             },
+             {
+              "type": "}",
+              "start": 338,
+              "end": 339,
+              "text": "}"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 340,
+        "end": 341,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

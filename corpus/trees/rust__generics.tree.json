@@ -1,0 +1,1136 @@
+{
+ "language": "rust",
+ "source_file": "corpus/src/rust/generics.rs",
+ "source": "fn transform<T, U, F>(\n    values: &[T],\n    fallback: U,\n    mut convert: F,\n) -> Result<Vec<U>, TransformError>\nwhere\n    T: Clone + Send + Sync,\n    U: Clone + Default + Send,\n    F: FnMut(T, &U) -> Result<U, TransformError>,\n{\n    let mut output = Vec::with_capacity(values.len());\n    for value in values {\n        output.push(convert(value.clone(), &fallback)?);\n    }\n    // The where clause is intentionally long enough to test rustfmt's fallback.\n    Ok(output)\n}\n",
+ "root": {
+  "type": "source_file",
+  "start": 0,
+  "end": 473,
+  "children": [
+   {
+    "type": "function_item",
+    "start": 0,
+    "end": 472,
+    "children": [
+     {
+      "type": "fn",
+      "start": 0,
+      "end": 2,
+      "text": "fn"
+     },
+     {
+      "type": "identifier",
+      "start": 3,
+      "end": 12,
+      "field": "name",
+      "text": "transform"
+     },
+     {
+      "type": "type_parameters",
+      "start": 12,
+      "end": 21,
+      "field": "type_parameters",
+      "children": [
+       {
+        "type": "<",
+        "start": 12,
+        "end": 13,
+        "text": "<"
+       },
+       {
+        "type": "type_parameter",
+        "start": 13,
+        "end": 14,
+        "children": [
+         {
+          "type": "type_identifier",
+          "start": 13,
+          "end": 14,
+          "field": "name",
+          "text": "T"
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 14,
+        "end": 15,
+        "text": ","
+       },
+       {
+        "type": "type_parameter",
+        "start": 16,
+        "end": 17,
+        "children": [
+         {
+          "type": "type_identifier",
+          "start": 16,
+          "end": 17,
+          "field": "name",
+          "text": "U"
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 17,
+        "end": 18,
+        "text": ","
+       },
+       {
+        "type": "type_parameter",
+        "start": 19,
+        "end": 20,
+        "children": [
+         {
+          "type": "type_identifier",
+          "start": 19,
+          "end": 20,
+          "field": "name",
+          "text": "F"
+         }
+        ]
+       },
+       {
+        "type": ">",
+        "start": 20,
+        "end": 21,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "parameters",
+      "start": 21,
+      "end": 79,
+      "field": "parameters",
+      "children": [
+       {
+        "type": "(",
+        "start": 21,
+        "end": 22,
+        "text": "("
+       },
+       {
+        "type": "parameter",
+        "start": 27,
+        "end": 39,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 27,
+          "end": 33,
+          "field": "pattern",
+          "text": "values"
+         },
+         {
+          "type": ":",
+          "start": 33,
+          "end": 34,
+          "text": ":"
+         },
+         {
+          "type": "reference_type",
+          "start": 35,
+          "end": 39,
+          "field": "type",
+          "children": [
+           {
+            "type": "&",
+            "start": 35,
+            "end": 36,
+            "text": "&"
+           },
+           {
+            "type": "array_type",
+            "start": 36,
+            "end": 39,
+            "field": "type",
+            "children": [
+             {
+              "type": "[",
+              "start": 36,
+              "end": 37,
+              "text": "["
+             },
+             {
+              "type": "type_identifier",
+              "start": 37,
+              "end": 38,
+              "field": "element",
+              "text": "T"
+             },
+             {
+              "type": "]",
+              "start": 38,
+              "end": 39,
+              "text": "]"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 39,
+        "end": 40,
+        "text": ","
+       },
+       {
+        "type": "parameter",
+        "start": 45,
+        "end": 56,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 45,
+          "end": 53,
+          "field": "pattern",
+          "text": "fallback"
+         },
+         {
+          "type": ":",
+          "start": 53,
+          "end": 54,
+          "text": ":"
+         },
+         {
+          "type": "type_identifier",
+          "start": 55,
+          "end": 56,
+          "field": "type",
+          "text": "U"
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 56,
+        "end": 57,
+        "text": ","
+       },
+       {
+        "type": "parameter",
+        "start": 62,
+        "end": 76,
+        "children": [
+         {
+          "type": "mutable_specifier",
+          "start": 62,
+          "end": 65,
+          "text": "mut"
+         },
+         {
+          "type": "identifier",
+          "start": 66,
+          "end": 73,
+          "field": "pattern",
+          "text": "convert"
+         },
+         {
+          "type": ":",
+          "start": 73,
+          "end": 74,
+          "text": ":"
+         },
+         {
+          "type": "type_identifier",
+          "start": 75,
+          "end": 76,
+          "field": "type",
+          "text": "F"
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 76,
+        "end": 77,
+        "text": ","
+       },
+       {
+        "type": ")",
+        "start": 78,
+        "end": 79,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "->",
+      "start": 80,
+      "end": 82,
+      "text": "->"
+     },
+     {
+      "type": "generic_type",
+      "start": 83,
+      "end": 113,
+      "field": "return_type",
+      "children": [
+       {
+        "type": "type_identifier",
+        "start": 83,
+        "end": 89,
+        "field": "type",
+        "text": "Result"
+       },
+       {
+        "type": "type_arguments",
+        "start": 89,
+        "end": 113,
+        "field": "type_arguments",
+        "children": [
+         {
+          "type": "<",
+          "start": 89,
+          "end": 90,
+          "text": "<"
+         },
+         {
+          "type": "generic_type",
+          "start": 90,
+          "end": 96,
+          "children": [
+           {
+            "type": "type_identifier",
+            "start": 90,
+            "end": 93,
+            "field": "type",
+            "text": "Vec"
+           },
+           {
+            "type": "type_arguments",
+            "start": 93,
+            "end": 96,
+            "field": "type_arguments",
+            "children": [
+             {
+              "type": "<",
+              "start": 93,
+              "end": 94,
+              "text": "<"
+             },
+             {
+              "type": "type_identifier",
+              "start": 94,
+              "end": 95,
+              "text": "U"
+             },
+             {
+              "type": ">",
+              "start": 95,
+              "end": 96,
+              "text": ">"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 96,
+          "end": 97,
+          "text": ","
+         },
+         {
+          "type": "type_identifier",
+          "start": 98,
+          "end": 112,
+          "text": "TransformError"
+         },
+         {
+          "type": ">",
+          "start": 112,
+          "end": 113,
+          "text": ">"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "where_clause",
+      "start": 114,
+      "end": 228,
+      "children": [
+       {
+        "type": "where",
+        "start": 114,
+        "end": 119,
+        "text": "where"
+       },
+       {
+        "type": "where_predicate",
+        "start": 124,
+        "end": 146,
+        "children": [
+         {
+          "type": "type_identifier",
+          "start": 124,
+          "end": 125,
+          "field": "left",
+          "text": "T"
+         },
+         {
+          "type": "trait_bounds",
+          "start": 125,
+          "end": 146,
+          "field": "bounds",
+          "children": [
+           {
+            "type": ":",
+            "start": 125,
+            "end": 126,
+            "text": ":"
+           },
+           {
+            "type": "type_identifier",
+            "start": 127,
+            "end": 132,
+            "text": "Clone"
+           },
+           {
+            "type": "+",
+            "start": 133,
+            "end": 134,
+            "text": "+"
+           },
+           {
+            "type": "type_identifier",
+            "start": 135,
+            "end": 139,
+            "text": "Send"
+           },
+           {
+            "type": "+",
+            "start": 140,
+            "end": 141,
+            "text": "+"
+           },
+           {
+            "type": "type_identifier",
+            "start": 142,
+            "end": 146,
+            "text": "Sync"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 146,
+        "end": 147,
+        "text": ","
+       },
+       {
+        "type": "where_predicate",
+        "start": 152,
+        "end": 177,
+        "children": [
+         {
+          "type": "type_identifier",
+          "start": 152,
+          "end": 153,
+          "field": "left",
+          "text": "U"
+         },
+         {
+          "type": "trait_bounds",
+          "start": 153,
+          "end": 177,
+          "field": "bounds",
+          "children": [
+           {
+            "type": ":",
+            "start": 153,
+            "end": 154,
+            "text": ":"
+           },
+           {
+            "type": "type_identifier",
+            "start": 155,
+            "end": 160,
+            "text": "Clone"
+           },
+           {
+            "type": "+",
+            "start": 161,
+            "end": 162,
+            "text": "+"
+           },
+           {
+            "type": "type_identifier",
+            "start": 163,
+            "end": 170,
+            "text": "Default"
+           },
+           {
+            "type": "+",
+            "start": 171,
+            "end": 172,
+            "text": "+"
+           },
+           {
+            "type": "type_identifier",
+            "start": 173,
+            "end": 177,
+            "text": "Send"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 177,
+        "end": 178,
+        "text": ","
+       },
+       {
+        "type": "where_predicate",
+        "start": 183,
+        "end": 227,
+        "children": [
+         {
+          "type": "type_identifier",
+          "start": 183,
+          "end": 184,
+          "field": "left",
+          "text": "F"
+         },
+         {
+          "type": "trait_bounds",
+          "start": 184,
+          "end": 227,
+          "field": "bounds",
+          "children": [
+           {
+            "type": ":",
+            "start": 184,
+            "end": 185,
+            "text": ":"
+           },
+           {
+            "type": "function_type",
+            "start": 186,
+            "end": 227,
+            "children": [
+             {
+              "type": "type_identifier",
+              "start": 186,
+              "end": 191,
+              "field": "trait",
+              "text": "FnMut"
+             },
+             {
+              "type": "parameters",
+              "start": 191,
+              "end": 198,
+              "field": "parameters",
+              "children": [
+               {
+                "type": "(",
+                "start": 191,
+                "end": 192,
+                "text": "("
+               },
+               {
+                "type": "type_identifier",
+                "start": 192,
+                "end": 193,
+                "text": "T"
+               },
+               {
+                "type": ",",
+                "start": 193,
+                "end": 194,
+                "text": ","
+               },
+               {
+                "type": "reference_type",
+                "start": 195,
+                "end": 197,
+                "children": [
+                 {
+                  "type": "&",
+                  "start": 195,
+                  "end": 196,
+                  "text": "&"
+                 },
+                 {
+                  "type": "type_identifier",
+                  "start": 196,
+                  "end": 197,
+                  "field": "type",
+                  "text": "U"
+                 }
+                ]
+               },
+               {
+                "type": ")",
+                "start": 197,
+                "end": 198,
+                "text": ")"
+               }
+              ]
+             },
+             {
+              "type": "->",
+              "start": 199,
+              "end": 201,
+              "text": "->"
+             },
+             {
+              "type": "generic_type",
+              "start": 202,
+              "end": 227,
+              "field": "return_type",
+              "children": [
+               {
+                "type": "type_identifier",
+                "start": 202,
+                "end": 208,
+                "field": "type",
+                "text": "Result"
+               },
+               {
+                "type": "type_arguments",
+                "start": 208,
+                "end": 227,
+                "field": "type_arguments",
+                "children": [
+                 {
+                  "type": "<",
+                  "start": 208,
+                  "end": 209,
+                  "text": "<"
+                 },
+                 {
+                  "type": "type_identifier",
+                  "start": 209,
+                  "end": 210,
+                  "text": "U"
+                 },
+                 {
+                  "type": ",",
+                  "start": 210,
+                  "end": 211,
+                  "text": ","
+                 },
+                 {
+                  "type": "type_identifier",
+                  "start": 212,
+                  "end": 226,
+                  "text": "TransformError"
+                 },
+                 {
+                  "type": ">",
+                  "start": 226,
+                  "end": 227,
+                  "text": ">"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 227,
+        "end": 228,
+        "text": ","
+       }
+      ]
+     },
+     {
+      "type": "block",
+      "start": 229,
+      "end": 472,
+      "field": "body",
+      "children": [
+       {
+        "type": "{",
+        "start": 229,
+        "end": 230,
+        "text": "{"
+       },
+       {
+        "type": "let_declaration",
+        "start": 235,
+        "end": 285,
+        "children": [
+         {
+          "type": "let",
+          "start": 235,
+          "end": 238,
+          "text": "let"
+         },
+         {
+          "type": "mutable_specifier",
+          "start": 239,
+          "end": 242,
+          "text": "mut"
+         },
+         {
+          "type": "identifier",
+          "start": 243,
+          "end": 249,
+          "field": "pattern",
+          "text": "output"
+         },
+         {
+          "type": "=",
+          "start": 250,
+          "end": 251,
+          "text": "="
+         },
+         {
+          "type": "call_expression",
+          "start": 252,
+          "end": 284,
+          "field": "value",
+          "children": [
+           {
+            "type": "scoped_identifier",
+            "start": 252,
+            "end": 270,
+            "field": "function",
+            "children": [
+             {
+              "type": "identifier",
+              "start": 252,
+              "end": 255,
+              "field": "path",
+              "text": "Vec"
+             },
+             {
+              "type": "::",
+              "start": 255,
+              "end": 257,
+              "text": "::"
+             },
+             {
+              "type": "identifier",
+              "start": 257,
+              "end": 270,
+              "field": "name",
+              "text": "with_capacity"
+             }
+            ]
+           },
+           {
+            "type": "arguments",
+            "start": 270,
+            "end": 284,
+            "field": "arguments",
+            "children": [
+             {
+              "type": "(",
+              "start": 270,
+              "end": 271,
+              "text": "("
+             },
+             {
+              "type": "call_expression",
+              "start": 271,
+              "end": 283,
+              "children": [
+               {
+                "type": "field_expression",
+                "start": 271,
+                "end": 281,
+                "field": "function",
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 271,
+                  "end": 277,
+                  "field": "value",
+                  "text": "values"
+                 },
+                 {
+                  "type": ".",
+                  "start": 277,
+                  "end": 278,
+                  "text": "."
+                 },
+                 {
+                  "type": "field_identifier",
+                  "start": 278,
+                  "end": 281,
+                  "field": "field",
+                  "text": "len"
+                 }
+                ]
+               },
+               {
+                "type": "arguments",
+                "start": 281,
+                "end": 283,
+                "field": "arguments",
+                "children": [
+                 {
+                  "type": "(",
+                  "start": 281,
+                  "end": 282,
+                  "text": "("
+                 },
+                 {
+                  "type": ")",
+                  "start": 282,
+                  "end": 283,
+                  "text": ")"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ")",
+              "start": 283,
+              "end": 284,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 284,
+          "end": 285,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "expression_statement",
+        "start": 290,
+        "end": 374,
+        "children": [
+         {
+          "type": "for_expression",
+          "start": 290,
+          "end": 374,
+          "children": [
+           {
+            "type": "for",
+            "start": 290,
+            "end": 293,
+            "text": "for"
+           },
+           {
+            "type": "identifier",
+            "start": 294,
+            "end": 299,
+            "field": "pattern",
+            "text": "value"
+           },
+           {
+            "type": "in",
+            "start": 300,
+            "end": 302,
+            "text": "in"
+           },
+           {
+            "type": "identifier",
+            "start": 303,
+            "end": 309,
+            "field": "value",
+            "text": "values"
+           },
+           {
+            "type": "block",
+            "start": 310,
+            "end": 374,
+            "field": "body",
+            "children": [
+             {
+              "type": "{",
+              "start": 310,
+              "end": 311,
+              "text": "{"
+             },
+             {
+              "type": "expression_statement",
+              "start": 320,
+              "end": 368,
+              "children": [
+               {
+                "type": "call_expression",
+                "start": 320,
+                "end": 367,
+                "children": [
+                 {
+                  "type": "field_expression",
+                  "start": 320,
+                  "end": 331,
+                  "field": "function",
+                  "children": [
+                   {
+                    "type": "identifier",
+                    "start": 320,
+                    "end": 326,
+                    "field": "value",
+                    "text": "output"
+                   },
+                   {
+                    "type": ".",
+                    "start": 326,
+                    "end": 327,
+                    "text": "."
+                   },
+                   {
+                    "type": "field_identifier",
+                    "start": 327,
+                    "end": 331,
+                    "field": "field",
+                    "text": "push"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "arguments",
+                  "start": 331,
+                  "end": 367,
+                  "field": "arguments",
+                  "children": [
+                   {
+                    "type": "(",
+                    "start": 331,
+                    "end": 332,
+                    "text": "("
+                   },
+                   {
+                    "type": "try_expression",
+                    "start": 332,
+                    "end": 366,
+                    "children": [
+                     {
+                      "type": "call_expression",
+                      "start": 332,
+                      "end": 365,
+                      "children": [
+                       {
+                        "type": "identifier",
+                        "start": 332,
+                        "end": 339,
+                        "field": "function",
+                        "text": "convert"
+                       },
+                       {
+                        "type": "arguments",
+                        "start": 339,
+                        "end": 365,
+                        "field": "arguments",
+                        "children": [
+                         {
+                          "type": "(",
+                          "start": 339,
+                          "end": 340,
+                          "text": "("
+                         },
+                         {
+                          "type": "call_expression",
+                          "start": 340,
+                          "end": 353,
+                          "children": [
+                           {
+                            "type": "field_expression",
+                            "start": 340,
+                            "end": 351,
+                            "field": "function",
+                            "children": [
+                             {
+                              "type": "identifier",
+                              "start": 340,
+                              "end": 345,
+                              "field": "value",
+                              "text": "value"
+                             },
+                             {
+                              "type": ".",
+                              "start": 345,
+                              "end": 346,
+                              "text": "."
+                             },
+                             {
+                              "type": "field_identifier",
+                              "start": 346,
+                              "end": 351,
+                              "field": "field",
+                              "text": "clone"
+                             }
+                            ]
+                           },
+                           {
+                            "type": "arguments",
+                            "start": 351,
+                            "end": 353,
+                            "field": "arguments",
+                            "children": [
+                             {
+                              "type": "(",
+                              "start": 351,
+                              "end": 352,
+                              "text": "("
+                             },
+                             {
+                              "type": ")",
+                              "start": 352,
+                              "end": 353,
+                              "text": ")"
+                             }
+                            ]
+                           }
+                          ]
+                         },
+                         {
+                          "type": ",",
+                          "start": 353,
+                          "end": 354,
+                          "text": ","
+                         },
+                         {
+                          "type": "reference_expression",
+                          "start": 355,
+                          "end": 364,
+                          "children": [
+                           {
+                            "type": "&",
+                            "start": 355,
+                            "end": 356,
+                            "text": "&"
+                           },
+                           {
+                            "type": "identifier",
+                            "start": 356,
+                            "end": 364,
+                            "field": "value",
+                            "text": "fallback"
+                           }
+                          ]
+                         },
+                         {
+                          "type": ")",
+                          "start": 364,
+                          "end": 365,
+                          "text": ")"
+                         }
+                        ]
+                       }
+                      ]
+                     },
+                     {
+                      "type": "?",
+                      "start": 365,
+                      "end": 366,
+                      "text": "?"
+                     }
+                    ]
+                   },
+                   {
+                    "type": ")",
+                    "start": 366,
+                    "end": 367,
+                    "text": ")"
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": ";",
+                "start": 367,
+                "end": 368,
+                "text": ";"
+               }
+              ]
+             },
+             {
+              "type": "}",
+              "start": 373,
+              "end": 374,
+              "text": "}"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "line_comment",
+        "start": 379,
+        "end": 455,
+        "children": [
+         {
+          "type": "//",
+          "start": 379,
+          "end": 381,
+          "text": "//"
+         }
+        ]
+       },
+       {
+        "type": "call_expression",
+        "start": 460,
+        "end": 470,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 460,
+          "end": 462,
+          "field": "function",
+          "text": "Ok"
+         },
+         {
+          "type": "arguments",
+          "start": 462,
+          "end": 470,
+          "field": "arguments",
+          "children": [
+           {
+            "type": "(",
+            "start": 462,
+            "end": 463,
+            "text": "("
+           },
+           {
+            "type": "identifier",
+            "start": 463,
+            "end": 469,
+            "text": "output"
+           },
+           {
+            "type": ")",
+            "start": 469,
+            "end": 470,
+            "text": ")"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 471,
+        "end": 472,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

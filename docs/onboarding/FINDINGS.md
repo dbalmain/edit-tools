@@ -1501,9 +1501,11 @@ Two caveats before anyone builds it:
   pair is small. Gate 3 already tolerates the wrapper via
   `transparent_wrappers = ["block"]`, so the gate is not the obstacle; the
   package's inability to emit it is.
-- **rustfmt reorders `use` declarations.** Permanently excluded — the linearity
-  invariant forbids reordering, and unlike respelling (entry 14) there is no
-  policy shape that would make it safe. `modules.rs` is written in the
+- **rustfmt reorders `use` declarations.** Excluded. This entry originally said
+  *permanently* excluded, on the grounds that no policy shape would make
+  reordering safe; **entry 19 withdraws that** — a sort is a checkable
+  permutation and is a policy like `trail`. It is still excluded, but on cost
+  now, not on principle. `modules.rs` is written in the
   reference's order so the corpus does not silently absorb it.
 - **Alignment is 2 of 15 files (13.3%)**, against Go's 37.5% — already recorded
   in entry 1, and the reason that entry says alignment is largely a Go cost.
@@ -1682,7 +1684,8 @@ this entry's status is open and its cost is marked **structural**.
 
 ### The decision Dave has
 
-1. **Decline for Rust.** 0 B. Loses 1.4% of real files, 2 of 15 corpus files.
+1. **Decline for Rust.** 0 B. Loses 1.4% of real files, 3 of 16 corpus files
+   (`structs.rs`, `comments.rs`, and the `widths.rs` probe added at stage B).
 2. **`alignment: "rust"`.** 796 B for ~76% of the reachable cases, and a second
    named mode with a third one already foreseeable.
 3. **The `cell` node.** Unpriced, replaces both modes, and is the only option
@@ -1697,6 +1700,104 @@ the feature.
 prediction about a package that does not exist. What stage C can confirm is
 whether alignment is even in Rust's top five divergences — entry 17 says the
 sub-widths are 44.8%, which is thirty times larger.
+
+---
+
+## 19. Three references sort imports, and sorting is not what linearity forbids
+
+**Status:** open · **backlogged by Dave, 2026-08-18** — raised, registered, and
+deliberately not scheduled · **Cost:** **contextual**, plus a declared
+comparator per language · **Languages:** Go, Rust, Kotlin — and **not**
+JavaScript or TypeScript
+
+Dave's observation, 2026-08-18: import sorting keeps appearing as an excluded
+behaviour, language after language, and an exclusion that recurs is a finding
+rather than a footnote.
+
+### First, the tally is three, not five
+
+| Reference          | Sorts imports?                        |
+| ------------------ | ------------------------------------- |
+| gofmt              | yes, within blank-line groups         |
+| rustfmt            | yes, within a contiguous group        |
+| ktfmt              | yes, **and de-duplicates**            |
+| prettier (JS / TS) | **no** — verified, not assumed        |
+
+Prettier was worth checking rather than assuming, because "everyone sorts
+imports" is true of ecosystems and false of formatters:
+
+```text
+$ printf 'import z from "zeta";\nimport a from "alpha";\n' \
+    | npx prettier@3.9.6 --no-config --stdin-filepath x.js
+import z from "zeta";
+import a from "alpha";
+```
+
+Sorting in the JS world comes from eslint or a prettier _plugin_, neither of
+which is our reference. That matters for the count: **eight** of the sixteen
+roster languages use prettier, and none of them wants this. The three that do
+are exactly the opinionated single-formatter languages.
+
+### Sorting is a policy, not a linearity violation
+
+The register has said "reordering is permanently forbidden — unlike respelling
+(entry 14) there is no policy shape that would make it safe". **That was too
+strong, and this entry withdraws it.**
+
+Linearity forbids a rule from consuming its children in any order but the
+source's, because that is what makes gate 3's nondestruction check meaningful
+and what keeps a package data rather than code. But `trail` and `autoparen` are
+already *enumerated exceptions* — mutations permitted because they are declared,
+bounded and checkable. A sort can be the same kind of thing:
+
+- the output is a **permutation** of the input, which gate 3 can verify as
+  multiset equality rather than trusting the package;
+- it is deterministic and idempotent;
+- it is bounded to a declared node type, and does not cross a blank-line group
+  boundary — which is what both gofmt and rustfmt actually do.
+
+None of that is true of arbitrary reordering. So the honest statement is that
+sorting is a **fourth token policy**, alongside `trail`, `autoparen` and the
+proposed `respell`.
+
+### What it actually costs, which is not the sorting
+
+Three things, in increasing order of difficulty.
+
+**1. The comparator is per-language and is not simple.** gofmt is byte order on
+the path. rustfmt is multi-level — `self` / `super` / `crate` precedence, then a
+case-aware ordering. ktfmt has its own. A package would have to *declare* the
+comparator, which means the package format grows a small ordering language, and
+that is exactly the kind of growth the 25 KiB budget exists to resist.
+
+**2. Comments move with the line, and comment attachment is a runtime rule.** An
+import carrying a trailing or leading comment must take it along. Our attachment
+happens in the runtime, not the package, so a sort policy has to reorder nodes
+*together with the trivia the runtime later attaches to them* — which is a
+sequencing problem, not a sorting one. This is the real work.
+
+**3. ktfmt also de-duplicates, and that is deletion.** Entry 13 says a package
+cannot delete a token, and nothing here changes that. So even a full sort policy
+leaves Kotlin's imports diverging, and `imports.kt` stays `[incomparable]`.
+**Sorting would not close the case that raised it.**
+
+### What would decide it
+
+Not the count of languages — three of sixteen, already known. The number that
+matters is how many *files* the exclusion costs, and that is measurable now:
+Rust's stage B bounded rustfmt's behaviour to sorting within a contiguous group
+(no merging, no regrouping, with `imports_granularity` and `group_imports` at
+their `Preserve` defaults), and Go's exclusion has been in place since round 2
+without anyone measuring what it costs.
+
+**Do this before building anything:** run the entry-16 fixpoint probe with
+imports as the only variable — take gofmt-clean and rustfmt-clean real files,
+shuffle each import group, reformat, and count how many files the reference puts
+back. That gives the divergence this entry would buy, per language, from real
+code, and it costs an afternoon rather than a subsystem.
+
+**Do not build the policy first.** Entry 1 is the precedent: alignment looked
+like an obvious win, cost 2,593 B, and bought one language most of its value.
 
 ---
 

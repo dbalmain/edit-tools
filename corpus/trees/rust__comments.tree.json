@@ -1,0 +1,943 @@
+{
+ "language": "rust",
+ "source_file": "corpus/src/rust/comments.rs",
+ "source": "//! Inner doc comment, which only a module's first position accepts.\n\n// Own-line comment before the first item.\n\n/// Outer doc comment. rustfmt never reflows one, so this line overruns at 60.\n///\n/// A second doc paragraph, and a doc comment on the field below.\nstruct Record {\n    /// Doc comment attached to a field.\n    first: u32,\n    second: u32,\n}\n\n/** Block doc comment on an item. */\nfn comment_positions() {\n    let first = 1; // trailing comment after a statement\n\n    /* Own-line block comment. */\n    let second = /* block comment inside an expression */ 2;\n    let third = 3; /* trailing block comment */\n\n    let values = [\n        // Comment before the first element inside a delimiter.\n        first,\n        second, // trailing comment inside the array\n        // Comment before the closing delimiter.\n    ];\n\n    let record = Record {\n        // Comment before a field.\n        first,\n        second, // trailing comment after a field\n               // Comment immediately before the closing brace.\n    };\n\n    consume(values, record, third);\n} // trailing comment after the function\n\n// Comment at the end of the file.\n",
+ "root": {
+  "type": "source_file",
+  "start": 0,
+  "end": 1139,
+  "children": [
+   {
+    "type": "line_comment",
+    "start": 0,
+    "end": 69,
+    "children": [
+     {
+      "type": "//",
+      "start": 0,
+      "end": 2,
+      "text": "//"
+     },
+     {
+      "type": "inner_doc_comment_marker",
+      "start": 2,
+      "end": 3,
+      "field": "inner",
+      "children": [
+       {
+        "type": "!",
+        "start": 2,
+        "end": 3,
+        "text": "!"
+       }
+      ]
+     },
+     {
+      "type": "doc_comment",
+      "start": 3,
+      "end": 69,
+      "field": "doc",
+      "text": " Inner doc comment, which only a module's first position accepts.\n"
+     }
+    ]
+   },
+   {
+    "type": "line_comment",
+    "start": 70,
+    "end": 112,
+    "children": [
+     {
+      "type": "//",
+      "start": 70,
+      "end": 72,
+      "text": "//"
+     }
+    ]
+   },
+   {
+    "type": "line_comment",
+    "start": 114,
+    "end": 193,
+    "children": [
+     {
+      "type": "//",
+      "start": 114,
+      "end": 116,
+      "text": "//"
+     },
+     {
+      "type": "outer_doc_comment_marker",
+      "start": 116,
+      "end": 117,
+      "field": "outer",
+      "children": [
+       {
+        "type": "/",
+        "start": 116,
+        "end": 117,
+        "text": "/"
+       }
+      ]
+     },
+     {
+      "type": "doc_comment",
+      "start": 117,
+      "end": 193,
+      "field": "doc",
+      "text": " Outer doc comment. rustfmt never reflows one, so this line overruns at 60.\n"
+     }
+    ]
+   },
+   {
+    "type": "line_comment",
+    "start": 193,
+    "end": 197,
+    "children": [
+     {
+      "type": "//",
+      "start": 193,
+      "end": 195,
+      "text": "//"
+     },
+     {
+      "type": "outer_doc_comment_marker",
+      "start": 195,
+      "end": 196,
+      "field": "outer",
+      "children": [
+       {
+        "type": "/",
+        "start": 195,
+        "end": 196,
+        "text": "/"
+       }
+      ]
+     },
+     {
+      "type": "doc_comment",
+      "start": 196,
+      "end": 197,
+      "field": "doc",
+      "text": "\n"
+     }
+    ]
+   },
+   {
+    "type": "line_comment",
+    "start": 197,
+    "end": 263,
+    "children": [
+     {
+      "type": "//",
+      "start": 197,
+      "end": 199,
+      "text": "//"
+     },
+     {
+      "type": "outer_doc_comment_marker",
+      "start": 199,
+      "end": 200,
+      "field": "outer",
+      "children": [
+       {
+        "type": "/",
+        "start": 199,
+        "end": 200,
+        "text": "/"
+       }
+      ]
+     },
+     {
+      "type": "doc_comment",
+      "start": 200,
+      "end": 263,
+      "field": "doc",
+      "text": " A second doc paragraph, and a doc comment on the field below.\n"
+     }
+    ]
+   },
+   {
+    "type": "struct_item",
+    "start": 263,
+    "end": 354,
+    "children": [
+     {
+      "type": "struct",
+      "start": 263,
+      "end": 269,
+      "text": "struct"
+     },
+     {
+      "type": "type_identifier",
+      "start": 270,
+      "end": 276,
+      "field": "name",
+      "text": "Record"
+     },
+     {
+      "type": "field_declaration_list",
+      "start": 277,
+      "end": 354,
+      "field": "body",
+      "children": [
+       {
+        "type": "{",
+        "start": 277,
+        "end": 278,
+        "text": "{"
+       },
+       {
+        "type": "line_comment",
+        "start": 283,
+        "end": 320,
+        "children": [
+         {
+          "type": "//",
+          "start": 283,
+          "end": 285,
+          "text": "//"
+         },
+         {
+          "type": "outer_doc_comment_marker",
+          "start": 285,
+          "end": 286,
+          "field": "outer",
+          "children": [
+           {
+            "type": "/",
+            "start": 285,
+            "end": 286,
+            "text": "/"
+           }
+          ]
+         },
+         {
+          "type": "doc_comment",
+          "start": 286,
+          "end": 320,
+          "field": "doc",
+          "text": " Doc comment attached to a field.\n"
+         }
+        ]
+       },
+       {
+        "type": "field_declaration",
+        "start": 324,
+        "end": 334,
+        "children": [
+         {
+          "type": "field_identifier",
+          "start": 324,
+          "end": 329,
+          "field": "name",
+          "text": "first"
+         },
+         {
+          "type": ":",
+          "start": 329,
+          "end": 330,
+          "text": ":"
+         },
+         {
+          "type": "primitive_type",
+          "start": 331,
+          "end": 334,
+          "field": "type",
+          "text": "u32"
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 334,
+        "end": 335,
+        "text": ","
+       },
+       {
+        "type": "field_declaration",
+        "start": 340,
+        "end": 351,
+        "children": [
+         {
+          "type": "field_identifier",
+          "start": 340,
+          "end": 346,
+          "field": "name",
+          "text": "second"
+         },
+         {
+          "type": ":",
+          "start": 346,
+          "end": 347,
+          "text": ":"
+         },
+         {
+          "type": "primitive_type",
+          "start": 348,
+          "end": 351,
+          "field": "type",
+          "text": "u32"
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 351,
+        "end": 352,
+        "text": ","
+       },
+       {
+        "type": "}",
+        "start": 353,
+        "end": 354,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "block_comment",
+    "start": 356,
+    "end": 392,
+    "children": [
+     {
+      "type": "/*",
+      "start": 356,
+      "end": 358,
+      "text": "/*"
+     },
+     {
+      "type": "outer_doc_comment_marker",
+      "start": 358,
+      "end": 359,
+      "field": "outer",
+      "text": "*"
+     },
+     {
+      "type": "doc_comment",
+      "start": 359,
+      "end": 390,
+      "field": "doc",
+      "text": " Block doc comment on an item. "
+     },
+     {
+      "type": "*/",
+      "start": 390,
+      "end": 392,
+      "text": "*/"
+     }
+    ]
+   },
+   {
+    "type": "function_item",
+    "start": 393,
+    "end": 1063,
+    "children": [
+     {
+      "type": "fn",
+      "start": 393,
+      "end": 395,
+      "text": "fn"
+     },
+     {
+      "type": "identifier",
+      "start": 396,
+      "end": 413,
+      "field": "name",
+      "text": "comment_positions"
+     },
+     {
+      "type": "parameters",
+      "start": 413,
+      "end": 415,
+      "field": "parameters",
+      "children": [
+       {
+        "type": "(",
+        "start": 413,
+        "end": 414,
+        "text": "("
+       },
+       {
+        "type": ")",
+        "start": 414,
+        "end": 415,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "block",
+      "start": 416,
+      "end": 1063,
+      "field": "body",
+      "children": [
+       {
+        "type": "{",
+        "start": 416,
+        "end": 417,
+        "text": "{"
+       },
+       {
+        "type": "let_declaration",
+        "start": 422,
+        "end": 436,
+        "children": [
+         {
+          "type": "let",
+          "start": 422,
+          "end": 425,
+          "text": "let"
+         },
+         {
+          "type": "identifier",
+          "start": 426,
+          "end": 431,
+          "field": "pattern",
+          "text": "first"
+         },
+         {
+          "type": "=",
+          "start": 432,
+          "end": 433,
+          "text": "="
+         },
+         {
+          "type": "integer_literal",
+          "start": 434,
+          "end": 435,
+          "field": "value",
+          "text": "1"
+         },
+         {
+          "type": ";",
+          "start": 435,
+          "end": 436,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "line_comment",
+        "start": 437,
+        "end": 474,
+        "children": [
+         {
+          "type": "//",
+          "start": 437,
+          "end": 439,
+          "text": "//"
+         }
+        ]
+       },
+       {
+        "type": "block_comment",
+        "start": 480,
+        "end": 509,
+        "children": [
+         {
+          "type": "/*",
+          "start": 480,
+          "end": 482,
+          "text": "/*"
+         },
+         {
+          "type": "*/",
+          "start": 507,
+          "end": 509,
+          "text": "*/"
+         }
+        ]
+       },
+       {
+        "type": "let_declaration",
+        "start": 514,
+        "end": 570,
+        "children": [
+         {
+          "type": "let",
+          "start": 514,
+          "end": 517,
+          "text": "let"
+         },
+         {
+          "type": "identifier",
+          "start": 518,
+          "end": 524,
+          "field": "pattern",
+          "text": "second"
+         },
+         {
+          "type": "=",
+          "start": 525,
+          "end": 526,
+          "text": "="
+         },
+         {
+          "type": "block_comment",
+          "start": 527,
+          "end": 567,
+          "children": [
+           {
+            "type": "/*",
+            "start": 527,
+            "end": 529,
+            "text": "/*"
+           },
+           {
+            "type": "*/",
+            "start": 565,
+            "end": 567,
+            "text": "*/"
+           }
+          ]
+         },
+         {
+          "type": "integer_literal",
+          "start": 568,
+          "end": 569,
+          "field": "value",
+          "text": "2"
+         },
+         {
+          "type": ";",
+          "start": 569,
+          "end": 570,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "let_declaration",
+        "start": 575,
+        "end": 589,
+        "children": [
+         {
+          "type": "let",
+          "start": 575,
+          "end": 578,
+          "text": "let"
+         },
+         {
+          "type": "identifier",
+          "start": 579,
+          "end": 584,
+          "field": "pattern",
+          "text": "third"
+         },
+         {
+          "type": "=",
+          "start": 585,
+          "end": 586,
+          "text": "="
+         },
+         {
+          "type": "integer_literal",
+          "start": 587,
+          "end": 588,
+          "field": "value",
+          "text": "3"
+         },
+         {
+          "type": ";",
+          "start": 588,
+          "end": 589,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "block_comment",
+        "start": 590,
+        "end": 618,
+        "children": [
+         {
+          "type": "/*",
+          "start": 590,
+          "end": 592,
+          "text": "/*"
+         },
+         {
+          "type": "*/",
+          "start": 616,
+          "end": 618,
+          "text": "*/"
+         }
+        ]
+       },
+       {
+        "type": "let_declaration",
+        "start": 624,
+        "end": 826,
+        "children": [
+         {
+          "type": "let",
+          "start": 624,
+          "end": 627,
+          "text": "let"
+         },
+         {
+          "type": "identifier",
+          "start": 628,
+          "end": 634,
+          "field": "pattern",
+          "text": "values"
+         },
+         {
+          "type": "=",
+          "start": 635,
+          "end": 636,
+          "text": "="
+         },
+         {
+          "type": "array_expression",
+          "start": 637,
+          "end": 825,
+          "field": "value",
+          "children": [
+           {
+            "type": "[",
+            "start": 637,
+            "end": 638,
+            "text": "["
+           },
+           {
+            "type": "line_comment",
+            "start": 647,
+            "end": 702,
+            "children": [
+             {
+              "type": "//",
+              "start": 647,
+              "end": 649,
+              "text": "//"
+             }
+            ]
+           },
+           {
+            "type": "identifier",
+            "start": 711,
+            "end": 716,
+            "text": "first"
+           },
+           {
+            "type": ",",
+            "start": 716,
+            "end": 717,
+            "text": ","
+           },
+           {
+            "type": "identifier",
+            "start": 726,
+            "end": 732,
+            "text": "second"
+           },
+           {
+            "type": ",",
+            "start": 732,
+            "end": 733,
+            "text": ","
+           },
+           {
+            "type": "line_comment",
+            "start": 734,
+            "end": 770,
+            "children": [
+             {
+              "type": "//",
+              "start": 734,
+              "end": 736,
+              "text": "//"
+             }
+            ]
+           },
+           {
+            "type": "line_comment",
+            "start": 779,
+            "end": 819,
+            "children": [
+             {
+              "type": "//",
+              "start": 779,
+              "end": 781,
+              "text": "//"
+             }
+            ]
+           },
+           {
+            "type": "]",
+            "start": 824,
+            "end": 825,
+            "text": "]"
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 825,
+          "end": 826,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "let_declaration",
+        "start": 832,
+        "end": 1024,
+        "children": [
+         {
+          "type": "let",
+          "start": 832,
+          "end": 835,
+          "text": "let"
+         },
+         {
+          "type": "identifier",
+          "start": 836,
+          "end": 842,
+          "field": "pattern",
+          "text": "record"
+         },
+         {
+          "type": "=",
+          "start": 843,
+          "end": 844,
+          "text": "="
+         },
+         {
+          "type": "struct_expression",
+          "start": 845,
+          "end": 1023,
+          "field": "value",
+          "children": [
+           {
+            "type": "type_identifier",
+            "start": 845,
+            "end": 851,
+            "field": "name",
+            "text": "Record"
+           },
+           {
+            "type": "field_initializer_list",
+            "start": 852,
+            "end": 1023,
+            "field": "body",
+            "children": [
+             {
+              "type": "{",
+              "start": 852,
+              "end": 853,
+              "text": "{"
+             },
+             {
+              "type": "line_comment",
+              "start": 862,
+              "end": 888,
+              "children": [
+               {
+                "type": "//",
+                "start": 862,
+                "end": 864,
+                "text": "//"
+               }
+              ]
+             },
+             {
+              "type": "shorthand_field_initializer",
+              "start": 897,
+              "end": 902,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 897,
+                "end": 902,
+                "text": "first"
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 902,
+              "end": 903,
+              "text": ","
+             },
+             {
+              "type": "shorthand_field_initializer",
+              "start": 912,
+              "end": 918,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 912,
+                "end": 918,
+                "text": "second"
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 918,
+              "end": 919,
+              "text": ","
+             },
+             {
+              "type": "line_comment",
+              "start": 920,
+              "end": 953,
+              "children": [
+               {
+                "type": "//",
+                "start": 920,
+                "end": 922,
+                "text": "//"
+               }
+              ]
+             },
+             {
+              "type": "line_comment",
+              "start": 969,
+              "end": 1017,
+              "children": [
+               {
+                "type": "//",
+                "start": 969,
+                "end": 971,
+                "text": "//"
+               }
+              ]
+             },
+             {
+              "type": "}",
+              "start": 1022,
+              "end": 1023,
+              "text": "}"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 1023,
+          "end": 1024,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "expression_statement",
+        "start": 1030,
+        "end": 1061,
+        "children": [
+         {
+          "type": "call_expression",
+          "start": 1030,
+          "end": 1060,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 1030,
+            "end": 1037,
+            "field": "function",
+            "text": "consume"
+           },
+           {
+            "type": "arguments",
+            "start": 1037,
+            "end": 1060,
+            "field": "arguments",
+            "children": [
+             {
+              "type": "(",
+              "start": 1037,
+              "end": 1038,
+              "text": "("
+             },
+             {
+              "type": "identifier",
+              "start": 1038,
+              "end": 1044,
+              "text": "values"
+             },
+             {
+              "type": ",",
+              "start": 1044,
+              "end": 1045,
+              "text": ","
+             },
+             {
+              "type": "identifier",
+              "start": 1046,
+              "end": 1052,
+              "text": "record"
+             },
+             {
+              "type": ",",
+              "start": 1052,
+              "end": 1053,
+              "text": ","
+             },
+             {
+              "type": "identifier",
+              "start": 1054,
+              "end": 1059,
+              "text": "third"
+             },
+             {
+              "type": ")",
+              "start": 1059,
+              "end": 1060,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 1060,
+          "end": 1061,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 1062,
+        "end": 1063,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "line_comment",
+    "start": 1064,
+    "end": 1102,
+    "children": [
+     {
+      "type": "//",
+      "start": 1064,
+      "end": 1066,
+      "text": "//"
+     }
+    ]
+   },
+   {
+    "type": "line_comment",
+    "start": 1104,
+    "end": 1138,
+    "children": [
+     {
+      "type": "//",
+      "start": 1104,
+      "end": 1106,
+      "text": "//"
+     }
+    ]
+   }
+  ]
+ }
+}

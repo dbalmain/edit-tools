@@ -1,0 +1,68 @@
+// rustfmt breaks a construct that exceeds its own width even when the line has
+// room to spare (FINDINGS 17). Every construct below fits inside max_width=100
+// flat and is broken anyway. `nesting.rs` shows this incidentally for struct
+// literals; this file probes the three thresholds that decide most real Rust --
+// struct_lit_width 18, chain_width 60, fn_call_width 60 -- plus array_width 60.
+//
+// The comment alignment at the end is the other half: rustfmt aligns trailing
+// comments across a run of list items and nothing else (FINDINGS 18).
+
+fn sub_widths(items: &[i32]) {
+    // Struct-literal body is 36 columns, over struct_lit_width 18; line is 65.
+    let branch = Branch {
+        leaves: [1, 2, 3, 4],
+        label: "north",
+    };
+
+    // Method chain is 61 columns, over chain_width 60; the whole line is 79.
+    let picked = items
+        .iter()
+        .map(double)
+        .filter(positive)
+        .collect::<Vec<_>>();
+
+    // Call arguments are 64 columns, over fn_call_width 60; the line is 91.
+    let joined = combine(
+        first_argument,
+        second_argument,
+        third_argument,
+        fourth_argument,
+    );
+
+    // Array elements are 63 columns, over array_width 60; the line is 82.
+    let names = [
+        alpha, bravo, charlie, delta, echo, foxtrot, golf,
+        hotel, india,
+    ];
+
+    consume(branch, picked, joined, names);
+}
+
+fn under_every_threshold(items: &[i32]) {
+    // The same four shapes, each inside its own threshold, so they stay flat.
+    let leaf = Leaf { id: 1 };
+    let some = items.iter().map(double).sum::<i32>();
+    let short = combine(first, second, third);
+    let few = [alpha, bravo, charlie];
+    consume(leaf, some, short, few);
+}
+
+struct Config {
+    retries: u32,        // bounded by the caller
+    timeout_ms: u64,     // milliseconds, not seconds
+    label: &'static str, // shown in logs
+}
+
+// The alignment run is width-dependent, which is the part a fixed rule misses.
+// At max_width=100 all three arms align. At 60 the third drops out, because
+// padding it would overrun, and the first two align without it -- so the run
+// splits rather than collapsing. The arm with no comment ends the run at both
+// widths.
+fn aligned_arms(code: u32) -> &'static str {
+    match code {
+        1 => "one",         // aligns at both widths
+        22 => "twenty-two", // aligns at both widths
+        333 => "three-thirty-three", // joins the run at 100, drops out at 60
+        _ => "other",
+    }
+}

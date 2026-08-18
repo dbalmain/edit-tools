@@ -1,0 +1,813 @@
+{
+ "language": "rust",
+ "source_file": "corpus/src/rust/async.rs",
+ "source": "async fn load_documents(client: Client, paths: Vec<Path>) -> Result<Vec<Document>, Error> {\n    let mut documents = Vec::new();\n    for path in paths {\n        let response = client.fetch(&path).await?;\n        let document = response.decode().await?;\n        documents.push(document);\n    }\n    // Await points and the loop block are both layout boundaries.\n    Ok(documents)\n}\n",
+ "root": {
+  "type": "source_file",
+  "start": 0,
+  "end": 379,
+  "children": [
+   {
+    "type": "function_item",
+    "start": 0,
+    "end": 378,
+    "children": [
+     {
+      "type": "function_modifiers",
+      "start": 0,
+      "end": 5,
+      "children": [
+       {
+        "type": "async",
+        "start": 0,
+        "end": 5,
+        "text": "async"
+       }
+      ]
+     },
+     {
+      "type": "fn",
+      "start": 6,
+      "end": 8,
+      "text": "fn"
+     },
+     {
+      "type": "identifier",
+      "start": 9,
+      "end": 23,
+      "field": "name",
+      "text": "load_documents"
+     },
+     {
+      "type": "parameters",
+      "start": 23,
+      "end": 57,
+      "field": "parameters",
+      "children": [
+       {
+        "type": "(",
+        "start": 23,
+        "end": 24,
+        "text": "("
+       },
+       {
+        "type": "parameter",
+        "start": 24,
+        "end": 38,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 24,
+          "end": 30,
+          "field": "pattern",
+          "text": "client"
+         },
+         {
+          "type": ":",
+          "start": 30,
+          "end": 31,
+          "text": ":"
+         },
+         {
+          "type": "type_identifier",
+          "start": 32,
+          "end": 38,
+          "field": "type",
+          "text": "Client"
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 38,
+        "end": 39,
+        "text": ","
+       },
+       {
+        "type": "parameter",
+        "start": 40,
+        "end": 56,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 40,
+          "end": 45,
+          "field": "pattern",
+          "text": "paths"
+         },
+         {
+          "type": ":",
+          "start": 45,
+          "end": 46,
+          "text": ":"
+         },
+         {
+          "type": "generic_type",
+          "start": 47,
+          "end": 56,
+          "field": "type",
+          "children": [
+           {
+            "type": "type_identifier",
+            "start": 47,
+            "end": 50,
+            "field": "type",
+            "text": "Vec"
+           },
+           {
+            "type": "type_arguments",
+            "start": 50,
+            "end": 56,
+            "field": "type_arguments",
+            "children": [
+             {
+              "type": "<",
+              "start": 50,
+              "end": 51,
+              "text": "<"
+             },
+             {
+              "type": "type_identifier",
+              "start": 51,
+              "end": 55,
+              "text": "Path"
+             },
+             {
+              "type": ">",
+              "start": 55,
+              "end": 56,
+              "text": ">"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ")",
+        "start": 56,
+        "end": 57,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "->",
+      "start": 58,
+      "end": 60,
+      "text": "->"
+     },
+     {
+      "type": "generic_type",
+      "start": 61,
+      "end": 89,
+      "field": "return_type",
+      "children": [
+       {
+        "type": "type_identifier",
+        "start": 61,
+        "end": 67,
+        "field": "type",
+        "text": "Result"
+       },
+       {
+        "type": "type_arguments",
+        "start": 67,
+        "end": 89,
+        "field": "type_arguments",
+        "children": [
+         {
+          "type": "<",
+          "start": 67,
+          "end": 68,
+          "text": "<"
+         },
+         {
+          "type": "generic_type",
+          "start": 68,
+          "end": 81,
+          "children": [
+           {
+            "type": "type_identifier",
+            "start": 68,
+            "end": 71,
+            "field": "type",
+            "text": "Vec"
+           },
+           {
+            "type": "type_arguments",
+            "start": 71,
+            "end": 81,
+            "field": "type_arguments",
+            "children": [
+             {
+              "type": "<",
+              "start": 71,
+              "end": 72,
+              "text": "<"
+             },
+             {
+              "type": "type_identifier",
+              "start": 72,
+              "end": 80,
+              "text": "Document"
+             },
+             {
+              "type": ">",
+              "start": 80,
+              "end": 81,
+              "text": ">"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 81,
+          "end": 82,
+          "text": ","
+         },
+         {
+          "type": "type_identifier",
+          "start": 83,
+          "end": 88,
+          "text": "Error"
+         },
+         {
+          "type": ">",
+          "start": 88,
+          "end": 89,
+          "text": ">"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "block",
+      "start": 90,
+      "end": 378,
+      "field": "body",
+      "children": [
+       {
+        "type": "{",
+        "start": 90,
+        "end": 91,
+        "text": "{"
+       },
+       {
+        "type": "let_declaration",
+        "start": 96,
+        "end": 127,
+        "children": [
+         {
+          "type": "let",
+          "start": 96,
+          "end": 99,
+          "text": "let"
+         },
+         {
+          "type": "mutable_specifier",
+          "start": 100,
+          "end": 103,
+          "text": "mut"
+         },
+         {
+          "type": "identifier",
+          "start": 104,
+          "end": 113,
+          "field": "pattern",
+          "text": "documents"
+         },
+         {
+          "type": "=",
+          "start": 114,
+          "end": 115,
+          "text": "="
+         },
+         {
+          "type": "call_expression",
+          "start": 116,
+          "end": 126,
+          "field": "value",
+          "children": [
+           {
+            "type": "scoped_identifier",
+            "start": 116,
+            "end": 124,
+            "field": "function",
+            "children": [
+             {
+              "type": "identifier",
+              "start": 116,
+              "end": 119,
+              "field": "path",
+              "text": "Vec"
+             },
+             {
+              "type": "::",
+              "start": 119,
+              "end": 121,
+              "text": "::"
+             },
+             {
+              "type": "identifier",
+              "start": 121,
+              "end": 124,
+              "field": "name",
+              "text": "new"
+             }
+            ]
+           },
+           {
+            "type": "arguments",
+            "start": 124,
+            "end": 126,
+            "field": "arguments",
+            "children": [
+             {
+              "type": "(",
+              "start": 124,
+              "end": 125,
+              "text": "("
+             },
+             {
+              "type": ")",
+              "start": 125,
+              "end": 126,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 126,
+          "end": 127,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "expression_statement",
+        "start": 132,
+        "end": 291,
+        "children": [
+         {
+          "type": "for_expression",
+          "start": 132,
+          "end": 291,
+          "children": [
+           {
+            "type": "for",
+            "start": 132,
+            "end": 135,
+            "text": "for"
+           },
+           {
+            "type": "identifier",
+            "start": 136,
+            "end": 140,
+            "field": "pattern",
+            "text": "path"
+           },
+           {
+            "type": "in",
+            "start": 141,
+            "end": 143,
+            "text": "in"
+           },
+           {
+            "type": "identifier",
+            "start": 144,
+            "end": 149,
+            "field": "value",
+            "text": "paths"
+           },
+           {
+            "type": "block",
+            "start": 150,
+            "end": 291,
+            "field": "body",
+            "children": [
+             {
+              "type": "{",
+              "start": 150,
+              "end": 151,
+              "text": "{"
+             },
+             {
+              "type": "let_declaration",
+              "start": 160,
+              "end": 202,
+              "children": [
+               {
+                "type": "let",
+                "start": 160,
+                "end": 163,
+                "text": "let"
+               },
+               {
+                "type": "identifier",
+                "start": 164,
+                "end": 172,
+                "field": "pattern",
+                "text": "response"
+               },
+               {
+                "type": "=",
+                "start": 173,
+                "end": 174,
+                "text": "="
+               },
+               {
+                "type": "try_expression",
+                "start": 175,
+                "end": 201,
+                "field": "value",
+                "children": [
+                 {
+                  "type": "await_expression",
+                  "start": 175,
+                  "end": 200,
+                  "children": [
+                   {
+                    "type": "call_expression",
+                    "start": 175,
+                    "end": 194,
+                    "children": [
+                     {
+                      "type": "field_expression",
+                      "start": 175,
+                      "end": 187,
+                      "field": "function",
+                      "children": [
+                       {
+                        "type": "identifier",
+                        "start": 175,
+                        "end": 181,
+                        "field": "value",
+                        "text": "client"
+                       },
+                       {
+                        "type": ".",
+                        "start": 181,
+                        "end": 182,
+                        "text": "."
+                       },
+                       {
+                        "type": "field_identifier",
+                        "start": 182,
+                        "end": 187,
+                        "field": "field",
+                        "text": "fetch"
+                       }
+                      ]
+                     },
+                     {
+                      "type": "arguments",
+                      "start": 187,
+                      "end": 194,
+                      "field": "arguments",
+                      "children": [
+                       {
+                        "type": "(",
+                        "start": 187,
+                        "end": 188,
+                        "text": "("
+                       },
+                       {
+                        "type": "reference_expression",
+                        "start": 188,
+                        "end": 193,
+                        "children": [
+                         {
+                          "type": "&",
+                          "start": 188,
+                          "end": 189,
+                          "text": "&"
+                         },
+                         {
+                          "type": "identifier",
+                          "start": 189,
+                          "end": 193,
+                          "field": "value",
+                          "text": "path"
+                         }
+                        ]
+                       },
+                       {
+                        "type": ")",
+                        "start": 193,
+                        "end": 194,
+                        "text": ")"
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   {
+                    "type": ".",
+                    "start": 194,
+                    "end": 195,
+                    "text": "."
+                   },
+                   {
+                    "type": "await",
+                    "start": 195,
+                    "end": 200,
+                    "text": "await"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "?",
+                  "start": 200,
+                  "end": 201,
+                  "text": "?"
+                 }
+                ]
+               },
+               {
+                "type": ";",
+                "start": 201,
+                "end": 202,
+                "text": ";"
+               }
+              ]
+             },
+             {
+              "type": "let_declaration",
+              "start": 211,
+              "end": 251,
+              "children": [
+               {
+                "type": "let",
+                "start": 211,
+                "end": 214,
+                "text": "let"
+               },
+               {
+                "type": "identifier",
+                "start": 215,
+                "end": 223,
+                "field": "pattern",
+                "text": "document"
+               },
+               {
+                "type": "=",
+                "start": 224,
+                "end": 225,
+                "text": "="
+               },
+               {
+                "type": "try_expression",
+                "start": 226,
+                "end": 250,
+                "field": "value",
+                "children": [
+                 {
+                  "type": "await_expression",
+                  "start": 226,
+                  "end": 249,
+                  "children": [
+                   {
+                    "type": "call_expression",
+                    "start": 226,
+                    "end": 243,
+                    "children": [
+                     {
+                      "type": "field_expression",
+                      "start": 226,
+                      "end": 241,
+                      "field": "function",
+                      "children": [
+                       {
+                        "type": "identifier",
+                        "start": 226,
+                        "end": 234,
+                        "field": "value",
+                        "text": "response"
+                       },
+                       {
+                        "type": ".",
+                        "start": 234,
+                        "end": 235,
+                        "text": "."
+                       },
+                       {
+                        "type": "field_identifier",
+                        "start": 235,
+                        "end": 241,
+                        "field": "field",
+                        "text": "decode"
+                       }
+                      ]
+                     },
+                     {
+                      "type": "arguments",
+                      "start": 241,
+                      "end": 243,
+                      "field": "arguments",
+                      "children": [
+                       {
+                        "type": "(",
+                        "start": 241,
+                        "end": 242,
+                        "text": "("
+                       },
+                       {
+                        "type": ")",
+                        "start": 242,
+                        "end": 243,
+                        "text": ")"
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   {
+                    "type": ".",
+                    "start": 243,
+                    "end": 244,
+                    "text": "."
+                   },
+                   {
+                    "type": "await",
+                    "start": 244,
+                    "end": 249,
+                    "text": "await"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "?",
+                  "start": 249,
+                  "end": 250,
+                  "text": "?"
+                 }
+                ]
+               },
+               {
+                "type": ";",
+                "start": 250,
+                "end": 251,
+                "text": ";"
+               }
+              ]
+             },
+             {
+              "type": "expression_statement",
+              "start": 260,
+              "end": 285,
+              "children": [
+               {
+                "type": "call_expression",
+                "start": 260,
+                "end": 284,
+                "children": [
+                 {
+                  "type": "field_expression",
+                  "start": 260,
+                  "end": 274,
+                  "field": "function",
+                  "children": [
+                   {
+                    "type": "identifier",
+                    "start": 260,
+                    "end": 269,
+                    "field": "value",
+                    "text": "documents"
+                   },
+                   {
+                    "type": ".",
+                    "start": 269,
+                    "end": 270,
+                    "text": "."
+                   },
+                   {
+                    "type": "field_identifier",
+                    "start": 270,
+                    "end": 274,
+                    "field": "field",
+                    "text": "push"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "arguments",
+                  "start": 274,
+                  "end": 284,
+                  "field": "arguments",
+                  "children": [
+                   {
+                    "type": "(",
+                    "start": 274,
+                    "end": 275,
+                    "text": "("
+                   },
+                   {
+                    "type": "identifier",
+                    "start": 275,
+                    "end": 283,
+                    "text": "document"
+                   },
+                   {
+                    "type": ")",
+                    "start": 283,
+                    "end": 284,
+                    "text": ")"
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": ";",
+                "start": 284,
+                "end": 285,
+                "text": ";"
+               }
+              ]
+             },
+             {
+              "type": "}",
+              "start": 290,
+              "end": 291,
+              "text": "}"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "line_comment",
+        "start": 296,
+        "end": 358,
+        "children": [
+         {
+          "type": "//",
+          "start": 296,
+          "end": 298,
+          "text": "//"
+         }
+        ]
+       },
+       {
+        "type": "call_expression",
+        "start": 363,
+        "end": 376,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 363,
+          "end": 365,
+          "field": "function",
+          "text": "Ok"
+         },
+         {
+          "type": "arguments",
+          "start": 365,
+          "end": 376,
+          "field": "arguments",
+          "children": [
+           {
+            "type": "(",
+            "start": 365,
+            "end": 366,
+            "text": "("
+           },
+           {
+            "type": "identifier",
+            "start": 366,
+            "end": 375,
+            "text": "documents"
+           },
+           {
+            "type": ")",
+            "start": 375,
+            "end": 376,
+            "text": ")"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 377,
+        "end": 378,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

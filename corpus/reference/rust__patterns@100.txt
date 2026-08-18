@@ -1,0 +1,15 @@
+fn pattern_probe(value: Option<Result<(String, usize), Error>>) {
+    match value {
+        Some(Ok((name, size))) if size > 1024 => {
+            // A guarded destructuring arm combines several pattern nodes.
+            consume(name, size);
+        }
+        Some(Ok((name, size))) => consume(name, size),
+        Some(Err(error)) => report(error),
+        None => report_missing(),
+    }
+
+    if let Some(Ok((name, size))) = value {
+        consume(name, size);
+    }
+}

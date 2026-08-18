@@ -1,0 +1,1079 @@
+{
+ "language": "kotlin",
+ "source_file": "corpus/src/kotlin/comments.kt",
+ "source": "// File-level comment at the very top.\n\n/** Greet the caller by name. */\nfun greet(name: String) { // trailing on a signature\n    /* a block comment on its own line */\n    // Leading comment inside the body.\n    println(name) // trailing on a statement\n    // comment before the closing brace\n}\n\nval values = listOf(\n    1, // first element\n    2, // second element\n    // own-line comment inside a list\n    3,\n)\n\nfun between() {\n    val x = 1\n    // trailing comment at the end of a block\n}\n\nfun widthOfATrailingComment() {\n    // A trailing comment counts toward its line's width, so a comment can be\n    // what forces a break. The first line is exactly 100 columns and stays\n    // flat; the second is 101 and ktfmt breaks the assignment to fit it.\n    val fits = listOf(a00, a01, a02, a03, a04, a05, a06, a07, a08, a09, a10) // fits at exactly 100.\n    val forced = listOf(a00, a01, a02, a03, a04, a05, a06, a07, a08, a09, a10) // one column past 100\n}\n\n// Comment at the end of the file.\n",
+ "root": {
+  "type": "source_file",
+  "start": 0,
+  "end": 994,
+  "children": [
+   {
+    "type": "line_comment",
+    "start": 0,
+    "end": 38,
+    "text": "// File-level comment at the very top."
+   },
+   {
+    "type": "block_comment",
+    "start": 40,
+    "end": 72,
+    "text": "/** Greet the caller by name. */"
+   },
+   {
+    "type": "function_declaration",
+    "start": 73,
+    "end": 294,
+    "children": [
+     {
+      "type": "fun",
+      "start": 73,
+      "end": 76,
+      "text": "fun"
+     },
+     {
+      "type": "identifier",
+      "start": 77,
+      "end": 82,
+      "field": "name",
+      "text": "greet"
+     },
+     {
+      "type": "function_value_parameters",
+      "start": 82,
+      "end": 96,
+      "children": [
+       {
+        "type": "(",
+        "start": 82,
+        "end": 83,
+        "text": "("
+       },
+       {
+        "type": "parameter",
+        "start": 83,
+        "end": 95,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 83,
+          "end": 87,
+          "text": "name"
+         },
+         {
+          "type": ":",
+          "start": 87,
+          "end": 88,
+          "text": ":"
+         },
+         {
+          "type": "user_type",
+          "start": 89,
+          "end": 95,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 89,
+            "end": 95,
+            "text": "String"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ")",
+        "start": 95,
+        "end": 96,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "function_body",
+      "start": 97,
+      "end": 294,
+      "children": [
+       {
+        "type": "block",
+        "start": 97,
+        "end": 294,
+        "children": [
+         {
+          "type": "{",
+          "start": 97,
+          "end": 98,
+          "text": "{"
+         },
+         {
+          "type": "line_comment",
+          "start": 99,
+          "end": 125,
+          "text": "// trailing on a signature"
+         },
+         {
+          "type": "block_comment",
+          "start": 130,
+          "end": 167,
+          "text": "/* a block comment on its own line */"
+         },
+         {
+          "type": "line_comment",
+          "start": 172,
+          "end": 207,
+          "text": "// Leading comment inside the body."
+         },
+         {
+          "type": "call_expression",
+          "start": 212,
+          "end": 225,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 212,
+            "end": 219,
+            "text": "println"
+           },
+           {
+            "type": "value_arguments",
+            "start": 219,
+            "end": 225,
+            "children": [
+             {
+              "type": "(",
+              "start": 219,
+              "end": 220,
+              "text": "("
+             },
+             {
+              "type": "value_argument",
+              "start": 220,
+              "end": 224,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 220,
+                "end": 224,
+                "text": "name"
+               }
+              ]
+             },
+             {
+              "type": ")",
+              "start": 224,
+              "end": 225,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "line_comment",
+          "start": 226,
+          "end": 252,
+          "text": "// trailing on a statement"
+         },
+         {
+          "type": "line_comment",
+          "start": 257,
+          "end": 292,
+          "text": "// comment before the closing brace"
+         },
+         {
+          "type": "}",
+          "start": 293,
+          "end": 294,
+          "text": "}"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "property_declaration",
+    "start": 296,
+    "end": 412,
+    "children": [
+     {
+      "type": "val",
+      "start": 296,
+      "end": 299,
+      "text": "val"
+     },
+     {
+      "type": "variable_declaration",
+      "start": 300,
+      "end": 306,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 300,
+        "end": 306,
+        "text": "values"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 307,
+      "end": 308,
+      "text": "="
+     },
+     {
+      "type": "call_expression",
+      "start": 309,
+      "end": 412,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 309,
+        "end": 315,
+        "text": "listOf"
+       },
+       {
+        "type": "value_arguments",
+        "start": 315,
+        "end": 412,
+        "children": [
+         {
+          "type": "(",
+          "start": 315,
+          "end": 316,
+          "text": "("
+         },
+         {
+          "type": "value_argument",
+          "start": 321,
+          "end": 322,
+          "children": [
+           {
+            "type": "number_literal",
+            "start": 321,
+            "end": 322,
+            "text": "1"
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 322,
+          "end": 323,
+          "text": ","
+         },
+         {
+          "type": "line_comment",
+          "start": 324,
+          "end": 340,
+          "text": "// first element"
+         },
+         {
+          "type": "value_argument",
+          "start": 345,
+          "end": 346,
+          "children": [
+           {
+            "type": "number_literal",
+            "start": 345,
+            "end": 346,
+            "text": "2"
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 346,
+          "end": 347,
+          "text": ","
+         },
+         {
+          "type": "line_comment",
+          "start": 348,
+          "end": 365,
+          "text": "// second element"
+         },
+         {
+          "type": "line_comment",
+          "start": 370,
+          "end": 403,
+          "text": "// own-line comment inside a list"
+         },
+         {
+          "type": "value_argument",
+          "start": 408,
+          "end": 409,
+          "children": [
+           {
+            "type": "number_literal",
+            "start": 408,
+            "end": 409,
+            "text": "3"
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 409,
+          "end": 410,
+          "text": ","
+         },
+         {
+          "type": ")",
+          "start": 411,
+          "end": 412,
+          "text": ")"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "function_declaration",
+    "start": 414,
+    "end": 491,
+    "children": [
+     {
+      "type": "fun",
+      "start": 414,
+      "end": 417,
+      "text": "fun"
+     },
+     {
+      "type": "identifier",
+      "start": 418,
+      "end": 425,
+      "field": "name",
+      "text": "between"
+     },
+     {
+      "type": "function_value_parameters",
+      "start": 425,
+      "end": 427,
+      "children": [
+       {
+        "type": "(",
+        "start": 425,
+        "end": 426,
+        "text": "("
+       },
+       {
+        "type": ")",
+        "start": 426,
+        "end": 427,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "function_body",
+      "start": 428,
+      "end": 491,
+      "children": [
+       {
+        "type": "block",
+        "start": 428,
+        "end": 491,
+        "children": [
+         {
+          "type": "{",
+          "start": 428,
+          "end": 429,
+          "text": "{"
+         },
+         {
+          "type": "property_declaration",
+          "start": 434,
+          "end": 443,
+          "children": [
+           {
+            "type": "val",
+            "start": 434,
+            "end": 437,
+            "text": "val"
+           },
+           {
+            "type": "variable_declaration",
+            "start": 438,
+            "end": 439,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 438,
+              "end": 439,
+              "text": "x"
+             }
+            ]
+           },
+           {
+            "type": "=",
+            "start": 440,
+            "end": 441,
+            "text": "="
+           },
+           {
+            "type": "number_literal",
+            "start": 442,
+            "end": 443,
+            "text": "1"
+           }
+          ]
+         },
+         {
+          "type": "line_comment",
+          "start": 448,
+          "end": 489,
+          "text": "// trailing comment at the end of a block"
+         },
+         {
+          "type": "}",
+          "start": 490,
+          "end": 491,
+          "text": "}"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "function_declaration",
+    "start": 493,
+    "end": 957,
+    "children": [
+     {
+      "type": "fun",
+      "start": 493,
+      "end": 496,
+      "text": "fun"
+     },
+     {
+      "type": "identifier",
+      "start": 497,
+      "end": 520,
+      "field": "name",
+      "text": "widthOfATrailingComment"
+     },
+     {
+      "type": "function_value_parameters",
+      "start": 520,
+      "end": 522,
+      "children": [
+       {
+        "type": "(",
+        "start": 520,
+        "end": 521,
+        "text": "("
+       },
+       {
+        "type": ")",
+        "start": 521,
+        "end": 522,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "function_body",
+      "start": 523,
+      "end": 957,
+      "children": [
+       {
+        "type": "block",
+        "start": 523,
+        "end": 957,
+        "children": [
+         {
+          "type": "{",
+          "start": 523,
+          "end": 524,
+          "text": "{"
+         },
+         {
+          "type": "line_comment",
+          "start": 529,
+          "end": 602,
+          "text": "// A trailing comment counts toward its line's width, so a comment can be"
+         },
+         {
+          "type": "line_comment",
+          "start": 607,
+          "end": 678,
+          "text": "// what forces a break. The first line is exactly 100 columns and stays"
+         },
+         {
+          "type": "line_comment",
+          "start": 683,
+          "end": 752,
+          "text": "// flat; the second is 101 and ktfmt breaks the assignment to fit it."
+         },
+         {
+          "type": "property_declaration",
+          "start": 757,
+          "end": 829,
+          "children": [
+           {
+            "type": "val",
+            "start": 757,
+            "end": 760,
+            "text": "val"
+           },
+           {
+            "type": "variable_declaration",
+            "start": 761,
+            "end": 765,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 761,
+              "end": 765,
+              "text": "fits"
+             }
+            ]
+           },
+           {
+            "type": "=",
+            "start": 766,
+            "end": 767,
+            "text": "="
+           },
+           {
+            "type": "call_expression",
+            "start": 768,
+            "end": 829,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 768,
+              "end": 774,
+              "text": "listOf"
+             },
+             {
+              "type": "value_arguments",
+              "start": 774,
+              "end": 829,
+              "children": [
+               {
+                "type": "(",
+                "start": 774,
+                "end": 775,
+                "text": "("
+               },
+               {
+                "type": "value_argument",
+                "start": 775,
+                "end": 778,
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 775,
+                  "end": 778,
+                  "text": "a00"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 778,
+                "end": 779,
+                "text": ","
+               },
+               {
+                "type": "value_argument",
+                "start": 780,
+                "end": 783,
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 780,
+                  "end": 783,
+                  "text": "a01"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 783,
+                "end": 784,
+                "text": ","
+               },
+               {
+                "type": "value_argument",
+                "start": 785,
+                "end": 788,
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 785,
+                  "end": 788,
+                  "text": "a02"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 788,
+                "end": 789,
+                "text": ","
+               },
+               {
+                "type": "value_argument",
+                "start": 790,
+                "end": 793,
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 790,
+                  "end": 793,
+                  "text": "a03"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 793,
+                "end": 794,
+                "text": ","
+               },
+               {
+                "type": "value_argument",
+                "start": 795,
+                "end": 798,
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 795,
+                  "end": 798,
+                  "text": "a04"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 798,
+                "end": 799,
+                "text": ","
+               },
+               {
+                "type": "value_argument",
+                "start": 800,
+                "end": 803,
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 800,
+                  "end": 803,
+                  "text": "a05"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 803,
+                "end": 804,
+                "text": ","
+               },
+               {
+                "type": "value_argument",
+                "start": 805,
+                "end": 808,
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 805,
+                  "end": 808,
+                  "text": "a06"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 808,
+                "end": 809,
+                "text": ","
+               },
+               {
+                "type": "value_argument",
+                "start": 810,
+                "end": 813,
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 810,
+                  "end": 813,
+                  "text": "a07"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 813,
+                "end": 814,
+                "text": ","
+               },
+               {
+                "type": "value_argument",
+                "start": 815,
+                "end": 818,
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 815,
+                  "end": 818,
+                  "text": "a08"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 818,
+                "end": 819,
+                "text": ","
+               },
+               {
+                "type": "value_argument",
+                "start": 820,
+                "end": 823,
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 820,
+                  "end": 823,
+                  "text": "a09"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 823,
+                "end": 824,
+                "text": ","
+               },
+               {
+                "type": "value_argument",
+                "start": 825,
+                "end": 828,
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 825,
+                  "end": 828,
+                  "text": "a10"
+                 }
+                ]
+               },
+               {
+                "type": ")",
+                "start": 828,
+                "end": 829,
+                "text": ")"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "line_comment",
+          "start": 830,
+          "end": 853,
+          "text": "// fits at exactly 100."
+         },
+         {
+          "type": "property_declaration",
+          "start": 858,
+          "end": 932,
+          "children": [
+           {
+            "type": "val",
+            "start": 858,
+            "end": 861,
+            "text": "val"
+           },
+           {
+            "type": "variable_declaration",
+            "start": 862,
+            "end": 868,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 862,
+              "end": 868,
+              "text": "forced"
+             }
+            ]
+           },
+           {
+            "type": "=",
+            "start": 869,
+            "end": 870,
+            "text": "="
+           },
+           {
+            "type": "call_expression",
+            "start": 871,
+            "end": 932,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 871,
+              "end": 877,
+              "text": "listOf"
+             },
+             {
+              "type": "value_arguments",
+              "start": 877,
+              "end": 932,
+              "children": [
+               {
+                "type": "(",
+                "start": 877,
+                "end": 878,
+                "text": "("
+               },
+               {
+                "type": "value_argument",
+                "start": 878,
+                "end": 881,
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 878,
+                  "end": 881,
+                  "text": "a00"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 881,
+                "end": 882,
+                "text": ","
+               },
+               {
+                "type": "value_argument",
+                "start": 883,
+                "end": 886,
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 883,
+                  "end": 886,
+                  "text": "a01"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 886,
+                "end": 887,
+                "text": ","
+               },
+               {
+                "type": "value_argument",
+                "start": 888,
+                "end": 891,
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 888,
+                  "end": 891,
+                  "text": "a02"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 891,
+                "end": 892,
+                "text": ","
+               },
+               {
+                "type": "value_argument",
+                "start": 893,
+                "end": 896,
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 893,
+                  "end": 896,
+                  "text": "a03"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 896,
+                "end": 897,
+                "text": ","
+               },
+               {
+                "type": "value_argument",
+                "start": 898,
+                "end": 901,
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 898,
+                  "end": 901,
+                  "text": "a04"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 901,
+                "end": 902,
+                "text": ","
+               },
+               {
+                "type": "value_argument",
+                "start": 903,
+                "end": 906,
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 903,
+                  "end": 906,
+                  "text": "a05"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 906,
+                "end": 907,
+                "text": ","
+               },
+               {
+                "type": "value_argument",
+                "start": 908,
+                "end": 911,
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 908,
+                  "end": 911,
+                  "text": "a06"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 911,
+                "end": 912,
+                "text": ","
+               },
+               {
+                "type": "value_argument",
+                "start": 913,
+                "end": 916,
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 913,
+                  "end": 916,
+                  "text": "a07"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 916,
+                "end": 917,
+                "text": ","
+               },
+               {
+                "type": "value_argument",
+                "start": 918,
+                "end": 921,
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 918,
+                  "end": 921,
+                  "text": "a08"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 921,
+                "end": 922,
+                "text": ","
+               },
+               {
+                "type": "value_argument",
+                "start": 923,
+                "end": 926,
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 923,
+                  "end": 926,
+                  "text": "a09"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 926,
+                "end": 927,
+                "text": ","
+               },
+               {
+                "type": "value_argument",
+                "start": 928,
+                "end": 931,
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 928,
+                  "end": 931,
+                  "text": "a10"
+                 }
+                ]
+               },
+               {
+                "type": ")",
+                "start": 931,
+                "end": 932,
+                "text": ")"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "line_comment",
+          "start": 933,
+          "end": 955,
+          "text": "// one column past 100"
+         },
+         {
+          "type": "}",
+          "start": 956,
+          "end": 957,
+          "text": "}"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "line_comment",
+    "start": 959,
+    "end": 993,
+    "text": "// Comment at the end of the file."
+   }
+  ]
+ }
+}

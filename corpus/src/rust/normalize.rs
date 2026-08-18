@@ -1,0 +1,9 @@
+fn normalize_spacing(){
+    let values = [ 1 ,2,3,4 ]; // uneven padding before a trailing comment
+    let empty_array = [ ];
+    let empty_call = collect( );
+    let empty_block = { };
+    let empty_tuple = ( );
+    let pairs = [ (1,2) ,(3,4),(5,6) ];
+    if values.len( )>0{consume(empty_array,empty_call,empty_block,empty_tuple,pairs);}
+}

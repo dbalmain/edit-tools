@@ -1,0 +1,2622 @@
+{
+ "language": "rust",
+ "source_file": "corpus/src/rust/widths.rs",
+ "source": "// rustfmt breaks a construct that exceeds its own width even when the line has\n// room to spare (FINDINGS 17). Every construct below fits inside max_width=100\n// flat and is broken anyway. `nesting.rs` shows this incidentally for struct\n// literals; this file probes the three thresholds that decide most real Rust --\n// struct_lit_width 18, chain_width 60, fn_call_width 60 -- plus array_width 60.\n//\n// The comment alignment at the end is the other half: rustfmt aligns trailing\n// comments across a run of list items and nothing else (FINDINGS 18).\n\nfn sub_widths(items: &[i32]) {\n    // Struct-literal body is 36 columns, over struct_lit_width 18; line is 65.\n    let branch = Branch { leaves: [1, 2, 3, 4], label: \"north\" };\n\n    // Method chain is 61 columns, over chain_width 60; the whole line is 79.\n    let picked = items.iter().map(double).filter(positive).collect::<Vec<_>>();\n\n    // Call arguments are 64 columns, over fn_call_width 60; the line is 91.\n    let joined = combine(first_argument, second_argument, third_argument, fourth_argument);\n\n    // Array elements are 63 columns, over array_width 60; the line is 82.\n    let names = [alpha, bravo, charlie, delta, echo, foxtrot, golf, hotel, india];\n\n    consume(branch, picked, joined, names);\n}\n\nfn under_every_threshold(items: &[i32]) {\n    // The same four shapes, each inside its own threshold, so they stay flat.\n    let leaf = Leaf { id: 1 };\n    let some = items.iter().map(double).sum::<i32>();\n    let short = combine(first, second, third);\n    let few = [alpha, bravo, charlie];\n    consume(leaf, some, short, few);\n}\n\nstruct Config {\n    retries: u32, // bounded by the caller\n    timeout_ms: u64, // milliseconds, not seconds\n    label: &'static str, // shown in logs\n}\n\n// The alignment run is width-dependent, which is the part a fixed rule misses.\n// At max_width=100 all three arms align. At 60 the third drops out, because\n// padding it would overrun, and the first two align without it -- so the run\n// splits rather than collapsing. The arm with no comment ends the run at both\n// widths.\nfn aligned_arms(code: u32) -> &'static str {\n    match code {\n        1 => \"one\", // aligns at both widths\n        22 => \"twenty-two\", // aligns at both widths\n        333 => \"three-thirty-three\", // joins the run at 100, drops out at 60\n        _ => \"other\",\n    }\n}\n",
+ "root": {
+  "type": "source_file",
+  "start": 0,
+  "end": 2346,
+  "children": [
+   {
+    "type": "line_comment",
+    "start": 0,
+    "end": 79,
+    "children": [
+     {
+      "type": "//",
+      "start": 0,
+      "end": 2,
+      "text": "//"
+     }
+    ]
+   },
+   {
+    "type": "line_comment",
+    "start": 80,
+    "end": 159,
+    "children": [
+     {
+      "type": "//",
+      "start": 80,
+      "end": 82,
+      "text": "//"
+     }
+    ]
+   },
+   {
+    "type": "line_comment",
+    "start": 160,
+    "end": 237,
+    "children": [
+     {
+      "type": "//",
+      "start": 160,
+      "end": 162,
+      "text": "//"
+     }
+    ]
+   },
+   {
+    "type": "line_comment",
+    "start": 238,
+    "end": 318,
+    "children": [
+     {
+      "type": "//",
+      "start": 238,
+      "end": 240,
+      "text": "//"
+     }
+    ]
+   },
+   {
+    "type": "line_comment",
+    "start": 319,
+    "end": 399,
+    "children": [
+     {
+      "type": "//",
+      "start": 319,
+      "end": 321,
+      "text": "//"
+     }
+    ]
+   },
+   {
+    "type": "line_comment",
+    "start": 400,
+    "end": 402,
+    "children": [
+     {
+      "type": "//",
+      "start": 400,
+      "end": 402,
+      "text": "//"
+     }
+    ]
+   },
+   {
+    "type": "line_comment",
+    "start": 403,
+    "end": 481,
+    "children": [
+     {
+      "type": "//",
+      "start": 403,
+      "end": 405,
+      "text": "//"
+     }
+    ]
+   },
+   {
+    "type": "line_comment",
+    "start": 482,
+    "end": 552,
+    "children": [
+     {
+      "type": "//",
+      "start": 482,
+      "end": 484,
+      "text": "//"
+     }
+    ]
+   },
+   {
+    "type": "function_item",
+    "start": 554,
+    "end": 1265,
+    "children": [
+     {
+      "type": "fn",
+      "start": 554,
+      "end": 556,
+      "text": "fn"
+     },
+     {
+      "type": "identifier",
+      "start": 557,
+      "end": 567,
+      "field": "name",
+      "text": "sub_widths"
+     },
+     {
+      "type": "parameters",
+      "start": 567,
+      "end": 582,
+      "field": "parameters",
+      "children": [
+       {
+        "type": "(",
+        "start": 567,
+        "end": 568,
+        "text": "("
+       },
+       {
+        "type": "parameter",
+        "start": 568,
+        "end": 581,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 568,
+          "end": 573,
+          "field": "pattern",
+          "text": "items"
+         },
+         {
+          "type": ":",
+          "start": 573,
+          "end": 574,
+          "text": ":"
+         },
+         {
+          "type": "reference_type",
+          "start": 575,
+          "end": 581,
+          "field": "type",
+          "children": [
+           {
+            "type": "&",
+            "start": 575,
+            "end": 576,
+            "text": "&"
+           },
+           {
+            "type": "array_type",
+            "start": 576,
+            "end": 581,
+            "field": "type",
+            "children": [
+             {
+              "type": "[",
+              "start": 576,
+              "end": 577,
+              "text": "["
+             },
+             {
+              "type": "primitive_type",
+              "start": 577,
+              "end": 580,
+              "field": "element",
+              "text": "i32"
+             },
+             {
+              "type": "]",
+              "start": 580,
+              "end": 581,
+              "text": "]"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ")",
+        "start": 581,
+        "end": 582,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "block",
+      "start": 583,
+      "end": 1265,
+      "field": "body",
+      "children": [
+       {
+        "type": "{",
+        "start": 583,
+        "end": 584,
+        "text": "{"
+       },
+       {
+        "type": "line_comment",
+        "start": 589,
+        "end": 664,
+        "children": [
+         {
+          "type": "//",
+          "start": 589,
+          "end": 591,
+          "text": "//"
+         }
+        ]
+       },
+       {
+        "type": "let_declaration",
+        "start": 669,
+        "end": 730,
+        "children": [
+         {
+          "type": "let",
+          "start": 669,
+          "end": 672,
+          "text": "let"
+         },
+         {
+          "type": "identifier",
+          "start": 673,
+          "end": 679,
+          "field": "pattern",
+          "text": "branch"
+         },
+         {
+          "type": "=",
+          "start": 680,
+          "end": 681,
+          "text": "="
+         },
+         {
+          "type": "struct_expression",
+          "start": 682,
+          "end": 729,
+          "field": "value",
+          "children": [
+           {
+            "type": "type_identifier",
+            "start": 682,
+            "end": 688,
+            "field": "name",
+            "text": "Branch"
+           },
+           {
+            "type": "field_initializer_list",
+            "start": 689,
+            "end": 729,
+            "field": "body",
+            "children": [
+             {
+              "type": "{",
+              "start": 689,
+              "end": 690,
+              "text": "{"
+             },
+             {
+              "type": "field_initializer",
+              "start": 691,
+              "end": 711,
+              "children": [
+               {
+                "type": "field_identifier",
+                "start": 691,
+                "end": 697,
+                "field": "field",
+                "text": "leaves"
+               },
+               {
+                "type": ":",
+                "start": 697,
+                "end": 698,
+                "text": ":"
+               },
+               {
+                "type": "array_expression",
+                "start": 699,
+                "end": 711,
+                "field": "value",
+                "children": [
+                 {
+                  "type": "[",
+                  "start": 699,
+                  "end": 700,
+                  "text": "["
+                 },
+                 {
+                  "type": "integer_literal",
+                  "start": 700,
+                  "end": 701,
+                  "text": "1"
+                 },
+                 {
+                  "type": ",",
+                  "start": 701,
+                  "end": 702,
+                  "text": ","
+                 },
+                 {
+                  "type": "integer_literal",
+                  "start": 703,
+                  "end": 704,
+                  "text": "2"
+                 },
+                 {
+                  "type": ",",
+                  "start": 704,
+                  "end": 705,
+                  "text": ","
+                 },
+                 {
+                  "type": "integer_literal",
+                  "start": 706,
+                  "end": 707,
+                  "text": "3"
+                 },
+                 {
+                  "type": ",",
+                  "start": 707,
+                  "end": 708,
+                  "text": ","
+                 },
+                 {
+                  "type": "integer_literal",
+                  "start": 709,
+                  "end": 710,
+                  "text": "4"
+                 },
+                 {
+                  "type": "]",
+                  "start": 710,
+                  "end": 711,
+                  "text": "]"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 711,
+              "end": 712,
+              "text": ","
+             },
+             {
+              "type": "field_initializer",
+              "start": 713,
+              "end": 727,
+              "children": [
+               {
+                "type": "field_identifier",
+                "start": 713,
+                "end": 718,
+                "field": "field",
+                "text": "label"
+               },
+               {
+                "type": ":",
+                "start": 718,
+                "end": 719,
+                "text": ":"
+               },
+               {
+                "type": "string_literal",
+                "start": 720,
+                "end": 727,
+                "field": "value",
+                "children": [
+                 {
+                  "type": "\"",
+                  "start": 720,
+                  "end": 721,
+                  "text": "\""
+                 },
+                 {
+                  "type": "string_content",
+                  "start": 721,
+                  "end": 726,
+                  "text": "north"
+                 },
+                 {
+                  "type": "\"",
+                  "start": 726,
+                  "end": 727,
+                  "text": "\""
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": "}",
+              "start": 728,
+              "end": 729,
+              "text": "}"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 729,
+          "end": 730,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "line_comment",
+        "start": 736,
+        "end": 809,
+        "children": [
+         {
+          "type": "//",
+          "start": 736,
+          "end": 738,
+          "text": "//"
+         }
+        ]
+       },
+       {
+        "type": "let_declaration",
+        "start": 814,
+        "end": 889,
+        "children": [
+         {
+          "type": "let",
+          "start": 814,
+          "end": 817,
+          "text": "let"
+         },
+         {
+          "type": "identifier",
+          "start": 818,
+          "end": 824,
+          "field": "pattern",
+          "text": "picked"
+         },
+         {
+          "type": "=",
+          "start": 825,
+          "end": 826,
+          "text": "="
+         },
+         {
+          "type": "call_expression",
+          "start": 827,
+          "end": 888,
+          "field": "value",
+          "children": [
+           {
+            "type": "generic_function",
+            "start": 827,
+            "end": 886,
+            "field": "function",
+            "children": [
+             {
+              "type": "field_expression",
+              "start": 827,
+              "end": 876,
+              "field": "function",
+              "children": [
+               {
+                "type": "call_expression",
+                "start": 827,
+                "end": 868,
+                "field": "value",
+                "children": [
+                 {
+                  "type": "field_expression",
+                  "start": 827,
+                  "end": 858,
+                  "field": "function",
+                  "children": [
+                   {
+                    "type": "call_expression",
+                    "start": 827,
+                    "end": 851,
+                    "field": "value",
+                    "children": [
+                     {
+                      "type": "field_expression",
+                      "start": 827,
+                      "end": 843,
+                      "field": "function",
+                      "children": [
+                       {
+                        "type": "call_expression",
+                        "start": 827,
+                        "end": 839,
+                        "field": "value",
+                        "children": [
+                         {
+                          "type": "field_expression",
+                          "start": 827,
+                          "end": 837,
+                          "field": "function",
+                          "children": [
+                           {
+                            "type": "identifier",
+                            "start": 827,
+                            "end": 832,
+                            "field": "value",
+                            "text": "items"
+                           },
+                           {
+                            "type": ".",
+                            "start": 832,
+                            "end": 833,
+                            "text": "."
+                           },
+                           {
+                            "type": "field_identifier",
+                            "start": 833,
+                            "end": 837,
+                            "field": "field",
+                            "text": "iter"
+                           }
+                          ]
+                         },
+                         {
+                          "type": "arguments",
+                          "start": 837,
+                          "end": 839,
+                          "field": "arguments",
+                          "children": [
+                           {
+                            "type": "(",
+                            "start": 837,
+                            "end": 838,
+                            "text": "("
+                           },
+                           {
+                            "type": ")",
+                            "start": 838,
+                            "end": 839,
+                            "text": ")"
+                           }
+                          ]
+                         }
+                        ]
+                       },
+                       {
+                        "type": ".",
+                        "start": 839,
+                        "end": 840,
+                        "text": "."
+                       },
+                       {
+                        "type": "field_identifier",
+                        "start": 840,
+                        "end": 843,
+                        "field": "field",
+                        "text": "map"
+                       }
+                      ]
+                     },
+                     {
+                      "type": "arguments",
+                      "start": 843,
+                      "end": 851,
+                      "field": "arguments",
+                      "children": [
+                       {
+                        "type": "(",
+                        "start": 843,
+                        "end": 844,
+                        "text": "("
+                       },
+                       {
+                        "type": "identifier",
+                        "start": 844,
+                        "end": 850,
+                        "text": "double"
+                       },
+                       {
+                        "type": ")",
+                        "start": 850,
+                        "end": 851,
+                        "text": ")"
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   {
+                    "type": ".",
+                    "start": 851,
+                    "end": 852,
+                    "text": "."
+                   },
+                   {
+                    "type": "field_identifier",
+                    "start": 852,
+                    "end": 858,
+                    "field": "field",
+                    "text": "filter"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "arguments",
+                  "start": 858,
+                  "end": 868,
+                  "field": "arguments",
+                  "children": [
+                   {
+                    "type": "(",
+                    "start": 858,
+                    "end": 859,
+                    "text": "("
+                   },
+                   {
+                    "type": "identifier",
+                    "start": 859,
+                    "end": 867,
+                    "text": "positive"
+                   },
+                   {
+                    "type": ")",
+                    "start": 867,
+                    "end": 868,
+                    "text": ")"
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": ".",
+                "start": 868,
+                "end": 869,
+                "text": "."
+               },
+               {
+                "type": "field_identifier",
+                "start": 869,
+                "end": 876,
+                "field": "field",
+                "text": "collect"
+               }
+              ]
+             },
+             {
+              "type": "::",
+              "start": 876,
+              "end": 878,
+              "text": "::"
+             },
+             {
+              "type": "type_arguments",
+              "start": 878,
+              "end": 886,
+              "field": "type_arguments",
+              "children": [
+               {
+                "type": "<",
+                "start": 878,
+                "end": 879,
+                "text": "<"
+               },
+               {
+                "type": "generic_type",
+                "start": 879,
+                "end": 885,
+                "children": [
+                 {
+                  "type": "type_identifier",
+                  "start": 879,
+                  "end": 882,
+                  "field": "type",
+                  "text": "Vec"
+                 },
+                 {
+                  "type": "type_arguments",
+                  "start": 882,
+                  "end": 885,
+                  "field": "type_arguments",
+                  "children": [
+                   {
+                    "type": "<",
+                    "start": 882,
+                    "end": 883,
+                    "text": "<"
+                   },
+                   {
+                    "type": "type_identifier",
+                    "start": 883,
+                    "end": 884,
+                    "text": "_"
+                   },
+                   {
+                    "type": ">",
+                    "start": 884,
+                    "end": 885,
+                    "text": ">"
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": ">",
+                "start": 885,
+                "end": 886,
+                "text": ">"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "arguments",
+            "start": 886,
+            "end": 888,
+            "field": "arguments",
+            "children": [
+             {
+              "type": "(",
+              "start": 886,
+              "end": 887,
+              "text": "("
+             },
+             {
+              "type": ")",
+              "start": 887,
+              "end": 888,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 888,
+          "end": 889,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "line_comment",
+        "start": 895,
+        "end": 967,
+        "children": [
+         {
+          "type": "//",
+          "start": 895,
+          "end": 897,
+          "text": "//"
+         }
+        ]
+       },
+       {
+        "type": "let_declaration",
+        "start": 972,
+        "end": 1059,
+        "children": [
+         {
+          "type": "let",
+          "start": 972,
+          "end": 975,
+          "text": "let"
+         },
+         {
+          "type": "identifier",
+          "start": 976,
+          "end": 982,
+          "field": "pattern",
+          "text": "joined"
+         },
+         {
+          "type": "=",
+          "start": 983,
+          "end": 984,
+          "text": "="
+         },
+         {
+          "type": "call_expression",
+          "start": 985,
+          "end": 1058,
+          "field": "value",
+          "children": [
+           {
+            "type": "identifier",
+            "start": 985,
+            "end": 992,
+            "field": "function",
+            "text": "combine"
+           },
+           {
+            "type": "arguments",
+            "start": 992,
+            "end": 1058,
+            "field": "arguments",
+            "children": [
+             {
+              "type": "(",
+              "start": 992,
+              "end": 993,
+              "text": "("
+             },
+             {
+              "type": "identifier",
+              "start": 993,
+              "end": 1007,
+              "text": "first_argument"
+             },
+             {
+              "type": ",",
+              "start": 1007,
+              "end": 1008,
+              "text": ","
+             },
+             {
+              "type": "identifier",
+              "start": 1009,
+              "end": 1024,
+              "text": "second_argument"
+             },
+             {
+              "type": ",",
+              "start": 1024,
+              "end": 1025,
+              "text": ","
+             },
+             {
+              "type": "identifier",
+              "start": 1026,
+              "end": 1040,
+              "text": "third_argument"
+             },
+             {
+              "type": ",",
+              "start": 1040,
+              "end": 1041,
+              "text": ","
+             },
+             {
+              "type": "identifier",
+              "start": 1042,
+              "end": 1057,
+              "text": "fourth_argument"
+             },
+             {
+              "type": ")",
+              "start": 1057,
+              "end": 1058,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 1058,
+          "end": 1059,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "line_comment",
+        "start": 1065,
+        "end": 1135,
+        "children": [
+         {
+          "type": "//",
+          "start": 1065,
+          "end": 1067,
+          "text": "//"
+         }
+        ]
+       },
+       {
+        "type": "let_declaration",
+        "start": 1140,
+        "end": 1218,
+        "children": [
+         {
+          "type": "let",
+          "start": 1140,
+          "end": 1143,
+          "text": "let"
+         },
+         {
+          "type": "identifier",
+          "start": 1144,
+          "end": 1149,
+          "field": "pattern",
+          "text": "names"
+         },
+         {
+          "type": "=",
+          "start": 1150,
+          "end": 1151,
+          "text": "="
+         },
+         {
+          "type": "array_expression",
+          "start": 1152,
+          "end": 1217,
+          "field": "value",
+          "children": [
+           {
+            "type": "[",
+            "start": 1152,
+            "end": 1153,
+            "text": "["
+           },
+           {
+            "type": "identifier",
+            "start": 1153,
+            "end": 1158,
+            "text": "alpha"
+           },
+           {
+            "type": ",",
+            "start": 1158,
+            "end": 1159,
+            "text": ","
+           },
+           {
+            "type": "identifier",
+            "start": 1160,
+            "end": 1165,
+            "text": "bravo"
+           },
+           {
+            "type": ",",
+            "start": 1165,
+            "end": 1166,
+            "text": ","
+           },
+           {
+            "type": "identifier",
+            "start": 1167,
+            "end": 1174,
+            "text": "charlie"
+           },
+           {
+            "type": ",",
+            "start": 1174,
+            "end": 1175,
+            "text": ","
+           },
+           {
+            "type": "identifier",
+            "start": 1176,
+            "end": 1181,
+            "text": "delta"
+           },
+           {
+            "type": ",",
+            "start": 1181,
+            "end": 1182,
+            "text": ","
+           },
+           {
+            "type": "identifier",
+            "start": 1183,
+            "end": 1187,
+            "text": "echo"
+           },
+           {
+            "type": ",",
+            "start": 1187,
+            "end": 1188,
+            "text": ","
+           },
+           {
+            "type": "identifier",
+            "start": 1189,
+            "end": 1196,
+            "text": "foxtrot"
+           },
+           {
+            "type": ",",
+            "start": 1196,
+            "end": 1197,
+            "text": ","
+           },
+           {
+            "type": "identifier",
+            "start": 1198,
+            "end": 1202,
+            "text": "golf"
+           },
+           {
+            "type": ",",
+            "start": 1202,
+            "end": 1203,
+            "text": ","
+           },
+           {
+            "type": "identifier",
+            "start": 1204,
+            "end": 1209,
+            "text": "hotel"
+           },
+           {
+            "type": ",",
+            "start": 1209,
+            "end": 1210,
+            "text": ","
+           },
+           {
+            "type": "identifier",
+            "start": 1211,
+            "end": 1216,
+            "text": "india"
+           },
+           {
+            "type": "]",
+            "start": 1216,
+            "end": 1217,
+            "text": "]"
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 1217,
+          "end": 1218,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "expression_statement",
+        "start": 1224,
+        "end": 1263,
+        "children": [
+         {
+          "type": "call_expression",
+          "start": 1224,
+          "end": 1262,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 1224,
+            "end": 1231,
+            "field": "function",
+            "text": "consume"
+           },
+           {
+            "type": "arguments",
+            "start": 1231,
+            "end": 1262,
+            "field": "arguments",
+            "children": [
+             {
+              "type": "(",
+              "start": 1231,
+              "end": 1232,
+              "text": "("
+             },
+             {
+              "type": "identifier",
+              "start": 1232,
+              "end": 1238,
+              "text": "branch"
+             },
+             {
+              "type": ",",
+              "start": 1238,
+              "end": 1239,
+              "text": ","
+             },
+             {
+              "type": "identifier",
+              "start": 1240,
+              "end": 1246,
+              "text": "picked"
+             },
+             {
+              "type": ",",
+              "start": 1246,
+              "end": 1247,
+              "text": ","
+             },
+             {
+              "type": "identifier",
+              "start": 1248,
+              "end": 1254,
+              "text": "joined"
+             },
+             {
+              "type": ",",
+              "start": 1254,
+              "end": 1255,
+              "text": ","
+             },
+             {
+              "type": "identifier",
+              "start": 1256,
+              "end": 1261,
+              "text": "names"
+             },
+             {
+              "type": ")",
+              "start": 1261,
+              "end": 1262,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 1262,
+          "end": 1263,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 1264,
+        "end": 1265,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "function_item",
+    "start": 1267,
+    "end": 1597,
+    "children": [
+     {
+      "type": "fn",
+      "start": 1267,
+      "end": 1269,
+      "text": "fn"
+     },
+     {
+      "type": "identifier",
+      "start": 1270,
+      "end": 1291,
+      "field": "name",
+      "text": "under_every_threshold"
+     },
+     {
+      "type": "parameters",
+      "start": 1291,
+      "end": 1306,
+      "field": "parameters",
+      "children": [
+       {
+        "type": "(",
+        "start": 1291,
+        "end": 1292,
+        "text": "("
+       },
+       {
+        "type": "parameter",
+        "start": 1292,
+        "end": 1305,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 1292,
+          "end": 1297,
+          "field": "pattern",
+          "text": "items"
+         },
+         {
+          "type": ":",
+          "start": 1297,
+          "end": 1298,
+          "text": ":"
+         },
+         {
+          "type": "reference_type",
+          "start": 1299,
+          "end": 1305,
+          "field": "type",
+          "children": [
+           {
+            "type": "&",
+            "start": 1299,
+            "end": 1300,
+            "text": "&"
+           },
+           {
+            "type": "array_type",
+            "start": 1300,
+            "end": 1305,
+            "field": "type",
+            "children": [
+             {
+              "type": "[",
+              "start": 1300,
+              "end": 1301,
+              "text": "["
+             },
+             {
+              "type": "primitive_type",
+              "start": 1301,
+              "end": 1304,
+              "field": "element",
+              "text": "i32"
+             },
+             {
+              "type": "]",
+              "start": 1304,
+              "end": 1305,
+              "text": "]"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ")",
+        "start": 1305,
+        "end": 1306,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "block",
+      "start": 1307,
+      "end": 1597,
+      "field": "body",
+      "children": [
+       {
+        "type": "{",
+        "start": 1307,
+        "end": 1308,
+        "text": "{"
+       },
+       {
+        "type": "line_comment",
+        "start": 1313,
+        "end": 1387,
+        "children": [
+         {
+          "type": "//",
+          "start": 1313,
+          "end": 1315,
+          "text": "//"
+         }
+        ]
+       },
+       {
+        "type": "let_declaration",
+        "start": 1392,
+        "end": 1418,
+        "children": [
+         {
+          "type": "let",
+          "start": 1392,
+          "end": 1395,
+          "text": "let"
+         },
+         {
+          "type": "identifier",
+          "start": 1396,
+          "end": 1400,
+          "field": "pattern",
+          "text": "leaf"
+         },
+         {
+          "type": "=",
+          "start": 1401,
+          "end": 1402,
+          "text": "="
+         },
+         {
+          "type": "struct_expression",
+          "start": 1403,
+          "end": 1417,
+          "field": "value",
+          "children": [
+           {
+            "type": "type_identifier",
+            "start": 1403,
+            "end": 1407,
+            "field": "name",
+            "text": "Leaf"
+           },
+           {
+            "type": "field_initializer_list",
+            "start": 1408,
+            "end": 1417,
+            "field": "body",
+            "children": [
+             {
+              "type": "{",
+              "start": 1408,
+              "end": 1409,
+              "text": "{"
+             },
+             {
+              "type": "field_initializer",
+              "start": 1410,
+              "end": 1415,
+              "children": [
+               {
+                "type": "field_identifier",
+                "start": 1410,
+                "end": 1412,
+                "field": "field",
+                "text": "id"
+               },
+               {
+                "type": ":",
+                "start": 1412,
+                "end": 1413,
+                "text": ":"
+               },
+               {
+                "type": "integer_literal",
+                "start": 1414,
+                "end": 1415,
+                "field": "value",
+                "text": "1"
+               }
+              ]
+             },
+             {
+              "type": "}",
+              "start": 1416,
+              "end": 1417,
+              "text": "}"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 1417,
+          "end": 1418,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "let_declaration",
+        "start": 1423,
+        "end": 1472,
+        "children": [
+         {
+          "type": "let",
+          "start": 1423,
+          "end": 1426,
+          "text": "let"
+         },
+         {
+          "type": "identifier",
+          "start": 1427,
+          "end": 1431,
+          "field": "pattern",
+          "text": "some"
+         },
+         {
+          "type": "=",
+          "start": 1432,
+          "end": 1433,
+          "text": "="
+         },
+         {
+          "type": "call_expression",
+          "start": 1434,
+          "end": 1471,
+          "field": "value",
+          "children": [
+           {
+            "type": "generic_function",
+            "start": 1434,
+            "end": 1469,
+            "field": "function",
+            "children": [
+             {
+              "type": "field_expression",
+              "start": 1434,
+              "end": 1462,
+              "field": "function",
+              "children": [
+               {
+                "type": "call_expression",
+                "start": 1434,
+                "end": 1458,
+                "field": "value",
+                "children": [
+                 {
+                  "type": "field_expression",
+                  "start": 1434,
+                  "end": 1450,
+                  "field": "function",
+                  "children": [
+                   {
+                    "type": "call_expression",
+                    "start": 1434,
+                    "end": 1446,
+                    "field": "value",
+                    "children": [
+                     {
+                      "type": "field_expression",
+                      "start": 1434,
+                      "end": 1444,
+                      "field": "function",
+                      "children": [
+                       {
+                        "type": "identifier",
+                        "start": 1434,
+                        "end": 1439,
+                        "field": "value",
+                        "text": "items"
+                       },
+                       {
+                        "type": ".",
+                        "start": 1439,
+                        "end": 1440,
+                        "text": "."
+                       },
+                       {
+                        "type": "field_identifier",
+                        "start": 1440,
+                        "end": 1444,
+                        "field": "field",
+                        "text": "iter"
+                       }
+                      ]
+                     },
+                     {
+                      "type": "arguments",
+                      "start": 1444,
+                      "end": 1446,
+                      "field": "arguments",
+                      "children": [
+                       {
+                        "type": "(",
+                        "start": 1444,
+                        "end": 1445,
+                        "text": "("
+                       },
+                       {
+                        "type": ")",
+                        "start": 1445,
+                        "end": 1446,
+                        "text": ")"
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   {
+                    "type": ".",
+                    "start": 1446,
+                    "end": 1447,
+                    "text": "."
+                   },
+                   {
+                    "type": "field_identifier",
+                    "start": 1447,
+                    "end": 1450,
+                    "field": "field",
+                    "text": "map"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "arguments",
+                  "start": 1450,
+                  "end": 1458,
+                  "field": "arguments",
+                  "children": [
+                   {
+                    "type": "(",
+                    "start": 1450,
+                    "end": 1451,
+                    "text": "("
+                   },
+                   {
+                    "type": "identifier",
+                    "start": 1451,
+                    "end": 1457,
+                    "text": "double"
+                   },
+                   {
+                    "type": ")",
+                    "start": 1457,
+                    "end": 1458,
+                    "text": ")"
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": ".",
+                "start": 1458,
+                "end": 1459,
+                "text": "."
+               },
+               {
+                "type": "field_identifier",
+                "start": 1459,
+                "end": 1462,
+                "field": "field",
+                "text": "sum"
+               }
+              ]
+             },
+             {
+              "type": "::",
+              "start": 1462,
+              "end": 1464,
+              "text": "::"
+             },
+             {
+              "type": "type_arguments",
+              "start": 1464,
+              "end": 1469,
+              "field": "type_arguments",
+              "children": [
+               {
+                "type": "<",
+                "start": 1464,
+                "end": 1465,
+                "text": "<"
+               },
+               {
+                "type": "primitive_type",
+                "start": 1465,
+                "end": 1468,
+                "text": "i32"
+               },
+               {
+                "type": ">",
+                "start": 1468,
+                "end": 1469,
+                "text": ">"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "arguments",
+            "start": 1469,
+            "end": 1471,
+            "field": "arguments",
+            "children": [
+             {
+              "type": "(",
+              "start": 1469,
+              "end": 1470,
+              "text": "("
+             },
+             {
+              "type": ")",
+              "start": 1470,
+              "end": 1471,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 1471,
+          "end": 1472,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "let_declaration",
+        "start": 1477,
+        "end": 1519,
+        "children": [
+         {
+          "type": "let",
+          "start": 1477,
+          "end": 1480,
+          "text": "let"
+         },
+         {
+          "type": "identifier",
+          "start": 1481,
+          "end": 1486,
+          "field": "pattern",
+          "text": "short"
+         },
+         {
+          "type": "=",
+          "start": 1487,
+          "end": 1488,
+          "text": "="
+         },
+         {
+          "type": "call_expression",
+          "start": 1489,
+          "end": 1518,
+          "field": "value",
+          "children": [
+           {
+            "type": "identifier",
+            "start": 1489,
+            "end": 1496,
+            "field": "function",
+            "text": "combine"
+           },
+           {
+            "type": "arguments",
+            "start": 1496,
+            "end": 1518,
+            "field": "arguments",
+            "children": [
+             {
+              "type": "(",
+              "start": 1496,
+              "end": 1497,
+              "text": "("
+             },
+             {
+              "type": "identifier",
+              "start": 1497,
+              "end": 1502,
+              "text": "first"
+             },
+             {
+              "type": ",",
+              "start": 1502,
+              "end": 1503,
+              "text": ","
+             },
+             {
+              "type": "identifier",
+              "start": 1504,
+              "end": 1510,
+              "text": "second"
+             },
+             {
+              "type": ",",
+              "start": 1510,
+              "end": 1511,
+              "text": ","
+             },
+             {
+              "type": "identifier",
+              "start": 1512,
+              "end": 1517,
+              "text": "third"
+             },
+             {
+              "type": ")",
+              "start": 1517,
+              "end": 1518,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 1518,
+          "end": 1519,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "let_declaration",
+        "start": 1524,
+        "end": 1558,
+        "children": [
+         {
+          "type": "let",
+          "start": 1524,
+          "end": 1527,
+          "text": "let"
+         },
+         {
+          "type": "identifier",
+          "start": 1528,
+          "end": 1531,
+          "field": "pattern",
+          "text": "few"
+         },
+         {
+          "type": "=",
+          "start": 1532,
+          "end": 1533,
+          "text": "="
+         },
+         {
+          "type": "array_expression",
+          "start": 1534,
+          "end": 1557,
+          "field": "value",
+          "children": [
+           {
+            "type": "[",
+            "start": 1534,
+            "end": 1535,
+            "text": "["
+           },
+           {
+            "type": "identifier",
+            "start": 1535,
+            "end": 1540,
+            "text": "alpha"
+           },
+           {
+            "type": ",",
+            "start": 1540,
+            "end": 1541,
+            "text": ","
+           },
+           {
+            "type": "identifier",
+            "start": 1542,
+            "end": 1547,
+            "text": "bravo"
+           },
+           {
+            "type": ",",
+            "start": 1547,
+            "end": 1548,
+            "text": ","
+           },
+           {
+            "type": "identifier",
+            "start": 1549,
+            "end": 1556,
+            "text": "charlie"
+           },
+           {
+            "type": "]",
+            "start": 1556,
+            "end": 1557,
+            "text": "]"
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 1557,
+          "end": 1558,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "expression_statement",
+        "start": 1563,
+        "end": 1595,
+        "children": [
+         {
+          "type": "call_expression",
+          "start": 1563,
+          "end": 1594,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 1563,
+            "end": 1570,
+            "field": "function",
+            "text": "consume"
+           },
+           {
+            "type": "arguments",
+            "start": 1570,
+            "end": 1594,
+            "field": "arguments",
+            "children": [
+             {
+              "type": "(",
+              "start": 1570,
+              "end": 1571,
+              "text": "("
+             },
+             {
+              "type": "identifier",
+              "start": 1571,
+              "end": 1575,
+              "text": "leaf"
+             },
+             {
+              "type": ",",
+              "start": 1575,
+              "end": 1576,
+              "text": ","
+             },
+             {
+              "type": "identifier",
+              "start": 1577,
+              "end": 1581,
+              "text": "some"
+             },
+             {
+              "type": ",",
+              "start": 1581,
+              "end": 1582,
+              "text": ","
+             },
+             {
+              "type": "identifier",
+              "start": 1583,
+              "end": 1588,
+              "text": "short"
+             },
+             {
+              "type": ",",
+              "start": 1588,
+              "end": 1589,
+              "text": ","
+             },
+             {
+              "type": "identifier",
+              "start": 1590,
+              "end": 1593,
+              "text": "few"
+             },
+             {
+              "type": ")",
+              "start": 1593,
+              "end": 1594,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 1594,
+          "end": 1595,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 1596,
+        "end": 1597,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "struct_item",
+    "start": 1599,
+    "end": 1751,
+    "children": [
+     {
+      "type": "struct",
+      "start": 1599,
+      "end": 1605,
+      "text": "struct"
+     },
+     {
+      "type": "type_identifier",
+      "start": 1606,
+      "end": 1612,
+      "field": "name",
+      "text": "Config"
+     },
+     {
+      "type": "field_declaration_list",
+      "start": 1613,
+      "end": 1751,
+      "field": "body",
+      "children": [
+       {
+        "type": "{",
+        "start": 1613,
+        "end": 1614,
+        "text": "{"
+       },
+       {
+        "type": "field_declaration",
+        "start": 1619,
+        "end": 1631,
+        "children": [
+         {
+          "type": "field_identifier",
+          "start": 1619,
+          "end": 1626,
+          "field": "name",
+          "text": "retries"
+         },
+         {
+          "type": ":",
+          "start": 1626,
+          "end": 1627,
+          "text": ":"
+         },
+         {
+          "type": "primitive_type",
+          "start": 1628,
+          "end": 1631,
+          "field": "type",
+          "text": "u32"
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 1631,
+        "end": 1632,
+        "text": ","
+       },
+       {
+        "type": "line_comment",
+        "start": 1633,
+        "end": 1657,
+        "children": [
+         {
+          "type": "//",
+          "start": 1633,
+          "end": 1635,
+          "text": "//"
+         }
+        ]
+       },
+       {
+        "type": "field_declaration",
+        "start": 1662,
+        "end": 1677,
+        "children": [
+         {
+          "type": "field_identifier",
+          "start": 1662,
+          "end": 1672,
+          "field": "name",
+          "text": "timeout_ms"
+         },
+         {
+          "type": ":",
+          "start": 1672,
+          "end": 1673,
+          "text": ":"
+         },
+         {
+          "type": "primitive_type",
+          "start": 1674,
+          "end": 1677,
+          "field": "type",
+          "text": "u64"
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 1677,
+        "end": 1678,
+        "text": ","
+       },
+       {
+        "type": "line_comment",
+        "start": 1679,
+        "end": 1707,
+        "children": [
+         {
+          "type": "//",
+          "start": 1679,
+          "end": 1681,
+          "text": "//"
+         }
+        ]
+       },
+       {
+        "type": "field_declaration",
+        "start": 1712,
+        "end": 1731,
+        "children": [
+         {
+          "type": "field_identifier",
+          "start": 1712,
+          "end": 1717,
+          "field": "name",
+          "text": "label"
+         },
+         {
+          "type": ":",
+          "start": 1717,
+          "end": 1718,
+          "text": ":"
+         },
+         {
+          "type": "reference_type",
+          "start": 1719,
+          "end": 1731,
+          "field": "type",
+          "children": [
+           {
+            "type": "&",
+            "start": 1719,
+            "end": 1720,
+            "text": "&"
+           },
+           {
+            "type": "lifetime",
+            "start": 1720,
+            "end": 1727,
+            "children": [
+             {
+              "type": "'",
+              "start": 1720,
+              "end": 1721,
+              "text": "'"
+             },
+             {
+              "type": "identifier",
+              "start": 1721,
+              "end": 1727,
+              "text": "static"
+             }
+            ]
+           },
+           {
+            "type": "primitive_type",
+            "start": 1728,
+            "end": 1731,
+            "field": "type",
+            "text": "str"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 1731,
+        "end": 1732,
+        "text": ","
+       },
+       {
+        "type": "line_comment",
+        "start": 1733,
+        "end": 1749,
+        "children": [
+         {
+          "type": "//",
+          "start": 1733,
+          "end": 1735,
+          "text": "//"
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 1750,
+        "end": 1751,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "line_comment",
+    "start": 1753,
+    "end": 1832,
+    "children": [
+     {
+      "type": "//",
+      "start": 1753,
+      "end": 1755,
+      "text": "//"
+     }
+    ]
+   },
+   {
+    "type": "line_comment",
+    "start": 1833,
+    "end": 1909,
+    "children": [
+     {
+      "type": "//",
+      "start": 1833,
+      "end": 1835,
+      "text": "//"
+     }
+    ]
+   },
+   {
+    "type": "line_comment",
+    "start": 1910,
+    "end": 1987,
+    "children": [
+     {
+      "type": "//",
+      "start": 1910,
+      "end": 1912,
+      "text": "//"
+     }
+    ]
+   },
+   {
+    "type": "line_comment",
+    "start": 1988,
+    "end": 2066,
+    "children": [
+     {
+      "type": "//",
+      "start": 1988,
+      "end": 1990,
+      "text": "//"
+     }
+    ]
+   },
+   {
+    "type": "line_comment",
+    "start": 2067,
+    "end": 2077,
+    "children": [
+     {
+      "type": "//",
+      "start": 2067,
+      "end": 2069,
+      "text": "//"
+     }
+    ]
+   },
+   {
+    "type": "function_item",
+    "start": 2078,
+    "end": 2345,
+    "children": [
+     {
+      "type": "fn",
+      "start": 2078,
+      "end": 2080,
+      "text": "fn"
+     },
+     {
+      "type": "identifier",
+      "start": 2081,
+      "end": 2093,
+      "field": "name",
+      "text": "aligned_arms"
+     },
+     {
+      "type": "parameters",
+      "start": 2093,
+      "end": 2104,
+      "field": "parameters",
+      "children": [
+       {
+        "type": "(",
+        "start": 2093,
+        "end": 2094,
+        "text": "("
+       },
+       {
+        "type": "parameter",
+        "start": 2094,
+        "end": 2103,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 2094,
+          "end": 2098,
+          "field": "pattern",
+          "text": "code"
+         },
+         {
+          "type": ":",
+          "start": 2098,
+          "end": 2099,
+          "text": ":"
+         },
+         {
+          "type": "primitive_type",
+          "start": 2100,
+          "end": 2103,
+          "field": "type",
+          "text": "u32"
+         }
+        ]
+       },
+       {
+        "type": ")",
+        "start": 2103,
+        "end": 2104,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "->",
+      "start": 2105,
+      "end": 2107,
+      "text": "->"
+     },
+     {
+      "type": "reference_type",
+      "start": 2108,
+      "end": 2120,
+      "field": "return_type",
+      "children": [
+       {
+        "type": "&",
+        "start": 2108,
+        "end": 2109,
+        "text": "&"
+       },
+       {
+        "type": "lifetime",
+        "start": 2109,
+        "end": 2116,
+        "children": [
+         {
+          "type": "'",
+          "start": 2109,
+          "end": 2110,
+          "text": "'"
+         },
+         {
+          "type": "identifier",
+          "start": 2110,
+          "end": 2116,
+          "text": "static"
+         }
+        ]
+       },
+       {
+        "type": "primitive_type",
+        "start": 2117,
+        "end": 2120,
+        "field": "type",
+        "text": "str"
+       }
+      ]
+     },
+     {
+      "type": "block",
+      "start": 2121,
+      "end": 2345,
+      "field": "body",
+      "children": [
+       {
+        "type": "{",
+        "start": 2121,
+        "end": 2122,
+        "text": "{"
+       },
+       {
+        "type": "expression_statement",
+        "start": 2127,
+        "end": 2343,
+        "children": [
+         {
+          "type": "match_expression",
+          "start": 2127,
+          "end": 2343,
+          "children": [
+           {
+            "type": "match",
+            "start": 2127,
+            "end": 2132,
+            "text": "match"
+           },
+           {
+            "type": "identifier",
+            "start": 2133,
+            "end": 2137,
+            "field": "value",
+            "text": "code"
+           },
+           {
+            "type": "match_block",
+            "start": 2138,
+            "end": 2343,
+            "field": "body",
+            "children": [
+             {
+              "type": "{",
+              "start": 2138,
+              "end": 2139,
+              "text": "{"
+             },
+             {
+              "type": "match_arm",
+              "start": 2148,
+              "end": 2159,
+              "children": [
+               {
+                "type": "match_pattern",
+                "start": 2148,
+                "end": 2149,
+                "field": "pattern",
+                "children": [
+                 {
+                  "type": "integer_literal",
+                  "start": 2148,
+                  "end": 2149,
+                  "text": "1"
+                 }
+                ]
+               },
+               {
+                "type": "=>",
+                "start": 2150,
+                "end": 2152,
+                "text": "=>"
+               },
+               {
+                "type": "string_literal",
+                "start": 2153,
+                "end": 2158,
+                "field": "value",
+                "children": [
+                 {
+                  "type": "\"",
+                  "start": 2153,
+                  "end": 2154,
+                  "text": "\""
+                 },
+                 {
+                  "type": "string_content",
+                  "start": 2154,
+                  "end": 2157,
+                  "text": "one"
+                 },
+                 {
+                  "type": "\"",
+                  "start": 2157,
+                  "end": 2158,
+                  "text": "\""
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 2158,
+                "end": 2159,
+                "text": ","
+               }
+              ]
+             },
+             {
+              "type": "line_comment",
+              "start": 2160,
+              "end": 2184,
+              "children": [
+               {
+                "type": "//",
+                "start": 2160,
+                "end": 2162,
+                "text": "//"
+               }
+              ]
+             },
+             {
+              "type": "match_arm",
+              "start": 2193,
+              "end": 2212,
+              "children": [
+               {
+                "type": "match_pattern",
+                "start": 2193,
+                "end": 2195,
+                "field": "pattern",
+                "children": [
+                 {
+                  "type": "integer_literal",
+                  "start": 2193,
+                  "end": 2195,
+                  "text": "22"
+                 }
+                ]
+               },
+               {
+                "type": "=>",
+                "start": 2196,
+                "end": 2198,
+                "text": "=>"
+               },
+               {
+                "type": "string_literal",
+                "start": 2199,
+                "end": 2211,
+                "field": "value",
+                "children": [
+                 {
+                  "type": "\"",
+                  "start": 2199,
+                  "end": 2200,
+                  "text": "\""
+                 },
+                 {
+                  "type": "string_content",
+                  "start": 2200,
+                  "end": 2210,
+                  "text": "twenty-two"
+                 },
+                 {
+                  "type": "\"",
+                  "start": 2210,
+                  "end": 2211,
+                  "text": "\""
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 2211,
+                "end": 2212,
+                "text": ","
+               }
+              ]
+             },
+             {
+              "type": "line_comment",
+              "start": 2213,
+              "end": 2237,
+              "children": [
+               {
+                "type": "//",
+                "start": 2213,
+                "end": 2215,
+                "text": "//"
+               }
+              ]
+             },
+             {
+              "type": "match_arm",
+              "start": 2246,
+              "end": 2274,
+              "children": [
+               {
+                "type": "match_pattern",
+                "start": 2246,
+                "end": 2249,
+                "field": "pattern",
+                "children": [
+                 {
+                  "type": "integer_literal",
+                  "start": 2246,
+                  "end": 2249,
+                  "text": "333"
+                 }
+                ]
+               },
+               {
+                "type": "=>",
+                "start": 2250,
+                "end": 2252,
+                "text": "=>"
+               },
+               {
+                "type": "string_literal",
+                "start": 2253,
+                "end": 2273,
+                "field": "value",
+                "children": [
+                 {
+                  "type": "\"",
+                  "start": 2253,
+                  "end": 2254,
+                  "text": "\""
+                 },
+                 {
+                  "type": "string_content",
+                  "start": 2254,
+                  "end": 2272,
+                  "text": "three-thirty-three"
+                 },
+                 {
+                  "type": "\"",
+                  "start": 2272,
+                  "end": 2273,
+                  "text": "\""
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 2273,
+                "end": 2274,
+                "text": ","
+               }
+              ]
+             },
+             {
+              "type": "line_comment",
+              "start": 2275,
+              "end": 2315,
+              "children": [
+               {
+                "type": "//",
+                "start": 2275,
+                "end": 2277,
+                "text": "//"
+               }
+              ]
+             },
+             {
+              "type": "match_arm",
+              "start": 2324,
+              "end": 2337,
+              "children": [
+               {
+                "type": "match_pattern",
+                "start": 2324,
+                "end": 2325,
+                "field": "pattern",
+                "children": [
+                 {
+                  "type": "_",
+                  "start": 2324,
+                  "end": 2325,
+                  "text": "_"
+                 }
+                ]
+               },
+               {
+                "type": "=>",
+                "start": 2326,
+                "end": 2328,
+                "text": "=>"
+               },
+               {
+                "type": "string_literal",
+                "start": 2329,
+                "end": 2336,
+                "field": "value",
+                "children": [
+                 {
+                  "type": "\"",
+                  "start": 2329,
+                  "end": 2330,
+                  "text": "\""
+                 },
+                 {
+                  "type": "string_content",
+                  "start": 2330,
+                  "end": 2335,
+                  "text": "other"
+                 },
+                 {
+                  "type": "\"",
+                  "start": 2335,
+                  "end": 2336,
+                  "text": "\""
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 2336,
+                "end": 2337,
+                "text": ","
+               }
+              ]
+             },
+             {
+              "type": "}",
+              "start": 2342,
+              "end": 2343,
+              "text": "}"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 2344,
+        "end": 2345,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

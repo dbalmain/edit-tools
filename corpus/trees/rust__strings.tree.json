@@ -1,0 +1,569 @@
+{
+ "language": "rust",
+ "source_file": "corpus/src/rust/strings.rs",
+ "source": "fn string_literals() {\n    let escaped = \"quotes: \\\" and backslash: \\\\ and newline: \\n\";\n    let raw = r###\"raw text with \"quotes\" and \\slashes\\\"###;\n    let multiline = \"first line\nsecond line\nthird line\";\n    let byte_string = b\"bytes\\x20with\\tescapes\";\n    let character = '\\n';\n    let long = \"a string literal that is deliberately too long to fit on a narrow rustfmt line and must remain one token\";\n\n    // String interiors are opaque even when their enclosing expression breaks.\n    use_strings(escaped, raw, multiline, byte_string, character, long);\n}\n",
+ "root": {
+  "type": "source_file",
+  "start": 0,
+  "end": 560,
+  "children": [
+   {
+    "type": "function_item",
+    "start": 0,
+    "end": 559,
+    "children": [
+     {
+      "type": "fn",
+      "start": 0,
+      "end": 2,
+      "text": "fn"
+     },
+     {
+      "type": "identifier",
+      "start": 3,
+      "end": 18,
+      "field": "name",
+      "text": "string_literals"
+     },
+     {
+      "type": "parameters",
+      "start": 18,
+      "end": 20,
+      "field": "parameters",
+      "children": [
+       {
+        "type": "(",
+        "start": 18,
+        "end": 19,
+        "text": "("
+       },
+       {
+        "type": ")",
+        "start": 19,
+        "end": 20,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "block",
+      "start": 21,
+      "end": 559,
+      "field": "body",
+      "children": [
+       {
+        "type": "{",
+        "start": 21,
+        "end": 22,
+        "text": "{"
+       },
+       {
+        "type": "let_declaration",
+        "start": 27,
+        "end": 88,
+        "children": [
+         {
+          "type": "let",
+          "start": 27,
+          "end": 30,
+          "text": "let"
+         },
+         {
+          "type": "identifier",
+          "start": 31,
+          "end": 38,
+          "field": "pattern",
+          "text": "escaped"
+         },
+         {
+          "type": "=",
+          "start": 39,
+          "end": 40,
+          "text": "="
+         },
+         {
+          "type": "string_literal",
+          "start": 41,
+          "end": 87,
+          "field": "value",
+          "children": [
+           {
+            "type": "\"",
+            "start": 41,
+            "end": 42,
+            "text": "\""
+           },
+           {
+            "type": "string_content",
+            "start": 42,
+            "end": 50,
+            "text": "quotes: "
+           },
+           {
+            "type": "escape_sequence",
+            "start": 50,
+            "end": 52,
+            "text": "\\\""
+           },
+           {
+            "type": "string_content",
+            "start": 52,
+            "end": 68,
+            "text": " and backslash: "
+           },
+           {
+            "type": "escape_sequence",
+            "start": 68,
+            "end": 70,
+            "text": "\\\\"
+           },
+           {
+            "type": "string_content",
+            "start": 70,
+            "end": 84,
+            "text": " and newline: "
+           },
+           {
+            "type": "escape_sequence",
+            "start": 84,
+            "end": 86,
+            "text": "\\n"
+           },
+           {
+            "type": "\"",
+            "start": 86,
+            "end": 87,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 87,
+          "end": 88,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "let_declaration",
+        "start": 93,
+        "end": 149,
+        "children": [
+         {
+          "type": "let",
+          "start": 93,
+          "end": 96,
+          "text": "let"
+         },
+         {
+          "type": "identifier",
+          "start": 97,
+          "end": 100,
+          "field": "pattern",
+          "text": "raw"
+         },
+         {
+          "type": "=",
+          "start": 101,
+          "end": 102,
+          "text": "="
+         },
+         {
+          "type": "raw_string_literal",
+          "start": 103,
+          "end": 148,
+          "field": "value",
+          "children": [
+           {
+            "type": "string_content",
+            "start": 108,
+            "end": 144,
+            "text": "raw text with \"quotes\" and \\slashes\\"
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 148,
+          "end": 149,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "let_declaration",
+        "start": 154,
+        "end": 206,
+        "children": [
+         {
+          "type": "let",
+          "start": 154,
+          "end": 157,
+          "text": "let"
+         },
+         {
+          "type": "identifier",
+          "start": 158,
+          "end": 167,
+          "field": "pattern",
+          "text": "multiline"
+         },
+         {
+          "type": "=",
+          "start": 168,
+          "end": 169,
+          "text": "="
+         },
+         {
+          "type": "string_literal",
+          "start": 170,
+          "end": 205,
+          "field": "value",
+          "children": [
+           {
+            "type": "\"",
+            "start": 170,
+            "end": 171,
+            "text": "\""
+           },
+           {
+            "type": "string_content",
+            "start": 171,
+            "end": 204,
+            "text": "first line\nsecond line\nthird line"
+           },
+           {
+            "type": "\"",
+            "start": 204,
+            "end": 205,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 205,
+          "end": 206,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "let_declaration",
+        "start": 211,
+        "end": 255,
+        "children": [
+         {
+          "type": "let",
+          "start": 211,
+          "end": 214,
+          "text": "let"
+         },
+         {
+          "type": "identifier",
+          "start": 215,
+          "end": 226,
+          "field": "pattern",
+          "text": "byte_string"
+         },
+         {
+          "type": "=",
+          "start": 227,
+          "end": 228,
+          "text": "="
+         },
+         {
+          "type": "string_literal",
+          "start": 229,
+          "end": 254,
+          "field": "value",
+          "children": [
+           {
+            "type": "\"",
+            "start": 229,
+            "end": 231,
+            "text": "b\""
+           },
+           {
+            "type": "string_content",
+            "start": 231,
+            "end": 236,
+            "text": "bytes"
+           },
+           {
+            "type": "escape_sequence",
+            "start": 236,
+            "end": 240,
+            "text": "\\x20"
+           },
+           {
+            "type": "string_content",
+            "start": 240,
+            "end": 244,
+            "text": "with"
+           },
+           {
+            "type": "escape_sequence",
+            "start": 244,
+            "end": 246,
+            "text": "\\t"
+           },
+           {
+            "type": "string_content",
+            "start": 246,
+            "end": 253,
+            "text": "escapes"
+           },
+           {
+            "type": "\"",
+            "start": 253,
+            "end": 254,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 254,
+          "end": 255,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "let_declaration",
+        "start": 260,
+        "end": 281,
+        "children": [
+         {
+          "type": "let",
+          "start": 260,
+          "end": 263,
+          "text": "let"
+         },
+         {
+          "type": "identifier",
+          "start": 264,
+          "end": 273,
+          "field": "pattern",
+          "text": "character"
+         },
+         {
+          "type": "=",
+          "start": 274,
+          "end": 275,
+          "text": "="
+         },
+         {
+          "type": "char_literal",
+          "start": 276,
+          "end": 280,
+          "field": "value",
+          "text": "'\\n'"
+         },
+         {
+          "type": ";",
+          "start": 280,
+          "end": 281,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "let_declaration",
+        "start": 286,
+        "end": 404,
+        "children": [
+         {
+          "type": "let",
+          "start": 286,
+          "end": 289,
+          "text": "let"
+         },
+         {
+          "type": "identifier",
+          "start": 290,
+          "end": 294,
+          "field": "pattern",
+          "text": "long"
+         },
+         {
+          "type": "=",
+          "start": 295,
+          "end": 296,
+          "text": "="
+         },
+         {
+          "type": "string_literal",
+          "start": 297,
+          "end": 403,
+          "field": "value",
+          "children": [
+           {
+            "type": "\"",
+            "start": 297,
+            "end": 298,
+            "text": "\""
+           },
+           {
+            "type": "string_content",
+            "start": 298,
+            "end": 402,
+            "text": "a string literal that is deliberately too long to fit on a narrow rustfmt line and must remain one token"
+           },
+           {
+            "type": "\"",
+            "start": 402,
+            "end": 403,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 403,
+          "end": 404,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "line_comment",
+        "start": 410,
+        "end": 485,
+        "children": [
+         {
+          "type": "//",
+          "start": 410,
+          "end": 412,
+          "text": "//"
+         }
+        ]
+       },
+       {
+        "type": "expression_statement",
+        "start": 490,
+        "end": 557,
+        "children": [
+         {
+          "type": "call_expression",
+          "start": 490,
+          "end": 556,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 490,
+            "end": 501,
+            "field": "function",
+            "text": "use_strings"
+           },
+           {
+            "type": "arguments",
+            "start": 501,
+            "end": 556,
+            "field": "arguments",
+            "children": [
+             {
+              "type": "(",
+              "start": 501,
+              "end": 502,
+              "text": "("
+             },
+             {
+              "type": "identifier",
+              "start": 502,
+              "end": 509,
+              "text": "escaped"
+             },
+             {
+              "type": ",",
+              "start": 509,
+              "end": 510,
+              "text": ","
+             },
+             {
+              "type": "identifier",
+              "start": 511,
+              "end": 514,
+              "text": "raw"
+             },
+             {
+              "type": ",",
+              "start": 514,
+              "end": 515,
+              "text": ","
+             },
+             {
+              "type": "identifier",
+              "start": 516,
+              "end": 525,
+              "text": "multiline"
+             },
+             {
+              "type": ",",
+              "start": 525,
+              "end": 526,
+              "text": ","
+             },
+             {
+              "type": "identifier",
+              "start": 527,
+              "end": 538,
+              "text": "byte_string"
+             },
+             {
+              "type": ",",
+              "start": 538,
+              "end": 539,
+              "text": ","
+             },
+             {
+              "type": "identifier",
+              "start": 540,
+              "end": 549,
+              "text": "character"
+             },
+             {
+              "type": ",",
+              "start": 549,
+              "end": 550,
+              "text": ","
+             },
+             {
+              "type": "identifier",
+              "start": 551,
+              "end": 555,
+              "text": "long"
+             },
+             {
+              "type": ")",
+              "start": 555,
+              "end": 556,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 556,
+          "end": 557,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 558,
+        "end": 559,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}
