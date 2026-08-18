@@ -1,0 +1,98 @@
+{
+  "format": "et-doc-rules/1",
+  "indent": 2,
+
+  "tokens": [
+    "(", ")", "[", "]", "{", "}", ",", ";", ":", ".", "=", "?",
+    "+", "-", "*", "/", "%", "**", "!", "~", "<", ">", "<=", ">=",
+    "==", "!=", "===", "!==", "&&", "||", "??", "|", "&", "^", "<<", ">>",
+    "+=", "-=", "*=", "/=", "%=", "??=", "&&=", "||=",
+    "=>", "...", "${", "`", "\"", "'",
+    "if", "else", "for", "while", "return", "function", "class", "new",
+    "const", "let", "var", "import", "export", "from", "as", "default",
+    "async", "await", "break", "continue", "case", "catch", "finally",
+    "switch", "try", "extends", "static", "get", "set", "of", "in",
+    "this", "super", "typeof", "yield", "delete", "void", "do", "with"
+  ],
+
+  "comments": ["comment"],
+  "descend": [],
+
+  "defs": {
+    "list": [
+      "group",
+      ["tok", ["$", 0]],
+      [
+        "indent",
+        ["soft"],
+        ["each", "named", ["seq", ["tok", ["$", 1]], ["line"]]],
+        ["trail", ["$", 1], "named"]
+      ],
+      ["soft"],
+      ["tok", ["$", 2]]
+    ],
+    "fill_list": [
+      "group",
+      ["tok", ["$", 0]],
+      [
+        "indent",
+        ["soft"],
+        ["fill", "named", ["seq", ["tok", ["$", 1]], ["line"]]],
+        ["trail", ["$", 1], "named"]
+      ],
+      ["soft"],
+      ["tok", ["$", 2]]
+    ]
+  },
+
+  "rules": {
+    "program": ["each", "named", ["seq", ["hard"], ["blank", 1]]],
+
+    "lexical_declaration": [
+      "seq",
+      ["child", "f:kind"],
+      ["sp"],
+      ["each", "t:variable_declarator", ["seq", ["tok", ","], ["sp"]]],
+      ["tok", ";"]
+    ],
+    "variable_declarator": [
+      "seq",
+      ["child", "f:name"],
+      ["sp"],
+      ["tok", "="],
+      ["sp"],
+      ["child", "f:value"]
+    ],
+
+    "array": [
+      "when",
+      ["count", "named", 0],
+      ["seq", ["tok", "["], ["tok", "]"]],
+      [
+        "when",
+        ["all", "named", ["number"]],
+        ["use", "fill_list", "[", ",", "]"],
+        ["use", "list", "[", ",", "]"]
+      ]
+    ],
+
+    "string": ["verbatim"],
+
+    "call_expression": ["seq", ["child", "f:function"], ["child", "f:arguments"]],
+    "arguments": [
+      "group",
+      ["tok", "("],
+      [
+        "indent",
+        ["soft"],
+        [
+          "group",
+          ["each", "named", ["seq", ["tok", ","], ["line"]]],
+          ["trail", ",", "named"]
+        ]
+      ],
+      ["soft"],
+      ["tok", ")"]
+    ]
+  }
+}
