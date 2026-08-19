@@ -456,8 +456,8 @@ not buy an IR feature.
 
 ## 3. A break-only separator pins its group
 
-**Status:** open · **Cost:** local · **Languages:** TOML (2), CSS (2), YAML (4)
-— 8 accepted divergences
+**Status:** open · **Cost:** local · **Languages:** TOML (2), CSS (2), YAML (4),
+Kotlin (1) — 9 accepted divergences
 
 The IR's only break-only separator policy also pins a group when it consumes an
 existing comma, so a rule cannot consume a source comma without pinning the
@@ -481,6 +481,21 @@ So the "feature, not a gap" reading is now the minority one. Three languages,
 eight divergences, and the magic-trailing-comma argument only ever justified the
 _pinning_ — never the fact that consuming a separator and pinning a group are
 welded together in one opcode.
+
+**Kotlin is the fourth language, and the first reference that _deletes_ the
+comma.** Every earlier instance is a reference that keeps a magic trailing comma
+and stays broken; ktfmt removes it. `collections.kt` carries the controlled pair
+in one file: `listOf(1, 2, 3)` stays flat, `listOf(1, 2, 3,)` has its trailing
+comma **deleted** and stays flat too, and an already-broken list keeps its commas
+and stays broken. Removing `trail` from `paren_list` to chase that took the
+package from 15/15 to 11/15 and made `comments.kt` refuse — tested and reverted.
+
+This matters to the decision because it breaks the symmetry the "feature, not a
+gap" reading rests on. That reading says pinning is right because an existing
+trailing comma is an author's instruction to stay broken. ktfmt reads the same
+comma as noise to be removed. The opcode cannot express either language's rule
+without also expressing the pinning, and the two references disagree about what
+the comma even means.
 
 **Decide when:** with entry 6, whose fix touches the same group-fit machinery.
 
