@@ -1,0 +1,94 @@
+{
+  "language": "kotlin",
+  "submission": "lang-kotlin",
+  "gate1_idempotence": {
+    "pass": true,
+    "got": 16,
+    "of": 16
+  },
+  "gate2_width": {
+    "pass": true,
+    "waived": true,
+    "overflow_lines": 0,
+    "reference_overflow": 0
+  },
+  "gate3_nondestruction": {
+    "pass": true,
+    "got": 16,
+    "of": 16,
+    "method": "default"
+  },
+  "gate4_agreement": {
+    "by_width": {
+      "100": {
+        "agreement": 14,
+        "of": 15,
+        "accepted": 0,
+        "stale": 0,
+        "unreviewed": 1,
+        "excluded": 1,
+        "review_coverage": 0.933,
+        "review_threshold_met": true
+      }
+    },
+    "agreement": 14,
+    "of": 15,
+    "accepted": 0,
+    "stale": 0,
+    "unreviewed": 1,
+    "excluded": 1,
+    "review_coverage": 0.933,
+    "review_threshold_met": true
+  },
+  "rust_js_parity": "identical",
+  "refusals": [],
+  "matching_files": [
+    "annotations.kt",
+    "chains.kt",
+    "classes.kt",
+    "comments.kt",
+    "control_flow.kt",
+    "functions.kt",
+    "generics.kt",
+    "kitchen.kt",
+    "long_sequences.kt",
+    "nesting.kt",
+    "normalisation.kt",
+    "strings.kt",
+    "trailing_lambdas.kt",
+    "when.kt"
+  ],
+  "size": {
+    "js-runtime": 13695,
+    "packages": 2354,
+    "total": 16049,
+    "per_language": {
+      "kotlin": {
+        "package": 2354,
+        "with_runtime": 16049
+      }
+    }
+  },
+  "size_delta_vs_main": {
+    "js_runtime_gzip": {
+      "main": 13695,
+      "now": 13695,
+      "delta": 0
+    },
+    "package_gzip": 2354,
+    "per_edit": []
+  },
+  "fill": {
+    "wanted": false,
+    "files_that_would_benefit": []
+  },
+  "divergences": [
+    {
+      "case": "collections.kt@100",
+      "id": "kotlin/collections.kt@100",
+      "hash": "bb803fd4975528eefb2543395f360b37528a7ecaa9d45a9c481389a702227254",
+      "verdict": "design limit",
+      "kind": "trail pins a source trailing comma; ktfmt COMPLETE removes it on a fitting list"
+    }
+  ]
+}
