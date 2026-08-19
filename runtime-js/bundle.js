@@ -191,6 +191,7 @@ function validateExpr(value) {
     case "srcline":
     case "srcsoft":
     case "cell":
+    case "srcbreak":
       arity(0);
       return;
     case "child":
@@ -943,6 +944,8 @@ class Ctx {
         return cell;
       case "cellblock":
         return concat([cellBreak, ...rest.map((e) => this.eval(e)), cellBreak]);
+      case "srcbreak":
+        return this.srcBreak(line);
       case "srctrail":
         return this.srctrail(rest[0]);
       case "child":

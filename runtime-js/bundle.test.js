@@ -537,6 +537,36 @@ test("a separator already in the source pins the layout open", () => {
   assert.equal(run(toy({ list: listRule }), list(["a", "b"], true), 80), "(\n  a,\n  b,\n)\n");
 });
 
+test("srcbreak stays expanded when the source broke but still obeys width", () => {
+  const objRule = [
+    "group", ["tok", "("],
+    ["indent", ["srcbreak"],
+      ["each", "named", ["seq", ["tok", ","], ["line"]]],
+      ["trail", ",", "named"]],
+    ["line"], ["tok", ")"],
+  ];
+  const pkg = toy({ obj: objRule });
+  const obj = (source, cs) => ({ type: "obj", start: 0, end: source.length, children: cs });
+
+  const broken = obj("(\n  a,\n  b\n)", [
+    span("(", 0, 1, "("), span("a", 4, 5, "a"), span(",", 5, 6, ","),
+    span("b", 8, 9, "b"), span(")", 10, 11, ")"),
+  ]);
+  assert.equal(runOn(pkg, "(\n  a,\n  b\n)", broken, 80), "(\n  a,\n  b,\n)\n");
+
+  const flat = obj("(a, b)", [
+    span("(", 0, 1, "("), span("a", 1, 2, "a"), span(",", 2, 3, ","),
+    span("b", 4, 5, "b"), span(")", 5, 6, ")"),
+  ]);
+  assert.equal(runOn(pkg, "(a, b)", flat, 80), "( a, b )\n");
+
+  const wide = obj("(aaaaa, bbbbb)", [
+    span("(", 0, 1, "("), span("aaaaa", 1, 6, "aaaaa"), span(",", 6, 7, ","),
+    span("bbbbb", 8, 13, "bbbbb"), span(")", 13, 14, ")"),
+  ]);
+  assert.equal(runOn(pkg, "(aaaaa, bbbbb)", wide, 6), "(\n  aaaaa,\n  bbbbb,\n)\n");
+});
+
 test("flatten breaks a whole chain together instead of staircasing", () => {
   const pkg = toy({
     sum: ["group", ["flatten", "sum", ["seq", ["line"], ["child", "f:operator"], ["sp"]]]],

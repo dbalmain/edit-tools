@@ -302,8 +302,25 @@ models each container as an independent group **matches** prettier here.
 The one exception is the **array-of-arrays** shape: `matrix` explodes to one
 inner array per line at **both** 80 and 40, even though it fits at 80 — the same
 "all-children-are-collections" rule JSON's manifest documented. That is a group
-whose break decision depends on the _kinds_ of its children, which the IR cannot
-express (DESIGN.md, the JSON note).
+whose break decision depends on the _kinds_ of its children.
+
+**Corrected at stage D (2026-08-19): the IR does express this.** This paragraph
+originally ended "which the IR cannot express (DESIGN.md, the JSON note)", and
+that was wrong when written. `when` + the `all` predicate already encodes it:
+
+```json
+["when", ["all", "named", ["array"]], ["hard-branch"], ["group-branch"]]
+```
+
+`all` tests every selected child against a list of node types, which is exactly
+"are all my children collections". JSON could have done this since round 1. The
+note was inherited from DESIGN.md rather than tested, and it survived stage A
+and stage B review because nobody built the expression. Stage D built it.
+
+The lesson is narrower than "check your claims": an **inherited** negative claim
+is the dangerous kind. A builder who writes "the IR cannot express X" from their
+own failed attempt has evidence; one who copies it from a design note has none,
+and the two read identically in a report.
 
 ### A trailing comment does not count toward its line's width
 

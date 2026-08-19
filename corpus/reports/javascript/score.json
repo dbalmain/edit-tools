@@ -1,0 +1,156 @@
+{
+  "submission": "lang-javascript",
+  "gates": {
+    "0-coverage": {
+      "pass": true,
+      "got": 28,
+      "of": 28,
+      "what": "formatted every corpus file at every width"
+    },
+    "1-agreement": {
+      "pass": true,
+      "got": 28,
+      "of": 28,
+      "what": "rust and js byte-identical"
+    },
+    "2-idempotence": {
+      "pass": true,
+      "got": 28,
+      "of": 28,
+      "what": "fmt(fmt(x)) == fmt(x)"
+    },
+    "3-nondestruction": {
+      "pass": true,
+      "got": 28,
+      "of": 28,
+      "what": "meaning and comments preserved"
+    }
+  },
+  "measures": {
+    "4-overflow-lines": 11,
+    "5-size-gzip": {
+      "js-runtime": 13412,
+      "packages": 2585,
+      "total": 15997,
+      "per_language": {
+        "javascript": {
+          "package": 2585,
+          "with_runtime": 15997
+        }
+      }
+    },
+    "6-reference-agreement": {
+      "agreement": 13,
+      "accepted": 0,
+      "stale": 0,
+      "unreviewed": 15,
+      "excluded": 0,
+      "of": 28,
+      "agreement_fraction": 0.464,
+      "review_coverage": 0.464,
+      "review_threshold": 0.7,
+      "review_threshold_met": false,
+      "by_language": {
+        "javascript": {
+          "reference": "3.9.6",
+          "waived": false,
+          "agreement": 13,
+          "accepted": 0,
+          "stale": 0,
+          "unreviewed": 15,
+          "excluded": 0,
+          "of": 28,
+          "reference_overflow": 6,
+          "missing": [],
+          "accepted_divergences": [],
+          "stale_divergences": [],
+          "unreviewed_divergences": [
+            {
+              "case": "chains.js@80",
+              "hash": "c91ba8e70a4f296d35009f6372f8cfe9d83169c3ea5185ff68691a1989e5b206"
+            },
+            {
+              "case": "chains.js@40",
+              "hash": "cf80d95416e5f6d1561a217b51989de017dca023be74b3357fdedd944e3a5bc7"
+            },
+            {
+              "case": "comments.js@80",
+              "hash": "b1c412dac262fea81953794649416ca0634cb9041f02f71b68b465c91cc38c2c"
+            },
+            {
+              "case": "comments.js@40",
+              "hash": "b175d9fea3e0522fcd0581df66f26c7c9ac06aa6f25338cc5ff65e1392f016fa"
+            },
+            {
+              "case": "control_flow.js@40",
+              "hash": "1a66bc944d954dde8608a823b718fb05382107856f2d7e98dc08cf245dee11cb"
+            },
+            {
+              "case": "kitchen.js@80",
+              "hash": "91075f61c5fa7467e067575578bb4a49d1369c74d6ac001e8ccfeb616763ab3f"
+            },
+            {
+              "case": "kitchen.js@40",
+              "hash": "0933338aea18b93a98fb699a5797e06871409f500fbb46b471d67dc91bf68026"
+            },
+            {
+              "case": "modern.js@80",
+              "hash": "f0ab81c7b6fcb66a5336d4f502c74066ab1c13e99237408cb1b9303e069f0a01"
+            },
+            {
+              "case": "modern.js@40",
+              "hash": "c8010a1a367ccc41e6ecef52a09663bb8b204266c8031e623e7cfae2d6cfad14"
+            },
+            {
+              "case": "normalisation.js@80",
+              "hash": "687d606954d36c7dbd689ddb06c7c7bc776c0ee3cebc90c0312bddd34d42f02f"
+            },
+            {
+              "case": "normalisation.js@40",
+              "hash": "687d606954d36c7dbd689ddb06c7c7bc776c0ee3cebc90c0312bddd34d42f02f"
+            },
+            {
+              "case": "operators.js@80",
+              "hash": "0c3bd4a0a03e5cd803c10a2d290d56f59132c47879d56db2f3d0b43872aadcdf"
+            },
+            {
+              "case": "operators.js@40",
+              "hash": "d9a01bcada7c909abf3ff4e16b84b69cf393d0ba209b68427bd1af69c162fc23"
+            },
+            {
+              "case": "sequences.js@80",
+              "hash": "f591d12696763cf8b1be87e5237b8a659f50a6f7ae439b46bb991823cc6cee43"
+            },
+            {
+              "case": "sequences.js@40",
+              "hash": "e14faf764ad170e89a4ec82f56317c1451591d0eca717c925c8067ff22cac47e"
+            }
+          ],
+          "excluded_files": [],
+          "by_width": {
+            "80": {
+              "agreement": 7,
+              "accepted": 0,
+              "stale": 0,
+              "unreviewed": 7,
+              "of": 14,
+              "review_coverage": 0.5,
+              "review_threshold_met": false
+            },
+            "40": {
+              "agreement": 6,
+              "accepted": 0,
+              "stale": 0,
+              "unreviewed": 8,
+              "of": 14,
+              "review_coverage": 0.429,
+              "review_threshold_met": false
+            }
+          }
+        }
+      }
+    }
+  },
+  "detail": [],
+  "pending": []
+}
