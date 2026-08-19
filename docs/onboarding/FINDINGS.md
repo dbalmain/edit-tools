@@ -1913,3 +1913,97 @@ Two lessons worth keeping:
 - **Verify a reported defect against the tree the report is about.** The first
   reproduction used the builder's worktree, which had not merged the change, and
   said the hole did not exist.
+
+---
+
+## 20. `paren` waits for a break; prettier adds parens that never wait
+
+**Status:** open · **Cost:** **local** · **Languages:** JavaScript (2 corpus
+files), TypeScript (unonboarded, same reference)
+
+`paren` and `autoparen` are the two sanctioned token-addition policies, and both
+are **break-driven**: they emit `(` `)` through `IfBreak`, so a group that fits
+flat never gets them. That matches black, whose parens exist to make a wrapped
+expression legal.
+
+prettier has a second kind, and it fires on lines that fit:
+
+```js
+const masked = (mask & value) | (other << shift);   // bitwise mix
+const coalesce = (config ??= defaults);             // logical assignment
+```
+
+These are **clarifying** parens, not wrapping parens. prettier adds them at any
+width, on lines with room to spare, because the argument is precedence
+readability rather than layout. No opcode can express that today — `paren` is
+the right policy and the wrong trigger.
+
+### What it costs
+
+The builder priced it during JavaScript's stage C: `operators.js@80` (one hunk)
+and `modern.js@80` (three wraps), taking @80 from **7/14 to 9/14**. Stage D
+verdicted the shape as right and the cost as unmeasured.
+
+Cheap, and cheap for a reason: the policy, the linearity argument, and the
+gate-3 story are all already settled for `paren`. What changes is when it fires,
+not what it may do. An always-on variant does **not** widen what a package may
+do to tokens — it narrows it, because an unconditional wrap is easier to audit
+than a conditional one.
+
+### Why this is not entry 13
+
+Entry 13 is a package that cannot **delete** a token the reference deletes. This
+is a package that cannot **add** one the reference adds unconditionally. Same
+family — the sanctioned-token-policy set — opposite direction, and JavaScript
+hits both in the same file. Entry 14 proposed `respell` as a third policy in
+that family; this would be a fourth.
+
+**ASI semicolon insertion** is the same shape again and is *not* priced here:
+prettier inserts a statement-terminating `;` where the source relied on
+automatic semicolon insertion. Recorded so it is not rediscovered as new.
+
+---
+
+## 21. `trail`'s one-item skip is black's rule, not a general one
+
+**Status:** open · **Cost:** **local** · **Languages:** Rust
+(`patterns.rs@60`), JavaScript (`sequences`, and every broken 1-item list)
+
+`trail` adds a separator to the last item of a **broken** list, and declines to
+when the list has exactly one item. That is black's rule — a single-element
+collection keeps no magic trailing comma — and it is hardcoded in the opcode
+rather than declared by the package.
+
+Two references in this round want the opposite:
+
+- **prettier**, `trailingComma: "all"` (its default since 3.0): a broken
+  one-item argument list, array or object gets the comma.
+- **rustfmt**: same, and `patterns.rs@60` is the corpus instance. Rust's stage C
+  recorded it as a divergence it could not close.
+
+### Why it is not entry 3
+
+Entry 3 is about `trail` **pinning** its group: the policy consumes a source
+separator, so a group carrying one cannot collapse. That is a different defect
+in the same opcode and it bites even when the count is right. This one is
+purely the `> 1` guard.
+
+JavaScript's stage D found the only workaround, and it is an argument against
+itself: a second `trail` branch selecting `*` rather than `named`, which reaches
+the one-item case by counting the brackets into the tally. It works and it is an
+abuse — the package expresses "one item" as "three children" and any change to
+the rule's shape silently breaks it.
+
+### The fix, and the choice inside it
+
+The minimum is a package-declared threshold rather than a constant. Two shapes:
+
+1. **A package header** — `"trail_min": 1`, one number for the language. Cheapest,
+   and right if a reference is internally consistent.
+2. **An operand** — `["trail", ",", "named", 1]`, per rule. Needed only if a
+   reference wants the comma for calls and not for, say, generic parameters.
+
+Nobody has yet found a reference that wants both behaviours in one language, so
+(1) is the recommendation until someone does. Two languages hitting the same
+constant from opposite sides is what makes this worth changing at all: one
+language wanting a different constant is a package problem, two is a schema one.
