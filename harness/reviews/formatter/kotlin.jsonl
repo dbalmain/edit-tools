@@ -1,0 +1,1 @@
+{"id": "kotlin/collections.kt@100", "hash": "bb803fd4975528eefb2543395f360b37528a7ecaa9d45a9c481389a702227254", "verdict": "package bug", "reason": "The fitting listOf call should remain flat, but the package expands it into a multiline trailing-comma form unlike ktfmt.", "reviewed_by": "gpt-5.6-luna", "reviewed_at": "2026-08-19T20:09:57Z"}
