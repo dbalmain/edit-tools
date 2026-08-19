@@ -2029,7 +2029,8 @@ language wanting a different constant is a package problem, two is a schema one.
 
 ## 22. `comment_cells` is one package-wide switch, and the two languages want opposite scopes
 
-**Status:** open · **Cost:** **local** · **Languages:** Rust (`structs.rs`,
+**Status:** **closed 2026-08-20 — built and measured.** · **Cost:** **local**
+(+958 B runtime, +43 B package) · **Languages:** Rust (`structs.rs`,
 `comments.rs`, `widths.rs` — six divergences), Go (the incumbent user)
 
 rustfmt aligns the trailing comments on **list items** — struct fields, enum
@@ -2129,3 +2130,46 @@ file-level agreement cannot see a fix to one hunk of five. The six divergences
 are `design-limit`, not `package-bug`: the package cannot express Rust's
 alignment scope, and the two experiments that look like they should work are
 disqualified by a gate and by a two-space column respectively.
+
+### Built, and what it cost
+
+`comment_cells` takes a scope: `true` (now `"all"`, gofmt's, unchanged) or
+`"block"`, which emits markers everywhere and collapses them to the plain gap
+outside a `cellblock`. The token exclusion narrowed from *any token* to the
+closing delimiters it was always meant to name.
+
+| piece | runtime | buys |
+| --- | ---: | --- |
+| scope + closer narrowing | +487 B | `structs.rs@100`, the corpus file |
+| width-aware column | +471 B | correct hunks in `structs.rs@60`, `widths.rs@60`; **no file** |
+| | **+958 B** | rust 19 → 20/32, go unchanged |
+
+Against the register: alignment was +2,627 B, `fill` +365 B, the sub-width cap
++271 B. This is the second most expensive local capability so far, and half of
+it buys no scored file. Total is 24,753 B of the 25,600 B budget.
+
+The width half is kept anyway, and the argument is `house-style.md`'s: a person
+editing a snippet in a box sees an over-aligned comment overrun the box, and
+file agreement cannot see that because the file diverges for another reason
+either way.
+
+### What surprised me: rustfmt's overflow rule is not per-row
+
+Two corpus files disagree under every simple rule, and the disagreement is the
+finding. At width 60, `structs.rs` keeps its widest field in the column and
+drops the *shortest* row out; `widths.rs` drops its widest arm and re-forms a
+narrower column from the two survivors. "Pad, then drop what overruns" gets
+`structs` right and `widths` wrong; "drop the widest, recompute" gets `widths`
+right and `structs` wrong.
+
+The rule that produces both is greedy and left-to-right: extend the current
+column while every row that *could* fit still does; otherwise close it and open
+a new one at the offending row. A row too long to fit at any column is
+**hopeless** — it sets the column but never constrains it, which is exactly why
+`much_longer_setting_name: String,` can anchor a column its shorter neighbour
+above cannot reach.
+
+Three samples confirm it, including a hand-built one at four widths. Reverse
+engineering a reference from two corpus files would have shipped a rule that is
+wrong on the third; the reference itself has to be the oracle. That is the
+reusable lesson, not the algorithm.

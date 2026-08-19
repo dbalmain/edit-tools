@@ -6,9 +6,9 @@ gate 1 rust/js parity   pass   (34/34 byte-identical)
 gate 2 idempotence      pass   (34/34)
 gate 3 non-destruction  pass   (34/34, method default)
 measure 4 overflow      38 lines (rustfmt 39)
-measure 5 size          package 2548 B gzip; runtime 12322 B gzip; total 14870
-measure 6 agreement     11/16 @ width 100,  8/16 @ width 60  =  19/32 (59.4%)
-                        + 13 accepted = 100% review coverage, 0 stale,
+measure 5 size          package 2589 B gzip; runtime 13293 B gzip
+measure 6 agreement     12/16 @ width 100,  8/16 @ width 60  =  20/32 (62.5%)
+                        + 12 accepted = 100% review coverage, 0 stale,
                           0 unreviewed, 0 package-bug
 refusals                none
 ```
@@ -262,3 +262,37 @@ review-coverage floor (100%), no stale reviews, no package bugs. The remaining
 (heterogeneous chains), 3 (`trail` pinning and its one-item skip), 6 (`fits`
 counts a trailing comment), 7 and 9 (comments), plus one house rule on
 `strings.rs@60`.
+
+## After entry 22 closed
+
+The stage-D section above stands as written — it was true when written, and the
+six divergences really were design limits at that moment. Entry 22 was then
+built, and three of them moved.
+
+`comment_cells` now takes a scope, so a package can ask for rustfmt's rule
+(align list items, leave statements alone) rather than gofmt's. The package
+declares `"comment_cells": "block"` and wraps three lists in `["cellblock"]` —
+`field_declaration_list`, `enum_variant_list`, `match_block`. That is the whole
+package change: three brackets and a header.
+
+| file | before | after |
+| --- | --- | --- |
+| `structs.rs@100` | diverged on the comment column | **agrees** — record retired |
+| `structs.rs@60` | column + one-item `trail` | one-item `trail` only (entry 21) |
+| `widths.rs@100` | column + method chain | method chain only (entry 11) |
+| `widths.rs@60` | column + method chain | method chain only (entry 11) |
+| `comments.rs` both | entries 22, 9, 7 | entries 9 and 7 — the column was never its main cause |
+
+Agreement 19 → **20/32**. Go is unchanged at 12/16, which is the check that
+matters for the narrowed token exclusion: it was *any token* and is now closing
+delimiters only, and Go is the language that would notice.
+
+The cost is +958 B of runtime for one corpus file, and half of that (+471 B) is
+the width-aware column, which buys no file at all — only hunks inside files that
+diverge for other reasons. Kept on the `house-style.md` argument that a comment
+overrunning the box is exactly the readability failure this product is for.
+
+### Verdict, restated
+
+`merge`, unchanged, on better numbers: 20 agreement, 12 accepted, 0 stale, 0
+unreviewed, 0 package-bug, gates 0-3 perfect, rust/js parity perfect.
