@@ -10,7 +10,7 @@ use std::collections::HashMap;
 
 use crate::attach::{split, Comment, Item};
 use crate::doc::Doc;
-use crate::pkg::{Expr, Package, Pred, Sel};
+use crate::pkg::{CommentCells, Expr, Package, Pred, Sel};
 use crate::tree::{Node, TreeDoc};
 use crate::Refusal;
 
@@ -20,7 +20,12 @@ pub fn format(tree: &TreeDoc, packages: &PackageMap, width: usize) -> Result<Str
     let fmt = Fmt::for_language(&tree.language, packages, tree.source.as_bytes())?;
     let doc = fmt.node(&tree.root)?;
     let mut out = crate::doc::print(&doc, width);
-    out = crate::align::cells(&out);
+    out = crate::align::cells(
+        &out,
+        fmt.pkg.comment_cells == crate::pkg::CommentCells::Block,
+        &" ".repeat(fmt.pkg.comment_gap),
+        width,
+    );
     if fmt.semantic_eof.get() {
         while out.ends_with(['\r', '\n']) {
             out.pop();
@@ -136,7 +141,9 @@ fn decorate(pkg: &Package, item: &Item<'_>, inner: Doc) -> Doc {
     parts.push(inner);
     let gap = " ".repeat(pkg.comment_gap);
     for text in &item.suffix {
-        let body = if pkg.comment_cells && !pkg.is_token(&item.node.kind) {
+        let body = if pkg.comment_cells != CommentCells::Off
+            && !Package::is_cell_closer(&item.node.kind)
+        {
             Doc::Concat(vec![Doc::Cell, Doc::text(text.as_str())])
         } else {
             Doc::text(format!("{gap}{text}"))

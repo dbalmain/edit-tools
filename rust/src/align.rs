@@ -10,7 +10,9 @@
 //! Formfeed (`["cellblock"]`) sections get the full tabwriter. Outside them,
 //! interior markers collapse to spaces and only a trailing comment cell
 //! participates — the same spec rule can serve a grouped `const (` and a
-//! standalone `const x = 1`.
+//! standalone `const x = 1`. Under `comment_cells: "block"` that surviving
+//! comment cell collapses to the plain gap instead, so alignment happens
+//! only inside a `cellblock` — rustfmt's scope rather than gofmt's.
 //!
 //! This mirrors `runtime-js/bundle.js` line for line on purpose; gate 1 checks
 //! the two byte for byte.
@@ -22,18 +24,26 @@ fn width(s: &str) -> usize {
 const MARK: char = '\u{000B}';
 const FORMFEED: char = '\u{000C}';
 
-pub fn cells(input: &str) -> String {
+pub fn cells(input: &str, block_only: bool, gap: &str, cols: usize) -> String {
+    // Only the "block" scope models a reference that has a width at all.
+    let limit = block_only.then_some(cols);
     if !input.contains(MARK) && !input.contains(FORMFEED) {
         return input.to_owned();
     }
     input
         .split(FORMFEED)
         .enumerate()
-        .map(|(i, chunk)| align_chunk(chunk, i % 2 == 0))
+        .map(|(i, chunk)| align_chunk(chunk, i % 2 == 0, block_only, gap, limit))
         .collect()
 }
 
-fn align_chunk(chunk: &str, comment_only: bool) -> String {
+fn align_chunk(
+    chunk: &str,
+    comment_only: bool,
+    block_only: bool,
+    gap: &str,
+    cols: Option<usize>,
+) -> String {
     if !chunk.contains(MARK) {
         return chunk.to_owned();
     }
@@ -41,7 +51,15 @@ fn align_chunk(chunk: &str, comment_only: bool) -> String {
     if comment_only {
         collapse_to_comment_cells(&mut lines);
     }
-    align_cells(&mut lines);
+    if comment_only && block_only {
+        for line in lines.iter_mut() {
+            if line.contains(MARK) {
+                *line = line.split(MARK).collect::<Vec<_>>().join(gap);
+            }
+        }
+        return lines.join("\n");
+    }
+    align_cells(&mut lines, cols);
     lines.join("\n")
 }
 
@@ -106,6 +124,60 @@ fn marked(line: &str) -> Option<Marked> {
     })
 }
 
+/// rustfmt keeps a trailing-comment column only while every row that *could*
+/// fit still does; a row that would be pushed past the width closes the column
+/// and opens a new one (FINDINGS 22). A row too long to fit at any column is
+/// hopeless: it sets the column but never constrains it, which is why a very
+/// long field can share a column with its shorter neighbours while a short one
+/// above them drops out. gofmt has no width and never does this, so `None`
+/// means "one run, as before".
+fn emit_run(
+    lines: &mut [String],
+    at: &[usize],
+    rows: &[Vec<String>],
+    indents: &[String],
+    cols: Option<usize>,
+) {
+    let Some(cols) = cols else {
+        tabwrite_cells(lines, at, rows, indents);
+        return;
+    };
+    let body = |r: usize| -> &str {
+        let cells = &rows[r];
+        cells.get(cells.len().wrapping_sub(2)).map_or("", String::as_str)
+    };
+    let note = |r: usize| -> &str { rows[r].last().map_or("", String::as_str) };
+    let hopeless =
+        |r: usize| width(&indents[r]) + width(body(r)) + 1 + width(note(r)) > cols;
+    let holds = |from: usize, to: usize, column: usize| {
+        (from..=to).all(|r| {
+            hopeless(r) || width(&indents[r]) + column + width(note(r)) <= cols
+        })
+    };
+    let flush = |from: usize, to: usize, lines: &mut [String]| {
+        tabwrite_cells(
+            lines,
+            &at[from..=to],
+            &rows[from..=to],
+            &indents[from..=to],
+        );
+    };
+
+    let mut start = 0;
+    let mut wide = 0;
+    for r in 0..rows.len() {
+        let candidate = wide.max(width(body(r)));
+        if r > start && !holds(start, r, candidate + 1) {
+            flush(start, r - 1, lines);
+            start = r;
+            wide = width(body(r));
+            continue;
+        }
+        wide = candidate;
+    }
+    flush(start, rows.len() - 1, lines);
+}
+
 fn tabwrite_cells(lines: &mut [String], at: &[usize], rows: &[Vec<String>], indents: &[String]) {
     let columns = rows
         .iter()
@@ -155,16 +227,17 @@ fn flush_cells(
     at: &mut Vec<usize>,
     rows: &mut Vec<Vec<String>>,
     indents: &mut Vec<String>,
+    cols: Option<usize>,
 ) {
     if !at.is_empty() {
-        tabwrite_cells(lines, at, rows, indents);
+        emit_run(lines, at, rows, indents, cols);
     }
     at.clear();
     rows.clear();
     indents.clear();
 }
 
-fn align_cells(lines: &mut [String]) {
+fn align_cells(lines: &mut [String], cols: Option<usize>) {
     let parsed: Vec<Option<Marked>> = lines.iter().map(|line| marked(line)).collect();
     let mut at: Vec<usize> = Vec::new();
     let mut rows: Vec<Vec<String>> = Vec::new();
@@ -173,11 +246,11 @@ fn align_cells(lines: &mut [String]) {
 
     for (i, row) in parsed.iter().enumerate() {
         let Some(row) = row else {
-            flush_cells(lines, &mut at, &mut rows, &mut indents);
+            flush_cells(lines, &mut at, &mut rows, &mut indents, cols);
             continue;
         };
         if row.closer {
-            flush_cells(lines, &mut at, &mut rows, &mut indents);
+            flush_cells(lines, &mut at, &mut rows, &mut indents, cols);
             tabwrite_cells(
                 lines,
                 &[i],
@@ -187,23 +260,28 @@ fn align_cells(lines: &mut [String]) {
             continue;
         }
         if !at.is_empty() && indent != row.indent {
-            flush_cells(lines, &mut at, &mut rows, &mut indents);
+            flush_cells(lines, &mut at, &mut rows, &mut indents, cols);
         }
         indent.clone_from(&row.indent);
         at.push(i);
         rows.push(row.cells.clone());
         indents.push(row.indent.clone());
     }
-    flush_cells(lines, &mut at, &mut rows, &mut indents);
+    flush_cells(lines, &mut at, &mut rows, &mut indents, cols);
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
+    /// gofmt's scope and no width limit, which is what these fixtures model.
+    fn cells_all(input: &str) -> String {
+        cells(input, false, " ", usize::MAX)
+    }
+
     fn cell_fixpoint(input: &str) -> String {
-        let once = cells(input);
-        assert_eq!(cells(&once), once, "cell alignment must be idempotent");
+        let once = cells_all(input);
+        assert_eq!(cells_all(&once), once, "cell alignment must be idempotent");
         once
     }
 

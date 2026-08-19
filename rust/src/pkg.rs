@@ -43,14 +43,55 @@ impl TryFrom<String> for PackageFormat {
     }
 }
 
+/// `comment_cells` scope. gofmt aligns a trailing comment wherever consecutive
+/// lines carry one; rustfmt aligns them on list items only. `Block` is the
+/// latter: markers are emitted everywhere, but outside a `cellblock` they
+/// collapse to the plain comment gap instead of forming a column.
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Default)]
+pub enum CommentCells {
+    #[default]
+    Off,
+    All,
+    Block,
+}
+
+#[derive(Deserialize)]
+#[serde(untagged)]
+enum RawCommentCells {
+    Flag(bool),
+    Mode(String),
+}
+
+impl Default for RawCommentCells {
+    fn default() -> Self {
+        Self::Flag(false)
+    }
+}
+
+impl TryFrom<RawCommentCells> for CommentCells {
+    type Error = String;
+
+    fn try_from(raw: RawCommentCells) -> Result<Self, Self::Error> {
+        match raw {
+            RawCommentCells::Flag(false) => Ok(Self::Off),
+            RawCommentCells::Flag(true) => Ok(Self::All),
+            RawCommentCells::Mode(mode) if mode == "block" => Ok(Self::Block),
+            RawCommentCells::Mode(_) => {
+                Err("`comment_cells` must be a boolean or \"block\"".to_owned())
+            }
+        }
+    }
+}
+
 #[derive(Deserialize)]
 #[serde(try_from = "RawPackage")]
 pub struct Package {
     pub indent: usize,
-    /// Trailing comments on named nodes become their own cell. Tokens
-    /// (`}` / `)`) keep a one-space gap so a closer cannot join a column.
+    /// Trailing comments become their own cell. Closing delimiters
+    /// (`}` / `)` / `]`) keep a plain gap so a closer cannot join a column;
+    /// a separator comma may, which is where Rust's list-item comments land.
     #[serde(default)]
-    pub comment_cells: bool,
+    pub comment_cells: CommentCells,
     /// Whether one indent level is a tab rather than `indent` spaces. gofmt
     /// is the first reference whose house style is tab-indented.
     #[serde(default)]
@@ -94,7 +135,7 @@ struct RawPackage {
     _format: PackageFormat,
     indent: usize,
     #[serde(default)]
-    comment_cells: bool,
+    comment_cells: RawCommentCells,
     #[serde(default)]
     tab_indent: bool,
     #[serde(default)]
@@ -139,7 +180,7 @@ impl TryFrom<RawPackage> for Package {
             .collect::<Result<_, String>>()?;
         Ok(Self {
             indent: raw.indent,
-            comment_cells: raw.comment_cells,
+            comment_cells: CommentCells::try_from(raw.comment_cells)?,
             tab_indent: raw.tab_indent,
             tokens: raw.tokens,
             comments: raw.comments,
@@ -419,6 +460,13 @@ impl Package {
 
     pub fn is_token(&self, kind: &str) -> bool {
         self.tokens.contains(kind)
+    }
+
+    /// A closer's trailing comment must not join the column above it. Only
+    /// these end a construct -- a separator comma is a token too, and in Rust
+    /// it is exactly where a list item's comment lands (FINDINGS 22).
+    pub fn is_cell_closer(kind: &str) -> bool {
+        matches!(kind, "}" | ")" | "]")
     }
 
     /// The string one indent level writes. Resolved once per package, so a

@@ -15,5 +15,7 @@ fn main() {
         eprintln!("stdin: {err}");
         std::process::exit(1);
     }
-    print!("{}", align::cells(&input));
+    // gofmt's scope (align a comment cell wherever one survives), which is
+    // what this probe's only caller ever measured.
+    print!("{}", align::cells(&input, false, " ", usize::MAX));
 }

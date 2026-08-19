@@ -5,6 +5,8 @@
   "comment_gap": 1,
   "blank_cap": 1,
 
+  "comment_cells": "block",
+
   "tokens": [
     "(", ")", "[", "]", "{", "}",
     ",", ";", ".", ":", "::", "=", "->", "=>",
@@ -252,7 +254,7 @@
       ["seq", ["tok", "{"], ["hard"], ["tok", "}"]],
       ["use", "brace_items"]
     ],
-    "match_block": ["use", "brace_items"],
+    "match_block": ["cellblock", ["use", "brace_items"]],
 
     "let_declaration": [
       "seq",
@@ -545,16 +547,19 @@
         "group",
         ["tok", "{"],
         [
-          "indent",
-          ["line"],
-          ["each", "named", ["seq", ["tok", ","], ["line"]]],
-          ["trail", ",", "named"]
+          "cellblock",
+          [
+            "indent",
+            ["line"],
+            ["each", "named", ["seq", ["tok", ","], ["line"]]],
+            ["trail", ",", "named"]
+          ]
         ],
         ["line"],
         ["tok", "}"]
       ]
     ],
-    "enum_variant_list": ["use", "brace_comma"],
+    "enum_variant_list": ["cellblock", ["use", "brace_comma"]],
 
     "field_declaration": [
       "seq",
