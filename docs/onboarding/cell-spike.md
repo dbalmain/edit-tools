@@ -203,3 +203,66 @@ they are gone.
 `harness/probe_alignment.py --align-only` should be retired or taught
 to run the full formatter. A marker pass on gofmt text will always
 print 0/4,814.
+
+---
+
+## Orchestrator verification (2026-08-19)
+
+The report's own weakest claim is the one about real-world Go: `297 / 1,291`
+is not comparable to main's number, and the evidence offered for "this is
+fine" was a 16-file hand sample. agy's parallel spike never ran (usage limit,
+109 h), so there was no second implementation to cross-check against either.
+
+Ran `probe_alignment.py --verbose` over the same GOROOT population in **both**
+trees and diffed the mangled sets by path. That is the comparable measurement.
+
+| | main | cells |
+| --- | ---: | ---: |
+| compared | 1,231 | 1,291 |
+| mangled | 272 (22.10%) | 297 (23.01%) |
+| refused | 3,584 | 3,524 |
+
+**The +25 decomposes, and that is the whole point of doing it by path:**
+
+- **23** are files main **refused outright** and cells now formats — the typed
+  `const` specs the report calls "a package bugfix riding along". They were
+  0% formatted before, so an imperfect result is a gain, not a loss.
+- **2** are true regressions: files main formatted **cleanly** that cells now
+  mangles.
+- **0** fixes. Cells does not clean up anything main got wrong.
+
+So the honest headline is **2 regressions in the 1,231 files main could
+already format (0.16%)**, not "23.01% vs 22.10%".
+
+### Both regressions are one defect, and the report predicted it
+
+```
+src/internal/abi/rangefuncconsts.go:14
+  got  '\tRF_READY         // body of loop ...'
+  want '\tRF_READY                          // body of loop ...'
+
+src/runtime/os2_plan9.go:47
+  got  '\t\tpp *_Plink   // known to be 0(ptr)'
+  want '\t\tpp    *_Plink // known to be 0(ptr)'
+```
+
+Both are a column whose width is set by rows the pass left out of the run —
+the valueless-row / empty-slot case. That is exactly the `extraTabs / comment
+slot` row of the report's own policy table, the one marked **"not fully"**,
+and the one FINDINGS 1 said the 16-file corpus cannot see. The spike named
+this defect without being able to size it; it is 2 files in 1,231.
+
+### What this does and does not license
+
+It does **not** move the recommendation: `land` still holds. −1,601 B, Go
+12/16, 91/138 elsewhere, all confirmed by re-running rather than reading.
+
+It does add a **merge condition**: the empty-slot case should be fixed, or
+accepted in writing as a known 0.16% divergence with these two files named.
+Merging on the report alone would have shipped it unmeasured, because the
+committed probe (`--align-only`) is now blind by construction and would have
+printed a clean `0 / 4,814`.
+
+Retiring `--align-only` is therefore not optional cleanup. A probe that
+cannot fail is worse than no probe: it reports success at exactly the moment
+it stops measuring anything.
