@@ -113,3 +113,53 @@ class RetireTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class PackageBugIsNotCoverageTests(unittest.TestCase):
+    """A recorded `package-bug` must not count toward the merge bar.
+
+    `design-limit`, `reference-quirk` and `house-rule` settle a divergence.
+    `package-bug` says we could have matched the reference and did not, so
+    counting it as coverage lets a package reach the floor by documenting
+    that it is broken -- which is what Rust's stage D did, printing
+    `threshold_met: True` on six of them while its reviewer said `escalate`.
+    """
+
+    DIGEST = "abc123"
+
+    def review(self, verdict: str, digest: str | None = None):
+        return review_ledger.Review(
+            id="rust/structs.rs@100",
+            hash=digest or self.DIGEST,
+            verdict=verdict,
+            reason="r",
+            reviewed_by="test",
+            reviewed_at="2026-08-20T00:00:00Z",
+        )
+
+    def test_settling_verdicts_are_accepted(self):
+        for verdict in ("design-limit", "reference-quirk", "house-rule"):
+            with self.subTest(verdict=verdict):
+                state = review_ledger.state(self.DIGEST, self.review(verdict))
+                self.assertEqual(state, "accepted")
+
+    def test_package_bug_is_a_defect_in_both_spellings(self):
+        # The viewer writes the spaced spelling; the CLI takes the hyphenated
+        # one. Both must land on `defect`.
+        for verdict in ("package-bug", "package bug"):
+            with self.subTest(verdict=verdict):
+                state = review_ledger.state(self.DIGEST, self.review(verdict))
+                self.assertEqual(state, "defect")
+
+    def test_a_defect_stays_in_the_denominator(self):
+        summary = review_ledger.summary(
+            ["accepted", "defect", "accepted", "accepted"]
+        )
+        self.assertEqual(summary["defect"], 1)
+        self.assertEqual(summary["accepted_fraction"], 0.75)
+
+    def test_staleness_wins_over_the_verdict(self):
+        # A package-bug whose output moved is stale, not a defect: the
+        # recorded reason no longer describes the diff.
+        state = review_ledger.state("moved", self.review("package-bug"))
+        self.assertEqual(state, "stale")

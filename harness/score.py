@@ -400,6 +400,7 @@ def reference_agreement(
                 "accepted": 0,
                 "stale": 0,
                 "unreviewed": 0,
+                "defect": 0,
                 "excluded": 0,
                 "of": 0,
                 "reference_overflow": 0,
@@ -407,6 +408,7 @@ def reference_agreement(
                 "accepted_divergences": [],
                 "stale_divergences": [],
                 "unreviewed_divergences": [],
+                "defect_divergences": [],
                 "excluded_files": [],
                 "by_width": {
                     str(width): {
@@ -414,6 +416,7 @@ def reference_agreement(
                         "accepted": 0,
                         "stale": 0,
                         "unreviewed": 0,
+                        "defect": 0,
                         "of": 0,
                     }
                     for width in m.widths
@@ -493,6 +496,17 @@ def reference_agreement(
                     )
                 elif item_state == "stale":
                     stale(entry, case, review, "formatter divergence changed")
+                elif item_state == "defect":
+                    # A recorded `package-bug` is a defect, not coverage. It
+                    # stays in the denominator and out of the numerator.
+                    entry["defect"] += 1
+                    entry["defect_divergences"].append(
+                        {
+                            "case": case,
+                            "hash": divergence.hash,
+                            "review": asdict(review),
+                        }
+                    )
                 else:
                     entry["unreviewed"] += 1
                     entry["unreviewed_divergences"].append(
@@ -509,6 +523,7 @@ def reference_agreement(
     accepted = sum(e["accepted"] for e in per_language.values())
     stale_count = sum(e["stale"] for e in per_language.values())
     unreviewed = sum(e["unreviewed"] for e in per_language.values())
+    defect = sum(e["defect"] for e in per_language.values())
     excluded = sum(e["excluded"] for e in per_language.values())
     of = sum(e["of"] for e in per_language.values())
     coverage = (agreement + accepted) / of if of else 1.0
@@ -529,6 +544,7 @@ def reference_agreement(
         "accepted": accepted,
         "stale": stale_count,
         "unreviewed": unreviewed,
+        "defect": defect,
         "excluded": excluded,
         "of": of,
         "agreement_fraction": round(agreement / of, 3) if of else None,
@@ -583,6 +599,7 @@ def main() -> int:
     print(f"  accepted divergence          {ra['accepted']}/{ra['of']}")
     print(f"  stale review                 {ra['stale']}/{ra['of']}")
     print(f"  unreviewed divergence        {ra['unreviewed']}/{ra['of']}")
+    print(f"  package bug (not coverage)   {ra['defect']}/{ra['of']}")
     print(f"  excluded from comparison     {ra['excluded']}")
     threshold = "met" if ra["review_threshold_met"] else "BELOW AT SOME WIDTH"
     print(
@@ -594,7 +611,8 @@ def main() -> int:
         print(f"    {lang:10} {e['agreement']:>3} agreement,"
               f" {e['accepted']:>3} accepted,"
               f" {e['stale']:>3} stale,"
-              f" {e['unreviewed']:>3} unreviewed / {e['of']:<3}"
+              f" {e['unreviewed']:>3} unreviewed,"
+              f" {e['defect']:>3} defect / {e['of']:<3}"
               f"  excluded {e['excluded']}"
               f" vs {e['reference']}"
               f"  (its own overflow: {e['reference_overflow']}){waived}")
@@ -603,7 +621,8 @@ def main() -> int:
             print(f"      @{width:<4} {outcomes['agreement']:>3} agreement,"
                   f" {outcomes['accepted']:>3} accepted,"
                   f" {outcomes['stale']:>3} stale,"
-                  f" {outcomes['unreviewed']:>3} unreviewed"
+                  f" {outcomes['unreviewed']:>3} unreviewed,"
+                  f" {outcomes['defect']:>3} defect"
                   f" / {outcomes['of']}{width_mark}")
         if e["accepted_divergences"]:
             print("      accepted:")
