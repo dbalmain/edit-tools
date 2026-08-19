@@ -307,6 +307,29 @@ boundaries. Nothing dishonest — just consistently the least useful of the thre
 **agy has still produced nothing**, blocked on headless command permissions
 rather than on capability. See `LANGUAGES.md`.
 
+**The cell node merged (2026-08-19), and the unpriced option was the cheapest.**
+FINDINGS 18 offered decline (0 B) / `alignment: "rust"` (796 B) / the `cell`
+node (unpriced). The framing implied the unknown was the expensive one. It was
+**−1,601 B**: the ~2,000 B of quote-aware scanners every named mode had to
+carry are gone, and what replaces them is ~992 B of language-independent
+tabwriter. Rust alignment is now a handful of package cells and no runtime at
+all.
+
+Two process notes worth more than the number:
+
+- **The A/B never ran.** agy was to build a second implementation head-to-head;
+  it hit a quota wall. The substitute was *independent verification of one
+  implementation* rather than a second implementation — re-running the
+  measurements by hand, and set-diffing the GOROOT probe by path. That is
+  cheaper than a second spike and caught what a second spike would not have:
+  the builder's own real-world claim rested on a 16-file sample.
+- **The committed probe had gone blind.** `--align-only` could only print
+  `0 / 4,814` once alignment moved to markers, and merging on the report alone
+  would have shipped 2 real regressions unmeasured. It is now retired with an
+  error that explains itself. Generalise: when a capability changes shape, ask
+  which existing probe silently stopped measuring — a green probe is evidence
+  only if it could have gone red.
+
 **Third seat, third nothing (2026-08-19).** Round 3 gave agy the `cell` doc-node
 spike — a self-contained brief in `spike/cell-node-agy`, deliberately written to
 need no prior project context, run manually by Dave so the permission problem
