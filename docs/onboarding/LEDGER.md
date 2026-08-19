@@ -514,3 +514,38 @@ Per the playbook's own split:
   `~/.claude/agent-playbook.md`.
 - **The per-model table above** — stays here and in project memory. It is
   calibration data, not a general lesson, and it goes stale.
+
+## Round 3, Rust cells: two models tried, neither produced a commit
+
+The slice: close the six `package-bug` divergences with `cell` / `cellblock`
+rules. Artefact-first prompt, four ordered deliverables, the disproved approach
+named and forbidden, pushback invited. Same prompt file to both, byte-identical,
+so the comparison is fair.
+
+| Model | Variant | Elapsed | Log | Commits | Tree change |
+| --- | --- | ---: | ---: | ---: | --- |
+| `opencode-go/deepseek-v4-pro` | `max` | 35 min | 149 KB | **0** | `comment_cells: true` — the forbidden approach |
+| `opencode-go/qwen3.8-max` | `max` | 36 min | 146 KB | **0** | none (wedged) |
+
+**DeepSeek**: `--variant max` did not change its behaviour. It investigated for
+35 minutes, produced no done-note, and its only edit was the one header the
+prompt named as disproved. Its own idempotence probe had already produced the
+evidence against that change, and it made the change anyway. This is its second
+run where a *negative* instruction was routed around rather than obeyed (the
+first: told not to read the harness scripts, it read the README beside them).
+Note the aven-bench results that earned DeepSeek its reputation were on
+`deepseek-v4-flash`; `deepseek-v4-pro` appears there zero times.
+
+**qwen3.8-max**: much better judgement — it found the `FMT_PACKAGES` override
+and iterated on scratch copies without ever dirtying the worktree, and its first
+experiment was the right shape. Then it wedged: log flat 12 min, CPU flat at
+6m55s, `do_epoll_wait` with **zero open sockets**, no commit. Not the
+"never started" signature (it had written 146 KB); a hang after real work.
+Killed at 36 min.
+
+The slice fell through to the orchestrator, which is where it should have gone
+first — see FINDINGS 22. The task was mis-specified, not mis-routed: it asked
+for rules that cannot exist, and the deliverable was always going to be a
+finding. **An agent cannot be graded on a task whose correct answer is "this is
+impossible" unless the prompt makes that answer reachable** — ours did, for one
+named sub-case (the method chain), and both models chased the other five anyway.

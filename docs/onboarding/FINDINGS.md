@@ -1090,6 +1090,15 @@ three times.
 **Decide when:** a second language wants it. Go can live without it; the
 divergences it causes are a small part of the 10.
 
+**The trigger fired (Rust, 2026-08-20).** rustfmt deletes the redundant leading
+`|` in a match pattern. Rust's corpus carries a dedicated `leading_pipes.rs`
+that is **declared incomparable for this reason alone** — the stage-B brief's
+preferred handling, and a sharper signal than a divergence would have been,
+because the language had to give up measuring the construct at all. Two
+languages now want `drop`, which is the condition this entry set for deciding. Rust's case is the friendlier one to
+reason about — a single anonymous token the grammar marks optional, in one
+position — and it does not need the general opcode to be settled first.
+
 ## 14. A third sanctioned token policy, for respelling
 
 **Status:** **decided — build it** (Dave, 2026-08-17) · **Cost:** contextual,
@@ -1564,8 +1573,16 @@ build it before then.
 ## 18. `alignment: "go"` on Rust aligns exactly the lines rustfmt leaves alone
 
 **Status:** **closed 2026-08-19 — option 3 built, measured and merged.**
-· **Cost:** **negative** (−1,601 B runtime) · **Languages:** Rust (1.4% of real
-files), Go (merged), Scheme (unonboarded)
+· **Reopened in part as [entry 22](#22-comment_cells-is-one-package-wide-switch-and-the-two-languages-want-opposite-scopes)
+(2026-08-20).** · **Cost:** **negative** (−1,601 B runtime) · **Languages:**
+Rust (1.4% of real files), Go (merged), Scheme (unonboarded)
+
+**Correction.** This entry closed saying Rust alignment is "package rules only,
+~0 B of runtime". Measurement at the point of writing those rules says
+otherwise: no package expression aligns a Rust struct field's trailing comment,
+because the comment attaches to the separator comma — a token — and
+`comment_cells` skips tokens. The capability landed; the *scope* it needs did
+not. Entry 22 has the three experiments.
 
 Entry 1 closed with "alignment is largely a Go cost, not a general one", on the
 strength of Rust showing 2 of 15 corpus files against Go's 6 of 16. Dave then
@@ -2007,3 +2024,108 @@ Nobody has yet found a reference that wants both behaviours in one language, so
 (1) is the recommendation until someone does. Two languages hitting the same
 constant from opposite sides is what makes this worth changing at all: one
 language wanting a different constant is a package problem, two is a schema one.
+
+---
+
+## 22. `comment_cells` is one package-wide switch, and the two languages want opposite scopes
+
+**Status:** open · **Cost:** **local** · **Languages:** Rust (`structs.rs`,
+`comments.rs`, `widths.rs` — six divergences), Go (the incumbent user)
+
+rustfmt aligns the trailing comments on **list items** — struct fields, enum
+variants, match arms — and leaves the trailing comments on **statements**
+alone. gofmt aligns both. `comment_cells` is a package header with no scope, so
+it can express gofmt's rule or nothing, and Rust cannot use it.
+
+This is the finding entry 18 should have produced. Entry 18 closed on the claim
+that Rust alignment is "package rules only, ~0 B of runtime". That claim is
+wrong, and the three measurements below are why.
+
+### A package-placed `["cell"]` cannot make a comment cell
+
+A trailing comment is emitted as a line **suffix**, and the suffix text carries
+its own gap:
+
+```js
+const gap = " ".repeat(fmt.commentGap);
+const commentCells = fmt.pkg.comment_cells === true && !fmt.tokens.has(item.node.type);
+parts.push(suffix(commentCells ? concat([cell, text(s)]) : text(`${gap}${s}`)));
+```
+
+So `comment_cells` is the *only* route from a comment to a cell. A package that
+writes its own `["cell"]` before the suffix gets the tabwriter's pad (widest
+`+ 1`) **and then** the suffix's `comment_gap`. Measured, with `["cell"]` after
+the separator comma in `field_declaration_list` inside a `["cellblock"]`:
+
+```
+    short: bool,                       // enable the short path      <- ours
+    short: bool,                      // enable the short path       <- rustfmt
+```
+
+Aligned, and one column too wide on every row, at every width. The package
+cannot reach `comment_gap` per-rule, and setting it to `0` package-wide would
+strip the space from every trailing comment that is *not* in a cell.
+
+### Turning the header on does not reach Rust's struct fields at all
+
+`comment_cells` skips tokens — `!fmt.tokens.has(item.node.type)` — so that a
+closer's trailing comment cannot join the column. In tree-sitter-rust the
+separator comma is a child of the **list**, not of the item:
+
+```
+'{'  'field_declaration'  ','  'line_comment'  'field_declaration'  ','  …
+```
+
+The comment's preceding sibling is therefore the `,` **token**, and the
+attachment rule hands the suffix to it. With `comment_cells: true` and no other
+change, `structs.rs` emits **zero** cell markers and its output is byte-identical
+to the unaligned base. Match arms behave differently only because `match_arm`
+owns its comma (`["opt", "t:,", …]`), so the comment lands on a named node.
+
+The token exclusion is right about closers and wrong about separators — the
+shape defect the stage-D brief warns about, invisible to every gate.
+
+### Where the header *does* fire, it breaks gate 2
+
+`comment_cells: true` aligns statement comments too, which rustfmt does not, and
+that is not merely a divergence — re-formatting our own output aligns it again
+against different neighbours:
+
+```
+failures:
+  rust__comments.tree@100: not idempotent
+  rust__comments.tree@60: not idempotent
+DISQUALIFIED
+```
+
+`let second = 2;` and `let third = 3;` are consecutive, same-indent, both
+comment-bearing, so the pass pads the shorter one and the next pass pads it
+again. Idempotence is a hard gate, so this is disqualifying rather than
+debatable.
+
+### Scoping is the whole fix, and it is already half-built
+
+`cellblock` exists and already means "this region aligns as a block". Adding a
+`["cellblock"]` around `match_block` — with the header on — makes `widths.rs`'s
+match arms **byte-identical to rustfmt**:
+
+```
+        1 => "one",         // aligns at both widths
+        22 => "twenty-two", // aligns at both widths
+```
+
+So the capability works; only its scope is unsayable. The minimum change is to
+let a `cellblock` opt its subtree into comment cells, leaving the package header
+for Go — which genuinely wants them outside cellblocks, for consecutive
+standalone `var`s (cell-spike, "Why not one node"). Narrowing the token
+exclusion from *any token* to *closing delimiters* is needed as well, or Rust's
+list items stay unreachable even inside a block.
+
+### What it costs today
+
+No file flips either way: 19/34 with the header and the `match_block` cellblock,
+19/34 without. `widths.rs` is multi-cause — the method chain is entry 11 — and
+file-level agreement cannot see a fix to one hunk of five. The six divergences
+are `design-limit`, not `package-bug`: the package cannot express Rust's
+alignment scope, and the two experiments that look like they should work are
+disqualified by a gate and by a two-space column respectively.
