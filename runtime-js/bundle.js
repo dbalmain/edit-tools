@@ -209,6 +209,7 @@ function validateExpr(value) {
       parseSelector(rest[1]);
       return;
     case "srctrail":
+    case "drop":
       arity(1);
       literal(rest[0]);
       return;
@@ -1024,6 +1025,8 @@ class Ctx {
         return this.srcBreak(line);
       case "srctrail":
         return this.srctrail(rest[0]);
+      case "drop":
+        return this.drop(rest[0]);
       case "child":
         return this.child(parseSelector(rest[0]));
       case "each":
@@ -1152,6 +1155,26 @@ class Ctx {
   srcBreak(flat) {
     const item = this.items[this.cursor];
     return item && item.lineBreak ? hard : flat;
+  }
+
+  /** Consume a redundant token without emitting it -- the only sanctioned
+   *  deletion, and the mirror of the linearity invariant that forbids
+   *  inventing token text (FINDINGS 13). Absent is fine: a package says
+   *  "drop this if it is here", the way rustfmt drops a leading `|`.
+   *
+   *  Two refusals guard it, because gate 3 alone has been caught out. The
+   *  token must be declared punctuation -- dropping a named node would delete
+   *  meaning, not spelling -- and it must carry no comment, since a dropped
+   *  token takes its trivia with it. */
+  drop(want) {
+    const item = this.items[this.cursor];
+    if (!item || item.node.text !== want) return nil;
+    if (!this.fmt.tokens.has(item.node.type)) {
+      throw this.refuse(`\`drop\` of \`${want}\`, which is not declared punctuation`);
+    }
+    if (decorated(item)) throw this.refuse(`no comment on a dropped \`${want}\``);
+    this.cursor++;
+    return nil;
   }
 
   /** The trailing-separator policy for a source-driven list: adopt a separator

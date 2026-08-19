@@ -87,6 +87,28 @@ function chain(ops, base, fields = { left: "left", operator: "operator", right: 
   return node;
 }
 
+const dropList = (children) => ({ type: "list", start: 0, end: 0, children });
+const dropRule = { list: ["seq", ["tok", "("], ["drop", "+"], ["child", "*"], ["tok", ")"]] };
+
+test("drop consumes a redundant token without emitting it", () => {
+  const root = dropList([leaf("(", "("), leaf("+", "+"), leaf("a", "a"), leaf(")", ")")]);
+  assert.equal(run(toy(dropRule), root, 80), "(a)\n");
+});
+
+test("drop is a no-op when the token is absent", () => {
+  const root = dropList([leaf("(", "("), leaf("a", "a"), leaf(")", ")")]);
+  assert.equal(run(toy(dropRule), root, 80), "(a)\n");
+});
+
+test("drop refuses a token the package has not declared punctuation", () => {
+  const pkg = toy({ list: ["seq", ["tok", "("], ["drop", "a"], ["tok", ")"]] });
+  const root = dropList([leaf("(", "("), leaf("a", "a"), leaf(")", ")")]);
+  assert.throws(
+    () => run(pkg, root, 80),
+    (err) => err instanceof Refusal && /not declared punctuation/.test(err.message),
+  );
+});
+
 test("a group fraction breaks a construct that still fits the line", () => {
   const rule = [
     "group", 0.18, ["tok", "("],

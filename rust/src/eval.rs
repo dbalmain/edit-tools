@@ -267,6 +267,7 @@ impl<'a> Ctx<'a> {
             Expr::SrcSoft => Ok(self.src_break(Doc::nil())),
             Expr::SrcBreak => Ok(self.src_break(Doc::Line)),
             Expr::SrcTrail(sep) => self.srctrail(sep, f),
+            Expr::Drop(want) => self.drop_token(want, f),
             Expr::Cell => Ok(Doc::Cell),
             Expr::CellBlock(es) => {
                 let mut parts = vec![Doc::CellBreak];
@@ -403,6 +404,28 @@ impl<'a> Ctx<'a> {
         } else {
             Doc::text(sep)
         })
+    }
+
+    /// Absent is fine: a package says "drop this if it is here", the way
+    /// rustfmt drops a leading `|`. Two refusals guard it, because gate 3
+    /// alone has been caught out. The token must be declared punctuation --
+    /// dropping a named node would delete meaning, not spelling -- and it must
+    /// carry no comment, since a dropped token takes its trivia with it.
+    fn drop_token(&mut self, want: &str, f: &Fmt<'a>) -> Result<Doc, Refusal> {
+        let at = self.cursor;
+        if self.items.get(at).and_then(|i| i.node.text.as_deref()) != Some(want) {
+            return Ok(Doc::nil());
+        }
+        if !f.pkg.is_token(&self.items[at].node.kind) {
+            return Err(self.refuse(&format!(
+                "`drop` of `{want}`, which is not declared punctuation"
+            )));
+        }
+        if self.items[at].decorated() {
+            return Err(self.refuse(&format!("no comment on a dropped `{want}`")));
+        }
+        self.cursor += 1;
+        Ok(Doc::nil())
     }
 
     fn child(&mut self, sel: &Sel, f: &Fmt<'a>) -> Result<Doc, Refusal> {
@@ -1010,6 +1033,43 @@ mod tests {
 
         let error = format_tree(&packages, "outer", "", root, 80).expect_err("must refuse");
         assert_eq!(error.0, "no package for language `missing-toy`");
+    }
+
+    #[test]
+    fn drop_consumes_a_redundant_token_without_emitting_it() {
+        let pkg = toy(json!({
+            "list": ["seq", ["tok", "("], ["drop", "+"], ["child", "*"], ["tok", ")"]]
+        }));
+        let root = json!({
+            "type": "list", "start": 0, "end": 0,
+            "children": [leaf("(", "("), leaf("+", "+"), leaf("a", "a"), leaf(")", ")")]
+        });
+        assert_eq!(run(&pkg, root, 80).expect("drop succeeds"), "(a)\n");
+    }
+
+    #[test]
+    fn drop_is_a_no_op_when_the_token_is_absent() {
+        let pkg = toy(json!({
+            "list": ["seq", ["tok", "("], ["drop", "+"], ["child", "*"], ["tok", ")"]]
+        }));
+        let root = json!({
+            "type": "list", "start": 0, "end": 0,
+            "children": [leaf("(", "("), leaf("a", "a"), leaf(")", ")")]
+        });
+        assert_eq!(run(&pkg, root, 80).expect("absent is fine"), "(a)\n");
+    }
+
+    #[test]
+    fn drop_refuses_a_token_the_package_has_not_declared_punctuation() {
+        let pkg = toy(json!({
+            "list": ["seq", ["tok", "("], ["drop", "a"], ["tok", ")"]]
+        }));
+        let root = json!({
+            "type": "list", "start": 0, "end": 0,
+            "children": [leaf("(", "("), leaf("a", "a"), leaf(")", ")")]
+        });
+        let err = run(&pkg, root, 80).expect_err("must refuse");
+        assert!(err.0.contains("not declared punctuation"), "{}", err.0);
     }
 
     #[test]

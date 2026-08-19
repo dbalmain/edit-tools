@@ -1064,7 +1064,9 @@ had one is worth recording — it is what stops this entry becoming a vague fear
 
 ## 13. A package cannot delete a token the reference deletes
 
-**Status:** open · **Cost:** local · **Languages:** Go
+**Status:** **opcode built 2026-08-20, unused — blocked in both languages, for
+two different reasons.** · **Cost:** local (+317 B runtime) · **Languages:** Go,
+Rust
 
 gofmt removes redundant parentheses and statement semicolons. Gate 3 permits it
 — the reparse is unchanged and the tokens are anonymous — but **no opcode can
@@ -1095,9 +1097,53 @@ divergences it causes are a small part of the 10.
 that is **declared incomparable for this reason alone** — the stage-B brief's
 preferred handling, and a sharper signal than a divergence would have been,
 because the language had to give up measuring the construct at all. Two
-languages now want `drop`, which is the condition this entry set for deciding. Rust's case is the friendlier one to
-reason about — a single anonymous token the grammar marks optional, in one
-position — and it does not need the general opcode to be settled first.
+languages now want `drop`, which is the condition this entry set for deciding.
+
+### Built. It works, and it earns nothing yet.
+
+`["drop", "|"]` consumes a token without emitting it. Absent is fine — a package
+says "drop this if it is here". Two refusals guard it, because this entry said
+gate 3 would be its only protection and gate 3 has been caught out three times:
+the token must be **declared punctuation** in the package's `tokens` (dropping a
+named node would delete meaning, not spelling), and it must **carry no comment**,
+since a dropped token takes its trivia with it. Six unit tests, three per
+runtime.
+
+Applied to Rust's `or_pattern`, `leading_pipes.rs` becomes **byte-identical to
+rustfmt at both widths, in both runtimes**. Then gate 3 rejected it, and the
+rejection is correct and instructive:
+
+```
+FAIL rust__leading_pipes@100: … match_pattern:
+     leaf text (('or_pattern', ('|', '_')),) became ('_',)
+```
+
+Two of the three arms can be declared away: `or_pattern` joins
+`transparent_wrappers`, which is sound because the elision fires only on a
+wrapper with **exactly one named child**, so `1 | 2` keeps both alternatives and
+a formatter that deleted one is still caught. The third arm, `| _`, cannot. Its
+`or_pattern` holds *only anonymous tokens*, and the wrapper rule is defined over
+named children. Worse, eliding it changes which branch the **parent** takes:
+`match_pattern` skeletons differently depending on whether it has any named
+child at all, so the reference and our output take different paths through the
+same function.
+
+That is not a missing declaration. It is entry 5's blind spot seen from the
+other side — the skeleton's two-branch design — and widening it to admit this
+case would weaken the only thing standing between `drop` and corrupted source.
+The opcode is therefore built and **not used by any package**.
+
+Go cannot use it yet either, for an unrelated reason: `normalisation.go@80` is
+the file that wanted consume-without-emit, and its stage-D review says the same
+file also needs parent-position-sensitive formatting (entry 10). One capability
+short in each language, and they are different capabilities.
+
+**So the bill is +317 B of runtime for zero agreement, in a 25,600 B budget with
+530 B left.** By `house-style.md`'s own argument that is a bad trade today. It
+is kept on the branch rather than reverted because both blockers are named and
+neither is `drop`'s fault — but it should not land on main until one of them
+moves. **Decide:** land it with the gate-3 skeleton work, or hold it until Go
+takes entry 10.
 
 ## 14. A third sanctioned token policy, for respelling
 

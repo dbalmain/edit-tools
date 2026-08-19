@@ -543,6 +543,10 @@ pub enum Expr {
     /// the separator if the source has one, and emit it only when the source
     /// had a line break before the following token.
     SrcTrail(String),
+    /// Consume a redundant token without emitting it -- the only sanctioned
+    /// deletion, and the mirror of the linearity invariant that forbids
+    /// inventing token text (FINDINGS 13).
+    Drop(String),
     /// A column break. `print` emits a marker; a later pass aligns runs.
     Cell,
     /// Wrap a grouped declaration so the align pass full-tabwrites it.
@@ -599,6 +603,10 @@ impl TryFrom<Value> for Expr {
             "srctrail" => {
                 arity(1)?;
                 Ok(Expr::SrcTrail(literal(&parts[0])?))
+            }
+            "drop" => {
+                arity(1)?;
+                Ok(Expr::Drop(literal(&parts[0])?))
             }
             "child" => {
                 arity(1)?;

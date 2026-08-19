@@ -33,7 +33,10 @@ transparent_wrappers = ["block"]
 equivalent_kinds = []
 
 # rustfmt deletes a leading `|` on a match arm (match_arm_leading_pipes =
-# Never). A package may not delete a source token, so the reference's output
-# can never be agreed and must sit outside the agreement denominator.
+# Never). The `drop` opcode (FINDINGS 13) now makes the deletion sayable, and
+# with it this file is byte-identical to rustfmt at both widths -- but gate 3
+# rejects the `| _` arm, because an `or_pattern` holding only anonymous tokens
+# cannot be declared transparent. Still outside the denominator, for a reason
+# that has moved from "no opcode" to "the gate cannot express the equivalence".
 [incomparable]
 "leading_pipes.rs" = "rustfmt deletes the leading `|` of each match arm (token deletion)"
