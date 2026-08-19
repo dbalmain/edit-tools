@@ -47,9 +47,10 @@ impl TryFrom<String> for PackageFormat {
 #[serde(try_from = "RawPackage")]
 pub struct Package {
     pub indent: usize,
-    /// Experimental rendered-text alignment. The only spike implementation
-    /// is `go`; omitting this field leaves the printer byte-for-byte alone.
-    pub alignment: Option<String>,
+    /// Trailing comments on named nodes become their own cell. Tokens
+    /// (`}` / `)`) keep a one-space gap so a closer cannot join a column.
+    #[serde(default)]
+    pub comment_cells: bool,
     /// Whether one indent level is a tab rather than `indent` spaces. gofmt
     /// is the first reference whose house style is tab-indented.
     #[serde(default)]
@@ -93,7 +94,7 @@ struct RawPackage {
     _format: PackageFormat,
     indent: usize,
     #[serde(default)]
-    alignment: Option<String>,
+    comment_cells: bool,
     #[serde(default)]
     tab_indent: bool,
     #[serde(default)]
@@ -132,19 +133,13 @@ impl TryFrom<RawPackage> for Package {
             }
         }
         let flatten_fields = flatten_fields(raw.flatten_fields)?;
-        if raw.alignment.as_deref().is_some_and(|value| value != "go") {
-            return Err(format!(
-                "unknown alignment mode `{}`; expected `go`",
-                raw.alignment.as_deref().unwrap_or_default()
-            ));
-        }
         let rules = expand_rules(&raw.defs, raw.rules)?
             .into_iter()
             .map(|(name, value)| Ok((name, Expr::try_from(value)?)))
             .collect::<Result<_, String>>()?;
         Ok(Self {
             indent: raw.indent,
-            alignment: raw.alignment,
+            comment_cells: raw.comment_cells,
             tab_indent: raw.tab_indent,
             tokens: raw.tokens,
             comments: raw.comments,
@@ -460,7 +455,7 @@ pub enum Pred {
     All(Sel, Vec<String>),
 }
 
-/// One expression of the package language. Eighteen opcodes; see DESIGN.md.
+/// One expression of the package language. Twenty opcodes; see DESIGN.md.
 #[derive(Debug, Deserialize)]
 #[serde(try_from = "Value")]
 pub enum Expr {
@@ -497,6 +492,11 @@ pub enum Expr {
     /// the separator if the source has one, and emit it only when the source
     /// had a line break before the following token.
     SrcTrail(String),
+    /// A column break. `print` emits a marker; a later pass aligns runs.
+    Cell,
+    /// Wrap a grouped declaration so the align pass full-tabwrites it.
+    /// Standalone specs of the same node type stay comment-column only.
+    CellBlock(Vec<Expr>),
 }
 
 impl TryFrom<Value> for Expr {
@@ -526,6 +526,7 @@ impl TryFrom<Value> for Expr {
 
         match op.as_str() {
             "seq" => Ok(Expr::Seq(rest(parts)?)),
+            "cellblock" => Ok(Expr::CellBlock(rest(parts)?)),
             "group" => {
                 let max = match parts.first() {
                     Some(Value::Number(_)) => Some(group_max(&parts.remove(0))?),
@@ -542,6 +543,7 @@ impl TryFrom<Value> for Expr {
             "verbatim" => arity(0).map(|()| Expr::Verbatim),
             "srcline" => arity(0).map(|()| Expr::SrcLine),
             "srcsoft" => arity(0).map(|()| Expr::SrcSoft),
+            "cell" => arity(0).map(|()| Expr::Cell),
             "srctrail" => {
                 arity(1)?;
                 Ok(Expr::SrcTrail(literal(&parts[0])?))
@@ -912,6 +914,19 @@ mod tests {
                 "{err}"
             );
         }
+    }
+
+    #[test]
+    fn cell_is_a_nullary_opcode() {
+        let pkg = macro_package(json!({}), json!({ "list": ["seq", ["cell"], ["line"]] }))
+            .expect("cell parses");
+        let Expr::Seq(parts) = &pkg.rules["list"] else {
+            panic!("seq");
+        };
+        assert!(matches!(parts.as_slice(), [Expr::Cell, Expr::Line]));
+
+        let err = refusal(json!({}), json!({ "list": ["cell", "x"] }));
+        assert!(err.contains("`cell` takes 0 operands, got 1"), "{err}");
     }
 
     #[test]

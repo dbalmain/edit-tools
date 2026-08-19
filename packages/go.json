@@ -2,7 +2,7 @@
   "format": "et-doc-rules/1",
   "indent": 1,
   "tab_indent": true,
-  "alignment": "go",
+  "comment_cells": true,
   "comment_gap": 1,
   "blank_cap": 1,
   "tokens": [
@@ -171,12 +171,71 @@
         ]
       ]
     ],
-    "braced_list": [
-      "seq",
+    "spec_cols": [
+      "when",
       [
-        "tok",
-        "{"
+        "count",
+        "t:=",
+        1
       ],
+      [
+        "seq",
+        [
+          "cell"
+        ],
+        [
+          "opt",
+          "f:type",
+          [
+            "child",
+            "f:type"
+          ]
+        ],
+        [
+          "cell"
+        ],
+        [
+          "tok",
+          "="
+        ],
+        [
+          "sp"
+        ],
+        [
+          "child",
+          "f:value"
+        ]
+      ],
+      [
+        "when",
+        [
+          "count",
+          "f:type",
+          1
+        ],
+        [
+          "seq",
+          [
+            "cell"
+          ],
+          [
+            "child",
+            "f:type"
+          ]
+        ],
+        [
+          "seq"
+        ]
+      ]
+    ],
+    "braced_list": [
+      "cellblock",
+      [
+        "seq",
+        [
+          "tok",
+          "{"
+        ],
       [
         "indent",
         [
@@ -203,6 +262,7 @@
       [
         "tok",
         "}"
+      ]
       ]
     ],
     "case_block": [
@@ -625,39 +685,8 @@
         ]
       ],
       [
-        "opt",
-        "f:type",
-        [
-          "seq",
-          [
-            "sp"
-          ],
-          [
-            "child",
-            "f:type"
-          ]
-        ]
-      ],
-      [
-        "opt",
-        "t:=",
-        [
-          "seq",
-          [
-            "sp"
-          ],
-          [
-            "tok",
-            "="
-          ],
-          [
-            "sp"
-          ],
-          [
-            "child",
-            "f:value"
-          ]
-        ]
+        "use",
+        "spec_cols"
       ]
     ],
     "var_spec_list": [
@@ -667,21 +696,24 @@
         "("
       ],
       [
-        "indent",
+        "cellblock",
         [
-          "hard"
-        ],
-        [
-          "each",
-          "named",
+          "indent",
           [
-            "seq",
+            "hard"
+          ],
+          [
+            "each",
+            "named",
             [
-              "hard"
-            ],
-            [
-              "blank",
-              1
+              "seq",
+              [
+                "hard"
+              ],
+              [
+                "blank",
+                1
+              ]
             ]
           ]
         ]
@@ -717,21 +749,24 @@
             "("
           ],
           [
-            "indent",
+            "cellblock",
             [
-              "hard"
-            ],
-            [
-              "each",
-              "named",
+              "indent",
               [
-                "seq",
+                "hard"
+              ],
+              [
+                "each",
+                "named",
                 [
-                  "hard"
-                ],
-                [
-                  "blank",
-                  1
+                  "seq",
+                  [
+                    "hard"
+                  ],
+                  [
+                    "blank",
+                    1
+                  ]
                 ]
               ]
             ]
@@ -767,25 +802,8 @@
         ]
       ],
       [
-        "opt",
-        "t:=",
-        [
-          "seq",
-          [
-            "sp"
-          ],
-          [
-            "tok",
-            "="
-          ],
-          [
-            "sp"
-          ],
-          [
-            "child",
-            "f:value"
-          ]
-        ]
+        "use",
+        "spec_cols"
       ]
     ],
     "type_declaration": [
@@ -944,7 +962,7 @@
           [
             "seq",
             [
-              "sp"
+              "cell"
             ],
             [
               "child",
@@ -970,7 +988,7 @@
           ]
         ],
         [
-          "sp"
+          "cell"
         ],
         [
           "child",
@@ -982,7 +1000,7 @@
           [
             "seq",
             [
-              "sp"
+              "cell"
             ],
             [
               "child",

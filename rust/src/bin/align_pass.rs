@@ -1,4 +1,8 @@
-//! Stdin → `align::go` → stdout. Used by `harness/probe_alignment.py --align-only`.
+//! Stdin → `align::cells` → stdout. Used by `harness/probe_alignment.py --align-only`.
+//!
+//! A marker-based pass is a no-op on gofmt output (no vertical tabs), so
+//! `--align-only` no longer measures agreement. The full formatter is the
+//! probe that counts.
 
 #[path = "../align.rs"]
 mod align;
@@ -11,5 +15,5 @@ fn main() {
         eprintln!("stdin: {err}");
         std::process::exit(1);
     }
-    print!("{}", align::go(&input));
+    print!("{}", align::cells(&input));
 }

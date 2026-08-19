@@ -34,6 +34,12 @@ pub enum Doc {
     Suffix(Box<Doc>),
     /// Forces enclosing groups to break without emitting anything.
     BreakParent,
+    /// A zero-width column break. `print` emits a vertical tab; a later
+    /// language-independent pass aligns runs of rows over those markers.
+    Cell,
+    /// A section boundary. `print` emits a formfeed; the align pass full-
+    /// tabwrites inside a pair and comment-aligns only outside one.
+    CellBreak,
 }
 
 impl Doc {
@@ -121,7 +127,7 @@ fn collect_forced(doc: &Doc, forced: &mut Forced) -> bool {
             collect_forced(inner, forced);
             false
         }
-        Doc::Text(_) | Doc::Line | Doc::Soft => false,
+        Doc::Text(_) | Doc::Line | Doc::Soft | Doc::Cell | Doc::CellBreak => false,
     }
 }
 
@@ -221,7 +227,7 @@ fn fits<'a>(
             // do we: it is the difference between breaking a call and leaving
             // an over-long line behind a `# ...`.
             Doc::Suffix(inner) => stack.push((ind, Mode::Flat, inner)),
-            Doc::BreakParent => {}
+            Doc::BreakParent | Doc::Cell | Doc::CellBreak => {}
         }
     }
 }
@@ -353,6 +359,28 @@ pub fn print(doc: &Doc, width: usize) -> String {
                 }
                 Doc::Suffix(inner) => suffixes.push((ind, Mode::Break, inner)),
                 Doc::BreakParent => {}
+                Doc::Cell => {
+                    if !pending.is_empty() {
+                        out.push_str(&pending);
+                        pending.clear();
+                    }
+                    out.push('\u{000B}');
+                }
+                Doc::CellBreak => {
+                    // A section boundary is the end of the current line's
+                    // tabwriter row. Flush suffixes first so a trailing
+                    // comment is not stranded after the formfeed.
+                    if !suffixes.is_empty() {
+                        stack.push((ind, mode, doc));
+                        stack.extend(suffixes.drain(..).rev());
+                        continue;
+                    }
+                    if !pending.is_empty() {
+                        out.push_str(&pending);
+                        pending.clear();
+                    }
+                    out.push('\u{000C}');
+                }
             }
         }
         if suffixes.is_empty() {
@@ -565,5 +593,27 @@ mod tests {
             capped_pair("id:", "1", 0.18),
         ]);
         assert_eq!(print(&doc, 80), format!("{}id:\n1", "X".repeat(78)));
+    }
+
+    #[test]
+    fn a_cell_is_a_zero_width_marker() {
+        let doc = Doc::group(seq(vec![
+            Doc::text("ab"),
+            Doc::Cell,
+            Doc::Line,
+            Doc::text("c"),
+        ]));
+        assert_eq!(print(&doc, 4), "ab\u{000B} c");
+        assert_eq!(print(&doc, 3), "ab\u{000B}\nc");
+    }
+
+    #[test]
+    fn a_cell_break_flushes_suffixes_before_the_formfeed() {
+        let doc = seq(vec![
+            Doc::text("x"),
+            Doc::Suffix(Box::new(seq(vec![Doc::Cell, Doc::text("// c")]))),
+            Doc::CellBreak,
+        ]);
+        assert_eq!(print(&doc, 80), "x\u{000B}// c\u{000C}");
     }
 }
