@@ -101,14 +101,30 @@ def load(kind: str, language: str, root: Path = ROOT) -> dict[str, Review]:
     return records
 
 
+#: The one verdict that is not an acceptance. `design-limit`, `reference-quirk`
+#: and `house-rule` all say the divergence is *settled* -- we could not, or we
+#: chose not to. `package-bug` says the opposite: we could, and did not. It must
+#: not count toward the merge bar, or a package reaches the floor by documenting
+#: that it is broken. Rust's stage D printed `threshold_met: True` on six of
+#: them while its reviewer said `escalate`; both were right, which is the bug.
+DEFECT_VERDICT = "package bug"
+
+
 def state(digest: str, review: Review | None) -> str:
     if review is None:
         return "unreviewed"
-    return "accepted" if review.hash == digest else "stale"
+    if review.hash != digest:
+        return "stale"
+    if review.verdict.replace("-", " ").strip().lower() == DEFECT_VERDICT:
+        return "defect"
+    return "accepted"
 
 
 def summary(states: list[str], threshold: float = 0.7) -> dict:
-    counts = {name: states.count(name) for name in ("accepted", "stale", "unreviewed")}
+    counts = {
+        name: states.count(name)
+        for name in ("accepted", "stale", "unreviewed", "defect")
+    }
     total = len(states)
     accepted_fraction = counts["accepted"] / total if total else 1.0
     return {
