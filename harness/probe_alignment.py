@@ -19,11 +19,21 @@ excluded by path because it is full of deliberate syntax errors; leaving
 it in and filtering "gofmt-clean parseable" inflates the set with
 fixtures that gofmt happens to accept.
 
-`--align-only` pipes each file through the alignment pass alone
-(`rust/src/bin/align_pass.rs`) instead of the full formatter. The spike
-measured that number: about 10 / 4814 (0.21%). The full formatter also
-disagrees for reasons that are not alignment (missing node types,
-entries 2 / 10 / 13), so the two modes answer different questions.
+`--align-only` is **retired and now errors out**. It piped each file
+through the alignment pass alone and measured about 10 / 4814 (0.21%)
+when alignment was a text-scanning pass over rendered output. Since the
+`cell` node landed (FINDINGS 18) the pass aligns *markers*, and gofmt
+output has no markers, so the pass is a no-op by construction and the
+flag printed a triumphant `0 / 4814`. A probe that cannot fail is worse
+than no probe: it reports success at exactly the moment it stops
+measuring anything.
+
+To compare two trees, run this script in **default mode with --verbose**
+in each and diff the mangled paths. Set-diffing matters: the absolute
+counts move with coverage, so a tree that formats more files looks worse
+while being better. That is how the cell merge was verified — 297/1,291
+against 272/1,231 decomposed to 23 newly-covered files and 2 genuine
+regressions.
 Default mode raises the recursion limit: `cmd/compile` trees are deep
 enough that `json.dump` dies at 1000 frames; a leftover overflow is
 counted unparseable rather than crashing the run.
@@ -307,7 +317,7 @@ def main() -> int:
     ap.add_argument(
         "--align-only",
         action="store_true",
-        help="run the alignment pass alone, not the full formatter",
+        help="retired: errors out, see the module docstring",
     )
     ap.add_argument(
         "--verbose",
@@ -324,11 +334,14 @@ def main() -> int:
     sys.setrecursionlimit(10000)
 
     if args.align_only:
-        if not ALIGN_BIN.is_file():
-            raise Failed(
-                "rust/target/release/align_pass is missing; run ./build.sh first"
-            )
-    elif not RUST_BIN.is_file():
+        raise Failed(
+            "--align-only is retired. Alignment aligns markers now, and gofmt "
+            "output has none, so the pass is a no-op and this flag reported "
+            "0/4814 whatever the code did. To compare two trees, run default "
+            "mode with --verbose in each and diff the mangled paths. See "
+            "docs/onboarding/cell-spike.md."
+        )
+    if not RUST_BIN.is_file():
         raise Failed("rust/target/release/docfmt is missing; run ./build.sh first")
 
     # Bootstrap before any work so a missing grammar re-execs the script

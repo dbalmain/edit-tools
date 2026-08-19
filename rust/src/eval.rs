@@ -20,9 +20,7 @@ pub fn format(tree: &TreeDoc, packages: &PackageMap, width: usize) -> Result<Str
     let fmt = Fmt::for_language(&tree.language, packages, tree.source.as_bytes())?;
     let doc = fmt.node(&tree.root)?;
     let mut out = crate::doc::print(&doc, width);
-    if fmt.pkg.alignment.as_deref() == Some("go") {
-        out = crate::align::go(&out);
-    }
+    out = crate::align::cells(&out);
     if fmt.semantic_eof.get() {
         while out.ends_with(['\r', '\n']) {
             out.pop();
@@ -138,7 +136,12 @@ fn decorate(pkg: &Package, item: &Item<'_>, inner: Doc) -> Doc {
     parts.push(inner);
     let gap = " ".repeat(pkg.comment_gap);
     for text in &item.suffix {
-        parts.push(Doc::Suffix(Box::new(Doc::text(format!("{gap}{text}")))));
+        let body = if pkg.comment_cells && !pkg.is_token(&item.node.kind) {
+            Doc::Concat(vec![Doc::Cell, Doc::text(text.as_str())])
+        } else {
+            Doc::text(format!("{gap}{text}"))
+        };
+        parts.push(Doc::Suffix(Box::new(body)));
     }
     parts.push(Doc::BreakParent);
     Doc::Concat(parts)
@@ -237,7 +240,13 @@ impl<'a> Ctx<'a> {
     fn eval(&mut self, expr: &Expr, f: &Fmt<'a>) -> Result<Doc, Refusal> {
         match expr {
             Expr::Seq(es) => Ok(Doc::Concat(self.eval_all(es, f)?)),
-            Expr::Group(es) => Ok(Doc::group(Doc::Concat(self.eval_all(es, f)?))),
+            Expr::Group(max, es) => {
+                let inner = Doc::Concat(self.eval_all(es, f)?);
+                Ok(match max {
+                    Some(n) => Doc::group_max(inner, *n),
+                    None => Doc::group(inner),
+                })
+            }
             Expr::Indent(es) => {
                 let mut parts = self.eval_all(es, f)?;
                 parts.push(self.flush_after(f));
@@ -250,6 +259,13 @@ impl<'a> Ctx<'a> {
             Expr::SrcLine => Ok(self.src_break(Doc::text(" "))),
             Expr::SrcSoft => Ok(self.src_break(Doc::nil())),
             Expr::SrcTrail(sep) => self.srctrail(sep, f),
+            Expr::Cell => Ok(Doc::Cell),
+            Expr::CellBlock(es) => {
+                let mut parts = vec![Doc::CellBreak];
+                parts.extend(self.eval_all(es, f)?);
+                parts.push(Doc::CellBreak);
+                Ok(Doc::Concat(parts))
+            }
             Expr::Child(sel) => self.child(sel, f),
             Expr::Each(sel, sep) => self.each(sel, sep, f),
             Expr::Fill(sel, sep) => self.fill(sel, sep, f),
@@ -1181,6 +1197,35 @@ try {{
             .status()
             .expect("spawn node");
         assert!(status.success(), "js runtime disagreed (exit {status})");
+    }
+
+    #[test]
+    fn a_group_fraction_breaks_a_construct_that_still_fits_the_line() {
+        let pkg = toy(json!({
+            "list": [
+                "group",
+                0.18,
+                ["tok", "("],
+                [
+                    "indent",
+                    ["soft"],
+                    ["each", "named", ["seq", ["tok", ","], ["line"]]],
+                    ["trail", ",", "named"]
+                ],
+                ["soft"],
+                ["tok", ")"]
+            ]
+        }));
+        // "(aaaa, bbbb)" is 12 columns; 0.18 * 80 = 14, so this stays flat.
+        assert_eq!(
+            run(&pkg, list(&["aaaa", "bbbb"], false), 80).expect("ok"),
+            "(aaaa, bbbb)\n"
+        );
+        // "(aaaaaa, bbbbbb)" is 16 columns — under 80, over 14.
+        assert_eq!(
+            run(&pkg, list(&["aaaaaa", "bbbbbb"], false), 80).expect("ok"),
+            "(\n  aaaaaa,\n  bbbbbb,\n)\n"
+        );
     }
 
     #[test]

@@ -87,6 +87,51 @@ function chain(ops, base, fields = { left: "left", operator: "operator", right: 
   return node;
 }
 
+test("a group fraction breaks a construct that still fits the line", () => {
+  const rule = [
+    "group", 0.18, ["tok", "("],
+    ["indent", ["soft"],
+      ["each", "named", ["seq", ["tok", ","], ["line"]]],
+      ["trail", ",", "named"]],
+    ["soft"], ["tok", ")"],
+  ];
+  const pkg = toy({ list: rule });
+  assert.equal(run(pkg, list(["aaaa", "bbbb"], false), 80), "(aaaa, bbbb)\n");
+  assert.equal(
+    run(pkg, list(["aaaaaa", "bbbbbb"], false), 80),
+    "(\n  aaaaaa,\n  bbbbbb,\n)\n",
+  );
+});
+
+test("a group cap measures the construct, not the rest of the line", () => {
+  const pkg = toy({
+    list: [
+      "seq",
+      ["group", 0.18, ["tok", "("], ["child", "named"], ["tok", ")"]],
+      ["sp"],
+      ["child", "named"],
+    ],
+  });
+  // "(id)" is 4 columns, under 0.18 * 80 = 14. The 70-column trailer would
+  // trip the cap if we measured the line.
+  const tree = {
+    type: "list",
+    start: 0,
+    end: 0,
+    children: [leaf("(", "("), leaf("name", "id"), leaf(")", ")"), leaf("name", "X".repeat(70))],
+  };
+  assert.equal(run(pkg, tree, 80), `(id) ${"X".repeat(70)}\n`);
+});
+
+test("group refuses a cap outside (0, 1]", () => {
+  for (const bad of [0, 1.1, 18, -0.18]) {
+    assert.throws(
+      () => run(toy({ list: ["group", bad, ["tok", "("]] }), list(["a"], false), 80),
+      (err) => err instanceof Refusal && /`group` max must be a fraction in \(0, 1]/.test(err.message),
+    );
+  }
+});
+
 test("width counts scalar values, not UTF-16 code units", () => {
   const pkg = toy({ list: ["group", ["tok", "("], ["each", "named", ["seq", ["line"]]], ["tok", ")"]] });
   const tree = list(["🙂🙂🙂", "x"], false);
