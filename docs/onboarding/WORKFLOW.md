@@ -416,16 +416,52 @@ prints its usage text and exits 0, having run nothing. Exit 0 plus a log that
 grows to a few KB looks exactly like a launch that worked. Generate the prompt
 with `sed -n '/^---$/,$p' | tail -n +2`.
 
-Two more substitution traps, both found the hard way:
+**Assert that no placeholder survives.** Round 3's stage-C launch substituted
+`{{LANG}}` and `{{WORKTREE}}` and silently left `{{STAGE_B_VERDICT}}` in place —
+directly under the heading "Corrections from review", followed by "Apply these
+first". Three agents were launched against it. The prompt looked right in every
+respect a human skim checks: correct language, correct worktree, correct branch.
+
+The generator must `grep -c '{{'` its own output and refuse to launch on a
+non-zero count. A placeholder is invisible precisely because it is well-formed;
+nothing downstream will complain about it.
+
+Three more substitution traps, all found the hard way:
 
 - **Anchor the branch rewrite.** The worktree path contains the branch name as a
   substring (`editor-tools-wt/lang-toml`), so a bare `s|wt/lang-toml|…|g`
   rewrites the path too and points the agent at a directory that does not exist.
   Substitute the backticked form.
 - **Substitute `{{WORKTREE}}` after any branch rewrite**, not before.
+- **Enumerate the template's placeholders rather than the ones you remember.**
+  `grep -o '{{[A-Z_]*}}' <template> | sort -u` is the list; hard-coding two of
+  three is how the above happened.
 
 Worktrees: `/home/dave/w/editor-tools-wt/lang-<name>/` on `wt/lang-<name>`,
 based on `main`. One language per worktree, one agent per worktree, always.
+
+**One agent per worktree does not mean one agent per file.** Round 3's Rust and
+Kotlin stage-B reviews ran concurrently in separate worktrees — no shared tree,
+no `git add -A` sweep, the rule as written was obeyed — and both edited the same
+assertion in `harness/test_manifest.py`, each describing itself as the first
+language to use `[incomparable]`. Neither was wrong from where it stood, and
+neither could see the other.
+
+Worktrees serialise **writes**; they do not serialise **decisions**. A shared
+file touched from two trees produces a textual conflict at merge, which is
+recoverable, and two incompatible designs, which is the expensive half — Rust
+special-cased itself inline and would have needed a new branch per language,
+Kotlin pinned the six languages predating the field and needed none.
+
+So when launching concurrent agents:
+
+- **Name the shared files they may not edit**, or say who owns each. `harness/`
+  outside `languages/<lang>.toml` is the obvious set.
+- Where an edit there is genuinely needed, require it be **proposed in the
+  done-note** rather than made, so the orchestrator applies it once.
+- The merge review must diff each branch against `main` for shared paths
+  *before* merging any of them; a conflict found at the second merge has
+  already had its first design accepted.
 
 For a **head-to-head round**, where several agents build the same language, the
 worktree and branch take an agent suffix: `lang-<name>-<agent>` on

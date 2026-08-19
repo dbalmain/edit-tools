@@ -151,6 +151,9 @@ accepts the attribute layout (the added parens are the already-transparent
 **after HTML and XML** in round 4, on the grounds that JSX is an
 attribute-and-element layout problem and those two languages will have settled
 that shape first. Revisit at round 4's close, not before.
+| 12  | Rust     | grok            | comment text recovered from the source range when a comment node carries no `text`                                       | tree-sitter-rust's `line_comment`/`block_comment` are **interior** nodes — the `//` is a child and the body lives only in the span — while `gen_trees.py` writes `text` on leaves only, so attach emitted empty comment suffixes. A general runtime defect exposed by Rust, not a Rust feature; same class as row 5. | warranted (orchestrator merge review). Cherry-picked to `main` ahead of the Rust slice because a second builder was independently converging on the same bug and would have produced a second design for it. | +299 B | 2026-08-19 |
+| 13  | JavaScript | DeepSeek      | `srcbreak` opcode — a break that is `hard` when the source broke and a group `line` when it did not                       | prettier's `objectWrap: preserve` needs both behaviours at once. `srcline`/`srcsoft` fall back to a space or nothing, which **ignore the enclosing group**, so a source-flat object that must break by width strands its first property. No composition reaches it: branching on source-brokenness would need a predicate, and `count`/`child-count`/`all` cannot see line breaks. | warranted (orchestrator merge review). Completes an existing family — one `srcBreak(flat)` helper, three call sites — rather than adding a mechanism. Cheapest runtime change on this table. | +16 B | pending stage D |
+| 14  | Rust     | grok            | optional leading fraction on `group`: break unless the flat form fits **both** the remaining columns and `round(max * width)` of the group's own span | FINDINGS 17. rustfmt carries nine width thresholds; a construct that fits the line still breaks if it exceeds its own. Unreachable by our single-width `group` **at any width**. Spike `spike/rust-subwidth` measured it end to end. | warranted (orchestrator merge review). Verified inert when undeclared by re-scoring every language at 91/138 unchanged, not by reading the code. Cheapest of the three local capabilities: `fill` +365 B, alignment +2,627 B. | +228 B | 2026-08-19 |
 
 ## 2. Template revisions
 
@@ -304,6 +307,45 @@ boundaries. Nothing dishonest — just consistently the least useful of the thre
 **agy has still produced nothing**, blocked on headless command permissions
 rather than on capability. See `LANGUAGES.md`.
 
+**The cell node merged (2026-08-19), and the unpriced option was the cheapest.**
+FINDINGS 18 offered decline (0 B) / `alignment: "rust"` (796 B) / the `cell`
+node (unpriced). The framing implied the unknown was the expensive one. It was
+**−1,601 B**: the ~2,000 B of quote-aware scanners every named mode had to
+carry are gone, and what replaces them is ~992 B of language-independent
+tabwriter. Rust alignment is now a handful of package cells and no runtime at
+all.
+
+Two process notes worth more than the number:
+
+- **The A/B never ran.** agy was to build a second implementation head-to-head;
+  it hit a quota wall. The substitute was *independent verification of one
+  implementation* rather than a second implementation — re-running the
+  measurements by hand, and set-diffing the GOROOT probe by path. That is
+  cheaper than a second spike and caught what a second spike would not have:
+  the builder's own real-world claim rested on a 16-file sample.
+- **The committed probe had gone blind.** `--align-only` could only print
+  `0 / 4,814` once alignment moved to markers, and merging on the report alone
+  would have shipped 2 real regressions unmeasured. It is now retired with an
+  error that explains itself. Generalise: when a capability changes shape, ask
+  which existing probe silently stopped measuring — a green probe is evidence
+  only if it could have gone red.
+
+**Third seat, third nothing (2026-08-19).** Round 3 gave agy the `cell` doc-node
+spike — a self-contained brief in `spike/cell-node-agy`, deliberately written to
+need no prior project context, run manually by Dave so the permission problem
+could not bite. It hit a usage limit that resets in 109 hours, so the head-to-head
+with grok never ran.
+
+Note what this does and does not say. Three allocations have produced no
+artefact, and the reasons were different every time: a permissions default in
+round 2, a quota wall in round 3. **Neither was a capability result**, so there
+is still no evidence about whether agy can do this work — which is itself the
+finding. A seat that costs a worktree and a brief and returns no signal is not
+free, and the brief is the expensive half. The next allocation should be one
+where a quota wall costs an hour rather than a round: a bounded review, not an
+open-ended spike. The branch and brief stay on disk, valid, for whenever the
+quota returns.
+
 **Closed 2026-08-16.** grok's corpus merged; the other three are abandoned in
 place on their branches. Two defects survived stage B and were caught only when
 the orchestrator audited the artefact before launching stage C — both are
@@ -400,6 +442,42 @@ Columns worth being precise about:
 - **Runtime edits** — count, and how many the reviewer called `warranted`. A
   model that reaches for the runtime when a package expression would do is
   telling you something about its judgement.
+
+### Round 3 stage C: DeepSeek could not start, grok could
+
+Recorded because it is the sharpest calibration signal either agent has
+produced, and it is about **method**, not knowledge.
+
+**DeepSeek V4 Pro, three runs on Kotlin, three empty worktrees.** Each spent its
+whole budget printing corpus trees as JSON — the files are thousands of lines
+each — and each process ended before a single file was written. Run 2 was told
+explicitly not to print trees and did it anyway. Run 3 was told again, given a
+one-line query snippet to use instead, and told the runtime blocker was already
+fixed; it also produced nothing. Reassigned to grok after the third.
+
+The same agent had **passed both stage-B reviews it was given**, one of them
+overturning a previous reviewer's deferral by checking a document. So this is
+not a capability ceiling. Stage B is bounded — read, verify, write a verdict.
+Stage C is open-ended, and DeepSeek did not self-limit its exploration.
+
+**grok, on the same brief for Rust, delivered a complete stage C**: a package,
+a runtime fix with its own case and a measured +299 B, a report, a `score.json`,
+and the entry-17 number the slice existed to produce. It also died twice
+mid-run, but each run had **committed** before dying, so the work chained.
+
+Two lessons, both general:
+
+- **"Commit before you are ready" is the instruction that mattered**, not any
+  amount of task description. It converts an early exit from total loss into
+  partial progress, and it is the difference between grok's nine commits and
+  DeepSeek's zero.
+- **A model that passes a bounded task can still fail an open-ended one.** Lane
+  assignment should follow task *shape*, not a single quality ranking. On this
+  evidence DeepSeek is a reviewer and grok is a builder, which happens to match
+  the lane table this round tried to replace.
+
+Both are still uncalibrated as reviewers of each other; that experiment is
+unaffected.
 
 ### Agents under comparison
 

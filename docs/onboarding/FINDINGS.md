@@ -1386,8 +1386,53 @@ language's implementation-correctness is in question.
 
 ## 17. A group fits against the line width; rustfmt has nine widths
 
-**Status:** open · **Cost:** **local** · **Languages:** Rust (44.8% of real
-files), and no other reference onboarded so far
+**Status:** **closed — built and landed** (`b1f456c`, 2026-08-19) ·
+**Cost:** **local**, confirmed by the spike · **Languages:** Rust
+
+A leading number on `group` is a fraction of the printer width:
+
+```json
+["group", 0.18, ["tok", "{"], ["indent", ["line"], "…"], ["line"], ["tok", "}"]]
+```
+
+The group breaks unless its flat form is **both** within the remaining columns
+**and** within `round(max * width)` of its own span. No number means the old
+test. **+228 B** on the runtime, the cheapest of the three local capabilities
+on this register — `fill` was +365 B and alignment +2,627 B. Rust 17/32 → 19/32;
+every other language byte-identical, verified by re-scoring at 91/138 unchanged
+rather than by reading the code.
+
+The spike is `spike/rust-subwidth`, its report
+`corpus/reports/rust/subwidth-spike.md`. Three things it corrected in the
+account below, all of which had been stated too confidently here:
+
+- **The thresholds are fractions of `max_width` only at or above 100.**
+  rustfmt's `WidthHeuristics::scaled` uses ratio 1.0 whenever
+  `max_width <= 100`, so below the default they are *constants*. This entry
+  claimed a clean fraction throughout on the strength of a single 100-vs-200
+  probe, which was right in the direction it tested and does not generalise
+  downward. A true fraction is still the better IR — one package, every width,
+  no magic 100 — but it is **not** rustfmt-identical at narrow widths.
+- **`chain_width` is not this feature.** A method chain is an alternating
+  `field_expression` / `call_expression` spine with no group around it, so
+  there is nothing to cap. Its 69 wild files belong to entry 11, not here.
+  That is the second-largest knob and it moved out of this entry's column.
+- **The 44.8% is a rustfmt-vs-itself count**, not an agreement prediction for a
+  package that still cannot flatten a method chain. It measured how much real
+  Rust layout a sub-width decides; it never promised that much agreement.
+
+One fidelity gap, recorded rather than fixed: **our cap measures the whole
+group, delimiters included; rustfmt's `struct_lit_width` measures the fields
+only.** Two columns of brace, two of paren. Invisible on this corpus — the
+literals sit at 36 and 5 columns of fields — but it means a 15-column field
+list that rustfmt keeps flat would break under a 0.18 cap on the brace group.
+Wrapping only the fields hugs the wrong way without a `BreakParent`, so the
+approximation was taken deliberately.
+
+### The original entry, as written before the spike
+
+**Cost:** **local** · **Languages:** Rust (44.8% of real files), and no other
+reference onboarded so far
 
 Every reference in the roster so far breaks when a construct does not fit the
 line. **rustfmt does not.** It carries nine width thresholds, and `max_width` is
@@ -1518,9 +1563,9 @@ build it before then.
 
 ## 18. `alignment: "go"` on Rust aligns exactly the lines rustfmt leaves alone
 
-**Status:** open, awaiting Dave · **Cost:** **local** for a Rust mode,
-**structural** for the general form · **Languages:** Rust (1.4% of real files),
-Go (merged), Scheme (unonboarded)
+**Status:** **closed 2026-08-19 — option 3 built, measured and merged.**
+· **Cost:** **negative** (−1,601 B runtime) · **Languages:** Rust (1.4% of real
+files), Go (merged), Scheme (unonboarded)
 
 Entry 1 closed with "alignment is largely a Go cost, not a general one", on the
 strength of Rust showing 2 of 15 corpus files against Go's 6 of 16. Dave then
@@ -1700,6 +1745,44 @@ the feature.
 prediction about a package that does not exist. What stage C can confirm is
 whether alignment is even in Rust's top five divergences — entry 17 says the
 sub-widths are 44.8%, which is thirty times larger.
+
+### Decided: option 3, and it was not the expensive one
+
+Dave chose the `cell` node and it is merged. Full working in
+`docs/onboarding/cell-spike.md`; the numbers that decided it:
+
+| | before | after |
+| --- | ---: | ---: |
+| runtime gzip | 13,923 B | **12,322 B** (**−1,601 B**) |
+| `packages/go.json` | 2,200 B | 2,314 B (+114 B) |
+| Go corpus | 12/16 | **12/16** |
+| all languages | 91/138 | **91/138** |
+
+**The unpriced option turned out to be the cheapest**, which inverts how this
+entry framed the choice. It was written as "0 B / 796 B / unknown", with the
+unknown implicitly the expensive one. The scanners were the expensive part —
+about 2,000 B of quote-aware lexing that every named mode had to carry — and
+deleting them pays for the capability twice over. **Rust alignment now costs
+~0 B of runtime**, a handful of `["cell"]` / `["cellblock"]` in the package,
+and the 270 B per-language lexer never recurs. Option 2 would have bought
+one language for 796 B; option 3 bought all of them for less than nothing.
+
+Three qualifications, so this is not read as a clean sweep:
+
+- **rustfmt's width-dependent trigger still does not fall out** (the part of
+  this entry that never reduced to a rule). Cells will over-align some runs.
+  Same ~76% of the reachable 1.4%.
+- **One node was not enough.** `cellblock` exists because a rule cannot see
+  its parent — [entry 10](#10-a-rule-cannot-vary-by-where-its-node-appears) —
+  and `var_spec` serves both grouped and standalone `var`. Placement implies
+  columns; run *membership* needs a parent-owned section.
+- **Two real-world regressions**, both the valueless-row empty-slot case, in
+  the 1,231 GOROOT files the previous formatter could already handle (0.16%).
+  Named and accepted in the spike report.
+
+Entry 1's "alignment is largely a Go cost, not a general one" survives as a
+statement about *prevalence* and is now irrelevant to *price*: the pass is
+language-independent, so the second language and the tenth cost the same.
 
 ---
 

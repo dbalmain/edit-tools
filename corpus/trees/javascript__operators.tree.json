@@ -1,0 +1,1524 @@
+{
+ "language": "javascript",
+ "source_file": "corpus/src/javascript/operators.js",
+ "source": "// Operator chains: the left-nested spines a package must flatten, and the\n// precedence boundaries where a chain stops splitting.\nconst arithmetic = first + second + third + fourth + fifth + sixth + seventh;\n\nconst mixed = alpha + beta * gamma - delta / epsilon + zeta * eta - theta / iota;\n\nconst logical = a && b && c && d && e && f && g;\n\nconst orChain = first || second || third || fourth || fifth || sixth;\n\nconst ternary = condition ? firstResult : secondResult;\n\nconst longTernary = someFairlyLongCondition ? primaryResultValue : fallbackResultValue;\n\nconst nestedTernary = first ? \"a\" : second ? \"b\" : \"c\";\n\nconst comparison = left === right && middle !== other && lower < upper;\n\nconst bitwise = flags | mask & value ^ other << shift;\n\nconst unary = -value + !negated * typeof check;\n",
+ "root": {
+  "type": "program",
+  "start": 0,
+  "end": 794,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 74,
+    "text": "// Operator chains: the left-nested spines a package must flatten, and the"
+   },
+   {
+    "type": "comment",
+    "start": 75,
+    "end": 130,
+    "text": "// precedence boundaries where a chain stops splitting."
+   },
+   {
+    "type": "lexical_declaration",
+    "start": 131,
+    "end": 208,
+    "children": [
+     {
+      "type": "const",
+      "start": 131,
+      "end": 136,
+      "field": "kind",
+      "text": "const"
+     },
+     {
+      "type": "variable_declarator",
+      "start": 137,
+      "end": 207,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 137,
+        "end": 147,
+        "field": "name",
+        "text": "arithmetic"
+       },
+       {
+        "type": "=",
+        "start": 148,
+        "end": 149,
+        "text": "="
+       },
+       {
+        "type": "binary_expression",
+        "start": 150,
+        "end": 207,
+        "field": "value",
+        "children": [
+         {
+          "type": "binary_expression",
+          "start": 150,
+          "end": 197,
+          "field": "left",
+          "children": [
+           {
+            "type": "binary_expression",
+            "start": 150,
+            "end": 189,
+            "field": "left",
+            "children": [
+             {
+              "type": "binary_expression",
+              "start": 150,
+              "end": 181,
+              "field": "left",
+              "children": [
+               {
+                "type": "binary_expression",
+                "start": 150,
+                "end": 172,
+                "field": "left",
+                "children": [
+                 {
+                  "type": "binary_expression",
+                  "start": 150,
+                  "end": 164,
+                  "field": "left",
+                  "children": [
+                   {
+                    "type": "identifier",
+                    "start": 150,
+                    "end": 155,
+                    "field": "left",
+                    "text": "first"
+                   },
+                   {
+                    "type": "+",
+                    "start": 156,
+                    "end": 157,
+                    "field": "operator",
+                    "text": "+"
+                   },
+                   {
+                    "type": "identifier",
+                    "start": 158,
+                    "end": 164,
+                    "field": "right",
+                    "text": "second"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "+",
+                  "start": 165,
+                  "end": 166,
+                  "field": "operator",
+                  "text": "+"
+                 },
+                 {
+                  "type": "identifier",
+                  "start": 167,
+                  "end": 172,
+                  "field": "right",
+                  "text": "third"
+                 }
+                ]
+               },
+               {
+                "type": "+",
+                "start": 173,
+                "end": 174,
+                "field": "operator",
+                "text": "+"
+               },
+               {
+                "type": "identifier",
+                "start": 175,
+                "end": 181,
+                "field": "right",
+                "text": "fourth"
+               }
+              ]
+             },
+             {
+              "type": "+",
+              "start": 182,
+              "end": 183,
+              "field": "operator",
+              "text": "+"
+             },
+             {
+              "type": "identifier",
+              "start": 184,
+              "end": 189,
+              "field": "right",
+              "text": "fifth"
+             }
+            ]
+           },
+           {
+            "type": "+",
+            "start": 190,
+            "end": 191,
+            "field": "operator",
+            "text": "+"
+           },
+           {
+            "type": "identifier",
+            "start": 192,
+            "end": 197,
+            "field": "right",
+            "text": "sixth"
+           }
+          ]
+         },
+         {
+          "type": "+",
+          "start": 198,
+          "end": 199,
+          "field": "operator",
+          "text": "+"
+         },
+         {
+          "type": "identifier",
+          "start": 200,
+          "end": 207,
+          "field": "right",
+          "text": "seventh"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": ";",
+      "start": 207,
+      "end": 208,
+      "text": ";"
+     }
+    ]
+   },
+   {
+    "type": "lexical_declaration",
+    "start": 210,
+    "end": 291,
+    "children": [
+     {
+      "type": "const",
+      "start": 210,
+      "end": 215,
+      "field": "kind",
+      "text": "const"
+     },
+     {
+      "type": "variable_declarator",
+      "start": 216,
+      "end": 290,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 216,
+        "end": 221,
+        "field": "name",
+        "text": "mixed"
+       },
+       {
+        "type": "=",
+        "start": 222,
+        "end": 223,
+        "text": "="
+       },
+       {
+        "type": "binary_expression",
+        "start": 224,
+        "end": 290,
+        "field": "value",
+        "children": [
+         {
+          "type": "binary_expression",
+          "start": 224,
+          "end": 275,
+          "field": "left",
+          "children": [
+           {
+            "type": "binary_expression",
+            "start": 224,
+            "end": 262,
+            "field": "left",
+            "children": [
+             {
+              "type": "binary_expression",
+              "start": 224,
+              "end": 244,
+              "field": "left",
+              "children": [
+               {
+                "type": "identifier",
+                "start": 224,
+                "end": 229,
+                "field": "left",
+                "text": "alpha"
+               },
+               {
+                "type": "+",
+                "start": 230,
+                "end": 231,
+                "field": "operator",
+                "text": "+"
+               },
+               {
+                "type": "binary_expression",
+                "start": 232,
+                "end": 244,
+                "field": "right",
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 232,
+                  "end": 236,
+                  "field": "left",
+                  "text": "beta"
+                 },
+                 {
+                  "type": "*",
+                  "start": 237,
+                  "end": 238,
+                  "field": "operator",
+                  "text": "*"
+                 },
+                 {
+                  "type": "identifier",
+                  "start": 239,
+                  "end": 244,
+                  "field": "right",
+                  "text": "gamma"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": "-",
+              "start": 245,
+              "end": 246,
+              "field": "operator",
+              "text": "-"
+             },
+             {
+              "type": "binary_expression",
+              "start": 247,
+              "end": 262,
+              "field": "right",
+              "children": [
+               {
+                "type": "identifier",
+                "start": 247,
+                "end": 252,
+                "field": "left",
+                "text": "delta"
+               },
+               {
+                "type": "/",
+                "start": 253,
+                "end": 254,
+                "field": "operator",
+                "text": "/"
+               },
+               {
+                "type": "identifier",
+                "start": 255,
+                "end": 262,
+                "field": "right",
+                "text": "epsilon"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "+",
+            "start": 263,
+            "end": 264,
+            "field": "operator",
+            "text": "+"
+           },
+           {
+            "type": "binary_expression",
+            "start": 265,
+            "end": 275,
+            "field": "right",
+            "children": [
+             {
+              "type": "identifier",
+              "start": 265,
+              "end": 269,
+              "field": "left",
+              "text": "zeta"
+             },
+             {
+              "type": "*",
+              "start": 270,
+              "end": 271,
+              "field": "operator",
+              "text": "*"
+             },
+             {
+              "type": "identifier",
+              "start": 272,
+              "end": 275,
+              "field": "right",
+              "text": "eta"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "-",
+          "start": 276,
+          "end": 277,
+          "field": "operator",
+          "text": "-"
+         },
+         {
+          "type": "binary_expression",
+          "start": 278,
+          "end": 290,
+          "field": "right",
+          "children": [
+           {
+            "type": "identifier",
+            "start": 278,
+            "end": 283,
+            "field": "left",
+            "text": "theta"
+           },
+           {
+            "type": "/",
+            "start": 284,
+            "end": 285,
+            "field": "operator",
+            "text": "/"
+           },
+           {
+            "type": "identifier",
+            "start": 286,
+            "end": 290,
+            "field": "right",
+            "text": "iota"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": ";",
+      "start": 290,
+      "end": 291,
+      "text": ";"
+     }
+    ]
+   },
+   {
+    "type": "lexical_declaration",
+    "start": 293,
+    "end": 341,
+    "children": [
+     {
+      "type": "const",
+      "start": 293,
+      "end": 298,
+      "field": "kind",
+      "text": "const"
+     },
+     {
+      "type": "variable_declarator",
+      "start": 299,
+      "end": 340,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 299,
+        "end": 306,
+        "field": "name",
+        "text": "logical"
+       },
+       {
+        "type": "=",
+        "start": 307,
+        "end": 308,
+        "text": "="
+       },
+       {
+        "type": "binary_expression",
+        "start": 309,
+        "end": 340,
+        "field": "value",
+        "children": [
+         {
+          "type": "binary_expression",
+          "start": 309,
+          "end": 335,
+          "field": "left",
+          "children": [
+           {
+            "type": "binary_expression",
+            "start": 309,
+            "end": 330,
+            "field": "left",
+            "children": [
+             {
+              "type": "binary_expression",
+              "start": 309,
+              "end": 325,
+              "field": "left",
+              "children": [
+               {
+                "type": "binary_expression",
+                "start": 309,
+                "end": 320,
+                "field": "left",
+                "children": [
+                 {
+                  "type": "binary_expression",
+                  "start": 309,
+                  "end": 315,
+                  "field": "left",
+                  "children": [
+                   {
+                    "type": "identifier",
+                    "start": 309,
+                    "end": 310,
+                    "field": "left",
+                    "text": "a"
+                   },
+                   {
+                    "type": "&&",
+                    "start": 311,
+                    "end": 313,
+                    "field": "operator",
+                    "text": "&&"
+                   },
+                   {
+                    "type": "identifier",
+                    "start": 314,
+                    "end": 315,
+                    "field": "right",
+                    "text": "b"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "&&",
+                  "start": 316,
+                  "end": 318,
+                  "field": "operator",
+                  "text": "&&"
+                 },
+                 {
+                  "type": "identifier",
+                  "start": 319,
+                  "end": 320,
+                  "field": "right",
+                  "text": "c"
+                 }
+                ]
+               },
+               {
+                "type": "&&",
+                "start": 321,
+                "end": 323,
+                "field": "operator",
+                "text": "&&"
+               },
+               {
+                "type": "identifier",
+                "start": 324,
+                "end": 325,
+                "field": "right",
+                "text": "d"
+               }
+              ]
+             },
+             {
+              "type": "&&",
+              "start": 326,
+              "end": 328,
+              "field": "operator",
+              "text": "&&"
+             },
+             {
+              "type": "identifier",
+              "start": 329,
+              "end": 330,
+              "field": "right",
+              "text": "e"
+             }
+            ]
+           },
+           {
+            "type": "&&",
+            "start": 331,
+            "end": 333,
+            "field": "operator",
+            "text": "&&"
+           },
+           {
+            "type": "identifier",
+            "start": 334,
+            "end": 335,
+            "field": "right",
+            "text": "f"
+           }
+          ]
+         },
+         {
+          "type": "&&",
+          "start": 336,
+          "end": 338,
+          "field": "operator",
+          "text": "&&"
+         },
+         {
+          "type": "identifier",
+          "start": 339,
+          "end": 340,
+          "field": "right",
+          "text": "g"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": ";",
+      "start": 340,
+      "end": 341,
+      "text": ";"
+     }
+    ]
+   },
+   {
+    "type": "lexical_declaration",
+    "start": 343,
+    "end": 412,
+    "children": [
+     {
+      "type": "const",
+      "start": 343,
+      "end": 348,
+      "field": "kind",
+      "text": "const"
+     },
+     {
+      "type": "variable_declarator",
+      "start": 349,
+      "end": 411,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 349,
+        "end": 356,
+        "field": "name",
+        "text": "orChain"
+       },
+       {
+        "type": "=",
+        "start": 357,
+        "end": 358,
+        "text": "="
+       },
+       {
+        "type": "binary_expression",
+        "start": 359,
+        "end": 411,
+        "field": "value",
+        "children": [
+         {
+          "type": "binary_expression",
+          "start": 359,
+          "end": 402,
+          "field": "left",
+          "children": [
+           {
+            "type": "binary_expression",
+            "start": 359,
+            "end": 393,
+            "field": "left",
+            "children": [
+             {
+              "type": "binary_expression",
+              "start": 359,
+              "end": 383,
+              "field": "left",
+              "children": [
+               {
+                "type": "binary_expression",
+                "start": 359,
+                "end": 374,
+                "field": "left",
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 359,
+                  "end": 364,
+                  "field": "left",
+                  "text": "first"
+                 },
+                 {
+                  "type": "||",
+                  "start": 365,
+                  "end": 367,
+                  "field": "operator",
+                  "text": "||"
+                 },
+                 {
+                  "type": "identifier",
+                  "start": 368,
+                  "end": 374,
+                  "field": "right",
+                  "text": "second"
+                 }
+                ]
+               },
+               {
+                "type": "||",
+                "start": 375,
+                "end": 377,
+                "field": "operator",
+                "text": "||"
+               },
+               {
+                "type": "identifier",
+                "start": 378,
+                "end": 383,
+                "field": "right",
+                "text": "third"
+               }
+              ]
+             },
+             {
+              "type": "||",
+              "start": 384,
+              "end": 386,
+              "field": "operator",
+              "text": "||"
+             },
+             {
+              "type": "identifier",
+              "start": 387,
+              "end": 393,
+              "field": "right",
+              "text": "fourth"
+             }
+            ]
+           },
+           {
+            "type": "||",
+            "start": 394,
+            "end": 396,
+            "field": "operator",
+            "text": "||"
+           },
+           {
+            "type": "identifier",
+            "start": 397,
+            "end": 402,
+            "field": "right",
+            "text": "fifth"
+           }
+          ]
+         },
+         {
+          "type": "||",
+          "start": 403,
+          "end": 405,
+          "field": "operator",
+          "text": "||"
+         },
+         {
+          "type": "identifier",
+          "start": 406,
+          "end": 411,
+          "field": "right",
+          "text": "sixth"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": ";",
+      "start": 411,
+      "end": 412,
+      "text": ";"
+     }
+    ]
+   },
+   {
+    "type": "lexical_declaration",
+    "start": 414,
+    "end": 469,
+    "children": [
+     {
+      "type": "const",
+      "start": 414,
+      "end": 419,
+      "field": "kind",
+      "text": "const"
+     },
+     {
+      "type": "variable_declarator",
+      "start": 420,
+      "end": 468,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 420,
+        "end": 427,
+        "field": "name",
+        "text": "ternary"
+       },
+       {
+        "type": "=",
+        "start": 428,
+        "end": 429,
+        "text": "="
+       },
+       {
+        "type": "ternary_expression",
+        "start": 430,
+        "end": 468,
+        "field": "value",
+        "children": [
+         {
+          "type": "identifier",
+          "start": 430,
+          "end": 439,
+          "field": "condition",
+          "text": "condition"
+         },
+         {
+          "type": "?",
+          "start": 440,
+          "end": 441,
+          "text": "?"
+         },
+         {
+          "type": "identifier",
+          "start": 442,
+          "end": 453,
+          "field": "consequence",
+          "text": "firstResult"
+         },
+         {
+          "type": ":",
+          "start": 454,
+          "end": 455,
+          "text": ":"
+         },
+         {
+          "type": "identifier",
+          "start": 456,
+          "end": 468,
+          "field": "alternative",
+          "text": "secondResult"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": ";",
+      "start": 468,
+      "end": 469,
+      "text": ";"
+     }
+    ]
+   },
+   {
+    "type": "lexical_declaration",
+    "start": 471,
+    "end": 558,
+    "children": [
+     {
+      "type": "const",
+      "start": 471,
+      "end": 476,
+      "field": "kind",
+      "text": "const"
+     },
+     {
+      "type": "variable_declarator",
+      "start": 477,
+      "end": 557,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 477,
+        "end": 488,
+        "field": "name",
+        "text": "longTernary"
+       },
+       {
+        "type": "=",
+        "start": 489,
+        "end": 490,
+        "text": "="
+       },
+       {
+        "type": "ternary_expression",
+        "start": 491,
+        "end": 557,
+        "field": "value",
+        "children": [
+         {
+          "type": "identifier",
+          "start": 491,
+          "end": 514,
+          "field": "condition",
+          "text": "someFairlyLongCondition"
+         },
+         {
+          "type": "?",
+          "start": 515,
+          "end": 516,
+          "text": "?"
+         },
+         {
+          "type": "identifier",
+          "start": 517,
+          "end": 535,
+          "field": "consequence",
+          "text": "primaryResultValue"
+         },
+         {
+          "type": ":",
+          "start": 536,
+          "end": 537,
+          "text": ":"
+         },
+         {
+          "type": "identifier",
+          "start": 538,
+          "end": 557,
+          "field": "alternative",
+          "text": "fallbackResultValue"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": ";",
+      "start": 557,
+      "end": 558,
+      "text": ";"
+     }
+    ]
+   },
+   {
+    "type": "lexical_declaration",
+    "start": 560,
+    "end": 615,
+    "children": [
+     {
+      "type": "const",
+      "start": 560,
+      "end": 565,
+      "field": "kind",
+      "text": "const"
+     },
+     {
+      "type": "variable_declarator",
+      "start": 566,
+      "end": 614,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 566,
+        "end": 579,
+        "field": "name",
+        "text": "nestedTernary"
+       },
+       {
+        "type": "=",
+        "start": 580,
+        "end": 581,
+        "text": "="
+       },
+       {
+        "type": "ternary_expression",
+        "start": 582,
+        "end": 614,
+        "field": "value",
+        "children": [
+         {
+          "type": "identifier",
+          "start": 582,
+          "end": 587,
+          "field": "condition",
+          "text": "first"
+         },
+         {
+          "type": "?",
+          "start": 588,
+          "end": 589,
+          "text": "?"
+         },
+         {
+          "type": "string",
+          "start": 590,
+          "end": 593,
+          "field": "consequence",
+          "children": [
+           {
+            "type": "\"",
+            "start": 590,
+            "end": 591,
+            "text": "\""
+           },
+           {
+            "type": "string_fragment",
+            "start": 591,
+            "end": 592,
+            "text": "a"
+           },
+           {
+            "type": "\"",
+            "start": 592,
+            "end": 593,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": ":",
+          "start": 594,
+          "end": 595,
+          "text": ":"
+         },
+         {
+          "type": "ternary_expression",
+          "start": 596,
+          "end": 614,
+          "field": "alternative",
+          "children": [
+           {
+            "type": "identifier",
+            "start": 596,
+            "end": 602,
+            "field": "condition",
+            "text": "second"
+           },
+           {
+            "type": "?",
+            "start": 603,
+            "end": 604,
+            "text": "?"
+           },
+           {
+            "type": "string",
+            "start": 605,
+            "end": 608,
+            "field": "consequence",
+            "children": [
+             {
+              "type": "\"",
+              "start": 605,
+              "end": 606,
+              "text": "\""
+             },
+             {
+              "type": "string_fragment",
+              "start": 606,
+              "end": 607,
+              "text": "b"
+             },
+             {
+              "type": "\"",
+              "start": 607,
+              "end": 608,
+              "text": "\""
+             }
+            ]
+           },
+           {
+            "type": ":",
+            "start": 609,
+            "end": 610,
+            "text": ":"
+           },
+           {
+            "type": "string",
+            "start": 611,
+            "end": 614,
+            "field": "alternative",
+            "children": [
+             {
+              "type": "\"",
+              "start": 611,
+              "end": 612,
+              "text": "\""
+             },
+             {
+              "type": "string_fragment",
+              "start": 612,
+              "end": 613,
+              "text": "c"
+             },
+             {
+              "type": "\"",
+              "start": 613,
+              "end": 614,
+              "text": "\""
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": ";",
+      "start": 614,
+      "end": 615,
+      "text": ";"
+     }
+    ]
+   },
+   {
+    "type": "lexical_declaration",
+    "start": 617,
+    "end": 688,
+    "children": [
+     {
+      "type": "const",
+      "start": 617,
+      "end": 622,
+      "field": "kind",
+      "text": "const"
+     },
+     {
+      "type": "variable_declarator",
+      "start": 623,
+      "end": 687,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 623,
+        "end": 633,
+        "field": "name",
+        "text": "comparison"
+       },
+       {
+        "type": "=",
+        "start": 634,
+        "end": 635,
+        "text": "="
+       },
+       {
+        "type": "binary_expression",
+        "start": 636,
+        "end": 687,
+        "field": "value",
+        "children": [
+         {
+          "type": "binary_expression",
+          "start": 636,
+          "end": 670,
+          "field": "left",
+          "children": [
+           {
+            "type": "binary_expression",
+            "start": 636,
+            "end": 650,
+            "field": "left",
+            "children": [
+             {
+              "type": "identifier",
+              "start": 636,
+              "end": 640,
+              "field": "left",
+              "text": "left"
+             },
+             {
+              "type": "===",
+              "start": 641,
+              "end": 644,
+              "field": "operator",
+              "text": "==="
+             },
+             {
+              "type": "identifier",
+              "start": 645,
+              "end": 650,
+              "field": "right",
+              "text": "right"
+             }
+            ]
+           },
+           {
+            "type": "&&",
+            "start": 651,
+            "end": 653,
+            "field": "operator",
+            "text": "&&"
+           },
+           {
+            "type": "binary_expression",
+            "start": 654,
+            "end": 670,
+            "field": "right",
+            "children": [
+             {
+              "type": "identifier",
+              "start": 654,
+              "end": 660,
+              "field": "left",
+              "text": "middle"
+             },
+             {
+              "type": "!==",
+              "start": 661,
+              "end": 664,
+              "field": "operator",
+              "text": "!=="
+             },
+             {
+              "type": "identifier",
+              "start": 665,
+              "end": 670,
+              "field": "right",
+              "text": "other"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "&&",
+          "start": 671,
+          "end": 673,
+          "field": "operator",
+          "text": "&&"
+         },
+         {
+          "type": "binary_expression",
+          "start": 674,
+          "end": 687,
+          "field": "right",
+          "children": [
+           {
+            "type": "identifier",
+            "start": 674,
+            "end": 679,
+            "field": "left",
+            "text": "lower"
+           },
+           {
+            "type": "<",
+            "start": 680,
+            "end": 681,
+            "field": "operator",
+            "text": "<"
+           },
+           {
+            "type": "identifier",
+            "start": 682,
+            "end": 687,
+            "field": "right",
+            "text": "upper"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": ";",
+      "start": 687,
+      "end": 688,
+      "text": ";"
+     }
+    ]
+   },
+   {
+    "type": "lexical_declaration",
+    "start": 690,
+    "end": 744,
+    "children": [
+     {
+      "type": "const",
+      "start": 690,
+      "end": 695,
+      "field": "kind",
+      "text": "const"
+     },
+     {
+      "type": "variable_declarator",
+      "start": 696,
+      "end": 743,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 696,
+        "end": 703,
+        "field": "name",
+        "text": "bitwise"
+       },
+       {
+        "type": "=",
+        "start": 704,
+        "end": 705,
+        "text": "="
+       },
+       {
+        "type": "binary_expression",
+        "start": 706,
+        "end": 743,
+        "field": "value",
+        "children": [
+         {
+          "type": "identifier",
+          "start": 706,
+          "end": 711,
+          "field": "left",
+          "text": "flags"
+         },
+         {
+          "type": "|",
+          "start": 712,
+          "end": 713,
+          "field": "operator",
+          "text": "|"
+         },
+         {
+          "type": "binary_expression",
+          "start": 714,
+          "end": 743,
+          "field": "right",
+          "children": [
+           {
+            "type": "binary_expression",
+            "start": 714,
+            "end": 726,
+            "field": "left",
+            "children": [
+             {
+              "type": "identifier",
+              "start": 714,
+              "end": 718,
+              "field": "left",
+              "text": "mask"
+             },
+             {
+              "type": "&",
+              "start": 719,
+              "end": 720,
+              "field": "operator",
+              "text": "&"
+             },
+             {
+              "type": "identifier",
+              "start": 721,
+              "end": 726,
+              "field": "right",
+              "text": "value"
+             }
+            ]
+           },
+           {
+            "type": "^",
+            "start": 727,
+            "end": 728,
+            "field": "operator",
+            "text": "^"
+           },
+           {
+            "type": "binary_expression",
+            "start": 729,
+            "end": 743,
+            "field": "right",
+            "children": [
+             {
+              "type": "identifier",
+              "start": 729,
+              "end": 734,
+              "field": "left",
+              "text": "other"
+             },
+             {
+              "type": "<<",
+              "start": 735,
+              "end": 737,
+              "field": "operator",
+              "text": "<<"
+             },
+             {
+              "type": "identifier",
+              "start": 738,
+              "end": 743,
+              "field": "right",
+              "text": "shift"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": ";",
+      "start": 743,
+      "end": 744,
+      "text": ";"
+     }
+    ]
+   },
+   {
+    "type": "lexical_declaration",
+    "start": 746,
+    "end": 793,
+    "children": [
+     {
+      "type": "const",
+      "start": 746,
+      "end": 751,
+      "field": "kind",
+      "text": "const"
+     },
+     {
+      "type": "variable_declarator",
+      "start": 752,
+      "end": 792,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 752,
+        "end": 757,
+        "field": "name",
+        "text": "unary"
+       },
+       {
+        "type": "=",
+        "start": 758,
+        "end": 759,
+        "text": "="
+       },
+       {
+        "type": "binary_expression",
+        "start": 760,
+        "end": 792,
+        "field": "value",
+        "children": [
+         {
+          "type": "unary_expression",
+          "start": 760,
+          "end": 766,
+          "field": "left",
+          "children": [
+           {
+            "type": "-",
+            "start": 760,
+            "end": 761,
+            "field": "operator",
+            "text": "-"
+           },
+           {
+            "type": "identifier",
+            "start": 761,
+            "end": 766,
+            "field": "argument",
+            "text": "value"
+           }
+          ]
+         },
+         {
+          "type": "+",
+          "start": 767,
+          "end": 768,
+          "field": "operator",
+          "text": "+"
+         },
+         {
+          "type": "binary_expression",
+          "start": 769,
+          "end": 792,
+          "field": "right",
+          "children": [
+           {
+            "type": "unary_expression",
+            "start": 769,
+            "end": 777,
+            "field": "left",
+            "children": [
+             {
+              "type": "!",
+              "start": 769,
+              "end": 770,
+              "field": "operator",
+              "text": "!"
+             },
+             {
+              "type": "identifier",
+              "start": 770,
+              "end": 777,
+              "field": "argument",
+              "text": "negated"
+             }
+            ]
+           },
+           {
+            "type": "*",
+            "start": 778,
+            "end": 779,
+            "field": "operator",
+            "text": "*"
+           },
+           {
+            "type": "unary_expression",
+            "start": 780,
+            "end": 792,
+            "field": "right",
+            "children": [
+             {
+              "type": "typeof",
+              "start": 780,
+              "end": 786,
+              "field": "operator",
+              "text": "typeof"
+             },
+             {
+              "type": "identifier",
+              "start": 787,
+              "end": 792,
+              "field": "argument",
+              "text": "check"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": ";",
+      "start": 792,
+      "end": 793,
+      "text": ";"
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -1,0 +1,42 @@
+// Containers inside containers, deep enough that the narrow width must break
+// some level but not every level.
+const matrix = [
+  [1, 2, 3],
+  [4, 5, 6],
+  [7, 8, 9],
+  [10, 11, 12],
+  [13, 14, 15],
+];
+
+const config = {
+  outer: {
+    inner: {
+      deep: [1, 2, 3],
+      other: { key: "value" },
+    },
+    sibling: [4, 5],
+  },
+};
+
+const call = outer(
+  inner(deeper(first, second), third),
+  fourth(fifth, sixth, seventh),
+);
+
+const arrow = (a) => (b) => (c) =>
+  a + b + c;
+
+const mixed = [
+  { list: [1, 2, 3] },
+  { list: [4, 5, 6] },
+  { list: [7, 8, 9] },
+];
+
+const fits = [
+  alpha,
+  beta,
+  [1, 2, 3, 4],
+  gamma,
+  delta,
+  epsilon,
+];

@@ -1,0 +1,11 @@
+// The construct that overflows a line: long flat lists of several shapes.
+// Numbers pack (prettier fills); identifiers and strings go one per line.
+const numbers = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200];
+
+const identifiers = [alpha, beta, gamma, delta, epsilon, zeta, eta, theta, iota, kappa, lambda, mu, nu, xi];
+
+const strings = ["red", "green", "blue", "cyan", "magenta", "yellow", "black", "white", "gray", "orange", "purple", "pink"];
+
+const call = render(first_argument, second_argument, third_argument, fourth_argument, fifth_argument, sixth);
+
+const short = [1, 2, 3, 4, 5];
