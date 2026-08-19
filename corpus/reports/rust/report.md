@@ -1,28 +1,31 @@
-# Rust package report (stage C)
+# Rust package report (stages C and D)
 
 ```
-gate 1 idempotence      pass   (34/34)
-gate 2 width            pass   (38 overflow lines; rustfmt 39)
+gate 0 coverage         pass   (34/34)
+gate 1 rust/js parity   pass   (34/34 byte-identical)
+gate 2 idempotence      pass   (34/34)
 gate 3 non-destruction  pass   (34/34, method default)
-gate 4 agreement        10/16 @ width 100,  7/16 @ width 60
-rust/js parity          identical (34/34)
+measure 4 overflow      38 lines (rustfmt 39)
+measure 5 size          package 2548 B gzip; runtime 12322 B gzip; total 14870
+measure 6 agreement     11/16 @ width 100,  8/16 @ width 60  =  19/32 (59.4%)
+                        + 13 accepted = 100% review coverage, 0 stale,
+                          0 unreviewed, 0 package-bug
 refusals                none
-size                    package 2505 B gzip; runtime 13695 B gzip
-                        (+299 interior comment text, vs main 13396)
 ```
 
-Scored 34/34 coverage, 34/34 rust/js, 34/34 idempotence, 34/34 non-destruction.
-`leading_pipes.rs` is excluded from the agreement denominator (token deletion);
-it still formats, is idempotent, and passes gate 3. Raw agreement is 17/32
-(53.1%). Review coverage is 53.1% until stage D records verdicts.
+`leading_pipes.rs` is excluded from the agreement denominator (token deletion —
+FINDINGS 13); it still formats, is idempotent, and passes gate 3.
+
+Two commits moved the headline number after stage C wrote it. The sub-width cap
+on `group` (FINDINGS 17) took agreement from 17/32 to **19/32** by closing both
+`nesting.rs` pairs. The cell node (FINDINGS 18) took the runtime from 13,695 B
+to **12,322 B** and closed nothing here — see the stage-D section.
 
 `STAGE_B_VERDICT` in the brief was an empty placeholder. Stage B's fixes were
 already on the branch; nothing further to apply.
 
 `comment_gap = 1` and `blank_cap = 1` are rustfmt's observed values (one space
-before a trailing comment; at most one blank next to a comment). Alignment
-padding is rustfmt's extra and is not encoded — FINDINGS 18, do not set
-`alignment: "go"`.
+before a trailing comment; at most one blank next to a comment).
 
 ## Entry 17: how much of the divergence is sub-widths
 
@@ -211,3 +214,51 @@ register, not as an opportunistic rust-only edit.
   number is 7/15 divergences, and the brief already said that. Useful to
   say again next time so a builder does not try to make the corpus match
   44.8%.
+
+## Stage D: alignment was the last hope, and it does not reach Rust
+
+Stage D reviewed 15 divergences and marked six of them `package-bug` —
+`structs.rs`, `comments.rs` and `widths.rs` at both widths — on the strength of
+FINDINGS 18 closing. The premise was that `cell` / `cellblock` had made rustfmt
+alignment expressible in the package for ~0 B.
+
+That premise was tested at the point of writing the rules, and it is wrong.
+**FINDINGS 22** has the three measurements; the short form:
+
+1. A package-placed `["cell"]` before a trailing comment collects the
+   tabwriter's pad *and* the suffix's own `comment_gap`, so every aligned row is
+   one column wider than rustfmt. Alignment is reachable; rustfmt's alignment is
+   not.
+2. `comment_cells: true` never fires on a Rust struct field. tree-sitter-rust
+   makes the separator comma a child of the **list**, so the comment's preceding
+   sibling is a token, and the header skips tokens. `structs.rs` emits zero cell
+   markers with the header on.
+3. Where the header does fire it also aligns statement comments, which rustfmt
+   leaves alone — and re-formatting our own output re-aligns it, so
+   `rust__comments.tree` fails **gate 2 idempotence** at both widths.
+   Disqualifying, not debatable.
+
+The capability itself is sound: with the header on and a `["cellblock"]` around
+`match_block`, `widths.rs`'s match arms are byte-identical to rustfmt. What is
+missing is **scope** — gofmt wants comment cells everywhere, rustfmt wants them
+inside list blocks only, and one package-wide boolean cannot say both.
+
+All six are therefore `design-limit`, and the package is at **0 package-bugs,
+0 unreviewed, 100% review coverage**. No file flipped in either direction from
+any of the experiments: 19/34 with them, 19/34 without. `widths.rs` remains
+multi-cause — entry 22 for the comment column, entry 11 for the method chain —
+and file agreement cannot see a fix to one hunk of five.
+
+`leading_pipes.rs` was reviewed at the same time. It is the corpus's dedicated
+incomparable file for rustfmt deleting a redundant leading `|`, which makes Rust
+the **second language to want the `drop` opcode** — the condition FINDINGS 13 set
+for deciding it. Entry 13 has been updated to record that the trigger fired.
+
+### Verdict
+
+`merge`. Gates 0-3 perfect, rust/js parity perfect, both widths above the 70%
+review-coverage floor (100%), no stale reviews, no package bugs. The remaining
+13 accepted divergences are all named findings: 22 (alignment scope), 11
+(heterogeneous chains), 3 (`trail` pinning and its one-item skip), 6 (`fits`
+counts a trailing comment), 7 and 9 (comments), plus one house rule on
+`strings.rs@60`.

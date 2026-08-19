@@ -1,186 +1,262 @@
 {
-  "language": "rust",
-  "gate1_idempotence": {
-    "pass": true,
-    "got": 34,
-    "of": 34
+  "submission": "lang-rust",
+  "gates": {
+    "0-coverage": {
+      "pass": true,
+      "got": 34,
+      "of": 34,
+      "what": "formatted every corpus file at every width"
+    },
+    "1-agreement": {
+      "pass": true,
+      "got": 34,
+      "of": 34,
+      "what": "rust and js byte-identical"
+    },
+    "2-idempotence": {
+      "pass": true,
+      "got": 34,
+      "of": 34,
+      "what": "fmt(fmt(x)) == fmt(x)"
+    },
+    "3-nondestruction": {
+      "pass": true,
+      "got": 34,
+      "of": 34,
+      "what": "meaning and comments preserved"
+    }
   },
-  "gate2_width": {
-    "pass": true,
-    "overflow_lines": 38,
-    "reference_overflow": 39
-  },
-  "gate3_nondestruction": {
-    "pass": true,
-    "got": 34,
-    "of": 34,
-    "method": "default"
-  },
-  "gate4_agreement": {
-    "by_width": {
-      "100": {
-        "agreement": 10,
-        "of": 16
-      },
-      "60": {
-        "agreement": 7,
-        "of": 16
+  "measures": {
+    "4-overflow-lines": 38,
+    "5-size-gzip": {
+      "js-runtime": 12322,
+      "packages": 2548,
+      "total": 14870,
+      "per_language": {
+        "rust": {
+          "package": 2548,
+          "with_runtime": 14870
+        }
       }
     },
-    "agreement": 17,
-    "of": 32,
-    "accepted": 0,
-    "stale": 0,
-    "unreviewed": 15,
-    "excluded": 1,
-    "review_coverage": 0.531,
-    "review_threshold_met": false,
-    "subwidth_divergences": 7,
-    "subwidth_fraction_of_divergences": 0.467
-  },
-  "rust_js_parity": "identical",
-  "refusals": [],
-  "matching_files": {
-    "100": [
-      "async.rs",
-      "enums.rs",
-      "kitchen.rs",
-      "macros.rs",
-      "modules.rs",
-      "normalize.rs",
-      "patterns.rs",
-      "sequences.rs",
-      "strings.rs",
-      "traits.rs"
-    ],
-    "60": [
-      "async.rs",
-      "enums.rs",
-      "generics.rs",
-      "macros.rs",
-      "modules.rs",
-      "sequences.rs",
-      "traits.rs"
-    ]
-  },
-  "size": {
-    "js-runtime": 13695,
-    "packages": 2505,
-    "total": 16200,
-    "per_language": {
-      "rust": {
-        "package": 2505,
-        "with_runtime": 16200
+    "6-reference-agreement": {
+      "agreement": 19,
+      "accepted": 13,
+      "stale": 0,
+      "unreviewed": 0,
+      "defect": 0,
+      "excluded": 1,
+      "of": 32,
+      "agreement_fraction": 0.594,
+      "review_coverage": 1.0,
+      "review_threshold": 0.7,
+      "review_threshold_met": true,
+      "by_language": {
+        "rust": {
+          "reference": "rustfmt 1.9.0",
+          "waived": false,
+          "agreement": 19,
+          "accepted": 13,
+          "stale": 0,
+          "unreviewed": 0,
+          "defect": 0,
+          "excluded": 1,
+          "of": 32,
+          "reference_overflow": 39,
+          "missing": [],
+          "accepted_divergences": [
+            {
+              "case": "closures.rs@100",
+              "hash": "46383e8472adc162edb44c2e1aee998fceb83ca29541202be96495cb623798e4",
+              "review": {
+                "id": "rust/closures.rs@100",
+                "hash": "46383e8472adc162edb44c2e1aee998fceb83ca29541202be96495cb623798e4",
+                "verdict": "design limit",
+                "reason": "A heterogeneous method chain alternates field_expression and call_expression nodes, so the existing same-type flatten cannot express rustfmt\u2019s dot-by-dot breaks at width 100.",
+                "reviewed_by": "gpt-5.6-luna",
+                "reviewed_at": "2026-08-19T19:57:36Z"
+              }
+            },
+            {
+              "case": "closures.rs@60",
+              "hash": "c912c8165d1e9a64e1ded1aba279772cfd1efeaceb8c3d8f4ecb0481e03da893",
+              "review": {
+                "id": "rust/closures.rs@60",
+                "hash": "c912c8165d1e9a64e1ded1aba279772cfd1efeaceb8c3d8f4ecb0481e03da893",
+                "verdict": "design limit",
+                "reason": "The same heterogeneous chain is not expressible by the existing flatten, and rustfmt additionally inserts a closure block that the linear, non-destructive package cannot synthesize.",
+                "reviewed_by": "gpt-5.6-luna",
+                "reviewed_at": "2026-08-19T19:57:36Z"
+              }
+            },
+            {
+              "case": "comments.rs@100",
+              "hash": "2e1895bc81cd5eb364b3d203970d82e5571c96e0a802e835899387409086c07e",
+              "review": {
+                "id": "rust/comments.rs@100",
+                "hash": "2e1895bc81cd5eb364b3d203970d82e5571c96e0a802e835899387409086c07e",
+                "verdict": "design limit",
+                "reason": "Entry 22 plus the established comment entries. Entry 22: comment_cells is package-wide and unscoped, so Rust cannot align list-item comments without also aligning statement comments, which fails gate 2 idempotence on this very file at both widths. Entries 9 and 7 remain the other causes here: a mid-expression block comment cannot be placed by the package, and a rule cannot tell a comment-forced break from a width-forced one.",
+                "reviewed_by": "opus-orchestrator",
+                "reviewed_at": "2026-08-19T21:54:59Z"
+              }
+            },
+            {
+              "case": "comments.rs@60",
+              "hash": "09319ae841d8b21123fecdc1852fbd50276e2b7311570bcd439b35426cbf2211",
+              "review": {
+                "id": "rust/comments.rs@60",
+                "hash": "09319ae841d8b21123fecdc1852fbd50276e2b7311570bcd439b35426cbf2211",
+                "verdict": "design limit",
+                "reason": "Entry 22 plus the established comment entries. Entry 22: comment_cells is package-wide and unscoped, so Rust cannot align list-item comments without also aligning statement comments, which fails gate 2 idempotence on this very file at both widths. Entries 9 and 7 remain the other causes here: a mid-expression block comment cannot be placed by the package, and a rule cannot tell a comment-forced break from a width-forced one.",
+                "reviewed_by": "opus-orchestrator",
+                "reviewed_at": "2026-08-19T21:54:59Z"
+              }
+            },
+            {
+              "case": "generics.rs@100",
+              "hash": "850bcf405912d794ce77cb4151580b4454b6fef3b8405c847a92df1840e02080",
+              "review": {
+                "id": "rust/generics.rs@100",
+                "hash": "850bcf405912d794ce77cb4151580b4454b6fef3b8405c847a92df1840e02080",
+                "verdict": "design limit",
+                "reason": "An existing source trailing comma pins the group through trail, while rustfmt collapses the signature when it fits; the package cannot consume or remove that comma.",
+                "reviewed_by": "gpt-5.6-luna",
+                "reviewed_at": "2026-08-19T19:57:38Z"
+              }
+            },
+            {
+              "case": "kitchen.rs@60",
+              "hash": "22d4cb3ad7db0f7a42973a737fa4811d24e3f615d0ade169736addfe017bf97a",
+              "review": {
+                "id": "rust/kitchen.rs@60",
+                "hash": "22d4cb3ad7db0f7a42973a737fa4811d24e3f615d0ade169736addfe017bf97a",
+                "verdict": "design limit",
+                "reason": "The remaining method-chain layout is the existing heterogeneous-chain flatten limit, and rustfmt\u2019s broken-arm brace placement depends on ancestor break context unavailable to this rule.",
+                "reviewed_by": "gpt-5.6-luna",
+                "reviewed_at": "2026-08-19T19:57:38Z"
+              }
+            },
+            {
+              "case": "normalize.rs@60",
+              "hash": "f31c8e7f58aad0e380259ba63195ddc61fb615d5c79bb2cc6a1b3f4363a72977",
+              "review": {
+                "id": "rust/normalize.rs@60",
+                "hash": "f31c8e7f58aad0e380259ba63195ddc61fb615d5c79bb2cc6a1b3f4363a72977",
+                "verdict": "design limit",
+                "reason": "The existing group-fit behavior counts the trailing comment, while rustfmt ignores it for deciding whether the array fits; this is existing FINDINGS 6.",
+                "reviewed_by": "gpt-5.6-luna",
+                "reviewed_at": "2026-08-19T19:57:39Z"
+              }
+            },
+            {
+              "case": "patterns.rs@60",
+              "hash": "f50435ec8fe4f7ed4e0b1271908c582ea6acfdfc75e5f7d69b430261159d4eb9",
+              "review": {
+                "id": "rust/patterns.rs@60",
+                "hash": "f50435ec8fe4f7ed4e0b1271908c582ea6acfdfc75e5f7d69b430261159d4eb9",
+                "verdict": "design limit",
+                "reason": "Rustfmt adds a trailing comma to this one-item broken parameter list, but trail intentionally does not synthesize a comma for one item; this is existing FINDINGS 3.",
+                "reviewed_by": "gpt-5.6-luna",
+                "reviewed_at": "2026-08-19T19:57:39Z"
+              }
+            },
+            {
+              "case": "strings.rs@60",
+              "hash": "990c0381bb988d21a530de0381b7ed776456ecf66d3d57d750bee14aced27610",
+              "review": {
+                "id": "rust/strings.rs@60",
+                "hash": "990c0381bb988d21a530de0381b7ed776456ecf66d3d57d750bee14aced27610",
+                "verdict": "house rule",
+                "reason": "Keeping the long string assignment flat preserves the package\u2019s consistent handling of opaque overlong leaves and avoids a let-level group that regresses the matching sequences corpus.",
+                "reviewed_by": "gpt-5.6-luna",
+                "reviewed_at": "2026-08-19T19:57:40Z"
+              }
+            },
+            {
+              "case": "structs.rs@100",
+              "hash": "82266bda9c75c01b9734c03e5bb39022d35d1ee86016c7b6a5ef6d199203c784",
+              "review": {
+                "id": "rust/structs.rs@100",
+                "hash": "82266bda9c75c01b9734c03e5bb39022d35d1ee86016c7b6a5ef6d199203c784",
+                "verdict": "design limit",
+                "reason": "Entry 22: rustfmt aligns trailing comments on list items only, and comment_cells is a package-wide switch with no scope. Measured three ways: a package-placed cell adds the tabwriter pad AND the suffix comment_gap, so every row is one column too wide; the header never fires on struct fields at all, because tree-sitter-rust makes the separator comma the comment's preceding sibling and comment_cells skips tokens; and where it does fire it aligns statement comments, which fails gate 2 idempotence on comments.rs at both widths (DISQUALIFIED). Scoping comment cells to a cellblock is the missing capability -- with it, widths.rs match arms are byte-identical to rustfmt.",
+                "reviewed_by": "opus-orchestrator",
+                "reviewed_at": "2026-08-19T21:54:43Z"
+              }
+            },
+            {
+              "case": "structs.rs@60",
+              "hash": "373cc106696aa3afceaf491a18fb8e6a8f94eb10d76963820d9d7f2ec9835495",
+              "review": {
+                "id": "rust/structs.rs@60",
+                "hash": "373cc106696aa3afceaf491a18fb8e6a8f94eb10d76963820d9d7f2ec9835495",
+                "verdict": "design limit",
+                "reason": "Entry 22: rustfmt aligns trailing comments on list items only, and comment_cells is a package-wide switch with no scope. Measured three ways: a package-placed cell adds the tabwriter pad AND the suffix comment_gap, so every row is one column too wide; the header never fires on struct fields at all, because tree-sitter-rust makes the separator comma the comment's preceding sibling and comment_cells skips tokens; and where it does fire it aligns statement comments, which fails gate 2 idempotence on comments.rs at both widths (DISQUALIFIED). Scoping comment cells to a cellblock is the missing capability -- with it, widths.rs match arms are byte-identical to rustfmt.",
+                "reviewed_by": "opus-orchestrator",
+                "reviewed_at": "2026-08-19T21:54:44Z"
+              }
+            },
+            {
+              "case": "widths.rs@100",
+              "hash": "798b833c4c9dc763bc295325bb002ec133e598a0db51b4ce376ef8e3e8dc7eba",
+              "review": {
+                "id": "rust/widths.rs@100",
+                "hash": "798b833c4c9dc763bc295325bb002ec133e598a0db51b4ce376ef8e3e8dc7eba",
+                "verdict": "design limit",
+                "reason": "Two causes, both design limits. Entry 22: rustfmt aligns trailing comments on list items only, and comment_cells is a package-wide switch with no scope -- a package-placed cell adds the tabwriter pad AND the suffix comment_gap (one column too wide), the header never reaches struct fields because the separator comma is the comment's preceding sibling and comment_cells skips tokens, and where it does fire it fails gate 2 idempotence. Entry 11: the method chain is an alternating field_expression / call_expression spine with no group to hold, so it cannot break. Adding a cellblock on match_block does make this file's match arms byte-identical to rustfmt; the remaining two hunks are 22 and 11.",
+                "reviewed_by": "opus-orchestrator",
+                "reviewed_at": "2026-08-19T21:54:58Z"
+              }
+            },
+            {
+              "case": "widths.rs@60",
+              "hash": "af4713b3e3f121382d655379e04303b0af0bf5400ef012c6c8abe81235afec0f",
+              "review": {
+                "id": "rust/widths.rs@60",
+                "hash": "af4713b3e3f121382d655379e04303b0af0bf5400ef012c6c8abe81235afec0f",
+                "verdict": "design limit",
+                "reason": "Two causes, both design limits. Entry 22: rustfmt aligns trailing comments on list items only, and comment_cells is a package-wide switch with no scope -- a package-placed cell adds the tabwriter pad AND the suffix comment_gap (one column too wide), the header never reaches struct fields because the separator comma is the comment's preceding sibling and comment_cells skips tokens, and where it does fire it fails gate 2 idempotence. Entry 11: the method chain is an alternating field_expression / call_expression spine with no group to hold, so it cannot break. Adding a cellblock on match_block does make this file's match arms byte-identical to rustfmt; the remaining two hunks are 22 and 11.",
+                "reviewed_by": "opus-orchestrator",
+                "reviewed_at": "2026-08-19T21:54:59Z"
+              }
+            }
+          ],
+          "stale_divergences": [],
+          "unreviewed_divergences": [],
+          "defect_divergences": [],
+          "excluded_files": [
+            {
+              "file": "leading_pipes.rs",
+              "reason": "rustfmt deletes the leading `|` of each match arm (token deletion)"
+            }
+          ],
+          "by_width": {
+            "100": {
+              "agreement": 11,
+              "accepted": 5,
+              "stale": 0,
+              "unreviewed": 0,
+              "defect": 0,
+              "of": 16,
+              "review_coverage": 1.0,
+              "review_threshold_met": true
+            },
+            "60": {
+              "agreement": 8,
+              "accepted": 8,
+              "stale": 0,
+              "unreviewed": 0,
+              "defect": 0,
+              "of": 16,
+              "review_coverage": 1.0,
+              "review_threshold_met": true
+            }
+          }
+        }
       }
     }
   },
-  "size_delta_vs_main": {
-    "js_runtime_gzip": {
-      "main": 13396,
-      "now": 13695,
-      "delta": 299
-    },
-    "package_gzip": 2505,
-    "per_edit": [
-      {
-        "commit": "5c27edb",
-        "construct": "interior comment text (tree-sitter-rust line_comment / block_comment)",
-        "gzip_delta": 299,
-        "from": 13396,
-        "to": 13695
-      }
-    ]
-  },
-  "divergences": [
-    {
-      "case": "closures.rs@100",
-      "id": "rust/closures.rs@100",
-      "hash": "46383e8472adc162edb44c2e1aee998fceb83ca29541202be96495cb623798e4",
-      "classification": "design limit"
-    },
-    {
-      "case": "closures.rs@60",
-      "id": "rust/closures.rs@60",
-      "hash": "c912c8165d1e9a64e1ded1aba279772cfd1efeaceb8c3d8f4ecb0481e03da893",
-      "classification": "design limit"
-    },
-    {
-      "case": "comments.rs@100",
-      "id": "rust/comments.rs@100",
-      "hash": "2e1895bc81cd5eb364b3d203970d82e5571c96e0a802e835899387409086c07e",
-      "classification": "design limit"
-    },
-    {
-      "case": "comments.rs@60",
-      "id": "rust/comments.rs@60",
-      "hash": "09319ae841d8b21123fecdc1852fbd50276e2b7311570bcd439b35426cbf2211",
-      "classification": "design limit"
-    },
-    {
-      "case": "generics.rs@100",
-      "id": "rust/generics.rs@100",
-      "hash": "850bcf405912d794ce77cb4151580b4454b6fef3b8405c847a92df1840e02080",
-      "classification": "design limit"
-    },
-    {
-      "case": "kitchen.rs@60",
-      "id": "rust/kitchen.rs@60",
-      "hash": "22d4cb3ad7db0f7a42973a737fa4811d24e3f615d0ade169736addfe017bf97a",
-      "classification": "design limit"
-    },
-    {
-      "case": "nesting.rs@100",
-      "id": "rust/nesting.rs@100",
-      "hash": "73496cc4a30dd73f82d405cd3543cb88ab107ebd20ed48c4d144cad455d8ec95",
-      "classification": "design limit"
-    },
-    {
-      "case": "nesting.rs@60",
-      "id": "rust/nesting.rs@60",
-      "hash": "9b36c57c1547db8cd4d528895fac237119a665ef9b6c69efcb2f93733909042a",
-      "classification": "design limit"
-    },
-    {
-      "case": "normalize.rs@60",
-      "id": "rust/normalize.rs@60",
-      "hash": "f31c8e7f58aad0e380259ba63195ddc61fb615d5c79bb2cc6a1b3f4363a72977",
-      "classification": "design limit"
-    },
-    {
-      "case": "patterns.rs@60",
-      "id": "rust/patterns.rs@60",
-      "hash": "f50435ec8fe4f7ed4e0b1271908c582ea6acfdfc75e5f7d69b430261159d4eb9",
-      "classification": "design limit"
-    },
-    {
-      "case": "strings.rs@60",
-      "id": "rust/strings.rs@60",
-      "hash": "990c0381bb988d21a530de0381b7ed776456ecf66d3d57d750bee14aced27610",
-      "classification": "design limit"
-    },
-    {
-      "case": "structs.rs@100",
-      "id": "rust/structs.rs@100",
-      "hash": "82266bda9c75c01b9734c03e5bb39022d35d1ee86016c7b6a5ef6d199203c784",
-      "classification": "design limit"
-    },
-    {
-      "case": "structs.rs@60",
-      "id": "rust/structs.rs@60",
-      "hash": "373cc106696aa3afceaf491a18fb8e6a8f94eb10d76963820d9d7f2ec9835495",
-      "classification": "design limit"
-    },
-    {
-      "case": "widths.rs@100",
-      "id": "rust/widths.rs@100",
-      "hash": "d5bef39d3e852861c0e97c540c89272faaee8fa8cfdbb89b494d591eea1695ed",
-      "classification": "design limit"
-    },
-    {
-      "case": "widths.rs@60",
-      "id": "rust/widths.rs@60",
-      "hash": "af4713b3e3f121382d655379e04303b0af0bf5400ef012c6c8abe81235afec0f",
-      "classification": "design limit"
-    }
-  ]
+  "detail": [],
+  "pending": []
 }
