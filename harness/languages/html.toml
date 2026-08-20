@@ -1,0 +1,66 @@
+# HTML. Schema: docs/onboarding/WORKFLOW.md, "Stage 0".
+name = "html"
+extensions = [".html"]
+
+# PyPI name matches the orchestrator's tree_sitter_html guess after the usual
+# hyphen-to-underscore swap. 0.7.0 was the guess; the latest release is 0.23.2
+# (checked against the live index 2026-08-21). Imported as tree_sitter_html;
+# the module exports language() (plus HIGHLIGHTS_QUERY, INJECTIONS_QUERY),
+# which returns a tree_sitter.Language capsule. No language_html().
+grammar = "tree-sitter-html==0.23.2"
+grammar_module = "tree_sitter_html"
+grammar_symbol = "language"
+
+# Markdown info strings that select this grammar for a fenced region.
+# `html` is the only spelling worth vouching for. `htm` is a file extension,
+# not a fence tag. `xhtml` is prettier's support-info alias, but it is a
+# different serialisation (namespaces, self-closing policy) and would collide
+# with XML onboarding if both claimed it.
+injection_aliases = ["html"]
+
+# prettier infers the parser from the filename, so stdin needs a fake one
+# (verified: without --stdin-filepath, and without --parser, it errors
+# "No parser and no file path given, couldn't infer a parser"). --parser html
+# is an alternative, not an extra flag; it is omitted. Output with either
+# selector is byte-identical on a document that includes script and style.
+# --no-config is load-bearing (below). --print-width honours {width}:
+# established by diffing 80 vs 40, not by reading --help. Paragraphs of
+# inline content reflow; attribute lists that overflow wrap all-or-nothing
+# (one attribute per line), which is why a 4-attr tag is flat at 80 and
+# stacked at 40 while a 7-attr tag is stacked at both.
+reference = "npx --yes prettier@3.9.6 --no-config --stdin-filepath x.html --print-width {width}"
+reference_version = "3.9.6"
+reference_width = "flag"
+
+# 80 is prettier's own default, established by bisection rather than from
+# --help: a start tag whose class value is 60 characters stays flat
+# unprompted and at --print-width 80, and wraps at --print-width 79; a
+# 61-character class wraps unprompted and at 80, and stays flat at 81.
+# Unprompted output is byte-identical to --print-width 80 on every probe.
+# 40 is the narrow width: it is the first round number at which 3-to-6
+# short attributes wrap and at which inline hug-closes (`</a` / `>text`)
+# actually appear. 60 still leaves most of those flat.
+widths = [80, 40]
+
+# The generic default is selected deliberately. An html.loads-style override
+# does not exist, and a DOM loader would collapse the spellings prettier
+# itself preserves (entity form, boolean vs valued attributes, void slash)
+# and the ones a package must not rewrite. Leave wrappers/equivalences empty
+# until the gate names a kind -- HTML has no parenthesised-expression node,
+# and start_tag / self_closing_tag are not the same construct (`<div></div>`
+# vs `<div />` is a real difference prettier itself preserves).
+gate3 = "default"
+
+transparent_wrappers = []
+equivalent_kinds = []
+
+# prettier rewrites that linearity forbids. One construct per file; they
+# still count for gates 0-3 and still get committed reference output.
+# Quotes are anonymous tokens around a named attribute_value, so the generic
+# default already accepts the rewrite -- incomparable here is for agreement,
+# not because gate 3 fails. The void slash *does* fail gate 3: `<br>` is a
+# start_tag and `<br />` is a self_closing_tag.
+[incomparable]
+"quotes.html" = "prettier re-quotes attributes to prefer double quotes (and to minimise escaping)"
+"void_slash.html" = "prettier emits XHTML-style self-closing slashes on void elements (`<br>` -> `<br />`)"
+"prose.html" = "prettier wraps prose by inserting newlines into `text` leaves"
