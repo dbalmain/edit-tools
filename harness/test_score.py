@@ -64,7 +64,12 @@ class ReviewLedgerScoreTests(unittest.TestCase):
                 self.root, [(self.tree, m)], ledger_root=self.reviews
             )
 
-    def approve(self, output: str = "house", item_id: str = "json/sample.json@60"):
+    def approve(
+        self,
+        output: str = "house",
+        item_id: str = "json/sample.json@60",
+        verdict: str = "design limit",
+    ):
         digest = formatter_divergence.make(
             "json", "sample.json", 60, output, "reference"
         ).hash
@@ -73,7 +78,7 @@ class ReviewLedgerScoreTests(unittest.TestCase):
             "json",
             item_id,
             digest,
-            "design limit",
+            verdict,
             "House containers break differently.",
             "reviewer@example.com",
             root=self.reviews,
@@ -126,6 +131,21 @@ class ReviewLedgerScoreTests(unittest.TestCase):
             report["by_language"]["json"]["stale_divergences"][0]["why"],
             "formatter divergence changed",
         )
+        scored = score.Report(submission="submission")
+        scored.gates = {"gate": {"pass": True}}
+        scored.measures = {"6-reference-agreement": report}
+        self.assertTrue(scored.disqualified)
+
+    def test_package_bug_is_a_hard_failure(self):
+        self.approve(verdict=review_ledger.DEFECT_VERDICT)
+        report = self.classify(
+            {
+                88: score.Run(ok=True, text="reference"),
+                60: score.Run(ok=True, text="house"),
+            }
+        )
+
+        self.assertEqual((report["defect"], report["accepted"]), (1, 0))
         scored = score.Report(submission="submission")
         scored.gates = {"gate": {"pass": True}}
         scored.measures = {"6-reference-agreement": report}

@@ -162,9 +162,19 @@ whether the package is right. Budget your effort here:
    strong claim and usually the wrong one. When we simply prefer our own layout
    — alignment being the standing example — the verdict is `house-rule`, and its
    reason must name the readability or cross-language-consistency argument, not
-   assert one. Record each accepted classification with the viewer's
-   `--approve`, `--verdict`, `--reason`, and `--reviewed-by` flags; the
-   resulting JSONL diff is part of the review.
+   assert one.
+
+   **`package-bug` now fails the scorer** (Dave, 2026-08-21), the way a stale
+   review does. It is not a softer thing to write than `design-limit` — it is
+   the one verdict that stops a merge, because it says the defect is ours and
+   fixable. Write it when that is true and expect the slice to come back; do not
+   reach for it to avoid committing to a design claim you are unsure of. The
+   pressure this creates runs the other way too: a genuine defect relabelled
+   `design-limit` to clear the bar is the worse failure of the two, and it is
+   what the "take two or three and check" instruction above is for. Record each
+   accepted classification with the viewer's `--approve`, `--verdict`,
+   `--reason`, and `--reviewed-by` flags; the resulting JSONL diff is part of
+   the review.
 
 4. **Verdict each runtime edit**: `warranted` | `unnecessary` |
    `needs-redesign`. A verdict of `unnecessary` is a **retroactive freeze for

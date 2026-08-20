@@ -32,28 +32,28 @@ Grammar package names are the orchestrator's guess from PyPI naming convention.
 Stage A confirms or corrects each one and records the pin in the manifest; a
 wrong guess here is a template delta, not a failure.
 
-**Round 3 stage B is complete and merged, 2026-08-18.** All three passed and
-all three are on `main`. Two were cut off by a session limit mid-review and
-resumed on DeepSeek; the Opus subagent runs that started them were off-lane —
-see `LEDGER.md`, "Reviewer lane".
+**Round 3 stage B is complete and merged, 2026-08-18.** All three passed and all
+three are on `main`. Two were cut off by a session limit mid-review and resumed
+on DeepSeek; the Opus subagent runs that started them were off-lane — see
+`LEDGER.md`, "Reviewer lane".
 
-| Language   | Verdict                  | Reviewer            | Cross-check                    |
-| ---------- | ------------------------ | ------------------- | ------------------------------ |
-| JavaScript | `pass with fixes applied` | Opus (off-lane)     | orchestrator merge review      |
-| Kotlin     | `pass with fixes applied` | Opus → DeepSeek     | grok, then orchestrator        |
-| Rust       | `pass with fixes applied` | Opus → DeepSeek     | orchestrator merge review      |
+| Language   | Verdict                   | Reviewer        | Cross-check               |
+| ---------- | ------------------------- | --------------- | ------------------------- |
+| JavaScript | `pass with fixes applied` | Opus (off-lane) | orchestrator merge review |
+| Kotlin     | `pass with fixes applied` | Opus → DeepSeek | grok, then orchestrator   |
+| Rust       | `pass with fixes applied` | Opus → DeepSeek | orchestrator merge review |
 
 Each found something the others could not have: JavaScript that prettier's
 `objectWrap` defaults to `preserve`, so a width-driven `group` is the wrong
 model for objects; Kotlin that ktfmt's `sortedAndDistinctImports` is two
-exclusions, sorting *and* de-duplication, not one; Rust that `FINDINGS` 4 was
-already decided and the leading-`|` deletion needed a dedicated
-`[incomparable]` probe rather than another deferral to Dave.
+exclusions, sorting _and_ de-duplication, not one; Rust that `FINDINGS` 4 was
+already decided and the leading-`|` deletion needed a dedicated `[incomparable]`
+probe rather than another deferral to Dave.
 
 **Round 3 is closed. All three merged 2026-08-20** — `c5e90f3`, `bcadfc3`,
 `7480e32`. Stage D reviewed every divergence in all three; the nine merged
-languages now stand at **0 stale, 0 unreviewed, 0 `package-bug`**, 140
-agreement of 217 pairs, in 25,048 B of a 25,600 B budget.
+languages now stand at **0 stale, 0 unreviewed, 0 `package-bug`**, 140 agreement
+of 217 pairs, in 25,048 B of a 25,600 B budget.
 
 **The board carried round 3 as `C` for two days after that**, which is the
 second time this exact failure has been recorded here — the first was carrying
@@ -62,8 +62,8 @@ keeps being ignored: **update the board at the transition, not at the merge, and
 not when someone next reads it.**
 
 Round 3 also left one branch open rather than merged: `worktree-feat-cell-scope`
-carries FINDINGS 22 (comment-cell scoping, LEDGER row 15) and FINDINGS 13
-(`drop`, row 16, parked). It is stage-D follow-up work on Rust, not a stage of
+carries FINDINGS 22 (comment-cell scoping, LEDGER row 17) and FINDINGS 13
+(`drop`, row 18, parked). It is stage-D follow-up work on Rust, not a stage of
 its own.
 
 Their builders are recorded as `unrecorded` because none of the three corpus
