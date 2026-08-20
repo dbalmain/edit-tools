@@ -1079,9 +1079,9 @@ had one is worth recording — it is what stops this entry becoming a vague fear
 
 ## 13. A package cannot delete a token the reference deletes
 
-**Status:** **opcode built 2026-08-20, unused — blocked in both languages, for
-two different reasons.** · **Cost:** local (+317 B runtime) · **Languages:** Go,
-Rust
+**Status:** **decided — parked** (Dave, 2026-08-21). Opcode built 2026-08-20,
+correct, and used by no package; the gate-3 skeleton rework is **not** being
+done for it. · **Cost:** local (+317 B runtime) · **Languages:** Go, Rust
 
 gofmt removes redundant parentheses and statement semicolons. Gate 3 permits it
 — the reparse is unchanged and the tokens are anonymous — but **no opcode can
@@ -1154,11 +1154,24 @@ file also needs parent-position-sensitive formatting (entry 10). One capability
 short in each language, and they are different capabilities.
 
 **So the bill is +317 B of runtime for zero agreement, in a 25,600 B budget with
-530 B left.** By `house-style.md`'s own argument that is a bad trade today. It
-is kept on the branch rather than reverted because both blockers are named and
-neither is `drop`'s fault — but it should not land on main until one of them
-moves. **Decide:** land it with the gate-3 skeleton work, or hold it until Go
-takes entry 10.
+552 B left.** By `house-style.md`'s own argument that is a bad trade today. It
+is kept rather than reverted because both blockers are named and neither is
+`drop`'s fault.
+
+**Decided 2026-08-21: parked.** Neither of the two options that would give the
+opcode a caller is being taken — not the gate-3 skeleton rework, and not
+entry 10 for Go. The code stays built, tested and unused until one of those
+happens for its own reasons, and this entry stays open as the place that will
+record it.
+
+The reason to prefer parking over reverting is that the expensive part of this
+entry was never the 317 B; it was **finding out that gate 3's two-branch
+skeleton is what blocks the deletion**, which cost a full build to learn. That
+result is written down here whether the code ships or not, but a package that
+wants `drop` later gets a working opcode rather than an archaeology exercise.
+The standing cost is bytes, and bytes are the one thing a revert can recover at
+any time — `6a357bd` is a single-commit revert with no dependents, so parking
+forecloses nothing.
 
 ## 14. A third sanctioned token policy, for respelling
 

@@ -1,12 +1,12 @@
 # Rust package report (stages C and D)
 
 ```
-gate 0 coverage         pass   (34/34)
-gate 1 rust/js parity   pass   (34/34 byte-identical)
-gate 2 idempotence      pass   (34/34)
-gate 3 non-destruction  pass   (34/34, method default)
-measure 4 overflow      38 lines (rustfmt 39)
-measure 5 size          package 2589 B gzip; runtime 13293 B gzip
+gate 0 coverage         pass   (38/38)
+gate 1 rust/js parity   pass   (38/38 byte-identical)
+gate 2 idempotence      pass   (38/38)
+gate 3 non-destruction  pass   (38/38, method default)
+measure 4 overflow      49 lines (rustfmt 47)
+measure 5 size          package 2564 B gzip; runtime 13610 B gzip
 measure 6 agreement     14/18 @ width 100,  8/18 @ width 60  =  22/36 (61.1%)
                         + 14 accepted = 100% review coverage, 0 stale,
                           0 unreviewed, 0 package-bug

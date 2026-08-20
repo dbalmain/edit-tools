@@ -16,9 +16,9 @@ building · `D` package review · `E`/`F` escalated · **merged** · **blocked**
 | YAML       | T1   | 2     | DS+grok+Terra | merged | tree_sitter_yaml       | prettier                          |
 | CSS        | T1   | 2     | grok          | merged | tree_sitter_css        | prettier                          |
 | Go         | T2   | 2     | DS+grok       | merged | tree_sitter_go         | gofmt                             |
-| Rust       | T2   | 3     | unrecorded    | C      | tree_sitter_rust       | rustfmt                           |
-| Kotlin     | T2   | 3     | unrecorded    | C      | tree_sitter_kotlin     | ktfmt                             |
-| JavaScript | T2   | 3     | unrecorded    | C      | tree_sitter_javascript | prettier                          |
+| Rust       | T2   | 3     | unrecorded    | merged | tree_sitter_rust       | rustfmt                           |
+| Kotlin     | T2   | 3     | unrecorded    | merged | tree_sitter_kotlin     | ktfmt                             |
+| JavaScript | T2   | 3     | unrecorded    | merged | tree_sitter_javascript | prettier                          |
 | Markdown   | T2   | 4     | tbd           | -      | tree_sitter_markdown   | prettier                          |
 | TypeScript | T2   | 4     | tbd           | -      | tree_sitter_typescript | prettier                          |
 | XML        | T3   | 4     | tbd           | -      | tree_sitter_xml        | prettier (`@prettier/plugin-xml`) |
@@ -50,13 +50,21 @@ exclusions, sorting *and* de-duplication, not one; Rust that `FINDINGS` 4 was
 already decided and the leading-`|` deletion needed a dedicated
 `[incomparable]` probe rather than another deferral to Dave.
 
-**Next: stage C for all three.**
+**Round 3 is closed. All three merged 2026-08-20** — `c5e90f3`, `bcadfc3`,
+`7480e32`. Stage D reviewed every divergence in all three; the nine merged
+languages now stand at **0 stale, 0 unreviewed, 0 `package-bug`**, 140
+agreement of 217 pairs, in 25,048 B of a 25,600 B budget.
 
-**Round 3's stage A is complete and unmerged**, on `wt/lang-rust`,
-`wt/lang-kotlin` and `wt/lang-javascript` — corpus, manifest, trees, reference
-output and corpus report for each. The board carried them as `-` for a day after
-they landed, which is the failure this line exists to prevent: **update the
-board at the transition, not at the merge.**
+**The board carried round 3 as `C` for two days after that**, which is the
+second time this exact failure has been recorded here — the first was carrying
+stage A as `-` for a day. The line below is not advice, it is the thing that
+keeps being ignored: **update the board at the transition, not at the merge, and
+not when someone next reads it.**
+
+Round 3 also left one branch open rather than merged: `worktree-feat-cell-scope`
+carries FINDINGS 22 (comment-cell scoping, LEDGER row 15) and FINDINGS 13
+(`drop`, row 16, parked). It is stage-D follow-up work on Rust, not a stage of
+its own.
 
 Their builders are recorded as `unrecorded` because none of the three corpus
 reports names the agent that wrote it. That is a template gap, not an
