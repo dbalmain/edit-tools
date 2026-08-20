@@ -20,8 +20,8 @@ building · `D` package review · `E`/`F` escalated · **merged** · **blocked**
 | Kotlin     | T2   | 3     | unrecorded    | merged | tree_sitter_kotlin     | ktfmt                             |
 | JavaScript | T2   | 3     | unrecorded    | merged | tree_sitter_javascript | prettier                          |
 | Markdown   | T2   | 4     | grok-4.6      | B      | tree_sitter_markdown   | prettier                          |
-| TypeScript | T2   | 4     | grok-4.6      | B      | tree_sitter_typescript | prettier                          |
-| XML        | T3   | 4     | grok-4.6      | B      | tree_sitter_xml        | prettier (`@prettier/plugin-xml`) |
+| TypeScript | T2   | 4     | grok-4.6      | C      | tree_sitter_typescript | prettier                          |
+| XML        | T3   | 4     | grok-4.6      | C      | tree_sitter_xml        | prettier (`@prettier/plugin-xml`) |
 | HTML       | T3   | 4     | grok-4.6      | B      | tree_sitter_html       | prettier                          |
 | Ruby       | T4   | 5     | tbd           | -      | tree_sitter_ruby       | syntax_tree                       |
 | Scheme     | T4   | 5     | tbd           | -      | tree_sitter_scheme     | emacs `scheme-mode`               |
@@ -104,6 +104,28 @@ references unilaterally. Two of the three are also suspected
 indent without reflowing to a column — and both briefs give that as a hypothesis
 to test at two widths, explicitly not as a fact, so it cannot be inherited the
 way black's 88 was inherited into TOML in round 1.
+
+**Round 4 stage B, first two verdicts, 2026-08-21.** **TypeScript: `pass`**
+(Sonnet) with nothing to correct. **XML: `pass with fixes applied`** (Sonnet),
+one commit — the report had covered three of the plugin's four XML options and
+never mentioned `xmlSortAttributesByKey`, which is off by default and therefore
+free for a naive package, so it changed the record rather than the verdict.
+
+Neither reviewer took a builder number on trust, and both went past the brief.
+TypeScript regenerated **all 30** reference outputs rather than the three the
+brief asks for, and settled the leading-`|` question empirically by running the
+same overflowing union under `--experimental-operator-position start` and `end`
+and getting byte-identical output — so the pipe is not that option. It also
+proved the `union_type` transparency claim by parsing both forms and dumping the
+tree: the leading-pipe form is a **unary** wrapper, every real union is a chain
+of **binary** ones, so the elision cannot hide a dropped alternative. XML
+regenerated its reference from a genuinely **cold** npm cache rather than the
+warm one that produced the committed files, which is the check that would catch
+a plugin resolving differently for the next person.
+
+Three template deltas came out of the two reviews and are applied — see table 2.
+The first was found **independently by both**: the brief's `x.{{LANG}}` stdin
+filename is wrong for five of the ten roster languages.
 
 **Round 4 stage A, 2026-08-21.** All four launched on grok-4.6 in parallel
 worktrees, each with the corpus brief plus its own "known stresses" note. All

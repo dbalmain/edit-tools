@@ -67,13 +67,34 @@ Fields you must establish rather than guess:
   width goes. Nothing is installed globally on this machine; use the
   pinned-runner pattern (`npx --yes pkg@ver`, `uvx pkg@ver`,
   `nix run nixpkgs#pkg`) that the python and json manifests demonstrate. Several
-  formatters infer the language from the filename and need a fake one for stdin
-  (`--stdin-filepath x.{{LANG}}`). Record the command that worked, not the one
-  you hoped would — and **verify every flag actually changes something before
-  keeping it.** `--stdin-filepath` is genuinely required for prettier and does
-  nothing at all for taplo, where it was kept anyway and would have been copied
-  into fourteen more manifests unexamined. A flag that does nothing is noise
-  that outlives you.
+  formatters infer the language from the filename and need a fake one for stdin.
+  **Spell that fake name with your manifest's own `extensions` entry, not the
+  language name** — `x.ts`, not `x.typescript`, which prettier rejects outright
+  with "no parser could be inferred". The two differ for at least five of the
+  ten languages already on the roster (`.py`, `.js`, `.kt`, `.rs`, `.ts`), so a
+  template example written as `x.{{LANG}}` is wrong more often than it is right.
+
+  Record the command that worked, not the one you hoped would — and **verify
+  every flag actually changes something before keeping it.** `--stdin-filepath`
+  does nothing at all for taplo, where it was kept anyway and would have been
+  copied into fourteen more manifests unexamined. A flag that does nothing is
+  noise that outlives you.
+
+  It is also not unconditionally required for prettier, which this brief used to
+  claim: it is required only where prettier is inferring the parser **from the
+  filename**. Passing `--parser <name>` explicitly does the same job and does
+  **not** open prettier's `.editorconfig` discovery channel, which
+  `--stdin-filepath` does. Pick one deliberately and say which, rather than
+  passing both because the examples do.
+
+  **If the reference is prettier plus a plugin** — XML is the first, and will
+  not be the last — pin the plugin's version as well as prettier's, and expect
+  `--plugin @scope/name` **not to resolve**: prettier 3 resolves a plugin from
+  the current working directory, not from the npx cache that supplied the
+  binary. The form that works passes the plugin's own entry-point path resolved
+  relative to the prettier binary npx produced. Prove it from a **cold cache**
+  (point `npm_config_cache` at a scratch directory) before you commit ground
+  truth generated from a warm one.
 
   **Establish whether the reference reads ambient config**, and disable it. The
   method matters: plant a config file that sets an option your command line does
@@ -157,6 +178,19 @@ Fields you must establish rather than guess:
   **Do not add a kind whose parentheses are structural** — in a Lisp, `(f)` is a
   call and `f` is not, and declaring that node transparent would let the
   formatter destroy code and still pass.
+
+  **There is a second shape, and it is not a parenthesis.** A grammar may insert
+  a **unary wrapper for a leading operator that only appears when the construct
+  breaks** — TypeScript's `union_type` is the worked example: `| A | B` parses
+  as a unary `union_type` around the first member, while every real multi-member
+  union is a chain of _binary_ `union_type` nodes. Declaring it transparent is
+  sound for exactly the reason the one-named-child rule exists: the elision
+  fires only on the unary node, so a formatter that dropped a real alternative
+  still fails on the surviving binary one. If your reference adds a leading
+  operator on break, look for this before reaching for a `gate3` override — and
+  prove the arity claim by parsing both forms and dumping the tree, not by
+  reading the grammar.
+
 - `equivalent_kinds` — also default-only. Groups of node kinds that are the same
   construct under a different name, which is what happens when parenthesising
   something renames its node (`pattern_list` → `tuple_pattern` in Python). Same
