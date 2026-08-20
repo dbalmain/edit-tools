@@ -19,10 +19,10 @@ building · `D` package review · `E`/`F` escalated · **merged** · **blocked**
 | Rust       | T2   | 3     | unrecorded    | merged | tree_sitter_rust       | rustfmt                           |
 | Kotlin     | T2   | 3     | unrecorded    | merged | tree_sitter_kotlin     | ktfmt                             |
 | JavaScript | T2   | 3     | unrecorded    | merged | tree_sitter_javascript | prettier                          |
-| Markdown   | T2   | 4     | tbd           | -      | tree_sitter_markdown   | prettier                          |
-| TypeScript | T2   | 4     | tbd           | -      | tree_sitter_typescript | prettier                          |
-| XML        | T3   | 4     | tbd           | -      | tree_sitter_xml        | prettier (`@prettier/plugin-xml`) |
-| HTML       | T3   | 4     | tbd           | -      | tree_sitter_html       | prettier                          |
+| Markdown   | T2   | 4     | grok-4.6      | A      | tree_sitter_markdown   | prettier                          |
+| TypeScript | T2   | 4     | grok-4.6      | B      | tree_sitter_typescript | prettier                          |
+| XML        | T3   | 4     | grok-4.6      | B      | tree_sitter_xml        | prettier (`@prettier/plugin-xml`) |
+| HTML       | T3   | 4     | grok-4.6      | B      | tree_sitter_html       | prettier                          |
 | Ruby       | T4   | 5     | tbd           | -      | tree_sitter_ruby       | syntax_tree                       |
 | Scheme     | T4   | 5     | tbd           | -      | tree_sitter_scheme     | emacs `scheme-mode`               |
 | Haskell    | T4   | 5     | tbd           | -      | tree_sitter_haskell    | ormolu                            |
@@ -72,6 +72,36 @@ attribution dispute — a stage-A report should identify its builder the way the
 runtime-change ledger identifies its agent, and `corpus-brief.md` does not ask
 for it. Every earlier round's builder is known only because the orchestrator
 launched them within one session's memory.
+
+**Round 4 stage A, 2026-08-21.** All four launched on grok-4.6 in parallel
+worktrees, each with the corpus brief plus its own "known stresses" note.
+TypeScript, XML and HTML are built and awaiting stage-B review; Markdown is
+still running. **All four corpora are grok-built, so none of their stage-B
+reviews may go to grok** — a reviewer is never the same family as the builder.
+
+Each produced a finding its brief predicted, which is the argument for the
+"known stresses" section existing at all:
+
+- **HTML answers the markup question the board asked.** Every element is an
+  `element` node, and whether prettier may break between two of them depends on
+  the **`tag_name`**, not the node type: `<div>a</div><div>b</div>` always
+  stacks, `<span>a</span><span>b</span>` packs and hug-wraps at 40. A node-type
+  table cannot express that. Note this is the same limit the board predicts for
+  **Scheme** in round 5 — "layout is driven by the head of a form, not the node
+  type" — arriving a round early and in a second language.
+- **HTML also breaks the injection schema.** `<script>` / `<style>` carry
+  `raw_text` and no info-string child: the guest language is a fact of the node
+  type, which `[[injections]]` cannot say. An optional `guest` field is proposed
+  in the report with exact patch lines, not applied.
+- **XML found gate 3 inert for one language.** Its comments are named `Comment`
+  nodes rather than tree-sitter extras, so `corpus_stats` reports 0/14 comments
+  and `drop_a_comment` never fires. Same class as FINDINGS 12. A `comment_kinds`
+  manifest field is proposed, not applied.
+- **TypeScript found the mirror of FINDINGS 13.** prettier *adds* a leading `|`
+  to a broken union — a token the source does not have, inserted conditionally
+  on breaking — where rustfmt *deletes* one. `trail` and `autoparen` are the
+  only sanctioned token additions and neither is leading-and-break-conditional.
+  The Doc IR has `IfBreak`; no opcode exposes it.
 
 **agy (Gemini 3.7 Flash) is not in round 2, and not by choice.** It was
 allocated the second CSS and Go seats. In headless mode it auto-denies any tool
