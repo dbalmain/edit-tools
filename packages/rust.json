@@ -760,31 +760,24 @@
 
     "token_tree": [
       "when",
-      ["count", "t:.", 0],
+      [
+        "all",
+        "*",
+        [
+          "identifier", "integer_literal", "string_literal", "self", "metavariable",
+          ",", "(", ")", "[", "]", "{", "}"
+        ]
+      ],
       [
         "when",
-        ["count", "t:!", 0],
+        ["count", "t:[", 1],
+        ["use", "paren_list", "[", "]"],
         [
           "when",
-          [
-            "all",
-            "named",
-            ["identifier", "integer_literal", "string_literal", "self", "metavariable"]
-          ],
-          [
-            "when",
-            ["count", "t:[", 1],
-            ["use", "paren_list", "[", "]"],
-            [
-              "when",
-              ["count", "t:(", 1],
-              ["use", "paren_list", "(", ")"],
-              ["use", "paren_list", "{", "}"]
-            ]
-          ],
-          ["verbatim"]
-        ],
-        ["verbatim"]
+          ["count", "t:(", 1],
+          ["use", "paren_list", "(", ")"],
+          ["use", "paren_list", "{", "}"]
+        ]
       ],
       ["verbatim"]
     ],

@@ -1,0 +1,17 @@
+// Macro token trees whose separators are not commas. The comma-list branch of
+// `token_tree` is only correct when every child is content or list punctuation;
+// an or-pattern, a guard, a path, or a range inside a macro is token soup and
+// has to go through `verbatim` instead.
+fn classify(tag: Tag, count: usize) -> bool {
+    let is_short =
+        matches!(tag, ShortOne | ShortTwo | ShortThree);
+    let is_guarded = matches!(count, n if n > 0);
+    let in_range = matches!(count, 1..=9);
+    let is_path = matches!(tag, crate::tags::Wide);
+    is_short && is_guarded && in_range && is_path
+}
+
+fn shout(name: &str, count: usize) -> String {
+    // A plain comma list, which the formatted branch does handle.
+    format!("{}: {}", name, count)
+}

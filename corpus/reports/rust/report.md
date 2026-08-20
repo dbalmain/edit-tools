@@ -7,8 +7,8 @@ gate 2 idempotence      pass   (34/34)
 gate 3 non-destruction  pass   (34/34, method default)
 measure 4 overflow      38 lines (rustfmt 39)
 measure 5 size          package 2589 B gzip; runtime 13293 B gzip
-measure 6 agreement     13/17 @ width 100,  8/17 @ width 60  =  21/34 (61.8%)
-                        + 13 accepted = 100% review coverage, 0 stale,
+measure 6 agreement     14/18 @ width 100,  8/18 @ width 60  =  22/36 (61.1%)
+                        + 14 accepted = 100% review coverage, 0 stale,
                           0 unreviewed, 0 package-bug
 refusals                none
 ```
@@ -317,7 +317,7 @@ children no fields, so the one opcode built for this shape cannot walk it.
 Agreement moves 20/32 → **21/34**: the probe adds two pairs, one agreeing and one
 accepted.
 
-### A refusal the corpus does not yet carry
+### The refusal, and the fix
 
 Writing the probe turned up a second gap immediately. This is ordinary Rust:
 
@@ -331,8 +331,19 @@ and the package refuses it:
 rule for `token_tree` wants the token `,` but found `|`
 ```
 
-The macro token-tree rule walks comma-separated trees only, so an or-pattern
-inside a macro invocation refuses at the cursor. It is **not** in the corpus,
-because adding it would fail gate 0 — which means the coverage number does not
-currently see it. It wants its own probe and a `token_tree` fix, and it is
-recorded in entry 23 so it is not rediscovered as new.
+`macro_patterns.rs` now carries this, plus a guard, a range and a path inside
+`matches!`. The guard on the comma-list branch was the bug: it tested three
+things known to go wrong — no `.`, no `!`, and every *named* child one of five
+content kinds — and said nothing about the anonymous children, which is exactly
+where a macro's separators live.
+
+One `["all", "*", …]` guard over the whole child list replaces all three. Every
+child must be content or list punctuation, and anything else goes to
+`verbatim`. The package gets **22 B smaller**, `macros.rs` still agrees at both
+widths, and the separators nobody had hit yet — `=>`, `;`, `..=`, `::` — are
+covered by construction rather than by enumeration.
+
+`macro_patterns.rs` agrees at width 100 and diverges at 60 on the opaque-leaf
+rule `strings.rs@60` already records. That house rule cited a regression; it is
+now measured, and larger than the citation said — a let-level group takes Rust
+from 22/36 to **17/36**.

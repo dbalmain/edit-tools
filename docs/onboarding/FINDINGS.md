@@ -2341,8 +2341,42 @@ corpus. Entry 16 again: a probe file isolates a construct and can still omit the
 half of it that costs something. `or_patterns.rs` now carries the long case, with
 no leading pipes, so it stays comparable and out of the incomparable table.
 
-**Also found and not yet filed:** `matches!(tag, ShortOne | ShortTwo)` refuses —
-`rule for token_tree wants the token , but found |`. The macro token-tree rule
-walks comma-separated trees only, so an or-pattern inside a macro invocation is
-a refusal on ordinary Rust. It is out of the corpus for now because adding it
-would fail gate 0; it wants its own probe and a `token_tree` fix.
+### The `matches!` refusal, and why the guard was the bug
+
+Writing the probe turned up a refusal on ordinary Rust:
+`matches!(tag, ShortOne | ShortTwo)` gave
+`rule for token_tree wants the token , but found |`.
+
+`token_tree` guarded its comma-list branch with three tests — no `.`, no `!`,
+and every **named** child one of five content kinds. That is an enumeration of
+things known to go wrong, and it could only ever be as complete as the last bug
+report. It says nothing about the *anonymous* children, which is exactly where a
+macro's separators live, so a token tree separated by `|`, `=>`, `;`, `..=` or
+`::` was routed into a rule that emits commas.
+
+The repair is one guard over the whole child list rather than three over part of
+it:
+
+```json
+["all", "*", ["identifier", "integer_literal", "string_literal", "self",
+              "metavariable", ",", "(", ")", "[", "]", "{", "}"]]
+```
+
+Every child must be content or list punctuation; anything else is token soup and
+goes to `verbatim`. This subsumes all three old tests — `.` and `!` are simply
+not in the list — and covers the separators nobody had hit yet. `allKinds`
+compares `node.type`, which for an anonymous token is its text, so punctuation
+and node kinds sit in one list without new machinery.
+
+It is **smaller** than what it replaced: the rust package drops 22 B, and
+`macros.rs` still agrees at both widths. This is the `all` predicate doing the
+job entry 8 predicted for it — "are every one of my children of kind K" — in a
+place nobody had connected to it.
+
+`macro_patterns.rs` now carries the case. It agrees at width 100 and diverges at
+60 on the opaque-leaf rule that `strings.rs@60` already records: rustfmt breaks
+after the `=`, we keep an overlong opaque value flat. That verdict was recorded
+as a house rule on a cited regression; the regression is now **measured**, and it
+is larger than the citation said — a let-level group takes Rust from 22/36 to
+17/36, regressing `sequences.rs` and `nesting.rs` at both widths, `macros.rs@60`
+and `strings.rs@100`, while still not fixing `strings.rs@60`.
