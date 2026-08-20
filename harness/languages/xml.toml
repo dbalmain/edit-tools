@@ -1,0 +1,64 @@
+# XML. Schema: docs/onboarding/WORKFLOW.md, "Stage 0".
+name = "xml"
+extensions = [".xml"]
+
+# PyPI name matches the orchestrator's tree_sitter_xml guess after the usual
+# hyphen-to-underscore swap. 0.7.0 is the latest release (checked against the
+# live index 2026-08-21). Imported as tree_sitter_xml. The module does *not*
+# export language(); it exports language_xml() and language_dtd(). This corpus
+# is XML documents, not standalone DTD files, so language_xml is the one.
+grammar = "tree-sitter-xml==0.7.0"
+grammar_module = "tree_sitter_xml"
+grammar_symbol = "language_xml"
+
+# Markdown info strings that select this grammar for a fenced region.
+# `xml` is the only spelling worth vouching for. prettier/plugin-xml also
+# lists linguist aliases rss/xsd/wsdl and a separate SVG language entry;
+# those are vocabularies, not info-string names I will stand behind.
+injection_aliases = ["xml"]
+
+# prettier 3 resolves --plugin from CWD, so `npx --package` does not make
+# @prettier/plugin-xml importable by name. The working invocation installs
+# both pins in npx's cache and passes the plugin's plugin.js by path relative
+# to the prettier binary that cache just put on PATH. --plugin is required:
+# without it, --parser xml errors "Couldn't resolve parser xml".
+#
+# --parser xml is sufficient to select the plugin's parser. --stdin-filepath
+# x.xml produces byte-identical output and is omitted: with a filepath,
+# prettier also reads .editorconfig from that path (verified: indent_size=8
+# reindented attribute wraps; --parser xml alone did not). --no-config is
+# load-bearing (below). --print-width honours {width}: established by
+# diffing 80 vs 40, not by reading --help. In the plugin's default
+# xmlWhitespaceSensitivity=strict, element content is not reflowed; what
+# wraps is attribute lists, XML declarations, and some DOCTYPE PUBLIC ids.
+reference = "npx --yes --package prettier@3.9.6 --package @prettier/plugin-xml@3.4.2 sh -c 'prettier --plugin \"$(dirname \"$(command -v prettier)\")/../@prettier/plugin-xml/src/plugin.js\" --parser xml --no-config --print-width {width}'"
+reference_version = "3.9.6 (@prettier/plugin-xml@3.4.2)"
+reference_width = "flag"
+
+# 80 is prettier's own default, established by bisection: an <item a="A"*67/>
+# formats to an 80-character line unprompted and at --print-width 80, and
+# --print-width 79 wraps it; <item a="A"*68/> wraps unprompted and at 80, and
+# stays flat at 81. 40 is the narrow width that splits start-tags 80 leaves
+# flat. The plugin also sets defaultOptions.printWidth to 80; the bisection
+# is what counts.
+widths = [80, 40]
+
+# The generic default is selected deliberately. A data-model loader (ElementTree,
+# lxml, xmltodict) collapses the spellings a formatter must preserve: quote
+# style on attributes, empty-pair vs self-closing, entity vs character vs
+# literal, CDATA vs text, and -- fatally -- CharData whitespace, which this
+# grammar represents as a named leaf. Leave wrappers/equivalences empty until
+# the gate names a kind. Parentheses are not an XML construct; STag/ETag vs
+# EmptyElemTag is structural (see empty_to_self_closing.xml).
+gate3 = "default"
+
+transparent_wrappers = []
+equivalent_kinds = []
+
+# prettier rewrites an empty element pair to a self-closing tag
+# (`<a></a>` -> `<a />`). That is STag+ETag to EmptyElemTag, a named-tree
+# change the linearity invariant forbids a package from matching. One
+# construct, one file. The required empty-with-a-space probe (`<a> </a>`)
+# is in normalisation.xml and is *not* rewritten.
+[incomparable]
+"empty_to_self_closing.xml" = "prettier rewrites empty element pairs to self-closing tags"

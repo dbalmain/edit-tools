@@ -1,0 +1,11 @@
+<!-- Namespaces, prefixes, and xmlns on nested elements. -->
+<root xmlns="urn:default" xmlns:b="urn:b" b:flag="yes">
+  <b:child xmlns:c="urn:c" c:id="n1" b:role="inner">
+    <!-- prefixed element with a defaulted child -->
+    <leaf c:n="1">text</leaf>
+  </b:child>
+  <b:empty
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:nil="true"
+  />
+</root>

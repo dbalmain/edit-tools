@@ -1,0 +1,533 @@
+{
+ "language": "xml",
+ "source_file": "corpus/src/xml/prolog.xml",
+ "source": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<?xml-stylesheet type=\"text/xsl\" href=\"pretty-long-stylesheet-name.xsl\"?>\n<!DOCTYPE note SYSTEM \"note.dtd\">\n<!-- misc comment between the prolog and the document element -->\n<note>\n  <to>You</to>\n  <from>Me</from>\n</note>\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 278,
+  "children": [
+   {
+    "type": "prolog",
+    "start": 0,
+    "end": 230,
+    "children": [
+     {
+      "type": "XMLDecl",
+      "start": 0,
+      "end": 55,
+      "children": [
+       {
+        "type": "<?",
+        "start": 0,
+        "end": 2,
+        "text": "<?"
+       },
+       {
+        "type": "xml",
+        "start": 2,
+        "end": 5,
+        "text": "xml"
+       },
+       {
+        "type": "version",
+        "start": 6,
+        "end": 13,
+        "text": "version"
+       },
+       {
+        "type": "=",
+        "start": 13,
+        "end": 14,
+        "text": "="
+       },
+       {
+        "type": "\"",
+        "start": 14,
+        "end": 15,
+        "text": "\""
+       },
+       {
+        "type": "VersionNum",
+        "start": 15,
+        "end": 18,
+        "text": "1.0"
+       },
+       {
+        "type": "\"",
+        "start": 18,
+        "end": 19,
+        "text": "\""
+       },
+       {
+        "type": "encoding",
+        "start": 20,
+        "end": 28,
+        "text": "encoding"
+       },
+       {
+        "type": "=",
+        "start": 28,
+        "end": 29,
+        "text": "="
+       },
+       {
+        "type": "\"",
+        "start": 29,
+        "end": 30,
+        "text": "\""
+       },
+       {
+        "type": "EncName",
+        "start": 30,
+        "end": 35,
+        "text": "UTF-8"
+       },
+       {
+        "type": "\"",
+        "start": 35,
+        "end": 36,
+        "text": "\""
+       },
+       {
+        "type": "standalone",
+        "start": 37,
+        "end": 47,
+        "text": "standalone"
+       },
+       {
+        "type": "=",
+        "start": 47,
+        "end": 48,
+        "text": "="
+       },
+       {
+        "type": "\"",
+        "start": 48,
+        "end": 49,
+        "text": "\""
+       },
+       {
+        "type": "yes",
+        "start": 49,
+        "end": 52,
+        "text": "yes"
+       },
+       {
+        "type": "\"",
+        "start": 52,
+        "end": 53,
+        "text": "\""
+       },
+       {
+        "type": "?>",
+        "start": 53,
+        "end": 55,
+        "text": "?>"
+       }
+      ]
+     },
+     {
+      "type": "StyleSheetPI",
+      "start": 56,
+      "end": 129,
+      "children": [
+       {
+        "type": "<?",
+        "start": 56,
+        "end": 58,
+        "text": "<?"
+       },
+       {
+        "type": "xml-stylesheet",
+        "start": 58,
+        "end": 72,
+        "text": "xml-stylesheet"
+       },
+       {
+        "type": "PseudoAtt",
+        "start": 73,
+        "end": 88,
+        "children": [
+         {
+          "type": "Name",
+          "start": 73,
+          "end": 77,
+          "text": "type"
+         },
+         {
+          "type": "=",
+          "start": 77,
+          "end": 78,
+          "text": "="
+         },
+         {
+          "type": "PseudoAttValue",
+          "start": 78,
+          "end": 88,
+          "children": [
+           {
+            "type": "\"",
+            "start": 78,
+            "end": 79,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 87,
+            "end": 88,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "PseudoAtt",
+        "start": 89,
+        "end": 127,
+        "children": [
+         {
+          "type": "Name",
+          "start": 89,
+          "end": 93,
+          "text": "href"
+         },
+         {
+          "type": "=",
+          "start": 93,
+          "end": 94,
+          "text": "="
+         },
+         {
+          "type": "PseudoAttValue",
+          "start": 94,
+          "end": 127,
+          "children": [
+           {
+            "type": "\"",
+            "start": 94,
+            "end": 95,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 126,
+            "end": 127,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "?>",
+        "start": 127,
+        "end": 129,
+        "text": "?>"
+       }
+      ]
+     },
+     {
+      "type": "doctypedecl",
+      "start": 130,
+      "end": 163,
+      "children": [
+       {
+        "type": "<!",
+        "start": 130,
+        "end": 132,
+        "text": "<!"
+       },
+       {
+        "type": "DOCTYPE",
+        "start": 132,
+        "end": 139,
+        "text": "DOCTYPE"
+       },
+       {
+        "type": "Name",
+        "start": 140,
+        "end": 144,
+        "text": "note"
+       },
+       {
+        "type": "ExternalID",
+        "start": 145,
+        "end": 162,
+        "children": [
+         {
+          "type": "SYSTEM",
+          "start": 145,
+          "end": 151,
+          "text": "SYSTEM"
+         },
+         {
+          "type": "SystemLiteral",
+          "start": 152,
+          "end": 162,
+          "children": [
+           {
+            "type": "\"",
+            "start": 152,
+            "end": 153,
+            "text": "\""
+           },
+           {
+            "type": "URI",
+            "start": 153,
+            "end": 161,
+            "text": "note.dtd"
+           },
+           {
+            "type": "\"",
+            "start": 161,
+            "end": 162,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ">",
+        "start": 162,
+        "end": 163,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "Comment",
+      "start": 164,
+      "end": 229,
+      "text": "<!-- misc comment between the prolog and the document element -->"
+     }
+    ]
+   },
+   {
+    "type": "element",
+    "start": 230,
+    "end": 277,
+    "field": "root",
+    "children": [
+     {
+      "type": "STag",
+      "start": 230,
+      "end": 236,
+      "children": [
+       {
+        "type": "<",
+        "start": 230,
+        "end": 231,
+        "text": "<"
+       },
+       {
+        "type": "Name",
+        "start": 231,
+        "end": 235,
+        "text": "note"
+       },
+       {
+        "type": ">",
+        "start": 235,
+        "end": 236,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "content",
+      "start": 236,
+      "end": 270,
+      "children": [
+       {
+        "type": "CharData",
+        "start": 236,
+        "end": 239,
+        "text": "\n  "
+       },
+       {
+        "type": "element",
+        "start": 239,
+        "end": 251,
+        "children": [
+         {
+          "type": "STag",
+          "start": 239,
+          "end": 243,
+          "children": [
+           {
+            "type": "<",
+            "start": 239,
+            "end": 240,
+            "text": "<"
+           },
+           {
+            "type": "Name",
+            "start": 240,
+            "end": 242,
+            "text": "to"
+           },
+           {
+            "type": ">",
+            "start": 242,
+            "end": 243,
+            "text": ">"
+           }
+          ]
+         },
+         {
+          "type": "content",
+          "start": 243,
+          "end": 246,
+          "children": [
+           {
+            "type": "CharData",
+            "start": 243,
+            "end": 246,
+            "text": "You"
+           }
+          ]
+         },
+         {
+          "type": "ETag",
+          "start": 246,
+          "end": 251,
+          "children": [
+           {
+            "type": "</",
+            "start": 246,
+            "end": 248,
+            "text": "</"
+           },
+           {
+            "type": "Name",
+            "start": 248,
+            "end": 250,
+            "text": "to"
+           },
+           {
+            "type": ">",
+            "start": 250,
+            "end": 251,
+            "text": ">"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "CharData",
+        "start": 251,
+        "end": 254,
+        "text": "\n  "
+       },
+       {
+        "type": "element",
+        "start": 254,
+        "end": 269,
+        "children": [
+         {
+          "type": "STag",
+          "start": 254,
+          "end": 260,
+          "children": [
+           {
+            "type": "<",
+            "start": 254,
+            "end": 255,
+            "text": "<"
+           },
+           {
+            "type": "Name",
+            "start": 255,
+            "end": 259,
+            "text": "from"
+           },
+           {
+            "type": ">",
+            "start": 259,
+            "end": 260,
+            "text": ">"
+           }
+          ]
+         },
+         {
+          "type": "content",
+          "start": 260,
+          "end": 262,
+          "children": [
+           {
+            "type": "CharData",
+            "start": 260,
+            "end": 262,
+            "text": "Me"
+           }
+          ]
+         },
+         {
+          "type": "ETag",
+          "start": 262,
+          "end": 269,
+          "children": [
+           {
+            "type": "</",
+            "start": 262,
+            "end": 264,
+            "text": "</"
+           },
+           {
+            "type": "Name",
+            "start": 264,
+            "end": 268,
+            "text": "from"
+           },
+           {
+            "type": ">",
+            "start": 268,
+            "end": 269,
+            "text": ">"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "CharData",
+        "start": 269,
+        "end": 270,
+        "text": "\n"
+       }
+      ]
+     },
+     {
+      "type": "ETag",
+      "start": 270,
+      "end": 277,
+      "children": [
+       {
+        "type": "</",
+        "start": 270,
+        "end": 272,
+        "text": "</"
+       },
+       {
+        "type": "Name",
+        "start": 272,
+        "end": 276,
+        "text": "note"
+       },
+       {
+        "type": ">",
+        "start": 276,
+        "end": 277,
+        "text": ">"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

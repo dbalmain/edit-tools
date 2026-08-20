@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Several constructs interacting; the messy file. -->
+<feed
+  xmlns="http://www.w3.org/2005/Atom"
+  xmlns:media="urn:media"
+>
+  <title
+    type="text"
+  >Kitchen sink</title>
+  <updated
+  >2026-08-21T00:00:00Z</updated>
+  <entry>
+    <id>urn:example:1</id>
+    <!-- mixed content plus a self-closing empty with a space -->
+    <summary>Hello <em
+      >world</em> from the kitchen.</summary>
+    <content
+      type="html"
+    ><![CDATA[<p>raw <b>markup</b></p>]]></content>
+    <media:thumbnail
+      url="https://example.com/thumb.jpg"
+      width="120"
+      height="90"
+    />
+    <empty> </empty>
+    <link
+      href="https://example.com/a?x=1&amp;y=2"
+      rel="alternate"
+      type="text/html"
+    />
+  </entry>
+</feed>

@@ -1,0 +1,728 @@
+{
+ "language": "xml",
+ "source_file": "corpus/src/xml/whitespace.xml",
+ "source": "<!-- Whitespace is significant. xml:space is a no-op under the default strict\n     setting; it is here so the later package cannot pretend otherwise. -->\n<root>\n  <keep xml:space=\"preserve\" note=\"author spacing is significant\">  a   b  </keep>\n  <norm note=\"also preserved at default\">  a   b  </norm>\n  <!-- mixed content whose spaces are the document -->\n  <p> one <em> two </em> three </p>\n  <pre>\nline one\n  indented line\n</pre>\n  <!-- blank-line runs in strict mode are CharData, not layout -->\n  <blank>\n\n\n<child/>\n\n  </blank>\n</root>\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 541,
+  "children": [
+   {
+    "type": "prolog",
+    "start": 0,
+    "end": 154,
+    "children": [
+     {
+      "type": "Comment",
+      "start": 0,
+      "end": 153,
+      "text": "<!-- Whitespace is significant. xml:space is a no-op under the default strict\n     setting; it is here so the later package cannot pretend otherwise. -->"
+     }
+    ]
+   },
+   {
+    "type": "element",
+    "start": 154,
+    "end": 540,
+    "field": "root",
+    "children": [
+     {
+      "type": "STag",
+      "start": 154,
+      "end": 160,
+      "children": [
+       {
+        "type": "<",
+        "start": 154,
+        "end": 155,
+        "text": "<"
+       },
+       {
+        "type": "Name",
+        "start": 155,
+        "end": 159,
+        "text": "root"
+       },
+       {
+        "type": ">",
+        "start": 159,
+        "end": 160,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "content",
+      "start": 160,
+      "end": 533,
+      "children": [
+       {
+        "type": "CharData",
+        "start": 160,
+        "end": 163,
+        "text": "\n  "
+       },
+       {
+        "type": "element",
+        "start": 163,
+        "end": 243,
+        "children": [
+         {
+          "type": "STag",
+          "start": 163,
+          "end": 227,
+          "children": [
+           {
+            "type": "<",
+            "start": 163,
+            "end": 164,
+            "text": "<"
+           },
+           {
+            "type": "Name",
+            "start": 164,
+            "end": 168,
+            "text": "keep"
+           },
+           {
+            "type": "Attribute",
+            "start": 169,
+            "end": 189,
+            "children": [
+             {
+              "type": "Name",
+              "start": 169,
+              "end": 178,
+              "text": "xml:space"
+             },
+             {
+              "type": "=",
+              "start": 178,
+              "end": 179,
+              "text": "="
+             },
+             {
+              "type": "AttValue",
+              "start": 179,
+              "end": 189,
+              "children": [
+               {
+                "type": "\"",
+                "start": 179,
+                "end": 180,
+                "text": "\""
+               },
+               {
+                "type": "\"",
+                "start": 188,
+                "end": 189,
+                "text": "\""
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "Attribute",
+            "start": 190,
+            "end": 226,
+            "children": [
+             {
+              "type": "Name",
+              "start": 190,
+              "end": 194,
+              "text": "note"
+             },
+             {
+              "type": "=",
+              "start": 194,
+              "end": 195,
+              "text": "="
+             },
+             {
+              "type": "AttValue",
+              "start": 195,
+              "end": 226,
+              "children": [
+               {
+                "type": "\"",
+                "start": 195,
+                "end": 196,
+                "text": "\""
+               },
+               {
+                "type": "\"",
+                "start": 225,
+                "end": 226,
+                "text": "\""
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ">",
+            "start": 226,
+            "end": 227,
+            "text": ">"
+           }
+          ]
+         },
+         {
+          "type": "content",
+          "start": 227,
+          "end": 236,
+          "children": [
+           {
+            "type": "CharData",
+            "start": 227,
+            "end": 236,
+            "text": "  a   b  "
+           }
+          ]
+         },
+         {
+          "type": "ETag",
+          "start": 236,
+          "end": 243,
+          "children": [
+           {
+            "type": "</",
+            "start": 236,
+            "end": 238,
+            "text": "</"
+           },
+           {
+            "type": "Name",
+            "start": 238,
+            "end": 242,
+            "text": "keep"
+           },
+           {
+            "type": ">",
+            "start": 242,
+            "end": 243,
+            "text": ">"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "CharData",
+        "start": 243,
+        "end": 246,
+        "text": "\n  "
+       },
+       {
+        "type": "element",
+        "start": 246,
+        "end": 301,
+        "children": [
+         {
+          "type": "STag",
+          "start": 246,
+          "end": 285,
+          "children": [
+           {
+            "type": "<",
+            "start": 246,
+            "end": 247,
+            "text": "<"
+           },
+           {
+            "type": "Name",
+            "start": 247,
+            "end": 251,
+            "text": "norm"
+           },
+           {
+            "type": "Attribute",
+            "start": 252,
+            "end": 284,
+            "children": [
+             {
+              "type": "Name",
+              "start": 252,
+              "end": 256,
+              "text": "note"
+             },
+             {
+              "type": "=",
+              "start": 256,
+              "end": 257,
+              "text": "="
+             },
+             {
+              "type": "AttValue",
+              "start": 257,
+              "end": 284,
+              "children": [
+               {
+                "type": "\"",
+                "start": 257,
+                "end": 258,
+                "text": "\""
+               },
+               {
+                "type": "\"",
+                "start": 283,
+                "end": 284,
+                "text": "\""
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ">",
+            "start": 284,
+            "end": 285,
+            "text": ">"
+           }
+          ]
+         },
+         {
+          "type": "content",
+          "start": 285,
+          "end": 294,
+          "children": [
+           {
+            "type": "CharData",
+            "start": 285,
+            "end": 294,
+            "text": "  a   b  "
+           }
+          ]
+         },
+         {
+          "type": "ETag",
+          "start": 294,
+          "end": 301,
+          "children": [
+           {
+            "type": "</",
+            "start": 294,
+            "end": 296,
+            "text": "</"
+           },
+           {
+            "type": "Name",
+            "start": 296,
+            "end": 300,
+            "text": "norm"
+           },
+           {
+            "type": ">",
+            "start": 300,
+            "end": 301,
+            "text": ">"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "CharData",
+        "start": 301,
+        "end": 304,
+        "text": "\n  "
+       },
+       {
+        "type": "Comment",
+        "start": 304,
+        "end": 356,
+        "text": "<!-- mixed content whose spaces are the document -->"
+       },
+       {
+        "type": "CharData",
+        "start": 356,
+        "end": 359,
+        "text": "\n  "
+       },
+       {
+        "type": "element",
+        "start": 359,
+        "end": 392,
+        "children": [
+         {
+          "type": "STag",
+          "start": 359,
+          "end": 362,
+          "children": [
+           {
+            "type": "<",
+            "start": 359,
+            "end": 360,
+            "text": "<"
+           },
+           {
+            "type": "Name",
+            "start": 360,
+            "end": 361,
+            "text": "p"
+           },
+           {
+            "type": ">",
+            "start": 361,
+            "end": 362,
+            "text": ">"
+           }
+          ]
+         },
+         {
+          "type": "content",
+          "start": 362,
+          "end": 388,
+          "children": [
+           {
+            "type": "CharData",
+            "start": 362,
+            "end": 367,
+            "text": " one "
+           },
+           {
+            "type": "element",
+            "start": 367,
+            "end": 381,
+            "children": [
+             {
+              "type": "STag",
+              "start": 367,
+              "end": 371,
+              "children": [
+               {
+                "type": "<",
+                "start": 367,
+                "end": 368,
+                "text": "<"
+               },
+               {
+                "type": "Name",
+                "start": 368,
+                "end": 370,
+                "text": "em"
+               },
+               {
+                "type": ">",
+                "start": 370,
+                "end": 371,
+                "text": ">"
+               }
+              ]
+             },
+             {
+              "type": "content",
+              "start": 371,
+              "end": 376,
+              "children": [
+               {
+                "type": "CharData",
+                "start": 371,
+                "end": 376,
+                "text": " two "
+               }
+              ]
+             },
+             {
+              "type": "ETag",
+              "start": 376,
+              "end": 381,
+              "children": [
+               {
+                "type": "</",
+                "start": 376,
+                "end": 378,
+                "text": "</"
+               },
+               {
+                "type": "Name",
+                "start": 378,
+                "end": 380,
+                "text": "em"
+               },
+               {
+                "type": ">",
+                "start": 380,
+                "end": 381,
+                "text": ">"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "CharData",
+            "start": 381,
+            "end": 388,
+            "text": " three "
+           }
+          ]
+         },
+         {
+          "type": "ETag",
+          "start": 388,
+          "end": 392,
+          "children": [
+           {
+            "type": "</",
+            "start": 388,
+            "end": 390,
+            "text": "</"
+           },
+           {
+            "type": "Name",
+            "start": 390,
+            "end": 391,
+            "text": "p"
+           },
+           {
+            "type": ">",
+            "start": 391,
+            "end": 392,
+            "text": ">"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "CharData",
+        "start": 392,
+        "end": 395,
+        "text": "\n  "
+       },
+       {
+        "type": "element",
+        "start": 395,
+        "end": 432,
+        "children": [
+         {
+          "type": "STag",
+          "start": 395,
+          "end": 400,
+          "children": [
+           {
+            "type": "<",
+            "start": 395,
+            "end": 396,
+            "text": "<"
+           },
+           {
+            "type": "Name",
+            "start": 396,
+            "end": 399,
+            "text": "pre"
+           },
+           {
+            "type": ">",
+            "start": 399,
+            "end": 400,
+            "text": ">"
+           }
+          ]
+         },
+         {
+          "type": "content",
+          "start": 400,
+          "end": 426,
+          "children": [
+           {
+            "type": "CharData",
+            "start": 400,
+            "end": 426,
+            "text": "\nline one\n  indented line\n"
+           }
+          ]
+         },
+         {
+          "type": "ETag",
+          "start": 426,
+          "end": 432,
+          "children": [
+           {
+            "type": "</",
+            "start": 426,
+            "end": 428,
+            "text": "</"
+           },
+           {
+            "type": "Name",
+            "start": 428,
+            "end": 431,
+            "text": "pre"
+           },
+           {
+            "type": ">",
+            "start": 431,
+            "end": 432,
+            "text": ">"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "CharData",
+        "start": 432,
+        "end": 435,
+        "text": "\n  "
+       },
+       {
+        "type": "Comment",
+        "start": 435,
+        "end": 499,
+        "text": "<!-- blank-line runs in strict mode are CharData, not layout -->"
+       },
+       {
+        "type": "CharData",
+        "start": 499,
+        "end": 502,
+        "text": "\n  "
+       },
+       {
+        "type": "element",
+        "start": 502,
+        "end": 532,
+        "children": [
+         {
+          "type": "STag",
+          "start": 502,
+          "end": 509,
+          "children": [
+           {
+            "type": "<",
+            "start": 502,
+            "end": 503,
+            "text": "<"
+           },
+           {
+            "type": "Name",
+            "start": 503,
+            "end": 508,
+            "text": "blank"
+           },
+           {
+            "type": ">",
+            "start": 508,
+            "end": 509,
+            "text": ">"
+           }
+          ]
+         },
+         {
+          "type": "content",
+          "start": 509,
+          "end": 524,
+          "children": [
+           {
+            "type": "CharData",
+            "start": 509,
+            "end": 512,
+            "text": "\n\n\n"
+           },
+           {
+            "type": "element",
+            "start": 512,
+            "end": 520,
+            "children": [
+             {
+              "type": "EmptyElemTag",
+              "start": 512,
+              "end": 520,
+              "children": [
+               {
+                "type": "<",
+                "start": 512,
+                "end": 513,
+                "text": "<"
+               },
+               {
+                "type": "Name",
+                "start": 513,
+                "end": 518,
+                "text": "child"
+               },
+               {
+                "type": "/>",
+                "start": 518,
+                "end": 520,
+                "text": "/>"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "CharData",
+            "start": 520,
+            "end": 524,
+            "text": "\n\n  "
+           }
+          ]
+         },
+         {
+          "type": "ETag",
+          "start": 524,
+          "end": 532,
+          "children": [
+           {
+            "type": "</",
+            "start": 524,
+            "end": 526,
+            "text": "</"
+           },
+           {
+            "type": "Name",
+            "start": 526,
+            "end": 531,
+            "text": "blank"
+           },
+           {
+            "type": ">",
+            "start": 531,
+            "end": 532,
+            "text": ">"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "CharData",
+        "start": 532,
+        "end": 533,
+        "text": "\n"
+       }
+      ]
+     },
+     {
+      "type": "ETag",
+      "start": 533,
+      "end": 540,
+      "children": [
+       {
+        "type": "</",
+        "start": 533,
+        "end": 535,
+        "text": "</"
+       },
+       {
+        "type": "Name",
+        "start": 535,
+        "end": 539,
+        "text": "root"
+       },
+       {
+        "type": ">",
+        "start": 539,
+        "end": 540,
+        "text": ">"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

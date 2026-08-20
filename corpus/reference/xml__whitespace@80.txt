@@ -1,0 +1,22 @@
+<!-- Whitespace is significant. xml:space is a no-op under the default strict
+     setting; it is here so the later package cannot pretend otherwise. -->
+<root>
+  <keep
+    xml:space="preserve"
+    note="author spacing is significant"
+  >  a   b  </keep>
+  <norm note="also preserved at default">  a   b  </norm>
+  <!-- mixed content whose spaces are the document -->
+  <p> one <em> two </em> three </p>
+  <pre>
+line one
+  indented line
+</pre>
+  <!-- blank-line runs in strict mode are CharData, not layout -->
+  <blank>
+
+
+<child />
+
+  </blank>
+</root>

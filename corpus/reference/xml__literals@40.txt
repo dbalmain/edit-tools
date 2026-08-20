@@ -1,0 +1,19 @@
+<!-- Entity references, character references, CDATA, and attribute escapes. -->
+<root>
+  <!-- named entities in text and attributes -->
+  <text
+  >&amp; &lt; &gt; &apos; &quot;</text>
+  <attr
+    a="&amp;&lt;&gt;&quot;"
+    b="&apos;"
+  />
+  <!-- decimal and hex character references; spelling must survive -->
+  <chars>&#65; &#x42; &#xA0;</chars>
+  <attr-chars
+    a="&#39;"
+    b="foo&#xA;bar"
+  />
+  <!-- CDATA keeps markup-looking text unparsed -->
+  <raw
+  ><![CDATA[  keep   <this>  &amp;  ]]></raw>
+</root>
