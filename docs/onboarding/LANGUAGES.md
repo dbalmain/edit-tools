@@ -23,9 +23,9 @@ building · `D` package review · `E`/`F` escalated · **merged** · **blocked**
 | TypeScript | T2   | 4     | grok-4.6      | B      | tree_sitter_typescript | prettier                          |
 | XML        | T3   | 4     | grok-4.6      | B      | tree_sitter_xml        | prettier (`@prettier/plugin-xml`) |
 | HTML       | T3   | 4     | grok-4.6      | B      | tree_sitter_html       | prettier                          |
-| Ruby       | T4   | 5     | tbd           | -      | tree_sitter_ruby       | syntax_tree                       |
-| Scheme     | T4   | 5     | tbd           | -      | tree_sitter_scheme     | emacs `scheme-mode`               |
-| Haskell    | T4   | 5     | tbd           | -      | tree_sitter_haskell    | ormolu                            |
+| Ruby       | T4   | 5     | grok-4.6      | A      | tree_sitter_ruby       | syntax_tree                       |
+| Scheme     | T4   | 5     | grok-4.6      | A      | tree_sitter_scheme     | emacs `scheme-mode`               |
+| Haskell    | T4   | 5     | grok-4.6      | A      | tree_sitter_haskell    | ormolu                            |
 | Aven       | T4   | 6     | tbd           | -      | **none — see below**   | `aven fmt`                        |
 
 Grammar package names are the orchestrator's guess from PyPI naming convention.
@@ -73,12 +73,28 @@ runtime-change ledger identifies its agent, and `corpus-brief.md` does not ask
 for it. Every earlier round's builder is known only because the orchestrator
 launched them within one session's memory.
 
+**Round 5 started early, 2026-08-21**, because round 4's stage A finished in a
+morning. Ruby, Scheme and Haskell are all on grok-4.6 in parallel worktrees,
+while round 4's four stage-B reviews run on Opus and Sonnet subagents — see
+`LEDGER.md`, "Reviewer lane", for why that lane and not another.
+
+All three round-5 references had to be established rather than assumed, and none
+is an `npx` one-liner: **there is no emacs, no ormolu and no `syntax_tree` on
+this machine**, though `nix`, `ruby`, `guile` and `scheme` are present. Each
+brief names the pinned-runner shape to establish and says that a reference which
+cannot be pinned reproducibly is a finding to report, not a reason to switch
+references unilaterally. Two of the three are also suspected
+`reference_width = "fixed"` languages — emacs `scheme-mode` and ormolu both
+indent without reflowing to a column — and both briefs give that as a hypothesis
+to test at two widths, explicitly not as a fact, so it cannot be inherited the
+way black's 88 was inherited into TOML in round 1.
+
 **Round 4 stage A, 2026-08-21.** All four launched on grok-4.6 in parallel
-worktrees, each with the corpus brief plus its own "known stresses" note.
-All four are built and awaiting stage-B review, in 10 commits across four
-worktrees, every tree clean and every shared-file diff verified empty. **All
-four corpora are grok-built, so none of their stage-B reviews may go to grok** —
-a reviewer is never the same family as the builder.
+worktrees, each with the corpus brief plus its own "known stresses" note. All
+four are built and awaiting stage-B review, in 10 commits across four worktrees,
+every tree clean and every shared-file diff verified empty. **All four corpora
+are grok-built, so none of their stage-B reviews may go to grok** — a reviewer
+is never the same family as the builder.
 
 Each produced a finding its brief predicted, which is the argument for the
 "known stresses" section existing at all:
@@ -104,14 +120,14 @@ Each produced a finding its brief predicted, which is the argument for the
 - **Markdown found the first real defect in the injection machinery**, which is
   the machinery it exists to exercise. `injection.region_for` takes the raw byte
   slice of `code_fence_content`, so a fence inside a block quote carries its
-  `> ` prefixes into the guest parser: JSON fails to parse and the guest
+  `>` prefixes into the guest parser: JSON fails to parse and the guest
   reformat becomes a verbatim gate-3 miss. List-item fences splice correctly,
   because their continuation is spaces. Patch proposed, not applied; the
   corpus's nested JSON lives in lists rather than quotes so the probe set stays
   honest about what works.
-- **TypeScript found the mirror of FINDINGS 13.** prettier *adds* a leading `|`
+- **TypeScript found the mirror of FINDINGS 13.** prettier _adds_ a leading `|`
   to a broken union — a token the source does not have, inserted conditionally
-  on breaking — where rustfmt *deletes* one. `trail` and `autoparen` are the
+  on breaking — where rustfmt _deletes_ one. `trail` and `autoparen` are the
   only sanctioned token additions and neither is leading-and-break-conditional.
   The Doc IR has `IfBreak`; no opcode exposes it.
 
