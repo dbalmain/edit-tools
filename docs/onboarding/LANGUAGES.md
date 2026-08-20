@@ -19,7 +19,7 @@ building · `D` package review · `E`/`F` escalated · **merged** · **blocked**
 | Rust       | T2   | 3     | unrecorded    | merged | tree_sitter_rust       | rustfmt                           |
 | Kotlin     | T2   | 3     | unrecorded    | merged | tree_sitter_kotlin     | ktfmt                             |
 | JavaScript | T2   | 3     | unrecorded    | merged | tree_sitter_javascript | prettier                          |
-| Markdown   | T2   | 4     | grok-4.6      | A      | tree_sitter_markdown   | prettier                          |
+| Markdown   | T2   | 4     | grok-4.6      | B      | tree_sitter_markdown   | prettier                          |
 | TypeScript | T2   | 4     | grok-4.6      | B      | tree_sitter_typescript | prettier                          |
 | XML        | T3   | 4     | grok-4.6      | B      | tree_sitter_xml        | prettier (`@prettier/plugin-xml`) |
 | HTML       | T3   | 4     | grok-4.6      | B      | tree_sitter_html       | prettier                          |
@@ -75,9 +75,10 @@ launched them within one session's memory.
 
 **Round 4 stage A, 2026-08-21.** All four launched on grok-4.6 in parallel
 worktrees, each with the corpus brief plus its own "known stresses" note.
-TypeScript, XML and HTML are built and awaiting stage-B review; Markdown is
-still running. **All four corpora are grok-built, so none of their stage-B
-reviews may go to grok** — a reviewer is never the same family as the builder.
+All four are built and awaiting stage-B review, in 10 commits across four
+worktrees, every tree clean and every shared-file diff verified empty. **All
+four corpora are grok-built, so none of their stage-B reviews may go to grok** —
+a reviewer is never the same family as the builder.
 
 Each produced a finding its brief predicted, which is the argument for the
 "known stresses" section existing at all:
@@ -93,15 +94,35 @@ Each produced a finding its brief predicted, which is the argument for the
   `raw_text` and no info-string child: the guest language is a fact of the node
   type, which `[[injections]]` cannot say. An optional `guest` field is proposed
   in the report with exact patch lines, not applied.
-- **XML found gate 3 inert for one language.** Its comments are named `Comment`
-  nodes rather than tree-sitter extras, so `corpus_stats` reports 0/14 comments
-  and `drop_a_comment` never fires. Same class as FINDINGS 12. A `comment_kinds`
-  manifest field is proposed, not applied.
+- **Gate 3's comment layer is inert in two of the four**, found independently.
+  XML's comments are named `Comment` nodes; markdown's are `html_block`. Neither
+  grammar marks them as extras, so `corpus_stats` reports 0 comments and
+  `drop_a_comment` never fires — the universal extras layer, whose only input is
+  comments, does nothing for either language. Same class as FINDINGS 12, and the
+  proposed `comment_kinds` manifest field is now paid for twice in one round.
+  Proposed with exact patch lines by XML, not applied.
+- **Markdown found the first real defect in the injection machinery**, which is
+  the machinery it exists to exercise. `injection.region_for` takes the raw byte
+  slice of `code_fence_content`, so a fence inside a block quote carries its
+  `> ` prefixes into the guest parser: JSON fails to parse and the guest
+  reformat becomes a verbatim gate-3 miss. List-item fences splice correctly,
+  because their continuation is spaces. Patch proposed, not applied; the
+  corpus's nested JSON lives in lists rather than quotes so the probe set stays
+  honest about what works.
 - **TypeScript found the mirror of FINDINGS 13.** prettier *adds* a leading `|`
   to a broken union — a token the source does not have, inserted conditionally
   on breaking — where rustfmt *deletes* one. `trail` and `autoparen` are the
   only sanctioned token additions and neither is leading-and-break-conditional.
   The Doc IR has `IfBreak`; no opcode exposes it.
+
+Two numbers stage B should look at rather than take on trust. Markdown's
+`proseWrap` defaults to **`preserve`**, so prettier reflows no paragraph, table,
+list item or heading: only **5 of 15** files can tell the two widths apart, all
+via fenced code, against a bar of one third. It clears the bar exactly and the
+builder reported the number instead of padding the corpus, which is what the
+brief asks for — but it means markdown's width sensitivity is entirely borrowed
+from its guests. Its reference also changes only **9 of 15** files, the lowest
+of the four.
 
 **agy (Gemini 3.7 Flash) is not in round 2, and not by choice.** It was
 allocated the second CSS and Go seats. In headless mode it auto-denies any tool
