@@ -23,9 +23,9 @@ building · `D` package review · `E`/`F` escalated · **merged** · **blocked**
 | TypeScript | T2   | 4     | grok-4.6      | B      | tree_sitter_typescript | prettier                          |
 | XML        | T3   | 4     | grok-4.6      | B      | tree_sitter_xml        | prettier (`@prettier/plugin-xml`) |
 | HTML       | T3   | 4     | grok-4.6      | B      | tree_sitter_html       | prettier                          |
-| Ruby       | T4   | 5     | grok-4.6      | A      | tree_sitter_ruby       | syntax_tree                       |
-| Scheme     | T4   | 5     | grok-4.6      | A      | tree_sitter_scheme     | emacs `scheme-mode`               |
-| Haskell    | T4   | 5     | grok-4.6      | A      | tree_sitter_haskell    | ormolu                            |
+| Ruby       | T4   | 5     | tbd           | -      | tree_sitter_ruby       | syntax_tree                       |
+| Scheme     | T4   | 5     | tbd           | -      | tree_sitter_scheme     | emacs `scheme-mode`               |
+| Haskell    | T4   | 5     | tbd           | -      | tree_sitter_haskell    | ormolu                            |
 | Aven       | T4   | 6     | tbd           | -      | **none — see below**   | `aven fmt`                        |
 
 Grammar package names are the orchestrator's guess from PyPI naming convention.
@@ -73,10 +73,26 @@ runtime-change ledger identifies its agent, and `corpus-brief.md` does not ask
 for it. Every earlier round's builder is known only because the orchestrator
 launched them within one session's memory.
 
-**Round 5 started early, 2026-08-21**, because round 4's stage A finished in a
-morning. Ruby, Scheme and Haskell are all on grok-4.6 in parallel worktrees,
-while round 4's four stage-B reviews run on Opus and Sonnet subagents — see
-`LEDGER.md`, "Reviewer lane", for why that lane and not another.
+**Round 5 was started early and did not start** — 2026-08-21. Ruby, Scheme and
+Haskell were launched on grok-4.6 in parallel worktrees when round 4's stage A
+finished in a morning. All three died on
+`status 402 Payment Required: Grok Build usage balance exhausted`, leaving three
+clean worktrees and no commits. Scheme got furthest — 22 model calls, 2.19 M
+tokens, ten minutes of API time — before hitting the wall mid-run.
+
+**This is a balance, not a rate limit, so there is nothing to wait out.** It
+does not reset at a known hour the way a session limit does, and the failure
+mode is a clean exit 1 with a 402 in the log, not a hang — which is worth
+knowing, because every _other_ way grok stops looks like a hang. The four
+round-4 stage-A slices spent what was left of the allocation; those four are the
+price list.
+
+The three worktrees (`wt/lang-ruby`, `wt/lang-scheme`, `wt/lang-haskell`) and
+their prompts are cut and waiting, the way `lang-css-agy` and `lang-go-agy` are.
+Codex takes round 5 stage A when it returns.
+
+Round 4's four stage-B reviews are unaffected — they run on Opus and Sonnet
+subagents; see `LEDGER.md`, "Reviewer lane", for why that lane and not another.
 
 All three round-5 references had to be established rather than assumed, and none
 is an `npx` one-liner: **there is no emacs, no ormolu and no `syntax_tree` on
@@ -119,12 +135,12 @@ Each produced a finding its brief predicted, which is the argument for the
   Proposed with exact patch lines by XML, not applied.
 - **Markdown found the first real defect in the injection machinery**, which is
   the machinery it exists to exercise. `injection.region_for` takes the raw byte
-  slice of `code_fence_content`, so a fence inside a block quote carries its
-  `>` prefixes into the guest parser: JSON fails to parse and the guest
-  reformat becomes a verbatim gate-3 miss. List-item fences splice correctly,
-  because their continuation is spaces. Patch proposed, not applied; the
-  corpus's nested JSON lives in lists rather than quotes so the probe set stays
-  honest about what works.
+  slice of `code_fence_content`, so a fence inside a block quote carries its `>`
+  prefixes into the guest parser: JSON fails to parse and the guest reformat
+  becomes a verbatim gate-3 miss. List-item fences splice correctly, because
+  their continuation is spaces. Patch proposed, not applied; the corpus's nested
+  JSON lives in lists rather than quotes so the probe set stays honest about
+  what works.
 - **TypeScript found the mirror of FINDINGS 13.** prettier _adds_ a leading `|`
   to a broken union — a token the source does not have, inserted conditionally
   on breaking — where rustfmt _deletes_ one. `trail` and `autoparen` are the
