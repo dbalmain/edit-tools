@@ -465,6 +465,19 @@ there costs all fifteen languages) and a **final sweep before Fable**.
 A reviewer must never be the same family as the builder: Sol does not review
 codex-built slices. Terra's work goes to grok or Opus.
 
+**Round 4 stage B runs on Opus and Sonnet subagents** — Dave, 2026-08-21, and
+recorded here because the template tells a reviewer to pick a lane deliberately
+and record it rather than let the template pick. Markdown and HTML to **Opus**,
+because their findings are structural (dispatch on `tag_name` rather than node
+type; two separate defects in the injection machinery). TypeScript and XML to
+**Sonnet**, because their reviews are the bounded read-verify-verdict shape.
+
+Three constraints closed off every other lane at once: the builder was grok-4.6
+for all four corpora and a reviewer is never the same family as the builder;
+codex-Sol was still out; and the opencode lane was nearly out of tokens. This is
+a deliberate, temporary exception to the paragraph above reserving Opus for
+central changes — codex returns tonight and stage D should go back to it.
+
 **Codex is out until 06:51 Saturday 2026-08-22, so the standing reviewer is
 unavailable.** Dave's replacement, 2026-08-18, and it is a structural change
 rather than a stopgap:
