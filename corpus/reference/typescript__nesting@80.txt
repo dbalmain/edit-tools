@@ -1,0 +1,47 @@
+// Containers inside containers, deep enough that the narrow width must break
+// some level but not every level. Inner type literals that still fit stay flat.
+type Nested = {
+  outer: {
+    inner: { deep: number[]; other: { key: string } };
+    sibling: number[];
+  };
+};
+
+const config: Nested = {
+  outer: {
+    inner: { deep: [1, 2, 3], other: { key: "value" } },
+    sibling: [4, 5],
+  },
+};
+
+type NestedGeneric = Promise<Map<string, Set<ReadonlyArray<number>>>>;
+
+const call = outer<string>(
+  inner<number>(deeper(first, second), third),
+  fourth(fifth, sixth, seventh),
+);
+
+const mixed: Array<{ list: number[] }> = [
+  { list: [1, 2, 3] },
+  { list: [4, 5, 6] },
+  { list: [7, 8, 9] },
+];
+
+const fits: Array<number | number[]> = [
+  alpha,
+  beta,
+  [1, 2, 3, 4],
+  gamma,
+  delta,
+  epsilon,
+];
+
+// objectWrap defaults to preserve: a type literal whose source has a newline
+// after `{` stays expanded even when it would fit flat. The tuple below is the
+// control -- tuples have no such rule and collapse.
+type PreservedBySource = {
+  alpha: number;
+  beta: string;
+};
+
+type CollapsedBySource = [number, string, boolean];

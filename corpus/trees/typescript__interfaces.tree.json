@@ -1,0 +1,1271 @@
+{
+ "language": "typescript",
+ "source_file": "corpus/src/typescript/interfaces.ts",
+ "source": "// Interfaces: members, extends lists, and the signatures an interface can hold.\n// A one-member interface expands even when it fits; that is not objectWrap.\ninterface Point {\n  readonly x: number;\n  y: number;\n  z?: number;\n  label: string;\n}\n\ninterface Named { name: string }\n\ninterface LabeledPoint extends Point, Named, Timestamped {\n  extra: boolean;\n}\n\ninterface Wide extends FirstLongBase, SecondLongBase, ThirdLongBase, FourthLongBase {\n  extra: number;\n}\n\ninterface Callable {\n  (x: number): string;\n  new (x: number): Thing;\n  [key: string]: number | string;\n  method(this: Callable): void;\n}\n\ninterface Accessors {\n  get value(): number;\n  set value(next: number);\n}\n",
+ "root": {
+  "type": "program",
+  "start": 0,
+  "end": 678,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 80,
+    "text": "// Interfaces: members, extends lists, and the signatures an interface can hold."
+   },
+   {
+    "type": "comment",
+    "start": 81,
+    "end": 157,
+    "text": "// A one-member interface expands even when it fits; that is not objectWrap."
+   },
+   {
+    "type": "interface_declaration",
+    "start": 158,
+    "end": 243,
+    "children": [
+     {
+      "type": "interface",
+      "start": 158,
+      "end": 167,
+      "text": "interface"
+     },
+     {
+      "type": "type_identifier",
+      "start": 168,
+      "end": 173,
+      "field": "name",
+      "text": "Point"
+     },
+     {
+      "type": "interface_body",
+      "start": 174,
+      "end": 243,
+      "field": "body",
+      "children": [
+       {
+        "type": "{",
+        "start": 174,
+        "end": 175,
+        "text": "{"
+       },
+       {
+        "type": "property_signature",
+        "start": 178,
+        "end": 196,
+        "children": [
+         {
+          "type": "readonly",
+          "start": 178,
+          "end": 186,
+          "text": "readonly"
+         },
+         {
+          "type": "property_identifier",
+          "start": 187,
+          "end": 188,
+          "field": "name",
+          "text": "x"
+         },
+         {
+          "type": "type_annotation",
+          "start": 188,
+          "end": 196,
+          "field": "type",
+          "children": [
+           {
+            "type": ":",
+            "start": 188,
+            "end": 189,
+            "text": ":"
+           },
+           {
+            "type": "predefined_type",
+            "start": 190,
+            "end": 196,
+            "children": [
+             {
+              "type": "number",
+              "start": 190,
+              "end": 196,
+              "text": "number"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ";",
+        "start": 196,
+        "end": 197,
+        "text": ";"
+       },
+       {
+        "type": "property_signature",
+        "start": 200,
+        "end": 209,
+        "children": [
+         {
+          "type": "property_identifier",
+          "start": 200,
+          "end": 201,
+          "field": "name",
+          "text": "y"
+         },
+         {
+          "type": "type_annotation",
+          "start": 201,
+          "end": 209,
+          "field": "type",
+          "children": [
+           {
+            "type": ":",
+            "start": 201,
+            "end": 202,
+            "text": ":"
+           },
+           {
+            "type": "predefined_type",
+            "start": 203,
+            "end": 209,
+            "children": [
+             {
+              "type": "number",
+              "start": 203,
+              "end": 209,
+              "text": "number"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ";",
+        "start": 209,
+        "end": 210,
+        "text": ";"
+       },
+       {
+        "type": "property_signature",
+        "start": 213,
+        "end": 223,
+        "children": [
+         {
+          "type": "property_identifier",
+          "start": 213,
+          "end": 214,
+          "field": "name",
+          "text": "z"
+         },
+         {
+          "type": "?",
+          "start": 214,
+          "end": 215,
+          "text": "?"
+         },
+         {
+          "type": "type_annotation",
+          "start": 215,
+          "end": 223,
+          "field": "type",
+          "children": [
+           {
+            "type": ":",
+            "start": 215,
+            "end": 216,
+            "text": ":"
+           },
+           {
+            "type": "predefined_type",
+            "start": 217,
+            "end": 223,
+            "children": [
+             {
+              "type": "number",
+              "start": 217,
+              "end": 223,
+              "text": "number"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ";",
+        "start": 223,
+        "end": 224,
+        "text": ";"
+       },
+       {
+        "type": "property_signature",
+        "start": 227,
+        "end": 240,
+        "children": [
+         {
+          "type": "property_identifier",
+          "start": 227,
+          "end": 232,
+          "field": "name",
+          "text": "label"
+         },
+         {
+          "type": "type_annotation",
+          "start": 232,
+          "end": 240,
+          "field": "type",
+          "children": [
+           {
+            "type": ":",
+            "start": 232,
+            "end": 233,
+            "text": ":"
+           },
+           {
+            "type": "predefined_type",
+            "start": 234,
+            "end": 240,
+            "children": [
+             {
+              "type": "string",
+              "start": 234,
+              "end": 240,
+              "text": "string"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ";",
+        "start": 240,
+        "end": 241,
+        "text": ";"
+       },
+       {
+        "type": "}",
+        "start": 242,
+        "end": 243,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "interface_declaration",
+    "start": 245,
+    "end": 277,
+    "children": [
+     {
+      "type": "interface",
+      "start": 245,
+      "end": 254,
+      "text": "interface"
+     },
+     {
+      "type": "type_identifier",
+      "start": 255,
+      "end": 260,
+      "field": "name",
+      "text": "Named"
+     },
+     {
+      "type": "interface_body",
+      "start": 261,
+      "end": 277,
+      "field": "body",
+      "children": [
+       {
+        "type": "{",
+        "start": 261,
+        "end": 262,
+        "text": "{"
+       },
+       {
+        "type": "property_signature",
+        "start": 263,
+        "end": 275,
+        "children": [
+         {
+          "type": "property_identifier",
+          "start": 263,
+          "end": 267,
+          "field": "name",
+          "text": "name"
+         },
+         {
+          "type": "type_annotation",
+          "start": 267,
+          "end": 275,
+          "field": "type",
+          "children": [
+           {
+            "type": ":",
+            "start": 267,
+            "end": 268,
+            "text": ":"
+           },
+           {
+            "type": "predefined_type",
+            "start": 269,
+            "end": 275,
+            "children": [
+             {
+              "type": "string",
+              "start": 269,
+              "end": 275,
+              "text": "string"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 276,
+        "end": 277,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "interface_declaration",
+    "start": 279,
+    "end": 357,
+    "children": [
+     {
+      "type": "interface",
+      "start": 279,
+      "end": 288,
+      "text": "interface"
+     },
+     {
+      "type": "type_identifier",
+      "start": 289,
+      "end": 301,
+      "field": "name",
+      "text": "LabeledPoint"
+     },
+     {
+      "type": "extends_type_clause",
+      "start": 302,
+      "end": 335,
+      "children": [
+       {
+        "type": "extends",
+        "start": 302,
+        "end": 309,
+        "text": "extends"
+       },
+       {
+        "type": "type_identifier",
+        "start": 310,
+        "end": 315,
+        "field": "type",
+        "text": "Point"
+       },
+       {
+        "type": ",",
+        "start": 315,
+        "end": 316,
+        "text": ","
+       },
+       {
+        "type": "type_identifier",
+        "start": 317,
+        "end": 322,
+        "field": "type",
+        "text": "Named"
+       },
+       {
+        "type": ",",
+        "start": 322,
+        "end": 323,
+        "text": ","
+       },
+       {
+        "type": "type_identifier",
+        "start": 324,
+        "end": 335,
+        "field": "type",
+        "text": "Timestamped"
+       }
+      ]
+     },
+     {
+      "type": "interface_body",
+      "start": 336,
+      "end": 357,
+      "field": "body",
+      "children": [
+       {
+        "type": "{",
+        "start": 336,
+        "end": 337,
+        "text": "{"
+       },
+       {
+        "type": "property_signature",
+        "start": 340,
+        "end": 354,
+        "children": [
+         {
+          "type": "property_identifier",
+          "start": 340,
+          "end": 345,
+          "field": "name",
+          "text": "extra"
+         },
+         {
+          "type": "type_annotation",
+          "start": 345,
+          "end": 354,
+          "field": "type",
+          "children": [
+           {
+            "type": ":",
+            "start": 345,
+            "end": 346,
+            "text": ":"
+           },
+           {
+            "type": "predefined_type",
+            "start": 347,
+            "end": 354,
+            "children": [
+             {
+              "type": "boolean",
+              "start": 347,
+              "end": 354,
+              "text": "boolean"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ";",
+        "start": 354,
+        "end": 355,
+        "text": ";"
+       },
+       {
+        "type": "}",
+        "start": 356,
+        "end": 357,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "interface_declaration",
+    "start": 359,
+    "end": 463,
+    "children": [
+     {
+      "type": "interface",
+      "start": 359,
+      "end": 368,
+      "text": "interface"
+     },
+     {
+      "type": "type_identifier",
+      "start": 369,
+      "end": 373,
+      "field": "name",
+      "text": "Wide"
+     },
+     {
+      "type": "extends_type_clause",
+      "start": 374,
+      "end": 442,
+      "children": [
+       {
+        "type": "extends",
+        "start": 374,
+        "end": 381,
+        "text": "extends"
+       },
+       {
+        "type": "type_identifier",
+        "start": 382,
+        "end": 395,
+        "field": "type",
+        "text": "FirstLongBase"
+       },
+       {
+        "type": ",",
+        "start": 395,
+        "end": 396,
+        "text": ","
+       },
+       {
+        "type": "type_identifier",
+        "start": 397,
+        "end": 411,
+        "field": "type",
+        "text": "SecondLongBase"
+       },
+       {
+        "type": ",",
+        "start": 411,
+        "end": 412,
+        "text": ","
+       },
+       {
+        "type": "type_identifier",
+        "start": 413,
+        "end": 426,
+        "field": "type",
+        "text": "ThirdLongBase"
+       },
+       {
+        "type": ",",
+        "start": 426,
+        "end": 427,
+        "text": ","
+       },
+       {
+        "type": "type_identifier",
+        "start": 428,
+        "end": 442,
+        "field": "type",
+        "text": "FourthLongBase"
+       }
+      ]
+     },
+     {
+      "type": "interface_body",
+      "start": 443,
+      "end": 463,
+      "field": "body",
+      "children": [
+       {
+        "type": "{",
+        "start": 443,
+        "end": 444,
+        "text": "{"
+       },
+       {
+        "type": "property_signature",
+        "start": 447,
+        "end": 460,
+        "children": [
+         {
+          "type": "property_identifier",
+          "start": 447,
+          "end": 452,
+          "field": "name",
+          "text": "extra"
+         },
+         {
+          "type": "type_annotation",
+          "start": 452,
+          "end": 460,
+          "field": "type",
+          "children": [
+           {
+            "type": ":",
+            "start": 452,
+            "end": 453,
+            "text": ":"
+           },
+           {
+            "type": "predefined_type",
+            "start": 454,
+            "end": 460,
+            "children": [
+             {
+              "type": "number",
+              "start": 454,
+              "end": 460,
+              "text": "number"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ";",
+        "start": 460,
+        "end": 461,
+        "text": ";"
+       },
+       {
+        "type": "}",
+        "start": 462,
+        "end": 463,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "interface_declaration",
+    "start": 465,
+    "end": 602,
+    "children": [
+     {
+      "type": "interface",
+      "start": 465,
+      "end": 474,
+      "text": "interface"
+     },
+     {
+      "type": "type_identifier",
+      "start": 475,
+      "end": 483,
+      "field": "name",
+      "text": "Callable"
+     },
+     {
+      "type": "interface_body",
+      "start": 484,
+      "end": 602,
+      "field": "body",
+      "children": [
+       {
+        "type": "{",
+        "start": 484,
+        "end": 485,
+        "text": "{"
+       },
+       {
+        "type": "call_signature",
+        "start": 488,
+        "end": 507,
+        "children": [
+         {
+          "type": "formal_parameters",
+          "start": 488,
+          "end": 499,
+          "field": "parameters",
+          "children": [
+           {
+            "type": "(",
+            "start": 488,
+            "end": 489,
+            "text": "("
+           },
+           {
+            "type": "required_parameter",
+            "start": 489,
+            "end": 498,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 489,
+              "end": 490,
+              "field": "pattern",
+              "text": "x"
+             },
+             {
+              "type": "type_annotation",
+              "start": 490,
+              "end": 498,
+              "field": "type",
+              "children": [
+               {
+                "type": ":",
+                "start": 490,
+                "end": 491,
+                "text": ":"
+               },
+               {
+                "type": "predefined_type",
+                "start": 492,
+                "end": 498,
+                "children": [
+                 {
+                  "type": "number",
+                  "start": 492,
+                  "end": 498,
+                  "text": "number"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ")",
+            "start": 498,
+            "end": 499,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": "type_annotation",
+          "start": 499,
+          "end": 507,
+          "field": "return_type",
+          "children": [
+           {
+            "type": ":",
+            "start": 499,
+            "end": 500,
+            "text": ":"
+           },
+           {
+            "type": "predefined_type",
+            "start": 501,
+            "end": 507,
+            "children": [
+             {
+              "type": "string",
+              "start": 501,
+              "end": 507,
+              "text": "string"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ";",
+        "start": 507,
+        "end": 508,
+        "text": ";"
+       },
+       {
+        "type": "construct_signature",
+        "start": 511,
+        "end": 533,
+        "children": [
+         {
+          "type": "new",
+          "start": 511,
+          "end": 514,
+          "text": "new"
+         },
+         {
+          "type": "formal_parameters",
+          "start": 515,
+          "end": 526,
+          "field": "parameters",
+          "children": [
+           {
+            "type": "(",
+            "start": 515,
+            "end": 516,
+            "text": "("
+           },
+           {
+            "type": "required_parameter",
+            "start": 516,
+            "end": 525,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 516,
+              "end": 517,
+              "field": "pattern",
+              "text": "x"
+             },
+             {
+              "type": "type_annotation",
+              "start": 517,
+              "end": 525,
+              "field": "type",
+              "children": [
+               {
+                "type": ":",
+                "start": 517,
+                "end": 518,
+                "text": ":"
+               },
+               {
+                "type": "predefined_type",
+                "start": 519,
+                "end": 525,
+                "children": [
+                 {
+                  "type": "number",
+                  "start": 519,
+                  "end": 525,
+                  "text": "number"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ")",
+            "start": 525,
+            "end": 526,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": "type_annotation",
+          "start": 526,
+          "end": 533,
+          "field": "type",
+          "children": [
+           {
+            "type": ":",
+            "start": 526,
+            "end": 527,
+            "text": ":"
+           },
+           {
+            "type": "type_identifier",
+            "start": 528,
+            "end": 533,
+            "text": "Thing"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ";",
+        "start": 533,
+        "end": 534,
+        "text": ";"
+       },
+       {
+        "type": "index_signature",
+        "start": 537,
+        "end": 567,
+        "children": [
+         {
+          "type": "[",
+          "start": 537,
+          "end": 538,
+          "text": "["
+         },
+         {
+          "type": "identifier",
+          "start": 538,
+          "end": 541,
+          "field": "name",
+          "text": "key"
+         },
+         {
+          "type": ":",
+          "start": 541,
+          "end": 542,
+          "text": ":"
+         },
+         {
+          "type": "predefined_type",
+          "start": 543,
+          "end": 549,
+          "field": "index_type",
+          "children": [
+           {
+            "type": "string",
+            "start": 543,
+            "end": 549,
+            "text": "string"
+           }
+          ]
+         },
+         {
+          "type": "]",
+          "start": 549,
+          "end": 550,
+          "text": "]"
+         },
+         {
+          "type": "type_annotation",
+          "start": 550,
+          "end": 567,
+          "field": "type",
+          "children": [
+           {
+            "type": ":",
+            "start": 550,
+            "end": 551,
+            "text": ":"
+           },
+           {
+            "type": "union_type",
+            "start": 552,
+            "end": 567,
+            "children": [
+             {
+              "type": "predefined_type",
+              "start": 552,
+              "end": 558,
+              "children": [
+               {
+                "type": "number",
+                "start": 552,
+                "end": 558,
+                "text": "number"
+               }
+              ]
+             },
+             {
+              "type": "|",
+              "start": 559,
+              "end": 560,
+              "text": "|"
+             },
+             {
+              "type": "predefined_type",
+              "start": 561,
+              "end": 567,
+              "children": [
+               {
+                "type": "string",
+                "start": 561,
+                "end": 567,
+                "text": "string"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ";",
+        "start": 567,
+        "end": 568,
+        "text": ";"
+       },
+       {
+        "type": "method_signature",
+        "start": 571,
+        "end": 599,
+        "children": [
+         {
+          "type": "property_identifier",
+          "start": 571,
+          "end": 577,
+          "field": "name",
+          "text": "method"
+         },
+         {
+          "type": "formal_parameters",
+          "start": 577,
+          "end": 593,
+          "field": "parameters",
+          "children": [
+           {
+            "type": "(",
+            "start": 577,
+            "end": 578,
+            "text": "("
+           },
+           {
+            "type": "required_parameter",
+            "start": 578,
+            "end": 592,
+            "children": [
+             {
+              "type": "this",
+              "start": 578,
+              "end": 582,
+              "field": "pattern",
+              "text": "this"
+             },
+             {
+              "type": "type_annotation",
+              "start": 582,
+              "end": 592,
+              "field": "type",
+              "children": [
+               {
+                "type": ":",
+                "start": 582,
+                "end": 583,
+                "text": ":"
+               },
+               {
+                "type": "type_identifier",
+                "start": 584,
+                "end": 592,
+                "text": "Callable"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ")",
+            "start": 592,
+            "end": 593,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": "type_annotation",
+          "start": 593,
+          "end": 599,
+          "field": "return_type",
+          "children": [
+           {
+            "type": ":",
+            "start": 593,
+            "end": 594,
+            "text": ":"
+           },
+           {
+            "type": "predefined_type",
+            "start": 595,
+            "end": 599,
+            "children": [
+             {
+              "type": "void",
+              "start": 595,
+              "end": 599,
+              "text": "void"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ";",
+        "start": 599,
+        "end": 600,
+        "text": ";"
+       },
+       {
+        "type": "}",
+        "start": 601,
+        "end": 602,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "interface_declaration",
+    "start": 604,
+    "end": 677,
+    "children": [
+     {
+      "type": "interface",
+      "start": 604,
+      "end": 613,
+      "text": "interface"
+     },
+     {
+      "type": "type_identifier",
+      "start": 614,
+      "end": 623,
+      "field": "name",
+      "text": "Accessors"
+     },
+     {
+      "type": "interface_body",
+      "start": 624,
+      "end": 677,
+      "field": "body",
+      "children": [
+       {
+        "type": "{",
+        "start": 624,
+        "end": 625,
+        "text": "{"
+       },
+       {
+        "type": "method_signature",
+        "start": 628,
+        "end": 647,
+        "children": [
+         {
+          "type": "get",
+          "start": 628,
+          "end": 631,
+          "text": "get"
+         },
+         {
+          "type": "property_identifier",
+          "start": 632,
+          "end": 637,
+          "field": "name",
+          "text": "value"
+         },
+         {
+          "type": "formal_parameters",
+          "start": 637,
+          "end": 639,
+          "field": "parameters",
+          "children": [
+           {
+            "type": "(",
+            "start": 637,
+            "end": 638,
+            "text": "("
+           },
+           {
+            "type": ")",
+            "start": 638,
+            "end": 639,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": "type_annotation",
+          "start": 639,
+          "end": 647,
+          "field": "return_type",
+          "children": [
+           {
+            "type": ":",
+            "start": 639,
+            "end": 640,
+            "text": ":"
+           },
+           {
+            "type": "predefined_type",
+            "start": 641,
+            "end": 647,
+            "children": [
+             {
+              "type": "number",
+              "start": 641,
+              "end": 647,
+              "text": "number"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ";",
+        "start": 647,
+        "end": 648,
+        "text": ";"
+       },
+       {
+        "type": "method_signature",
+        "start": 651,
+        "end": 674,
+        "children": [
+         {
+          "type": "set",
+          "start": 651,
+          "end": 654,
+          "text": "set"
+         },
+         {
+          "type": "property_identifier",
+          "start": 655,
+          "end": 660,
+          "field": "name",
+          "text": "value"
+         },
+         {
+          "type": "formal_parameters",
+          "start": 660,
+          "end": 674,
+          "field": "parameters",
+          "children": [
+           {
+            "type": "(",
+            "start": 660,
+            "end": 661,
+            "text": "("
+           },
+           {
+            "type": "required_parameter",
+            "start": 661,
+            "end": 673,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 661,
+              "end": 665,
+              "field": "pattern",
+              "text": "next"
+             },
+             {
+              "type": "type_annotation",
+              "start": 665,
+              "end": 673,
+              "field": "type",
+              "children": [
+               {
+                "type": ":",
+                "start": 665,
+                "end": 666,
+                "text": ":"
+               },
+               {
+                "type": "predefined_type",
+                "start": 667,
+                "end": 673,
+                "children": [
+                 {
+                  "type": "number",
+                  "start": 667,
+                  "end": 673,
+                  "text": "number"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ")",
+            "start": 673,
+            "end": 674,
+            "text": ")"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ";",
+        "start": 674,
+        "end": 675,
+        "text": ";"
+       },
+       {
+        "type": "}",
+        "start": 676,
+        "end": 677,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

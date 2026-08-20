@@ -1,0 +1,63 @@
+# TypeScript. Schema: docs/onboarding/WORKFLOW.md, "Stage 0".
+name = "typescript"
+extensions = [".ts"]
+
+# PyPI name matches the orchestrator's tree_sitter_typescript guess after the
+# hyphen-to-underscore swap; the pin does not. 0.7.0 was the guess; the latest
+# release on the live index (2026-08-21) is 0.23.2. Imported as
+# tree_sitter_typescript. The module does not export language(); it exports
+# language_typescript() and language_tsx(), both returning a
+# tree_sitter.Language capsule. language_typescript is the deliberate pick:
+# angle-bracket assertions parse cleanly and JSX is an ERROR. language_tsx
+# inverts that (JSX clean, <number>value is ERROR) and would have claimed the
+# tsx fence. See the corpus report.
+grammar = "tree-sitter-typescript==0.23.2"
+grammar_module = "tree_sitter_typescript"
+grammar_symbol = "language_typescript"
+
+# Markdown info strings that select this grammar for a fenced region.
+# `typescript` is canonical. `ts` is prettier's own alias, GitHub linguist's,
+# and the conventional fence spelling. `tsx` / `typescriptreact` belong to
+# language_tsx, not this grammar. `javascript` / `js` are taken.
+injection_aliases = ["typescript", "ts"]
+
+# prettier infers the parser from the filename, so stdin needs a fake one.
+# Verified: no filepath and no parser errors "No parser and no file path given";
+# `--stdin-filepath x.typescript` also fails to infer; `--stdin-filepath x.ts`
+# works; `--parser typescript` is an alternative that produces byte-identical
+# output and is omitted as redundant. `--no-config` is load-bearing (planted
+# `.prettierrc` / `package.json` `"prettier"` / ancestor search / `.editorconfig`
+# all silently rewrite options the CLI does not name; `--no-config` kills every
+# channel, including editorconfig). `--print-width` honours {width}, established
+# by diffing 80 vs 40, not by reading --help.
+reference = "npx --yes prettier@3.9.6 --no-config --stdin-filepath x.ts --print-width {width}"
+reference_version = "3.9.6"
+reference_width = "flag"
+
+# 80 is prettier's own default, established by bisection: a 20-item number
+# array (`const x = [0, …, 19];`, 81 chars) breaks unprompted and at
+# `--print-width 80`, and stays flat at `--print-width 81`. Unprompted output
+# is byte-identical to `--print-width 80` on that boundary. 40 is the narrow
+# width; it forces the union, generic-parameter and type-literal decisions
+# 80 lets a package dodge. Same pair as JavaScript, re-bisected here rather
+# than inherited.
+widths = [80, 40]
+
+# The generic default. No override: tree-sitter-typescript, like its
+# JavaScript sibling, represents both quote styles as one `string` node with
+# an anonymous quote token, so prettier's quote normalisation leaves the named
+# tree unchanged. A data-model loader would collapse the spellings a formatter
+# must preserve (1_000 vs 1000, "hello" vs 'hello' in string-literal types).
+gate3 = "default"
+
+# Established by running prettier over the corpus, not by reading the grammar.
+# prettier both inserts and deletes `parenthesized_expression` around a single
+# expression (`((1 + 2))` -> `1 + 2`; `a + b as number` -> `(a + b) as number`;
+# a nested ternary's parens). It also inserts and deletes a unary `union_type`
+# around the first member of a union when it adds or removes a leading `|`
+# (`A | B | C` <-> `| A | B | C`). In every case the wrapper has exactly one
+# named child, so it is genuinely transparent: `(expr)` is `expr`, and `| T` is
+# `T`. A binary `union_type` has two named children and is not elided, so
+# declaring the kind does not let a formatter drop `| B` from `A | B`.
+transparent_wrappers = ["parenthesized_expression", "union_type"]
+equivalent_kinds = []

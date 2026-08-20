@@ -1,0 +1,1721 @@
+{
+ "language": "typescript",
+ "source_file": "corpus/src/typescript/mapped.ts",
+ "source": "// Mapped and conditional types, `infer`, `keyof`, and template-literal types —\n// the type-level programs a person would notice if they were laid out wrongly.\ntype Optional<T> = { [K in keyof T]?: T[K] | null };\n\ntype ReadonlyPicked<T, K extends keyof T> = { readonly [P in K]: T[P] };\n\ntype Mutable<T> = { -readonly [K in keyof T]: T[K] };\n\ntype RequiredKeys<T> = { [K in keyof T]-?: T[K] };\n\ntype Unpacked<T> = T extends Promise<infer U> ? U : T extends Array<infer U> ? U : T;\n\ntype EventName<T extends string> = `on${Capitalize<T>}`;\n\ntype DeepPartial<T> = T extends object ? { [K in keyof T]?: DeepPartial<T[K]> } : T;\n\ntype Lookup = Person[\"name\" | \"age\"];\n",
+ "root": {
+  "type": "program",
+  "start": 0,
+  "end": 666,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 81,
+    "text": "// Mapped and conditional types, `infer`, `keyof`, and template-literal types —"
+   },
+   {
+    "type": "comment",
+    "start": 82,
+    "end": 161,
+    "text": "// the type-level programs a person would notice if they were laid out wrongly."
+   },
+   {
+    "type": "type_alias_declaration",
+    "start": 162,
+    "end": 214,
+    "children": [
+     {
+      "type": "type",
+      "start": 162,
+      "end": 166,
+      "text": "type"
+     },
+     {
+      "type": "type_identifier",
+      "start": 167,
+      "end": 175,
+      "field": "name",
+      "text": "Optional"
+     },
+     {
+      "type": "type_parameters",
+      "start": 175,
+      "end": 178,
+      "field": "type_parameters",
+      "children": [
+       {
+        "type": "<",
+        "start": 175,
+        "end": 176,
+        "text": "<"
+       },
+       {
+        "type": "type_parameter",
+        "start": 176,
+        "end": 177,
+        "children": [
+         {
+          "type": "type_identifier",
+          "start": 176,
+          "end": 177,
+          "field": "name",
+          "text": "T"
+         }
+        ]
+       },
+       {
+        "type": ">",
+        "start": 177,
+        "end": 178,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 179,
+      "end": 180,
+      "text": "="
+     },
+     {
+      "type": "object_type",
+      "start": 181,
+      "end": 213,
+      "field": "value",
+      "children": [
+       {
+        "type": "{",
+        "start": 181,
+        "end": 182,
+        "text": "{"
+       },
+       {
+        "type": "index_signature",
+        "start": 183,
+        "end": 211,
+        "children": [
+         {
+          "type": "[",
+          "start": 183,
+          "end": 184,
+          "text": "["
+         },
+         {
+          "type": "mapped_type_clause",
+          "start": 184,
+          "end": 196,
+          "children": [
+           {
+            "type": "type_identifier",
+            "start": 184,
+            "end": 185,
+            "field": "name",
+            "text": "K"
+           },
+           {
+            "type": "in",
+            "start": 186,
+            "end": 188,
+            "text": "in"
+           },
+           {
+            "type": "index_type_query",
+            "start": 189,
+            "end": 196,
+            "field": "type",
+            "children": [
+             {
+              "type": "keyof",
+              "start": 189,
+              "end": 194,
+              "text": "keyof"
+             },
+             {
+              "type": "type_identifier",
+              "start": 195,
+              "end": 196,
+              "text": "T"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "]",
+          "start": 196,
+          "end": 197,
+          "text": "]"
+         },
+         {
+          "type": "opting_type_annotation",
+          "start": 197,
+          "end": 211,
+          "field": "type",
+          "children": [
+           {
+            "type": "?:",
+            "start": 197,
+            "end": 199,
+            "text": "?:"
+           },
+           {
+            "type": "union_type",
+            "start": 200,
+            "end": 211,
+            "children": [
+             {
+              "type": "lookup_type",
+              "start": 200,
+              "end": 204,
+              "children": [
+               {
+                "type": "type_identifier",
+                "start": 200,
+                "end": 201,
+                "text": "T"
+               },
+               {
+                "type": "[",
+                "start": 201,
+                "end": 202,
+                "text": "["
+               },
+               {
+                "type": "type_identifier",
+                "start": 202,
+                "end": 203,
+                "text": "K"
+               },
+               {
+                "type": "]",
+                "start": 203,
+                "end": 204,
+                "text": "]"
+               }
+              ]
+             },
+             {
+              "type": "|",
+              "start": 205,
+              "end": 206,
+              "text": "|"
+             },
+             {
+              "type": "literal_type",
+              "start": 207,
+              "end": 211,
+              "children": [
+               {
+                "type": "null",
+                "start": 207,
+                "end": 211,
+                "text": "null"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 212,
+        "end": 213,
+        "text": "}"
+       }
+      ]
+     },
+     {
+      "type": ";",
+      "start": 213,
+      "end": 214,
+      "text": ";"
+     }
+    ]
+   },
+   {
+    "type": "type_alias_declaration",
+    "start": 216,
+    "end": 288,
+    "children": [
+     {
+      "type": "type",
+      "start": 216,
+      "end": 220,
+      "text": "type"
+     },
+     {
+      "type": "type_identifier",
+      "start": 221,
+      "end": 235,
+      "field": "name",
+      "text": "ReadonlyPicked"
+     },
+     {
+      "type": "type_parameters",
+      "start": 235,
+      "end": 257,
+      "field": "type_parameters",
+      "children": [
+       {
+        "type": "<",
+        "start": 235,
+        "end": 236,
+        "text": "<"
+       },
+       {
+        "type": "type_parameter",
+        "start": 236,
+        "end": 237,
+        "children": [
+         {
+          "type": "type_identifier",
+          "start": 236,
+          "end": 237,
+          "field": "name",
+          "text": "T"
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 237,
+        "end": 238,
+        "text": ","
+       },
+       {
+        "type": "type_parameter",
+        "start": 239,
+        "end": 256,
+        "children": [
+         {
+          "type": "type_identifier",
+          "start": 239,
+          "end": 240,
+          "field": "name",
+          "text": "K"
+         },
+         {
+          "type": "constraint",
+          "start": 241,
+          "end": 256,
+          "field": "constraint",
+          "children": [
+           {
+            "type": "extends",
+            "start": 241,
+            "end": 248,
+            "text": "extends"
+           },
+           {
+            "type": "index_type_query",
+            "start": 249,
+            "end": 256,
+            "children": [
+             {
+              "type": "keyof",
+              "start": 249,
+              "end": 254,
+              "text": "keyof"
+             },
+             {
+              "type": "type_identifier",
+              "start": 255,
+              "end": 256,
+              "text": "T"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ">",
+        "start": 256,
+        "end": 257,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 258,
+      "end": 259,
+      "text": "="
+     },
+     {
+      "type": "object_type",
+      "start": 260,
+      "end": 287,
+      "field": "value",
+      "children": [
+       {
+        "type": "{",
+        "start": 260,
+        "end": 261,
+        "text": "{"
+       },
+       {
+        "type": "index_signature",
+        "start": 262,
+        "end": 285,
+        "children": [
+         {
+          "type": "readonly",
+          "start": 262,
+          "end": 270,
+          "text": "readonly"
+         },
+         {
+          "type": "[",
+          "start": 271,
+          "end": 272,
+          "text": "["
+         },
+         {
+          "type": "mapped_type_clause",
+          "start": 272,
+          "end": 278,
+          "children": [
+           {
+            "type": "type_identifier",
+            "start": 272,
+            "end": 273,
+            "field": "name",
+            "text": "P"
+           },
+           {
+            "type": "in",
+            "start": 274,
+            "end": 276,
+            "text": "in"
+           },
+           {
+            "type": "type_identifier",
+            "start": 277,
+            "end": 278,
+            "field": "type",
+            "text": "K"
+           }
+          ]
+         },
+         {
+          "type": "]",
+          "start": 278,
+          "end": 279,
+          "text": "]"
+         },
+         {
+          "type": "type_annotation",
+          "start": 279,
+          "end": 285,
+          "field": "type",
+          "children": [
+           {
+            "type": ":",
+            "start": 279,
+            "end": 280,
+            "text": ":"
+           },
+           {
+            "type": "lookup_type",
+            "start": 281,
+            "end": 285,
+            "children": [
+             {
+              "type": "type_identifier",
+              "start": 281,
+              "end": 282,
+              "text": "T"
+             },
+             {
+              "type": "[",
+              "start": 282,
+              "end": 283,
+              "text": "["
+             },
+             {
+              "type": "type_identifier",
+              "start": 283,
+              "end": 284,
+              "text": "P"
+             },
+             {
+              "type": "]",
+              "start": 284,
+              "end": 285,
+              "text": "]"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 286,
+        "end": 287,
+        "text": "}"
+       }
+      ]
+     },
+     {
+      "type": ";",
+      "start": 287,
+      "end": 288,
+      "text": ";"
+     }
+    ]
+   },
+   {
+    "type": "type_alias_declaration",
+    "start": 290,
+    "end": 343,
+    "children": [
+     {
+      "type": "type",
+      "start": 290,
+      "end": 294,
+      "text": "type"
+     },
+     {
+      "type": "type_identifier",
+      "start": 295,
+      "end": 302,
+      "field": "name",
+      "text": "Mutable"
+     },
+     {
+      "type": "type_parameters",
+      "start": 302,
+      "end": 305,
+      "field": "type_parameters",
+      "children": [
+       {
+        "type": "<",
+        "start": 302,
+        "end": 303,
+        "text": "<"
+       },
+       {
+        "type": "type_parameter",
+        "start": 303,
+        "end": 304,
+        "children": [
+         {
+          "type": "type_identifier",
+          "start": 303,
+          "end": 304,
+          "field": "name",
+          "text": "T"
+         }
+        ]
+       },
+       {
+        "type": ">",
+        "start": 304,
+        "end": 305,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 306,
+      "end": 307,
+      "text": "="
+     },
+     {
+      "type": "object_type",
+      "start": 308,
+      "end": 342,
+      "field": "value",
+      "children": [
+       {
+        "type": "{",
+        "start": 308,
+        "end": 309,
+        "text": "{"
+       },
+       {
+        "type": "index_signature",
+        "start": 310,
+        "end": 340,
+        "children": [
+         {
+          "type": "-",
+          "start": 310,
+          "end": 311,
+          "field": "sign",
+          "text": "-"
+         },
+         {
+          "type": "readonly",
+          "start": 311,
+          "end": 319,
+          "text": "readonly"
+         },
+         {
+          "type": "[",
+          "start": 320,
+          "end": 321,
+          "text": "["
+         },
+         {
+          "type": "mapped_type_clause",
+          "start": 321,
+          "end": 333,
+          "children": [
+           {
+            "type": "type_identifier",
+            "start": 321,
+            "end": 322,
+            "field": "name",
+            "text": "K"
+           },
+           {
+            "type": "in",
+            "start": 323,
+            "end": 325,
+            "text": "in"
+           },
+           {
+            "type": "index_type_query",
+            "start": 326,
+            "end": 333,
+            "field": "type",
+            "children": [
+             {
+              "type": "keyof",
+              "start": 326,
+              "end": 331,
+              "text": "keyof"
+             },
+             {
+              "type": "type_identifier",
+              "start": 332,
+              "end": 333,
+              "text": "T"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "]",
+          "start": 333,
+          "end": 334,
+          "text": "]"
+         },
+         {
+          "type": "type_annotation",
+          "start": 334,
+          "end": 340,
+          "field": "type",
+          "children": [
+           {
+            "type": ":",
+            "start": 334,
+            "end": 335,
+            "text": ":"
+           },
+           {
+            "type": "lookup_type",
+            "start": 336,
+            "end": 340,
+            "children": [
+             {
+              "type": "type_identifier",
+              "start": 336,
+              "end": 337,
+              "text": "T"
+             },
+             {
+              "type": "[",
+              "start": 337,
+              "end": 338,
+              "text": "["
+             },
+             {
+              "type": "type_identifier",
+              "start": 338,
+              "end": 339,
+              "text": "K"
+             },
+             {
+              "type": "]",
+              "start": 339,
+              "end": 340,
+              "text": "]"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 341,
+        "end": 342,
+        "text": "}"
+       }
+      ]
+     },
+     {
+      "type": ";",
+      "start": 342,
+      "end": 343,
+      "text": ";"
+     }
+    ]
+   },
+   {
+    "type": "type_alias_declaration",
+    "start": 345,
+    "end": 395,
+    "children": [
+     {
+      "type": "type",
+      "start": 345,
+      "end": 349,
+      "text": "type"
+     },
+     {
+      "type": "type_identifier",
+      "start": 350,
+      "end": 362,
+      "field": "name",
+      "text": "RequiredKeys"
+     },
+     {
+      "type": "type_parameters",
+      "start": 362,
+      "end": 365,
+      "field": "type_parameters",
+      "children": [
+       {
+        "type": "<",
+        "start": 362,
+        "end": 363,
+        "text": "<"
+       },
+       {
+        "type": "type_parameter",
+        "start": 363,
+        "end": 364,
+        "children": [
+         {
+          "type": "type_identifier",
+          "start": 363,
+          "end": 364,
+          "field": "name",
+          "text": "T"
+         }
+        ]
+       },
+       {
+        "type": ">",
+        "start": 364,
+        "end": 365,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 366,
+      "end": 367,
+      "text": "="
+     },
+     {
+      "type": "object_type",
+      "start": 368,
+      "end": 394,
+      "field": "value",
+      "children": [
+       {
+        "type": "{",
+        "start": 368,
+        "end": 369,
+        "text": "{"
+       },
+       {
+        "type": "index_signature",
+        "start": 370,
+        "end": 392,
+        "children": [
+         {
+          "type": "[",
+          "start": 370,
+          "end": 371,
+          "text": "["
+         },
+         {
+          "type": "mapped_type_clause",
+          "start": 371,
+          "end": 383,
+          "children": [
+           {
+            "type": "type_identifier",
+            "start": 371,
+            "end": 372,
+            "field": "name",
+            "text": "K"
+           },
+           {
+            "type": "in",
+            "start": 373,
+            "end": 375,
+            "text": "in"
+           },
+           {
+            "type": "index_type_query",
+            "start": 376,
+            "end": 383,
+            "field": "type",
+            "children": [
+             {
+              "type": "keyof",
+              "start": 376,
+              "end": 381,
+              "text": "keyof"
+             },
+             {
+              "type": "type_identifier",
+              "start": 382,
+              "end": 383,
+              "text": "T"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "]",
+          "start": 383,
+          "end": 384,
+          "text": "]"
+         },
+         {
+          "type": "omitting_type_annotation",
+          "start": 384,
+          "end": 392,
+          "field": "type",
+          "children": [
+           {
+            "type": "-?:",
+            "start": 384,
+            "end": 387,
+            "text": "-?:"
+           },
+           {
+            "type": "lookup_type",
+            "start": 388,
+            "end": 392,
+            "children": [
+             {
+              "type": "type_identifier",
+              "start": 388,
+              "end": 389,
+              "text": "T"
+             },
+             {
+              "type": "[",
+              "start": 389,
+              "end": 390,
+              "text": "["
+             },
+             {
+              "type": "type_identifier",
+              "start": 390,
+              "end": 391,
+              "text": "K"
+             },
+             {
+              "type": "]",
+              "start": 391,
+              "end": 392,
+              "text": "]"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 393,
+        "end": 394,
+        "text": "}"
+       }
+      ]
+     },
+     {
+      "type": ";",
+      "start": 394,
+      "end": 395,
+      "text": ";"
+     }
+    ]
+   },
+   {
+    "type": "type_alias_declaration",
+    "start": 397,
+    "end": 482,
+    "children": [
+     {
+      "type": "type",
+      "start": 397,
+      "end": 401,
+      "text": "type"
+     },
+     {
+      "type": "type_identifier",
+      "start": 402,
+      "end": 410,
+      "field": "name",
+      "text": "Unpacked"
+     },
+     {
+      "type": "type_parameters",
+      "start": 410,
+      "end": 413,
+      "field": "type_parameters",
+      "children": [
+       {
+        "type": "<",
+        "start": 410,
+        "end": 411,
+        "text": "<"
+       },
+       {
+        "type": "type_parameter",
+        "start": 411,
+        "end": 412,
+        "children": [
+         {
+          "type": "type_identifier",
+          "start": 411,
+          "end": 412,
+          "field": "name",
+          "text": "T"
+         }
+        ]
+       },
+       {
+        "type": ">",
+        "start": 412,
+        "end": 413,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 414,
+      "end": 415,
+      "text": "="
+     },
+     {
+      "type": "conditional_type",
+      "start": 416,
+      "end": 481,
+      "field": "value",
+      "children": [
+       {
+        "type": "type_identifier",
+        "start": 416,
+        "end": 417,
+        "field": "left",
+        "text": "T"
+       },
+       {
+        "type": "extends",
+        "start": 418,
+        "end": 425,
+        "text": "extends"
+       },
+       {
+        "type": "generic_type",
+        "start": 426,
+        "end": 442,
+        "field": "right",
+        "children": [
+         {
+          "type": "type_identifier",
+          "start": 426,
+          "end": 433,
+          "field": "name",
+          "text": "Promise"
+         },
+         {
+          "type": "type_arguments",
+          "start": 433,
+          "end": 442,
+          "field": "type_arguments",
+          "children": [
+           {
+            "type": "<",
+            "start": 433,
+            "end": 434,
+            "text": "<"
+           },
+           {
+            "type": "infer_type",
+            "start": 434,
+            "end": 441,
+            "children": [
+             {
+              "type": "infer",
+              "start": 434,
+              "end": 439,
+              "text": "infer"
+             },
+             {
+              "type": "type_identifier",
+              "start": 440,
+              "end": 441,
+              "text": "U"
+             }
+            ]
+           },
+           {
+            "type": ">",
+            "start": 441,
+            "end": 442,
+            "text": ">"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "?",
+        "start": 443,
+        "end": 444,
+        "text": "?"
+       },
+       {
+        "type": "type_identifier",
+        "start": 445,
+        "end": 446,
+        "field": "consequence",
+        "text": "U"
+       },
+       {
+        "type": ":",
+        "start": 447,
+        "end": 448,
+        "text": ":"
+       },
+       {
+        "type": "conditional_type",
+        "start": 449,
+        "end": 481,
+        "field": "alternative",
+        "children": [
+         {
+          "type": "type_identifier",
+          "start": 449,
+          "end": 450,
+          "field": "left",
+          "text": "T"
+         },
+         {
+          "type": "extends",
+          "start": 451,
+          "end": 458,
+          "text": "extends"
+         },
+         {
+          "type": "generic_type",
+          "start": 459,
+          "end": 473,
+          "field": "right",
+          "children": [
+           {
+            "type": "type_identifier",
+            "start": 459,
+            "end": 464,
+            "field": "name",
+            "text": "Array"
+           },
+           {
+            "type": "type_arguments",
+            "start": 464,
+            "end": 473,
+            "field": "type_arguments",
+            "children": [
+             {
+              "type": "<",
+              "start": 464,
+              "end": 465,
+              "text": "<"
+             },
+             {
+              "type": "infer_type",
+              "start": 465,
+              "end": 472,
+              "children": [
+               {
+                "type": "infer",
+                "start": 465,
+                "end": 470,
+                "text": "infer"
+               },
+               {
+                "type": "type_identifier",
+                "start": 471,
+                "end": 472,
+                "text": "U"
+               }
+              ]
+             },
+             {
+              "type": ">",
+              "start": 472,
+              "end": 473,
+              "text": ">"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "?",
+          "start": 474,
+          "end": 475,
+          "text": "?"
+         },
+         {
+          "type": "type_identifier",
+          "start": 476,
+          "end": 477,
+          "field": "consequence",
+          "text": "U"
+         },
+         {
+          "type": ":",
+          "start": 478,
+          "end": 479,
+          "text": ":"
+         },
+         {
+          "type": "type_identifier",
+          "start": 480,
+          "end": 481,
+          "field": "alternative",
+          "text": "T"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": ";",
+      "start": 481,
+      "end": 482,
+      "text": ";"
+     }
+    ]
+   },
+   {
+    "type": "type_alias_declaration",
+    "start": 484,
+    "end": 540,
+    "children": [
+     {
+      "type": "type",
+      "start": 484,
+      "end": 488,
+      "text": "type"
+     },
+     {
+      "type": "type_identifier",
+      "start": 489,
+      "end": 498,
+      "field": "name",
+      "text": "EventName"
+     },
+     {
+      "type": "type_parameters",
+      "start": 498,
+      "end": 516,
+      "field": "type_parameters",
+      "children": [
+       {
+        "type": "<",
+        "start": 498,
+        "end": 499,
+        "text": "<"
+       },
+       {
+        "type": "type_parameter",
+        "start": 499,
+        "end": 515,
+        "children": [
+         {
+          "type": "type_identifier",
+          "start": 499,
+          "end": 500,
+          "field": "name",
+          "text": "T"
+         },
+         {
+          "type": "constraint",
+          "start": 501,
+          "end": 515,
+          "field": "constraint",
+          "children": [
+           {
+            "type": "extends",
+            "start": 501,
+            "end": 508,
+            "text": "extends"
+           },
+           {
+            "type": "predefined_type",
+            "start": 509,
+            "end": 515,
+            "children": [
+             {
+              "type": "string",
+              "start": 509,
+              "end": 515,
+              "text": "string"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ">",
+        "start": 515,
+        "end": 516,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 517,
+      "end": 518,
+      "text": "="
+     },
+     {
+      "type": "template_literal_type",
+      "start": 519,
+      "end": 539,
+      "field": "value",
+      "children": [
+       {
+        "type": "`",
+        "start": 519,
+        "end": 520,
+        "text": "`"
+       },
+       {
+        "type": "string_fragment",
+        "start": 520,
+        "end": 522,
+        "text": "on"
+       },
+       {
+        "type": "template_type",
+        "start": 522,
+        "end": 538,
+        "children": [
+         {
+          "type": "${",
+          "start": 522,
+          "end": 524,
+          "text": "${"
+         },
+         {
+          "type": "generic_type",
+          "start": 524,
+          "end": 537,
+          "children": [
+           {
+            "type": "type_identifier",
+            "start": 524,
+            "end": 534,
+            "field": "name",
+            "text": "Capitalize"
+           },
+           {
+            "type": "type_arguments",
+            "start": 534,
+            "end": 537,
+            "field": "type_arguments",
+            "children": [
+             {
+              "type": "<",
+              "start": 534,
+              "end": 535,
+              "text": "<"
+             },
+             {
+              "type": "type_identifier",
+              "start": 535,
+              "end": 536,
+              "text": "T"
+             },
+             {
+              "type": ">",
+              "start": 536,
+              "end": 537,
+              "text": ">"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "}",
+          "start": 537,
+          "end": 538,
+          "text": "}"
+         }
+        ]
+       },
+       {
+        "type": "`",
+        "start": 538,
+        "end": 539,
+        "text": "`"
+       }
+      ]
+     },
+     {
+      "type": ";",
+      "start": 539,
+      "end": 540,
+      "text": ";"
+     }
+    ]
+   },
+   {
+    "type": "type_alias_declaration",
+    "start": 542,
+    "end": 626,
+    "children": [
+     {
+      "type": "type",
+      "start": 542,
+      "end": 546,
+      "text": "type"
+     },
+     {
+      "type": "type_identifier",
+      "start": 547,
+      "end": 558,
+      "field": "name",
+      "text": "DeepPartial"
+     },
+     {
+      "type": "type_parameters",
+      "start": 558,
+      "end": 561,
+      "field": "type_parameters",
+      "children": [
+       {
+        "type": "<",
+        "start": 558,
+        "end": 559,
+        "text": "<"
+       },
+       {
+        "type": "type_parameter",
+        "start": 559,
+        "end": 560,
+        "children": [
+         {
+          "type": "type_identifier",
+          "start": 559,
+          "end": 560,
+          "field": "name",
+          "text": "T"
+         }
+        ]
+       },
+       {
+        "type": ">",
+        "start": 560,
+        "end": 561,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 562,
+      "end": 563,
+      "text": "="
+     },
+     {
+      "type": "conditional_type",
+      "start": 564,
+      "end": 625,
+      "field": "value",
+      "children": [
+       {
+        "type": "type_identifier",
+        "start": 564,
+        "end": 565,
+        "field": "left",
+        "text": "T"
+       },
+       {
+        "type": "extends",
+        "start": 566,
+        "end": 573,
+        "text": "extends"
+       },
+       {
+        "type": "predefined_type",
+        "start": 574,
+        "end": 580,
+        "field": "right",
+        "children": [
+         {
+          "type": "object",
+          "start": 574,
+          "end": 580,
+          "text": "object"
+         }
+        ]
+       },
+       {
+        "type": "?",
+        "start": 581,
+        "end": 582,
+        "text": "?"
+       },
+       {
+        "type": "object_type",
+        "start": 583,
+        "end": 621,
+        "field": "consequence",
+        "children": [
+         {
+          "type": "{",
+          "start": 583,
+          "end": 584,
+          "text": "{"
+         },
+         {
+          "type": "index_signature",
+          "start": 585,
+          "end": 619,
+          "children": [
+           {
+            "type": "[",
+            "start": 585,
+            "end": 586,
+            "text": "["
+           },
+           {
+            "type": "mapped_type_clause",
+            "start": 586,
+            "end": 598,
+            "children": [
+             {
+              "type": "type_identifier",
+              "start": 586,
+              "end": 587,
+              "field": "name",
+              "text": "K"
+             },
+             {
+              "type": "in",
+              "start": 588,
+              "end": 590,
+              "text": "in"
+             },
+             {
+              "type": "index_type_query",
+              "start": 591,
+              "end": 598,
+              "field": "type",
+              "children": [
+               {
+                "type": "keyof",
+                "start": 591,
+                "end": 596,
+                "text": "keyof"
+               },
+               {
+                "type": "type_identifier",
+                "start": 597,
+                "end": 598,
+                "text": "T"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "]",
+            "start": 598,
+            "end": 599,
+            "text": "]"
+           },
+           {
+            "type": "opting_type_annotation",
+            "start": 599,
+            "end": 619,
+            "field": "type",
+            "children": [
+             {
+              "type": "?:",
+              "start": 599,
+              "end": 601,
+              "text": "?:"
+             },
+             {
+              "type": "generic_type",
+              "start": 602,
+              "end": 619,
+              "children": [
+               {
+                "type": "type_identifier",
+                "start": 602,
+                "end": 613,
+                "field": "name",
+                "text": "DeepPartial"
+               },
+               {
+                "type": "type_arguments",
+                "start": 613,
+                "end": 619,
+                "field": "type_arguments",
+                "children": [
+                 {
+                  "type": "<",
+                  "start": 613,
+                  "end": 614,
+                  "text": "<"
+                 },
+                 {
+                  "type": "lookup_type",
+                  "start": 614,
+                  "end": 618,
+                  "children": [
+                   {
+                    "type": "type_identifier",
+                    "start": 614,
+                    "end": 615,
+                    "text": "T"
+                   },
+                   {
+                    "type": "[",
+                    "start": 615,
+                    "end": 616,
+                    "text": "["
+                   },
+                   {
+                    "type": "type_identifier",
+                    "start": 616,
+                    "end": 617,
+                    "text": "K"
+                   },
+                   {
+                    "type": "]",
+                    "start": 617,
+                    "end": 618,
+                    "text": "]"
+                   }
+                  ]
+                 },
+                 {
+                  "type": ">",
+                  "start": 618,
+                  "end": 619,
+                  "text": ">"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "}",
+          "start": 620,
+          "end": 621,
+          "text": "}"
+         }
+        ]
+       },
+       {
+        "type": ":",
+        "start": 622,
+        "end": 623,
+        "text": ":"
+       },
+       {
+        "type": "type_identifier",
+        "start": 624,
+        "end": 625,
+        "field": "alternative",
+        "text": "T"
+       }
+      ]
+     },
+     {
+      "type": ";",
+      "start": 625,
+      "end": 626,
+      "text": ";"
+     }
+    ]
+   },
+   {
+    "type": "type_alias_declaration",
+    "start": 628,
+    "end": 665,
+    "children": [
+     {
+      "type": "type",
+      "start": 628,
+      "end": 632,
+      "text": "type"
+     },
+     {
+      "type": "type_identifier",
+      "start": 633,
+      "end": 639,
+      "field": "name",
+      "text": "Lookup"
+     },
+     {
+      "type": "=",
+      "start": 640,
+      "end": 641,
+      "text": "="
+     },
+     {
+      "type": "lookup_type",
+      "start": 642,
+      "end": 664,
+      "field": "value",
+      "children": [
+       {
+        "type": "type_identifier",
+        "start": 642,
+        "end": 648,
+        "text": "Person"
+       },
+       {
+        "type": "[",
+        "start": 648,
+        "end": 649,
+        "text": "["
+       },
+       {
+        "type": "union_type",
+        "start": 649,
+        "end": 663,
+        "children": [
+         {
+          "type": "literal_type",
+          "start": 649,
+          "end": 655,
+          "children": [
+           {
+            "type": "string",
+            "start": 649,
+            "end": 655,
+            "children": [
+             {
+              "type": "\"",
+              "start": 649,
+              "end": 650,
+              "text": "\""
+             },
+             {
+              "type": "string_fragment",
+              "start": 650,
+              "end": 654,
+              "text": "name"
+             },
+             {
+              "type": "\"",
+              "start": 654,
+              "end": 655,
+              "text": "\""
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "|",
+          "start": 656,
+          "end": 657,
+          "text": "|"
+         },
+         {
+          "type": "literal_type",
+          "start": 658,
+          "end": 663,
+          "children": [
+           {
+            "type": "string",
+            "start": 658,
+            "end": 663,
+            "children": [
+             {
+              "type": "\"",
+              "start": 658,
+              "end": 659,
+              "text": "\""
+             },
+             {
+              "type": "string_fragment",
+              "start": 659,
+              "end": 662,
+              "text": "age"
+             },
+             {
+              "type": "\"",
+              "start": 662,
+              "end": 663,
+              "text": "\""
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "]",
+        "start": 663,
+        "end": 664,
+        "text": "]"
+       }
+      ]
+     },
+     {
+      "type": ";",
+      "start": 664,
+      "end": 665,
+      "text": ";"
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -1,0 +1,64 @@
+// Type annotations on the everyday bindings a person would notice if they
+// came out wrong: variables, parameters, returns, fields, `this`, predicates.
+const host: string = "localhost";
+let port: number = 8080;
+var legacy: boolean = false;
+
+function connect(
+  host: string,
+  port: number,
+  timeout: number = 30,
+  retries?: number,
+): Promise<Socket> {
+  return open(
+    host,
+    port,
+    timeout,
+    retries ?? 3,
+  );
+}
+
+function variadic(
+  first: string,
+  ...rest: number[]
+): number {
+  return rest.reduce(
+    (acc: number, item: number) =>
+      acc + item,
+    0,
+  );
+}
+
+function withThis(
+  this: Window,
+  x: number,
+): void {
+  this;
+}
+
+function isString(
+  x: unknown,
+): x is string {
+  return typeof x === "string";
+}
+
+function assertDefined(
+  x: unknown,
+): asserts x {
+  if (!x) throw new Error("missing");
+}
+
+class Server {
+  readonly id: string;
+  private running: boolean = false;
+  constructor(
+    public readonly name: string,
+    private port: number,
+    protected label?: string,
+  ) {
+    this.id = name;
+  }
+}
+
+type PersonName = Person["name"];
+type Keys = keyof typeof values;

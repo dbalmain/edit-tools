@@ -1,0 +1,47 @@
+// Comments in every position TypeScript allows, including type-level ones.
+
+const value: number = 1; // trailing comment on a statement
+
+// Own-line comment before a declaration, separated by nothing.
+const documented: number = 2;
+
+interface Documented {
+  // comment before the first member
+  first: number;
+  second: string; // trailing on a member
+  // comment before the closing brace
+}
+
+type Union = Alpha | /* mid-union block comment */ Beta | Gamma;
+
+type Piped =
+  | Alpha // trailing on the first member
+  | Beta;
+
+function annotated<T /* on a type parameter */, U>(x: T): U {
+  // leading comment inside the body
+  const result = x as unknown as U; // trailing on an assignment
+  // comment before the return
+  return result;
+}
+
+type Inner = Promise</* inside type arguments */ string>;
+
+const collapsed: number[] = [
+  // comment right after the opening bracket
+  alpha,
+  beta,
+  gamma,
+];
+
+enum Flags {
+  // comment before the first member
+  On = 1, // trailing on a member
+  Off = 0,
+  // comment before the closing brace
+}
+
+/** JSDoc on a type alias. */
+type Aliased = number;
+
+// Comment at the end of the file.

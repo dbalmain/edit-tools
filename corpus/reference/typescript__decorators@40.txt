@@ -1,0 +1,31 @@
+// Decorators on classes, methods, properties, parameters, plus a factory whose
+// argument list reflows at the narrow width.
+@sealed
+class Service {
+  @optional
+  name: string = "default";
+
+  constructor(
+    @inject
+    private readonly db: Database,
+  ) {}
+
+  @bound
+  method(): number {
+    return 1;
+  }
+
+  @logged("debug", {
+    verbose: true,
+    timestamp: true,
+    requestId: "unset",
+  })
+  fetch(url: string): Promise<string> {
+    return load(url);
+  }
+}
+
+@logged("info", { verbose: false })
+class Worker {
+  run(): void {}
+}

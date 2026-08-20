@@ -1,0 +1,30 @@
+// Interfaces: members, extends lists, and the signatures an interface can hold.
+// A one-member interface expands even when it fits; that is not objectWrap.
+interface Point {
+  readonly x: number;
+  y: number;
+  z?: number;
+  label: string;
+}
+
+interface Named { name: string }
+
+interface LabeledPoint extends Point, Named, Timestamped {
+  extra: boolean;
+}
+
+interface Wide extends FirstLongBase, SecondLongBase, ThirdLongBase, FourthLongBase {
+  extra: number;
+}
+
+interface Callable {
+  (x: number): string;
+  new (x: number): Thing;
+  [key: string]: number | string;
+  method(this: Callable): void;
+}
+
+interface Accessors {
+  get value(): number;
+  set value(next: number);
+}

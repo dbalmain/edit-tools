@@ -1,0 +1,2139 @@
+{
+ "language": "typescript",
+ "source_file": "corpus/src/typescript/overloads.ts",
+ "source": "// Overload signatures: functions, methods, and constructors. The\n// implementation signature is the last one and is the only one with a body.\nfunction read(path: string): string;\nfunction read(path: string, encoding: string): Buffer;\nfunction read(path: string, encoding?: string): string | Buffer {\n  return encoding === undefined ? loadText(path) : loadBytes(path, encoding);\n}\n\nfunction parse(input: string): object;\nfunction parse(input: number): object;\nfunction parse(input: string | number): object {\n  return JSON.parse(String(input));\n}\n\nclass Loader {\n  constructor(url: string);\n  constructor(url: string, timeout: number);\n  constructor(url: string, timeout?: number) {\n    this.url = url;\n  }\n  url: string;\n\n  load(): Promise<string>;\n  load(force: boolean): Promise<string>;\n  load(force?: boolean): Promise<string> {\n    return fetch(this.url);\n  }\n}\n",
+ "root": {
+  "type": "program",
+  "start": 0,
+  "end": 868,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 65,
+    "text": "// Overload signatures: functions, methods, and constructors. The"
+   },
+   {
+    "type": "comment",
+    "start": 66,
+    "end": 142,
+    "text": "// implementation signature is the last one and is the only one with a body."
+   },
+   {
+    "type": "function_signature",
+    "start": 143,
+    "end": 179,
+    "children": [
+     {
+      "type": "function",
+      "start": 143,
+      "end": 151,
+      "text": "function"
+     },
+     {
+      "type": "identifier",
+      "start": 152,
+      "end": 156,
+      "field": "name",
+      "text": "read"
+     },
+     {
+      "type": "formal_parameters",
+      "start": 156,
+      "end": 170,
+      "field": "parameters",
+      "children": [
+       {
+        "type": "(",
+        "start": 156,
+        "end": 157,
+        "text": "("
+       },
+       {
+        "type": "required_parameter",
+        "start": 157,
+        "end": 169,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 157,
+          "end": 161,
+          "field": "pattern",
+          "text": "path"
+         },
+         {
+          "type": "type_annotation",
+          "start": 161,
+          "end": 169,
+          "field": "type",
+          "children": [
+           {
+            "type": ":",
+            "start": 161,
+            "end": 162,
+            "text": ":"
+           },
+           {
+            "type": "predefined_type",
+            "start": 163,
+            "end": 169,
+            "children": [
+             {
+              "type": "string",
+              "start": 163,
+              "end": 169,
+              "text": "string"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ")",
+        "start": 169,
+        "end": 170,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "type_annotation",
+      "start": 170,
+      "end": 178,
+      "field": "return_type",
+      "children": [
+       {
+        "type": ":",
+        "start": 170,
+        "end": 171,
+        "text": ":"
+       },
+       {
+        "type": "predefined_type",
+        "start": 172,
+        "end": 178,
+        "children": [
+         {
+          "type": "string",
+          "start": 172,
+          "end": 178,
+          "text": "string"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": ";",
+      "start": 178,
+      "end": 179,
+      "text": ";"
+     }
+    ]
+   },
+   {
+    "type": "function_signature",
+    "start": 180,
+    "end": 234,
+    "children": [
+     {
+      "type": "function",
+      "start": 180,
+      "end": 188,
+      "text": "function"
+     },
+     {
+      "type": "identifier",
+      "start": 189,
+      "end": 193,
+      "field": "name",
+      "text": "read"
+     },
+     {
+      "type": "formal_parameters",
+      "start": 193,
+      "end": 225,
+      "field": "parameters",
+      "children": [
+       {
+        "type": "(",
+        "start": 193,
+        "end": 194,
+        "text": "("
+       },
+       {
+        "type": "required_parameter",
+        "start": 194,
+        "end": 206,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 194,
+          "end": 198,
+          "field": "pattern",
+          "text": "path"
+         },
+         {
+          "type": "type_annotation",
+          "start": 198,
+          "end": 206,
+          "field": "type",
+          "children": [
+           {
+            "type": ":",
+            "start": 198,
+            "end": 199,
+            "text": ":"
+           },
+           {
+            "type": "predefined_type",
+            "start": 200,
+            "end": 206,
+            "children": [
+             {
+              "type": "string",
+              "start": 200,
+              "end": 206,
+              "text": "string"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 206,
+        "end": 207,
+        "text": ","
+       },
+       {
+        "type": "required_parameter",
+        "start": 208,
+        "end": 224,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 208,
+          "end": 216,
+          "field": "pattern",
+          "text": "encoding"
+         },
+         {
+          "type": "type_annotation",
+          "start": 216,
+          "end": 224,
+          "field": "type",
+          "children": [
+           {
+            "type": ":",
+            "start": 216,
+            "end": 217,
+            "text": ":"
+           },
+           {
+            "type": "predefined_type",
+            "start": 218,
+            "end": 224,
+            "children": [
+             {
+              "type": "string",
+              "start": 218,
+              "end": 224,
+              "text": "string"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ")",
+        "start": 224,
+        "end": 225,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "type_annotation",
+      "start": 225,
+      "end": 233,
+      "field": "return_type",
+      "children": [
+       {
+        "type": ":",
+        "start": 225,
+        "end": 226,
+        "text": ":"
+       },
+       {
+        "type": "type_identifier",
+        "start": 227,
+        "end": 233,
+        "text": "Buffer"
+       }
+      ]
+     },
+     {
+      "type": ";",
+      "start": 233,
+      "end": 234,
+      "text": ";"
+     }
+    ]
+   },
+   {
+    "type": "function_declaration",
+    "start": 235,
+    "end": 380,
+    "children": [
+     {
+      "type": "function",
+      "start": 235,
+      "end": 243,
+      "text": "function"
+     },
+     {
+      "type": "identifier",
+      "start": 244,
+      "end": 248,
+      "field": "name",
+      "text": "read"
+     },
+     {
+      "type": "formal_parameters",
+      "start": 248,
+      "end": 281,
+      "field": "parameters",
+      "children": [
+       {
+        "type": "(",
+        "start": 248,
+        "end": 249,
+        "text": "("
+       },
+       {
+        "type": "required_parameter",
+        "start": 249,
+        "end": 261,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 249,
+          "end": 253,
+          "field": "pattern",
+          "text": "path"
+         },
+         {
+          "type": "type_annotation",
+          "start": 253,
+          "end": 261,
+          "field": "type",
+          "children": [
+           {
+            "type": ":",
+            "start": 253,
+            "end": 254,
+            "text": ":"
+           },
+           {
+            "type": "predefined_type",
+            "start": 255,
+            "end": 261,
+            "children": [
+             {
+              "type": "string",
+              "start": 255,
+              "end": 261,
+              "text": "string"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 261,
+        "end": 262,
+        "text": ","
+       },
+       {
+        "type": "optional_parameter",
+        "start": 263,
+        "end": 280,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 263,
+          "end": 271,
+          "field": "pattern",
+          "text": "encoding"
+         },
+         {
+          "type": "?",
+          "start": 271,
+          "end": 272,
+          "text": "?"
+         },
+         {
+          "type": "type_annotation",
+          "start": 272,
+          "end": 280,
+          "field": "type",
+          "children": [
+           {
+            "type": ":",
+            "start": 272,
+            "end": 273,
+            "text": ":"
+           },
+           {
+            "type": "predefined_type",
+            "start": 274,
+            "end": 280,
+            "children": [
+             {
+              "type": "string",
+              "start": 274,
+              "end": 280,
+              "text": "string"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ")",
+        "start": 280,
+        "end": 281,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "type_annotation",
+      "start": 281,
+      "end": 298,
+      "field": "return_type",
+      "children": [
+       {
+        "type": ":",
+        "start": 281,
+        "end": 282,
+        "text": ":"
+       },
+       {
+        "type": "union_type",
+        "start": 283,
+        "end": 298,
+        "children": [
+         {
+          "type": "predefined_type",
+          "start": 283,
+          "end": 289,
+          "children": [
+           {
+            "type": "string",
+            "start": 283,
+            "end": 289,
+            "text": "string"
+           }
+          ]
+         },
+         {
+          "type": "|",
+          "start": 290,
+          "end": 291,
+          "text": "|"
+         },
+         {
+          "type": "type_identifier",
+          "start": 292,
+          "end": 298,
+          "text": "Buffer"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "statement_block",
+      "start": 299,
+      "end": 380,
+      "field": "body",
+      "children": [
+       {
+        "type": "{",
+        "start": 299,
+        "end": 300,
+        "text": "{"
+       },
+       {
+        "type": "return_statement",
+        "start": 303,
+        "end": 378,
+        "children": [
+         {
+          "type": "return",
+          "start": 303,
+          "end": 309,
+          "text": "return"
+         },
+         {
+          "type": "ternary_expression",
+          "start": 310,
+          "end": 377,
+          "children": [
+           {
+            "type": "binary_expression",
+            "start": 310,
+            "end": 332,
+            "field": "condition",
+            "children": [
+             {
+              "type": "identifier",
+              "start": 310,
+              "end": 318,
+              "field": "left",
+              "text": "encoding"
+             },
+             {
+              "type": "===",
+              "start": 319,
+              "end": 322,
+              "field": "operator",
+              "text": "==="
+             },
+             {
+              "type": "undefined",
+              "start": 323,
+              "end": 332,
+              "field": "right",
+              "text": "undefined"
+             }
+            ]
+           },
+           {
+            "type": "?",
+            "start": 333,
+            "end": 334,
+            "text": "?"
+           },
+           {
+            "type": "call_expression",
+            "start": 335,
+            "end": 349,
+            "field": "consequence",
+            "children": [
+             {
+              "type": "identifier",
+              "start": 335,
+              "end": 343,
+              "field": "function",
+              "text": "loadText"
+             },
+             {
+              "type": "arguments",
+              "start": 343,
+              "end": 349,
+              "field": "arguments",
+              "children": [
+               {
+                "type": "(",
+                "start": 343,
+                "end": 344,
+                "text": "("
+               },
+               {
+                "type": "identifier",
+                "start": 344,
+                "end": 348,
+                "text": "path"
+               },
+               {
+                "type": ")",
+                "start": 348,
+                "end": 349,
+                "text": ")"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ":",
+            "start": 350,
+            "end": 351,
+            "text": ":"
+           },
+           {
+            "type": "call_expression",
+            "start": 352,
+            "end": 377,
+            "field": "alternative",
+            "children": [
+             {
+              "type": "identifier",
+              "start": 352,
+              "end": 361,
+              "field": "function",
+              "text": "loadBytes"
+             },
+             {
+              "type": "arguments",
+              "start": 361,
+              "end": 377,
+              "field": "arguments",
+              "children": [
+               {
+                "type": "(",
+                "start": 361,
+                "end": 362,
+                "text": "("
+               },
+               {
+                "type": "identifier",
+                "start": 362,
+                "end": 366,
+                "text": "path"
+               },
+               {
+                "type": ",",
+                "start": 366,
+                "end": 367,
+                "text": ","
+               },
+               {
+                "type": "identifier",
+                "start": 368,
+                "end": 376,
+                "text": "encoding"
+               },
+               {
+                "type": ")",
+                "start": 376,
+                "end": 377,
+                "text": ")"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 377,
+          "end": 378,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 379,
+        "end": 380,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "function_signature",
+    "start": 382,
+    "end": 420,
+    "children": [
+     {
+      "type": "function",
+      "start": 382,
+      "end": 390,
+      "text": "function"
+     },
+     {
+      "type": "identifier",
+      "start": 391,
+      "end": 396,
+      "field": "name",
+      "text": "parse"
+     },
+     {
+      "type": "formal_parameters",
+      "start": 396,
+      "end": 411,
+      "field": "parameters",
+      "children": [
+       {
+        "type": "(",
+        "start": 396,
+        "end": 397,
+        "text": "("
+       },
+       {
+        "type": "required_parameter",
+        "start": 397,
+        "end": 410,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 397,
+          "end": 402,
+          "field": "pattern",
+          "text": "input"
+         },
+         {
+          "type": "type_annotation",
+          "start": 402,
+          "end": 410,
+          "field": "type",
+          "children": [
+           {
+            "type": ":",
+            "start": 402,
+            "end": 403,
+            "text": ":"
+           },
+           {
+            "type": "predefined_type",
+            "start": 404,
+            "end": 410,
+            "children": [
+             {
+              "type": "string",
+              "start": 404,
+              "end": 410,
+              "text": "string"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ")",
+        "start": 410,
+        "end": 411,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "type_annotation",
+      "start": 411,
+      "end": 419,
+      "field": "return_type",
+      "children": [
+       {
+        "type": ":",
+        "start": 411,
+        "end": 412,
+        "text": ":"
+       },
+       {
+        "type": "predefined_type",
+        "start": 413,
+        "end": 419,
+        "children": [
+         {
+          "type": "object",
+          "start": 413,
+          "end": 419,
+          "text": "object"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": ";",
+      "start": 419,
+      "end": 420,
+      "text": ";"
+     }
+    ]
+   },
+   {
+    "type": "function_signature",
+    "start": 421,
+    "end": 459,
+    "children": [
+     {
+      "type": "function",
+      "start": 421,
+      "end": 429,
+      "text": "function"
+     },
+     {
+      "type": "identifier",
+      "start": 430,
+      "end": 435,
+      "field": "name",
+      "text": "parse"
+     },
+     {
+      "type": "formal_parameters",
+      "start": 435,
+      "end": 450,
+      "field": "parameters",
+      "children": [
+       {
+        "type": "(",
+        "start": 435,
+        "end": 436,
+        "text": "("
+       },
+       {
+        "type": "required_parameter",
+        "start": 436,
+        "end": 449,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 436,
+          "end": 441,
+          "field": "pattern",
+          "text": "input"
+         },
+         {
+          "type": "type_annotation",
+          "start": 441,
+          "end": 449,
+          "field": "type",
+          "children": [
+           {
+            "type": ":",
+            "start": 441,
+            "end": 442,
+            "text": ":"
+           },
+           {
+            "type": "predefined_type",
+            "start": 443,
+            "end": 449,
+            "children": [
+             {
+              "type": "number",
+              "start": 443,
+              "end": 449,
+              "text": "number"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ")",
+        "start": 449,
+        "end": 450,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "type_annotation",
+      "start": 450,
+      "end": 458,
+      "field": "return_type",
+      "children": [
+       {
+        "type": ":",
+        "start": 450,
+        "end": 451,
+        "text": ":"
+       },
+       {
+        "type": "predefined_type",
+        "start": 452,
+        "end": 458,
+        "children": [
+         {
+          "type": "object",
+          "start": 452,
+          "end": 458,
+          "text": "object"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": ";",
+      "start": 458,
+      "end": 459,
+      "text": ";"
+     }
+    ]
+   },
+   {
+    "type": "function_declaration",
+    "start": 460,
+    "end": 546,
+    "children": [
+     {
+      "type": "function",
+      "start": 460,
+      "end": 468,
+      "text": "function"
+     },
+     {
+      "type": "identifier",
+      "start": 469,
+      "end": 474,
+      "field": "name",
+      "text": "parse"
+     },
+     {
+      "type": "formal_parameters",
+      "start": 474,
+      "end": 498,
+      "field": "parameters",
+      "children": [
+       {
+        "type": "(",
+        "start": 474,
+        "end": 475,
+        "text": "("
+       },
+       {
+        "type": "required_parameter",
+        "start": 475,
+        "end": 497,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 475,
+          "end": 480,
+          "field": "pattern",
+          "text": "input"
+         },
+         {
+          "type": "type_annotation",
+          "start": 480,
+          "end": 497,
+          "field": "type",
+          "children": [
+           {
+            "type": ":",
+            "start": 480,
+            "end": 481,
+            "text": ":"
+           },
+           {
+            "type": "union_type",
+            "start": 482,
+            "end": 497,
+            "children": [
+             {
+              "type": "predefined_type",
+              "start": 482,
+              "end": 488,
+              "children": [
+               {
+                "type": "string",
+                "start": 482,
+                "end": 488,
+                "text": "string"
+               }
+              ]
+             },
+             {
+              "type": "|",
+              "start": 489,
+              "end": 490,
+              "text": "|"
+             },
+             {
+              "type": "predefined_type",
+              "start": 491,
+              "end": 497,
+              "children": [
+               {
+                "type": "number",
+                "start": 491,
+                "end": 497,
+                "text": "number"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ")",
+        "start": 497,
+        "end": 498,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "type_annotation",
+      "start": 498,
+      "end": 506,
+      "field": "return_type",
+      "children": [
+       {
+        "type": ":",
+        "start": 498,
+        "end": 499,
+        "text": ":"
+       },
+       {
+        "type": "predefined_type",
+        "start": 500,
+        "end": 506,
+        "children": [
+         {
+          "type": "object",
+          "start": 500,
+          "end": 506,
+          "text": "object"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "statement_block",
+      "start": 507,
+      "end": 546,
+      "field": "body",
+      "children": [
+       {
+        "type": "{",
+        "start": 507,
+        "end": 508,
+        "text": "{"
+       },
+       {
+        "type": "return_statement",
+        "start": 511,
+        "end": 544,
+        "children": [
+         {
+          "type": "return",
+          "start": 511,
+          "end": 517,
+          "text": "return"
+         },
+         {
+          "type": "call_expression",
+          "start": 518,
+          "end": 543,
+          "children": [
+           {
+            "type": "member_expression",
+            "start": 518,
+            "end": 528,
+            "field": "function",
+            "children": [
+             {
+              "type": "identifier",
+              "start": 518,
+              "end": 522,
+              "field": "object",
+              "text": "JSON"
+             },
+             {
+              "type": ".",
+              "start": 522,
+              "end": 523,
+              "text": "."
+             },
+             {
+              "type": "property_identifier",
+              "start": 523,
+              "end": 528,
+              "field": "property",
+              "text": "parse"
+             }
+            ]
+           },
+           {
+            "type": "arguments",
+            "start": 528,
+            "end": 543,
+            "field": "arguments",
+            "children": [
+             {
+              "type": "(",
+              "start": 528,
+              "end": 529,
+              "text": "("
+             },
+             {
+              "type": "call_expression",
+              "start": 529,
+              "end": 542,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 529,
+                "end": 535,
+                "field": "function",
+                "text": "String"
+               },
+               {
+                "type": "arguments",
+                "start": 535,
+                "end": 542,
+                "field": "arguments",
+                "children": [
+                 {
+                  "type": "(",
+                  "start": 535,
+                  "end": 536,
+                  "text": "("
+                 },
+                 {
+                  "type": "identifier",
+                  "start": 536,
+                  "end": 541,
+                  "text": "input"
+                 },
+                 {
+                  "type": ")",
+                  "start": 541,
+                  "end": 542,
+                  "text": ")"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ")",
+              "start": 542,
+              "end": 543,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ";",
+          "start": 543,
+          "end": 544,
+          "text": ";"
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 545,
+        "end": 546,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "class_declaration",
+    "start": 548,
+    "end": 867,
+    "children": [
+     {
+      "type": "class",
+      "start": 548,
+      "end": 553,
+      "text": "class"
+     },
+     {
+      "type": "type_identifier",
+      "start": 554,
+      "end": 560,
+      "field": "name",
+      "text": "Loader"
+     },
+     {
+      "type": "class_body",
+      "start": 561,
+      "end": 867,
+      "field": "body",
+      "children": [
+       {
+        "type": "{",
+        "start": 561,
+        "end": 562,
+        "text": "{"
+       },
+       {
+        "type": "method_signature",
+        "start": 565,
+        "end": 589,
+        "children": [
+         {
+          "type": "property_identifier",
+          "start": 565,
+          "end": 576,
+          "field": "name",
+          "text": "constructor"
+         },
+         {
+          "type": "formal_parameters",
+          "start": 576,
+          "end": 589,
+          "field": "parameters",
+          "children": [
+           {
+            "type": "(",
+            "start": 576,
+            "end": 577,
+            "text": "("
+           },
+           {
+            "type": "required_parameter",
+            "start": 577,
+            "end": 588,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 577,
+              "end": 580,
+              "field": "pattern",
+              "text": "url"
+             },
+             {
+              "type": "type_annotation",
+              "start": 580,
+              "end": 588,
+              "field": "type",
+              "children": [
+               {
+                "type": ":",
+                "start": 580,
+                "end": 581,
+                "text": ":"
+               },
+               {
+                "type": "predefined_type",
+                "start": 582,
+                "end": 588,
+                "children": [
+                 {
+                  "type": "string",
+                  "start": 582,
+                  "end": 588,
+                  "text": "string"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ")",
+            "start": 588,
+            "end": 589,
+            "text": ")"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ";",
+        "start": 589,
+        "end": 590,
+        "text": ";"
+       },
+       {
+        "type": "method_signature",
+        "start": 593,
+        "end": 634,
+        "children": [
+         {
+          "type": "property_identifier",
+          "start": 593,
+          "end": 604,
+          "field": "name",
+          "text": "constructor"
+         },
+         {
+          "type": "formal_parameters",
+          "start": 604,
+          "end": 634,
+          "field": "parameters",
+          "children": [
+           {
+            "type": "(",
+            "start": 604,
+            "end": 605,
+            "text": "("
+           },
+           {
+            "type": "required_parameter",
+            "start": 605,
+            "end": 616,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 605,
+              "end": 608,
+              "field": "pattern",
+              "text": "url"
+             },
+             {
+              "type": "type_annotation",
+              "start": 608,
+              "end": 616,
+              "field": "type",
+              "children": [
+               {
+                "type": ":",
+                "start": 608,
+                "end": 609,
+                "text": ":"
+               },
+               {
+                "type": "predefined_type",
+                "start": 610,
+                "end": 616,
+                "children": [
+                 {
+                  "type": "string",
+                  "start": 610,
+                  "end": 616,
+                  "text": "string"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 616,
+            "end": 617,
+            "text": ","
+           },
+           {
+            "type": "required_parameter",
+            "start": 618,
+            "end": 633,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 618,
+              "end": 625,
+              "field": "pattern",
+              "text": "timeout"
+             },
+             {
+              "type": "type_annotation",
+              "start": 625,
+              "end": 633,
+              "field": "type",
+              "children": [
+               {
+                "type": ":",
+                "start": 625,
+                "end": 626,
+                "text": ":"
+               },
+               {
+                "type": "predefined_type",
+                "start": 627,
+                "end": 633,
+                "children": [
+                 {
+                  "type": "number",
+                  "start": 627,
+                  "end": 633,
+                  "text": "number"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ")",
+            "start": 633,
+            "end": 634,
+            "text": ")"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ";",
+        "start": 634,
+        "end": 635,
+        "text": ";"
+       },
+       {
+        "type": "method_definition",
+        "start": 638,
+        "end": 706,
+        "children": [
+         {
+          "type": "property_identifier",
+          "start": 638,
+          "end": 649,
+          "field": "name",
+          "text": "constructor"
+         },
+         {
+          "type": "formal_parameters",
+          "start": 649,
+          "end": 680,
+          "field": "parameters",
+          "children": [
+           {
+            "type": "(",
+            "start": 649,
+            "end": 650,
+            "text": "("
+           },
+           {
+            "type": "required_parameter",
+            "start": 650,
+            "end": 661,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 650,
+              "end": 653,
+              "field": "pattern",
+              "text": "url"
+             },
+             {
+              "type": "type_annotation",
+              "start": 653,
+              "end": 661,
+              "field": "type",
+              "children": [
+               {
+                "type": ":",
+                "start": 653,
+                "end": 654,
+                "text": ":"
+               },
+               {
+                "type": "predefined_type",
+                "start": 655,
+                "end": 661,
+                "children": [
+                 {
+                  "type": "string",
+                  "start": 655,
+                  "end": 661,
+                  "text": "string"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 661,
+            "end": 662,
+            "text": ","
+           },
+           {
+            "type": "optional_parameter",
+            "start": 663,
+            "end": 679,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 663,
+              "end": 670,
+              "field": "pattern",
+              "text": "timeout"
+             },
+             {
+              "type": "?",
+              "start": 670,
+              "end": 671,
+              "text": "?"
+             },
+             {
+              "type": "type_annotation",
+              "start": 671,
+              "end": 679,
+              "field": "type",
+              "children": [
+               {
+                "type": ":",
+                "start": 671,
+                "end": 672,
+                "text": ":"
+               },
+               {
+                "type": "predefined_type",
+                "start": 673,
+                "end": 679,
+                "children": [
+                 {
+                  "type": "number",
+                  "start": 673,
+                  "end": 679,
+                  "text": "number"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ")",
+            "start": 679,
+            "end": 680,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": "statement_block",
+          "start": 681,
+          "end": 706,
+          "field": "body",
+          "children": [
+           {
+            "type": "{",
+            "start": 681,
+            "end": 682,
+            "text": "{"
+           },
+           {
+            "type": "expression_statement",
+            "start": 687,
+            "end": 702,
+            "children": [
+             {
+              "type": "assignment_expression",
+              "start": 687,
+              "end": 701,
+              "children": [
+               {
+                "type": "member_expression",
+                "start": 687,
+                "end": 695,
+                "field": "left",
+                "children": [
+                 {
+                  "type": "this",
+                  "start": 687,
+                  "end": 691,
+                  "field": "object",
+                  "text": "this"
+                 },
+                 {
+                  "type": ".",
+                  "start": 691,
+                  "end": 692,
+                  "text": "."
+                 },
+                 {
+                  "type": "property_identifier",
+                  "start": 692,
+                  "end": 695,
+                  "field": "property",
+                  "text": "url"
+                 }
+                ]
+               },
+               {
+                "type": "=",
+                "start": 696,
+                "end": 697,
+                "text": "="
+               },
+               {
+                "type": "identifier",
+                "start": 698,
+                "end": 701,
+                "field": "right",
+                "text": "url"
+               }
+              ]
+             },
+             {
+              "type": ";",
+              "start": 701,
+              "end": 702,
+              "text": ";"
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 705,
+            "end": 706,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "public_field_definition",
+        "start": 709,
+        "end": 720,
+        "children": [
+         {
+          "type": "property_identifier",
+          "start": 709,
+          "end": 712,
+          "field": "name",
+          "text": "url"
+         },
+         {
+          "type": "type_annotation",
+          "start": 712,
+          "end": 720,
+          "field": "type",
+          "children": [
+           {
+            "type": ":",
+            "start": 712,
+            "end": 713,
+            "text": ":"
+           },
+           {
+            "type": "predefined_type",
+            "start": 714,
+            "end": 720,
+            "children": [
+             {
+              "type": "string",
+              "start": 714,
+              "end": 720,
+              "text": "string"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ";",
+        "start": 720,
+        "end": 721,
+        "text": ";"
+       },
+       {
+        "type": "method_signature",
+        "start": 725,
+        "end": 748,
+        "children": [
+         {
+          "type": "property_identifier",
+          "start": 725,
+          "end": 729,
+          "field": "name",
+          "text": "load"
+         },
+         {
+          "type": "formal_parameters",
+          "start": 729,
+          "end": 731,
+          "field": "parameters",
+          "children": [
+           {
+            "type": "(",
+            "start": 729,
+            "end": 730,
+            "text": "("
+           },
+           {
+            "type": ")",
+            "start": 730,
+            "end": 731,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": "type_annotation",
+          "start": 731,
+          "end": 748,
+          "field": "return_type",
+          "children": [
+           {
+            "type": ":",
+            "start": 731,
+            "end": 732,
+            "text": ":"
+           },
+           {
+            "type": "generic_type",
+            "start": 733,
+            "end": 748,
+            "children": [
+             {
+              "type": "type_identifier",
+              "start": 733,
+              "end": 740,
+              "field": "name",
+              "text": "Promise"
+             },
+             {
+              "type": "type_arguments",
+              "start": 740,
+              "end": 748,
+              "field": "type_arguments",
+              "children": [
+               {
+                "type": "<",
+                "start": 740,
+                "end": 741,
+                "text": "<"
+               },
+               {
+                "type": "predefined_type",
+                "start": 741,
+                "end": 747,
+                "children": [
+                 {
+                  "type": "string",
+                  "start": 741,
+                  "end": 747,
+                  "text": "string"
+                 }
+                ]
+               },
+               {
+                "type": ">",
+                "start": 747,
+                "end": 748,
+                "text": ">"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ";",
+        "start": 748,
+        "end": 749,
+        "text": ";"
+       },
+       {
+        "type": "method_signature",
+        "start": 752,
+        "end": 789,
+        "children": [
+         {
+          "type": "property_identifier",
+          "start": 752,
+          "end": 756,
+          "field": "name",
+          "text": "load"
+         },
+         {
+          "type": "formal_parameters",
+          "start": 756,
+          "end": 772,
+          "field": "parameters",
+          "children": [
+           {
+            "type": "(",
+            "start": 756,
+            "end": 757,
+            "text": "("
+           },
+           {
+            "type": "required_parameter",
+            "start": 757,
+            "end": 771,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 757,
+              "end": 762,
+              "field": "pattern",
+              "text": "force"
+             },
+             {
+              "type": "type_annotation",
+              "start": 762,
+              "end": 771,
+              "field": "type",
+              "children": [
+               {
+                "type": ":",
+                "start": 762,
+                "end": 763,
+                "text": ":"
+               },
+               {
+                "type": "predefined_type",
+                "start": 764,
+                "end": 771,
+                "children": [
+                 {
+                  "type": "boolean",
+                  "start": 764,
+                  "end": 771,
+                  "text": "boolean"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ")",
+            "start": 771,
+            "end": 772,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": "type_annotation",
+          "start": 772,
+          "end": 789,
+          "field": "return_type",
+          "children": [
+           {
+            "type": ":",
+            "start": 772,
+            "end": 773,
+            "text": ":"
+           },
+           {
+            "type": "generic_type",
+            "start": 774,
+            "end": 789,
+            "children": [
+             {
+              "type": "type_identifier",
+              "start": 774,
+              "end": 781,
+              "field": "name",
+              "text": "Promise"
+             },
+             {
+              "type": "type_arguments",
+              "start": 781,
+              "end": 789,
+              "field": "type_arguments",
+              "children": [
+               {
+                "type": "<",
+                "start": 781,
+                "end": 782,
+                "text": "<"
+               },
+               {
+                "type": "predefined_type",
+                "start": 782,
+                "end": 788,
+                "children": [
+                 {
+                  "type": "string",
+                  "start": 782,
+                  "end": 788,
+                  "text": "string"
+                 }
+                ]
+               },
+               {
+                "type": ">",
+                "start": 788,
+                "end": 789,
+                "text": ">"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ";",
+        "start": 789,
+        "end": 790,
+        "text": ";"
+       },
+       {
+        "type": "method_definition",
+        "start": 793,
+        "end": 865,
+        "children": [
+         {
+          "type": "property_identifier",
+          "start": 793,
+          "end": 797,
+          "field": "name",
+          "text": "load"
+         },
+         {
+          "type": "formal_parameters",
+          "start": 797,
+          "end": 814,
+          "field": "parameters",
+          "children": [
+           {
+            "type": "(",
+            "start": 797,
+            "end": 798,
+            "text": "("
+           },
+           {
+            "type": "optional_parameter",
+            "start": 798,
+            "end": 813,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 798,
+              "end": 803,
+              "field": "pattern",
+              "text": "force"
+             },
+             {
+              "type": "?",
+              "start": 803,
+              "end": 804,
+              "text": "?"
+             },
+             {
+              "type": "type_annotation",
+              "start": 804,
+              "end": 813,
+              "field": "type",
+              "children": [
+               {
+                "type": ":",
+                "start": 804,
+                "end": 805,
+                "text": ":"
+               },
+               {
+                "type": "predefined_type",
+                "start": 806,
+                "end": 813,
+                "children": [
+                 {
+                  "type": "boolean",
+                  "start": 806,
+                  "end": 813,
+                  "text": "boolean"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ")",
+            "start": 813,
+            "end": 814,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": "type_annotation",
+          "start": 814,
+          "end": 831,
+          "field": "return_type",
+          "children": [
+           {
+            "type": ":",
+            "start": 814,
+            "end": 815,
+            "text": ":"
+           },
+           {
+            "type": "generic_type",
+            "start": 816,
+            "end": 831,
+            "children": [
+             {
+              "type": "type_identifier",
+              "start": 816,
+              "end": 823,
+              "field": "name",
+              "text": "Promise"
+             },
+             {
+              "type": "type_arguments",
+              "start": 823,
+              "end": 831,
+              "field": "type_arguments",
+              "children": [
+               {
+                "type": "<",
+                "start": 823,
+                "end": 824,
+                "text": "<"
+               },
+               {
+                "type": "predefined_type",
+                "start": 824,
+                "end": 830,
+                "children": [
+                 {
+                  "type": "string",
+                  "start": 824,
+                  "end": 830,
+                  "text": "string"
+                 }
+                ]
+               },
+               {
+                "type": ">",
+                "start": 830,
+                "end": 831,
+                "text": ">"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "statement_block",
+          "start": 832,
+          "end": 865,
+          "field": "body",
+          "children": [
+           {
+            "type": "{",
+            "start": 832,
+            "end": 833,
+            "text": "{"
+           },
+           {
+            "type": "return_statement",
+            "start": 838,
+            "end": 861,
+            "children": [
+             {
+              "type": "return",
+              "start": 838,
+              "end": 844,
+              "text": "return"
+             },
+             {
+              "type": "call_expression",
+              "start": 845,
+              "end": 860,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 845,
+                "end": 850,
+                "field": "function",
+                "text": "fetch"
+               },
+               {
+                "type": "arguments",
+                "start": 850,
+                "end": 860,
+                "field": "arguments",
+                "children": [
+                 {
+                  "type": "(",
+                  "start": 850,
+                  "end": 851,
+                  "text": "("
+                 },
+                 {
+                  "type": "member_expression",
+                  "start": 851,
+                  "end": 859,
+                  "children": [
+                   {
+                    "type": "this",
+                    "start": 851,
+                    "end": 855,
+                    "field": "object",
+                    "text": "this"
+                   },
+                   {
+                    "type": ".",
+                    "start": 855,
+                    "end": 856,
+                    "text": "."
+                   },
+                   {
+                    "type": "property_identifier",
+                    "start": 856,
+                    "end": 859,
+                    "field": "property",
+                    "text": "url"
+                   }
+                  ]
+                 },
+                 {
+                  "type": ")",
+                  "start": 859,
+                  "end": 860,
+                  "text": ")"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ";",
+              "start": 860,
+              "end": 861,
+              "text": ";"
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 864,
+            "end": 865,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 866,
+        "end": 867,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}
