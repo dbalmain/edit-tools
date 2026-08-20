@@ -1,53 +1,53 @@
 {
-  "submission": "lang-rust",
+  "submission": "feat-cell-scope",
   "gates": {
     "0-coverage": {
       "pass": true,
-      "got": 34,
-      "of": 34,
+      "got": 38,
+      "of": 38,
       "what": "formatted every corpus file at every width"
     },
     "1-agreement": {
       "pass": true,
-      "got": 34,
-      "of": 34,
+      "got": 38,
+      "of": 38,
       "what": "rust and js byte-identical"
     },
     "2-idempotence": {
       "pass": true,
-      "got": 34,
-      "of": 34,
+      "got": 38,
+      "of": 38,
       "what": "fmt(fmt(x)) == fmt(x)"
     },
     "3-nondestruction": {
       "pass": true,
-      "got": 34,
-      "of": 34,
+      "got": 38,
+      "of": 38,
       "what": "meaning and comments preserved"
     }
   },
   "measures": {
-    "4-overflow-lines": 38,
+    "4-overflow-lines": 49,
     "5-size-gzip": {
-      "js-runtime": 12322,
-      "packages": 2548,
-      "total": 14870,
+      "js-runtime": 13610,
+      "packages": 2564,
+      "total": 16174,
       "per_language": {
         "rust": {
-          "package": 2548,
-          "with_runtime": 14870
+          "package": 2564,
+          "with_runtime": 16174
         }
       }
     },
     "6-reference-agreement": {
-      "agreement": 19,
-      "accepted": 13,
+      "agreement": 22,
+      "accepted": 14,
       "stale": 0,
       "unreviewed": 0,
       "defect": 0,
       "excluded": 1,
-      "of": 32,
-      "agreement_fraction": 0.594,
+      "of": 36,
+      "agreement_fraction": 0.611,
       "review_coverage": 1.0,
       "review_threshold": 0.7,
       "review_threshold_met": true,
@@ -55,14 +55,14 @@
         "rust": {
           "reference": "rustfmt 1.9.0",
           "waived": false,
-          "agreement": 19,
-          "accepted": 13,
+          "agreement": 22,
+          "accepted": 14,
           "stale": 0,
           "unreviewed": 0,
           "defect": 0,
           "excluded": 1,
-          "of": 32,
-          "reference_overflow": 39,
+          "of": 36,
+          "reference_overflow": 47,
           "missing": [],
           "accepted_divergences": [
             {
@@ -138,6 +138,18 @@
               }
             },
             {
+              "case": "macro_patterns.rs@60",
+              "hash": "bbe8b0ea7efbdcee95f68390275d63a4bc12aa12885a96ef745ba9c7b6682e02",
+              "review": {
+                "id": "rust/macro_patterns.rs@60",
+                "hash": "bbe8b0ea7efbdcee95f68390275d63a4bc12aa12885a96ef745ba9c7b6682e02",
+                "verdict": "house rule",
+                "reason": "The same opaque-overlong-leaf rule as strings.rs@60, now with the regression measured rather than cited. rustfmt breaks after the = when a let binding exceeds the width; we keep an opaque value flat, because the value here is a verbatim macro body with no interior break point, so breaking after = only moves the overflow down a line. Tested the alternative: a let-level group around = plus an indented line takes rust from 22/36 to 17/36 -- it regresses sequences.rs and nesting.rs at both widths, macros.rs@60 and strings.rs@100, and still does not fix strings.rs@60. Consistent handling of overlong opaque leaves is worth more than one pair, and the cross-language argument is the same one python and javascript already follow.",
+                "reviewed_by": "opus-orchestrator",
+                "reviewed_at": "2026-08-20T10:22:42Z"
+              }
+            },
+            {
               "case": "normalize.rs@60",
               "hash": "f31c8e7f58aad0e380259ba63195ddc61fb615d5c79bb2cc6a1b3f4363a72977",
               "review": {
@@ -147,6 +159,18 @@
                 "reason": "The existing group-fit behavior counts the trailing comment, while rustfmt ignores it for deciding whether the array fits; this is existing FINDINGS 6.",
                 "reviewed_by": "gpt-5.6-luna",
                 "reviewed_at": "2026-08-19T19:57:39Z"
+              }
+            },
+            {
+              "case": "or_patterns.rs@60",
+              "hash": "fa40bb41be04b6bed019ddc3e7b71cc8d90b73b65384f11e17f0aa2546db8d0a",
+              "review": {
+                "id": "rust/or_patterns.rs@60",
+                "hash": "fa40bb41be04b6bed019ddc3e7b71cc8d90b73b65384f11e17f0aa2546db8d0a",
+                "verdict": "design limit",
+                "reason": "Entry 23. rustfmt packs a long or-pattern per line with the pipe leading each continuation line. Measured all three IR expressions: each cannot break at all (no group, no line, so the arm runs to 95 columns); fill produces the correct leading-pipe style but staircases, because tree-sitter-rust builds A|B|C|D left-nested so fill sees two named children at every level and decides each nesting level at the column where that subtree starts (instrumented: every decision taken at pos=8, while JSON and CSS show pos advancing normally, so fill itself is sound); and flatten -- the opcode built for exactly this left-nested same-type shape -- refuses, because it finds the next spine node by the flatten_fields left/operator/right names and this grammar gives or_pattern's children no fields at all. Not entry 11: that is an alternating-type spine needing a heterogeneous flatten, this is the homogeneous case flatten already claims, blocked only by how it identifies the next link.",
+                "reviewed_by": "opus-orchestrator",
+                "reviewed_at": "2026-08-20T10:01:20Z"
               }
             },
             {
@@ -174,51 +198,39 @@
               }
             },
             {
-              "case": "structs.rs@100",
-              "hash": "82266bda9c75c01b9734c03e5bb39022d35d1ee86016c7b6a5ef6d199203c784",
-              "review": {
-                "id": "rust/structs.rs@100",
-                "hash": "82266bda9c75c01b9734c03e5bb39022d35d1ee86016c7b6a5ef6d199203c784",
-                "verdict": "design limit",
-                "reason": "Entry 22: rustfmt aligns trailing comments on list items only, and comment_cells is a package-wide switch with no scope. Measured three ways: a package-placed cell adds the tabwriter pad AND the suffix comment_gap, so every row is one column too wide; the header never fires on struct fields at all, because tree-sitter-rust makes the separator comma the comment's preceding sibling and comment_cells skips tokens; and where it does fire it aligns statement comments, which fails gate 2 idempotence on comments.rs at both widths (DISQUALIFIED). Scoping comment cells to a cellblock is the missing capability -- with it, widths.rs match arms are byte-identical to rustfmt.",
-                "reviewed_by": "opus-orchestrator",
-                "reviewed_at": "2026-08-19T21:54:43Z"
-              }
-            },
-            {
               "case": "structs.rs@60",
-              "hash": "373cc106696aa3afceaf491a18fb8e6a8f94eb10d76963820d9d7f2ec9835495",
+              "hash": "670e6be0a2b99635c95597db904b85ab1d2ca19f050346c9e6b25c0afb9163cf",
               "review": {
                 "id": "rust/structs.rs@60",
-                "hash": "373cc106696aa3afceaf491a18fb8e6a8f94eb10d76963820d9d7f2ec9835495",
+                "hash": "670e6be0a2b99635c95597db904b85ab1d2ca19f050346c9e6b25c0afb9163cf",
                 "verdict": "design limit",
-                "reason": "Entry 22: rustfmt aligns trailing comments on list items only, and comment_cells is a package-wide switch with no scope. Measured three ways: a package-placed cell adds the tabwriter pad AND the suffix comment_gap, so every row is one column too wide; the header never fires on struct fields at all, because tree-sitter-rust makes the separator comma the comment's preceding sibling and comment_cells skips tokens; and where it does fire it aligns statement comments, which fails gate 2 idempotence on comments.rs at both widths (DISQUALIFIED). Scoping comment cells to a cellblock is the missing capability -- with it, widths.rs match arms are byte-identical to rustfmt.",
+                "reason": "Entry 21 (and entry 3). The comment column now matches rustfmt exactly at this width, including the two rows rustfmt drops out of the column. The only remaining hunk is the one-item broken argument list: rustfmt writes a trailing comma after \"default\", and trail declines to synthesise one for a single item because that is black's rule, hardcoded in the opcode rather than declared by the package.",
                 "reviewed_by": "opus-orchestrator",
-                "reviewed_at": "2026-08-19T21:54:44Z"
+                "reviewed_at": "2026-08-19T22:22:07Z"
               }
             },
             {
               "case": "widths.rs@100",
-              "hash": "798b833c4c9dc763bc295325bb002ec133e598a0db51b4ce376ef8e3e8dc7eba",
+              "hash": "18f02366969ef9e187f58fff7f469765f756e677e8aed7e893ad9b4b75288f36",
               "review": {
                 "id": "rust/widths.rs@100",
-                "hash": "798b833c4c9dc763bc295325bb002ec133e598a0db51b4ce376ef8e3e8dc7eba",
+                "hash": "18f02366969ef9e187f58fff7f469765f756e677e8aed7e893ad9b4b75288f36",
                 "verdict": "design limit",
-                "reason": "Two causes, both design limits. Entry 22: rustfmt aligns trailing comments on list items only, and comment_cells is a package-wide switch with no scope -- a package-placed cell adds the tabwriter pad AND the suffix comment_gap (one column too wide), the header never reaches struct fields because the separator comma is the comment's preceding sibling and comment_cells skips tokens, and where it does fire it fails gate 2 idempotence. Entry 11: the method chain is an alternating field_expression / call_expression spine with no group to hold, so it cannot break. Adding a cellblock on match_block does make this file's match arms byte-identical to rustfmt; the remaining two hunks are 22 and 11.",
+                "reason": "Entry 11, alone now. The comment columns on the Config struct and the aligned_arms match block are byte-identical to rustfmt after the comment_cells scope landed. What remains is the method chain: an alternating field_expression / call_expression spine with no group to hold it, so the package cannot break it dot-by-dot.",
                 "reviewed_by": "opus-orchestrator",
-                "reviewed_at": "2026-08-19T21:54:58Z"
+                "reviewed_at": "2026-08-19T22:22:07Z"
               }
             },
             {
               "case": "widths.rs@60",
-              "hash": "af4713b3e3f121382d655379e04303b0af0bf5400ef012c6c8abe81235afec0f",
+              "hash": "4b28dfc44740915b6bca6c393b89440f0e0082e2d8c3fe85206700cae5b34cc2",
               "review": {
                 "id": "rust/widths.rs@60",
-                "hash": "af4713b3e3f121382d655379e04303b0af0bf5400ef012c6c8abe81235afec0f",
+                "hash": "4b28dfc44740915b6bca6c393b89440f0e0082e2d8c3fe85206700cae5b34cc2",
                 "verdict": "design limit",
-                "reason": "Two causes, both design limits. Entry 22: rustfmt aligns trailing comments on list items only, and comment_cells is a package-wide switch with no scope -- a package-placed cell adds the tabwriter pad AND the suffix comment_gap (one column too wide), the header never reaches struct fields because the separator comma is the comment's preceding sibling and comment_cells skips tokens, and where it does fire it fails gate 2 idempotence. Entry 11: the method chain is an alternating field_expression / call_expression spine with no group to hold, so it cannot break. Adding a cellblock on match_block does make this file's match arms byte-identical to rustfmt; the remaining two hunks are 22 and 11.",
+                "reason": "Entry 11, alone now. Both comment columns match rustfmt at this width, including the long arm that drops out of the column and the two shorter ones that re-form a narrower one. What remains is the heterogeneous method chain, which has no group to break.",
                 "reviewed_by": "opus-orchestrator",
-                "reviewed_at": "2026-08-19T21:54:59Z"
+                "reviewed_at": "2026-08-19T22:22:08Z"
               }
             }
           ],
@@ -233,22 +245,22 @@
           ],
           "by_width": {
             "100": {
-              "agreement": 11,
-              "accepted": 5,
+              "agreement": 14,
+              "accepted": 4,
               "stale": 0,
               "unreviewed": 0,
               "defect": 0,
-              "of": 16,
+              "of": 18,
               "review_coverage": 1.0,
               "review_threshold_met": true
             },
             "60": {
               "agreement": 8,
-              "accepted": 8,
+              "accepted": 10,
               "stale": 0,
               "unreviewed": 0,
               "defect": 0,
-              "of": 16,
+              "of": 18,
               "review_coverage": 1.0,
               "review_threshold_met": true
             }

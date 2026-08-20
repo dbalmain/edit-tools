@@ -456,8 +456,8 @@ not buy an IR feature.
 
 ## 3. A break-only separator pins its group
 
-**Status:** open · **Cost:** local · **Languages:** TOML (2), CSS (2), YAML (4)
-— 8 accepted divergences
+**Status:** open · **Cost:** local · **Languages:** TOML (2), CSS (2), YAML (4),
+Kotlin (1) — 9 accepted divergences
 
 The IR's only break-only separator policy also pins a group when it consumes an
 existing comma, so a rule cannot consume a source comma without pinning the
@@ -481,6 +481,21 @@ So the "feature, not a gap" reading is now the minority one. Three languages,
 eight divergences, and the magic-trailing-comma argument only ever justified the
 _pinning_ — never the fact that consuming a separator and pinning a group are
 welded together in one opcode.
+
+**Kotlin is the fourth language, and the first reference that _deletes_ the
+comma.** Every earlier instance is a reference that keeps a magic trailing comma
+and stays broken; ktfmt removes it. `collections.kt` carries the controlled pair
+in one file: `listOf(1, 2, 3)` stays flat, `listOf(1, 2, 3,)` has its trailing
+comma **deleted** and stays flat too, and an already-broken list keeps its commas
+and stays broken. Removing `trail` from `paren_list` to chase that took the
+package from 15/15 to 11/15 and made `comments.kt` refuse — tested and reverted.
+
+This matters to the decision because it breaks the symmetry the "feature, not a
+gap" reading rests on. That reading says pinning is right because an existing
+trailing comma is an author's instruction to stay broken. ktfmt reads the same
+comma as noise to be removed. The opcode cannot express either language's rule
+without also expressing the pinning, and the two references disagree about what
+the comma even means.
 
 **Decide when:** with entry 6, whose fix touches the same group-fit machinery.
 
@@ -1064,7 +1079,9 @@ had one is worth recording — it is what stops this entry becoming a vague fear
 
 ## 13. A package cannot delete a token the reference deletes
 
-**Status:** open · **Cost:** local · **Languages:** Go
+**Status:** **decided — parked** (Dave, 2026-08-21). Opcode built 2026-08-20,
+correct, and used by no package; the gate-3 skeleton rework is **not** being
+done for it. · **Cost:** local (+317 B runtime) · **Languages:** Go, Rust
 
 gofmt removes redundant parentheses and statement semicolons. Gate 3 permits it
 — the reparse is unchanged and the tokens are anonymous — but **no opcode can
@@ -1095,9 +1112,66 @@ divergences it causes are a small part of the 10.
 that is **declared incomparable for this reason alone** — the stage-B brief's
 preferred handling, and a sharper signal than a divergence would have been,
 because the language had to give up measuring the construct at all. Two
-languages now want `drop`, which is the condition this entry set for deciding. Rust's case is the friendlier one to
-reason about — a single anonymous token the grammar marks optional, in one
-position — and it does not need the general opcode to be settled first.
+languages now want `drop`, which is the condition this entry set for deciding.
+
+### Built. It works, and it earns nothing yet.
+
+`["drop", "|"]` consumes a token without emitting it. Absent is fine — a package
+says "drop this if it is here". Two refusals guard it, because this entry said
+gate 3 would be its only protection and gate 3 has been caught out three times:
+the token must be **declared punctuation** in the package's `tokens` (dropping a
+named node would delete meaning, not spelling), and it must **carry no comment**,
+since a dropped token takes its trivia with it. Six unit tests, three per
+runtime.
+
+Applied to Rust's `or_pattern`, `leading_pipes.rs` becomes **byte-identical to
+rustfmt at both widths, in both runtimes**. Then gate 3 rejected it, and the
+rejection is correct and instructive:
+
+```
+FAIL rust__leading_pipes@100: … match_pattern:
+     leaf text (('or_pattern', ('|', '_')),) became ('_',)
+```
+
+Two of the three arms can be declared away: `or_pattern` joins
+`transparent_wrappers`, which is sound because the elision fires only on a
+wrapper with **exactly one named child**, so `1 | 2` keeps both alternatives and
+a formatter that deleted one is still caught. The third arm, `| _`, cannot. Its
+`or_pattern` holds *only anonymous tokens*, and the wrapper rule is defined over
+named children. Worse, eliding it changes which branch the **parent** takes:
+`match_pattern` skeletons differently depending on whether it has any named
+child at all, so the reference and our output take different paths through the
+same function.
+
+That is not a missing declaration. It is entry 5's blind spot seen from the
+other side — the skeleton's two-branch design — and widening it to admit this
+case would weaken the only thing standing between `drop` and corrupted source.
+The opcode is therefore built and **not used by any package**.
+
+Go cannot use it yet either, for an unrelated reason: `normalisation.go@80` is
+the file that wanted consume-without-emit, and its stage-D review says the same
+file also needs parent-position-sensitive formatting (entry 10). One capability
+short in each language, and they are different capabilities.
+
+**So the bill is +317 B of runtime for zero agreement, in a 25,600 B budget with
+552 B left.** By `house-style.md`'s own argument that is a bad trade today. It
+is kept rather than reverted because both blockers are named and neither is
+`drop`'s fault.
+
+**Decided 2026-08-21: parked.** Neither of the two options that would give the
+opcode a caller is being taken — not the gate-3 skeleton rework, and not
+entry 10 for Go. The code stays built, tested and unused until one of those
+happens for its own reasons, and this entry stays open as the place that will
+record it.
+
+The reason to prefer parking over reverting is that the expensive part of this
+entry was never the 317 B; it was **finding out that gate 3's two-branch
+skeleton is what blocks the deletion**, which cost a full build to learn. That
+result is written down here whether the code ships or not, but a package that
+wants `drop` later gets a working opcode rather than an archaeology exercise.
+The standing cost is bytes, and bytes are the one thing a revert can recover at
+any time — `6a357bd` is a single-commit revert with no dependents, so parking
+forecloses nothing.
 
 ## 14. A third sanctioned token policy, for respelling
 
@@ -2029,7 +2103,8 @@ language wanting a different constant is a package problem, two is a schema one.
 
 ## 22. `comment_cells` is one package-wide switch, and the two languages want opposite scopes
 
-**Status:** open · **Cost:** **local** · **Languages:** Rust (`structs.rs`,
+**Status:** **closed 2026-08-20 — built and measured.** · **Cost:** **local**
+(+958 B runtime, +43 B package) · **Languages:** Rust (`structs.rs`,
 `comments.rs`, `widths.rs` — six divergences), Go (the incumbent user)
 
 rustfmt aligns the trailing comments on **list items** — struct fields, enum
@@ -2129,3 +2204,192 @@ file-level agreement cannot see a fix to one hunk of five. The six divergences
 are `design-limit`, not `package-bug`: the package cannot express Rust's
 alignment scope, and the two experiments that look like they should work are
 disqualified by a gate and by a two-space column respectively.
+
+### Built, and what it cost
+
+`comment_cells` takes a scope: `true` (now `"all"`, gofmt's, unchanged) or
+`"block"`, which emits markers everywhere and collapses them to the plain gap
+outside a `cellblock`. The token exclusion narrowed from *any token* to the
+closing delimiters it was always meant to name.
+
+| piece | runtime | buys |
+| --- | ---: | --- |
+| scope + closer narrowing | +487 B | `structs.rs@100`, the corpus file |
+| width-aware column | +471 B | correct hunks in `structs.rs@60`, `widths.rs@60`; **no file** |
+| | **+958 B** | rust 19 → 20/32, go unchanged |
+
+Against the register: alignment was +2,627 B, `fill` +365 B, the sub-width cap
++271 B. This is the second most expensive local capability so far, and half of
+it buys no scored file. Total is 24,753 B of the 25,600 B budget.
+
+The width half is kept anyway, and the argument is `house-style.md`'s: a person
+editing a snippet in a box sees an over-aligned comment overrun the box, and
+file agreement cannot see that because the file diverges for another reason
+either way.
+
+### What surprised me: rustfmt's overflow rule is not per-row
+
+Two corpus files disagree under every simple rule, and the disagreement is the
+finding. At width 60, `structs.rs` keeps its widest field in the column and
+drops the *shortest* row out; `widths.rs` drops its widest arm and re-forms a
+narrower column from the two survivors. "Pad, then drop what overruns" gets
+`structs` right and `widths` wrong; "drop the widest, recompute" gets `widths`
+right and `structs` wrong.
+
+The rule that produces both is greedy and left-to-right: extend the current
+column while every row that *could* fit still does; otherwise close it and open
+a new one at the offending row. A row too long to fit at any column is
+**hopeless** — it sets the column but never constrains it, which is exactly why
+`much_longer_setting_name: String,` can anchor a column its shorter neighbour
+above cannot reach.
+
+Three samples confirm it, including a hand-built one at four widths. Reverse
+engineering a reference from two corpus files would have shipped a rule that is
+wrong on the third; the reference itself has to be the oracle. That is the
+reusable lesson, not the algorithm.
+
+---
+
+## 23. `flatten` walks a spine by field name, and not every spine has fields
+
+**Status:** open · **Cost:** **local** · **Languages:** Rust
+(`or_patterns.rs@60`)
+
+rustfmt wraps a long or-pattern by packing alternatives per line and putting the
+`|` at the **start** of each continuation line:
+
+```rust
+        LongVariantNameOne | LongVariantNameTwo
+        | LongVariantNameThree | LongVariantNameFour => {
+```
+
+Three IR expressions reach for that, and all three were measured rather than
+argued.
+
+### `each` — cannot break at all
+
+The committed rule is `["each", "named", ["seq", ["sp"], ["tok", "|"], ["sp"]]]`.
+There is no `group` and no `line`, so the pattern has no break point anywhere:
+at width 60 the arm runs to 95 columns. This is the state the corpus now
+records.
+
+### `fill` — right style, wrong packing
+
+`["fill", "named", ["seq", ["line"], ["tok", "|"], ["sp"]]]` produces the
+leading-`|` wrap correctly. **That is worth recording on its own: a `fill`
+separator may lead as well as trail.** Every shipped use of `fill` — CSS, JSON —
+puts the `line` last, so nothing had established that the separator's `line` can
+come first and put the operator at the head of the continuation line. It can.
+
+The packing is what fails:
+
+```
+        Alpha | Beta | Gamma | Delta | Epsilon | Zeta | Eta
+        | Theta
+        | Iota
+        | Kappa => "greek",
+```
+
+tree-sitter-rust builds `A | B | C | D` as a **left-nested** tree —
+`or_pattern(or_pattern(or_pattern(A, B), C), D)` — so `fill "named"` sees
+exactly two named children at every level: an inner `or_pattern` and one
+alternative. Each nesting level therefore takes its own fill decision, measured
+from the column where that whole subtree begins. Instrumented, every decision in
+the chain is taken at `pos=8`:
+
+```
+fill pos=8 content="LongVariantNameOne" next="LongVariantNameFour" bothFit=false
+fill pos=8 content="LongVariantNameOne" next="LongVariantNameThree" bothFit=false
+fill pos=8 content="LongVariantNameOne" next="LongVariantNameTwo"  bothFit=true
+```
+
+The same instrumentation on JSON and CSS shows `pos` advancing normally
+(`18 → 21`, `5 → 8`), which is the check that keeps this from being read as a
+`fill` defect. `fill` is correct; it is being handed a nested tree where it
+needs a flat run.
+
+### `flatten` — refuses, and the refusal is the finding
+
+`flatten` exists precisely to collect "a left-nested run of same-type,
+same-tightness operators into one flat list, so the whole chain breaks together
+instead of staircasing". This spine is same-type and left-nested — its target
+shape exactly. It still refuses:
+
+```
+rule for `or_pattern` wants Field("left") but found `or_pattern`
+```
+
+`flatten` finds the next spine node with
+`children.find(c => c.field === fields.left)`, reading `left` / `operator` /
+`right` from the package's `flatten_fields` header. tree-sitter-rust gives
+`or_pattern`'s children **no field names at all** — the tree is
+`[or_pattern, "|", identifier]`, every one of them fieldless. The opcode's
+spine-walk is field-driven, so a grammar that does not name its operands is
+invisible to it.
+
+### Why this is not entry 11
+
+Entry 11 is a spine of **alternating** types (`field_expression` /
+`call_expression`) with no group to hold it; it needs a flatten that tolerates a
+heterogeneous chain. This is a spine of a **single** type — the homogeneous case
+`flatten` already claims — blocked only by how it identifies the next link. Two
+different repairs:
+
+1. **Positional or type-based spine walk.** When `flatten_fields` does not apply,
+   take the first child whose type matches the named kind. Cheapest, and it makes
+   `flatten` work on any left-nested grammar rather than only on ones that label
+   their operands.
+2. **A declared spine per node type**, e.g. `flatten_fields` gaining an entry
+   keyed by kind. More precise, more package surface, and nothing yet needs the
+   precision.
+
+(1) unblocks this case and costs one fallback in the spine walk.
+
+### How it was found, which is the recurring part
+
+`leading_pipes.rs` was written as a dedicated probe for one construct — rustfmt
+deleting a leading `|` — and it contains only **short** patterns. The construct's
+harder half, what happens when the same pattern must break, was never in the
+corpus. Entry 16 again: a probe file isolates a construct and can still omit the
+half of it that costs something. `or_patterns.rs` now carries the long case, with
+no leading pipes, so it stays comparable and out of the incomparable table.
+
+### The `matches!` refusal, and why the guard was the bug
+
+Writing the probe turned up a refusal on ordinary Rust:
+`matches!(tag, ShortOne | ShortTwo)` gave
+`rule for token_tree wants the token , but found |`.
+
+`token_tree` guarded its comma-list branch with three tests — no `.`, no `!`,
+and every **named** child one of five content kinds. That is an enumeration of
+things known to go wrong, and it could only ever be as complete as the last bug
+report. It says nothing about the *anonymous* children, which is exactly where a
+macro's separators live, so a token tree separated by `|`, `=>`, `;`, `..=` or
+`::` was routed into a rule that emits commas.
+
+The repair is one guard over the whole child list rather than three over part of
+it:
+
+```json
+["all", "*", ["identifier", "integer_literal", "string_literal", "self",
+              "metavariable", ",", "(", ")", "[", "]", "{", "}"]]
+```
+
+Every child must be content or list punctuation; anything else is token soup and
+goes to `verbatim`. This subsumes all three old tests — `.` and `!` are simply
+not in the list — and covers the separators nobody had hit yet. `allKinds`
+compares `node.type`, which for an anonymous token is its text, so punctuation
+and node kinds sit in one list without new machinery.
+
+It is **smaller** than what it replaced: the rust package drops 22 B, and
+`macros.rs` still agrees at both widths. This is the `all` predicate doing the
+job entry 8 predicted for it — "are every one of my children of kind K" — in a
+place nobody had connected to it.
+
+`macro_patterns.rs` now carries the case. It agrees at width 100 and diverges at
+60 on the opaque-leaf rule that `strings.rs@60` already records: rustfmt breaks
+after the `=`, we keep an overlong opaque value flat. That verdict was recorded
+as a house rule on a cited regression; the regression is now **measured**, and it
+is larger than the citation said — a let-level group takes Rust from 22/36 to
+17/36, regressing `sequences.rs` and `nesting.rs` at both widths, `macros.rs@60`
+and `strings.rs@100`, while still not fixing `strings.rs@60`.

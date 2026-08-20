@@ -354,6 +354,12 @@ authoritative and this file is not.
   classified as **design limit**, **package bug**, or **reference quirk**. An
   unclassified divergence is an automatic escalate — the classification is the
   actual deliverable.
+- **A `package bug` verdict fails the scorer**, the way a stale review does —
+  Dave, 2026-08-21. It is a defect the reviewer found and named, so it stops a
+  merge rather than being reported alongside one. Fix it, or establish that it
+  is actually a design limit and reclassify it with the evidence; do not carry
+  it. An **unreviewed** divergence is not a hard failure — it is measured
+  against the 70% floor above.
 - **Refusal parity** counts as agreement only when _both_ runtimes refuse.
 - Both runtimes must produce byte-identical output on every corpus file at every
   width. A Rust/JS divergence is a stage-D reject regardless of gate scores.
@@ -460,8 +466,8 @@ So when launching concurrent agents:
 - Where an edit there is genuinely needed, require it be **proposed in the
   done-note** rather than made, so the orchestrator applies it once.
 - The merge review must diff each branch against `main` for shared paths
-  *before* merging any of them; a conflict found at the second merge has
-  already had its first design accepted.
+  _before_ merging any of them; a conflict found at the second merge has already
+  had its first design accepted.
 
 For a **head-to-head round**, where several agents build the same language, the
 worktree and branch take an agent suffix: `lang-<name>-<agent>` on

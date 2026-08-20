@@ -209,6 +209,7 @@ function validateExpr(value) {
       parseSelector(rest[1]);
       return;
     case "srctrail":
+    case "drop":
       arity(1);
       literal(rest[0]);
       return;
@@ -312,8 +313,17 @@ function flattenFields(pkg) {
   return names;
 }
 
+function commentCellsField(pkg) {
+  const raw = pkg.comment_cells;
+  if (raw === undefined || raw === false) return CELLS_OFF;
+  if (raw === true) return CELLS_ALL;
+  if (raw === "block") return CELLS_BLOCK;
+  throw new Refusal('`comment_cells` must be a boolean or "block"');
+}
+
 function buildPackage(pkg) {
   validatePackageFormat(pkg);
+  const comment_cells = commentCellsField(pkg);
   const comment_gap = gapField(pkg, "comment_gap");
   const blank_cap = gapField(pkg, "blank_cap");
   const flatten_fields = flattenFields(pkg);
@@ -339,7 +349,7 @@ function buildPackage(pkg) {
       return [name, expanded];
     }),
   );
-  return { ...pkg, comment_gap, blank_cap, flatten_fields, rules };
+  return { ...pkg, comment_cells, comment_gap, blank_cap, flatten_fields, rules };
 }
 
 // ---------------------------------------------------------------- the Doc IR
@@ -567,6 +577,61 @@ function print(doc, cols) {
 
 const CELL_MARK = "\v";
 
+// `comment_cells` scope. gofmt aligns a trailing comment wherever consecutive
+// lines carry one; rustfmt aligns them on list items only. "block" is the
+// latter: markers are emitted everywhere, but outside a `cellblock` they
+// collapse to the plain comment gap instead of forming a column.
+const CELLS_OFF = "off";
+const CELLS_ALL = "all";
+const CELLS_BLOCK = "block";
+
+// A closer's trailing comment must not join the column above it. The node the
+// comment attaches to is a token here, and only these end a construct -- a
+// separator comma is a token too, and in Rust it is exactly where a list
+// item's comment lands (FINDINGS 22).
+const CELL_CLOSERS = new Set(["}", ")", "]"]);
+
+// rustfmt keeps a trailing-comment column only while every row that *could*
+// fit still does; a row that would be pushed past the width closes the column
+// and opens a new one (FINDINGS 22). A row too long to fit at any column is
+// hopeless: it sets the column but never constrains it, which is why a very
+// long field can share a column with its shorter neighbours while a short one
+// above them drops out. gofmt has no width and never does this, so `cols`
+// undefined means "one run, as before".
+function emitRun(lines, at, rows, indents, cols) {
+  if (cols === undefined) {
+    cellTabwrite(lines, at, rows, indents);
+    return;
+  }
+  const body = (r) => rows[r][rows[r].length - 2] ?? "";
+  const note = (r) => rows[r][rows[r].length - 1] ?? "";
+  const hopeless = (r) => width(indents[r]) + width(body(r)) + 1 + width(note(r)) > cols;
+  const holds = (from, to, column) => {
+    for (let r = from; r <= to; r++) {
+      if (hopeless(r)) continue;
+      if (width(indents[r]) + column + width(note(r)) > cols) return false;
+    }
+    return true;
+  };
+  const flushRange = (from, to) => {
+    cellTabwrite(lines, at.slice(from, to + 1), rows.slice(from, to + 1), indents.slice(from, to + 1));
+  };
+
+  let start = 0;
+  let wide = 0;
+  for (let r = 0; r < rows.length; r++) {
+    const candidate = Math.max(wide, width(body(r)));
+    if (r > start && !holds(start, r, candidate + 1)) {
+      flushRange(start, r - 1);
+      start = r;
+      wide = width(body(r));
+      continue;
+    }
+    wide = candidate;
+  }
+  flushRange(start, rows.length - 1);
+}
+
 function cellTabwrite(lines, at, rows, indents) {
   const columns = Math.max(0, ...rows.map((cells) => cells.length)) - 1;
   const pad = rows.map((cells) => Array(cells.length).fill(0));
@@ -614,10 +679,16 @@ function collapseToCommentCells(lines) {
   }
 }
 
-function alignChunk(chunk, commentOnly) {
+function alignChunk(chunk, commentOnly, blockOnly, gap, cols) {
   if (!chunk.includes(CELL_MARK)) return chunk;
   const lines = chunk.split("\n");
   if (commentOnly) collapseToCommentCells(lines);
+  if (commentOnly && blockOnly) {
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].includes(CELL_MARK)) lines[i] = lines[i].split(CELL_MARK).join(gap);
+    }
+    return lines.join("\n");
+  }
   const parsed = lines.map((line) => {
     if (!line.includes(CELL_MARK)) return null;
     let at = 0;
@@ -634,7 +705,7 @@ function alignChunk(chunk, commentOnly) {
   let rows = [];
   let indents = [];
   const flush = () => {
-    if (at.length > 0) cellTabwrite(lines, at, rows, indents);
+    if (at.length > 0) emitRun(lines, at, rows, indents, cols);
     at = [];
     rows = [];
     indents = [];
@@ -658,9 +729,14 @@ function alignChunk(chunk, commentOnly) {
   return lines.join("\n");
 }
 
-function alignCells(input) {
+function alignCells(input, blockOnly, gap, cols) {
   if (!input.includes(CELL_MARK) && !input.includes("\f")) return input;
-  return input.split("\f").map((chunk, i) => alignChunk(chunk, i % 2 === 0)).join("");
+  // Only the "block" scope models a reference that has a width at all.
+  const limit = blockOnly ? cols : undefined;
+  return input
+    .split("\f")
+    .map((chunk, i) => alignChunk(chunk, i % 2 === 0, blockOnly, gap, limit))
+    .join("");
 }
 
 // ------------------------------------------------------- comment attachment
@@ -788,7 +864,8 @@ function decorate(fmt, item, inner) {
   if (sink && parts.length > 0) parts = [indent(fmt.indentUnit, concat(parts))];
   parts.push(inner);
   const gap = " ".repeat(fmt.commentGap);
-  const commentCells = fmt.pkg.comment_cells === true && !fmt.tokens.has(item.node.type);
+  const commentCells =
+    fmt.pkg.comment_cells !== CELLS_OFF && !CELL_CLOSERS.has(item.node.type);
   for (const s of item.suffix) {
     parts.push(suffix(commentCells ? concat([cell, text(s)]) : text(`${gap}${s}`)));
   }
@@ -948,6 +1025,8 @@ class Ctx {
         return this.srcBreak(line);
       case "srctrail":
         return this.srctrail(rest[0]);
+      case "drop":
+        return this.drop(rest[0]);
       case "child":
         return this.child(parseSelector(rest[0]));
       case "each":
@@ -1076,6 +1155,26 @@ class Ctx {
   srcBreak(flat) {
     const item = this.items[this.cursor];
     return item && item.lineBreak ? hard : flat;
+  }
+
+  /** Consume a redundant token without emitting it -- the only sanctioned
+   *  deletion, and the mirror of the linearity invariant that forbids
+   *  inventing token text (FINDINGS 13). Absent is fine: a package says
+   *  "drop this if it is here", the way rustfmt drops a leading `|`.
+   *
+   *  Two refusals guard it, because gate 3 alone has been caught out. The
+   *  token must be declared punctuation -- dropping a named node would delete
+   *  meaning, not spelling -- and it must carry no comment, since a dropped
+   *  token takes its trivia with it. */
+  drop(want) {
+    const item = this.items[this.cursor];
+    if (!item || item.node.text !== want) return nil;
+    if (!this.fmt.tokens.has(item.node.type)) {
+      throw this.refuse(`\`drop\` of \`${want}\`, which is not declared punctuation`);
+    }
+    if (decorated(item)) throw this.refuse(`no comment on a dropped \`${want}\``);
+    this.cursor++;
+    return nil;
   }
 
   /** The trailing-separator policy for a source-driven list: adopt a separator
@@ -1332,7 +1431,7 @@ function format(tree, packages, cols) {
   const bytes = new TextEncoder().encode(tree.source ?? "");
   const fmt = new Formatter(packages, tree.language, bytes, new TextDecoder());
   let out = print(fmt.node(tree.root), cols);
-  out = alignCells(out);
+  out = alignCells(out, fmt.pkg.comment_cells === CELLS_BLOCK, " ".repeat(fmt.commentGap), cols);
   if (fmt.semanticEof) {
     const suffix = (tree.source ?? "").match(/(?:\r\n|\r|\n)+$/)?.[0] ?? "";
     return `${out.replace(/[\r\n]+$/, "")}${suffix}`;

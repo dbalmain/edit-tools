@@ -123,8 +123,24 @@ class Report:
 
     @property
     def disqualified(self) -> bool:
-        stale = self.measures.get("6-reference-agreement", {}).get("stale", 0)
-        return not all(g["pass"] for g in self.gates.values()) or stale > 0
+        """Gates, plus the two review outcomes a merge must not carry.
+
+        A stale review is a claim about output that is no longer true. A
+        `package-bug` is a defect the reviewer found and named. Both were
+        reported and neither stopped a merge, which made `package-bug` the
+        cheaper verdict to write whenever a reviewer was unsure -- the opposite
+        of what the vocabulary is for. Dave, 2026-08-21: both are hard failures.
+
+        An unreviewed divergence is deliberately not here. It is measured
+        against stage D's 70% coverage floor, because a corpus that outruns its
+        review is a scheduling problem, not a false claim.
+        """
+        agreement = self.measures.get("6-reference-agreement", {})
+        return (
+            not all(g["pass"] for g in self.gates.values())
+            or agreement.get("stale", 0) > 0
+            or agreement.get("defect", 0) > 0
+        )
 
 
 def gzipped(path: Path) -> int:
@@ -351,8 +367,8 @@ def reference_agreement(
 
     A matching review accepts a divergence. Any review whose pair changed, now
     agrees, is refused, lacks a reference, or no longer has a corpus comparison is
-    stale. Stale review is a hard scorer failure; an unreviewed difference is
-    reported against the stage-D 70% review threshold.
+    stale. Stale review and `package-bug` are both hard scorer failures; an
+    unreviewed difference is reported against the stage-D 70% review threshold.
 
     Files listed in the manifest's `incomparable` table are a fifth count,
     `excluded`. They stay in gates 0–3 but do not enter the agreement
@@ -599,7 +615,8 @@ def main() -> int:
     print(f"  accepted divergence          {ra['accepted']}/{ra['of']}")
     print(f"  stale review                 {ra['stale']}/{ra['of']}")
     print(f"  unreviewed divergence        {ra['unreviewed']}/{ra['of']}")
-    print(f"  package bug (not coverage)   {ra['defect']}/{ra['of']}")
+    print(f"  package bug (not coverage)   {ra['defect']}/{ra['of']}"
+          f"{'   <- hard failure' if ra['defect'] else ''}")
     print(f"  excluded from comparison     {ra['excluded']}")
     threshold = "met" if ra["review_threshold_met"] else "BELOW AT SOME WIDTH"
     print(

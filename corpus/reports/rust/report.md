@@ -1,14 +1,14 @@
 # Rust package report (stages C and D)
 
 ```
-gate 0 coverage         pass   (34/34)
-gate 1 rust/js parity   pass   (34/34 byte-identical)
-gate 2 idempotence      pass   (34/34)
-gate 3 non-destruction  pass   (34/34, method default)
-measure 4 overflow      38 lines (rustfmt 39)
-measure 5 size          package 2548 B gzip; runtime 12322 B gzip; total 14870
-measure 6 agreement     11/16 @ width 100,  8/16 @ width 60  =  19/32 (59.4%)
-                        + 13 accepted = 100% review coverage, 0 stale,
+gate 0 coverage         pass   (38/38)
+gate 1 rust/js parity   pass   (38/38 byte-identical)
+gate 2 idempotence      pass   (38/38)
+gate 3 non-destruction  pass   (38/38, method default)
+measure 4 overflow      49 lines (rustfmt 47)
+measure 5 size          package 2564 B gzip; runtime 13610 B gzip
+measure 6 agreement     14/18 @ width 100,  8/18 @ width 60  =  22/36 (61.1%)
+                        + 14 accepted = 100% review coverage, 0 stale,
                           0 unreviewed, 0 package-bug
 refusals                none
 ```
@@ -262,3 +262,88 @@ review-coverage floor (100%), no stale reviews, no package bugs. The remaining
 (heterogeneous chains), 3 (`trail` pinning and its one-item skip), 6 (`fits`
 counts a trailing comment), 7 and 9 (comments), plus one house rule on
 `strings.rs@60`.
+
+## After entry 22 closed
+
+The stage-D section above stands as written — it was true when written, and the
+six divergences really were design limits at that moment. Entry 22 was then
+built, and three of them moved.
+
+`comment_cells` now takes a scope, so a package can ask for rustfmt's rule
+(align list items, leave statements alone) rather than gofmt's. The package
+declares `"comment_cells": "block"` and wraps three lists in `["cellblock"]` —
+`field_declaration_list`, `enum_variant_list`, `match_block`. That is the whole
+package change: three brackets and a header.
+
+| file | before | after |
+| --- | --- | --- |
+| `structs.rs@100` | diverged on the comment column | **agrees** — record retired |
+| `structs.rs@60` | column + one-item `trail` | one-item `trail` only (entry 21) |
+| `widths.rs@100` | column + method chain | method chain only (entry 11) |
+| `widths.rs@60` | column + method chain | method chain only (entry 11) |
+| `comments.rs` both | entries 22, 9, 7 | entries 9 and 7 — the column was never its main cause |
+
+Agreement 19 → **20/32**. Go is unchanged at 12/16, which is the check that
+matters for the narrowed token exclusion: it was *any token* and is now closing
+delimiters only, and Go is the language that would notice.
+
+The cost is +958 B of runtime for one corpus file, and half of that (+471 B) is
+the width-aware column, which buys no file at all — only hunks inside files that
+diverge for other reasons. Kept on the `house-style.md` argument that a comment
+overrunning the box is exactly the readability failure this product is for.
+
+### Verdict, restated
+
+`merge`, unchanged, on better numbers: 20 agreement, 12 accepted, 0 stale, 0
+unreviewed, 0 package-bug, gates 0-3 perfect, rust/js parity perfect.
+
+## The or-pattern probe, and what the leading-pipe file was hiding
+
+`leading_pipes.rs` is the dedicated probe for rustfmt deleting a leading `|`.
+It contains only **short** patterns, so it never exercised what happens when the
+same construct has to break — and being declared incomparable, nothing it did
+could have shown up in the agreement number anyway.
+
+`or_patterns.rs` now carries the long case. It has **no** leading pipes, so it is
+comparable and stays out of the incomparable table; mixing the two constructs in
+one file is exactly what the stage-B brief calls a review reject.
+
+It is a well-behaved probe: **it agrees at width 100 and diverges at width 60**,
+so the construct is isolated to one width and the divergence has one cause.
+That cause is FINDINGS 23 — `flatten` identifies the next node in a left-nested
+spine by the `flatten_fields` names, and tree-sitter-rust gives `or_pattern`'s
+children no fields, so the one opcode built for this shape cannot walk it.
+
+Agreement moves 20/32 → **21/34**: the probe adds two pairs, one agreeing and one
+accepted.
+
+### The refusal, and the fix
+
+Writing the probe turned up a second gap immediately. This is ordinary Rust:
+
+```rust
+matches!(tag, ShortOne | ShortTwo | ShortThree)
+```
+
+and the package refuses it:
+
+```
+rule for `token_tree` wants the token `,` but found `|`
+```
+
+`macro_patterns.rs` now carries this, plus a guard, a range and a path inside
+`matches!`. The guard on the comma-list branch was the bug: it tested three
+things known to go wrong — no `.`, no `!`, and every *named* child one of five
+content kinds — and said nothing about the anonymous children, which is exactly
+where a macro's separators live.
+
+One `["all", "*", …]` guard over the whole child list replaces all three. Every
+child must be content or list punctuation, and anything else goes to
+`verbatim`. The package gets **22 B smaller**, `macros.rs` still agrees at both
+widths, and the separators nobody had hit yet — `=>`, `;`, `..=`, `::` — are
+covered by construction rather than by enumeration.
+
+`macro_patterns.rs` agrees at width 100 and diverges at 60 on the opaque-leaf
+rule `strings.rs@60` already records. That house rule cited a regression; it is
+now measured, and larger than the citation said — a let-level group takes Rust
+from 22/36 to **17/36**.
