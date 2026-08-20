@@ -1,0 +1,9 @@
+<!-- Nested start-tags. Inner tags that fit stay flat when a parent wraps. -->
+<catalog alpha="aaaaaaaaaaaaaaaa" beta="bbbbbbbbbbbbbbbb" gamma="cccccccccccccccc">
+  <book id="1" sku="alpha-01">
+    <title lang="en">Tiny</title>
+    <!-- a child that fits with room to spare after ancestors wrap -->
+    <author xml:id="ann">Ann</author>
+  </book>
+  <book id="2" sku="glued"><chapter n="1"><note kind="ok">fits</note></chapter></book>
+</catalog>
