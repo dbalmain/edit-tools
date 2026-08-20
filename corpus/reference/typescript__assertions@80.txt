@@ -1,0 +1,18 @@
+// Type assertions: `as`, `as const`, `satisfies`, angle-brackets (TypeScript
+// grammar only — TSX parses `<number>value` as an ERROR), and the clarifying
+// parens prettier inserts around `a + b as number`.
+const asNumber = value as number;
+
+const double = raw as unknown as Config;
+
+const angle = <number>raw;
+
+const tuple = [1, 2] as const;
+
+const cfg = { host: "localhost", port: 8080, debug: true } satisfies Config;
+
+const mixed = (a + b) as number;
+
+const nonNull = maybe!;
+
+const both = { a: 1 } as const satisfies Point;

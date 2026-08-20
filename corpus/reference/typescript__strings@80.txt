@@ -1,0 +1,30 @@
+// String and template literals, plus the type-level forms. Interiors never reflow.
+const plain: string = "hello world";
+
+const escape: string = "line one\nline two\ttabbed";
+
+const unicode: string = "café";
+
+const astral: string =
+  "🙂🙂🙂🙂🙂 a string whose width counts scalar values, not UTF-16 units";
+
+const template: string = `a template with ${name} interpolated`;
+
+const multiLine: string = `first line
+  indented second line
+    deeper third line
+fourth line`;
+
+const tagged: string = tag`tagged ${value} template`;
+
+const concat: string =
+  "first " + "second " + "third " + "fourth " + "fifth part of the string";
+
+const long: string =
+  "this is a very long string literal that the formatter must never reflow";
+
+type Literal = "hello" | "world" | "typescript";
+
+type Template = `hello-${string}`;
+
+type TemplateUnion = `a-${string}` | `b-${number}` | `c-${boolean}`;

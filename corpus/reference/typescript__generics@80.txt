@@ -1,0 +1,39 @@
+// Generics with long parameter lists, constraints, defaults, and the arrow
+// form that only the TypeScript grammar (not TSX) accepts.
+function map<
+  TFirst extends string,
+  TSecond extends number,
+  TThird extends boolean,
+>(a: TFirst, b: TSecond, c: TThird): TFirst {
+  return a;
+}
+
+function defaults<T = string, U extends number = number, V extends T[] = T[]>(
+  x: T,
+  y: U,
+): V {
+  return [x] as V;
+}
+
+function constParam<const T extends readonly string[]>(names: T): T {
+  return names;
+}
+
+const identity = <T>(value: T): T => value;
+
+const boxed = identity<string>("hello");
+
+const pair = makePair<string, number>("port", 8080);
+
+interface Box<T extends { id: string }, U = T> {
+  value: T;
+  extra?: U;
+}
+
+class Store<K extends string, V> {
+  get(key: K): V | undefined {
+    return undefined;
+  }
+}
+
+type Nested = Map<string, Promise<Set<ReadonlyArray<number>>>>;

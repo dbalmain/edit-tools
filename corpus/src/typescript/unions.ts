@@ -1,0 +1,18 @@
+// Unions and intersections that must break, plus the conditional form built
+// on them. prettier puts a leading `|` on a broken union and does not put a
+// leading `&` on a broken intersection.
+type LongUnion = VeryLongTypeNameAlpha | VeryLongTypeNameBeta | VeryLongTypeNameGamma | VeryLongTypeNameDelta;
+
+type FitsUnion = Alpha | Beta | Gamma;
+
+type LongIntersection = VeryLongTypeNameAlpha & VeryLongTypeNameBeta & VeryLongTypeNameGamma & VeryLongTypeNameDelta;
+
+type NestedInGeneric = Promise<VeryLongAlpha | VeryLongBeta | VeryLongGamma | VeryLongDelta | VeryLongEpsilon>;
+
+function constrained<T extends VeryLongConstraintAlpha | VeryLongConstraintBeta | VeryLongConstraintGamma>(x: T): T {
+  return x;
+}
+
+type Conditional<T> = T extends string ? string[] : T extends number ? number[] : never;
+
+type FunctionUnion = ((x: string) => number) | ((x: number) => string) | ((x: boolean) => boolean);
