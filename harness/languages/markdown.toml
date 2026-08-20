@@ -1,0 +1,76 @@
+# Markdown. Schema: docs/onboarding/WORKFLOW.md, "Stage 0".
+name = "markdown"
+extensions = [".md"]
+
+# PyPI name matches the orchestrator's tree_sitter_markdown guess after the
+# hyphen-to-underscore swap. 0.5.1 is the latest release (confirmed against the
+# live index); the injection fixture already pinned this version. Imported as
+# tree_sitter_markdown. The module exports language() (block) and
+# inline_language() (inline). Fences, info_string and code_fence_content live
+# in the block tree, so the host selects language() — the same choice
+# docs/injection.md recorded, and the one gen_trees.py's region splice needs.
+# inline_language() is not used: the harness has no included-range second pass.
+grammar = "tree-sitter-markdown==0.5.1"
+grammar_module = "tree_sitter_markdown"
+grammar_symbol = "language"
+
+# `markdown` is canonical. `md` is the conventional fence spelling (GitHub
+# linguist, prettier's own support-info aliases). `pandoc` is a different
+# dialect and is not vouched for. `mdx` is prettier's MDX parser, not this
+# grammar.
+injection_aliases = ["markdown", "md"]
+
+# prettier infers the parser from the filename, so stdin needs a fake one
+# (verified: without --stdin-filepath and without --parser it errors
+# "No parser and no file path given"). --parser markdown is an alternative,
+# not an extra flag: parser-only, filepath-only, and x.md vs x.markdown are
+# byte-identical on dirty input, so --parser is omitted. --no-config is
+# load-bearing (below). --print-width honours {width}: established by diffing
+# 80 vs 40 on a 27-item JSON fence, not by reading --help. Paragraphs, tables,
+# list markers, emphasis and headings do not reflow at the default
+# proseWrap=preserve; fenced JSON/JS and YAML front-matter flow collections do.
+reference = "npx --yes prettier@3.9.6 --no-config --stdin-filepath x.md --print-width {width}"
+reference_version = "3.9.6"
+reference_width = "flag"
+
+# 80 is prettier's own default, established three ways: `prettier --help` says
+# 80; unprompted output matches `--print-width 80` on every probe; and a
+# 26-ones JSON array in a fence (78 chars) stays flat unprompted while a
+# 27-ones array (81 chars) breaks unprompted and at 80, and stays flat at 81.
+# 40 is the narrow width: it is the first round number at which a JSON fence,
+# a JS fence, and the same fence nested in a list or blockquote actually
+# split. 60 still leaves the 27-ones array flat.
+widths = [80, 40]
+
+# The generic default is selected deliberately. Markdown has no data-model
+# loader that would preserve fence bodies, emphasis delimiters, list markers
+# or table-cell spelling, and the block grammar's named tree already sees
+# those. Leave wrappers/equivalences empty until the gate names a kind —
+# markdown has no parenthesised-expression node, and parentheses in links
+# are structural.
+gate3 = "default"
+
+transparent_wrappers = []
+equivalent_kinds = []
+
+# Measurement exclusions forced by the linearity invariant. prettier rewrites
+# that no package may match, so each lives in its own file:
+#   - `*em*` -> `_em_` (emphasis delimiter)
+#   - `*` / `+` list markers -> `-`
+#   - `***` / `___` / `* * *` thematic breaks -> `---`
+# Quote-style link titles (`'title'` -> `"title"`) are omitted from the
+# corpus rather than excluded: they are the same anonymous-token rewrite as
+# JS quotes, and the corpus writes double quotes. Ordered `1)` -> `1.` and
+# `__strong__` -> `**strong**` are the same class; the corpus writes the
+# canonical form.
+[incomparable]
+"emphasis.md" = "prettier rewrites *emphasis* to _emphasis_ (delimiter token)"
+"list_markers.md" = "prettier rewrites * and + unordered-list markers to -"
+"thematic.md" = "prettier rewrites ***, ___ and * * * thematic breaks to ---"
+
+# Host shape. Keep array tables after every root key: TOML keys below
+# [[injections]] would belong to that entry, not to the manifest root.
+[[injections]]
+node = "fenced_code_block"
+info = "info_string"
+content = "code_fence_content"

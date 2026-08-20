@@ -1,0 +1,274 @@
+{
+ "language": "markdown",
+ "source_file": "corpus/src/markdown/blockquotes.md",
+ "source": "<!-- Nested quotes and quoted lists. -->\n\n> outer quote <!-- trailing on the first quoted line -->\n> still outer\n>\n> > inner quote\n> > still inner\n>\n> - quoted list\n> - quoted next\n>   - nested in the quote\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 207,
+  "children": [
+   {
+    "type": "section",
+    "start": 0,
+    "end": 207,
+    "children": [
+     {
+      "type": "html_block",
+      "start": 0,
+      "end": 41,
+      "children": [
+       {
+        "type": ".",
+        "start": 35,
+        "end": 36,
+        "text": "."
+       },
+       {
+        "type": "-->",
+        "start": 37,
+        "end": 40,
+        "text": "-->"
+       }
+      ]
+     },
+     {
+      "type": "block_quote",
+      "start": 42,
+      "end": 207,
+      "children": [
+       {
+        "type": "block_quote_marker",
+        "start": 42,
+        "end": 44,
+        "text": "> "
+       },
+       {
+        "type": "paragraph",
+        "start": 44,
+        "end": 114,
+        "children": [
+         {
+          "type": "inline",
+          "start": 44,
+          "end": 112,
+          "children": [
+           {
+            "type": "<",
+            "start": 56,
+            "end": 57,
+            "text": "<"
+           },
+           {
+            "type": "!",
+            "start": 57,
+            "end": 58,
+            "text": "!"
+           },
+           {
+            "type": "-",
+            "start": 58,
+            "end": 59,
+            "text": "-"
+           },
+           {
+            "type": "-",
+            "start": 59,
+            "end": 60,
+            "text": "-"
+           },
+           {
+            "type": "-",
+            "start": 95,
+            "end": 96,
+            "text": "-"
+           },
+           {
+            "type": "-",
+            "start": 96,
+            "end": 97,
+            "text": "-"
+           },
+           {
+            "type": ">",
+            "start": 97,
+            "end": 98,
+            "text": ">"
+           },
+           {
+            "type": "block_continuation",
+            "start": 99,
+            "end": 101,
+            "text": "> "
+           }
+          ]
+         },
+         {
+          "type": "block_continuation",
+          "start": 113,
+          "end": 114,
+          "text": ">"
+         }
+        ]
+       },
+       {
+        "type": "block_continuation",
+        "start": 115,
+        "end": 117,
+        "text": "> "
+       },
+       {
+        "type": "block_quote",
+        "start": 117,
+        "end": 148,
+        "children": [
+         {
+          "type": "block_quote_marker",
+          "start": 117,
+          "end": 119,
+          "text": "> "
+         },
+         {
+          "type": "paragraph",
+          "start": 119,
+          "end": 148,
+          "children": [
+           {
+            "type": "inline",
+            "start": 119,
+            "end": 146,
+            "children": [
+             {
+              "type": "block_continuation",
+              "start": 131,
+              "end": 135,
+              "text": "> > "
+             }
+            ]
+           },
+           {
+            "type": "block_continuation",
+            "start": 147,
+            "end": 148,
+            "text": ">"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "block_continuation",
+        "start": 149,
+        "end": 151,
+        "text": "> "
+       },
+       {
+        "type": "list",
+        "start": 151,
+        "end": 207,
+        "children": [
+         {
+          "type": "list_item",
+          "start": 151,
+          "end": 167,
+          "children": [
+           {
+            "type": "list_marker_minus",
+            "start": 151,
+            "end": 153,
+            "text": "- "
+           },
+           {
+            "type": "paragraph",
+            "start": 153,
+            "end": 167,
+            "children": [
+             {
+              "type": "inline",
+              "start": 153,
+              "end": 164,
+              "text": "quoted list"
+             },
+             {
+              "type": "block_continuation",
+              "start": 165,
+              "end": 167,
+              "text": "> "
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "list_item",
+          "start": 167,
+          "end": 207,
+          "children": [
+           {
+            "type": "list_marker_minus",
+            "start": 167,
+            "end": 169,
+            "text": "- "
+           },
+           {
+            "type": "paragraph",
+            "start": 169,
+            "end": 185,
+            "children": [
+             {
+              "type": "inline",
+              "start": 169,
+              "end": 180,
+              "text": "quoted next"
+             },
+             {
+              "type": "block_continuation",
+              "start": 181,
+              "end": 185,
+              "text": ">   "
+             }
+            ]
+           },
+           {
+            "type": "list",
+            "start": 185,
+            "end": 207,
+            "children": [
+             {
+              "type": "list_item",
+              "start": 185,
+              "end": 207,
+              "children": [
+               {
+                "type": "list_marker_minus",
+                "start": 185,
+                "end": 187,
+                "text": "- "
+               },
+               {
+                "type": "paragraph",
+                "start": 187,
+                "end": 207,
+                "children": [
+                 {
+                  "type": "inline",
+                  "start": 187,
+                  "end": 206,
+                  "text": "nested in the quote"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

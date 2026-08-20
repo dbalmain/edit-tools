@@ -1,0 +1,106 @@
+{
+ "language": "markdown",
+ "source_file": "corpus/src/markdown/emphasis.md",
+ "source": "<!-- prettier rewrites *em* to _em_. -->\n\nA paragraph with *star emphasis* and another *word*.\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 95,
+  "children": [
+   {
+    "type": "section",
+    "start": 0,
+    "end": 95,
+    "children": [
+     {
+      "type": "html_block",
+      "start": 0,
+      "end": 41,
+      "children": [
+       {
+        "type": "*",
+        "start": 23,
+        "end": 24,
+        "text": "*"
+       },
+       {
+        "type": "*",
+        "start": 26,
+        "end": 27,
+        "text": "*"
+       },
+       {
+        "type": "_",
+        "start": 31,
+        "end": 32,
+        "text": "_"
+       },
+       {
+        "type": "_",
+        "start": 34,
+        "end": 35,
+        "text": "_"
+       },
+       {
+        "type": ".",
+        "start": 35,
+        "end": 36,
+        "text": "."
+       },
+       {
+        "type": "-->",
+        "start": 37,
+        "end": 40,
+        "text": "-->"
+       }
+      ]
+     },
+     {
+      "type": "paragraph",
+      "start": 42,
+      "end": 95,
+      "children": [
+       {
+        "type": "inline",
+        "start": 42,
+        "end": 94,
+        "children": [
+         {
+          "type": "*",
+          "start": 59,
+          "end": 60,
+          "text": "*"
+         },
+         {
+          "type": "*",
+          "start": 73,
+          "end": 74,
+          "text": "*"
+         },
+         {
+          "type": "*",
+          "start": 87,
+          "end": 88,
+          "text": "*"
+         },
+         {
+          "type": "*",
+          "start": 92,
+          "end": 93,
+          "text": "*"
+         },
+         {
+          "type": ".",
+          "start": 93,
+          "end": 94,
+          "text": "."
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

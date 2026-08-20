@@ -1,0 +1,527 @@
+{
+ "language": "markdown",
+ "source_file": "corpus/src/markdown/normalisation.md",
+ "source": "<!-- Written as a person writes it, not prettier. -->\n\n#    Title with extra spaces after the marker\n\n\n\n# After a run of blanks between headings\n\n> quote already spaced; prettier does not eat this marker's trailing space\n>  bar with two spaces after the marker\n> baz\n\n[already-tight](/url \"title\")\n\n![already-tight-image](/img.png \"title\")\n\n```   json\n{\"a\":1}\n```\n\n- outer\n  - inner already at prettier's indent\n    1. ordered already at prettier's indent\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 456,
+  "children": [
+   {
+    "type": "section",
+    "start": 0,
+    "end": 55,
+    "children": [
+     {
+      "type": "html_block",
+      "start": 0,
+      "end": 54,
+      "children": [
+       {
+        "type": ",",
+        "start": 34,
+        "end": 35,
+        "text": ","
+       },
+       {
+        "type": ".",
+        "start": 48,
+        "end": 49,
+        "text": "."
+       },
+       {
+        "type": "-->",
+        "start": 50,
+        "end": 53,
+        "text": "-->"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "section",
+    "start": 55,
+    "end": 104,
+    "children": [
+     {
+      "type": "atx_heading",
+      "start": 55,
+      "end": 101,
+      "children": [
+       {
+        "type": "atx_h1_marker",
+        "start": 55,
+        "end": 56,
+        "text": "#"
+       },
+       {
+        "type": "inline",
+        "start": 60,
+        "end": 100,
+        "field": "heading_content",
+        "text": "Title with extra spaces after the marker"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "section",
+    "start": 104,
+    "end": 456,
+    "children": [
+     {
+      "type": "atx_heading",
+      "start": 104,
+      "end": 145,
+      "children": [
+       {
+        "type": "atx_h1_marker",
+        "start": 104,
+        "end": 105,
+        "text": "#"
+       },
+       {
+        "type": "inline",
+        "start": 106,
+        "end": 144,
+        "field": "heading_content",
+        "text": "After a run of blanks between headings"
+       }
+      ]
+     },
+     {
+      "type": "block_quote",
+      "start": 146,
+      "end": 267,
+      "children": [
+       {
+        "type": "block_quote_marker",
+        "start": 146,
+        "end": 148,
+        "text": "> "
+       },
+       {
+        "type": "paragraph",
+        "start": 148,
+        "end": 267,
+        "children": [
+         {
+          "type": "inline",
+          "start": 148,
+          "end": 266,
+          "children": [
+           {
+            "type": ";",
+            "start": 168,
+            "end": 169,
+            "text": ";"
+           },
+           {
+            "type": "'",
+            "start": 203,
+            "end": 204,
+            "text": "'"
+           },
+           {
+            "type": "block_continuation",
+            "start": 221,
+            "end": 223,
+            "text": "> "
+           },
+           {
+            "type": "block_continuation",
+            "start": 261,
+            "end": 263,
+            "text": "> "
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "paragraph",
+      "start": 268,
+      "end": 298,
+      "children": [
+       {
+        "type": "inline",
+        "start": 268,
+        "end": 297,
+        "children": [
+         {
+          "type": "[",
+          "start": 268,
+          "end": 269,
+          "text": "["
+         },
+         {
+          "type": "-",
+          "start": 276,
+          "end": 277,
+          "text": "-"
+         },
+         {
+          "type": "]",
+          "start": 282,
+          "end": 283,
+          "text": "]"
+         },
+         {
+          "type": "(",
+          "start": 283,
+          "end": 284,
+          "text": "("
+         },
+         {
+          "type": "/",
+          "start": 284,
+          "end": 285,
+          "text": "/"
+         },
+         {
+          "type": "\"",
+          "start": 289,
+          "end": 290,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 295,
+          "end": 296,
+          "text": "\""
+         },
+         {
+          "type": ")",
+          "start": 296,
+          "end": 297,
+          "text": ")"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "paragraph",
+      "start": 299,
+      "end": 340,
+      "children": [
+       {
+        "type": "inline",
+        "start": 299,
+        "end": 339,
+        "children": [
+         {
+          "type": "!",
+          "start": 299,
+          "end": 300,
+          "text": "!"
+         },
+         {
+          "type": "[",
+          "start": 300,
+          "end": 301,
+          "text": "["
+         },
+         {
+          "type": "-",
+          "start": 308,
+          "end": 309,
+          "text": "-"
+         },
+         {
+          "type": "-",
+          "start": 314,
+          "end": 315,
+          "text": "-"
+         },
+         {
+          "type": "]",
+          "start": 320,
+          "end": 321,
+          "text": "]"
+         },
+         {
+          "type": "(",
+          "start": 321,
+          "end": 322,
+          "text": "("
+         },
+         {
+          "type": "/",
+          "start": 322,
+          "end": 323,
+          "text": "/"
+         },
+         {
+          "type": ".",
+          "start": 326,
+          "end": 327,
+          "text": "."
+         },
+         {
+          "type": "\"",
+          "start": 331,
+          "end": 332,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 337,
+          "end": 338,
+          "text": "\""
+         },
+         {
+          "type": ")",
+          "start": 338,
+          "end": 339,
+          "text": ")"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "fenced_code_block",
+      "start": 341,
+      "end": 364,
+      "children": [
+       {
+        "type": "fenced_code_block_delimiter",
+        "start": 341,
+        "end": 344,
+        "text": "```"
+       },
+       {
+        "type": "info_string",
+        "start": 347,
+        "end": 351,
+        "children": [
+         {
+          "type": "language",
+          "start": 347,
+          "end": 351,
+          "text": "json"
+         }
+        ]
+       },
+       {
+        "type": "block_continuation",
+        "start": 352,
+        "end": 352,
+        "text": ""
+       },
+       {
+        "type": "document",
+        "start": 352,
+        "end": 360,
+        "children": [
+         {
+          "type": "object",
+          "start": 352,
+          "end": 359,
+          "children": [
+           {
+            "type": "{",
+            "start": 352,
+            "end": 353,
+            "text": "{"
+           },
+           {
+            "type": "pair",
+            "start": 353,
+            "end": 358,
+            "children": [
+             {
+              "type": "string",
+              "start": 353,
+              "end": 356,
+              "field": "key",
+              "children": [
+               {
+                "type": "\"",
+                "start": 353,
+                "end": 354,
+                "text": "\""
+               },
+               {
+                "type": "string_content",
+                "start": 354,
+                "end": 355,
+                "text": "a"
+               },
+               {
+                "type": "\"",
+                "start": 355,
+                "end": 356,
+                "text": "\""
+               }
+              ]
+             },
+             {
+              "type": ":",
+              "start": 356,
+              "end": 357,
+              "text": ":"
+             },
+             {
+              "type": "number",
+              "start": 357,
+              "end": 358,
+              "field": "value",
+              "text": "1"
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 358,
+            "end": 359,
+            "text": "}"
+           }
+          ]
+         }
+        ],
+        "language": "json"
+       },
+       {
+        "type": "fenced_code_block_delimiter",
+        "start": 360,
+        "end": 363,
+        "text": "```"
+       }
+      ]
+     },
+     {
+      "type": "list",
+      "start": 365,
+      "end": 456,
+      "children": [
+       {
+        "type": "list_item",
+        "start": 365,
+        "end": 456,
+        "children": [
+         {
+          "type": "list_marker_minus",
+          "start": 365,
+          "end": 367,
+          "text": "- "
+         },
+         {
+          "type": "paragraph",
+          "start": 367,
+          "end": 375,
+          "children": [
+           {
+            "type": "inline",
+            "start": 367,
+            "end": 372,
+            "text": "outer"
+           },
+           {
+            "type": "block_continuation",
+            "start": 373,
+            "end": 375,
+            "text": "  "
+           }
+          ]
+         },
+         {
+          "type": "list",
+          "start": 375,
+          "end": 456,
+          "children": [
+           {
+            "type": "list_item",
+            "start": 375,
+            "end": 456,
+            "children": [
+             {
+              "type": "list_marker_minus",
+              "start": 375,
+              "end": 377,
+              "text": "- "
+             },
+             {
+              "type": "paragraph",
+              "start": 377,
+              "end": 416,
+              "children": [
+               {
+                "type": "inline",
+                "start": 377,
+                "end": 411,
+                "children": [
+                 {
+                  "type": "'",
+                  "start": 402,
+                  "end": 403,
+                  "text": "'"
+                 }
+                ]
+               },
+               {
+                "type": "block_continuation",
+                "start": 412,
+                "end": 416,
+                "text": "    "
+               }
+              ]
+             },
+             {
+              "type": "list",
+              "start": 416,
+              "end": 456,
+              "children": [
+               {
+                "type": "list_item",
+                "start": 416,
+                "end": 456,
+                "children": [
+                 {
+                  "type": "list_marker_dot",
+                  "start": 416,
+                  "end": 419,
+                  "text": "1. "
+                 },
+                 {
+                  "type": "paragraph",
+                  "start": 419,
+                  "end": 456,
+                  "children": [
+                   {
+                    "type": "inline",
+                    "start": 419,
+                    "end": 455,
+                    "children": [
+                     {
+                      "type": "'",
+                      "start": 446,
+                      "end": 447,
+                      "text": "'"
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

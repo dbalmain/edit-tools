@@ -1,0 +1,17 @@
+<!-- Nested lists holding fenced JSON. -->
+
+- outer list
+  - inner item with a fence, so remaining width is smaller than the root's
+
+    ```json
+    [{"id": 1}, {"id": 2}, {"id": 3}, {"id": 4}, {"id": 5}, {"id": 6}]
+    ```
+
+  - sibling of the fenced item
+- another outer item wrapping a nested list
+  - deep
+    - deeper still, holding a second fence
+
+      ```json
+      [{"k": 1}, {"k": 1}, {"k": 1}, {"k": 1}]
+      ```

@@ -1,0 +1,602 @@
+{
+ "language": "markdown",
+ "source_file": "corpus/src/markdown/lists.md",
+ "source": "<!-- Tight, loose, nested, ordered, empty task. -->\n\n- tight alpha <!-- trailing on a tight item -->\n- tight bravo\n  - nested tight\n  - also nested\n\n- loose alpha\n\n- loose bravo\n\n  still in the loose item, as a second paragraph\n\n1. ordered first\n2. ordered second\n3. ordered third\n   1. nested ordered\n   2. nested ordered too\n\n- [ ] empty checkbox with a space\n- [x] checked\n- [ ] another open task\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 400,
+  "children": [
+   {
+    "type": "section",
+    "start": 0,
+    "end": 400,
+    "children": [
+     {
+      "type": "html_block",
+      "start": 0,
+      "end": 52,
+      "children": [
+       {
+        "type": ",",
+        "start": 10,
+        "end": 11,
+        "text": ","
+       },
+       {
+        "type": ",",
+        "start": 17,
+        "end": 18,
+        "text": ","
+       },
+       {
+        "type": ",",
+        "start": 25,
+        "end": 26,
+        "text": ","
+       },
+       {
+        "type": ",",
+        "start": 34,
+        "end": 35,
+        "text": ","
+       },
+       {
+        "type": ".",
+        "start": 46,
+        "end": 47,
+        "text": "."
+       },
+       {
+        "type": "-->",
+        "start": 48,
+        "end": 51,
+        "text": "-->"
+       }
+      ]
+     },
+     {
+      "type": "list",
+      "start": 53,
+      "end": 229,
+      "children": [
+       {
+        "type": "list_item",
+        "start": 53,
+        "end": 101,
+        "children": [
+         {
+          "type": "list_marker_minus",
+          "start": 53,
+          "end": 55,
+          "text": "- "
+         },
+         {
+          "type": "paragraph",
+          "start": 55,
+          "end": 101,
+          "children": [
+           {
+            "type": "inline",
+            "start": 55,
+            "end": 100,
+            "children": [
+             {
+              "type": "<",
+              "start": 67,
+              "end": 68,
+              "text": "<"
+             },
+             {
+              "type": "!",
+              "start": 68,
+              "end": 69,
+              "text": "!"
+             },
+             {
+              "type": "-",
+              "start": 69,
+              "end": 70,
+              "text": "-"
+             },
+             {
+              "type": "-",
+              "start": 70,
+              "end": 71,
+              "text": "-"
+             },
+             {
+              "type": "-",
+              "start": 97,
+              "end": 98,
+              "text": "-"
+             },
+             {
+              "type": "-",
+              "start": 98,
+              "end": 99,
+              "text": "-"
+             },
+             {
+              "type": ">",
+              "start": 99,
+              "end": 100,
+              "text": ">"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "list_item",
+        "start": 101,
+        "end": 149,
+        "children": [
+         {
+          "type": "list_marker_minus",
+          "start": 101,
+          "end": 103,
+          "text": "- "
+         },
+         {
+          "type": "paragraph",
+          "start": 103,
+          "end": 117,
+          "children": [
+           {
+            "type": "inline",
+            "start": 103,
+            "end": 114,
+            "text": "tight bravo"
+           },
+           {
+            "type": "block_continuation",
+            "start": 115,
+            "end": 117,
+            "text": "  "
+           }
+          ]
+         },
+         {
+          "type": "list",
+          "start": 117,
+          "end": 149,
+          "children": [
+           {
+            "type": "list_item",
+            "start": 117,
+            "end": 134,
+            "children": [
+             {
+              "type": "list_marker_minus",
+              "start": 117,
+              "end": 119,
+              "text": "- "
+             },
+             {
+              "type": "paragraph",
+              "start": 119,
+              "end": 134,
+              "children": [
+               {
+                "type": "inline",
+                "start": 119,
+                "end": 131,
+                "text": "nested tight"
+               },
+               {
+                "type": "block_continuation",
+                "start": 132,
+                "end": 134,
+                "text": "  "
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "list_item",
+            "start": 134,
+            "end": 149,
+            "children": [
+             {
+              "type": "list_marker_minus",
+              "start": 134,
+              "end": 136,
+              "text": "- "
+             },
+             {
+              "type": "paragraph",
+              "start": 136,
+              "end": 148,
+              "children": [
+               {
+                "type": "inline",
+                "start": 136,
+                "end": 147,
+                "text": "also nested"
+               },
+               {
+                "type": "block_continuation",
+                "start": 148,
+                "end": 148,
+                "text": ""
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "list_item",
+        "start": 149,
+        "end": 164,
+        "children": [
+         {
+          "type": "list_marker_minus",
+          "start": 149,
+          "end": 151,
+          "text": "- "
+         },
+         {
+          "type": "paragraph",
+          "start": 151,
+          "end": 163,
+          "children": [
+           {
+            "type": "inline",
+            "start": 151,
+            "end": 162,
+            "text": "loose alpha"
+           },
+           {
+            "type": "block_continuation",
+            "start": 163,
+            "end": 163,
+            "text": ""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "list_item",
+        "start": 164,
+        "end": 229,
+        "children": [
+         {
+          "type": "list_marker_minus",
+          "start": 164,
+          "end": 166,
+          "text": "- "
+         },
+         {
+          "type": "paragraph",
+          "start": 166,
+          "end": 178,
+          "children": [
+           {
+            "type": "inline",
+            "start": 166,
+            "end": 177,
+            "text": "loose bravo"
+           },
+           {
+            "type": "block_continuation",
+            "start": 178,
+            "end": 178,
+            "text": ""
+           }
+          ]
+         },
+         {
+          "type": "block_continuation",
+          "start": 179,
+          "end": 181,
+          "text": "  "
+         },
+         {
+          "type": "paragraph",
+          "start": 181,
+          "end": 228,
+          "children": [
+           {
+            "type": "inline",
+            "start": 181,
+            "end": 227,
+            "children": [
+             {
+              "type": ",",
+              "start": 204,
+              "end": 205,
+              "text": ","
+             }
+            ]
+           },
+           {
+            "type": "block_continuation",
+            "start": 228,
+            "end": 228,
+            "text": ""
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "list",
+      "start": 229,
+      "end": 328,
+      "children": [
+       {
+        "type": "list_item",
+        "start": 229,
+        "end": 246,
+        "children": [
+         {
+          "type": "list_marker_dot",
+          "start": 229,
+          "end": 232,
+          "text": "1. "
+         },
+         {
+          "type": "paragraph",
+          "start": 232,
+          "end": 246,
+          "children": [
+           {
+            "type": "inline",
+            "start": 232,
+            "end": 245,
+            "text": "ordered first"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "list_item",
+        "start": 246,
+        "end": 264,
+        "children": [
+         {
+          "type": "list_marker_dot",
+          "start": 246,
+          "end": 249,
+          "text": "2. "
+         },
+         {
+          "type": "paragraph",
+          "start": 249,
+          "end": 264,
+          "children": [
+           {
+            "type": "inline",
+            "start": 249,
+            "end": 263,
+            "text": "ordered second"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "list_item",
+        "start": 264,
+        "end": 328,
+        "children": [
+         {
+          "type": "list_marker_dot",
+          "start": 264,
+          "end": 267,
+          "text": "3. "
+         },
+         {
+          "type": "paragraph",
+          "start": 267,
+          "end": 284,
+          "children": [
+           {
+            "type": "inline",
+            "start": 267,
+            "end": 280,
+            "text": "ordered third"
+           },
+           {
+            "type": "block_continuation",
+            "start": 281,
+            "end": 284,
+            "text": "   "
+           }
+          ]
+         },
+         {
+          "type": "list",
+          "start": 284,
+          "end": 328,
+          "children": [
+           {
+            "type": "list_item",
+            "start": 284,
+            "end": 305,
+            "children": [
+             {
+              "type": "list_marker_dot",
+              "start": 284,
+              "end": 287,
+              "text": "1. "
+             },
+             {
+              "type": "paragraph",
+              "start": 287,
+              "end": 305,
+              "children": [
+               {
+                "type": "inline",
+                "start": 287,
+                "end": 301,
+                "text": "nested ordered"
+               },
+               {
+                "type": "block_continuation",
+                "start": 302,
+                "end": 305,
+                "text": "   "
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "list_item",
+            "start": 305,
+            "end": 328,
+            "children": [
+             {
+              "type": "list_marker_dot",
+              "start": 305,
+              "end": 308,
+              "text": "2. "
+             },
+             {
+              "type": "paragraph",
+              "start": 308,
+              "end": 327,
+              "children": [
+               {
+                "type": "inline",
+                "start": 308,
+                "end": 326,
+                "text": "nested ordered too"
+               },
+               {
+                "type": "block_continuation",
+                "start": 327,
+                "end": 327,
+                "text": ""
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "list",
+      "start": 328,
+      "end": 400,
+      "children": [
+       {
+        "type": "list_item",
+        "start": 328,
+        "end": 362,
+        "children": [
+         {
+          "type": "list_marker_minus",
+          "start": 328,
+          "end": 330,
+          "text": "- "
+         },
+         {
+          "type": "task_list_marker_unchecked",
+          "start": 330,
+          "end": 333,
+          "text": "[ ]"
+         },
+         {
+          "type": "paragraph",
+          "start": 334,
+          "end": 362,
+          "children": [
+           {
+            "type": "inline",
+            "start": 334,
+            "end": 361,
+            "text": "empty checkbox with a space"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "list_item",
+        "start": 362,
+        "end": 376,
+        "children": [
+         {
+          "type": "list_marker_minus",
+          "start": 362,
+          "end": 364,
+          "text": "- "
+         },
+         {
+          "type": "task_list_marker_checked",
+          "start": 364,
+          "end": 367,
+          "text": "[x]"
+         },
+         {
+          "type": "paragraph",
+          "start": 368,
+          "end": 376,
+          "children": [
+           {
+            "type": "inline",
+            "start": 368,
+            "end": 375,
+            "text": "checked"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "list_item",
+        "start": 376,
+        "end": 400,
+        "children": [
+         {
+          "type": "list_marker_minus",
+          "start": 376,
+          "end": 378,
+          "text": "- "
+         },
+         {
+          "type": "task_list_marker_unchecked",
+          "start": 378,
+          "end": 381,
+          "text": "[ ]"
+         },
+         {
+          "type": "paragraph",
+          "start": 382,
+          "end": 400,
+          "children": [
+           {
+            "type": "inline",
+            "start": 382,
+            "end": 399,
+            "text": "another open task"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

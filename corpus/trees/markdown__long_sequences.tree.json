@@ -1,0 +1,854 @@
+{
+ "language": "markdown",
+ "source_file": "corpus/src/markdown/long_sequences.md",
+ "source": "<!-- Fenced JSON arrays that overflow a line. -->\n\nA 27-item array of ones is 81 characters, so it breaks at prettier's default\n80 and stays flat at 81. The 26-item neighbour (78 characters) stays flat at\nboth scored widths.\n\n```json\n[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]\n```\n\n```json\n[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]\n```\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 412,
+  "children": [
+   {
+    "type": "section",
+    "start": 0,
+    "end": 412,
+    "children": [
+     {
+      "type": "html_block",
+      "start": 0,
+      "end": 50,
+      "children": [
+       {
+        "type": ".",
+        "start": 44,
+        "end": 45,
+        "text": "."
+       },
+       {
+        "type": "-->",
+        "start": 46,
+        "end": 49,
+        "text": "-->"
+       }
+      ]
+     },
+     {
+      "type": "paragraph",
+      "start": 51,
+      "end": 225,
+      "children": [
+       {
+        "type": "inline",
+        "start": 51,
+        "end": 224,
+        "children": [
+         {
+          "type": "-",
+          "start": 55,
+          "end": 56,
+          "text": "-"
+         },
+         {
+          "type": ",",
+          "start": 91,
+          "end": 92,
+          "text": ","
+         },
+         {
+          "type": "'",
+          "start": 117,
+          "end": 118,
+          "text": "'"
+         },
+         {
+          "type": ".",
+          "start": 151,
+          "end": 152,
+          "text": "."
+         },
+         {
+          "type": "-",
+          "start": 159,
+          "end": 160,
+          "text": "-"
+         },
+         {
+          "type": "(",
+          "start": 175,
+          "end": 176,
+          "text": "("
+         },
+         {
+          "type": ")",
+          "start": 189,
+          "end": 190,
+          "text": ")"
+         },
+         {
+          "type": ".",
+          "start": 223,
+          "end": 224,
+          "text": "."
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "fenced_code_block",
+      "start": 226,
+      "end": 317,
+      "children": [
+       {
+        "type": "fenced_code_block_delimiter",
+        "start": 226,
+        "end": 229,
+        "text": "```"
+       },
+       {
+        "type": "info_string",
+        "start": 229,
+        "end": 233,
+        "children": [
+         {
+          "type": "language",
+          "start": 229,
+          "end": 233,
+          "text": "json"
+         }
+        ]
+       },
+       {
+        "type": "block_continuation",
+        "start": 234,
+        "end": 234,
+        "text": ""
+       },
+       {
+        "type": "document",
+        "start": 234,
+        "end": 313,
+        "children": [
+         {
+          "type": "array",
+          "start": 234,
+          "end": 312,
+          "children": [
+           {
+            "type": "[",
+            "start": 234,
+            "end": 235,
+            "text": "["
+           },
+           {
+            "type": "number",
+            "start": 235,
+            "end": 236,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 236,
+            "end": 237,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 238,
+            "end": 239,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 239,
+            "end": 240,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 241,
+            "end": 242,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 242,
+            "end": 243,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 244,
+            "end": 245,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 245,
+            "end": 246,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 247,
+            "end": 248,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 248,
+            "end": 249,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 250,
+            "end": 251,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 251,
+            "end": 252,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 253,
+            "end": 254,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 254,
+            "end": 255,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 256,
+            "end": 257,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 257,
+            "end": 258,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 259,
+            "end": 260,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 260,
+            "end": 261,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 262,
+            "end": 263,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 263,
+            "end": 264,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 265,
+            "end": 266,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 266,
+            "end": 267,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 268,
+            "end": 269,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 269,
+            "end": 270,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 271,
+            "end": 272,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 272,
+            "end": 273,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 274,
+            "end": 275,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 275,
+            "end": 276,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 277,
+            "end": 278,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 278,
+            "end": 279,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 280,
+            "end": 281,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 281,
+            "end": 282,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 283,
+            "end": 284,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 284,
+            "end": 285,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 286,
+            "end": 287,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 287,
+            "end": 288,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 289,
+            "end": 290,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 290,
+            "end": 291,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 292,
+            "end": 293,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 293,
+            "end": 294,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 295,
+            "end": 296,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 296,
+            "end": 297,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 298,
+            "end": 299,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 299,
+            "end": 300,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 301,
+            "end": 302,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 302,
+            "end": 303,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 304,
+            "end": 305,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 305,
+            "end": 306,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 307,
+            "end": 308,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 308,
+            "end": 309,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 310,
+            "end": 311,
+            "text": "1"
+           },
+           {
+            "type": "]",
+            "start": 311,
+            "end": 312,
+            "text": "]"
+           }
+          ]
+         }
+        ],
+        "language": "json"
+       },
+       {
+        "type": "fenced_code_block_delimiter",
+        "start": 313,
+        "end": 316,
+        "text": "```"
+       }
+      ]
+     },
+     {
+      "type": "fenced_code_block",
+      "start": 318,
+      "end": 412,
+      "children": [
+       {
+        "type": "fenced_code_block_delimiter",
+        "start": 318,
+        "end": 321,
+        "text": "```"
+       },
+       {
+        "type": "info_string",
+        "start": 321,
+        "end": 325,
+        "children": [
+         {
+          "type": "language",
+          "start": 321,
+          "end": 325,
+          "text": "json"
+         }
+        ]
+       },
+       {
+        "type": "block_continuation",
+        "start": 326,
+        "end": 326,
+        "text": ""
+       },
+       {
+        "type": "document",
+        "start": 326,
+        "end": 408,
+        "children": [
+         {
+          "type": "array",
+          "start": 326,
+          "end": 407,
+          "children": [
+           {
+            "type": "[",
+            "start": 326,
+            "end": 327,
+            "text": "["
+           },
+           {
+            "type": "number",
+            "start": 327,
+            "end": 328,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 328,
+            "end": 329,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 330,
+            "end": 331,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 331,
+            "end": 332,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 333,
+            "end": 334,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 334,
+            "end": 335,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 336,
+            "end": 337,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 337,
+            "end": 338,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 339,
+            "end": 340,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 340,
+            "end": 341,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 342,
+            "end": 343,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 343,
+            "end": 344,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 345,
+            "end": 346,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 346,
+            "end": 347,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 348,
+            "end": 349,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 349,
+            "end": 350,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 351,
+            "end": 352,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 352,
+            "end": 353,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 354,
+            "end": 355,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 355,
+            "end": 356,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 357,
+            "end": 358,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 358,
+            "end": 359,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 360,
+            "end": 361,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 361,
+            "end": 362,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 363,
+            "end": 364,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 364,
+            "end": 365,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 366,
+            "end": 367,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 367,
+            "end": 368,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 369,
+            "end": 370,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 370,
+            "end": 371,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 372,
+            "end": 373,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 373,
+            "end": 374,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 375,
+            "end": 376,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 376,
+            "end": 377,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 378,
+            "end": 379,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 379,
+            "end": 380,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 381,
+            "end": 382,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 382,
+            "end": 383,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 384,
+            "end": 385,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 385,
+            "end": 386,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 387,
+            "end": 388,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 388,
+            "end": 389,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 390,
+            "end": 391,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 391,
+            "end": 392,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 393,
+            "end": 394,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 394,
+            "end": 395,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 396,
+            "end": 397,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 397,
+            "end": 398,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 399,
+            "end": 400,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 400,
+            "end": 401,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 402,
+            "end": 403,
+            "text": "1"
+           },
+           {
+            "type": ",",
+            "start": 403,
+            "end": 404,
+            "text": ","
+           },
+           {
+            "type": "number",
+            "start": 405,
+            "end": 406,
+            "text": "1"
+           },
+           {
+            "type": "]",
+            "start": 406,
+            "end": 407,
+            "text": "]"
+           }
+          ]
+         }
+        ],
+        "language": "json"
+       },
+       {
+        "type": "fenced_code_block_delimiter",
+        "start": 408,
+        "end": 411,
+        "text": "```"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}
