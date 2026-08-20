@@ -2234,3 +2234,115 @@ Three samples confirm it, including a hand-built one at four widths. Reverse
 engineering a reference from two corpus files would have shipped a rule that is
 wrong on the third; the reference itself has to be the oracle. That is the
 reusable lesson, not the algorithm.
+
+---
+
+## 23. `flatten` walks a spine by field name, and not every spine has fields
+
+**Status:** open · **Cost:** **local** · **Languages:** Rust
+(`or_patterns.rs@60`)
+
+rustfmt wraps a long or-pattern by packing alternatives per line and putting the
+`|` at the **start** of each continuation line:
+
+```rust
+        LongVariantNameOne | LongVariantNameTwo
+        | LongVariantNameThree | LongVariantNameFour => {
+```
+
+Three IR expressions reach for that, and all three were measured rather than
+argued.
+
+### `each` — cannot break at all
+
+The committed rule is `["each", "named", ["seq", ["sp"], ["tok", "|"], ["sp"]]]`.
+There is no `group` and no `line`, so the pattern has no break point anywhere:
+at width 60 the arm runs to 95 columns. This is the state the corpus now
+records.
+
+### `fill` — right style, wrong packing
+
+`["fill", "named", ["seq", ["line"], ["tok", "|"], ["sp"]]]` produces the
+leading-`|` wrap correctly. **That is worth recording on its own: a `fill`
+separator may lead as well as trail.** Every shipped use of `fill` — CSS, JSON —
+puts the `line` last, so nothing had established that the separator's `line` can
+come first and put the operator at the head of the continuation line. It can.
+
+The packing is what fails:
+
+```
+        Alpha | Beta | Gamma | Delta | Epsilon | Zeta | Eta
+        | Theta
+        | Iota
+        | Kappa => "greek",
+```
+
+tree-sitter-rust builds `A | B | C | D` as a **left-nested** tree —
+`or_pattern(or_pattern(or_pattern(A, B), C), D)` — so `fill "named"` sees
+exactly two named children at every level: an inner `or_pattern` and one
+alternative. Each nesting level therefore takes its own fill decision, measured
+from the column where that whole subtree begins. Instrumented, every decision in
+the chain is taken at `pos=8`:
+
+```
+fill pos=8 content="LongVariantNameOne" next="LongVariantNameFour" bothFit=false
+fill pos=8 content="LongVariantNameOne" next="LongVariantNameThree" bothFit=false
+fill pos=8 content="LongVariantNameOne" next="LongVariantNameTwo"  bothFit=true
+```
+
+The same instrumentation on JSON and CSS shows `pos` advancing normally
+(`18 → 21`, `5 → 8`), which is the check that keeps this from being read as a
+`fill` defect. `fill` is correct; it is being handed a nested tree where it
+needs a flat run.
+
+### `flatten` — refuses, and the refusal is the finding
+
+`flatten` exists precisely to collect "a left-nested run of same-type,
+same-tightness operators into one flat list, so the whole chain breaks together
+instead of staircasing". This spine is same-type and left-nested — its target
+shape exactly. It still refuses:
+
+```
+rule for `or_pattern` wants Field("left") but found `or_pattern`
+```
+
+`flatten` finds the next spine node with
+`children.find(c => c.field === fields.left)`, reading `left` / `operator` /
+`right` from the package's `flatten_fields` header. tree-sitter-rust gives
+`or_pattern`'s children **no field names at all** — the tree is
+`[or_pattern, "|", identifier]`, every one of them fieldless. The opcode's
+spine-walk is field-driven, so a grammar that does not name its operands is
+invisible to it.
+
+### Why this is not entry 11
+
+Entry 11 is a spine of **alternating** types (`field_expression` /
+`call_expression`) with no group to hold it; it needs a flatten that tolerates a
+heterogeneous chain. This is a spine of a **single** type — the homogeneous case
+`flatten` already claims — blocked only by how it identifies the next link. Two
+different repairs:
+
+1. **Positional or type-based spine walk.** When `flatten_fields` does not apply,
+   take the first child whose type matches the named kind. Cheapest, and it makes
+   `flatten` work on any left-nested grammar rather than only on ones that label
+   their operands.
+2. **A declared spine per node type**, e.g. `flatten_fields` gaining an entry
+   keyed by kind. More precise, more package surface, and nothing yet needs the
+   precision.
+
+(1) unblocks this case and costs one fallback in the spine walk.
+
+### How it was found, which is the recurring part
+
+`leading_pipes.rs` was written as a dedicated probe for one construct — rustfmt
+deleting a leading `|` — and it contains only **short** patterns. The construct's
+harder half, what happens when the same pattern must break, was never in the
+corpus. Entry 16 again: a probe file isolates a construct and can still omit the
+half of it that costs something. `or_patterns.rs` now carries the long case, with
+no leading pipes, so it stays comparable and out of the incomparable table.
+
+**Also found and not yet filed:** `matches!(tag, ShortOne | ShortTwo)` refuses —
+`rule for token_tree wants the token , but found |`. The macro token-tree rule
+walks comma-separated trees only, so an or-pattern inside a macro invocation is
+a refusal on ordinary Rust. It is out of the corpus for now because adding it
+would fail gate 0; it wants its own probe and a `token_tree` fix.

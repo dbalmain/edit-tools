@@ -7,8 +7,8 @@ gate 2 idempotence      pass   (34/34)
 gate 3 non-destruction  pass   (34/34, method default)
 measure 4 overflow      38 lines (rustfmt 39)
 measure 5 size          package 2589 B gzip; runtime 13293 B gzip
-measure 6 agreement     12/16 @ width 100,  8/16 @ width 60  =  20/32 (62.5%)
-                        + 12 accepted = 100% review coverage, 0 stale,
+measure 6 agreement     13/17 @ width 100,  8/17 @ width 60  =  21/34 (61.8%)
+                        + 13 accepted = 100% review coverage, 0 stale,
                           0 unreviewed, 0 package-bug
 refusals                none
 ```
@@ -296,3 +296,43 @@ overrunning the box is exactly the readability failure this product is for.
 
 `merge`, unchanged, on better numbers: 20 agreement, 12 accepted, 0 stale, 0
 unreviewed, 0 package-bug, gates 0-3 perfect, rust/js parity perfect.
+
+## The or-pattern probe, and what the leading-pipe file was hiding
+
+`leading_pipes.rs` is the dedicated probe for rustfmt deleting a leading `|`.
+It contains only **short** patterns, so it never exercised what happens when the
+same construct has to break — and being declared incomparable, nothing it did
+could have shown up in the agreement number anyway.
+
+`or_patterns.rs` now carries the long case. It has **no** leading pipes, so it is
+comparable and stays out of the incomparable table; mixing the two constructs in
+one file is exactly what the stage-B brief calls a review reject.
+
+It is a well-behaved probe: **it agrees at width 100 and diverges at width 60**,
+so the construct is isolated to one width and the divergence has one cause.
+That cause is FINDINGS 23 — `flatten` identifies the next node in a left-nested
+spine by the `flatten_fields` names, and tree-sitter-rust gives `or_pattern`'s
+children no fields, so the one opcode built for this shape cannot walk it.
+
+Agreement moves 20/32 → **21/34**: the probe adds two pairs, one agreeing and one
+accepted.
+
+### A refusal the corpus does not yet carry
+
+Writing the probe turned up a second gap immediately. This is ordinary Rust:
+
+```rust
+matches!(tag, ShortOne | ShortTwo | ShortThree)
+```
+
+and the package refuses it:
+
+```
+rule for `token_tree` wants the token `,` but found `|`
+```
+
+The macro token-tree rule walks comma-separated trees only, so an or-pattern
+inside a macro invocation refuses at the cursor. It is **not** in the corpus,
+because adding it would fail gate 0 — which means the coverage number does not
+currently see it. It wants its own probe and a `token_tree` fix, and it is
+recorded in entry 23 so it is not rediscovered as new.
