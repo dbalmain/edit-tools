@@ -1,0 +1,13 @@
+<!-- Self-closing tags already written that way. prettier only inserts the
+     space before /> and wraps attributes; it does not invent an end tag. -->
+<root>
+  <br />
+  <img src="logo.png" alt="site logo" />
+  <input
+    type="text"
+    name="q"
+    value="search terms"
+    disabled="disabled"
+  />
+  <hr class="section-break" />
+</root>

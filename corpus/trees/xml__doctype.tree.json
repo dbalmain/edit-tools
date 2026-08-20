@@ -1,0 +1,564 @@
+{
+ "language": "xml",
+ "source_file": "corpus/src/xml/doctype.xml",
+ "source": "<!-- DOCTYPE with a PUBLIC identifier long enough to wrap. -->\n<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\">\n  <head>\n    <title>Sample</title>\n  </head>\n  <body>\n    <p>Hello</p>\n  </body>\n</html>\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 316,
+  "children": [
+   {
+    "type": "prolog",
+    "start": 0,
+    "end": 173,
+    "children": [
+     {
+      "type": "Comment",
+      "start": 0,
+      "end": 62,
+      "text": "<!-- DOCTYPE with a PUBLIC identifier long enough to wrap. -->"
+     },
+     {
+      "type": "doctypedecl",
+      "start": 63,
+      "end": 172,
+      "children": [
+       {
+        "type": "<!",
+        "start": 63,
+        "end": 65,
+        "text": "<!"
+       },
+       {
+        "type": "DOCTYPE",
+        "start": 65,
+        "end": 72,
+        "text": "DOCTYPE"
+       },
+       {
+        "type": "Name",
+        "start": 73,
+        "end": 77,
+        "text": "html"
+       },
+       {
+        "type": "ExternalID",
+        "start": 78,
+        "end": 171,
+        "children": [
+         {
+          "type": "PUBLIC",
+          "start": 78,
+          "end": 84,
+          "text": "PUBLIC"
+         },
+         {
+          "type": "PubidLiteral",
+          "start": 85,
+          "end": 119,
+          "children": [
+           {
+            "type": "\"",
+            "start": 85,
+            "end": 86,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 118,
+            "end": 119,
+            "text": "\""
+           }
+          ]
+         },
+         {
+          "type": "SystemLiteral",
+          "start": 120,
+          "end": 171,
+          "children": [
+           {
+            "type": "\"",
+            "start": 120,
+            "end": 121,
+            "text": "\""
+           },
+           {
+            "type": "URI",
+            "start": 121,
+            "end": 170,
+            "text": "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"
+           },
+           {
+            "type": "\"",
+            "start": 170,
+            "end": 171,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ">",
+        "start": 171,
+        "end": 172,
+        "text": ">"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "element",
+    "start": 173,
+    "end": 315,
+    "field": "root",
+    "children": [
+     {
+      "type": "STag",
+      "start": 173,
+      "end": 226,
+      "children": [
+       {
+        "type": "<",
+        "start": 173,
+        "end": 174,
+        "text": "<"
+       },
+       {
+        "type": "Name",
+        "start": 174,
+        "end": 178,
+        "text": "html"
+       },
+       {
+        "type": "Attribute",
+        "start": 179,
+        "end": 215,
+        "children": [
+         {
+          "type": "Name",
+          "start": 179,
+          "end": 184,
+          "text": "xmlns"
+         },
+         {
+          "type": "=",
+          "start": 184,
+          "end": 185,
+          "text": "="
+         },
+         {
+          "type": "AttValue",
+          "start": 185,
+          "end": 215,
+          "children": [
+           {
+            "type": "\"",
+            "start": 185,
+            "end": 186,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 214,
+            "end": 215,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "Attribute",
+        "start": 216,
+        "end": 225,
+        "children": [
+         {
+          "type": "Name",
+          "start": 216,
+          "end": 220,
+          "text": "lang"
+         },
+         {
+          "type": "=",
+          "start": 220,
+          "end": 221,
+          "text": "="
+         },
+         {
+          "type": "AttValue",
+          "start": 221,
+          "end": 225,
+          "children": [
+           {
+            "type": "\"",
+            "start": 221,
+            "end": 222,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 224,
+            "end": 225,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ">",
+        "start": 225,
+        "end": 226,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "content",
+      "start": 226,
+      "end": 308,
+      "children": [
+       {
+        "type": "CharData",
+        "start": 226,
+        "end": 229,
+        "text": "\n  "
+       },
+       {
+        "type": "element",
+        "start": 229,
+        "end": 271,
+        "children": [
+         {
+          "type": "STag",
+          "start": 229,
+          "end": 235,
+          "children": [
+           {
+            "type": "<",
+            "start": 229,
+            "end": 230,
+            "text": "<"
+           },
+           {
+            "type": "Name",
+            "start": 230,
+            "end": 234,
+            "text": "head"
+           },
+           {
+            "type": ">",
+            "start": 234,
+            "end": 235,
+            "text": ">"
+           }
+          ]
+         },
+         {
+          "type": "content",
+          "start": 235,
+          "end": 264,
+          "children": [
+           {
+            "type": "CharData",
+            "start": 235,
+            "end": 240,
+            "text": "\n    "
+           },
+           {
+            "type": "element",
+            "start": 240,
+            "end": 261,
+            "children": [
+             {
+              "type": "STag",
+              "start": 240,
+              "end": 247,
+              "children": [
+               {
+                "type": "<",
+                "start": 240,
+                "end": 241,
+                "text": "<"
+               },
+               {
+                "type": "Name",
+                "start": 241,
+                "end": 246,
+                "text": "title"
+               },
+               {
+                "type": ">",
+                "start": 246,
+                "end": 247,
+                "text": ">"
+               }
+              ]
+             },
+             {
+              "type": "content",
+              "start": 247,
+              "end": 253,
+              "children": [
+               {
+                "type": "CharData",
+                "start": 247,
+                "end": 253,
+                "text": "Sample"
+               }
+              ]
+             },
+             {
+              "type": "ETag",
+              "start": 253,
+              "end": 261,
+              "children": [
+               {
+                "type": "</",
+                "start": 253,
+                "end": 255,
+                "text": "</"
+               },
+               {
+                "type": "Name",
+                "start": 255,
+                "end": 260,
+                "text": "title"
+               },
+               {
+                "type": ">",
+                "start": 260,
+                "end": 261,
+                "text": ">"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "CharData",
+            "start": 261,
+            "end": 264,
+            "text": "\n  "
+           }
+          ]
+         },
+         {
+          "type": "ETag",
+          "start": 264,
+          "end": 271,
+          "children": [
+           {
+            "type": "</",
+            "start": 264,
+            "end": 266,
+            "text": "</"
+           },
+           {
+            "type": "Name",
+            "start": 266,
+            "end": 270,
+            "text": "head"
+           },
+           {
+            "type": ">",
+            "start": 270,
+            "end": 271,
+            "text": ">"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "CharData",
+        "start": 271,
+        "end": 274,
+        "text": "\n  "
+       },
+       {
+        "type": "element",
+        "start": 274,
+        "end": 307,
+        "children": [
+         {
+          "type": "STag",
+          "start": 274,
+          "end": 280,
+          "children": [
+           {
+            "type": "<",
+            "start": 274,
+            "end": 275,
+            "text": "<"
+           },
+           {
+            "type": "Name",
+            "start": 275,
+            "end": 279,
+            "text": "body"
+           },
+           {
+            "type": ">",
+            "start": 279,
+            "end": 280,
+            "text": ">"
+           }
+          ]
+         },
+         {
+          "type": "content",
+          "start": 280,
+          "end": 300,
+          "children": [
+           {
+            "type": "CharData",
+            "start": 280,
+            "end": 285,
+            "text": "\n    "
+           },
+           {
+            "type": "element",
+            "start": 285,
+            "end": 297,
+            "children": [
+             {
+              "type": "STag",
+              "start": 285,
+              "end": 288,
+              "children": [
+               {
+                "type": "<",
+                "start": 285,
+                "end": 286,
+                "text": "<"
+               },
+               {
+                "type": "Name",
+                "start": 286,
+                "end": 287,
+                "text": "p"
+               },
+               {
+                "type": ">",
+                "start": 287,
+                "end": 288,
+                "text": ">"
+               }
+              ]
+             },
+             {
+              "type": "content",
+              "start": 288,
+              "end": 293,
+              "children": [
+               {
+                "type": "CharData",
+                "start": 288,
+                "end": 293,
+                "text": "Hello"
+               }
+              ]
+             },
+             {
+              "type": "ETag",
+              "start": 293,
+              "end": 297,
+              "children": [
+               {
+                "type": "</",
+                "start": 293,
+                "end": 295,
+                "text": "</"
+               },
+               {
+                "type": "Name",
+                "start": 295,
+                "end": 296,
+                "text": "p"
+               },
+               {
+                "type": ">",
+                "start": 296,
+                "end": 297,
+                "text": ">"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "CharData",
+            "start": 297,
+            "end": 300,
+            "text": "\n  "
+           }
+          ]
+         },
+         {
+          "type": "ETag",
+          "start": 300,
+          "end": 307,
+          "children": [
+           {
+            "type": "</",
+            "start": 300,
+            "end": 302,
+            "text": "</"
+           },
+           {
+            "type": "Name",
+            "start": 302,
+            "end": 306,
+            "text": "body"
+           },
+           {
+            "type": ">",
+            "start": 306,
+            "end": 307,
+            "text": ">"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "CharData",
+        "start": 307,
+        "end": 308,
+        "text": "\n"
+       }
+      ]
+     },
+     {
+      "type": "ETag",
+      "start": 308,
+      "end": 315,
+      "children": [
+       {
+        "type": "</",
+        "start": 308,
+        "end": 310,
+        "text": "</"
+       },
+       {
+        "type": "Name",
+        "start": 310,
+        "end": 314,
+        "text": "html"
+       },
+       {
+        "type": ">",
+        "start": 314,
+        "end": 315,
+        "text": ">"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

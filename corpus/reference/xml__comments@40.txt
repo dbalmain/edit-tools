@@ -1,0 +1,21 @@
+<!-- File-level comment at the very top; XMLDecl is absent so this can lead. -->
+<root
+  a="1"
+><!-- after the opening tag -->
+  <!-- own-line before the first child -->
+  <child
+    b="2"
+  /> <!-- trailing on a self-closing child -->
+  <!-- own-line between children -->
+  <child c="3">
+    text<!-- inside mixed content -->more
+    <!-- own-line before the closing tag -->
+  </child>
+  <only-comment>
+    <!-- the only child of an otherwise empty element -->
+  </only-comment>
+  <!-- consecutive own-line comment -->
+  <!-- second of the pair -->
+<!-- before the closing tag of root, glued to the previous line's leftover -->
+</root>
+<!-- comment at the end of the file -->

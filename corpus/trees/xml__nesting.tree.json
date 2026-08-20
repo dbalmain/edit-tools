@@ -1,0 +1,958 @@
+{
+ "language": "xml",
+ "source_file": "corpus/src/xml/nesting.xml",
+ "source": "<!-- Nested start-tags. Inner tags that fit stay flat when a parent wraps. -->\n<catalog alpha=\"aaaaaaaaaaaaaaaa\" beta=\"bbbbbbbbbbbbbbbb\" gamma=\"cccccccccccccccc\">\n  <book id=\"1\" sku=\"alpha-01\">\n    <title lang=\"en\">Tiny</title>\n    <!-- a child that fits with room to spare after ancestors wrap -->\n    <author xml:id=\"ann\">Ann</author>\n  </book>\n  <book id=\"2\" sku=\"glued\"><chapter n=\"1\"><note kind=\"ok\">fits</note></chapter></book>\n</catalog>\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 445,
+  "children": [
+   {
+    "type": "prolog",
+    "start": 0,
+    "end": 79,
+    "children": [
+     {
+      "type": "Comment",
+      "start": 0,
+      "end": 78,
+      "text": "<!-- Nested start-tags. Inner tags that fit stay flat when a parent wraps. -->"
+     }
+    ]
+   },
+   {
+    "type": "element",
+    "start": 79,
+    "end": 444,
+    "field": "root",
+    "children": [
+     {
+      "type": "STag",
+      "start": 79,
+      "end": 162,
+      "children": [
+       {
+        "type": "<",
+        "start": 79,
+        "end": 80,
+        "text": "<"
+       },
+       {
+        "type": "Name",
+        "start": 80,
+        "end": 87,
+        "text": "catalog"
+       },
+       {
+        "type": "Attribute",
+        "start": 88,
+        "end": 112,
+        "children": [
+         {
+          "type": "Name",
+          "start": 88,
+          "end": 93,
+          "text": "alpha"
+         },
+         {
+          "type": "=",
+          "start": 93,
+          "end": 94,
+          "text": "="
+         },
+         {
+          "type": "AttValue",
+          "start": 94,
+          "end": 112,
+          "children": [
+           {
+            "type": "\"",
+            "start": 94,
+            "end": 95,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 111,
+            "end": 112,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "Attribute",
+        "start": 113,
+        "end": 136,
+        "children": [
+         {
+          "type": "Name",
+          "start": 113,
+          "end": 117,
+          "text": "beta"
+         },
+         {
+          "type": "=",
+          "start": 117,
+          "end": 118,
+          "text": "="
+         },
+         {
+          "type": "AttValue",
+          "start": 118,
+          "end": 136,
+          "children": [
+           {
+            "type": "\"",
+            "start": 118,
+            "end": 119,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 135,
+            "end": 136,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "Attribute",
+        "start": 137,
+        "end": 161,
+        "children": [
+         {
+          "type": "Name",
+          "start": 137,
+          "end": 142,
+          "text": "gamma"
+         },
+         {
+          "type": "=",
+          "start": 142,
+          "end": 143,
+          "text": "="
+         },
+         {
+          "type": "AttValue",
+          "start": 143,
+          "end": 161,
+          "children": [
+           {
+            "type": "\"",
+            "start": 143,
+            "end": 144,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 160,
+            "end": 161,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ">",
+        "start": 161,
+        "end": 162,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "content",
+      "start": 162,
+      "end": 434,
+      "children": [
+       {
+        "type": "CharData",
+        "start": 162,
+        "end": 165,
+        "text": "\n  "
+       },
+       {
+        "type": "element",
+        "start": 165,
+        "end": 346,
+        "children": [
+         {
+          "type": "STag",
+          "start": 165,
+          "end": 193,
+          "children": [
+           {
+            "type": "<",
+            "start": 165,
+            "end": 166,
+            "text": "<"
+           },
+           {
+            "type": "Name",
+            "start": 166,
+            "end": 170,
+            "text": "book"
+           },
+           {
+            "type": "Attribute",
+            "start": 171,
+            "end": 177,
+            "children": [
+             {
+              "type": "Name",
+              "start": 171,
+              "end": 173,
+              "text": "id"
+             },
+             {
+              "type": "=",
+              "start": 173,
+              "end": 174,
+              "text": "="
+             },
+             {
+              "type": "AttValue",
+              "start": 174,
+              "end": 177,
+              "children": [
+               {
+                "type": "\"",
+                "start": 174,
+                "end": 175,
+                "text": "\""
+               },
+               {
+                "type": "\"",
+                "start": 176,
+                "end": 177,
+                "text": "\""
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "Attribute",
+            "start": 178,
+            "end": 192,
+            "children": [
+             {
+              "type": "Name",
+              "start": 178,
+              "end": 181,
+              "text": "sku"
+             },
+             {
+              "type": "=",
+              "start": 181,
+              "end": 182,
+              "text": "="
+             },
+             {
+              "type": "AttValue",
+              "start": 182,
+              "end": 192,
+              "children": [
+               {
+                "type": "\"",
+                "start": 182,
+                "end": 183,
+                "text": "\""
+               },
+               {
+                "type": "\"",
+                "start": 191,
+                "end": 192,
+                "text": "\""
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ">",
+            "start": 192,
+            "end": 193,
+            "text": ">"
+           }
+          ]
+         },
+         {
+          "type": "content",
+          "start": 193,
+          "end": 339,
+          "children": [
+           {
+            "type": "CharData",
+            "start": 193,
+            "end": 198,
+            "text": "\n    "
+           },
+           {
+            "type": "element",
+            "start": 198,
+            "end": 227,
+            "children": [
+             {
+              "type": "STag",
+              "start": 198,
+              "end": 215,
+              "children": [
+               {
+                "type": "<",
+                "start": 198,
+                "end": 199,
+                "text": "<"
+               },
+               {
+                "type": "Name",
+                "start": 199,
+                "end": 204,
+                "text": "title"
+               },
+               {
+                "type": "Attribute",
+                "start": 205,
+                "end": 214,
+                "children": [
+                 {
+                  "type": "Name",
+                  "start": 205,
+                  "end": 209,
+                  "text": "lang"
+                 },
+                 {
+                  "type": "=",
+                  "start": 209,
+                  "end": 210,
+                  "text": "="
+                 },
+                 {
+                  "type": "AttValue",
+                  "start": 210,
+                  "end": 214,
+                  "children": [
+                   {
+                    "type": "\"",
+                    "start": 210,
+                    "end": 211,
+                    "text": "\""
+                   },
+                   {
+                    "type": "\"",
+                    "start": 213,
+                    "end": 214,
+                    "text": "\""
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": ">",
+                "start": 214,
+                "end": 215,
+                "text": ">"
+               }
+              ]
+             },
+             {
+              "type": "content",
+              "start": 215,
+              "end": 219,
+              "children": [
+               {
+                "type": "CharData",
+                "start": 215,
+                "end": 219,
+                "text": "Tiny"
+               }
+              ]
+             },
+             {
+              "type": "ETag",
+              "start": 219,
+              "end": 227,
+              "children": [
+               {
+                "type": "</",
+                "start": 219,
+                "end": 221,
+                "text": "</"
+               },
+               {
+                "type": "Name",
+                "start": 221,
+                "end": 226,
+                "text": "title"
+               },
+               {
+                "type": ">",
+                "start": 226,
+                "end": 227,
+                "text": ">"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "CharData",
+            "start": 227,
+            "end": 232,
+            "text": "\n    "
+           },
+           {
+            "type": "Comment",
+            "start": 232,
+            "end": 298,
+            "text": "<!-- a child that fits with room to spare after ancestors wrap -->"
+           },
+           {
+            "type": "CharData",
+            "start": 298,
+            "end": 303,
+            "text": "\n    "
+           },
+           {
+            "type": "element",
+            "start": 303,
+            "end": 336,
+            "children": [
+             {
+              "type": "STag",
+              "start": 303,
+              "end": 324,
+              "children": [
+               {
+                "type": "<",
+                "start": 303,
+                "end": 304,
+                "text": "<"
+               },
+               {
+                "type": "Name",
+                "start": 304,
+                "end": 310,
+                "text": "author"
+               },
+               {
+                "type": "Attribute",
+                "start": 311,
+                "end": 323,
+                "children": [
+                 {
+                  "type": "Name",
+                  "start": 311,
+                  "end": 317,
+                  "text": "xml:id"
+                 },
+                 {
+                  "type": "=",
+                  "start": 317,
+                  "end": 318,
+                  "text": "="
+                 },
+                 {
+                  "type": "AttValue",
+                  "start": 318,
+                  "end": 323,
+                  "children": [
+                   {
+                    "type": "\"",
+                    "start": 318,
+                    "end": 319,
+                    "text": "\""
+                   },
+                   {
+                    "type": "\"",
+                    "start": 322,
+                    "end": 323,
+                    "text": "\""
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": ">",
+                "start": 323,
+                "end": 324,
+                "text": ">"
+               }
+              ]
+             },
+             {
+              "type": "content",
+              "start": 324,
+              "end": 327,
+              "children": [
+               {
+                "type": "CharData",
+                "start": 324,
+                "end": 327,
+                "text": "Ann"
+               }
+              ]
+             },
+             {
+              "type": "ETag",
+              "start": 327,
+              "end": 336,
+              "children": [
+               {
+                "type": "</",
+                "start": 327,
+                "end": 329,
+                "text": "</"
+               },
+               {
+                "type": "Name",
+                "start": 329,
+                "end": 335,
+                "text": "author"
+               },
+               {
+                "type": ">",
+                "start": 335,
+                "end": 336,
+                "text": ">"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "CharData",
+            "start": 336,
+            "end": 339,
+            "text": "\n  "
+           }
+          ]
+         },
+         {
+          "type": "ETag",
+          "start": 339,
+          "end": 346,
+          "children": [
+           {
+            "type": "</",
+            "start": 339,
+            "end": 341,
+            "text": "</"
+           },
+           {
+            "type": "Name",
+            "start": 341,
+            "end": 345,
+            "text": "book"
+           },
+           {
+            "type": ">",
+            "start": 345,
+            "end": 346,
+            "text": ">"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "CharData",
+        "start": 346,
+        "end": 349,
+        "text": "\n  "
+       },
+       {
+        "type": "element",
+        "start": 349,
+        "end": 433,
+        "children": [
+         {
+          "type": "STag",
+          "start": 349,
+          "end": 374,
+          "children": [
+           {
+            "type": "<",
+            "start": 349,
+            "end": 350,
+            "text": "<"
+           },
+           {
+            "type": "Name",
+            "start": 350,
+            "end": 354,
+            "text": "book"
+           },
+           {
+            "type": "Attribute",
+            "start": 355,
+            "end": 361,
+            "children": [
+             {
+              "type": "Name",
+              "start": 355,
+              "end": 357,
+              "text": "id"
+             },
+             {
+              "type": "=",
+              "start": 357,
+              "end": 358,
+              "text": "="
+             },
+             {
+              "type": "AttValue",
+              "start": 358,
+              "end": 361,
+              "children": [
+               {
+                "type": "\"",
+                "start": 358,
+                "end": 359,
+                "text": "\""
+               },
+               {
+                "type": "\"",
+                "start": 360,
+                "end": 361,
+                "text": "\""
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "Attribute",
+            "start": 362,
+            "end": 373,
+            "children": [
+             {
+              "type": "Name",
+              "start": 362,
+              "end": 365,
+              "text": "sku"
+             },
+             {
+              "type": "=",
+              "start": 365,
+              "end": 366,
+              "text": "="
+             },
+             {
+              "type": "AttValue",
+              "start": 366,
+              "end": 373,
+              "children": [
+               {
+                "type": "\"",
+                "start": 366,
+                "end": 367,
+                "text": "\""
+               },
+               {
+                "type": "\"",
+                "start": 372,
+                "end": 373,
+                "text": "\""
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ">",
+            "start": 373,
+            "end": 374,
+            "text": ">"
+           }
+          ]
+         },
+         {
+          "type": "content",
+          "start": 374,
+          "end": 426,
+          "children": [
+           {
+            "type": "element",
+            "start": 374,
+            "end": 426,
+            "children": [
+             {
+              "type": "STag",
+              "start": 374,
+              "end": 389,
+              "children": [
+               {
+                "type": "<",
+                "start": 374,
+                "end": 375,
+                "text": "<"
+               },
+               {
+                "type": "Name",
+                "start": 375,
+                "end": 382,
+                "text": "chapter"
+               },
+               {
+                "type": "Attribute",
+                "start": 383,
+                "end": 388,
+                "children": [
+                 {
+                  "type": "Name",
+                  "start": 383,
+                  "end": 384,
+                  "text": "n"
+                 },
+                 {
+                  "type": "=",
+                  "start": 384,
+                  "end": 385,
+                  "text": "="
+                 },
+                 {
+                  "type": "AttValue",
+                  "start": 385,
+                  "end": 388,
+                  "children": [
+                   {
+                    "type": "\"",
+                    "start": 385,
+                    "end": 386,
+                    "text": "\""
+                   },
+                   {
+                    "type": "\"",
+                    "start": 387,
+                    "end": 388,
+                    "text": "\""
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": ">",
+                "start": 388,
+                "end": 389,
+                "text": ">"
+               }
+              ]
+             },
+             {
+              "type": "content",
+              "start": 389,
+              "end": 416,
+              "children": [
+               {
+                "type": "element",
+                "start": 389,
+                "end": 416,
+                "children": [
+                 {
+                  "type": "STag",
+                  "start": 389,
+                  "end": 405,
+                  "children": [
+                   {
+                    "type": "<",
+                    "start": 389,
+                    "end": 390,
+                    "text": "<"
+                   },
+                   {
+                    "type": "Name",
+                    "start": 390,
+                    "end": 394,
+                    "text": "note"
+                   },
+                   {
+                    "type": "Attribute",
+                    "start": 395,
+                    "end": 404,
+                    "children": [
+                     {
+                      "type": "Name",
+                      "start": 395,
+                      "end": 399,
+                      "text": "kind"
+                     },
+                     {
+                      "type": "=",
+                      "start": 399,
+                      "end": 400,
+                      "text": "="
+                     },
+                     {
+                      "type": "AttValue",
+                      "start": 400,
+                      "end": 404,
+                      "children": [
+                       {
+                        "type": "\"",
+                        "start": 400,
+                        "end": 401,
+                        "text": "\""
+                       },
+                       {
+                        "type": "\"",
+                        "start": 403,
+                        "end": 404,
+                        "text": "\""
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   {
+                    "type": ">",
+                    "start": 404,
+                    "end": 405,
+                    "text": ">"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "content",
+                  "start": 405,
+                  "end": 409,
+                  "children": [
+                   {
+                    "type": "CharData",
+                    "start": 405,
+                    "end": 409,
+                    "text": "fits"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "ETag",
+                  "start": 409,
+                  "end": 416,
+                  "children": [
+                   {
+                    "type": "</",
+                    "start": 409,
+                    "end": 411,
+                    "text": "</"
+                   },
+                   {
+                    "type": "Name",
+                    "start": 411,
+                    "end": 415,
+                    "text": "note"
+                   },
+                   {
+                    "type": ">",
+                    "start": 415,
+                    "end": 416,
+                    "text": ">"
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": "ETag",
+              "start": 416,
+              "end": 426,
+              "children": [
+               {
+                "type": "</",
+                "start": 416,
+                "end": 418,
+                "text": "</"
+               },
+               {
+                "type": "Name",
+                "start": 418,
+                "end": 425,
+                "text": "chapter"
+               },
+               {
+                "type": ">",
+                "start": 425,
+                "end": 426,
+                "text": ">"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "ETag",
+          "start": 426,
+          "end": 433,
+          "children": [
+           {
+            "type": "</",
+            "start": 426,
+            "end": 428,
+            "text": "</"
+           },
+           {
+            "type": "Name",
+            "start": 428,
+            "end": 432,
+            "text": "book"
+           },
+           {
+            "type": ">",
+            "start": 432,
+            "end": 433,
+            "text": ">"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "CharData",
+        "start": 433,
+        "end": 434,
+        "text": "\n"
+       }
+      ]
+     },
+     {
+      "type": "ETag",
+      "start": 434,
+      "end": 444,
+      "children": [
+       {
+        "type": "</",
+        "start": 434,
+        "end": 436,
+        "text": "</"
+       },
+       {
+        "type": "Name",
+        "start": 436,
+        "end": 443,
+        "text": "catalog"
+       },
+       {
+        "type": ">",
+        "start": 443,
+        "end": 444,
+        "text": ">"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

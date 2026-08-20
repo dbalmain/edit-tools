@@ -1,0 +1,17 @@
+<!-- Attribute quote style is preserved; mixed quotes in one tag. -->
+<root>
+  <item
+    a="double"
+    b='single'
+    c="keep"
+  />
+  <item
+    a="he said 'hello'"
+    b='she said "hi"'
+  />
+  <!-- quotes around a URL-shaped value, still preserved -->
+  <item
+    href="https://example.com/a?x=1&amp;y=2"
+    alt='A "quoted" label'
+  />
+</root>

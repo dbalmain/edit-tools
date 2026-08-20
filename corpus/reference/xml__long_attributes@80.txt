@@ -1,0 +1,13 @@
+<!-- The construct that overflows: attribute lists on a start-tag. -->
+<root>
+  <!-- flat at 80, one attribute per line at 40 -->
+  <item a="one" b="two" c="three" d="four" e="five" />
+  <item aa="alpha" bb="bravo" cc="charlie" dd="delta" />
+  <!-- already long enough that 80 wraps too -->
+  <item
+    alpha="aaaaaaaaaaaa"
+    beta="bbbbbbbbbbbb"
+    gamma="cccccccccccc"
+    delta="dddddddddddd"
+  />
+</root>

@@ -1,0 +1,520 @@
+{
+ "language": "xml",
+ "source_file": "corpus/src/xml/comments.xml",
+ "source": "<!-- File-level comment at the very top; XMLDecl is absent so this can lead. -->\n<root a=\"1\"><!-- after the opening tag -->\n  <!-- own-line before the first child -->\n  <child b=\"2\"/> <!-- trailing on a self-closing child -->\n  <!-- own-line between children -->\n  <child c=\"3\">\n    text<!-- inside mixed content -->more\n    <!-- own-line before the closing tag -->\n  </child>\n  <only-comment>\n    <!-- the only child of an otherwise empty element -->\n  </only-comment>\n  <!-- consecutive own-line comment -->\n  <!-- second of the pair -->\n<!-- before the closing tag of root, glued to the previous line's leftover -->\n</root>\n<!-- comment at the end of the file -->\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 667,
+  "children": [
+   {
+    "type": "prolog",
+    "start": 0,
+    "end": 81,
+    "children": [
+     {
+      "type": "Comment",
+      "start": 0,
+      "end": 80,
+      "text": "<!-- File-level comment at the very top; XMLDecl is absent so this can lead. -->"
+     }
+    ]
+   },
+   {
+    "type": "element",
+    "start": 81,
+    "end": 626,
+    "field": "root",
+    "children": [
+     {
+      "type": "STag",
+      "start": 81,
+      "end": 93,
+      "children": [
+       {
+        "type": "<",
+        "start": 81,
+        "end": 82,
+        "text": "<"
+       },
+       {
+        "type": "Name",
+        "start": 82,
+        "end": 86,
+        "text": "root"
+       },
+       {
+        "type": "Attribute",
+        "start": 87,
+        "end": 92,
+        "children": [
+         {
+          "type": "Name",
+          "start": 87,
+          "end": 88,
+          "text": "a"
+         },
+         {
+          "type": "=",
+          "start": 88,
+          "end": 89,
+          "text": "="
+         },
+         {
+          "type": "AttValue",
+          "start": 89,
+          "end": 92,
+          "children": [
+           {
+            "type": "\"",
+            "start": 89,
+            "end": 90,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 91,
+            "end": 92,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ">",
+        "start": 92,
+        "end": 93,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "content",
+      "start": 93,
+      "end": 619,
+      "children": [
+       {
+        "type": "Comment",
+        "start": 93,
+        "end": 123,
+        "text": "<!-- after the opening tag -->"
+       },
+       {
+        "type": "CharData",
+        "start": 123,
+        "end": 126,
+        "text": "\n  "
+       },
+       {
+        "type": "Comment",
+        "start": 126,
+        "end": 166,
+        "text": "<!-- own-line before the first child -->"
+       },
+       {
+        "type": "CharData",
+        "start": 166,
+        "end": 169,
+        "text": "\n  "
+       },
+       {
+        "type": "element",
+        "start": 169,
+        "end": 183,
+        "children": [
+         {
+          "type": "EmptyElemTag",
+          "start": 169,
+          "end": 183,
+          "children": [
+           {
+            "type": "<",
+            "start": 169,
+            "end": 170,
+            "text": "<"
+           },
+           {
+            "type": "Name",
+            "start": 170,
+            "end": 175,
+            "text": "child"
+           },
+           {
+            "type": "Attribute",
+            "start": 176,
+            "end": 181,
+            "children": [
+             {
+              "type": "Name",
+              "start": 176,
+              "end": 177,
+              "text": "b"
+             },
+             {
+              "type": "=",
+              "start": 177,
+              "end": 178,
+              "text": "="
+             },
+             {
+              "type": "AttValue",
+              "start": 178,
+              "end": 181,
+              "children": [
+               {
+                "type": "\"",
+                "start": 178,
+                "end": 179,
+                "text": "\""
+               },
+               {
+                "type": "\"",
+                "start": 180,
+                "end": 181,
+                "text": "\""
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "/>",
+            "start": 181,
+            "end": 183,
+            "text": "/>"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "CharData",
+        "start": 183,
+        "end": 184,
+        "text": " "
+       },
+       {
+        "type": "Comment",
+        "start": 184,
+        "end": 225,
+        "text": "<!-- trailing on a self-closing child -->"
+       },
+       {
+        "type": "CharData",
+        "start": 225,
+        "end": 228,
+        "text": "\n  "
+       },
+       {
+        "type": "Comment",
+        "start": 228,
+        "end": 262,
+        "text": "<!-- own-line between children -->"
+       },
+       {
+        "type": "CharData",
+        "start": 262,
+        "end": 265,
+        "text": "\n  "
+       },
+       {
+        "type": "element",
+        "start": 265,
+        "end": 376,
+        "children": [
+         {
+          "type": "STag",
+          "start": 265,
+          "end": 278,
+          "children": [
+           {
+            "type": "<",
+            "start": 265,
+            "end": 266,
+            "text": "<"
+           },
+           {
+            "type": "Name",
+            "start": 266,
+            "end": 271,
+            "text": "child"
+           },
+           {
+            "type": "Attribute",
+            "start": 272,
+            "end": 277,
+            "children": [
+             {
+              "type": "Name",
+              "start": 272,
+              "end": 273,
+              "text": "c"
+             },
+             {
+              "type": "=",
+              "start": 273,
+              "end": 274,
+              "text": "="
+             },
+             {
+              "type": "AttValue",
+              "start": 274,
+              "end": 277,
+              "children": [
+               {
+                "type": "\"",
+                "start": 274,
+                "end": 275,
+                "text": "\""
+               },
+               {
+                "type": "\"",
+                "start": 276,
+                "end": 277,
+                "text": "\""
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ">",
+            "start": 277,
+            "end": 278,
+            "text": ">"
+           }
+          ]
+         },
+         {
+          "type": "content",
+          "start": 278,
+          "end": 368,
+          "children": [
+           {
+            "type": "CharData",
+            "start": 278,
+            "end": 287,
+            "text": "\n    text"
+           },
+           {
+            "type": "Comment",
+            "start": 287,
+            "end": 316,
+            "text": "<!-- inside mixed content -->"
+           },
+           {
+            "type": "CharData",
+            "start": 316,
+            "end": 325,
+            "text": "more\n    "
+           },
+           {
+            "type": "Comment",
+            "start": 325,
+            "end": 365,
+            "text": "<!-- own-line before the closing tag -->"
+           },
+           {
+            "type": "CharData",
+            "start": 365,
+            "end": 368,
+            "text": "\n  "
+           }
+          ]
+         },
+         {
+          "type": "ETag",
+          "start": 368,
+          "end": 376,
+          "children": [
+           {
+            "type": "</",
+            "start": 368,
+            "end": 370,
+            "text": "</"
+           },
+           {
+            "type": "Name",
+            "start": 370,
+            "end": 375,
+            "text": "child"
+           },
+           {
+            "type": ">",
+            "start": 375,
+            "end": 376,
+            "text": ">"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "CharData",
+        "start": 376,
+        "end": 379,
+        "text": "\n  "
+       },
+       {
+        "type": "element",
+        "start": 379,
+        "end": 469,
+        "children": [
+         {
+          "type": "STag",
+          "start": 379,
+          "end": 393,
+          "children": [
+           {
+            "type": "<",
+            "start": 379,
+            "end": 380,
+            "text": "<"
+           },
+           {
+            "type": "Name",
+            "start": 380,
+            "end": 392,
+            "text": "only-comment"
+           },
+           {
+            "type": ">",
+            "start": 392,
+            "end": 393,
+            "text": ">"
+           }
+          ]
+         },
+         {
+          "type": "content",
+          "start": 393,
+          "end": 454,
+          "children": [
+           {
+            "type": "CharData",
+            "start": 393,
+            "end": 398,
+            "text": "\n    "
+           },
+           {
+            "type": "Comment",
+            "start": 398,
+            "end": 451,
+            "text": "<!-- the only child of an otherwise empty element -->"
+           },
+           {
+            "type": "CharData",
+            "start": 451,
+            "end": 454,
+            "text": "\n  "
+           }
+          ]
+         },
+         {
+          "type": "ETag",
+          "start": 454,
+          "end": 469,
+          "children": [
+           {
+            "type": "</",
+            "start": 454,
+            "end": 456,
+            "text": "</"
+           },
+           {
+            "type": "Name",
+            "start": 456,
+            "end": 468,
+            "text": "only-comment"
+           },
+           {
+            "type": ">",
+            "start": 468,
+            "end": 469,
+            "text": ">"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "CharData",
+        "start": 469,
+        "end": 472,
+        "text": "\n  "
+       },
+       {
+        "type": "Comment",
+        "start": 472,
+        "end": 509,
+        "text": "<!-- consecutive own-line comment -->"
+       },
+       {
+        "type": "CharData",
+        "start": 509,
+        "end": 512,
+        "text": "\n  "
+       },
+       {
+        "type": "Comment",
+        "start": 512,
+        "end": 539,
+        "text": "<!-- second of the pair -->"
+       },
+       {
+        "type": "CharData",
+        "start": 539,
+        "end": 540,
+        "text": "\n"
+       },
+       {
+        "type": "Comment",
+        "start": 540,
+        "end": 618,
+        "text": "<!-- before the closing tag of root, glued to the previous line's leftover -->"
+       },
+       {
+        "type": "CharData",
+        "start": 618,
+        "end": 619,
+        "text": "\n"
+       }
+      ]
+     },
+     {
+      "type": "ETag",
+      "start": 619,
+      "end": 626,
+      "children": [
+       {
+        "type": "</",
+        "start": 619,
+        "end": 621,
+        "text": "</"
+       },
+       {
+        "type": "Name",
+        "start": 621,
+        "end": 625,
+        "text": "root"
+       },
+       {
+        "type": ">",
+        "start": 625,
+        "end": 626,
+        "text": ">"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "Comment",
+    "start": 627,
+    "end": 666,
+    "text": "<!-- comment at the end of the file -->"
+   }
+  ]
+ }
+}

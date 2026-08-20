@@ -1,0 +1,792 @@
+{
+ "language": "xml",
+ "source_file": "corpus/src/xml/mixed_content.xml",
+ "source": "<!-- Text and elements as siblings: the shape a node-type table finds hardest. -->\n<article>\n  <p>Hello <em>world</em> and a somewhat longer run of text.</p>\n  <p>A short <a href=\"https://example.com/path\">link</a> in a sentence.</p>\n  <!-- glued mixed content, no extra spaces around the child -->\n  <p>before<b>bold</b>after</p>\n  <p>Price: <value unit=\"usd\" amount=\"12.00\"/> plus tax.</p>\n</article>\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 403,
+  "children": [
+   {
+    "type": "prolog",
+    "start": 0,
+    "end": 83,
+    "children": [
+     {
+      "type": "Comment",
+      "start": 0,
+      "end": 82,
+      "text": "<!-- Text and elements as siblings: the shape a node-type table finds hardest. -->"
+     }
+    ]
+   },
+   {
+    "type": "element",
+    "start": 83,
+    "end": 402,
+    "field": "root",
+    "children": [
+     {
+      "type": "STag",
+      "start": 83,
+      "end": 92,
+      "children": [
+       {
+        "type": "<",
+        "start": 83,
+        "end": 84,
+        "text": "<"
+       },
+       {
+        "type": "Name",
+        "start": 84,
+        "end": 91,
+        "text": "article"
+       },
+       {
+        "type": ">",
+        "start": 91,
+        "end": 92,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "content",
+      "start": 92,
+      "end": 392,
+      "children": [
+       {
+        "type": "CharData",
+        "start": 92,
+        "end": 95,
+        "text": "\n  "
+       },
+       {
+        "type": "element",
+        "start": 95,
+        "end": 157,
+        "children": [
+         {
+          "type": "STag",
+          "start": 95,
+          "end": 98,
+          "children": [
+           {
+            "type": "<",
+            "start": 95,
+            "end": 96,
+            "text": "<"
+           },
+           {
+            "type": "Name",
+            "start": 96,
+            "end": 97,
+            "text": "p"
+           },
+           {
+            "type": ">",
+            "start": 97,
+            "end": 98,
+            "text": ">"
+           }
+          ]
+         },
+         {
+          "type": "content",
+          "start": 98,
+          "end": 153,
+          "children": [
+           {
+            "type": "CharData",
+            "start": 98,
+            "end": 104,
+            "text": "Hello "
+           },
+           {
+            "type": "element",
+            "start": 104,
+            "end": 118,
+            "children": [
+             {
+              "type": "STag",
+              "start": 104,
+              "end": 108,
+              "children": [
+               {
+                "type": "<",
+                "start": 104,
+                "end": 105,
+                "text": "<"
+               },
+               {
+                "type": "Name",
+                "start": 105,
+                "end": 107,
+                "text": "em"
+               },
+               {
+                "type": ">",
+                "start": 107,
+                "end": 108,
+                "text": ">"
+               }
+              ]
+             },
+             {
+              "type": "content",
+              "start": 108,
+              "end": 113,
+              "children": [
+               {
+                "type": "CharData",
+                "start": 108,
+                "end": 113,
+                "text": "world"
+               }
+              ]
+             },
+             {
+              "type": "ETag",
+              "start": 113,
+              "end": 118,
+              "children": [
+               {
+                "type": "</",
+                "start": 113,
+                "end": 115,
+                "text": "</"
+               },
+               {
+                "type": "Name",
+                "start": 115,
+                "end": 117,
+                "text": "em"
+               },
+               {
+                "type": ">",
+                "start": 117,
+                "end": 118,
+                "text": ">"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "CharData",
+            "start": 118,
+            "end": 153,
+            "text": " and a somewhat longer run of text."
+           }
+          ]
+         },
+         {
+          "type": "ETag",
+          "start": 153,
+          "end": 157,
+          "children": [
+           {
+            "type": "</",
+            "start": 153,
+            "end": 155,
+            "text": "</"
+           },
+           {
+            "type": "Name",
+            "start": 155,
+            "end": 156,
+            "text": "p"
+           },
+           {
+            "type": ">",
+            "start": 156,
+            "end": 157,
+            "text": ">"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "CharData",
+        "start": 157,
+        "end": 160,
+        "text": "\n  "
+       },
+       {
+        "type": "element",
+        "start": 160,
+        "end": 233,
+        "children": [
+         {
+          "type": "STag",
+          "start": 160,
+          "end": 163,
+          "children": [
+           {
+            "type": "<",
+            "start": 160,
+            "end": 161,
+            "text": "<"
+           },
+           {
+            "type": "Name",
+            "start": 161,
+            "end": 162,
+            "text": "p"
+           },
+           {
+            "type": ">",
+            "start": 162,
+            "end": 163,
+            "text": ">"
+           }
+          ]
+         },
+         {
+          "type": "content",
+          "start": 163,
+          "end": 229,
+          "children": [
+           {
+            "type": "CharData",
+            "start": 163,
+            "end": 171,
+            "text": "A short "
+           },
+           {
+            "type": "element",
+            "start": 171,
+            "end": 214,
+            "children": [
+             {
+              "type": "STag",
+              "start": 171,
+              "end": 206,
+              "children": [
+               {
+                "type": "<",
+                "start": 171,
+                "end": 172,
+                "text": "<"
+               },
+               {
+                "type": "Name",
+                "start": 172,
+                "end": 173,
+                "text": "a"
+               },
+               {
+                "type": "Attribute",
+                "start": 174,
+                "end": 205,
+                "children": [
+                 {
+                  "type": "Name",
+                  "start": 174,
+                  "end": 178,
+                  "text": "href"
+                 },
+                 {
+                  "type": "=",
+                  "start": 178,
+                  "end": 179,
+                  "text": "="
+                 },
+                 {
+                  "type": "AttValue",
+                  "start": 179,
+                  "end": 205,
+                  "children": [
+                   {
+                    "type": "\"",
+                    "start": 179,
+                    "end": 180,
+                    "text": "\""
+                   },
+                   {
+                    "type": "\"",
+                    "start": 204,
+                    "end": 205,
+                    "text": "\""
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": ">",
+                "start": 205,
+                "end": 206,
+                "text": ">"
+               }
+              ]
+             },
+             {
+              "type": "content",
+              "start": 206,
+              "end": 210,
+              "children": [
+               {
+                "type": "CharData",
+                "start": 206,
+                "end": 210,
+                "text": "link"
+               }
+              ]
+             },
+             {
+              "type": "ETag",
+              "start": 210,
+              "end": 214,
+              "children": [
+               {
+                "type": "</",
+                "start": 210,
+                "end": 212,
+                "text": "</"
+               },
+               {
+                "type": "Name",
+                "start": 212,
+                "end": 213,
+                "text": "a"
+               },
+               {
+                "type": ">",
+                "start": 213,
+                "end": 214,
+                "text": ">"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "CharData",
+            "start": 214,
+            "end": 229,
+            "text": " in a sentence."
+           }
+          ]
+         },
+         {
+          "type": "ETag",
+          "start": 229,
+          "end": 233,
+          "children": [
+           {
+            "type": "</",
+            "start": 229,
+            "end": 231,
+            "text": "</"
+           },
+           {
+            "type": "Name",
+            "start": 231,
+            "end": 232,
+            "text": "p"
+           },
+           {
+            "type": ">",
+            "start": 232,
+            "end": 233,
+            "text": ">"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "CharData",
+        "start": 233,
+        "end": 236,
+        "text": "\n  "
+       },
+       {
+        "type": "Comment",
+        "start": 236,
+        "end": 298,
+        "text": "<!-- glued mixed content, no extra spaces around the child -->"
+       },
+       {
+        "type": "CharData",
+        "start": 298,
+        "end": 301,
+        "text": "\n  "
+       },
+       {
+        "type": "element",
+        "start": 301,
+        "end": 330,
+        "children": [
+         {
+          "type": "STag",
+          "start": 301,
+          "end": 304,
+          "children": [
+           {
+            "type": "<",
+            "start": 301,
+            "end": 302,
+            "text": "<"
+           },
+           {
+            "type": "Name",
+            "start": 302,
+            "end": 303,
+            "text": "p"
+           },
+           {
+            "type": ">",
+            "start": 303,
+            "end": 304,
+            "text": ">"
+           }
+          ]
+         },
+         {
+          "type": "content",
+          "start": 304,
+          "end": 326,
+          "children": [
+           {
+            "type": "CharData",
+            "start": 304,
+            "end": 310,
+            "text": "before"
+           },
+           {
+            "type": "element",
+            "start": 310,
+            "end": 321,
+            "children": [
+             {
+              "type": "STag",
+              "start": 310,
+              "end": 313,
+              "children": [
+               {
+                "type": "<",
+                "start": 310,
+                "end": 311,
+                "text": "<"
+               },
+               {
+                "type": "Name",
+                "start": 311,
+                "end": 312,
+                "text": "b"
+               },
+               {
+                "type": ">",
+                "start": 312,
+                "end": 313,
+                "text": ">"
+               }
+              ]
+             },
+             {
+              "type": "content",
+              "start": 313,
+              "end": 317,
+              "children": [
+               {
+                "type": "CharData",
+                "start": 313,
+                "end": 317,
+                "text": "bold"
+               }
+              ]
+             },
+             {
+              "type": "ETag",
+              "start": 317,
+              "end": 321,
+              "children": [
+               {
+                "type": "</",
+                "start": 317,
+                "end": 319,
+                "text": "</"
+               },
+               {
+                "type": "Name",
+                "start": 319,
+                "end": 320,
+                "text": "b"
+               },
+               {
+                "type": ">",
+                "start": 320,
+                "end": 321,
+                "text": ">"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "CharData",
+            "start": 321,
+            "end": 326,
+            "text": "after"
+           }
+          ]
+         },
+         {
+          "type": "ETag",
+          "start": 326,
+          "end": 330,
+          "children": [
+           {
+            "type": "</",
+            "start": 326,
+            "end": 328,
+            "text": "</"
+           },
+           {
+            "type": "Name",
+            "start": 328,
+            "end": 329,
+            "text": "p"
+           },
+           {
+            "type": ">",
+            "start": 329,
+            "end": 330,
+            "text": ">"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "CharData",
+        "start": 330,
+        "end": 333,
+        "text": "\n  "
+       },
+       {
+        "type": "element",
+        "start": 333,
+        "end": 391,
+        "children": [
+         {
+          "type": "STag",
+          "start": 333,
+          "end": 336,
+          "children": [
+           {
+            "type": "<",
+            "start": 333,
+            "end": 334,
+            "text": "<"
+           },
+           {
+            "type": "Name",
+            "start": 334,
+            "end": 335,
+            "text": "p"
+           },
+           {
+            "type": ">",
+            "start": 335,
+            "end": 336,
+            "text": ">"
+           }
+          ]
+         },
+         {
+          "type": "content",
+          "start": 336,
+          "end": 387,
+          "children": [
+           {
+            "type": "CharData",
+            "start": 336,
+            "end": 343,
+            "text": "Price: "
+           },
+           {
+            "type": "element",
+            "start": 343,
+            "end": 377,
+            "children": [
+             {
+              "type": "EmptyElemTag",
+              "start": 343,
+              "end": 377,
+              "children": [
+               {
+                "type": "<",
+                "start": 343,
+                "end": 344,
+                "text": "<"
+               },
+               {
+                "type": "Name",
+                "start": 344,
+                "end": 349,
+                "text": "value"
+               },
+               {
+                "type": "Attribute",
+                "start": 350,
+                "end": 360,
+                "children": [
+                 {
+                  "type": "Name",
+                  "start": 350,
+                  "end": 354,
+                  "text": "unit"
+                 },
+                 {
+                  "type": "=",
+                  "start": 354,
+                  "end": 355,
+                  "text": "="
+                 },
+                 {
+                  "type": "AttValue",
+                  "start": 355,
+                  "end": 360,
+                  "children": [
+                   {
+                    "type": "\"",
+                    "start": 355,
+                    "end": 356,
+                    "text": "\""
+                   },
+                   {
+                    "type": "\"",
+                    "start": 359,
+                    "end": 360,
+                    "text": "\""
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": "Attribute",
+                "start": 361,
+                "end": 375,
+                "children": [
+                 {
+                  "type": "Name",
+                  "start": 361,
+                  "end": 367,
+                  "text": "amount"
+                 },
+                 {
+                  "type": "=",
+                  "start": 367,
+                  "end": 368,
+                  "text": "="
+                 },
+                 {
+                  "type": "AttValue",
+                  "start": 368,
+                  "end": 375,
+                  "children": [
+                   {
+                    "type": "\"",
+                    "start": 368,
+                    "end": 369,
+                    "text": "\""
+                   },
+                   {
+                    "type": "\"",
+                    "start": 374,
+                    "end": 375,
+                    "text": "\""
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": "/>",
+                "start": 375,
+                "end": 377,
+                "text": "/>"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "CharData",
+            "start": 377,
+            "end": 387,
+            "text": " plus tax."
+           }
+          ]
+         },
+         {
+          "type": "ETag",
+          "start": 387,
+          "end": 391,
+          "children": [
+           {
+            "type": "</",
+            "start": 387,
+            "end": 389,
+            "text": "</"
+           },
+           {
+            "type": "Name",
+            "start": 389,
+            "end": 390,
+            "text": "p"
+           },
+           {
+            "type": ">",
+            "start": 390,
+            "end": 391,
+            "text": ">"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "CharData",
+        "start": 391,
+        "end": 392,
+        "text": "\n"
+       }
+      ]
+     },
+     {
+      "type": "ETag",
+      "start": 392,
+      "end": 402,
+      "children": [
+       {
+        "type": "</",
+        "start": 392,
+        "end": 394,
+        "text": "</"
+       },
+       {
+        "type": "Name",
+        "start": 394,
+        "end": 401,
+        "text": "article"
+       },
+       {
+        "type": ">",
+        "start": 401,
+        "end": 402,
+        "text": ">"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}
