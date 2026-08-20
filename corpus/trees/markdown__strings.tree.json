@@ -1,0 +1,528 @@
+{
+ "language": "markdown",
+ "source_file": "corpus/src/markdown/strings.md",
+ "source": "<!-- Code spans, escapes, entities, long span. -->\n\nA code span `keeps  inner   spaces` and an empty-looking span of one space: ` `.\n\nEscaped emphasis \\*not emphasis\\* and an escaped bracket \\[not a link].\n\nEntities: `&amp;` `&lt;` `&#39;` `&#x2A;`.\n\nDouble-backtick span that contains a backtick: ``a`b``.\n\nA long code span that prettier will not wrap: `this_is_a_single_token_that_is_longer_than_forty_columns_and_also_longer_than_eighty_if_I_keep_going_xxxxxxxx`.\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 467,
+  "children": [
+   {
+    "type": "section",
+    "start": 0,
+    "end": 467,
+    "children": [
+     {
+      "type": "html_block",
+      "start": 0,
+      "end": 51,
+      "children": [
+       {
+        "type": ",",
+        "start": 15,
+        "end": 16,
+        "text": ","
+       },
+       {
+        "type": ",",
+        "start": 24,
+        "end": 25,
+        "text": ","
+       },
+       {
+        "type": ",",
+        "start": 34,
+        "end": 35,
+        "text": ","
+       },
+       {
+        "type": ".",
+        "start": 45,
+        "end": 46,
+        "text": "."
+       },
+       {
+        "type": "-->",
+        "start": 47,
+        "end": 50,
+        "text": "-->"
+       }
+      ]
+     },
+     {
+      "type": "paragraph",
+      "start": 52,
+      "end": 133,
+      "children": [
+       {
+        "type": "inline",
+        "start": 52,
+        "end": 132,
+        "children": [
+         {
+          "type": "`",
+          "start": 64,
+          "end": 65,
+          "text": "`"
+         },
+         {
+          "type": "`",
+          "start": 86,
+          "end": 87,
+          "text": "`"
+         },
+         {
+          "type": "-",
+          "start": 100,
+          "end": 101,
+          "text": "-"
+         },
+         {
+          "type": ":",
+          "start": 126,
+          "end": 127,
+          "text": ":"
+         },
+         {
+          "type": "`",
+          "start": 128,
+          "end": 129,
+          "text": "`"
+         },
+         {
+          "type": "`",
+          "start": 130,
+          "end": 131,
+          "text": "`"
+         },
+         {
+          "type": ".",
+          "start": 131,
+          "end": 132,
+          "text": "."
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "paragraph",
+      "start": 134,
+      "end": 206,
+      "children": [
+       {
+        "type": "inline",
+        "start": 134,
+        "end": 205,
+        "children": [
+         {
+          "type": "\\",
+          "start": 151,
+          "end": 152,
+          "text": "\\"
+         },
+         {
+          "type": "*",
+          "start": 152,
+          "end": 153,
+          "text": "*"
+         },
+         {
+          "type": "\\",
+          "start": 165,
+          "end": 166,
+          "text": "\\"
+         },
+         {
+          "type": "*",
+          "start": 166,
+          "end": 167,
+          "text": "*"
+         },
+         {
+          "type": "\\",
+          "start": 191,
+          "end": 192,
+          "text": "\\"
+         },
+         {
+          "type": "[",
+          "start": 192,
+          "end": 193,
+          "text": "["
+         },
+         {
+          "type": "]",
+          "start": 203,
+          "end": 204,
+          "text": "]"
+         },
+         {
+          "type": ".",
+          "start": 204,
+          "end": 205,
+          "text": "."
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "paragraph",
+      "start": 207,
+      "end": 250,
+      "children": [
+       {
+        "type": "inline",
+        "start": 207,
+        "end": 249,
+        "children": [
+         {
+          "type": ":",
+          "start": 215,
+          "end": 216,
+          "text": ":"
+         },
+         {
+          "type": "`",
+          "start": 217,
+          "end": 218,
+          "text": "`"
+         },
+         {
+          "type": "&",
+          "start": 218,
+          "end": 219,
+          "text": "&"
+         },
+         {
+          "type": ";",
+          "start": 222,
+          "end": 223,
+          "text": ";"
+         },
+         {
+          "type": "`",
+          "start": 223,
+          "end": 224,
+          "text": "`"
+         },
+         {
+          "type": "`",
+          "start": 225,
+          "end": 226,
+          "text": "`"
+         },
+         {
+          "type": "&",
+          "start": 226,
+          "end": 227,
+          "text": "&"
+         },
+         {
+          "type": ";",
+          "start": 229,
+          "end": 230,
+          "text": ";"
+         },
+         {
+          "type": "`",
+          "start": 230,
+          "end": 231,
+          "text": "`"
+         },
+         {
+          "type": "`",
+          "start": 232,
+          "end": 233,
+          "text": "`"
+         },
+         {
+          "type": "&",
+          "start": 233,
+          "end": 234,
+          "text": "&"
+         },
+         {
+          "type": "#",
+          "start": 234,
+          "end": 235,
+          "text": "#"
+         },
+         {
+          "type": ";",
+          "start": 237,
+          "end": 238,
+          "text": ";"
+         },
+         {
+          "type": "`",
+          "start": 238,
+          "end": 239,
+          "text": "`"
+         },
+         {
+          "type": "`",
+          "start": 240,
+          "end": 241,
+          "text": "`"
+         },
+         {
+          "type": "&",
+          "start": 241,
+          "end": 242,
+          "text": "&"
+         },
+         {
+          "type": "#",
+          "start": 242,
+          "end": 243,
+          "text": "#"
+         },
+         {
+          "type": ";",
+          "start": 246,
+          "end": 247,
+          "text": ";"
+         },
+         {
+          "type": "`",
+          "start": 247,
+          "end": 248,
+          "text": "`"
+         },
+         {
+          "type": ".",
+          "start": 248,
+          "end": 249,
+          "text": "."
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "paragraph",
+      "start": 251,
+      "end": 307,
+      "children": [
+       {
+        "type": "inline",
+        "start": 251,
+        "end": 306,
+        "children": [
+         {
+          "type": "-",
+          "start": 257,
+          "end": 258,
+          "text": "-"
+         },
+         {
+          "type": ":",
+          "start": 296,
+          "end": 297,
+          "text": ":"
+         },
+         {
+          "type": "`",
+          "start": 298,
+          "end": 299,
+          "text": "`"
+         },
+         {
+          "type": "`",
+          "start": 299,
+          "end": 300,
+          "text": "`"
+         },
+         {
+          "type": "`",
+          "start": 301,
+          "end": 302,
+          "text": "`"
+         },
+         {
+          "type": "`",
+          "start": 303,
+          "end": 304,
+          "text": "`"
+         },
+         {
+          "type": "`",
+          "start": 304,
+          "end": 305,
+          "text": "`"
+         },
+         {
+          "type": ".",
+          "start": 305,
+          "end": 306,
+          "text": "."
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "paragraph",
+      "start": 308,
+      "end": 467,
+      "children": [
+       {
+        "type": "inline",
+        "start": 308,
+        "end": 466,
+        "children": [
+         {
+          "type": ":",
+          "start": 352,
+          "end": 353,
+          "text": ":"
+         },
+         {
+          "type": "`",
+          "start": 354,
+          "end": 355,
+          "text": "`"
+         },
+         {
+          "type": "_",
+          "start": 359,
+          "end": 360,
+          "text": "_"
+         },
+         {
+          "type": "_",
+          "start": 362,
+          "end": 363,
+          "text": "_"
+         },
+         {
+          "type": "_",
+          "start": 364,
+          "end": 365,
+          "text": "_"
+         },
+         {
+          "type": "_",
+          "start": 371,
+          "end": 372,
+          "text": "_"
+         },
+         {
+          "type": "_",
+          "start": 377,
+          "end": 378,
+          "text": "_"
+         },
+         {
+          "type": "_",
+          "start": 382,
+          "end": 383,
+          "text": "_"
+         },
+         {
+          "type": "_",
+          "start": 385,
+          "end": 386,
+          "text": "_"
+         },
+         {
+          "type": "_",
+          "start": 392,
+          "end": 393,
+          "text": "_"
+         },
+         {
+          "type": "_",
+          "start": 397,
+          "end": 398,
+          "text": "_"
+         },
+         {
+          "type": "_",
+          "start": 403,
+          "end": 404,
+          "text": "_"
+         },
+         {
+          "type": "_",
+          "start": 411,
+          "end": 412,
+          "text": "_"
+         },
+         {
+          "type": "_",
+          "start": 415,
+          "end": 416,
+          "text": "_"
+         },
+         {
+          "type": "_",
+          "start": 420,
+          "end": 421,
+          "text": "_"
+         },
+         {
+          "type": "_",
+          "start": 427,
+          "end": 428,
+          "text": "_"
+         },
+         {
+          "type": "_",
+          "start": 432,
+          "end": 433,
+          "text": "_"
+         },
+         {
+          "type": "_",
+          "start": 439,
+          "end": 440,
+          "text": "_"
+         },
+         {
+          "type": "_",
+          "start": 442,
+          "end": 443,
+          "text": "_"
+         },
+         {
+          "type": "_",
+          "start": 444,
+          "end": 445,
+          "text": "_"
+         },
+         {
+          "type": "_",
+          "start": 449,
+          "end": 450,
+          "text": "_"
+         },
+         {
+          "type": "_",
+          "start": 455,
+          "end": 456,
+          "text": "_"
+         },
+         {
+          "type": "`",
+          "start": 464,
+          "end": 465,
+          "text": "`"
+         },
+         {
+          "type": ".",
+          "start": 465,
+          "end": 466,
+          "text": "."
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

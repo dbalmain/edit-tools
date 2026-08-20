@@ -1,0 +1,180 @@
+{
+ "language": "markdown",
+ "source_file": "corpus/src/markdown/list_markers.md",
+ "source": "<!-- prettier rewrites * and + markers to -. -->\n\n* star item\n* star next\n\n+ plus item\n+ plus next\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 99,
+  "children": [
+   {
+    "type": "section",
+    "start": 0,
+    "end": 99,
+    "children": [
+     {
+      "type": "html_block",
+      "start": 0,
+      "end": 49,
+      "children": [
+       {
+        "type": "*",
+        "start": 23,
+        "end": 24,
+        "text": "*"
+       },
+       {
+        "type": "+",
+        "start": 29,
+        "end": 30,
+        "text": "+"
+       },
+       {
+        "type": "-",
+        "start": 42,
+        "end": 43,
+        "text": "-"
+       },
+       {
+        "type": ".",
+        "start": 43,
+        "end": 44,
+        "text": "."
+       },
+       {
+        "type": "-->",
+        "start": 45,
+        "end": 48,
+        "text": "-->"
+       }
+      ]
+     },
+     {
+      "type": "list",
+      "start": 50,
+      "end": 75,
+      "children": [
+       {
+        "type": "list_item",
+        "start": 50,
+        "end": 62,
+        "children": [
+         {
+          "type": "list_marker_star",
+          "start": 50,
+          "end": 52,
+          "text": "* "
+         },
+         {
+          "type": "paragraph",
+          "start": 52,
+          "end": 62,
+          "children": [
+           {
+            "type": "inline",
+            "start": 52,
+            "end": 61,
+            "text": "star item"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "list_item",
+        "start": 62,
+        "end": 75,
+        "children": [
+         {
+          "type": "list_marker_star",
+          "start": 62,
+          "end": 64,
+          "text": "* "
+         },
+         {
+          "type": "paragraph",
+          "start": 64,
+          "end": 74,
+          "children": [
+           {
+            "type": "inline",
+            "start": 64,
+            "end": 73,
+            "text": "star next"
+           },
+           {
+            "type": "block_continuation",
+            "start": 74,
+            "end": 74,
+            "text": ""
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "list",
+      "start": 75,
+      "end": 99,
+      "children": [
+       {
+        "type": "list_item",
+        "start": 75,
+        "end": 87,
+        "children": [
+         {
+          "type": "list_marker_plus",
+          "start": 75,
+          "end": 77,
+          "text": "+ "
+         },
+         {
+          "type": "paragraph",
+          "start": 77,
+          "end": 87,
+          "children": [
+           {
+            "type": "inline",
+            "start": 77,
+            "end": 86,
+            "text": "plus item"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "list_item",
+        "start": 87,
+        "end": 99,
+        "children": [
+         {
+          "type": "list_marker_plus",
+          "start": 87,
+          "end": 89,
+          "text": "+ "
+         },
+         {
+          "type": "paragraph",
+          "start": 89,
+          "end": 99,
+          "children": [
+           {
+            "type": "inline",
+            "start": 89,
+            "end": 98,
+            "text": "plus next"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}
