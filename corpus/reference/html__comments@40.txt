@@ -1,0 +1,19 @@
+<!-- File-level comment at the very top of the document. -->
+<div>
+  <!-- own-line before the first child -->
+  <p>hi</p>
+  <!-- between block children -->
+  <p>there<!-- trailing on text --></p>
+  <div>
+    <!-- inside an otherwise empty element -->
+  </div>
+  <p>x</p>
+  <!-- before the closing delimiter -->
+</div>
+<!-- after a block sibling; prettier puts this on its own line -->
+<p>short</p>
+<!-- consecutive own-line comment -->
+<!-- second of the pair -->
+<span>inline</span
+><!-- after an inline element -->
+<!-- comment at the end of the file -->

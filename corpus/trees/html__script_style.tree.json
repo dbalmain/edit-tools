@@ -1,0 +1,371 @@
+{
+ "language": "html",
+ "source_file": "corpus/src/html/script_style.html",
+ "source": "<!-- Script and style are the HTML injection sites. The grammar has no info-string child. -->\n<style>\n  body {\n    color: red;\n  }\n</style>\n<script>\n  var x = 1;\n</script>\n<script src=\"app.js\" defer></script>\n<script type=\"application/ld+json\">\n  { \"a\": 1, \"b\": 2 }\n</script>\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 276,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 93,
+    "text": "<!-- Script and style are the HTML injection sites. The grammar has no info-string child. -->"
+   },
+   {
+    "type": "style_element",
+    "start": 94,
+    "end": 139,
+    "children": [
+     {
+      "type": "start_tag",
+      "start": 94,
+      "end": 101,
+      "children": [
+       {
+        "type": "<",
+        "start": 94,
+        "end": 95,
+        "text": "<"
+       },
+       {
+        "type": "tag_name",
+        "start": 95,
+        "end": 100,
+        "text": "style"
+       },
+       {
+        "type": ">",
+        "start": 100,
+        "end": 101,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "raw_text",
+      "start": 101,
+      "end": 131,
+      "text": "\n  body {\n    color: red;\n  }\n"
+     },
+     {
+      "type": "end_tag",
+      "start": 131,
+      "end": 139,
+      "children": [
+       {
+        "type": "</",
+        "start": 131,
+        "end": 133,
+        "text": "</"
+       },
+       {
+        "type": "tag_name",
+        "start": 133,
+        "end": 138,
+        "text": "style"
+       },
+       {
+        "type": ">",
+        "start": 138,
+        "end": 139,
+        "text": ">"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "script_element",
+    "start": 140,
+    "end": 171,
+    "children": [
+     {
+      "type": "start_tag",
+      "start": 140,
+      "end": 148,
+      "children": [
+       {
+        "type": "<",
+        "start": 140,
+        "end": 141,
+        "text": "<"
+       },
+       {
+        "type": "tag_name",
+        "start": 141,
+        "end": 147,
+        "text": "script"
+       },
+       {
+        "type": ">",
+        "start": 147,
+        "end": 148,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "raw_text",
+      "start": 148,
+      "end": 162,
+      "text": "\n  var x = 1;\n"
+     },
+     {
+      "type": "end_tag",
+      "start": 162,
+      "end": 171,
+      "children": [
+       {
+        "type": "</",
+        "start": 162,
+        "end": 164,
+        "text": "</"
+       },
+       {
+        "type": "tag_name",
+        "start": 164,
+        "end": 170,
+        "text": "script"
+       },
+       {
+        "type": ">",
+        "start": 170,
+        "end": 171,
+        "text": ">"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "script_element",
+    "start": 172,
+    "end": 208,
+    "children": [
+     {
+      "type": "start_tag",
+      "start": 172,
+      "end": 199,
+      "children": [
+       {
+        "type": "<",
+        "start": 172,
+        "end": 173,
+        "text": "<"
+       },
+       {
+        "type": "tag_name",
+        "start": 173,
+        "end": 179,
+        "text": "script"
+       },
+       {
+        "type": "attribute",
+        "start": 180,
+        "end": 192,
+        "children": [
+         {
+          "type": "attribute_name",
+          "start": 180,
+          "end": 183,
+          "text": "src"
+         },
+         {
+          "type": "=",
+          "start": 183,
+          "end": 184,
+          "text": "="
+         },
+         {
+          "type": "quoted_attribute_value",
+          "start": 184,
+          "end": 192,
+          "children": [
+           {
+            "type": "\"",
+            "start": 184,
+            "end": 185,
+            "text": "\""
+           },
+           {
+            "type": "attribute_value",
+            "start": 185,
+            "end": 191,
+            "text": "app.js"
+           },
+           {
+            "type": "\"",
+            "start": 191,
+            "end": 192,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "attribute",
+        "start": 193,
+        "end": 198,
+        "children": [
+         {
+          "type": "attribute_name",
+          "start": 193,
+          "end": 198,
+          "text": "defer"
+         }
+        ]
+       },
+       {
+        "type": ">",
+        "start": 198,
+        "end": 199,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "raw_text",
+      "start": 199,
+      "end": 199,
+      "text": ""
+     },
+     {
+      "type": "end_tag",
+      "start": 199,
+      "end": 208,
+      "children": [
+       {
+        "type": "</",
+        "start": 199,
+        "end": 201,
+        "text": "</"
+       },
+       {
+        "type": "tag_name",
+        "start": 201,
+        "end": 207,
+        "text": "script"
+       },
+       {
+        "type": ">",
+        "start": 207,
+        "end": 208,
+        "text": ">"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "script_element",
+    "start": 209,
+    "end": 275,
+    "children": [
+     {
+      "type": "start_tag",
+      "start": 209,
+      "end": 244,
+      "children": [
+       {
+        "type": "<",
+        "start": 209,
+        "end": 210,
+        "text": "<"
+       },
+       {
+        "type": "tag_name",
+        "start": 210,
+        "end": 216,
+        "text": "script"
+       },
+       {
+        "type": "attribute",
+        "start": 217,
+        "end": 243,
+        "children": [
+         {
+          "type": "attribute_name",
+          "start": 217,
+          "end": 221,
+          "text": "type"
+         },
+         {
+          "type": "=",
+          "start": 221,
+          "end": 222,
+          "text": "="
+         },
+         {
+          "type": "quoted_attribute_value",
+          "start": 222,
+          "end": 243,
+          "children": [
+           {
+            "type": "\"",
+            "start": 222,
+            "end": 223,
+            "text": "\""
+           },
+           {
+            "type": "attribute_value",
+            "start": 223,
+            "end": 242,
+            "text": "application/ld+json"
+           },
+           {
+            "type": "\"",
+            "start": 242,
+            "end": 243,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ">",
+        "start": 243,
+        "end": 244,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "raw_text",
+      "start": 244,
+      "end": 266,
+      "text": "\n  { \"a\": 1, \"b\": 2 }\n"
+     },
+     {
+      "type": "end_tag",
+      "start": 266,
+      "end": 275,
+      "children": [
+       {
+        "type": "</",
+        "start": 266,
+        "end": 268,
+        "text": "</"
+       },
+       {
+        "type": "tag_name",
+        "start": 268,
+        "end": 274,
+        "text": "script"
+       },
+       {
+        "type": ">",
+        "start": 274,
+        "end": 275,
+        "text": ">"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

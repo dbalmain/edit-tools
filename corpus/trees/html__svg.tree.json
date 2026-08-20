@@ -1,0 +1,730 @@
+{
+ "language": "html",
+ "source_file": "corpus/src/html/svg.html",
+ "source": "<!-- SVG-in-HTML. Same `element` node as everything else; wrapping follows the tag name. -->\n<svg viewBox=\"0 0 100 100\" xmlns=\"http://www.w3.org/2000/svg\">\n  <g fill=\"none\">\n    <circle cx=\"50\" cy=\"50\" r=\"40\" stroke=\"black\"></circle>\n    <rect x=\"10\" y=\"10\" width=\"20\" height=\"20\"></rect>\n  </g>\n</svg>\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 303,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 92,
+    "text": "<!-- SVG-in-HTML. Same `element` node as everything else; wrapping follows the tag name. -->"
+   },
+   {
+    "type": "element",
+    "start": 93,
+    "end": 302,
+    "children": [
+     {
+      "type": "start_tag",
+      "start": 93,
+      "end": 155,
+      "children": [
+       {
+        "type": "<",
+        "start": 93,
+        "end": 94,
+        "text": "<"
+       },
+       {
+        "type": "tag_name",
+        "start": 94,
+        "end": 97,
+        "text": "svg"
+       },
+       {
+        "type": "attribute",
+        "start": 98,
+        "end": 119,
+        "children": [
+         {
+          "type": "attribute_name",
+          "start": 98,
+          "end": 105,
+          "text": "viewBox"
+         },
+         {
+          "type": "=",
+          "start": 105,
+          "end": 106,
+          "text": "="
+         },
+         {
+          "type": "quoted_attribute_value",
+          "start": 106,
+          "end": 119,
+          "children": [
+           {
+            "type": "\"",
+            "start": 106,
+            "end": 107,
+            "text": "\""
+           },
+           {
+            "type": "attribute_value",
+            "start": 107,
+            "end": 118,
+            "text": "0 0 100 100"
+           },
+           {
+            "type": "\"",
+            "start": 118,
+            "end": 119,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "attribute",
+        "start": 120,
+        "end": 154,
+        "children": [
+         {
+          "type": "attribute_name",
+          "start": 120,
+          "end": 125,
+          "text": "xmlns"
+         },
+         {
+          "type": "=",
+          "start": 125,
+          "end": 126,
+          "text": "="
+         },
+         {
+          "type": "quoted_attribute_value",
+          "start": 126,
+          "end": 154,
+          "children": [
+           {
+            "type": "\"",
+            "start": 126,
+            "end": 127,
+            "text": "\""
+           },
+           {
+            "type": "attribute_value",
+            "start": 127,
+            "end": 153,
+            "text": "http://www.w3.org/2000/svg"
+           },
+           {
+            "type": "\"",
+            "start": 153,
+            "end": 154,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ">",
+        "start": 154,
+        "end": 155,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "element",
+      "start": 158,
+      "end": 295,
+      "children": [
+       {
+        "type": "start_tag",
+        "start": 158,
+        "end": 173,
+        "children": [
+         {
+          "type": "<",
+          "start": 158,
+          "end": 159,
+          "text": "<"
+         },
+         {
+          "type": "tag_name",
+          "start": 159,
+          "end": 160,
+          "text": "g"
+         },
+         {
+          "type": "attribute",
+          "start": 161,
+          "end": 172,
+          "children": [
+           {
+            "type": "attribute_name",
+            "start": 161,
+            "end": 165,
+            "text": "fill"
+           },
+           {
+            "type": "=",
+            "start": 165,
+            "end": 166,
+            "text": "="
+           },
+           {
+            "type": "quoted_attribute_value",
+            "start": 166,
+            "end": 172,
+            "children": [
+             {
+              "type": "\"",
+              "start": 166,
+              "end": 167,
+              "text": "\""
+             },
+             {
+              "type": "attribute_value",
+              "start": 167,
+              "end": 171,
+              "text": "none"
+             },
+             {
+              "type": "\"",
+              "start": 171,
+              "end": 172,
+              "text": "\""
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ">",
+          "start": 172,
+          "end": 173,
+          "text": ">"
+         }
+        ]
+       },
+       {
+        "type": "element",
+        "start": 178,
+        "end": 233,
+        "children": [
+         {
+          "type": "start_tag",
+          "start": 178,
+          "end": 224,
+          "children": [
+           {
+            "type": "<",
+            "start": 178,
+            "end": 179,
+            "text": "<"
+           },
+           {
+            "type": "tag_name",
+            "start": 179,
+            "end": 185,
+            "text": "circle"
+           },
+           {
+            "type": "attribute",
+            "start": 186,
+            "end": 193,
+            "children": [
+             {
+              "type": "attribute_name",
+              "start": 186,
+              "end": 188,
+              "text": "cx"
+             },
+             {
+              "type": "=",
+              "start": 188,
+              "end": 189,
+              "text": "="
+             },
+             {
+              "type": "quoted_attribute_value",
+              "start": 189,
+              "end": 193,
+              "children": [
+               {
+                "type": "\"",
+                "start": 189,
+                "end": 190,
+                "text": "\""
+               },
+               {
+                "type": "attribute_value",
+                "start": 190,
+                "end": 192,
+                "text": "50"
+               },
+               {
+                "type": "\"",
+                "start": 192,
+                "end": 193,
+                "text": "\""
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "attribute",
+            "start": 194,
+            "end": 201,
+            "children": [
+             {
+              "type": "attribute_name",
+              "start": 194,
+              "end": 196,
+              "text": "cy"
+             },
+             {
+              "type": "=",
+              "start": 196,
+              "end": 197,
+              "text": "="
+             },
+             {
+              "type": "quoted_attribute_value",
+              "start": 197,
+              "end": 201,
+              "children": [
+               {
+                "type": "\"",
+                "start": 197,
+                "end": 198,
+                "text": "\""
+               },
+               {
+                "type": "attribute_value",
+                "start": 198,
+                "end": 200,
+                "text": "50"
+               },
+               {
+                "type": "\"",
+                "start": 200,
+                "end": 201,
+                "text": "\""
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "attribute",
+            "start": 202,
+            "end": 208,
+            "children": [
+             {
+              "type": "attribute_name",
+              "start": 202,
+              "end": 203,
+              "text": "r"
+             },
+             {
+              "type": "=",
+              "start": 203,
+              "end": 204,
+              "text": "="
+             },
+             {
+              "type": "quoted_attribute_value",
+              "start": 204,
+              "end": 208,
+              "children": [
+               {
+                "type": "\"",
+                "start": 204,
+                "end": 205,
+                "text": "\""
+               },
+               {
+                "type": "attribute_value",
+                "start": 205,
+                "end": 207,
+                "text": "40"
+               },
+               {
+                "type": "\"",
+                "start": 207,
+                "end": 208,
+                "text": "\""
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "attribute",
+            "start": 209,
+            "end": 223,
+            "children": [
+             {
+              "type": "attribute_name",
+              "start": 209,
+              "end": 215,
+              "text": "stroke"
+             },
+             {
+              "type": "=",
+              "start": 215,
+              "end": 216,
+              "text": "="
+             },
+             {
+              "type": "quoted_attribute_value",
+              "start": 216,
+              "end": 223,
+              "children": [
+               {
+                "type": "\"",
+                "start": 216,
+                "end": 217,
+                "text": "\""
+               },
+               {
+                "type": "attribute_value",
+                "start": 217,
+                "end": 222,
+                "text": "black"
+               },
+               {
+                "type": "\"",
+                "start": 222,
+                "end": 223,
+                "text": "\""
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ">",
+            "start": 223,
+            "end": 224,
+            "text": ">"
+           }
+          ]
+         },
+         {
+          "type": "end_tag",
+          "start": 224,
+          "end": 233,
+          "children": [
+           {
+            "type": "</",
+            "start": 224,
+            "end": 226,
+            "text": "</"
+           },
+           {
+            "type": "tag_name",
+            "start": 226,
+            "end": 232,
+            "text": "circle"
+           },
+           {
+            "type": ">",
+            "start": 232,
+            "end": 233,
+            "text": ">"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "element",
+        "start": 238,
+        "end": 288,
+        "children": [
+         {
+          "type": "start_tag",
+          "start": 238,
+          "end": 281,
+          "children": [
+           {
+            "type": "<",
+            "start": 238,
+            "end": 239,
+            "text": "<"
+           },
+           {
+            "type": "tag_name",
+            "start": 239,
+            "end": 243,
+            "text": "rect"
+           },
+           {
+            "type": "attribute",
+            "start": 244,
+            "end": 250,
+            "children": [
+             {
+              "type": "attribute_name",
+              "start": 244,
+              "end": 245,
+              "text": "x"
+             },
+             {
+              "type": "=",
+              "start": 245,
+              "end": 246,
+              "text": "="
+             },
+             {
+              "type": "quoted_attribute_value",
+              "start": 246,
+              "end": 250,
+              "children": [
+               {
+                "type": "\"",
+                "start": 246,
+                "end": 247,
+                "text": "\""
+               },
+               {
+                "type": "attribute_value",
+                "start": 247,
+                "end": 249,
+                "text": "10"
+               },
+               {
+                "type": "\"",
+                "start": 249,
+                "end": 250,
+                "text": "\""
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "attribute",
+            "start": 251,
+            "end": 257,
+            "children": [
+             {
+              "type": "attribute_name",
+              "start": 251,
+              "end": 252,
+              "text": "y"
+             },
+             {
+              "type": "=",
+              "start": 252,
+              "end": 253,
+              "text": "="
+             },
+             {
+              "type": "quoted_attribute_value",
+              "start": 253,
+              "end": 257,
+              "children": [
+               {
+                "type": "\"",
+                "start": 253,
+                "end": 254,
+                "text": "\""
+               },
+               {
+                "type": "attribute_value",
+                "start": 254,
+                "end": 256,
+                "text": "10"
+               },
+               {
+                "type": "\"",
+                "start": 256,
+                "end": 257,
+                "text": "\""
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "attribute",
+            "start": 258,
+            "end": 268,
+            "children": [
+             {
+              "type": "attribute_name",
+              "start": 258,
+              "end": 263,
+              "text": "width"
+             },
+             {
+              "type": "=",
+              "start": 263,
+              "end": 264,
+              "text": "="
+             },
+             {
+              "type": "quoted_attribute_value",
+              "start": 264,
+              "end": 268,
+              "children": [
+               {
+                "type": "\"",
+                "start": 264,
+                "end": 265,
+                "text": "\""
+               },
+               {
+                "type": "attribute_value",
+                "start": 265,
+                "end": 267,
+                "text": "20"
+               },
+               {
+                "type": "\"",
+                "start": 267,
+                "end": 268,
+                "text": "\""
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "attribute",
+            "start": 269,
+            "end": 280,
+            "children": [
+             {
+              "type": "attribute_name",
+              "start": 269,
+              "end": 275,
+              "text": "height"
+             },
+             {
+              "type": "=",
+              "start": 275,
+              "end": 276,
+              "text": "="
+             },
+             {
+              "type": "quoted_attribute_value",
+              "start": 276,
+              "end": 280,
+              "children": [
+               {
+                "type": "\"",
+                "start": 276,
+                "end": 277,
+                "text": "\""
+               },
+               {
+                "type": "attribute_value",
+                "start": 277,
+                "end": 279,
+                "text": "20"
+               },
+               {
+                "type": "\"",
+                "start": 279,
+                "end": 280,
+                "text": "\""
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ">",
+            "start": 280,
+            "end": 281,
+            "text": ">"
+           }
+          ]
+         },
+         {
+          "type": "end_tag",
+          "start": 281,
+          "end": 288,
+          "children": [
+           {
+            "type": "</",
+            "start": 281,
+            "end": 283,
+            "text": "</"
+           },
+           {
+            "type": "tag_name",
+            "start": 283,
+            "end": 287,
+            "text": "rect"
+           },
+           {
+            "type": ">",
+            "start": 287,
+            "end": 288,
+            "text": ">"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "end_tag",
+        "start": 291,
+        "end": 295,
+        "children": [
+         {
+          "type": "</",
+          "start": 291,
+          "end": 293,
+          "text": "</"
+         },
+         {
+          "type": "tag_name",
+          "start": 293,
+          "end": 294,
+          "text": "g"
+         },
+         {
+          "type": ">",
+          "start": 294,
+          "end": 295,
+          "text": ">"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "end_tag",
+      "start": 296,
+      "end": 302,
+      "children": [
+       {
+        "type": "</",
+        "start": 296,
+        "end": 298,
+        "text": "</"
+       },
+       {
+        "type": "tag_name",
+        "start": 298,
+        "end": 301,
+        "text": "svg"
+       },
+       {
+        "type": ">",
+        "start": 301,
+        "end": 302,
+        "text": ">"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

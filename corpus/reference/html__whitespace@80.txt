@@ -1,0 +1,9 @@
+<!-- Whitespace significance depends on the element. pre/textarea keep runs; p does not. -->
+<pre>
+  keep   these    spaces
+  and
+lines</pre>
+<textarea>  keep   these    spaces</textarea>
+<p>Hello world already collapsed</p>
+<span> world </span>
+<p>Hello&nbsp;&nbsp;world</p>

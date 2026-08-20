@@ -1,0 +1,544 @@
+{
+ "language": "html",
+ "source_file": "corpus/src/html/void.html",
+ "source": "<!-- Void elements already written with the slash prettier emits. -->\n<br />\n<hr />\n<img src=\"x.png\" alt=\"pic\" />\n<input type=\"checkbox\" name=\"agree\" checked disabled />\n<meta charset=\"utf-8\" />\n<link rel=\"stylesheet\" href=\"site.css\" />\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 237,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 69,
+    "text": "<!-- Void elements already written with the slash prettier emits. -->"
+   },
+   {
+    "type": "element",
+    "start": 70,
+    "end": 76,
+    "children": [
+     {
+      "type": "self_closing_tag",
+      "start": 70,
+      "end": 76,
+      "children": [
+       {
+        "type": "<",
+        "start": 70,
+        "end": 71,
+        "text": "<"
+       },
+       {
+        "type": "tag_name",
+        "start": 71,
+        "end": 73,
+        "text": "br"
+       },
+       {
+        "type": "/>",
+        "start": 74,
+        "end": 76,
+        "text": "/>"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "element",
+    "start": 77,
+    "end": 83,
+    "children": [
+     {
+      "type": "self_closing_tag",
+      "start": 77,
+      "end": 83,
+      "children": [
+       {
+        "type": "<",
+        "start": 77,
+        "end": 78,
+        "text": "<"
+       },
+       {
+        "type": "tag_name",
+        "start": 78,
+        "end": 80,
+        "text": "hr"
+       },
+       {
+        "type": "/>",
+        "start": 81,
+        "end": 83,
+        "text": "/>"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "element",
+    "start": 84,
+    "end": 113,
+    "children": [
+     {
+      "type": "self_closing_tag",
+      "start": 84,
+      "end": 113,
+      "children": [
+       {
+        "type": "<",
+        "start": 84,
+        "end": 85,
+        "text": "<"
+       },
+       {
+        "type": "tag_name",
+        "start": 85,
+        "end": 88,
+        "text": "img"
+       },
+       {
+        "type": "attribute",
+        "start": 89,
+        "end": 100,
+        "children": [
+         {
+          "type": "attribute_name",
+          "start": 89,
+          "end": 92,
+          "text": "src"
+         },
+         {
+          "type": "=",
+          "start": 92,
+          "end": 93,
+          "text": "="
+         },
+         {
+          "type": "quoted_attribute_value",
+          "start": 93,
+          "end": 100,
+          "children": [
+           {
+            "type": "\"",
+            "start": 93,
+            "end": 94,
+            "text": "\""
+           },
+           {
+            "type": "attribute_value",
+            "start": 94,
+            "end": 99,
+            "text": "x.png"
+           },
+           {
+            "type": "\"",
+            "start": 99,
+            "end": 100,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "attribute",
+        "start": 101,
+        "end": 110,
+        "children": [
+         {
+          "type": "attribute_name",
+          "start": 101,
+          "end": 104,
+          "text": "alt"
+         },
+         {
+          "type": "=",
+          "start": 104,
+          "end": 105,
+          "text": "="
+         },
+         {
+          "type": "quoted_attribute_value",
+          "start": 105,
+          "end": 110,
+          "children": [
+           {
+            "type": "\"",
+            "start": 105,
+            "end": 106,
+            "text": "\""
+           },
+           {
+            "type": "attribute_value",
+            "start": 106,
+            "end": 109,
+            "text": "pic"
+           },
+           {
+            "type": "\"",
+            "start": 109,
+            "end": 110,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "/>",
+        "start": 111,
+        "end": 113,
+        "text": "/>"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "element",
+    "start": 114,
+    "end": 169,
+    "children": [
+     {
+      "type": "self_closing_tag",
+      "start": 114,
+      "end": 169,
+      "children": [
+       {
+        "type": "<",
+        "start": 114,
+        "end": 115,
+        "text": "<"
+       },
+       {
+        "type": "tag_name",
+        "start": 115,
+        "end": 120,
+        "text": "input"
+       },
+       {
+        "type": "attribute",
+        "start": 121,
+        "end": 136,
+        "children": [
+         {
+          "type": "attribute_name",
+          "start": 121,
+          "end": 125,
+          "text": "type"
+         },
+         {
+          "type": "=",
+          "start": 125,
+          "end": 126,
+          "text": "="
+         },
+         {
+          "type": "quoted_attribute_value",
+          "start": 126,
+          "end": 136,
+          "children": [
+           {
+            "type": "\"",
+            "start": 126,
+            "end": 127,
+            "text": "\""
+           },
+           {
+            "type": "attribute_value",
+            "start": 127,
+            "end": 135,
+            "text": "checkbox"
+           },
+           {
+            "type": "\"",
+            "start": 135,
+            "end": 136,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "attribute",
+        "start": 137,
+        "end": 149,
+        "children": [
+         {
+          "type": "attribute_name",
+          "start": 137,
+          "end": 141,
+          "text": "name"
+         },
+         {
+          "type": "=",
+          "start": 141,
+          "end": 142,
+          "text": "="
+         },
+         {
+          "type": "quoted_attribute_value",
+          "start": 142,
+          "end": 149,
+          "children": [
+           {
+            "type": "\"",
+            "start": 142,
+            "end": 143,
+            "text": "\""
+           },
+           {
+            "type": "attribute_value",
+            "start": 143,
+            "end": 148,
+            "text": "agree"
+           },
+           {
+            "type": "\"",
+            "start": 148,
+            "end": 149,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "attribute",
+        "start": 150,
+        "end": 157,
+        "children": [
+         {
+          "type": "attribute_name",
+          "start": 150,
+          "end": 157,
+          "text": "checked"
+         }
+        ]
+       },
+       {
+        "type": "attribute",
+        "start": 158,
+        "end": 166,
+        "children": [
+         {
+          "type": "attribute_name",
+          "start": 158,
+          "end": 166,
+          "text": "disabled"
+         }
+        ]
+       },
+       {
+        "type": "/>",
+        "start": 167,
+        "end": 169,
+        "text": "/>"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "element",
+    "start": 170,
+    "end": 194,
+    "children": [
+     {
+      "type": "self_closing_tag",
+      "start": 170,
+      "end": 194,
+      "children": [
+       {
+        "type": "<",
+        "start": 170,
+        "end": 171,
+        "text": "<"
+       },
+       {
+        "type": "tag_name",
+        "start": 171,
+        "end": 175,
+        "text": "meta"
+       },
+       {
+        "type": "attribute",
+        "start": 176,
+        "end": 191,
+        "children": [
+         {
+          "type": "attribute_name",
+          "start": 176,
+          "end": 183,
+          "text": "charset"
+         },
+         {
+          "type": "=",
+          "start": 183,
+          "end": 184,
+          "text": "="
+         },
+         {
+          "type": "quoted_attribute_value",
+          "start": 184,
+          "end": 191,
+          "children": [
+           {
+            "type": "\"",
+            "start": 184,
+            "end": 185,
+            "text": "\""
+           },
+           {
+            "type": "attribute_value",
+            "start": 185,
+            "end": 190,
+            "text": "utf-8"
+           },
+           {
+            "type": "\"",
+            "start": 190,
+            "end": 191,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "/>",
+        "start": 192,
+        "end": 194,
+        "text": "/>"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "element",
+    "start": 195,
+    "end": 236,
+    "children": [
+     {
+      "type": "self_closing_tag",
+      "start": 195,
+      "end": 236,
+      "children": [
+       {
+        "type": "<",
+        "start": 195,
+        "end": 196,
+        "text": "<"
+       },
+       {
+        "type": "tag_name",
+        "start": 196,
+        "end": 200,
+        "text": "link"
+       },
+       {
+        "type": "attribute",
+        "start": 201,
+        "end": 217,
+        "children": [
+         {
+          "type": "attribute_name",
+          "start": 201,
+          "end": 204,
+          "text": "rel"
+         },
+         {
+          "type": "=",
+          "start": 204,
+          "end": 205,
+          "text": "="
+         },
+         {
+          "type": "quoted_attribute_value",
+          "start": 205,
+          "end": 217,
+          "children": [
+           {
+            "type": "\"",
+            "start": 205,
+            "end": 206,
+            "text": "\""
+           },
+           {
+            "type": "attribute_value",
+            "start": 206,
+            "end": 216,
+            "text": "stylesheet"
+           },
+           {
+            "type": "\"",
+            "start": 216,
+            "end": 217,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "attribute",
+        "start": 218,
+        "end": 233,
+        "children": [
+         {
+          "type": "attribute_name",
+          "start": 218,
+          "end": 222,
+          "text": "href"
+         },
+         {
+          "type": "=",
+          "start": 222,
+          "end": 223,
+          "text": "="
+         },
+         {
+          "type": "quoted_attribute_value",
+          "start": 223,
+          "end": 233,
+          "children": [
+           {
+            "type": "\"",
+            "start": 223,
+            "end": 224,
+            "text": "\""
+           },
+           {
+            "type": "attribute_value",
+            "start": 224,
+            "end": 232,
+            "text": "site.css"
+           },
+           {
+            "type": "\"",
+            "start": 232,
+            "end": 233,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "/>",
+        "start": 234,
+        "end": 236,
+        "text": "/>"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

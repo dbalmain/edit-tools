@@ -1,0 +1,20 @@
+<!-- Inline elements reflow as prose; a block inside an inline uses prettier's hug-close. -->
+<p>
+  Hello <span>world</span> and
+  <a
+    href="https://example.com/this/is/a/pretty/long/path"
+    >link</a
+  >
+  plus <em>more</em>.
+</p>
+<p>
+  <span>a</span><span>b</span
+  ><span>c</span><span>d</span
+  ><span>e</span><span>f</span
+  ><span>g</span><span>h</span>
+</p>
+<span
+  >outer
+  <div>block inside inline</div>
+  after</span
+>

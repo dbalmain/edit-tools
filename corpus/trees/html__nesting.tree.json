@@ -1,0 +1,460 @@
+{
+ "language": "html",
+ "source_file": "corpus/src/html/nesting.html",
+ "source": "<!-- Deep block containers. Inner tags that fit stay flat when a parent breaks. -->\n<div>\n  <section>\n    <article class=\"this-is-an-extremely-long-class-name-designed-to-force-the-opening-tag-to-wrap-past-eighty\">\n      <div id=\"fits\"><b>x</b></div>\n      <p>Short paragraph.</p>\n    </article>\n  </section>\n</div>\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 316,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 83,
+    "text": "<!-- Deep block containers. Inner tags that fit stay flat when a parent breaks. -->"
+   },
+   {
+    "type": "element",
+    "start": 84,
+    "end": 315,
+    "children": [
+     {
+      "type": "start_tag",
+      "start": 84,
+      "end": 89,
+      "children": [
+       {
+        "type": "<",
+        "start": 84,
+        "end": 85,
+        "text": "<"
+       },
+       {
+        "type": "tag_name",
+        "start": 85,
+        "end": 88,
+        "text": "div"
+       },
+       {
+        "type": ">",
+        "start": 88,
+        "end": 89,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "element",
+      "start": 92,
+      "end": 308,
+      "children": [
+       {
+        "type": "start_tag",
+        "start": 92,
+        "end": 101,
+        "children": [
+         {
+          "type": "<",
+          "start": 92,
+          "end": 93,
+          "text": "<"
+         },
+         {
+          "type": "tag_name",
+          "start": 93,
+          "end": 100,
+          "text": "section"
+         },
+         {
+          "type": ">",
+          "start": 100,
+          "end": 101,
+          "text": ">"
+         }
+        ]
+       },
+       {
+        "type": "element",
+        "start": 106,
+        "end": 295,
+        "children": [
+         {
+          "type": "start_tag",
+          "start": 106,
+          "end": 214,
+          "children": [
+           {
+            "type": "<",
+            "start": 106,
+            "end": 107,
+            "text": "<"
+           },
+           {
+            "type": "tag_name",
+            "start": 107,
+            "end": 114,
+            "text": "article"
+           },
+           {
+            "type": "attribute",
+            "start": 115,
+            "end": 213,
+            "children": [
+             {
+              "type": "attribute_name",
+              "start": 115,
+              "end": 120,
+              "text": "class"
+             },
+             {
+              "type": "=",
+              "start": 120,
+              "end": 121,
+              "text": "="
+             },
+             {
+              "type": "quoted_attribute_value",
+              "start": 121,
+              "end": 213,
+              "children": [
+               {
+                "type": "\"",
+                "start": 121,
+                "end": 122,
+                "text": "\""
+               },
+               {
+                "type": "attribute_value",
+                "start": 122,
+                "end": 212,
+                "text": "this-is-an-extremely-long-class-name-designed-to-force-the-opening-tag-to-wrap-past-eighty"
+               },
+               {
+                "type": "\"",
+                "start": 212,
+                "end": 213,
+                "text": "\""
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ">",
+            "start": 213,
+            "end": 214,
+            "text": ">"
+           }
+          ]
+         },
+         {
+          "type": "element",
+          "start": 221,
+          "end": 250,
+          "children": [
+           {
+            "type": "start_tag",
+            "start": 221,
+            "end": 236,
+            "children": [
+             {
+              "type": "<",
+              "start": 221,
+              "end": 222,
+              "text": "<"
+             },
+             {
+              "type": "tag_name",
+              "start": 222,
+              "end": 225,
+              "text": "div"
+             },
+             {
+              "type": "attribute",
+              "start": 226,
+              "end": 235,
+              "children": [
+               {
+                "type": "attribute_name",
+                "start": 226,
+                "end": 228,
+                "text": "id"
+               },
+               {
+                "type": "=",
+                "start": 228,
+                "end": 229,
+                "text": "="
+               },
+               {
+                "type": "quoted_attribute_value",
+                "start": 229,
+                "end": 235,
+                "children": [
+                 {
+                  "type": "\"",
+                  "start": 229,
+                  "end": 230,
+                  "text": "\""
+                 },
+                 {
+                  "type": "attribute_value",
+                  "start": 230,
+                  "end": 234,
+                  "text": "fits"
+                 },
+                 {
+                  "type": "\"",
+                  "start": 234,
+                  "end": 235,
+                  "text": "\""
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ">",
+              "start": 235,
+              "end": 236,
+              "text": ">"
+             }
+            ]
+           },
+           {
+            "type": "element",
+            "start": 236,
+            "end": 244,
+            "children": [
+             {
+              "type": "start_tag",
+              "start": 236,
+              "end": 239,
+              "children": [
+               {
+                "type": "<",
+                "start": 236,
+                "end": 237,
+                "text": "<"
+               },
+               {
+                "type": "tag_name",
+                "start": 237,
+                "end": 238,
+                "text": "b"
+               },
+               {
+                "type": ">",
+                "start": 238,
+                "end": 239,
+                "text": ">"
+               }
+              ]
+             },
+             {
+              "type": "text",
+              "start": 239,
+              "end": 240,
+              "text": "x"
+             },
+             {
+              "type": "end_tag",
+              "start": 240,
+              "end": 244,
+              "children": [
+               {
+                "type": "</",
+                "start": 240,
+                "end": 242,
+                "text": "</"
+               },
+               {
+                "type": "tag_name",
+                "start": 242,
+                "end": 243,
+                "text": "b"
+               },
+               {
+                "type": ">",
+                "start": 243,
+                "end": 244,
+                "text": ">"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "end_tag",
+            "start": 244,
+            "end": 250,
+            "children": [
+             {
+              "type": "</",
+              "start": 244,
+              "end": 246,
+              "text": "</"
+             },
+             {
+              "type": "tag_name",
+              "start": 246,
+              "end": 249,
+              "text": "div"
+             },
+             {
+              "type": ">",
+              "start": 249,
+              "end": 250,
+              "text": ">"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "element",
+          "start": 257,
+          "end": 280,
+          "children": [
+           {
+            "type": "start_tag",
+            "start": 257,
+            "end": 260,
+            "children": [
+             {
+              "type": "<",
+              "start": 257,
+              "end": 258,
+              "text": "<"
+             },
+             {
+              "type": "tag_name",
+              "start": 258,
+              "end": 259,
+              "text": "p"
+             },
+             {
+              "type": ">",
+              "start": 259,
+              "end": 260,
+              "text": ">"
+             }
+            ]
+           },
+           {
+            "type": "text",
+            "start": 260,
+            "end": 276,
+            "text": "Short paragraph."
+           },
+           {
+            "type": "end_tag",
+            "start": 276,
+            "end": 280,
+            "children": [
+             {
+              "type": "</",
+              "start": 276,
+              "end": 278,
+              "text": "</"
+             },
+             {
+              "type": "tag_name",
+              "start": 278,
+              "end": 279,
+              "text": "p"
+             },
+             {
+              "type": ">",
+              "start": 279,
+              "end": 280,
+              "text": ">"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "end_tag",
+          "start": 285,
+          "end": 295,
+          "children": [
+           {
+            "type": "</",
+            "start": 285,
+            "end": 287,
+            "text": "</"
+           },
+           {
+            "type": "tag_name",
+            "start": 287,
+            "end": 294,
+            "text": "article"
+           },
+           {
+            "type": ">",
+            "start": 294,
+            "end": 295,
+            "text": ">"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "end_tag",
+        "start": 298,
+        "end": 308,
+        "children": [
+         {
+          "type": "</",
+          "start": 298,
+          "end": 300,
+          "text": "</"
+         },
+         {
+          "type": "tag_name",
+          "start": 300,
+          "end": 307,
+          "text": "section"
+         },
+         {
+          "type": ">",
+          "start": 307,
+          "end": 308,
+          "text": ">"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "end_tag",
+      "start": 309,
+      "end": 315,
+      "children": [
+       {
+        "type": "</",
+        "start": 309,
+        "end": 311,
+        "text": "</"
+       },
+       {
+        "type": "tag_name",
+        "start": 311,
+        "end": 314,
+        "text": "div"
+       },
+       {
+        "type": ">",
+        "start": 314,
+        "end": 315,
+        "text": ">"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

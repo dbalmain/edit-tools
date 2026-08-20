@@ -1,0 +1,516 @@
+{
+ "language": "html",
+ "source_file": "corpus/src/html/attributes.html",
+ "source": "<!-- Attribute lists: the construct that most often overflows a start tag. -->\n<div data-a=\"v\" data-b=\"v\" data-c=\"v\" data-d=\"v\"></div>\n<input type=\"text\" name=\"username\" id=\"user\" class=\"form-control\" placeholder=\"Enter your name\" required />\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 243,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 78,
+    "text": "<!-- Attribute lists: the construct that most often overflows a start tag. -->"
+   },
+   {
+    "type": "element",
+    "start": 79,
+    "end": 134,
+    "children": [
+     {
+      "type": "start_tag",
+      "start": 79,
+      "end": 128,
+      "children": [
+       {
+        "type": "<",
+        "start": 79,
+        "end": 80,
+        "text": "<"
+       },
+       {
+        "type": "tag_name",
+        "start": 80,
+        "end": 83,
+        "text": "div"
+       },
+       {
+        "type": "attribute",
+        "start": 84,
+        "end": 94,
+        "children": [
+         {
+          "type": "attribute_name",
+          "start": 84,
+          "end": 90,
+          "text": "data-a"
+         },
+         {
+          "type": "=",
+          "start": 90,
+          "end": 91,
+          "text": "="
+         },
+         {
+          "type": "quoted_attribute_value",
+          "start": 91,
+          "end": 94,
+          "children": [
+           {
+            "type": "\"",
+            "start": 91,
+            "end": 92,
+            "text": "\""
+           },
+           {
+            "type": "attribute_value",
+            "start": 92,
+            "end": 93,
+            "text": "v"
+           },
+           {
+            "type": "\"",
+            "start": 93,
+            "end": 94,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "attribute",
+        "start": 95,
+        "end": 105,
+        "children": [
+         {
+          "type": "attribute_name",
+          "start": 95,
+          "end": 101,
+          "text": "data-b"
+         },
+         {
+          "type": "=",
+          "start": 101,
+          "end": 102,
+          "text": "="
+         },
+         {
+          "type": "quoted_attribute_value",
+          "start": 102,
+          "end": 105,
+          "children": [
+           {
+            "type": "\"",
+            "start": 102,
+            "end": 103,
+            "text": "\""
+           },
+           {
+            "type": "attribute_value",
+            "start": 103,
+            "end": 104,
+            "text": "v"
+           },
+           {
+            "type": "\"",
+            "start": 104,
+            "end": 105,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "attribute",
+        "start": 106,
+        "end": 116,
+        "children": [
+         {
+          "type": "attribute_name",
+          "start": 106,
+          "end": 112,
+          "text": "data-c"
+         },
+         {
+          "type": "=",
+          "start": 112,
+          "end": 113,
+          "text": "="
+         },
+         {
+          "type": "quoted_attribute_value",
+          "start": 113,
+          "end": 116,
+          "children": [
+           {
+            "type": "\"",
+            "start": 113,
+            "end": 114,
+            "text": "\""
+           },
+           {
+            "type": "attribute_value",
+            "start": 114,
+            "end": 115,
+            "text": "v"
+           },
+           {
+            "type": "\"",
+            "start": 115,
+            "end": 116,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "attribute",
+        "start": 117,
+        "end": 127,
+        "children": [
+         {
+          "type": "attribute_name",
+          "start": 117,
+          "end": 123,
+          "text": "data-d"
+         },
+         {
+          "type": "=",
+          "start": 123,
+          "end": 124,
+          "text": "="
+         },
+         {
+          "type": "quoted_attribute_value",
+          "start": 124,
+          "end": 127,
+          "children": [
+           {
+            "type": "\"",
+            "start": 124,
+            "end": 125,
+            "text": "\""
+           },
+           {
+            "type": "attribute_value",
+            "start": 125,
+            "end": 126,
+            "text": "v"
+           },
+           {
+            "type": "\"",
+            "start": 126,
+            "end": 127,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ">",
+        "start": 127,
+        "end": 128,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "end_tag",
+      "start": 128,
+      "end": 134,
+      "children": [
+       {
+        "type": "</",
+        "start": 128,
+        "end": 130,
+        "text": "</"
+       },
+       {
+        "type": "tag_name",
+        "start": 130,
+        "end": 133,
+        "text": "div"
+       },
+       {
+        "type": ">",
+        "start": 133,
+        "end": 134,
+        "text": ">"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "element",
+    "start": 135,
+    "end": 242,
+    "children": [
+     {
+      "type": "self_closing_tag",
+      "start": 135,
+      "end": 242,
+      "children": [
+       {
+        "type": "<",
+        "start": 135,
+        "end": 136,
+        "text": "<"
+       },
+       {
+        "type": "tag_name",
+        "start": 136,
+        "end": 141,
+        "text": "input"
+       },
+       {
+        "type": "attribute",
+        "start": 142,
+        "end": 153,
+        "children": [
+         {
+          "type": "attribute_name",
+          "start": 142,
+          "end": 146,
+          "text": "type"
+         },
+         {
+          "type": "=",
+          "start": 146,
+          "end": 147,
+          "text": "="
+         },
+         {
+          "type": "quoted_attribute_value",
+          "start": 147,
+          "end": 153,
+          "children": [
+           {
+            "type": "\"",
+            "start": 147,
+            "end": 148,
+            "text": "\""
+           },
+           {
+            "type": "attribute_value",
+            "start": 148,
+            "end": 152,
+            "text": "text"
+           },
+           {
+            "type": "\"",
+            "start": 152,
+            "end": 153,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "attribute",
+        "start": 154,
+        "end": 169,
+        "children": [
+         {
+          "type": "attribute_name",
+          "start": 154,
+          "end": 158,
+          "text": "name"
+         },
+         {
+          "type": "=",
+          "start": 158,
+          "end": 159,
+          "text": "="
+         },
+         {
+          "type": "quoted_attribute_value",
+          "start": 159,
+          "end": 169,
+          "children": [
+           {
+            "type": "\"",
+            "start": 159,
+            "end": 160,
+            "text": "\""
+           },
+           {
+            "type": "attribute_value",
+            "start": 160,
+            "end": 168,
+            "text": "username"
+           },
+           {
+            "type": "\"",
+            "start": 168,
+            "end": 169,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "attribute",
+        "start": 170,
+        "end": 179,
+        "children": [
+         {
+          "type": "attribute_name",
+          "start": 170,
+          "end": 172,
+          "text": "id"
+         },
+         {
+          "type": "=",
+          "start": 172,
+          "end": 173,
+          "text": "="
+         },
+         {
+          "type": "quoted_attribute_value",
+          "start": 173,
+          "end": 179,
+          "children": [
+           {
+            "type": "\"",
+            "start": 173,
+            "end": 174,
+            "text": "\""
+           },
+           {
+            "type": "attribute_value",
+            "start": 174,
+            "end": 178,
+            "text": "user"
+           },
+           {
+            "type": "\"",
+            "start": 178,
+            "end": 179,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "attribute",
+        "start": 180,
+        "end": 200,
+        "children": [
+         {
+          "type": "attribute_name",
+          "start": 180,
+          "end": 185,
+          "text": "class"
+         },
+         {
+          "type": "=",
+          "start": 185,
+          "end": 186,
+          "text": "="
+         },
+         {
+          "type": "quoted_attribute_value",
+          "start": 186,
+          "end": 200,
+          "children": [
+           {
+            "type": "\"",
+            "start": 186,
+            "end": 187,
+            "text": "\""
+           },
+           {
+            "type": "attribute_value",
+            "start": 187,
+            "end": 199,
+            "text": "form-control"
+           },
+           {
+            "type": "\"",
+            "start": 199,
+            "end": 200,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "attribute",
+        "start": 201,
+        "end": 230,
+        "children": [
+         {
+          "type": "attribute_name",
+          "start": 201,
+          "end": 212,
+          "text": "placeholder"
+         },
+         {
+          "type": "=",
+          "start": 212,
+          "end": 213,
+          "text": "="
+         },
+         {
+          "type": "quoted_attribute_value",
+          "start": 213,
+          "end": 230,
+          "children": [
+           {
+            "type": "\"",
+            "start": 213,
+            "end": 214,
+            "text": "\""
+           },
+           {
+            "type": "attribute_value",
+            "start": 214,
+            "end": 229,
+            "text": "Enter your name"
+           },
+           {
+            "type": "\"",
+            "start": 229,
+            "end": 230,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "attribute",
+        "start": 231,
+        "end": 239,
+        "children": [
+         {
+          "type": "attribute_name",
+          "start": 231,
+          "end": 239,
+          "text": "required"
+         }
+        ]
+       },
+       {
+        "type": "/>",
+        "start": 240,
+        "end": 242,
+        "text": "/>"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}
