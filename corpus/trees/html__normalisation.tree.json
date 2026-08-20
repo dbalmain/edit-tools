@@ -1,0 +1,977 @@
+{
+ "language": "html",
+ "source_file": "corpus/src/html/normalisation.html",
+ "source": "<!-- Dirty spacing: what prettier rewrites at token level, not what it breaks. -->\n<div  class = \"a\"   id= \"b\" >\n<p>Hello world</p>\n\t<span>x</span>\n</div>\n<div></div>\n<div> </div>\n<span></span>\n<span> </span>\n<ul> </ul>\n<script></script>\n<div class=\"packed\"><p>a</p><p>b</p></div>\n\n\n\n<p title = \"x\" >ok     <!-- spaces before this trailing comment --></p>\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 356,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 82,
+    "text": "<!-- Dirty spacing: what prettier rewrites at token level, not what it breaks. -->"
+   },
+   {
+    "type": "element",
+    "start": 83,
+    "end": 154,
+    "children": [
+     {
+      "type": "start_tag",
+      "start": 83,
+      "end": 112,
+      "children": [
+       {
+        "type": "<",
+        "start": 83,
+        "end": 84,
+        "text": "<"
+       },
+       {
+        "type": "tag_name",
+        "start": 84,
+        "end": 87,
+        "text": "div"
+       },
+       {
+        "type": "attribute",
+        "start": 89,
+        "end": 100,
+        "children": [
+         {
+          "type": "attribute_name",
+          "start": 89,
+          "end": 94,
+          "text": "class"
+         },
+         {
+          "type": "=",
+          "start": 95,
+          "end": 96,
+          "text": "="
+         },
+         {
+          "type": "quoted_attribute_value",
+          "start": 97,
+          "end": 100,
+          "children": [
+           {
+            "type": "\"",
+            "start": 97,
+            "end": 98,
+            "text": "\""
+           },
+           {
+            "type": "attribute_value",
+            "start": 98,
+            "end": 99,
+            "text": "a"
+           },
+           {
+            "type": "\"",
+            "start": 99,
+            "end": 100,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "attribute",
+        "start": 103,
+        "end": 110,
+        "children": [
+         {
+          "type": "attribute_name",
+          "start": 103,
+          "end": 105,
+          "text": "id"
+         },
+         {
+          "type": "=",
+          "start": 105,
+          "end": 106,
+          "text": "="
+         },
+         {
+          "type": "quoted_attribute_value",
+          "start": 107,
+          "end": 110,
+          "children": [
+           {
+            "type": "\"",
+            "start": 107,
+            "end": 108,
+            "text": "\""
+           },
+           {
+            "type": "attribute_value",
+            "start": 108,
+            "end": 109,
+            "text": "b"
+           },
+           {
+            "type": "\"",
+            "start": 109,
+            "end": 110,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ">",
+        "start": 111,
+        "end": 112,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "element",
+      "start": 113,
+      "end": 131,
+      "children": [
+       {
+        "type": "start_tag",
+        "start": 113,
+        "end": 116,
+        "children": [
+         {
+          "type": "<",
+          "start": 113,
+          "end": 114,
+          "text": "<"
+         },
+         {
+          "type": "tag_name",
+          "start": 114,
+          "end": 115,
+          "text": "p"
+         },
+         {
+          "type": ">",
+          "start": 115,
+          "end": 116,
+          "text": ">"
+         }
+        ]
+       },
+       {
+        "type": "text",
+        "start": 116,
+        "end": 127,
+        "text": "Hello world"
+       },
+       {
+        "type": "end_tag",
+        "start": 127,
+        "end": 131,
+        "children": [
+         {
+          "type": "</",
+          "start": 127,
+          "end": 129,
+          "text": "</"
+         },
+         {
+          "type": "tag_name",
+          "start": 129,
+          "end": 130,
+          "text": "p"
+         },
+         {
+          "type": ">",
+          "start": 130,
+          "end": 131,
+          "text": ">"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "element",
+      "start": 133,
+      "end": 147,
+      "children": [
+       {
+        "type": "start_tag",
+        "start": 133,
+        "end": 139,
+        "children": [
+         {
+          "type": "<",
+          "start": 133,
+          "end": 134,
+          "text": "<"
+         },
+         {
+          "type": "tag_name",
+          "start": 134,
+          "end": 138,
+          "text": "span"
+         },
+         {
+          "type": ">",
+          "start": 138,
+          "end": 139,
+          "text": ">"
+         }
+        ]
+       },
+       {
+        "type": "text",
+        "start": 139,
+        "end": 140,
+        "text": "x"
+       },
+       {
+        "type": "end_tag",
+        "start": 140,
+        "end": 147,
+        "children": [
+         {
+          "type": "</",
+          "start": 140,
+          "end": 142,
+          "text": "</"
+         },
+         {
+          "type": "tag_name",
+          "start": 142,
+          "end": 146,
+          "text": "span"
+         },
+         {
+          "type": ">",
+          "start": 146,
+          "end": 147,
+          "text": ">"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "end_tag",
+      "start": 148,
+      "end": 154,
+      "children": [
+       {
+        "type": "</",
+        "start": 148,
+        "end": 150,
+        "text": "</"
+       },
+       {
+        "type": "tag_name",
+        "start": 150,
+        "end": 153,
+        "text": "div"
+       },
+       {
+        "type": ">",
+        "start": 153,
+        "end": 154,
+        "text": ">"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "element",
+    "start": 155,
+    "end": 166,
+    "children": [
+     {
+      "type": "start_tag",
+      "start": 155,
+      "end": 160,
+      "children": [
+       {
+        "type": "<",
+        "start": 155,
+        "end": 156,
+        "text": "<"
+       },
+       {
+        "type": "tag_name",
+        "start": 156,
+        "end": 159,
+        "text": "div"
+       },
+       {
+        "type": ">",
+        "start": 159,
+        "end": 160,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "end_tag",
+      "start": 160,
+      "end": 166,
+      "children": [
+       {
+        "type": "</",
+        "start": 160,
+        "end": 162,
+        "text": "</"
+       },
+       {
+        "type": "tag_name",
+        "start": 162,
+        "end": 165,
+        "text": "div"
+       },
+       {
+        "type": ">",
+        "start": 165,
+        "end": 166,
+        "text": ">"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "element",
+    "start": 167,
+    "end": 179,
+    "children": [
+     {
+      "type": "start_tag",
+      "start": 167,
+      "end": 172,
+      "children": [
+       {
+        "type": "<",
+        "start": 167,
+        "end": 168,
+        "text": "<"
+       },
+       {
+        "type": "tag_name",
+        "start": 168,
+        "end": 171,
+        "text": "div"
+       },
+       {
+        "type": ">",
+        "start": 171,
+        "end": 172,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "end_tag",
+      "start": 173,
+      "end": 179,
+      "children": [
+       {
+        "type": "</",
+        "start": 173,
+        "end": 175,
+        "text": "</"
+       },
+       {
+        "type": "tag_name",
+        "start": 175,
+        "end": 178,
+        "text": "div"
+       },
+       {
+        "type": ">",
+        "start": 178,
+        "end": 179,
+        "text": ">"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "element",
+    "start": 180,
+    "end": 193,
+    "children": [
+     {
+      "type": "start_tag",
+      "start": 180,
+      "end": 186,
+      "children": [
+       {
+        "type": "<",
+        "start": 180,
+        "end": 181,
+        "text": "<"
+       },
+       {
+        "type": "tag_name",
+        "start": 181,
+        "end": 185,
+        "text": "span"
+       },
+       {
+        "type": ">",
+        "start": 185,
+        "end": 186,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "end_tag",
+      "start": 186,
+      "end": 193,
+      "children": [
+       {
+        "type": "</",
+        "start": 186,
+        "end": 188,
+        "text": "</"
+       },
+       {
+        "type": "tag_name",
+        "start": 188,
+        "end": 192,
+        "text": "span"
+       },
+       {
+        "type": ">",
+        "start": 192,
+        "end": 193,
+        "text": ">"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "element",
+    "start": 194,
+    "end": 208,
+    "children": [
+     {
+      "type": "start_tag",
+      "start": 194,
+      "end": 200,
+      "children": [
+       {
+        "type": "<",
+        "start": 194,
+        "end": 195,
+        "text": "<"
+       },
+       {
+        "type": "tag_name",
+        "start": 195,
+        "end": 199,
+        "text": "span"
+       },
+       {
+        "type": ">",
+        "start": 199,
+        "end": 200,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "end_tag",
+      "start": 201,
+      "end": 208,
+      "children": [
+       {
+        "type": "</",
+        "start": 201,
+        "end": 203,
+        "text": "</"
+       },
+       {
+        "type": "tag_name",
+        "start": 203,
+        "end": 207,
+        "text": "span"
+       },
+       {
+        "type": ">",
+        "start": 207,
+        "end": 208,
+        "text": ">"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "element",
+    "start": 209,
+    "end": 219,
+    "children": [
+     {
+      "type": "start_tag",
+      "start": 209,
+      "end": 213,
+      "children": [
+       {
+        "type": "<",
+        "start": 209,
+        "end": 210,
+        "text": "<"
+       },
+       {
+        "type": "tag_name",
+        "start": 210,
+        "end": 212,
+        "text": "ul"
+       },
+       {
+        "type": ">",
+        "start": 212,
+        "end": 213,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "end_tag",
+      "start": 214,
+      "end": 219,
+      "children": [
+       {
+        "type": "</",
+        "start": 214,
+        "end": 216,
+        "text": "</"
+       },
+       {
+        "type": "tag_name",
+        "start": 216,
+        "end": 218,
+        "text": "ul"
+       },
+       {
+        "type": ">",
+        "start": 218,
+        "end": 219,
+        "text": ">"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "script_element",
+    "start": 220,
+    "end": 237,
+    "children": [
+     {
+      "type": "start_tag",
+      "start": 220,
+      "end": 228,
+      "children": [
+       {
+        "type": "<",
+        "start": 220,
+        "end": 221,
+        "text": "<"
+       },
+       {
+        "type": "tag_name",
+        "start": 221,
+        "end": 227,
+        "text": "script"
+       },
+       {
+        "type": ">",
+        "start": 227,
+        "end": 228,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "raw_text",
+      "start": 228,
+      "end": 228,
+      "text": ""
+     },
+     {
+      "type": "end_tag",
+      "start": 228,
+      "end": 237,
+      "children": [
+       {
+        "type": "</",
+        "start": 228,
+        "end": 230,
+        "text": "</"
+       },
+       {
+        "type": "tag_name",
+        "start": 230,
+        "end": 236,
+        "text": "script"
+       },
+       {
+        "type": ">",
+        "start": 236,
+        "end": 237,
+        "text": ">"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "element",
+    "start": 238,
+    "end": 280,
+    "children": [
+     {
+      "type": "start_tag",
+      "start": 238,
+      "end": 258,
+      "children": [
+       {
+        "type": "<",
+        "start": 238,
+        "end": 239,
+        "text": "<"
+       },
+       {
+        "type": "tag_name",
+        "start": 239,
+        "end": 242,
+        "text": "div"
+       },
+       {
+        "type": "attribute",
+        "start": 243,
+        "end": 257,
+        "children": [
+         {
+          "type": "attribute_name",
+          "start": 243,
+          "end": 248,
+          "text": "class"
+         },
+         {
+          "type": "=",
+          "start": 248,
+          "end": 249,
+          "text": "="
+         },
+         {
+          "type": "quoted_attribute_value",
+          "start": 249,
+          "end": 257,
+          "children": [
+           {
+            "type": "\"",
+            "start": 249,
+            "end": 250,
+            "text": "\""
+           },
+           {
+            "type": "attribute_value",
+            "start": 250,
+            "end": 256,
+            "text": "packed"
+           },
+           {
+            "type": "\"",
+            "start": 256,
+            "end": 257,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ">",
+        "start": 257,
+        "end": 258,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "element",
+      "start": 258,
+      "end": 266,
+      "children": [
+       {
+        "type": "start_tag",
+        "start": 258,
+        "end": 261,
+        "children": [
+         {
+          "type": "<",
+          "start": 258,
+          "end": 259,
+          "text": "<"
+         },
+         {
+          "type": "tag_name",
+          "start": 259,
+          "end": 260,
+          "text": "p"
+         },
+         {
+          "type": ">",
+          "start": 260,
+          "end": 261,
+          "text": ">"
+         }
+        ]
+       },
+       {
+        "type": "text",
+        "start": 261,
+        "end": 262,
+        "text": "a"
+       },
+       {
+        "type": "end_tag",
+        "start": 262,
+        "end": 266,
+        "children": [
+         {
+          "type": "</",
+          "start": 262,
+          "end": 264,
+          "text": "</"
+         },
+         {
+          "type": "tag_name",
+          "start": 264,
+          "end": 265,
+          "text": "p"
+         },
+         {
+          "type": ">",
+          "start": 265,
+          "end": 266,
+          "text": ">"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "element",
+      "start": 266,
+      "end": 274,
+      "children": [
+       {
+        "type": "start_tag",
+        "start": 266,
+        "end": 269,
+        "children": [
+         {
+          "type": "<",
+          "start": 266,
+          "end": 267,
+          "text": "<"
+         },
+         {
+          "type": "tag_name",
+          "start": 267,
+          "end": 268,
+          "text": "p"
+         },
+         {
+          "type": ">",
+          "start": 268,
+          "end": 269,
+          "text": ">"
+         }
+        ]
+       },
+       {
+        "type": "text",
+        "start": 269,
+        "end": 270,
+        "text": "b"
+       },
+       {
+        "type": "end_tag",
+        "start": 270,
+        "end": 274,
+        "children": [
+         {
+          "type": "</",
+          "start": 270,
+          "end": 272,
+          "text": "</"
+         },
+         {
+          "type": "tag_name",
+          "start": 272,
+          "end": 273,
+          "text": "p"
+         },
+         {
+          "type": ">",
+          "start": 273,
+          "end": 274,
+          "text": ">"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "end_tag",
+      "start": 274,
+      "end": 280,
+      "children": [
+       {
+        "type": "</",
+        "start": 274,
+        "end": 276,
+        "text": "</"
+       },
+       {
+        "type": "tag_name",
+        "start": 276,
+        "end": 279,
+        "text": "div"
+       },
+       {
+        "type": ">",
+        "start": 279,
+        "end": 280,
+        "text": ">"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "element",
+    "start": 284,
+    "end": 355,
+    "children": [
+     {
+      "type": "start_tag",
+      "start": 284,
+      "end": 300,
+      "children": [
+       {
+        "type": "<",
+        "start": 284,
+        "end": 285,
+        "text": "<"
+       },
+       {
+        "type": "tag_name",
+        "start": 285,
+        "end": 286,
+        "text": "p"
+       },
+       {
+        "type": "attribute",
+        "start": 287,
+        "end": 298,
+        "children": [
+         {
+          "type": "attribute_name",
+          "start": 287,
+          "end": 292,
+          "text": "title"
+         },
+         {
+          "type": "=",
+          "start": 293,
+          "end": 294,
+          "text": "="
+         },
+         {
+          "type": "quoted_attribute_value",
+          "start": 295,
+          "end": 298,
+          "children": [
+           {
+            "type": "\"",
+            "start": 295,
+            "end": 296,
+            "text": "\""
+           },
+           {
+            "type": "attribute_value",
+            "start": 296,
+            "end": 297,
+            "text": "x"
+           },
+           {
+            "type": "\"",
+            "start": 297,
+            "end": 298,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ">",
+        "start": 299,
+        "end": 300,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "text",
+      "start": 300,
+      "end": 302,
+      "text": "ok"
+     },
+     {
+      "type": "comment",
+      "start": 307,
+      "end": 351,
+      "text": "<!-- spaces before this trailing comment -->"
+     },
+     {
+      "type": "end_tag",
+      "start": 351,
+      "end": 355,
+      "children": [
+       {
+        "type": "</",
+        "start": 351,
+        "end": 353,
+        "text": "</"
+       },
+       {
+        "type": "tag_name",
+        "start": 353,
+        "end": 354,
+        "text": "p"
+       },
+       {
+        "type": ">",
+        "start": 354,
+        "end": 355,
+        "text": ">"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

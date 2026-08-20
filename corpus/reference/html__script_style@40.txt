@@ -1,0 +1,13 @@
+<!-- Script and style are the HTML injection sites. The grammar has no info-string child. -->
+<style>
+  body {
+    color: red;
+  }
+</style>
+<script>
+  var x = 1;
+</script>
+<script src="app.js" defer></script>
+<script type="application/ld+json">
+  { "a": 1, "b": 2 }
+</script>

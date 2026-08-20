@@ -1,0 +1,354 @@
+{
+ "language": "html",
+ "source_file": "corpus/src/html/void_slash.html",
+ "source": "<!-- prettier emits XHTML-style self-closing slashes on void elements. -->\n<br>\n<img src=\"x.png\" alt=\"pic\">\n<hr>\n<input type=\"text\">\n<meta charset=\"utf-8\">\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 156,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 74,
+    "text": "<!-- prettier emits XHTML-style self-closing slashes on void elements. -->"
+   },
+   {
+    "type": "element",
+    "start": 75,
+    "end": 80,
+    "children": [
+     {
+      "type": "start_tag",
+      "start": 75,
+      "end": 79,
+      "children": [
+       {
+        "type": "<",
+        "start": 75,
+        "end": 76,
+        "text": "<"
+       },
+       {
+        "type": "tag_name",
+        "start": 76,
+        "end": 78,
+        "text": "br"
+       },
+       {
+        "type": ">",
+        "start": 78,
+        "end": 79,
+        "text": ">"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "element",
+    "start": 80,
+    "end": 108,
+    "children": [
+     {
+      "type": "start_tag",
+      "start": 80,
+      "end": 107,
+      "children": [
+       {
+        "type": "<",
+        "start": 80,
+        "end": 81,
+        "text": "<"
+       },
+       {
+        "type": "tag_name",
+        "start": 81,
+        "end": 84,
+        "text": "img"
+       },
+       {
+        "type": "attribute",
+        "start": 85,
+        "end": 96,
+        "children": [
+         {
+          "type": "attribute_name",
+          "start": 85,
+          "end": 88,
+          "text": "src"
+         },
+         {
+          "type": "=",
+          "start": 88,
+          "end": 89,
+          "text": "="
+         },
+         {
+          "type": "quoted_attribute_value",
+          "start": 89,
+          "end": 96,
+          "children": [
+           {
+            "type": "\"",
+            "start": 89,
+            "end": 90,
+            "text": "\""
+           },
+           {
+            "type": "attribute_value",
+            "start": 90,
+            "end": 95,
+            "text": "x.png"
+           },
+           {
+            "type": "\"",
+            "start": 95,
+            "end": 96,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "attribute",
+        "start": 97,
+        "end": 106,
+        "children": [
+         {
+          "type": "attribute_name",
+          "start": 97,
+          "end": 100,
+          "text": "alt"
+         },
+         {
+          "type": "=",
+          "start": 100,
+          "end": 101,
+          "text": "="
+         },
+         {
+          "type": "quoted_attribute_value",
+          "start": 101,
+          "end": 106,
+          "children": [
+           {
+            "type": "\"",
+            "start": 101,
+            "end": 102,
+            "text": "\""
+           },
+           {
+            "type": "attribute_value",
+            "start": 102,
+            "end": 105,
+            "text": "pic"
+           },
+           {
+            "type": "\"",
+            "start": 105,
+            "end": 106,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ">",
+        "start": 106,
+        "end": 107,
+        "text": ">"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "element",
+    "start": 108,
+    "end": 113,
+    "children": [
+     {
+      "type": "start_tag",
+      "start": 108,
+      "end": 112,
+      "children": [
+       {
+        "type": "<",
+        "start": 108,
+        "end": 109,
+        "text": "<"
+       },
+       {
+        "type": "tag_name",
+        "start": 109,
+        "end": 111,
+        "text": "hr"
+       },
+       {
+        "type": ">",
+        "start": 111,
+        "end": 112,
+        "text": ">"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "element",
+    "start": 113,
+    "end": 133,
+    "children": [
+     {
+      "type": "start_tag",
+      "start": 113,
+      "end": 132,
+      "children": [
+       {
+        "type": "<",
+        "start": 113,
+        "end": 114,
+        "text": "<"
+       },
+       {
+        "type": "tag_name",
+        "start": 114,
+        "end": 119,
+        "text": "input"
+       },
+       {
+        "type": "attribute",
+        "start": 120,
+        "end": 131,
+        "children": [
+         {
+          "type": "attribute_name",
+          "start": 120,
+          "end": 124,
+          "text": "type"
+         },
+         {
+          "type": "=",
+          "start": 124,
+          "end": 125,
+          "text": "="
+         },
+         {
+          "type": "quoted_attribute_value",
+          "start": 125,
+          "end": 131,
+          "children": [
+           {
+            "type": "\"",
+            "start": 125,
+            "end": 126,
+            "text": "\""
+           },
+           {
+            "type": "attribute_value",
+            "start": 126,
+            "end": 130,
+            "text": "text"
+           },
+           {
+            "type": "\"",
+            "start": 130,
+            "end": 131,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ">",
+        "start": 131,
+        "end": 132,
+        "text": ">"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "element",
+    "start": 133,
+    "end": 156,
+    "children": [
+     {
+      "type": "start_tag",
+      "start": 133,
+      "end": 155,
+      "children": [
+       {
+        "type": "<",
+        "start": 133,
+        "end": 134,
+        "text": "<"
+       },
+       {
+        "type": "tag_name",
+        "start": 134,
+        "end": 138,
+        "text": "meta"
+       },
+       {
+        "type": "attribute",
+        "start": 139,
+        "end": 154,
+        "children": [
+         {
+          "type": "attribute_name",
+          "start": 139,
+          "end": 146,
+          "text": "charset"
+         },
+         {
+          "type": "=",
+          "start": 146,
+          "end": 147,
+          "text": "="
+         },
+         {
+          "type": "quoted_attribute_value",
+          "start": 147,
+          "end": 154,
+          "children": [
+           {
+            "type": "\"",
+            "start": 147,
+            "end": 148,
+            "text": "\""
+           },
+           {
+            "type": "attribute_value",
+            "start": 148,
+            "end": 153,
+            "text": "utf-8"
+           },
+           {
+            "type": "\"",
+            "start": 153,
+            "end": 154,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ">",
+        "start": 154,
+        "end": 155,
+        "text": ">"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

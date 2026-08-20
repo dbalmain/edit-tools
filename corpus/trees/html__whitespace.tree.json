@@ -1,0 +1,351 @@
+{
+ "language": "html",
+ "source_file": "corpus/src/html/whitespace.html",
+ "source": "<!-- Whitespace significance depends on the element. pre/textarea keep runs; p does not. -->\n<pre>  keep   these    spaces\n  and\nlines</pre>\n<textarea>  keep   these    spaces</textarea>\n<p>Hello world already collapsed</p>\n<span> world </span>\n<p>Hello&nbsp;&nbsp;world</p>\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 275,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 92,
+    "text": "<!-- Whitespace significance depends on the element. pre/textarea keep runs; p does not. -->"
+   },
+   {
+    "type": "element",
+    "start": 93,
+    "end": 140,
+    "children": [
+     {
+      "type": "start_tag",
+      "start": 93,
+      "end": 98,
+      "children": [
+       {
+        "type": "<",
+        "start": 93,
+        "end": 94,
+        "text": "<"
+       },
+       {
+        "type": "tag_name",
+        "start": 94,
+        "end": 97,
+        "text": "pre"
+       },
+       {
+        "type": ">",
+        "start": 97,
+        "end": 98,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "text",
+      "start": 100,
+      "end": 134,
+      "text": "keep   these    spaces\n  and\nlines"
+     },
+     {
+      "type": "end_tag",
+      "start": 134,
+      "end": 140,
+      "children": [
+       {
+        "type": "</",
+        "start": 134,
+        "end": 136,
+        "text": "</"
+       },
+       {
+        "type": "tag_name",
+        "start": 136,
+        "end": 139,
+        "text": "pre"
+       },
+       {
+        "type": ">",
+        "start": 139,
+        "end": 140,
+        "text": ">"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "element",
+    "start": 141,
+    "end": 186,
+    "children": [
+     {
+      "type": "start_tag",
+      "start": 141,
+      "end": 151,
+      "children": [
+       {
+        "type": "<",
+        "start": 141,
+        "end": 142,
+        "text": "<"
+       },
+       {
+        "type": "tag_name",
+        "start": 142,
+        "end": 150,
+        "text": "textarea"
+       },
+       {
+        "type": ">",
+        "start": 150,
+        "end": 151,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "text",
+      "start": 153,
+      "end": 175,
+      "text": "keep   these    spaces"
+     },
+     {
+      "type": "end_tag",
+      "start": 175,
+      "end": 186,
+      "children": [
+       {
+        "type": "</",
+        "start": 175,
+        "end": 177,
+        "text": "</"
+       },
+       {
+        "type": "tag_name",
+        "start": 177,
+        "end": 185,
+        "text": "textarea"
+       },
+       {
+        "type": ">",
+        "start": 185,
+        "end": 186,
+        "text": ">"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "element",
+    "start": 187,
+    "end": 223,
+    "children": [
+     {
+      "type": "start_tag",
+      "start": 187,
+      "end": 190,
+      "children": [
+       {
+        "type": "<",
+        "start": 187,
+        "end": 188,
+        "text": "<"
+       },
+       {
+        "type": "tag_name",
+        "start": 188,
+        "end": 189,
+        "text": "p"
+       },
+       {
+        "type": ">",
+        "start": 189,
+        "end": 190,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "text",
+      "start": 190,
+      "end": 219,
+      "text": "Hello world already collapsed"
+     },
+     {
+      "type": "end_tag",
+      "start": 219,
+      "end": 223,
+      "children": [
+       {
+        "type": "</",
+        "start": 219,
+        "end": 221,
+        "text": "</"
+       },
+       {
+        "type": "tag_name",
+        "start": 221,
+        "end": 222,
+        "text": "p"
+       },
+       {
+        "type": ">",
+        "start": 222,
+        "end": 223,
+        "text": ">"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "element",
+    "start": 224,
+    "end": 244,
+    "children": [
+     {
+      "type": "start_tag",
+      "start": 224,
+      "end": 230,
+      "children": [
+       {
+        "type": "<",
+        "start": 224,
+        "end": 225,
+        "text": "<"
+       },
+       {
+        "type": "tag_name",
+        "start": 225,
+        "end": 229,
+        "text": "span"
+       },
+       {
+        "type": ">",
+        "start": 229,
+        "end": 230,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "text",
+      "start": 231,
+      "end": 236,
+      "text": "world"
+     },
+     {
+      "type": "end_tag",
+      "start": 237,
+      "end": 244,
+      "children": [
+       {
+        "type": "</",
+        "start": 237,
+        "end": 239,
+        "text": "</"
+       },
+       {
+        "type": "tag_name",
+        "start": 239,
+        "end": 243,
+        "text": "span"
+       },
+       {
+        "type": ">",
+        "start": 243,
+        "end": 244,
+        "text": ">"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "element",
+    "start": 245,
+    "end": 274,
+    "children": [
+     {
+      "type": "start_tag",
+      "start": 245,
+      "end": 248,
+      "children": [
+       {
+        "type": "<",
+        "start": 245,
+        "end": 246,
+        "text": "<"
+       },
+       {
+        "type": "tag_name",
+        "start": 246,
+        "end": 247,
+        "text": "p"
+       },
+       {
+        "type": ">",
+        "start": 247,
+        "end": 248,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "text",
+      "start": 248,
+      "end": 253,
+      "text": "Hello"
+     },
+     {
+      "type": "entity",
+      "start": 253,
+      "end": 259,
+      "text": "&nbsp;"
+     },
+     {
+      "type": "entity",
+      "start": 259,
+      "end": 265,
+      "text": "&nbsp;"
+     },
+     {
+      "type": "text",
+      "start": 265,
+      "end": 270,
+      "text": "world"
+     },
+     {
+      "type": "end_tag",
+      "start": 270,
+      "end": 274,
+      "children": [
+       {
+        "type": "</",
+        "start": 270,
+        "end": 272,
+        "text": "</"
+       },
+       {
+        "type": "tag_name",
+        "start": 272,
+        "end": 273,
+        "text": "p"
+       },
+       {
+        "type": ">",
+        "start": 273,
+        "end": 274,
+        "text": ">"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -1,0 +1,507 @@
+{
+ "language": "html",
+ "source_file": "corpus/src/html/comments.html",
+ "source": "<!-- File-level comment at the very top of the document. -->\n<div>\n  <!-- own-line before the first child -->\n  <p>hi</p>\n  <!-- between block children -->\n  <p>there<!-- trailing on text --></p>\n  <div><!-- inside an otherwise empty element --></div>\n  <p>x</p>\n  <!-- before the closing delimiter -->\n</div>\n<!-- after a block sibling; prettier puts this on its own line -->\n<p>short</p>\n<!-- consecutive own-line comment -->\n<!-- second of the pair -->\n<span>inline</span><!-- after an inline element -->\n<!-- comment at the end of the file -->\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 548,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 60,
+    "text": "<!-- File-level comment at the very top of the document. -->"
+   },
+   {
+    "type": "element",
+    "start": 61,
+    "end": 309,
+    "children": [
+     {
+      "type": "start_tag",
+      "start": 61,
+      "end": 66,
+      "children": [
+       {
+        "type": "<",
+        "start": 61,
+        "end": 62,
+        "text": "<"
+       },
+       {
+        "type": "tag_name",
+        "start": 62,
+        "end": 65,
+        "text": "div"
+       },
+       {
+        "type": ">",
+        "start": 65,
+        "end": 66,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 69,
+      "end": 109,
+      "text": "<!-- own-line before the first child -->"
+     },
+     {
+      "type": "element",
+      "start": 112,
+      "end": 121,
+      "children": [
+       {
+        "type": "start_tag",
+        "start": 112,
+        "end": 115,
+        "children": [
+         {
+          "type": "<",
+          "start": 112,
+          "end": 113,
+          "text": "<"
+         },
+         {
+          "type": "tag_name",
+          "start": 113,
+          "end": 114,
+          "text": "p"
+         },
+         {
+          "type": ">",
+          "start": 114,
+          "end": 115,
+          "text": ">"
+         }
+        ]
+       },
+       {
+        "type": "text",
+        "start": 115,
+        "end": 117,
+        "text": "hi"
+       },
+       {
+        "type": "end_tag",
+        "start": 117,
+        "end": 121,
+        "children": [
+         {
+          "type": "</",
+          "start": 117,
+          "end": 119,
+          "text": "</"
+         },
+         {
+          "type": "tag_name",
+          "start": 119,
+          "end": 120,
+          "text": "p"
+         },
+         {
+          "type": ">",
+          "start": 120,
+          "end": 121,
+          "text": ">"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 124,
+      "end": 155,
+      "text": "<!-- between block children -->"
+     },
+     {
+      "type": "element",
+      "start": 158,
+      "end": 195,
+      "children": [
+       {
+        "type": "start_tag",
+        "start": 158,
+        "end": 161,
+        "children": [
+         {
+          "type": "<",
+          "start": 158,
+          "end": 159,
+          "text": "<"
+         },
+         {
+          "type": "tag_name",
+          "start": 159,
+          "end": 160,
+          "text": "p"
+         },
+         {
+          "type": ">",
+          "start": 160,
+          "end": 161,
+          "text": ">"
+         }
+        ]
+       },
+       {
+        "type": "text",
+        "start": 161,
+        "end": 166,
+        "text": "there"
+       },
+       {
+        "type": "comment",
+        "start": 166,
+        "end": 191,
+        "text": "<!-- trailing on text -->"
+       },
+       {
+        "type": "end_tag",
+        "start": 191,
+        "end": 195,
+        "children": [
+         {
+          "type": "</",
+          "start": 191,
+          "end": 193,
+          "text": "</"
+         },
+         {
+          "type": "tag_name",
+          "start": 193,
+          "end": 194,
+          "text": "p"
+         },
+         {
+          "type": ">",
+          "start": 194,
+          "end": 195,
+          "text": ">"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "element",
+      "start": 198,
+      "end": 251,
+      "children": [
+       {
+        "type": "start_tag",
+        "start": 198,
+        "end": 203,
+        "children": [
+         {
+          "type": "<",
+          "start": 198,
+          "end": 199,
+          "text": "<"
+         },
+         {
+          "type": "tag_name",
+          "start": 199,
+          "end": 202,
+          "text": "div"
+         },
+         {
+          "type": ">",
+          "start": 202,
+          "end": 203,
+          "text": ">"
+         }
+        ]
+       },
+       {
+        "type": "comment",
+        "start": 203,
+        "end": 245,
+        "text": "<!-- inside an otherwise empty element -->"
+       },
+       {
+        "type": "end_tag",
+        "start": 245,
+        "end": 251,
+        "children": [
+         {
+          "type": "</",
+          "start": 245,
+          "end": 247,
+          "text": "</"
+         },
+         {
+          "type": "tag_name",
+          "start": 247,
+          "end": 250,
+          "text": "div"
+         },
+         {
+          "type": ">",
+          "start": 250,
+          "end": 251,
+          "text": ">"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "element",
+      "start": 254,
+      "end": 262,
+      "children": [
+       {
+        "type": "start_tag",
+        "start": 254,
+        "end": 257,
+        "children": [
+         {
+          "type": "<",
+          "start": 254,
+          "end": 255,
+          "text": "<"
+         },
+         {
+          "type": "tag_name",
+          "start": 255,
+          "end": 256,
+          "text": "p"
+         },
+         {
+          "type": ">",
+          "start": 256,
+          "end": 257,
+          "text": ">"
+         }
+        ]
+       },
+       {
+        "type": "text",
+        "start": 257,
+        "end": 258,
+        "text": "x"
+       },
+       {
+        "type": "end_tag",
+        "start": 258,
+        "end": 262,
+        "children": [
+         {
+          "type": "</",
+          "start": 258,
+          "end": 260,
+          "text": "</"
+         },
+         {
+          "type": "tag_name",
+          "start": 260,
+          "end": 261,
+          "text": "p"
+         },
+         {
+          "type": ">",
+          "start": 261,
+          "end": 262,
+          "text": ">"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 265,
+      "end": 302,
+      "text": "<!-- before the closing delimiter -->"
+     },
+     {
+      "type": "end_tag",
+      "start": 303,
+      "end": 309,
+      "children": [
+       {
+        "type": "</",
+        "start": 303,
+        "end": 305,
+        "text": "</"
+       },
+       {
+        "type": "tag_name",
+        "start": 305,
+        "end": 308,
+        "text": "div"
+       },
+       {
+        "type": ">",
+        "start": 308,
+        "end": 309,
+        "text": ">"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 310,
+    "end": 376,
+    "text": "<!-- after a block sibling; prettier puts this on its own line -->"
+   },
+   {
+    "type": "element",
+    "start": 377,
+    "end": 389,
+    "children": [
+     {
+      "type": "start_tag",
+      "start": 377,
+      "end": 380,
+      "children": [
+       {
+        "type": "<",
+        "start": 377,
+        "end": 378,
+        "text": "<"
+       },
+       {
+        "type": "tag_name",
+        "start": 378,
+        "end": 379,
+        "text": "p"
+       },
+       {
+        "type": ">",
+        "start": 379,
+        "end": 380,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "text",
+      "start": 380,
+      "end": 385,
+      "text": "short"
+     },
+     {
+      "type": "end_tag",
+      "start": 385,
+      "end": 389,
+      "children": [
+       {
+        "type": "</",
+        "start": 385,
+        "end": 387,
+        "text": "</"
+       },
+       {
+        "type": "tag_name",
+        "start": 387,
+        "end": 388,
+        "text": "p"
+       },
+       {
+        "type": ">",
+        "start": 388,
+        "end": 389,
+        "text": ">"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 390,
+    "end": 427,
+    "text": "<!-- consecutive own-line comment -->"
+   },
+   {
+    "type": "comment",
+    "start": 428,
+    "end": 455,
+    "text": "<!-- second of the pair -->"
+   },
+   {
+    "type": "element",
+    "start": 456,
+    "end": 475,
+    "children": [
+     {
+      "type": "start_tag",
+      "start": 456,
+      "end": 462,
+      "children": [
+       {
+        "type": "<",
+        "start": 456,
+        "end": 457,
+        "text": "<"
+       },
+       {
+        "type": "tag_name",
+        "start": 457,
+        "end": 461,
+        "text": "span"
+       },
+       {
+        "type": ">",
+        "start": 461,
+        "end": 462,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "text",
+      "start": 462,
+      "end": 468,
+      "text": "inline"
+     },
+     {
+      "type": "end_tag",
+      "start": 468,
+      "end": 475,
+      "children": [
+       {
+        "type": "</",
+        "start": 468,
+        "end": 470,
+        "text": "</"
+       },
+       {
+        "type": "tag_name",
+        "start": 470,
+        "end": 474,
+        "text": "span"
+       },
+       {
+        "type": ">",
+        "start": 474,
+        "end": 475,
+        "text": ">"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 475,
+    "end": 507,
+    "text": "<!-- after an inline element -->"
+   },
+   {
+    "type": "comment",
+    "start": 508,
+    "end": 547,
+    "text": "<!-- comment at the end of the file -->"
+   }
+  ]
+ }
+}

@@ -1,0 +1,81 @@
+{
+ "language": "html",
+ "source_file": "corpus/src/html/prose.html",
+ "source": "<!-- prettier wraps prose by inserting newlines into `text` leaves. Linearity forbids that. -->\n<p>The quick brown fox jumps over the lazy dog and then the fox jumps again over another lazy dog nearby and keeps going until the line must wrap.</p>\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 247,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 95,
+    "text": "<!-- prettier wraps prose by inserting newlines into `text` leaves. Linearity forbids that. -->"
+   },
+   {
+    "type": "element",
+    "start": 96,
+    "end": 246,
+    "children": [
+     {
+      "type": "start_tag",
+      "start": 96,
+      "end": 99,
+      "children": [
+       {
+        "type": "<",
+        "start": 96,
+        "end": 97,
+        "text": "<"
+       },
+       {
+        "type": "tag_name",
+        "start": 97,
+        "end": 98,
+        "text": "p"
+       },
+       {
+        "type": ">",
+        "start": 98,
+        "end": 99,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "text",
+      "start": 99,
+      "end": 242,
+      "text": "The quick brown fox jumps over the lazy dog and then the fox jumps again over another lazy dog nearby and keeps going until the line must wrap."
+     },
+     {
+      "type": "end_tag",
+      "start": 242,
+      "end": 246,
+      "children": [
+       {
+        "type": "</",
+        "start": 242,
+        "end": 244,
+        "text": "</"
+       },
+       {
+        "type": "tag_name",
+        "start": 244,
+        "end": 245,
+        "text": "p"
+       },
+       {
+        "type": ">",
+        "start": 245,
+        "end": 246,
+        "text": ">"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}
