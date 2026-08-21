@@ -652,6 +652,42 @@ test("flatten walks a fieldless binary spine", () => {
   assert.equal(run(pkg, tree, 4), "aaa\n| bbb\n| ccc\n");
 });
 
+test("flatten keeps a suffix comment on a skipped left", () => {
+  const pkg = {
+    format: "et-doc-rules/1",
+    indent: 2,
+    tokens: ["|"],
+    comments: ["comment"],
+    rules: {
+      sum: ["group", ["flatten", "sum", ["seq", ["line"], ["tok", "|"], ["sp"]]]],
+    },
+  };
+  const source = "aaa | bbb /* c */ | ccc";
+  const tree = {
+    type: "sum",
+    start: 0,
+    end: source.length,
+    children: [
+      {
+        type: "sum",
+        start: 0,
+        end: 9,
+        children: [
+          { type: "name", start: 0, end: 3, text: "aaa" },
+          { type: "|", start: 4, end: 5, text: "|" },
+          { type: "name", start: 6, end: 9, text: "bbb" },
+        ],
+      },
+      { type: "comment", start: 10, end: 17, text: "/* c */" },
+      { type: "|", start: 18, end: 19, text: "|" },
+      { type: "name", start: 20, end: 23, text: "ccc" },
+    ],
+  };
+  const got = runOn(pkg, source, tree, 80);
+  assert.match(got, /\/\* c \*\//);
+  assert.match(got, /ccc/);
+});
+
 test("flatten_fields refuses a bad header", () => {
   for (const [value, message] of [
     [["left", "operator", "right"], /`flatten_fields` must be an object, got \["left","operator","right"\]/],

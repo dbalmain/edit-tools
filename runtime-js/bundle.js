@@ -1302,16 +1302,18 @@ class Ctx {
     const inner = spine.map((n) => new Ctx(this.fmt, n));
 
     const parts = [];
+    const skippedComments = [];
     if (inner.length === 0) {
       parts.push(this.child(left));
     } else {
       parts.push(inner[inner.length - 1].child(left));
-      this.skip(left);
-      for (let i = 0; i < inner.length - 1; i++) inner[i].skip(left);
+      skippedComments.push(this.skip(left));
+      for (let i = 0; i < inner.length - 1; i++) skippedComments.push(inner[i].skip(left));
     }
     for (let i = inner.length - 1; i >= 0; i--) {
       parts.push(inner[i].eval(sep), inner[i].child(right));
     }
+    parts.push(...skippedComments);
     parts.push(this.eval(sep), this.child(right));
 
     for (const ctx of inner) {
@@ -1323,13 +1325,25 @@ class Ctx {
     return concat(parts);
   }
 
-  /** Step over a child the chain emits elsewhere. It is still consumed exactly
-   *  once, so long as nothing was attached to it here. */
+  /** Step over a child the chain emits elsewhere. Leading comments still
+   *  refuse — those belong on the inner context — but a suffix or after
+   *  comment on the skipped node is returned so flatten can emit it after
+   *  the nested chain. */
   skip(sel) {
     const at = this.take(sel, "the left operand of a chain");
-    if (decorated(this.items[at])) {
-      throw this.refuse("no comment on an operand of a flattened chain");
+    const item = this.items[at];
+    if (item.lead.length > 0) {
+      throw this.refuse("no leading comment on an operand of a flattened chain");
     }
+    const suffixParts = [];
+    const gap = " ".repeat(this.fmt.commentGap);
+    for (const s of item.suffix) suffixParts.push(suffix(text(`${gap}${s}`)));
+    if (item.suffix.length > 0) suffixParts.push(breakParent);
+    item.suffix = [];
+    const after = item.after;
+    item.after = [];
+    suffixParts.push(afterDocs(this.fmt, after));
+    return concat(suffixParts);
   }
 }
 

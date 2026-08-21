@@ -653,13 +653,20 @@ impl<'a> Ctx<'a> {
         let mut inner: Vec<Ctx<'a>> = spine.iter().map(|n| Ctx::new(n, f)).collect();
 
         let mut parts = Vec::new();
+        let mut skipped_comments = Vec::new();
         match inner.last_mut() {
             None => parts.push(self.child(&left, f)?),
             Some(deepest) => {
                 parts.push(deepest.child(&left, f)?);
-                self.skip(&left, f)?;
+                // Comments attached to a skipped left (a nested same-type node)
+                // belong after that nested chain, not at the skip site — which
+                // is before the nested separators have been printed. TypeScript
+                // unions park a mid-union comment on the nested left after the
+                // first format; emitting it here would put it on the first
+                // member.
+                skipped_comments.push(self.skip(&left, f)?);
                 for i in 0..inner.len().saturating_sub(1) {
-                    inner[i].skip(&left, f)?;
+                    skipped_comments.push(inner[i].skip(&left, f)?);
                 }
             }
         }
@@ -667,6 +674,7 @@ impl<'a> Ctx<'a> {
             parts.push(inner[i].eval(sep, f)?);
             parts.push(inner[i].child(&right, f)?);
         }
+        parts.extend(skipped_comments);
         parts.push(self.eval(sep, f)?);
         parts.push(self.child(&right, f)?);
 
@@ -682,14 +690,27 @@ impl<'a> Ctx<'a> {
         Ok(Doc::Concat(parts))
     }
 
-    /// Step over a child the chain emits elsewhere. It is still consumed
-    /// exactly once, so long as nothing was attached to it here.
-    fn skip(&mut self, sel: &Sel, f: &Fmt<'a>) -> Result<(), Refusal> {
+    /// Step over a child the chain emits elsewhere. Leading comments still
+    /// refuse — those belong on the inner context — but a suffix or after
+    /// comment on the skipped node is returned so the caller can emit it
+    /// after the nested chain (FINDINGS 13's union-comment round-trip).
+    fn skip(&mut self, sel: &Sel, f: &Fmt<'a>) -> Result<Doc, Refusal> {
         let at = self.take(sel, f)?;
-        if self.items[at].decorated() {
-            return Err(self.refuse("no comment on an operand of a flattened chain"));
+        if !self.items[at].lead.is_empty() {
+            return Err(self.refuse("no leading comment on an operand of a flattened chain"));
         }
-        Ok(())
+        let suffix = std::mem::take(&mut self.items[at].suffix);
+        let after = std::mem::take(&mut self.items[at].after);
+        let mut parts = Vec::new();
+        let gap = " ".repeat(f.pkg.comment_gap);
+        for text in &suffix {
+            parts.push(Doc::Suffix(Box::new(Doc::text(format!("{gap}{text}")))));
+        }
+        if !suffix.is_empty() {
+            parts.push(Doc::BreakParent);
+        }
+        parts.push(after_docs(f.pkg, &after));
+        Ok(Doc::Concat(parts))
     }
 }
 
@@ -1527,6 +1548,46 @@ try {{
             "aaa | bbb | ccc\n"
         );
         assert_eq!(run(&pkg, tree, 4).expect("ok"), "aaa\n| bbb\n| ccc\n");
+    }
+
+    #[test]
+    fn flatten_keeps_a_suffix_comment_on_a_skipped_left() {
+        // After one format, a mid-union comment re-parses as a sibling of the
+        // nested left rather than of the `|`. skip used to refuse that shape.
+        let pkg: Package = serde_json::from_value(json!({
+            "format": "et-doc-rules/1",
+            "indent": 2,
+            "tokens": ["|"],
+            "comments": ["comment"],
+            "rules": {
+                "sum": ["group", ["flatten", "sum",
+                    ["seq", ["line"], ["tok", "|"], ["sp"]]]]
+            },
+        }))
+        .expect("package");
+        let source = "aaa | bbb /* c */ | ccc";
+        let tree = json!({
+            "type": "sum", "start": 0, "end": source.len(),
+            "children": [
+                {
+                    "type": "sum", "start": 0, "end": 9,
+                    "children": [
+                        {"type": "name", "start": 0, "end": 3, "text": "aaa"},
+                        {"type": "|", "start": 4, "end": 5, "text": "|"},
+                        {"type": "name", "start": 6, "end": 9, "text": "bbb"},
+                    ],
+                },
+                {"type": "comment", "start": 10, "end": 17, "text": "/* c */"},
+                {"type": "|", "start": 18, "end": 19, "text": "|"},
+                {"type": "name", "start": 20, "end": 23, "text": "ccc"},
+            ],
+        });
+        let got = run_on(&one(pkg), source, tree, 80).expect("ok");
+        assert!(
+            got.contains("/* c */"),
+            "comment was dropped: {got:?}"
+        );
+        assert!(got.contains("ccc"), "{got:?}");
     }
 
     #[test]
