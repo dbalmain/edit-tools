@@ -1,11 +1,11 @@
 {
  "language": "scheme",
  "source_file": "corpus/src/scheme/comments.scm",
- "source": ";; Top-level comments. emacs indents an own-line comment by its SEMICOLON\n;; COUNT, not by its nesting depth: `;` goes to comment-column (default 40,\n;; five tabs under indent-tabs-mode t), `;;` to the enclosing code indent,\n;; `;;;` to column 0. The `semis` block below is the discriminator.\n; file-level comment at column 0\n\n(define (add a b) ; trailing on a definition\n;; own-line comment inside the body\n(+ a b) ; trailing on a body form\n)\n\n(define values-with-comments\n(list\n1 ; trailing inside a list\n;; own-line inside a list\n2\n#| a one-line block comment |#\n#; skipped\n3\n;; comment before the closing delimiter\n))\n\n;; Semicolon count decides the column, at every depth. One `;` goes to\n;; comment-column even nested two forms deep; `;;;` goes to column 0 even\n;; nested. A rule keyed on nesting depth agrees with the file-level cases\n;; above and diverges on all three lines inside this body.\n(define (semis x)\n(let ((y x))\n; one semi, nested two deep -- still comment-column\n;; two semis, nested -- enclosing code indent\n;;; three semis, nested -- column 0\n(+ y 1)))\n\n;;; three semis at file level\n; comment at the end of the file\n",
+ "source": ";; Top-level comments. emacs indents an own-line comment by its SEMICOLON\n;; COUNT, not by its nesting depth: `;` goes to comment-column (default 40,\n;; five tabs under indent-tabs-mode t), `;;` to the enclosing code indent,\n;; `;;;` to column 0. The `semis` block below is the discriminator.\n; file-level comment at column 0\n\n(define (add a b) ; trailing on a definition\n;; own-line comment inside the body\n(+ a b) ; trailing on a body form\n)\n\n(define values-with-comments\n(list\n1 ; trailing inside a list\n;; own-line inside a list\n2\n#| a one-line block comment |#\n#; skipped\n3\n;; comment before the closing delimiter\n))\n\n;; Semicolon count decides the column, at every depth. One `;` goes to\n;; comment-column even nested two forms deep; `;;;` goes to column 0 even\n;; nested. A rule keyed on nesting depth agrees with the file-level cases\n;; above and diverges on all three lines inside this body.\n(define (semis x)\n(let ((y x))\n; one semi -- comment-column\n;; two semis -- code indent\n;;; three semis -- column 0\n(+ y 1)))\n\n;;; three semis at file level\n; comment at the end of the file\n",
  "root": {
   "type": "program",
   "start": 0,
-  "end": 1140,
+  "end": 1091,
   "children": [
    {
     "type": "comment",
@@ -311,7 +311,7 @@
    {
     "type": "list",
     "start": 901,
-    "end": 1075,
+    "end": 1026,
     "children": [
      {
       "type": "(",
@@ -359,7 +359,7 @@
      {
       "type": "list",
       "start": 919,
-      "end": 1074,
+      "end": 1025,
       "children": [
        {
         "type": "(",
@@ -426,84 +426,84 @@
        {
         "type": "comment",
         "start": 932,
-        "end": 983,
-        "text": "; one semi, nested two deep -- still comment-column"
+        "end": 960,
+        "text": "; one semi -- comment-column"
        },
        {
         "type": "comment",
-        "start": 984,
-        "end": 1029,
-        "text": ";; two semis, nested -- enclosing code indent"
+        "start": 961,
+        "end": 988,
+        "text": ";; two semis -- code indent"
        },
        {
         "type": "comment",
-        "start": 1030,
-        "end": 1065,
-        "text": ";;; three semis, nested -- column 0"
+        "start": 989,
+        "end": 1016,
+        "text": ";;; three semis -- column 0"
        },
        {
         "type": "list",
-        "start": 1066,
-        "end": 1073,
+        "start": 1017,
+        "end": 1024,
         "children": [
          {
           "type": "(",
-          "start": 1066,
-          "end": 1067,
+          "start": 1017,
+          "end": 1018,
           "text": "("
          },
          {
           "type": "symbol",
-          "start": 1067,
-          "end": 1068,
+          "start": 1018,
+          "end": 1019,
           "text": "+"
          },
          {
           "type": "symbol",
-          "start": 1069,
-          "end": 1070,
+          "start": 1020,
+          "end": 1021,
           "text": "y"
          },
          {
           "type": "number",
-          "start": 1071,
-          "end": 1072,
+          "start": 1022,
+          "end": 1023,
           "text": "1"
          },
          {
           "type": ")",
-          "start": 1072,
-          "end": 1073,
+          "start": 1023,
+          "end": 1024,
           "text": ")"
          }
         ]
        },
        {
         "type": ")",
-        "start": 1073,
-        "end": 1074,
+        "start": 1024,
+        "end": 1025,
         "text": ")"
        }
       ]
      },
      {
       "type": ")",
-      "start": 1074,
-      "end": 1075,
+      "start": 1025,
+      "end": 1026,
       "text": ")"
      }
     ]
    },
    {
     "type": "comment",
-    "start": 1077,
-    "end": 1106,
+    "start": 1028,
+    "end": 1057,
     "text": ";;; three semis at file level"
    },
    {
     "type": "comment",
-    "start": 1107,
-    "end": 1139,
+    "start": 1058,
+    "end": 1090,
     "text": "; comment at the end of the file"
    }
   ]

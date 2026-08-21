@@ -26,9 +26,9 @@
 ;; above and diverges on all three lines inside this body.
 (define (semis x)
   (let ((y x))
-					; one semi, nested two deep -- still comment-column
-    ;; two semis, nested -- enclosing code indent
-;;; three semis, nested -- column 0
+					; one semi -- comment-column
+    ;; two semis -- code indent
+;;; three semis -- column 0
     (+ y 1)))
 
 ;;; three semis at file level
