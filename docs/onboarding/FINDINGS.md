@@ -2393,3 +2393,116 @@ as a house rule on a cited regression; the regression is now **measured**, and i
 is larger than the citation said — a let-level group takes Rust from 22/36 to
 17/36, regressing `sequences.rs` and `nesting.rs` at both widths, `macros.rs@60`
 and `strings.rs@100`, while still not fixing `strings.rs@60`.
+
+## 24. An injected region is spliced by offset, and a reflow invents lines the host never saw
+
+**Status:** open · **Cost:** **contextual** · **Languages:** Markdown (HTML next)
+
+A guest region is extracted as a **byte slice** of the host document, parsed by
+the guest grammar, and spliced back by adding one number to every guest offset.
+That works for as long as the guest's bytes are a contiguous, unmodified run of
+the host's bytes. **Markdown's block quote is the first construct where they are
+not**, and it breaks the design in two different places — the second of which
+has no proposed fix at all.
+
+### What a quoted fence is, and what it does
+
+A fenced code block inside a block quote carries a `> ` continuation marker on
+every line:
+
+````markdown
+> ```json
+> { "a": 1, "b": [1, 2, 3] }
+> ```
+````
+
+tree-sitter includes those markers in the span of `code_fence_content`, so
+`injection.region_for` hands the guest parser the markers along with the
+content. Measured, both shapes in one document:
+
+```
+list item:   b'{ "a": 1, "b": [1, 2, 3] }\n  '   -> json.loads OK
+block quote: b'{ "a": 1, "b": [1, 2, 3] }\n> '   -> json.loads FAILS
+```
+
+The list-item form works **by luck**: its continuation is spaces, and JSON
+treats spaces as whitespace. Nothing about it is a designed success. Any host
+construct whose continuation is not whitespace fails the same way — the parse
+fails, the region falls back to `verbatim`, and the fence body is emitted
+untouched with no warning.
+
+### The first defect: stripping breaks the splice
+
+The obvious repair — drop the `block_continuation` children from the region's
+source — was proposed by markdown's stage A with correct file, function and line
+numbers, and is **wrong**. `gen_trees.convert` rebases guest offsets onto the
+host with a **single additive base** and reads each leaf's text from **host**
+bytes. Remove characters from the middle and that correspondence becomes
+piecewise: every leaf after the first stripped marker reads from the wrong
+place. Two agents measured it independently on different fences — **16 of 17**
+and **21 of 23** leaves wrong, `"alpha"` coming back as `' "alp'` — and
+`check_clean` only looks for `ERROR`/`MISSING`, so the corrupted tree looks
+healthy.
+
+That much has a known fix: `Region` carries retained
+`(guest_start, host_start, len)` runs and the consumers use the map instead of a
+scalar. It is a real change across `injection.py`, `gen_trees.py` and
+`gate3.py`, and it is not the hard part.
+
+### The second defect, and the actual finding
+
+**The offset map repairs reading and does nothing for writing.** Strip the `> `
+prefixes and the guest sees clean JSON — then the guest **reflows it**, and the
+lines it emits are lines the host document never contained. Each one needs a
+`> ` prefix that nothing puts back. The host has already handed off; the guest
+does not know it is inside a block quote; no opcode in the package format takes
+a per-line prefix; and the printer's `indent` carries a column count, not a
+string.
+
+So the boundary is wrong in a way an offset map cannot reach: **a host construct
+can own a per-line prefix, and the guest can create lines after the host has
+stopped looking.** Splicing is a byte-range operation and this is not a
+byte-range problem.
+
+Found by codex-Sol on the harness slice, 2026-08-22, having been asked to build
+the offset map and invited to refuse it. It reproduced the first defect, built
+the map on paper, and declined — which is the outcome the prompt named as
+acceptable and is worth more than the implementation would have been.
+
+### Why this is not entry 12
+
+Entry 12 is YAML: **semantic content living in the whitespace between two
+nodes**, invisible to a gate that compares nodes. This one is visible to
+everything — the `> ` markers are right there in the source, in the span, in the
+tree. The problem is not that we cannot see them. It is that we have nowhere to
+**put them back**, on lines that do not exist until after the guest has run.
+
+### What it would take
+
+Not one capability, but a choice between two shapes, and this entry exists to
+make that choice rather than to prejudge it:
+
+- **A per-line prefix on the region**, carried through the printer so every line
+  the guest emits inside the region is prefixed on the way out. Cheap to state,
+  and it puts a host concern inside the guest's printer.
+- **Prefix re-application as a host post-pass**, after the guest returns its
+  rendered block, using the same continuation the host stripped. Keeps the guest
+  ignorant, and needs the host rule to know how many lines came back.
+
+The second looks closer to how `alignCells` already works — a text post-pass
+after `print()` — and cell alignment (entry 18, LEDGER row 1) is the precedent
+for a whole-text pass being the right shape rather than a printer change. That
+is an argument, not a decision.
+
+**Decide when:** a second host language wants it. **HTML is the likely second
+and is already onboarded** — `<script>` and `<style>` inside a construct with a
+continuation marker would hit the identical wall. Markdown alone is not enough
+to build on, which is why this is open rather than scheduled.
+
+**What it costs to leave:** a fenced code block inside a block quote is not
+formatted. It is a common shape in real documents — quoted examples, docs that
+block-quote a snippet — and it is one of the shapes Dave's headline markdown
+requirement is written in. Markdown's corpus avoids it deliberately and its
+report says so, so nothing is silently wrong; the construct is simply out of
+reach. `probe_injection.py` now reproduces the limitation permanently, so the
+next person meets the real problem instead of rediscovering the shallow one.
