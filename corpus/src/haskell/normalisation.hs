@@ -1,0 +1,18 @@
+module Normalisation where
+
+-- token-level mess: spacing, delimiter padding, indent, empty containers
+xs = [ ]
+unit = ( )
+pair = ( 1,2 )
+lst = [ 1,2,3 ]
+add a b=a+b
+scale x=x*  2+1
+padded ( a , b ) = a + b
+weird x=x+1       -- lots of spaces before this comment
+nested = ((1))
+kept = (1 + 2)
+emptyUpdate r = r { }
+packed = do x<-pure 1;pure x
+indented = do
+      n <- pure 0
+      if n==0 then pure 1 else pure n
