@@ -203,6 +203,25 @@ Fields you must establish rather than guess:
   **not** leave the construct out of the corpus: put it in its own file and
   declare it.
 
+  **That last rule is not absolute, and following it literally can gut the
+  denominator.** It is written for a reference with a handful of linearity-
+  forbidden rewrites. Markdown's does about twelve; a dedicated file each would
+  have meant twelve incomparable files against fifteen comparable ones. The
+  policy that works, and which markdown's builder invented before this paragraph
+  existed: **write the construct in the reference's own canonical form** so it
+  appears throughout the corpus and is simply never rewritten, **record the
+  rewrite in the report**, and reserve a dedicated `[incomparable]` file for the
+  rewrites worth measuring the absence of. Say which you did and why.
+
+  **State the gate-3 outcome, not a prose reason.** A reason describes; an
+  outcome is checkable. Run the gate-3 oracle over the file and record whether
+  it rejects — because a single reference rule can have two halves that land on
+  opposite sides. HTML's `quotes.html` is one prettier rule whose delimiter swap
+  (`class='a'` → `class="a"`) **passes** and whose escape minimisation
+  (`title="&quot;hi&quot;"` → `title='"hi"'`) **rejects**, and the prose reason
+  described only the passing half — which is the wrong half to hand to stage C
+  on its own. The oracle run is about ten lines of script.
+
   ```toml
   [incomparable]
   "quotes.yaml" = "prettier re-quotes to minimise escaping"
@@ -324,6 +343,20 @@ the same harness defect; the two who described it precisely were more useful
 than the one who fixed it, because the fix had to be re-decided centrally
 anyway.
 
+**But a proposal is the one thing nobody runs, so it has to carry its own safety
+argument.** That claim above is true for _adding_ a field and false for
+_changing what a shared function returns_. If your patch does the latter, **name
+its callers and the invariant each one relies on.** Markdown's stage A proposed
+stripping `block_continuation` from `injection.region_for`'s result — field,
+function and line numbers all correct, everything this paragraph asks for — and
+it would have silently corrupted every spliced tree, because `gen_trees.convert`
+rebases guest offsets onto the host with a single **additive base** and reads
+leaf text from **host bytes**. Stripping makes that mapping piecewise. Measured
+on one multi-line quoted fence: **16 of 17 leaves read the wrong host bytes**,
+and `check_clean` only looks for `ERROR`/`MISSING`, so nothing catches it. The
+defect was real and the diagnosis was right; the patch shape was wrong, and no
+gate would have said so.
+
 You may also change `rust/` and `runtime-js/`, but you almost certainly should
 not need to for _this_ slice. If you do, every such edit must appear in your
 report with the case for it.
@@ -363,6 +396,25 @@ Write `corpus/reports/{{LANG}}/corpus-report.md`:
   changes at all, and how many differ between your two widths. A corpus where
   most files are byte-identical input to output is not probing anything; report
   the number rather than making the reviewer compute it.
+- **the reference's own option table, dumped and then gone through item by
+  item.** Run the command that enumerates them — `prettier --support-info`,
+  `taplo --help`, "gofmt has none" — paste the table, and say which defaults are
+  load-bearing. This is a **command producing an artefact**, like the two above,
+  because when it was phrased as a topic to discuss it was the one required item
+  that got skipped, twice in one round, by builders who had plainly seen the
+  behaviour in their own output.
+
+  **Flag above all any default that makes layout depend on the input's line
+  breaks rather than on width alone.** The runtime has `srcline`, `srcsoft` and
+  `srctrail` for exactly that, and stage C has to know to reach for them,
+  because a preserved break and a width-driven break are **the same bytes** — a
+  package that models the construct as an ordinary width `group` passes every
+  file that happens to agree and is wrong in a way no count can see. Three
+  languages have now been bitten: prettier's `objectWrap` (JavaScript, which
+  cost a runtime opcode), `proseWrap` and `embeddedLanguageFormatting`
+  (markdown, where `off` is exactly what a naive package implements), and
+  `htmlWhitespaceSensitivity` (HTML, where `ignore` is).
+
 - **the reference's own overflow count** — run
   `./harness/corpus_stats.py --language {{LANG}}`, which prints it per width
   along with the three corpus-quality counts above, so none of them has to be

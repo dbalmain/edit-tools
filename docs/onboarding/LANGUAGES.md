@@ -19,10 +19,10 @@ building · `D` package review · `E`/`F` escalated · **merged** · **blocked**
 | Rust       | T2   | 3     | unrecorded    | merged | tree_sitter_rust       | rustfmt                           |
 | Kotlin     | T2   | 3     | unrecorded    | merged | tree_sitter_kotlin     | ktfmt                             |
 | JavaScript | T2   | 3     | unrecorded    | merged | tree_sitter_javascript | prettier                          |
-| Markdown   | T2   | 4     | grok-4.6      | B      | tree_sitter_markdown   | prettier                          |
+| Markdown   | T2   | 4     | grok-4.6      | C      | tree_sitter_markdown   | prettier                          |
 | TypeScript | T2   | 4     | grok-4.6      | C      | tree_sitter_typescript | prettier                          |
 | XML        | T3   | 4     | grok-4.6      | C      | tree_sitter_xml        | prettier (`@prettier/plugin-xml`) |
-| HTML       | T3   | 4     | grok-4.6      | B      | tree_sitter_html       | prettier                          |
+| HTML       | T3   | 4     | grok-4.6      | C      | tree_sitter_html       | prettier                          |
 | Ruby       | T4   | 5     | tbd           | -      | tree_sitter_ruby       | syntax_tree                       |
 | Scheme     | T4   | 5     | tbd           | -      | tree_sitter_scheme     | emacs `scheme-mode`               |
 | Haskell    | T4   | 5     | tbd           | -      | tree_sitter_haskell    | ormolu                            |
@@ -105,7 +105,7 @@ indent without reflowing to a column — and both briefs give that as a hypothes
 to test at two widths, explicitly not as a fact, so it cannot be inherited the
 way black's 88 was inherited into TOML in round 1.
 
-**Round 4 stage B, first two verdicts, 2026-08-21.** **TypeScript: `pass`**
+**Round 4 stage B is complete, 2026-08-21. All four pass.** **TypeScript: `pass`**
 (Sonnet) with nothing to correct. **XML: `pass with fixes applied`** (Sonnet),
 one commit — the report had covered three of the plugin's four XML options and
 never mentioned `xmlSortAttributesByKey`, which is off by default and therefore
@@ -126,6 +126,46 @@ a plugin resolving differently for the next person.
 Three template deltas came out of the two reviews and are applied — see table 2.
 The first was found **independently by both**: the brief's `x.{{LANG}}` stdin
 filename is wrong for five of the ten roster languages.
+
+**Markdown: `pass with fixes applied`** (Opus). **HTML: `pass with fixes
+applied`** (Opus). Both re-derived the reference from scratch — 30 and 32
+outputs regenerated straight from the manifest command rather than through
+`gen_reference.py` — and both found documentation defects rather than corpus
+defects. The corpora, pins, trees and reference output needed no change in
+either.
+
+Three results from those two are worth carrying forward:
+
+- **A precise proposal is the one thing nobody runs.** Markdown's stage A
+  proposed stripping `block_continuation` from `injection.region_for` — right
+  diagnosis, wrong shape. `gen_trees.convert` rebases guest offsets with a
+  single additive base and reads leaf text from host bytes, so stripping makes
+  that mapping piecewise: **16 of 17 leaves** read the wrong host bytes on a
+  multi-line quoted fence, and `check_clean` only looks for `ERROR`/`MISSING`.
+  This is the propose-don't-apply rule earning its keep, and it is now a
+  template delta.
+- **HTML's `quotes.html` claim was backwards in the dangerous direction.** The
+  report and manifest both said the quote rewrite passes gate 3. It fails — the
+  delimiter swap passes, escape minimisation rejects — and describing only the
+  passing half is the wrong half to hand to stage C.
+- **The options survey was skipped by both builders**, having each plainly seen
+  the behaviour in their own output. HTML has two input-sensitive defaults, and
+  `--html-whitespace-sensitivity ignore` produces *exactly* what a naive
+  width-driven package emits. That is the `objectWrap` shape for the third time.
+
+**The two injection proposals are one change, not two.** HTML's `script_element`
+has content and no info string; markdown's front matter has neither — the node
+*is* the region. Both relaxations land in the same twelve lines of
+`manifest.py::_injections`, so shipping HTML's alone means migrating that
+validation twice. Land together: `info` and `content` both optional, require
+`info` xor `guest`, and a missing `content` means the host node is the region.
+`<script type="application/ld+json">` is correctly scoped out as a genuine third
+change — its routing key is an attribute value, not a node type, so `guest`
+structurally cannot express it.
+
+**One decision is open and is on the decisions page**: what to do about the
+quoted-fence splice defect. It blocks no required gate today because markdown's
+corpus avoids the shape by design.
 
 **Round 4 stage A, 2026-08-21.** All four launched on grok-4.6 in parallel
 worktrees, each with the corpus brief plus its own "known stresses" note. All
