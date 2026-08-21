@@ -67,13 +67,34 @@ Fields you must establish rather than guess:
   width goes. Nothing is installed globally on this machine; use the
   pinned-runner pattern (`npx --yes pkg@ver`, `uvx pkg@ver`,
   `nix run nixpkgs#pkg`) that the python and json manifests demonstrate. Several
-  formatters infer the language from the filename and need a fake one for stdin
-  (`--stdin-filepath x.{{LANG}}`). Record the command that worked, not the one
-  you hoped would — and **verify every flag actually changes something before
-  keeping it.** `--stdin-filepath` is genuinely required for prettier and does
-  nothing at all for taplo, where it was kept anyway and would have been copied
-  into fourteen more manifests unexamined. A flag that does nothing is noise
-  that outlives you.
+  formatters infer the language from the filename and need a fake one for stdin.
+  **Spell that fake name with your manifest's own `extensions` entry, not the
+  language name** — `x.ts`, not `x.typescript`, which prettier rejects outright
+  with "no parser could be inferred". The two differ for at least five of the
+  ten languages already on the roster (`.py`, `.js`, `.kt`, `.rs`, `.ts`), so a
+  template example written as `x.{{LANG}}` is wrong more often than it is right.
+
+  Record the command that worked, not the one you hoped would — and **verify
+  every flag actually changes something before keeping it.** `--stdin-filepath`
+  does nothing at all for taplo, where it was kept anyway and would have been
+  copied into fourteen more manifests unexamined. A flag that does nothing is
+  noise that outlives you.
+
+  It is also not unconditionally required for prettier, which this brief used to
+  claim: it is required only where prettier is inferring the parser **from the
+  filename**. Passing `--parser <name>` explicitly does the same job and does
+  **not** open prettier's `.editorconfig` discovery channel, which
+  `--stdin-filepath` does. Pick one deliberately and say which, rather than
+  passing both because the examples do.
+
+  **If the reference is prettier plus a plugin** — XML is the first, and will
+  not be the last — pin the plugin's version as well as prettier's, and expect
+  `--plugin @scope/name` **not to resolve**: prettier 3 resolves a plugin from
+  the current working directory, not from the npx cache that supplied the
+  binary. The form that works passes the plugin's own entry-point path resolved
+  relative to the prettier binary npx produced. Prove it from a **cold cache**
+  (point `npm_config_cache` at a scratch directory) before you commit ground
+  truth generated from a warm one.
 
   **Establish whether the reference reads ambient config**, and disable it. The
   method matters: plant a config file that sets an option your command line does
@@ -157,6 +178,19 @@ Fields you must establish rather than guess:
   **Do not add a kind whose parentheses are structural** — in a Lisp, `(f)` is a
   call and `f` is not, and declaring that node transparent would let the
   formatter destroy code and still pass.
+
+  **There is a second shape, and it is not a parenthesis.** A grammar may insert
+  a **unary wrapper for a leading operator that only appears when the construct
+  breaks** — TypeScript's `union_type` is the worked example: `| A | B` parses
+  as a unary `union_type` around the first member, while every real multi-member
+  union is a chain of _binary_ `union_type` nodes. Declaring it transparent is
+  sound for exactly the reason the one-named-child rule exists: the elision
+  fires only on the unary node, so a formatter that dropped a real alternative
+  still fails on the surviving binary one. If your reference adds a leading
+  operator on break, look for this before reaching for a `gate3` override — and
+  prove the arity claim by parsing both forms and dumping the tree, not by
+  reading the grammar.
+
 - `equivalent_kinds` — also default-only. Groups of node kinds that are the same
   construct under a different name, which is what happens when parenthesising
   something renames its node (`pattern_list` → `tuple_pattern` in Python). Same
@@ -168,6 +202,25 @@ Fields you must establish rather than guess:
   with no reason is a manifest error; a name that does not exist is too. Do
   **not** leave the construct out of the corpus: put it in its own file and
   declare it.
+
+  **That last rule is not absolute, and following it literally can gut the
+  denominator.** It is written for a reference with a handful of linearity-
+  forbidden rewrites. Markdown's does about twelve; a dedicated file each would
+  have meant twelve incomparable files against fifteen comparable ones. The
+  policy that works, and which markdown's builder invented before this paragraph
+  existed: **write the construct in the reference's own canonical form** so it
+  appears throughout the corpus and is simply never rewritten, **record the
+  rewrite in the report**, and reserve a dedicated `[incomparable]` file for the
+  rewrites worth measuring the absence of. Say which you did and why.
+
+  **State the gate-3 outcome, not a prose reason.** A reason describes; an
+  outcome is checkable. Run the gate-3 oracle over the file and record whether
+  it rejects — because a single reference rule can have two halves that land on
+  opposite sides. HTML's `quotes.html` is one prettier rule whose delimiter swap
+  (`class='a'` → `class="a"`) **passes** and whose escape minimisation
+  (`title="&quot;hi&quot;"` → `title='"hi"'`) **rejects**, and the prose reason
+  described only the passing half — which is the wrong half to hand to stage C
+  on its own. The oracle run is about ten lines of script.
 
   ```toml
   [incomparable]
@@ -290,6 +343,20 @@ the same harness defect; the two who described it precisely were more useful
 than the one who fixed it, because the fix had to be re-decided centrally
 anyway.
 
+**But a proposal is the one thing nobody runs, so it has to carry its own safety
+argument.** That claim above is true for _adding_ a field and false for
+_changing what a shared function returns_. If your patch does the latter, **name
+its callers and the invariant each one relies on.** Markdown's stage A proposed
+stripping `block_continuation` from `injection.region_for`'s result — field,
+function and line numbers all correct, everything this paragraph asks for — and
+it would have silently corrupted every spliced tree, because `gen_trees.convert`
+rebases guest offsets onto the host with a single **additive base** and reads
+leaf text from **host bytes**. Stripping makes that mapping piecewise. Measured
+on one multi-line quoted fence: **16 of 17 leaves read the wrong host bytes**,
+and `check_clean` only looks for `ERROR`/`MISSING`, so nothing catches it. The
+defect was real and the diagnosis was right; the patch shape was wrong, and no
+gate would have said so.
+
 You may also change `rust/` and `runtime-js/`, but you almost certainly should
 not need to for _this_ slice. If you do, every such edit must appear in your
 report with the case for it.
@@ -329,6 +396,25 @@ Write `corpus/reports/{{LANG}}/corpus-report.md`:
   changes at all, and how many differ between your two widths. A corpus where
   most files are byte-identical input to output is not probing anything; report
   the number rather than making the reviewer compute it.
+- **the reference's own option table, dumped and then gone through item by
+  item.** Run the command that enumerates them — `prettier --support-info`,
+  `taplo --help`, "gofmt has none" — paste the table, and say which defaults are
+  load-bearing. This is a **command producing an artefact**, like the two above,
+  because when it was phrased as a topic to discuss it was the one required item
+  that got skipped, twice in one round, by builders who had plainly seen the
+  behaviour in their own output.
+
+  **Flag above all any default that makes layout depend on the input's line
+  breaks rather than on width alone.** The runtime has `srcline`, `srcsoft` and
+  `srctrail` for exactly that, and stage C has to know to reach for them,
+  because a preserved break and a width-driven break are **the same bytes** — a
+  package that models the construct as an ordinary width `group` passes every
+  file that happens to agree and is wrong in a way no count can see. Three
+  languages have now been bitten: prettier's `objectWrap` (JavaScript, which
+  cost a runtime opcode), `proseWrap` and `embeddedLanguageFormatting`
+  (markdown, where `off` is exactly what a naive package implements), and
+  `htmlWhitespaceSensitivity` (HTML, where `ignore` is).
+
 - **the reference's own overflow count** — run
   `./harness/corpus_stats.py --language {{LANG}}`, which prints it per width
   along with the three corpus-quality counts above, so none of them has to be
