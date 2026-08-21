@@ -1,0 +1,36 @@
+# Dirty spacing: what syntax_tree rewrites, not what it breaks.
+
+def  normalise( a ,b )
+result=a + b*  2
+return(result)
+end
+
+def empty( ) # empty parameter list written with a space
+xs = [ ] # empty array with a space
+ys = { } # empty hash with a space
+zs = foo( ) # empty call with a space
+end
+
+def padded( )
+x = [ 1,2,3 ]
+h = { a:1,b:2 }
+if ( x != nil )
+puts(x)
+x
+else
+puts(0)
+0
+end
+end
+
+trailing_spaces = 1       # lots of spaces before this comment
+
+def indented
+        n = 0
+        if n==0
+                n = 1
+                n
+        end
+end
+
+x = 1; y = 2; z = 3

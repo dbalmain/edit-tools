@@ -1,0 +1,817 @@
+{
+ "language": "ruby",
+ "source_file": "corpus/src/ruby/strings.rb",
+ "source": "# Double quotes are syntax_tree's default. A string that contains `\"` stays\n# single-quoted; every other plain string is rewritten to doubles, so the\n# corpus is written that way already.\n\nshort = \"hello\" # default delimiter\n\nsaid = 'she said \"hi\"'\n\ninner_single = \"she said 'hi'\"\n\nlong_string = \"this is a very long string literal that must never be reflowed by the formatter\"\n\ninterpolated = \"user #{name} has #{count} items in #{container_name} as of #{timestamp}\"\n\npercent_q = %Q[hello #{name}]\n\nregex = /foo#{bar}/i\n\nescape = \"line one\\nline two\\ttabbed\"\n\nunicode_literal = \"café\"\n\n# astral characters: width must be counted in scalar values, not UTF-16 units\nastral = \"🙂🙂🙂🙂🙂🙂 a string whose width differs between JS and Rust naively\"\n\nmessage = <<~MSG\n  hello #{name}\nMSG\n\nraw_heredoc = <<~'LIT'\n  no interpolation #{here}\nLIT\n",
+ "root": {
+  "type": "program",
+  "start": 0,
+  "end": 852,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 75,
+    "text": "# Double quotes are syntax_tree's default. A string that contains `\"` stays"
+   },
+   {
+    "type": "comment",
+    "start": 76,
+    "end": 149,
+    "text": "# single-quoted; every other plain string is rewritten to doubles, so the"
+   },
+   {
+    "type": "comment",
+    "start": 150,
+    "end": 187,
+    "text": "# corpus is written that way already."
+   },
+   {
+    "type": "assignment",
+    "start": 189,
+    "end": 204,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 189,
+      "end": 194,
+      "field": "left",
+      "text": "short"
+     },
+     {
+      "type": "=",
+      "start": 195,
+      "end": 196,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 197,
+      "end": 204,
+      "field": "right",
+      "children": [
+       {
+        "type": "\"",
+        "start": 197,
+        "end": 198,
+        "text": "\""
+       },
+       {
+        "type": "string_content",
+        "start": 198,
+        "end": 203,
+        "text": "hello"
+       },
+       {
+        "type": "\"",
+        "start": 203,
+        "end": 204,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 205,
+    "end": 224,
+    "text": "# default delimiter"
+   },
+   {
+    "type": "assignment",
+    "start": 226,
+    "end": 248,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 226,
+      "end": 230,
+      "field": "left",
+      "text": "said"
+     },
+     {
+      "type": "=",
+      "start": 231,
+      "end": 232,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 233,
+      "end": 248,
+      "field": "right",
+      "children": [
+       {
+        "type": "\"",
+        "start": 233,
+        "end": 234,
+        "text": "'"
+       },
+       {
+        "type": "string_content",
+        "start": 234,
+        "end": 247,
+        "text": "she said \"hi\""
+       },
+       {
+        "type": "\"",
+        "start": 247,
+        "end": 248,
+        "text": "'"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "assignment",
+    "start": 250,
+    "end": 280,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 250,
+      "end": 262,
+      "field": "left",
+      "text": "inner_single"
+     },
+     {
+      "type": "=",
+      "start": 263,
+      "end": 264,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 265,
+      "end": 280,
+      "field": "right",
+      "children": [
+       {
+        "type": "\"",
+        "start": 265,
+        "end": 266,
+        "text": "\""
+       },
+       {
+        "type": "string_content",
+        "start": 266,
+        "end": 279,
+        "text": "she said 'hi'"
+       },
+       {
+        "type": "\"",
+        "start": 279,
+        "end": 280,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "assignment",
+    "start": 282,
+    "end": 377,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 282,
+      "end": 293,
+      "field": "left",
+      "text": "long_string"
+     },
+     {
+      "type": "=",
+      "start": 294,
+      "end": 295,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 296,
+      "end": 377,
+      "field": "right",
+      "children": [
+       {
+        "type": "\"",
+        "start": 296,
+        "end": 297,
+        "text": "\""
+       },
+       {
+        "type": "string_content",
+        "start": 297,
+        "end": 376,
+        "text": "this is a very long string literal that must never be reflowed by the formatter"
+       },
+       {
+        "type": "\"",
+        "start": 376,
+        "end": 377,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "assignment",
+    "start": 379,
+    "end": 467,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 379,
+      "end": 391,
+      "field": "left",
+      "text": "interpolated"
+     },
+     {
+      "type": "=",
+      "start": 392,
+      "end": 393,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 394,
+      "end": 467,
+      "field": "right",
+      "children": [
+       {
+        "type": "\"",
+        "start": 394,
+        "end": 395,
+        "text": "\""
+       },
+       {
+        "type": "string_content",
+        "start": 395,
+        "end": 400,
+        "text": "user "
+       },
+       {
+        "type": "interpolation",
+        "start": 400,
+        "end": 407,
+        "children": [
+         {
+          "type": "#{",
+          "start": 400,
+          "end": 402,
+          "text": "#{"
+         },
+         {
+          "type": "identifier",
+          "start": 402,
+          "end": 406,
+          "text": "name"
+         },
+         {
+          "type": "}",
+          "start": 406,
+          "end": 407,
+          "text": "}"
+         }
+        ]
+       },
+       {
+        "type": "string_content",
+        "start": 407,
+        "end": 412,
+        "text": " has "
+       },
+       {
+        "type": "interpolation",
+        "start": 412,
+        "end": 420,
+        "children": [
+         {
+          "type": "#{",
+          "start": 412,
+          "end": 414,
+          "text": "#{"
+         },
+         {
+          "type": "identifier",
+          "start": 414,
+          "end": 419,
+          "text": "count"
+         },
+         {
+          "type": "}",
+          "start": 419,
+          "end": 420,
+          "text": "}"
+         }
+        ]
+       },
+       {
+        "type": "string_content",
+        "start": 420,
+        "end": 430,
+        "text": " items in "
+       },
+       {
+        "type": "interpolation",
+        "start": 430,
+        "end": 447,
+        "children": [
+         {
+          "type": "#{",
+          "start": 430,
+          "end": 432,
+          "text": "#{"
+         },
+         {
+          "type": "identifier",
+          "start": 432,
+          "end": 446,
+          "text": "container_name"
+         },
+         {
+          "type": "}",
+          "start": 446,
+          "end": 447,
+          "text": "}"
+         }
+        ]
+       },
+       {
+        "type": "string_content",
+        "start": 447,
+        "end": 454,
+        "text": " as of "
+       },
+       {
+        "type": "interpolation",
+        "start": 454,
+        "end": 466,
+        "children": [
+         {
+          "type": "#{",
+          "start": 454,
+          "end": 456,
+          "text": "#{"
+         },
+         {
+          "type": "identifier",
+          "start": 456,
+          "end": 465,
+          "text": "timestamp"
+         },
+         {
+          "type": "}",
+          "start": 465,
+          "end": 466,
+          "text": "}"
+         }
+        ]
+       },
+       {
+        "type": "\"",
+        "start": 466,
+        "end": 467,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "assignment",
+    "start": 469,
+    "end": 498,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 469,
+      "end": 478,
+      "field": "left",
+      "text": "percent_q"
+     },
+     {
+      "type": "=",
+      "start": 479,
+      "end": 480,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 481,
+      "end": 498,
+      "field": "right",
+      "children": [
+       {
+        "type": "\"",
+        "start": 481,
+        "end": 484,
+        "text": "%Q["
+       },
+       {
+        "type": "string_content",
+        "start": 484,
+        "end": 490,
+        "text": "hello "
+       },
+       {
+        "type": "interpolation",
+        "start": 490,
+        "end": 497,
+        "children": [
+         {
+          "type": "#{",
+          "start": 490,
+          "end": 492,
+          "text": "#{"
+         },
+         {
+          "type": "identifier",
+          "start": 492,
+          "end": 496,
+          "text": "name"
+         },
+         {
+          "type": "}",
+          "start": 496,
+          "end": 497,
+          "text": "}"
+         }
+        ]
+       },
+       {
+        "type": "\"",
+        "start": 497,
+        "end": 498,
+        "text": "]"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "assignment",
+    "start": 500,
+    "end": 520,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 500,
+      "end": 505,
+      "field": "left",
+      "text": "regex"
+     },
+     {
+      "type": "=",
+      "start": 506,
+      "end": 507,
+      "text": "="
+     },
+     {
+      "type": "regex",
+      "start": 508,
+      "end": 520,
+      "field": "right",
+      "children": [
+       {
+        "type": "/",
+        "start": 508,
+        "end": 509,
+        "text": "/"
+       },
+       {
+        "type": "string_content",
+        "start": 509,
+        "end": 512,
+        "text": "foo"
+       },
+       {
+        "type": "interpolation",
+        "start": 512,
+        "end": 518,
+        "children": [
+         {
+          "type": "#{",
+          "start": 512,
+          "end": 514,
+          "text": "#{"
+         },
+         {
+          "type": "identifier",
+          "start": 514,
+          "end": 517,
+          "text": "bar"
+         },
+         {
+          "type": "}",
+          "start": 517,
+          "end": 518,
+          "text": "}"
+         }
+        ]
+       },
+       {
+        "type": "/",
+        "start": 518,
+        "end": 520,
+        "text": "/i"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "assignment",
+    "start": 522,
+    "end": 559,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 522,
+      "end": 528,
+      "field": "left",
+      "text": "escape"
+     },
+     {
+      "type": "=",
+      "start": 529,
+      "end": 530,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 531,
+      "end": 559,
+      "field": "right",
+      "children": [
+       {
+        "type": "\"",
+        "start": 531,
+        "end": 532,
+        "text": "\""
+       },
+       {
+        "type": "string_content",
+        "start": 532,
+        "end": 540,
+        "text": "line one"
+       },
+       {
+        "type": "escape_sequence",
+        "start": 540,
+        "end": 542,
+        "text": "\\n"
+       },
+       {
+        "type": "string_content",
+        "start": 542,
+        "end": 550,
+        "text": "line two"
+       },
+       {
+        "type": "escape_sequence",
+        "start": 550,
+        "end": 552,
+        "text": "\\t"
+       },
+       {
+        "type": "string_content",
+        "start": 552,
+        "end": 558,
+        "text": "tabbed"
+       },
+       {
+        "type": "\"",
+        "start": 558,
+        "end": 559,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "assignment",
+    "start": 561,
+    "end": 586,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 561,
+      "end": 576,
+      "field": "left",
+      "text": "unicode_literal"
+     },
+     {
+      "type": "=",
+      "start": 577,
+      "end": 578,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 579,
+      "end": 586,
+      "field": "right",
+      "children": [
+       {
+        "type": "\"",
+        "start": 579,
+        "end": 580,
+        "text": "\""
+       },
+       {
+        "type": "string_content",
+        "start": 580,
+        "end": 585,
+        "text": "café"
+       },
+       {
+        "type": "\"",
+        "start": 585,
+        "end": 586,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 588,
+    "end": 665,
+    "text": "# astral characters: width must be counted in scalar values, not UTF-16 units"
+   },
+   {
+    "type": "assignment",
+    "start": 666,
+    "end": 758,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 666,
+      "end": 672,
+      "field": "left",
+      "text": "astral"
+     },
+     {
+      "type": "=",
+      "start": 673,
+      "end": 674,
+      "text": "="
+     },
+     {
+      "type": "string",
+      "start": 675,
+      "end": 758,
+      "field": "right",
+      "children": [
+       {
+        "type": "\"",
+        "start": 675,
+        "end": 676,
+        "text": "\""
+       },
+       {
+        "type": "string_content",
+        "start": 676,
+        "end": 757,
+        "text": "🙂🙂🙂🙂🙂🙂 a string whose width differs between JS and Rust naively"
+       },
+       {
+        "type": "\"",
+        "start": 757,
+        "end": 758,
+        "text": "\""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "assignment",
+    "start": 760,
+    "end": 776,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 760,
+      "end": 767,
+      "field": "left",
+      "text": "message"
+     },
+     {
+      "type": "=",
+      "start": 768,
+      "end": 769,
+      "text": "="
+     },
+     {
+      "type": "heredoc_beginning",
+      "start": 770,
+      "end": 776,
+      "field": "right",
+      "text": "<<~MSG"
+     }
+    ]
+   },
+   {
+    "type": "heredoc_body",
+    "start": 776,
+    "end": 796,
+    "children": [
+     {
+      "type": "heredoc_content",
+      "start": 776,
+      "end": 785,
+      "text": "\n  hello "
+     },
+     {
+      "type": "interpolation",
+      "start": 785,
+      "end": 792,
+      "children": [
+       {
+        "type": "#{",
+        "start": 785,
+        "end": 787,
+        "text": "#{"
+       },
+       {
+        "type": "identifier",
+        "start": 787,
+        "end": 791,
+        "text": "name"
+       },
+       {
+        "type": "}",
+        "start": 791,
+        "end": 792,
+        "text": "}"
+       }
+      ]
+     },
+     {
+      "type": "heredoc_content",
+      "start": 792,
+      "end": 793,
+      "text": "\n"
+     },
+     {
+      "type": "heredoc_end",
+      "start": 793,
+      "end": 796,
+      "text": "MSG"
+     }
+    ]
+   },
+   {
+    "type": "assignment",
+    "start": 798,
+    "end": 820,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 798,
+      "end": 809,
+      "field": "left",
+      "text": "raw_heredoc"
+     },
+     {
+      "type": "=",
+      "start": 810,
+      "end": 811,
+      "text": "="
+     },
+     {
+      "type": "heredoc_beginning",
+      "start": 812,
+      "end": 820,
+      "field": "right",
+      "text": "<<~'LIT'"
+     }
+    ]
+   },
+   {
+    "type": "heredoc_body",
+    "start": 820,
+    "end": 851,
+    "children": [
+     {
+      "type": "heredoc_content",
+      "start": 820,
+      "end": 848,
+      "text": "\n  no interpolation #{here}\n"
+     },
+     {
+      "type": "heredoc_end",
+      "start": 848,
+      "end": 851,
+      "text": "LIT"
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -1,0 +1,497 @@
+{
+ "language": "ruby",
+ "source_file": "corpus/src/ruby/comments.rb",
+ "source": "# encoding: utf-8\n# frozen_string_literal: true\n\n# Own-line comment at file scope, after the magic comments.\n\nrequire \"json\" # trailing comment on a require\n\n# Own-line comment before a definition, separated by a blank line.\ndef documented(a, b)\n  # Leading comment inside the body.\n  result = a + b # trailing comment on a statement\n  # Comment before return.\n  result\nend\n\nvalues = [\n  1, # first\n  2, # second\n  # own-line comment inside a bracketed list\n  3\n]\n\nconfig = {\n  # comment before the first key\n  host: \"localhost\",\n  port: 8080 # trailing on a pair\n}\n\n=begin\nA block comment, which tree-sitter-ruby also emits as a `comment` extra.\n=end\n\ndef between\n  # trailing comment at the end of a block\nend\n\n# Comment at the end of the file.\n",
+ "root": {
+  "type": "program",
+  "start": 0,
+  "end": 747,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 17,
+    "text": "# encoding: utf-8"
+   },
+   {
+    "type": "comment",
+    "start": 18,
+    "end": 47,
+    "text": "# frozen_string_literal: true"
+   },
+   {
+    "type": "comment",
+    "start": 49,
+    "end": 108,
+    "text": "# Own-line comment at file scope, after the magic comments."
+   },
+   {
+    "type": "call",
+    "start": 110,
+    "end": 124,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 110,
+      "end": 117,
+      "field": "method",
+      "text": "require"
+     },
+     {
+      "type": "argument_list",
+      "start": 118,
+      "end": 124,
+      "field": "arguments",
+      "children": [
+       {
+        "type": "string",
+        "start": 118,
+        "end": 124,
+        "children": [
+         {
+          "type": "\"",
+          "start": 118,
+          "end": 119,
+          "text": "\""
+         },
+         {
+          "type": "string_content",
+          "start": 119,
+          "end": 123,
+          "text": "json"
+         },
+         {
+          "type": "\"",
+          "start": 123,
+          "end": 124,
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 125,
+    "end": 156,
+    "text": "# trailing comment on a require"
+   },
+   {
+    "type": "comment",
+    "start": 158,
+    "end": 224,
+    "text": "# Own-line comment before a definition, separated by a blank line."
+   },
+   {
+    "type": "method",
+    "start": 225,
+    "end": 373,
+    "children": [
+     {
+      "type": "def",
+      "start": 225,
+      "end": 228,
+      "text": "def"
+     },
+     {
+      "type": "identifier",
+      "start": 229,
+      "end": 239,
+      "field": "name",
+      "text": "documented"
+     },
+     {
+      "type": "method_parameters",
+      "start": 239,
+      "end": 245,
+      "field": "parameters",
+      "children": [
+       {
+        "type": "(",
+        "start": 239,
+        "end": 240,
+        "text": "("
+       },
+       {
+        "type": "identifier",
+        "start": 240,
+        "end": 241,
+        "text": "a"
+       },
+       {
+        "type": ",",
+        "start": 241,
+        "end": 242,
+        "text": ","
+       },
+       {
+        "type": "identifier",
+        "start": 243,
+        "end": 244,
+        "text": "b"
+       },
+       {
+        "type": ")",
+        "start": 244,
+        "end": 245,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 248,
+      "end": 282,
+      "text": "# Leading comment inside the body."
+     },
+     {
+      "type": "body_statement",
+      "start": 285,
+      "end": 369,
+      "field": "body",
+      "children": [
+       {
+        "type": "assignment",
+        "start": 285,
+        "end": 299,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 285,
+          "end": 291,
+          "field": "left",
+          "text": "result"
+         },
+         {
+          "type": "=",
+          "start": 292,
+          "end": 293,
+          "text": "="
+         },
+         {
+          "type": "binary",
+          "start": 294,
+          "end": 299,
+          "field": "right",
+          "children": [
+           {
+            "type": "identifier",
+            "start": 294,
+            "end": 295,
+            "field": "left",
+            "text": "a"
+           },
+           {
+            "type": "+",
+            "start": 296,
+            "end": 297,
+            "field": "operator",
+            "text": "+"
+           },
+           {
+            "type": "identifier",
+            "start": 298,
+            "end": 299,
+            "field": "right",
+            "text": "b"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "comment",
+        "start": 300,
+        "end": 333,
+        "text": "# trailing comment on a statement"
+       },
+       {
+        "type": "comment",
+        "start": 336,
+        "end": 360,
+        "text": "# Comment before return."
+       },
+       {
+        "type": "identifier",
+        "start": 363,
+        "end": 369,
+        "text": "result"
+       }
+      ]
+     },
+     {
+      "type": "end",
+      "start": 370,
+      "end": 373,
+      "text": "end"
+     }
+    ]
+   },
+   {
+    "type": "assignment",
+    "start": 375,
+    "end": 463,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 375,
+      "end": 381,
+      "field": "left",
+      "text": "values"
+     },
+     {
+      "type": "=",
+      "start": 382,
+      "end": 383,
+      "text": "="
+     },
+     {
+      "type": "array",
+      "start": 384,
+      "end": 463,
+      "field": "right",
+      "children": [
+       {
+        "type": "[",
+        "start": 384,
+        "end": 385,
+        "text": "["
+       },
+       {
+        "type": "integer",
+        "start": 388,
+        "end": 389,
+        "text": "1"
+       },
+       {
+        "type": ",",
+        "start": 389,
+        "end": 390,
+        "text": ","
+       },
+       {
+        "type": "comment",
+        "start": 391,
+        "end": 398,
+        "text": "# first"
+       },
+       {
+        "type": "integer",
+        "start": 401,
+        "end": 402,
+        "text": "2"
+       },
+       {
+        "type": ",",
+        "start": 402,
+        "end": 403,
+        "text": ","
+       },
+       {
+        "type": "comment",
+        "start": 404,
+        "end": 412,
+        "text": "# second"
+       },
+       {
+        "type": "comment",
+        "start": 415,
+        "end": 457,
+        "text": "# own-line comment inside a bracketed list"
+       },
+       {
+        "type": "integer",
+        "start": 460,
+        "end": 461,
+        "text": "3"
+       },
+       {
+        "type": "]",
+        "start": 462,
+        "end": 463,
+        "text": "]"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "assignment",
+    "start": 465,
+    "end": 565,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 465,
+      "end": 471,
+      "field": "left",
+      "text": "config"
+     },
+     {
+      "type": "=",
+      "start": 472,
+      "end": 473,
+      "text": "="
+     },
+     {
+      "type": "hash",
+      "start": 474,
+      "end": 565,
+      "field": "right",
+      "children": [
+       {
+        "type": "{",
+        "start": 474,
+        "end": 475,
+        "text": "{"
+       },
+       {
+        "type": "comment",
+        "start": 478,
+        "end": 508,
+        "text": "# comment before the first key"
+       },
+       {
+        "type": "pair",
+        "start": 511,
+        "end": 528,
+        "children": [
+         {
+          "type": "hash_key_symbol",
+          "start": 511,
+          "end": 515,
+          "field": "key",
+          "text": "host"
+         },
+         {
+          "type": ":",
+          "start": 515,
+          "end": 516,
+          "text": ":"
+         },
+         {
+          "type": "string",
+          "start": 517,
+          "end": 528,
+          "field": "value",
+          "children": [
+           {
+            "type": "\"",
+            "start": 517,
+            "end": 518,
+            "text": "\""
+           },
+           {
+            "type": "string_content",
+            "start": 518,
+            "end": 527,
+            "text": "localhost"
+           },
+           {
+            "type": "\"",
+            "start": 527,
+            "end": 528,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 528,
+        "end": 529,
+        "text": ","
+       },
+       {
+        "type": "pair",
+        "start": 532,
+        "end": 542,
+        "children": [
+         {
+          "type": "hash_key_symbol",
+          "start": 532,
+          "end": 536,
+          "field": "key",
+          "text": "port"
+         },
+         {
+          "type": ":",
+          "start": 536,
+          "end": 537,
+          "text": ":"
+         },
+         {
+          "type": "integer",
+          "start": 538,
+          "end": 542,
+          "field": "value",
+          "text": "8080"
+         }
+        ]
+       },
+       {
+        "type": "comment",
+        "start": 543,
+        "end": 563,
+        "text": "# trailing on a pair"
+       },
+       {
+        "type": "}",
+        "start": 564,
+        "end": 565,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 567,
+    "end": 651,
+    "text": "=begin\nA block comment, which tree-sitter-ruby also emits as a `comment` extra.\n=end"
+   },
+   {
+    "type": "method",
+    "start": 653,
+    "end": 711,
+    "children": [
+     {
+      "type": "def",
+      "start": 653,
+      "end": 656,
+      "text": "def"
+     },
+     {
+      "type": "identifier",
+      "start": 657,
+      "end": 664,
+      "field": "name",
+      "text": "between"
+     },
+     {
+      "type": "comment",
+      "start": 667,
+      "end": 707,
+      "text": "# trailing comment at the end of a block"
+     },
+     {
+      "type": "end",
+      "start": 708,
+      "end": 711,
+      "text": "end"
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 713,
+    "end": 746,
+    "text": "# Comment at the end of the file."
+   }
+  ]
+ }
+}

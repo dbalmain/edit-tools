@@ -1,0 +1,158 @@
+{
+ "language": "ruby",
+ "source_file": "corpus/src/ruby/block_conversion.rb",
+ "source": "# A single-statement block that fits braces at width 80 and becomes do/end\n# at width 40. syntax_tree picks the delimiters by whether the body fits,\n# not by the source form.\n\n# The conversion is the whole of this file.\nitems.each { |item| process_the_item_with_a_fairly_long_method_name(item) }\n",
+ "root": {
+  "type": "program",
+  "start": 0,
+  "end": 296,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 74,
+    "text": "# A single-statement block that fits braces at width 80 and becomes do/end"
+   },
+   {
+    "type": "comment",
+    "start": 75,
+    "end": 148,
+    "text": "# at width 40. syntax_tree picks the delimiters by whether the body fits,"
+   },
+   {
+    "type": "comment",
+    "start": 149,
+    "end": 174,
+    "text": "# not by the source form."
+   },
+   {
+    "type": "comment",
+    "start": 176,
+    "end": 219,
+    "text": "# The conversion is the whole of this file."
+   },
+   {
+    "type": "call",
+    "start": 220,
+    "end": 295,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 220,
+      "end": 225,
+      "field": "receiver",
+      "text": "items"
+     },
+     {
+      "type": ".",
+      "start": 225,
+      "end": 226,
+      "field": "operator",
+      "text": "."
+     },
+     {
+      "type": "identifier",
+      "start": 226,
+      "end": 230,
+      "field": "method",
+      "text": "each"
+     },
+     {
+      "type": "block",
+      "start": 231,
+      "end": 295,
+      "field": "block",
+      "children": [
+       {
+        "type": "{",
+        "start": 231,
+        "end": 232,
+        "text": "{"
+       },
+       {
+        "type": "block_parameters",
+        "start": 233,
+        "end": 239,
+        "field": "parameters",
+        "children": [
+         {
+          "type": "|",
+          "start": 233,
+          "end": 234,
+          "text": "|"
+         },
+         {
+          "type": "identifier",
+          "start": 234,
+          "end": 238,
+          "text": "item"
+         },
+         {
+          "type": "|",
+          "start": 238,
+          "end": 239,
+          "text": "|"
+         }
+        ]
+       },
+       {
+        "type": "block_body",
+        "start": 240,
+        "end": 293,
+        "field": "body",
+        "children": [
+         {
+          "type": "call",
+          "start": 240,
+          "end": 293,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 240,
+            "end": 287,
+            "field": "method",
+            "text": "process_the_item_with_a_fairly_long_method_name"
+           },
+           {
+            "type": "argument_list",
+            "start": 287,
+            "end": 293,
+            "field": "arguments",
+            "children": [
+             {
+              "type": "(",
+              "start": 287,
+              "end": 288,
+              "text": "("
+             },
+             {
+              "type": "identifier",
+              "start": 288,
+              "end": 292,
+              "text": "item"
+             },
+             {
+              "type": ")",
+              "start": 292,
+              "end": 293,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 294,
+        "end": 295,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

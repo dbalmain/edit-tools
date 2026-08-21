@@ -1,0 +1,1022 @@
+{
+ "language": "ruby",
+ "source_file": "corpus/src/ruby/operators.rb",
+ "source": "# Binary chains, keyword vs punctuator boolean, unary, safe navigation.\n# `and`/`or` are not rewritten to `&&`/`||`.\n\nsimple = a + b # tight in the source, spaced in the output of normalisation\n\narithmetic_chain =\n  first_operand + second_operand + third_operand + fourth_operand +\n    fifth_operand\n\nmixed_precedence = alpha + beta * gamma - delta / epsilon + zeta * eta\n\nboolean_and = condition_one && condition_two && condition_three && condition_four\n\nboolean_or = first_option || second_option || third_option || fourth_option\n\nkeyword_and = condition_one and condition_two\nkeyword_or = first_option or second_option\n\nunary = -value\nbang = !some_condition_that_is_fairly_long\nnot_expr = (not some_condition)\n\nsafe = user&.profile&.address&.city\n\nop_assign = x += 1\n\nrange = 1..10\nexcl = 1...10\n",
+ "root": {
+  "type": "program",
+  "start": 0,
+  "end": 799,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 71,
+    "text": "# Binary chains, keyword vs punctuator boolean, unary, safe navigation."
+   },
+   {
+    "type": "comment",
+    "start": 72,
+    "end": 116,
+    "text": "# `and`/`or` are not rewritten to `&&`/`||`."
+   },
+   {
+    "type": "assignment",
+    "start": 118,
+    "end": 132,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 118,
+      "end": 124,
+      "field": "left",
+      "text": "simple"
+     },
+     {
+      "type": "=",
+      "start": 125,
+      "end": 126,
+      "text": "="
+     },
+     {
+      "type": "binary",
+      "start": 127,
+      "end": 132,
+      "field": "right",
+      "children": [
+       {
+        "type": "identifier",
+        "start": 127,
+        "end": 128,
+        "field": "left",
+        "text": "a"
+       },
+       {
+        "type": "+",
+        "start": 129,
+        "end": 130,
+        "field": "operator",
+        "text": "+"
+       },
+       {
+        "type": "identifier",
+        "start": 131,
+        "end": 132,
+        "field": "right",
+        "text": "b"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 133,
+    "end": 193,
+    "text": "# tight in the source, spaced in the output of normalisation"
+   },
+   {
+    "type": "assignment",
+    "start": 195,
+    "end": 299,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 195,
+      "end": 211,
+      "field": "left",
+      "text": "arithmetic_chain"
+     },
+     {
+      "type": "=",
+      "start": 212,
+      "end": 213,
+      "text": "="
+     },
+     {
+      "type": "binary",
+      "start": 216,
+      "end": 299,
+      "field": "right",
+      "children": [
+       {
+        "type": "binary",
+        "start": 216,
+        "end": 279,
+        "field": "left",
+        "children": [
+         {
+          "type": "binary",
+          "start": 216,
+          "end": 262,
+          "field": "left",
+          "children": [
+           {
+            "type": "binary",
+            "start": 216,
+            "end": 246,
+            "field": "left",
+            "children": [
+             {
+              "type": "identifier",
+              "start": 216,
+              "end": 229,
+              "field": "left",
+              "text": "first_operand"
+             },
+             {
+              "type": "+",
+              "start": 230,
+              "end": 231,
+              "field": "operator",
+              "text": "+"
+             },
+             {
+              "type": "identifier",
+              "start": 232,
+              "end": 246,
+              "field": "right",
+              "text": "second_operand"
+             }
+            ]
+           },
+           {
+            "type": "+",
+            "start": 247,
+            "end": 248,
+            "field": "operator",
+            "text": "+"
+           },
+           {
+            "type": "identifier",
+            "start": 249,
+            "end": 262,
+            "field": "right",
+            "text": "third_operand"
+           }
+          ]
+         },
+         {
+          "type": "+",
+          "start": 263,
+          "end": 264,
+          "field": "operator",
+          "text": "+"
+         },
+         {
+          "type": "identifier",
+          "start": 265,
+          "end": 279,
+          "field": "right",
+          "text": "fourth_operand"
+         }
+        ]
+       },
+       {
+        "type": "+",
+        "start": 280,
+        "end": 281,
+        "field": "operator",
+        "text": "+"
+       },
+       {
+        "type": "identifier",
+        "start": 286,
+        "end": 299,
+        "field": "right",
+        "text": "fifth_operand"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "assignment",
+    "start": 301,
+    "end": 371,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 301,
+      "end": 317,
+      "field": "left",
+      "text": "mixed_precedence"
+     },
+     {
+      "type": "=",
+      "start": 318,
+      "end": 319,
+      "text": "="
+     },
+     {
+      "type": "binary",
+      "start": 320,
+      "end": 371,
+      "field": "right",
+      "children": [
+       {
+        "type": "binary",
+        "start": 320,
+        "end": 358,
+        "field": "left",
+        "children": [
+         {
+          "type": "binary",
+          "start": 320,
+          "end": 340,
+          "field": "left",
+          "children": [
+           {
+            "type": "identifier",
+            "start": 320,
+            "end": 325,
+            "field": "left",
+            "text": "alpha"
+           },
+           {
+            "type": "+",
+            "start": 326,
+            "end": 327,
+            "field": "operator",
+            "text": "+"
+           },
+           {
+            "type": "binary",
+            "start": 328,
+            "end": 340,
+            "field": "right",
+            "children": [
+             {
+              "type": "identifier",
+              "start": 328,
+              "end": 332,
+              "field": "left",
+              "text": "beta"
+             },
+             {
+              "type": "*",
+              "start": 333,
+              "end": 334,
+              "field": "operator",
+              "text": "*"
+             },
+             {
+              "type": "identifier",
+              "start": 335,
+              "end": 340,
+              "field": "right",
+              "text": "gamma"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "-",
+          "start": 341,
+          "end": 342,
+          "field": "operator",
+          "text": "-"
+         },
+         {
+          "type": "binary",
+          "start": 343,
+          "end": 358,
+          "field": "right",
+          "children": [
+           {
+            "type": "identifier",
+            "start": 343,
+            "end": 348,
+            "field": "left",
+            "text": "delta"
+           },
+           {
+            "type": "/",
+            "start": 349,
+            "end": 350,
+            "field": "operator",
+            "text": "/"
+           },
+           {
+            "type": "identifier",
+            "start": 351,
+            "end": 358,
+            "field": "right",
+            "text": "epsilon"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "+",
+        "start": 359,
+        "end": 360,
+        "field": "operator",
+        "text": "+"
+       },
+       {
+        "type": "binary",
+        "start": 361,
+        "end": 371,
+        "field": "right",
+        "children": [
+         {
+          "type": "identifier",
+          "start": 361,
+          "end": 365,
+          "field": "left",
+          "text": "zeta"
+         },
+         {
+          "type": "*",
+          "start": 366,
+          "end": 367,
+          "field": "operator",
+          "text": "*"
+         },
+         {
+          "type": "identifier",
+          "start": 368,
+          "end": 371,
+          "field": "right",
+          "text": "eta"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "assignment",
+    "start": 373,
+    "end": 454,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 373,
+      "end": 384,
+      "field": "left",
+      "text": "boolean_and"
+     },
+     {
+      "type": "=",
+      "start": 385,
+      "end": 386,
+      "text": "="
+     },
+     {
+      "type": "binary",
+      "start": 387,
+      "end": 454,
+      "field": "right",
+      "children": [
+       {
+        "type": "binary",
+        "start": 387,
+        "end": 436,
+        "field": "left",
+        "children": [
+         {
+          "type": "binary",
+          "start": 387,
+          "end": 417,
+          "field": "left",
+          "children": [
+           {
+            "type": "identifier",
+            "start": 387,
+            "end": 400,
+            "field": "left",
+            "text": "condition_one"
+           },
+           {
+            "type": "&&",
+            "start": 401,
+            "end": 403,
+            "field": "operator",
+            "text": "&&"
+           },
+           {
+            "type": "identifier",
+            "start": 404,
+            "end": 417,
+            "field": "right",
+            "text": "condition_two"
+           }
+          ]
+         },
+         {
+          "type": "&&",
+          "start": 418,
+          "end": 420,
+          "field": "operator",
+          "text": "&&"
+         },
+         {
+          "type": "identifier",
+          "start": 421,
+          "end": 436,
+          "field": "right",
+          "text": "condition_three"
+         }
+        ]
+       },
+       {
+        "type": "&&",
+        "start": 437,
+        "end": 439,
+        "field": "operator",
+        "text": "&&"
+       },
+       {
+        "type": "identifier",
+        "start": 440,
+        "end": 454,
+        "field": "right",
+        "text": "condition_four"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "assignment",
+    "start": 456,
+    "end": 531,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 456,
+      "end": 466,
+      "field": "left",
+      "text": "boolean_or"
+     },
+     {
+      "type": "=",
+      "start": 467,
+      "end": 468,
+      "text": "="
+     },
+     {
+      "type": "binary",
+      "start": 469,
+      "end": 531,
+      "field": "right",
+      "children": [
+       {
+        "type": "binary",
+        "start": 469,
+        "end": 514,
+        "field": "left",
+        "children": [
+         {
+          "type": "binary",
+          "start": 469,
+          "end": 498,
+          "field": "left",
+          "children": [
+           {
+            "type": "identifier",
+            "start": 469,
+            "end": 481,
+            "field": "left",
+            "text": "first_option"
+           },
+           {
+            "type": "||",
+            "start": 482,
+            "end": 484,
+            "field": "operator",
+            "text": "||"
+           },
+           {
+            "type": "identifier",
+            "start": 485,
+            "end": 498,
+            "field": "right",
+            "text": "second_option"
+           }
+          ]
+         },
+         {
+          "type": "||",
+          "start": 499,
+          "end": 501,
+          "field": "operator",
+          "text": "||"
+         },
+         {
+          "type": "identifier",
+          "start": 502,
+          "end": 514,
+          "field": "right",
+          "text": "third_option"
+         }
+        ]
+       },
+       {
+        "type": "||",
+        "start": 515,
+        "end": 517,
+        "field": "operator",
+        "text": "||"
+       },
+       {
+        "type": "identifier",
+        "start": 518,
+        "end": 531,
+        "field": "right",
+        "text": "fourth_option"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "binary",
+    "start": 533,
+    "end": 578,
+    "children": [
+     {
+      "type": "assignment",
+      "start": 533,
+      "end": 560,
+      "field": "left",
+      "children": [
+       {
+        "type": "identifier",
+        "start": 533,
+        "end": 544,
+        "field": "left",
+        "text": "keyword_and"
+       },
+       {
+        "type": "=",
+        "start": 545,
+        "end": 546,
+        "text": "="
+       },
+       {
+        "type": "identifier",
+        "start": 547,
+        "end": 560,
+        "field": "right",
+        "text": "condition_one"
+       }
+      ]
+     },
+     {
+      "type": "and",
+      "start": 561,
+      "end": 564,
+      "field": "operator",
+      "text": "and"
+     },
+     {
+      "type": "identifier",
+      "start": 565,
+      "end": 578,
+      "field": "right",
+      "text": "condition_two"
+     }
+    ]
+   },
+   {
+    "type": "binary",
+    "start": 579,
+    "end": 621,
+    "children": [
+     {
+      "type": "assignment",
+      "start": 579,
+      "end": 604,
+      "field": "left",
+      "children": [
+       {
+        "type": "identifier",
+        "start": 579,
+        "end": 589,
+        "field": "left",
+        "text": "keyword_or"
+       },
+       {
+        "type": "=",
+        "start": 590,
+        "end": 591,
+        "text": "="
+       },
+       {
+        "type": "identifier",
+        "start": 592,
+        "end": 604,
+        "field": "right",
+        "text": "first_option"
+       }
+      ]
+     },
+     {
+      "type": "or",
+      "start": 605,
+      "end": 607,
+      "field": "operator",
+      "text": "or"
+     },
+     {
+      "type": "identifier",
+      "start": 608,
+      "end": 621,
+      "field": "right",
+      "text": "second_option"
+     }
+    ]
+   },
+   {
+    "type": "assignment",
+    "start": 623,
+    "end": 637,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 623,
+      "end": 628,
+      "field": "left",
+      "text": "unary"
+     },
+     {
+      "type": "=",
+      "start": 629,
+      "end": 630,
+      "text": "="
+     },
+     {
+      "type": "unary",
+      "start": 631,
+      "end": 637,
+      "field": "right",
+      "children": [
+       {
+        "type": "-",
+        "start": 631,
+        "end": 632,
+        "field": "operator",
+        "text": "-"
+       },
+       {
+        "type": "identifier",
+        "start": 632,
+        "end": 637,
+        "field": "operand",
+        "text": "value"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "assignment",
+    "start": 638,
+    "end": 680,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 638,
+      "end": 642,
+      "field": "left",
+      "text": "bang"
+     },
+     {
+      "type": "=",
+      "start": 643,
+      "end": 644,
+      "text": "="
+     },
+     {
+      "type": "unary",
+      "start": 645,
+      "end": 680,
+      "field": "right",
+      "children": [
+       {
+        "type": "!",
+        "start": 645,
+        "end": 646,
+        "field": "operator",
+        "text": "!"
+       },
+       {
+        "type": "identifier",
+        "start": 646,
+        "end": 680,
+        "field": "operand",
+        "text": "some_condition_that_is_fairly_long"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "assignment",
+    "start": 681,
+    "end": 712,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 681,
+      "end": 689,
+      "field": "left",
+      "text": "not_expr"
+     },
+     {
+      "type": "=",
+      "start": 690,
+      "end": 691,
+      "text": "="
+     },
+     {
+      "type": "parenthesized_statements",
+      "start": 692,
+      "end": 712,
+      "field": "right",
+      "children": [
+       {
+        "type": "(",
+        "start": 692,
+        "end": 693,
+        "text": "("
+       },
+       {
+        "type": "unary",
+        "start": 693,
+        "end": 711,
+        "children": [
+         {
+          "type": "not",
+          "start": 693,
+          "end": 696,
+          "field": "operator",
+          "text": "not"
+         },
+         {
+          "type": "identifier",
+          "start": 697,
+          "end": 711,
+          "field": "operand",
+          "text": "some_condition"
+         }
+        ]
+       },
+       {
+        "type": ")",
+        "start": 711,
+        "end": 712,
+        "text": ")"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "assignment",
+    "start": 714,
+    "end": 749,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 714,
+      "end": 718,
+      "field": "left",
+      "text": "safe"
+     },
+     {
+      "type": "=",
+      "start": 719,
+      "end": 720,
+      "text": "="
+     },
+     {
+      "type": "call",
+      "start": 721,
+      "end": 749,
+      "field": "right",
+      "children": [
+       {
+        "type": "call",
+        "start": 721,
+        "end": 743,
+        "field": "receiver",
+        "children": [
+         {
+          "type": "call",
+          "start": 721,
+          "end": 734,
+          "field": "receiver",
+          "children": [
+           {
+            "type": "identifier",
+            "start": 721,
+            "end": 725,
+            "field": "receiver",
+            "text": "user"
+           },
+           {
+            "type": "&.",
+            "start": 725,
+            "end": 727,
+            "field": "operator",
+            "text": "&."
+           },
+           {
+            "type": "identifier",
+            "start": 727,
+            "end": 734,
+            "field": "method",
+            "text": "profile"
+           }
+          ]
+         },
+         {
+          "type": "&.",
+          "start": 734,
+          "end": 736,
+          "field": "operator",
+          "text": "&."
+         },
+         {
+          "type": "identifier",
+          "start": 736,
+          "end": 743,
+          "field": "method",
+          "text": "address"
+         }
+        ]
+       },
+       {
+        "type": "&.",
+        "start": 743,
+        "end": 745,
+        "field": "operator",
+        "text": "&."
+       },
+       {
+        "type": "identifier",
+        "start": 745,
+        "end": 749,
+        "field": "method",
+        "text": "city"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "assignment",
+    "start": 751,
+    "end": 769,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 751,
+      "end": 760,
+      "field": "left",
+      "text": "op_assign"
+     },
+     {
+      "type": "=",
+      "start": 761,
+      "end": 762,
+      "text": "="
+     },
+     {
+      "type": "operator_assignment",
+      "start": 763,
+      "end": 769,
+      "field": "right",
+      "children": [
+       {
+        "type": "identifier",
+        "start": 763,
+        "end": 764,
+        "field": "left",
+        "text": "x"
+       },
+       {
+        "type": "+=",
+        "start": 765,
+        "end": 767,
+        "field": "operator",
+        "text": "+="
+       },
+       {
+        "type": "integer",
+        "start": 768,
+        "end": 769,
+        "field": "right",
+        "text": "1"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "assignment",
+    "start": 771,
+    "end": 784,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 771,
+      "end": 776,
+      "field": "left",
+      "text": "range"
+     },
+     {
+      "type": "=",
+      "start": 777,
+      "end": 778,
+      "text": "="
+     },
+     {
+      "type": "range",
+      "start": 779,
+      "end": 784,
+      "field": "right",
+      "children": [
+       {
+        "type": "integer",
+        "start": 779,
+        "end": 780,
+        "field": "begin",
+        "text": "1"
+       },
+       {
+        "type": "..",
+        "start": 780,
+        "end": 782,
+        "field": "operator",
+        "text": ".."
+       },
+       {
+        "type": "integer",
+        "start": 782,
+        "end": 784,
+        "field": "end",
+        "text": "10"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "assignment",
+    "start": 785,
+    "end": 798,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 785,
+      "end": 789,
+      "field": "left",
+      "text": "excl"
+     },
+     {
+      "type": "=",
+      "start": 790,
+      "end": 791,
+      "text": "="
+     },
+     {
+      "type": "range",
+      "start": 792,
+      "end": 798,
+      "field": "right",
+      "children": [
+       {
+        "type": "integer",
+        "start": 792,
+        "end": 793,
+        "field": "begin",
+        "text": "1"
+       },
+       {
+        "type": "...",
+        "start": 793,
+        "end": 796,
+        "field": "operator",
+        "text": "..."
+       },
+       {
+        "type": "integer",
+        "start": 796,
+        "end": 798,
+        "field": "end",
+        "text": "10"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}
