@@ -83,10 +83,28 @@ gate3 = "default"
 transparent_wrappers = ["parens"]
 equivalent_kinds = []
 
-# ormolu sorts import declarations alphabetically (and flattens blank-line
-# groups into one list). Reordering named siblings is a move a linear
-# formatter cannot make. `imports.hs` holds four distinct unsorted imports
-# with already-sorted names inside each list, so it probes statement
-# reordering alone. Gate 3 rejects the rewrite (see the corpus report).
+# ormolu rewrites the import block in two separable ways, and each gets its
+# own dedicated file so neither hides the other (the ktfmt
+# `sortedAndDistinctImports` precedent: one exclusion named, two performed).
+#
+#   1. It REORDERS declarations — alphabetically by module name, and it
+#      flattens blank-line groups into one list. `imports.hs` holds four
+#      distinct unsorted imports with already-sorted names inside each list,
+#      so it probes statement reordering alone.
+#   2. It COLLAPSES repeated imports of one module — an exact duplicate
+#      declaration is dropped, and two lists for the same module are unioned.
+#      `import_merging.hs` writes its modules and names in the order ormolu
+#      already emits them, so it probes collapsing alone and never reordering.
+#
+# Both are moves a linear formatter cannot make. Verified: gate 3 rejects (1)
+# with `leaf text 'Data' became 'Control'` and (2) with `4 named children
+# became 2`.
+#
+# Also observed and deliberately NOT probed here: ormolu sorts and
+# de-duplicates the NAMES inside a single import list
+# (`(sort, nub, foldl')` -> `(foldl', nub, sort)`, `(sort, nub, sort)` ->
+# `(nub, sort)`). That is the same reorder class as (1); every corpus import
+# list is written already-sorted and duplicate-free so no file depends on it.
 [incomparable]
 "imports.hs" = "ormolu sorts import declarations; gate 3 rejects with leaf text 'Data' became 'Control'"
+"import_merging.hs" = "ormolu collapses repeated imports of one module (duplicate dropped, lists unioned); gate 3 rejects with 4 named children became 2"

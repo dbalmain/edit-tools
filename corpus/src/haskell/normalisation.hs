@@ -1,6 +1,6 @@
 module Normalisation where
-
 -- token-level mess: spacing, delimiter padding, indent, empty containers
+-- no blank line after the module header either: ormolu inserts one
 xs = [ ]
 unit = ( )
 pair = ( 1,2 )
