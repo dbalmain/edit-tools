@@ -1,0 +1,551 @@
+{
+ "language": "scheme",
+ "source_file": "corpus/src/scheme/normalisation.scm",
+ "source": ";; Input written the way a person writes it and emacs indent-region does\n;; not: intra-line padding is preserved, leading indent is rewritten, an\n;; empty list written with a space in it stays ( ).\n(define( packed x )( + x 1 ))\n\n(define (over-indented x)\n        x)\n\n(define (under-indented x)\nx)\n\n(define empty-spaced (quote ( )))\n\n(define empty-tight (quote ()))\n\n(define trailing-spaces 1)       ; run of spaces before this comment\n\n(define (mixed-padding a b c)\n(list  a   b\nc))\n",
+ "root": {
+  "type": "program",
+  "start": 0,
+  "end": 483,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 72,
+    "text": ";; Input written the way a person writes it and emacs indent-region does"
+   },
+   {
+    "type": "comment",
+    "start": 73,
+    "end": 145,
+    "text": ";; not: intra-line padding is preserved, leading indent is rewritten, an"
+   },
+   {
+    "type": "comment",
+    "start": 146,
+    "end": 197,
+    "text": ";; empty list written with a space in it stays ( )."
+   },
+   {
+    "type": "list",
+    "start": 198,
+    "end": 227,
+    "children": [
+     {
+      "type": "(",
+      "start": 198,
+      "end": 199,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 199,
+      "end": 205,
+      "text": "define"
+     },
+     {
+      "type": "list",
+      "start": 205,
+      "end": 217,
+      "children": [
+       {
+        "type": "(",
+        "start": 205,
+        "end": 206,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 207,
+        "end": 213,
+        "text": "packed"
+       },
+       {
+        "type": "symbol",
+        "start": 214,
+        "end": 215,
+        "text": "x"
+       },
+       {
+        "type": ")",
+        "start": 216,
+        "end": 217,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "list",
+      "start": 217,
+      "end": 226,
+      "children": [
+       {
+        "type": "(",
+        "start": 217,
+        "end": 218,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 219,
+        "end": 220,
+        "text": "+"
+       },
+       {
+        "type": "symbol",
+        "start": 221,
+        "end": 222,
+        "text": "x"
+       },
+       {
+        "type": "number",
+        "start": 223,
+        "end": 224,
+        "text": "1"
+       },
+       {
+        "type": ")",
+        "start": 225,
+        "end": 226,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": ")",
+      "start": 226,
+      "end": 227,
+      "text": ")"
+     }
+    ]
+   },
+   {
+    "type": "list",
+    "start": 229,
+    "end": 265,
+    "children": [
+     {
+      "type": "(",
+      "start": 229,
+      "end": 230,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 230,
+      "end": 236,
+      "text": "define"
+     },
+     {
+      "type": "list",
+      "start": 237,
+      "end": 254,
+      "children": [
+       {
+        "type": "(",
+        "start": 237,
+        "end": 238,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 238,
+        "end": 251,
+        "text": "over-indented"
+       },
+       {
+        "type": "symbol",
+        "start": 252,
+        "end": 253,
+        "text": "x"
+       },
+       {
+        "type": ")",
+        "start": 253,
+        "end": 254,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "symbol",
+      "start": 263,
+      "end": 264,
+      "text": "x"
+     },
+     {
+      "type": ")",
+      "start": 264,
+      "end": 265,
+      "text": ")"
+     }
+    ]
+   },
+   {
+    "type": "list",
+    "start": 267,
+    "end": 296,
+    "children": [
+     {
+      "type": "(",
+      "start": 267,
+      "end": 268,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 268,
+      "end": 274,
+      "text": "define"
+     },
+     {
+      "type": "list",
+      "start": 275,
+      "end": 293,
+      "children": [
+       {
+        "type": "(",
+        "start": 275,
+        "end": 276,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 276,
+        "end": 290,
+        "text": "under-indented"
+       },
+       {
+        "type": "symbol",
+        "start": 291,
+        "end": 292,
+        "text": "x"
+       },
+       {
+        "type": ")",
+        "start": 292,
+        "end": 293,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "symbol",
+      "start": 294,
+      "end": 295,
+      "text": "x"
+     },
+     {
+      "type": ")",
+      "start": 295,
+      "end": 296,
+      "text": ")"
+     }
+    ]
+   },
+   {
+    "type": "list",
+    "start": 298,
+    "end": 331,
+    "children": [
+     {
+      "type": "(",
+      "start": 298,
+      "end": 299,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 299,
+      "end": 305,
+      "text": "define"
+     },
+     {
+      "type": "symbol",
+      "start": 306,
+      "end": 318,
+      "text": "empty-spaced"
+     },
+     {
+      "type": "list",
+      "start": 319,
+      "end": 330,
+      "children": [
+       {
+        "type": "(",
+        "start": 319,
+        "end": 320,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 320,
+        "end": 325,
+        "text": "quote"
+       },
+       {
+        "type": "list",
+        "start": 326,
+        "end": 329,
+        "children": [
+         {
+          "type": "(",
+          "start": 326,
+          "end": 327,
+          "text": "("
+         },
+         {
+          "type": ")",
+          "start": 328,
+          "end": 329,
+          "text": ")"
+         }
+        ]
+       },
+       {
+        "type": ")",
+        "start": 329,
+        "end": 330,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": ")",
+      "start": 330,
+      "end": 331,
+      "text": ")"
+     }
+    ]
+   },
+   {
+    "type": "list",
+    "start": 333,
+    "end": 364,
+    "children": [
+     {
+      "type": "(",
+      "start": 333,
+      "end": 334,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 334,
+      "end": 340,
+      "text": "define"
+     },
+     {
+      "type": "symbol",
+      "start": 341,
+      "end": 352,
+      "text": "empty-tight"
+     },
+     {
+      "type": "list",
+      "start": 353,
+      "end": 363,
+      "children": [
+       {
+        "type": "(",
+        "start": 353,
+        "end": 354,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 354,
+        "end": 359,
+        "text": "quote"
+       },
+       {
+        "type": "list",
+        "start": 360,
+        "end": 362,
+        "children": [
+         {
+          "type": "(",
+          "start": 360,
+          "end": 361,
+          "text": "("
+         },
+         {
+          "type": ")",
+          "start": 361,
+          "end": 362,
+          "text": ")"
+         }
+        ]
+       },
+       {
+        "type": ")",
+        "start": 362,
+        "end": 363,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": ")",
+      "start": 363,
+      "end": 364,
+      "text": ")"
+     }
+    ]
+   },
+   {
+    "type": "list",
+    "start": 366,
+    "end": 392,
+    "children": [
+     {
+      "type": "(",
+      "start": 366,
+      "end": 367,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 367,
+      "end": 373,
+      "text": "define"
+     },
+     {
+      "type": "symbol",
+      "start": 374,
+      "end": 389,
+      "text": "trailing-spaces"
+     },
+     {
+      "type": "number",
+      "start": 390,
+      "end": 391,
+      "text": "1"
+     },
+     {
+      "type": ")",
+      "start": 391,
+      "end": 392,
+      "text": ")"
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 399,
+    "end": 434,
+    "text": "; run of spaces before this comment"
+   },
+   {
+    "type": "list",
+    "start": 436,
+    "end": 482,
+    "children": [
+     {
+      "type": "(",
+      "start": 436,
+      "end": 437,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 437,
+      "end": 443,
+      "text": "define"
+     },
+     {
+      "type": "list",
+      "start": 444,
+      "end": 465,
+      "children": [
+       {
+        "type": "(",
+        "start": 444,
+        "end": 445,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 445,
+        "end": 458,
+        "text": "mixed-padding"
+       },
+       {
+        "type": "symbol",
+        "start": 459,
+        "end": 460,
+        "text": "a"
+       },
+       {
+        "type": "symbol",
+        "start": 461,
+        "end": 462,
+        "text": "b"
+       },
+       {
+        "type": "symbol",
+        "start": 463,
+        "end": 464,
+        "text": "c"
+       },
+       {
+        "type": ")",
+        "start": 464,
+        "end": 465,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "list",
+      "start": 466,
+      "end": 481,
+      "children": [
+       {
+        "type": "(",
+        "start": 466,
+        "end": 467,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 467,
+        "end": 471,
+        "text": "list"
+       },
+       {
+        "type": "symbol",
+        "start": 473,
+        "end": 474,
+        "text": "a"
+       },
+       {
+        "type": "symbol",
+        "start": 477,
+        "end": 478,
+        "text": "b"
+       },
+       {
+        "type": "symbol",
+        "start": 479,
+        "end": 480,
+        "text": "c"
+       },
+       {
+        "type": ")",
+        "start": 480,
+        "end": 481,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": ")",
+      "start": 481,
+      "end": 482,
+      "text": ")"
+     }
+    ]
+   }
+  ]
+ }
+}

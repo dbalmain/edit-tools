@@ -1,0 +1,283 @@
+{
+ "language": "scheme",
+ "source_file": "corpus/src/scheme/comments.scm",
+ "source": ";; Top-level comments. emacs indent-region moves these to comment-column\n;; (default 40), which with indent-tabs-mode t is five tabs.\n; file-level comment at column 0\n\n(define (add a b) ; trailing on a definition\n;; own-line comment inside the body\n(+ a b) ; trailing on a body form\n)\n\n(define values-with-comments\n(list\n1 ; trailing inside a list\n;; own-line inside a list\n2\n#| a one-line block comment |#\n#; skipped\n3\n;; comment before the closing delimiter\n))\n\n; comment at the end of the file\n",
+ "root": {
+  "type": "program",
+  "start": 0,
+  "end": 497,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 72,
+    "text": ";; Top-level comments. emacs indent-region moves these to comment-column"
+   },
+   {
+    "type": "comment",
+    "start": 73,
+    "end": 133,
+    "text": ";; (default 40), which with indent-tabs-mode t is five tabs."
+   },
+   {
+    "type": "comment",
+    "start": 134,
+    "end": 166,
+    "text": "; file-level comment at column 0"
+   },
+   {
+    "type": "list",
+    "start": 168,
+    "end": 284,
+    "children": [
+     {
+      "type": "(",
+      "start": 168,
+      "end": 169,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 169,
+      "end": 175,
+      "text": "define"
+     },
+     {
+      "type": "list",
+      "start": 176,
+      "end": 185,
+      "children": [
+       {
+        "type": "(",
+        "start": 176,
+        "end": 177,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 177,
+        "end": 180,
+        "text": "add"
+       },
+       {
+        "type": "symbol",
+        "start": 181,
+        "end": 182,
+        "text": "a"
+       },
+       {
+        "type": "symbol",
+        "start": 183,
+        "end": 184,
+        "text": "b"
+       },
+       {
+        "type": ")",
+        "start": 184,
+        "end": 185,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 186,
+      "end": 212,
+      "text": "; trailing on a definition"
+     },
+     {
+      "type": "comment",
+      "start": 213,
+      "end": 248,
+      "text": ";; own-line comment inside the body"
+     },
+     {
+      "type": "list",
+      "start": 249,
+      "end": 256,
+      "children": [
+       {
+        "type": "(",
+        "start": 249,
+        "end": 250,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 250,
+        "end": 251,
+        "text": "+"
+       },
+       {
+        "type": "symbol",
+        "start": 252,
+        "end": 253,
+        "text": "a"
+       },
+       {
+        "type": "symbol",
+        "start": 254,
+        "end": 255,
+        "text": "b"
+       },
+       {
+        "type": ")",
+        "start": 255,
+        "end": 256,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 257,
+      "end": 282,
+      "text": "; trailing on a body form"
+     },
+     {
+      "type": ")",
+      "start": 283,
+      "end": 284,
+      "text": ")"
+     }
+    ]
+   },
+   {
+    "type": "list",
+    "start": 286,
+    "end": 462,
+    "children": [
+     {
+      "type": "(",
+      "start": 286,
+      "end": 287,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 287,
+      "end": 293,
+      "text": "define"
+     },
+     {
+      "type": "symbol",
+      "start": 294,
+      "end": 314,
+      "text": "values-with-comments"
+     },
+     {
+      "type": "list",
+      "start": 315,
+      "end": 461,
+      "children": [
+       {
+        "type": "(",
+        "start": 315,
+        "end": 316,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 316,
+        "end": 320,
+        "text": "list"
+       },
+       {
+        "type": "number",
+        "start": 321,
+        "end": 322,
+        "text": "1"
+       },
+       {
+        "type": "comment",
+        "start": 323,
+        "end": 347,
+        "text": "; trailing inside a list"
+       },
+       {
+        "type": "comment",
+        "start": 348,
+        "end": 373,
+        "text": ";; own-line inside a list"
+       },
+       {
+        "type": "number",
+        "start": 374,
+        "end": 375,
+        "text": "2"
+       },
+       {
+        "type": "block_comment",
+        "start": 376,
+        "end": 406,
+        "children": [
+         {
+          "type": "#|",
+          "start": 376,
+          "end": 378,
+          "text": "#|"
+         },
+         {
+          "type": "|#",
+          "start": 404,
+          "end": 406,
+          "text": "|#"
+         }
+        ]
+       },
+       {
+        "type": "comment",
+        "start": 407,
+        "end": 417,
+        "children": [
+         {
+          "type": "#;",
+          "start": 407,
+          "end": 409,
+          "text": "#;"
+         },
+         {
+          "type": "symbol",
+          "start": 410,
+          "end": 417,
+          "text": "skipped"
+         }
+        ]
+       },
+       {
+        "type": "number",
+        "start": 418,
+        "end": 419,
+        "text": "3"
+       },
+       {
+        "type": "comment",
+        "start": 420,
+        "end": 459,
+        "text": ";; comment before the closing delimiter"
+       },
+       {
+        "type": ")",
+        "start": 460,
+        "end": 461,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": ")",
+      "start": 461,
+      "end": 462,
+      "text": ")"
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 464,
+    "end": 496,
+    "text": "; comment at the end of the file"
+   }
+  ]
+ }
+}

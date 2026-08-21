@@ -1,0 +1,41 @@
+;; The constructs that most often overflow a line: a many-argument call
+;; and a long quoted list, already broken so indent applies per element.
+(define (sum-many a b c d e f g h i j) ; ten parameters
+  (+ a
+     b
+     c
+     d
+     e
+     f
+     g
+     h
+     i
+     j))
+
+(define alphabet
+  (list 'a
+	'b
+	'c
+	'd
+	'e
+	'f
+	'g
+	'h
+	'i
+	'j
+	'k
+	'l
+	'm
+	'n
+	'o
+	'p
+	'q
+	'r
+	's
+	't
+	'u
+	'v
+	'w
+	'x
+	'y
+	'z))

@@ -1,0 +1,20 @@
+;; lambda: rest args, nested lambda, and the specform-1 split when the
+;; formals sit on the next line versus on the head line.
+(define add
+  (lambda (x y) ; formals on the head line
+    (+ x y)))
+
+(define add-broken
+  (lambda
+      (x y)
+    (+ x y)))
+
+(define (make-adder n)
+  (lambda (x)
+    (+ x n)))
+
+(define (sum-all . xs)
+  (apply + xs))
+
+(define (split first . rest)
+  (cons first rest))

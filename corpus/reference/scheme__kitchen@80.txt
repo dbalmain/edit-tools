@@ -1,0 +1,30 @@
+;; Several constructs interacting: a procedure that binds, branches,
+;; quasiquotes, and comments. The one file allowed to be messy.
+(define (summarise numbers) ; kitchen: bind, branch, quote, comment
+  (let loop ((xs numbers)
+	     (acc 0)
+	     (seen '()))
+    (cond
+     ((null? xs)
+      ;; done: emit a quoted summary
+      `((sum ,acc)
+	(seen ,@(reverse seen))))
+     ((not (number? (car xs)))
+      (loop (cdr xs) acc seen))
+     (else
+      (let ((n (car xs))) ; trailing inside the loop
+	(if (negative? n)
+	    (loop (cdr xs) acc seen)
+	    (loop (cdr xs)
+		  (+ acc n)
+		  (cons n seen))))))))
+
+(define sample
+  (list 1
+	-2
+	3
+	#f
+	4))
+
+(define (run)
+  (summarise sample))
