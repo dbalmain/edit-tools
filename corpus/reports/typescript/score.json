@@ -1,0 +1,246 @@
+{
+  "language": "typescript",
+  "submission": "lang-typescript",
+  "gate1_idempotence": {
+    "pass": true,
+    "got": 30,
+    "of": 30
+  },
+  "gate2_width": {
+    "pass": true,
+    "waived": false,
+    "overflow_lines": 9,
+    "reference_overflow": 8
+  },
+  "gate3_nondestruction": {
+    "pass": true,
+    "got": 30,
+    "of": 30,
+    "method": "default"
+  },
+  "gate4_agreement": {
+    "by_width": {
+      "80": {
+        "agreement": 8,
+        "of": 15,
+        "accepted": 0,
+        "stale": 0,
+        "unreviewed": 7,
+        "excluded": 0,
+        "review_coverage": 0.533,
+        "review_threshold_met": false
+      },
+      "40": {
+        "agreement": 3,
+        "of": 15,
+        "accepted": 0,
+        "stale": 0,
+        "unreviewed": 12,
+        "excluded": 0,
+        "review_coverage": 0.2,
+        "review_threshold_met": false
+      }
+    },
+    "agreement": 11,
+    "of": 30,
+    "accepted": 0,
+    "stale": 0,
+    "unreviewed": 19,
+    "excluded": 0,
+    "review_coverage": 0.367,
+    "review_threshold_met": false
+  },
+  "rust_js_parity": "identical",
+  "refusals": [],
+  "matching_files": [
+    "annotations.ts@80",
+    "decorators.ts@80",
+    "enums.ts@80",
+    "enums.ts@40",
+    "generics.ts@80",
+    "generics.ts@40",
+    "interfaces.ts@80",
+    "interfaces.ts@40",
+    "nesting.ts@80",
+    "overloads.ts@80",
+    "strings.ts@80"
+  ],
+  "size": {
+    "js-runtime": 13803,
+    "packages": 4640,
+    "total": 18443,
+    "per_language": {
+      "typescript": {
+        "package": 4640,
+        "with_runtime": 18443
+      }
+    }
+  },
+  "size_delta_vs_main": {
+    "js_runtime_gzip": {
+      "main": 13610,
+      "now": 13803,
+      "delta": 193
+    },
+    "package_gzip": 4640,
+    "per_edit": [
+      {
+        "edit": "fieldless flatten spine",
+        "construct": "union_type / intersection_type have no left/operator/right fields",
+        "js_runtime_gzip_delta": 61,
+        "eval_rs_gzip_delta": 517
+      },
+      {
+        "edit": "flatten skip emits suffix/after comments",
+        "construct": "mid-union comment re-parses as suffix of the nested left",
+        "js_runtime_gzip_delta": 127,
+        "eval_rs_gzip_delta": 307
+      },
+      {
+        "edit": "positional flatten only when no child has a field",
+        "construct": "tree-interface rename probe (lhs/op/rhs still has fields)",
+        "js_runtime_gzip_delta": 5,
+        "eval_rs_gzip_delta": 0
+      }
+    ]
+  },
+  "fill": {
+    "wanted": true,
+    "files_that_would_benefit": ["sequences.ts"]
+  },
+  "divergences": [
+    {
+      "case": "unions.ts@80",
+      "id": "typescript/unions.ts@80",
+      "hash": "f67ccbc3d259903998235b7a100ccd81a308d18da23dff2a8094b968216fdecf",
+      "verdict": "design limit",
+      "kind": "leading | on a broken union; IfBreak is not an opcode"
+    },
+    {
+      "case": "unions.ts@40",
+      "id": "typescript/unions.ts@40",
+      "hash": "3094377f18c9dfbf7aa6a3caec83f3bd0173997e58f7ae4585ccc84d53bf1307",
+      "verdict": "design limit",
+      "kind": "leading | on a broken union"
+    },
+    {
+      "case": "strings.ts@40",
+      "id": "typescript/strings.ts@40",
+      "hash": "0ae9586fa861ea2850b0bc48a3060c8bfd18846dec854f33fc193e52d2525fb6",
+      "verdict": "design limit",
+      "kind": "leading | on a broken template-literal union"
+    },
+    {
+      "case": "assertions.ts@80",
+      "id": "typescript/assertions.ts@80",
+      "hash": "7194a9626d033dfe3d9ad04168fe229e3bb5a29f37c41abf8d290750e0dbb8ff",
+      "verdict": "design limit",
+      "kind": "always-on wrap of a + b as number; paren is IfBreak"
+    },
+    {
+      "case": "assertions.ts@40",
+      "id": "typescript/assertions.ts@40",
+      "hash": "7234213102e08dcdc8da4c646f3db548e62a70e96a6e889e9cc53208fe0c244c",
+      "verdict": "design limit",
+      "kind": "always-on wrap of a + b as number"
+    },
+    {
+      "case": "normalisation.ts@80",
+      "id": "typescript/normalisation.ts@80",
+      "hash": "296a8f6399727322969955bc20f55820fdbae3907a3b4cd11be8c7ae20afa733",
+      "verdict": "design limit",
+      "kind": "FINDINGS 13 paren deletion; no opcode inserts a missing semicolon"
+    },
+    {
+      "case": "normalisation.ts@40",
+      "id": "typescript/normalisation.ts@40",
+      "hash": "77facb064cd95d67b45d30deae257ab4ddaa6198b543111e3fc33c5b3b87235b",
+      "verdict": "design limit",
+      "kind": "same token mutations"
+    },
+    {
+      "case": "sequences.ts@80",
+      "id": "typescript/sequences.ts@80",
+      "hash": "1130dc9245dad79d931c5556b4714c7a1eed31c24e4aac53fe2a753cec29f5e1",
+      "verdict": "design limit",
+      "kind": "fill packs number arrays but reorders comments; package uses each"
+    },
+    {
+      "case": "sequences.ts@40",
+      "id": "typescript/sequences.ts@40",
+      "hash": "1dc2c3bebd0444e4f75a0d0b0cfca8e8e2fe2deeaca08bad96810c67dc789cef",
+      "verdict": "design limit",
+      "kind": "same number packing"
+    },
+    {
+      "case": "kitchen.ts@80",
+      "id": "typescript/kitchen.ts@80",
+      "hash": "0a36228c91344f849b2d3d9b617e697e46e3c8e1af3fafe24814122f953ca79e",
+      "verdict": "design limit",
+      "kind": "method chains at the dots; FINDINGS 11"
+    },
+    {
+      "case": "kitchen.ts@40",
+      "id": "typescript/kitchen.ts@40",
+      "hash": "fcccfb22b27944694ae9eda962b38d567c1f1b590e07a1f00e3ae453d7cfa295",
+      "verdict": "design limit",
+      "kind": "method chains plus assignment hang"
+    },
+    {
+      "case": "comments.ts@80",
+      "id": "typescript/comments.ts@80",
+      "hash": "875fd9997021bb1a67a96a88b263947b5cd946a015563fb7ba4e0dfc3b64784d",
+      "verdict": "design limit",
+      "kind": "FINDINGS 9 attachment; leading | on Piped"
+    },
+    {
+      "case": "comments.ts@40",
+      "id": "typescript/comments.ts@40",
+      "hash": "4a4e8a5c97f66d546eaea2e6e53db601e10c71a78942161f3f81be30302c8158",
+      "verdict": "design limit",
+      "kind": "FINDINGS 9 plus FINDINGS 6 suffix width"
+    },
+    {
+      "case": "mapped.ts@80",
+      "id": "typescript/mapped.ts@80",
+      "hash": "3e4ac3100bc032af1dd92e8281baf4c7bafe0b251efd6d774c750c7849f903be",
+      "verdict": "design limit",
+      "kind": "FINDINGS 15: grouping the alias matches Unpacked and misses DeepPartial"
+    },
+    {
+      "case": "mapped.ts@40",
+      "id": "typescript/mapped.ts@40",
+      "hash": "6d0f77f317356c21b790c58467c48451031c051c41fb32b19d59e9842771d0a5",
+      "verdict": "design limit",
+      "kind": "same assignment-vs-ternary preference"
+    },
+    {
+      "case": "nesting.ts@40",
+      "id": "typescript/nesting.ts@40",
+      "hash": "85f8e694fdc379e2aa61c93d05c1a60f6344deb234197c03df860279ca0b24e9",
+      "verdict": "design limit",
+      "kind": "fits counts the array still on the stack, wrapping the generic"
+    },
+    {
+      "case": "overloads.ts@40",
+      "id": "typescript/overloads.ts@40",
+      "hash": "aa02a8329c9cb1beb56a732b9cc5dec51d6808c2eff13cb9f0b26d7aac773ab3",
+      "verdict": "design limit",
+      "kind": "no try-two-layouts: we break Promise<string>, prettier breaks load("
+    },
+    {
+      "case": "decorators.ts@40",
+      "id": "typescript/decorators.ts@40",
+      "hash": "842d55de55a1e284530b561f25698f16792ee65a61a1d4a6208d777a56290c9b",
+      "verdict": "package bug",
+      "kind": "declined: two-group call would hug @logged first arg; JS list reused"
+    },
+    {
+      "case": "annotations.ts@40",
+      "id": "typescript/annotations.ts@40",
+      "hash": "2420da614b2f7cc748f10df7b3f415c4b6ebb159bf375da497006ccac790e145",
+      "verdict": "reference quirk",
+      "kind": "prettier omits trailing comma after rest parameter"
+    }
+  ]
+}
