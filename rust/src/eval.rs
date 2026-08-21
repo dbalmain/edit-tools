@@ -614,14 +614,36 @@ impl<'a> Ctx<'a> {
     /// Collect a left-nested run of same-type, same-tightness operators into
     /// one flat list, so the whole chain breaks together instead of
     /// staircasing. This is the opcode a per-node fold cannot do without.
+    ///
+    /// Grammars that label the spine (`left` / `operator` / `right`) keep using
+    /// those fields. Grammars that do not — tree-sitter-typescript's
+    /// `union_type` / `intersection_type` are `[operand, token, operand]` with
+    /// no fields — fall back to the first non-comment child as left and the
+    /// remaining named child as right, and the separator expression consumes
+    /// the operator token. The two shapes are the same walk.
     fn flatten(&mut self, kind: &str, sep: &Expr, f: &Fmt<'a>) -> Result<Doc, Refusal> {
         let fields = &f.pkg.flatten_fields;
-        let left = Sel::Field(fields.left.clone());
-        let right = Sel::Field(fields.right.clone());
+        let fielded = self.node.child_with_field(&fields.left).is_some();
+        let left = if fielded {
+            Sel::Field(fields.left.clone())
+        } else {
+            Sel::Named
+        };
+        let right = if fielded {
+            Sel::Field(fields.right.clone())
+        } else {
+            Sel::Named
+        };
 
         let mut spine = Vec::new();
         let mut cur = self.node;
-        while let Some(next) = cur.child_with_field(&fields.left) {
+        loop {
+            let next = if fielded {
+                cur.child_with_field(&fields.left)
+            } else {
+                positional_left(cur, f.pkg)
+            };
+            let Some(next) = next else { break };
             if next.kind != kind || tightness(f.pkg, cur) != tightness(f.pkg, next) {
                 break;
             }
@@ -695,7 +717,23 @@ fn node_matches(node: &Node, sel: &Sel, pkg: &Package) -> bool {
 fn tightness(pkg: &Package, node: &Node) -> i64 {
     node.child_with_field(&pkg.flatten_fields.operator)
         .and_then(|op| op.text.as_deref())
+        .or_else(|| {
+            node.children.iter().find_map(|child| {
+                if pkg.is_token(&child.kind) {
+                    child.text.as_deref()
+                } else {
+                    None
+                }
+            })
+        })
         .map_or(0, |op| pkg.tightness(op))
+}
+
+/// First non-comment child: the left operand of a fieldless binary node.
+fn positional_left<'a>(node: &'a Node, pkg: &Package) -> Option<&'a Node> {
+    node.children
+        .iter()
+        .find(|child| !pkg.comments.contains(&child.kind))
 }
 
 /// `verbatim` is the one opcode that emits source bytes nobody compared
@@ -1461,6 +1499,34 @@ try {{
         // Tightness must read `op` too, or mixed precedence would not split.
         let mixed = chain_fields(&[("*", "bbb"), ("+", "ccc")], "aaa", "lhs", "op", "rhs");
         assert_eq!(run(&packages, mixed, 9).expect("ok"), "aaa * bbb\n+ ccc\n");
+    }
+
+    fn fieldless_chain(ops: &[(&str, &str)], base: &str) -> serde_json::Value {
+        let mut node = leaf("name", base);
+        for (op, rhs) in ops {
+            node = json!({
+                "type": "sum", "start": 0, "end": 0,
+                "children": [node, leaf(op, op), leaf("name", rhs)],
+            });
+        }
+        node
+    }
+
+    #[test]
+    fn flatten_walks_a_fieldless_binary_spine() {
+        // TypeScript unions are `[operand, "|", operand]` with no left/operator/
+        // right fields. The same opcode has to flatten that shape, or every
+        // nested union staircases.
+        let pkg = toy(json!({
+            "sum": ["group", ["flatten", "sum",
+                ["seq", ["line"], ["tok", "|"], ["sp"]]]]
+        }));
+        let tree = fieldless_chain(&[("|", "bbb"), ("|", "ccc")], "aaa");
+        assert_eq!(
+            run(&pkg, tree.clone(), 80).expect("ok"),
+            "aaa | bbb | ccc\n"
+        );
+        assert_eq!(run(&pkg, tree, 4).expect("ok"), "aaa\n| bbb\n| ccc\n");
     }
 
     #[test]

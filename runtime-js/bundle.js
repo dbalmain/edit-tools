@@ -1283,12 +1283,16 @@ class Ctx {
    *  This is the opcode a per-node fold cannot do without. */
   flatten(kind, sep) {
     const fields = this.fmt.flatten;
-    const left = { field: fields.left };
-    const right = { field: fields.right };
+    const fielded = (this.node.children ?? []).some((c) => c.field === fields.left);
+    const left = fielded ? { field: fields.left } : { named: true };
+    const right = fielded ? { field: fields.right } : { named: true };
 
     const spine = [];
     for (let cur = this.node; ; ) {
-      const next = (cur.children ?? []).find((c) => c.field === fields.left);
+      const kids = cur.children ?? [];
+      const next = fielded
+        ? kids.find((c) => c.field === fields.left)
+        : kids.find((c) => !this.fmt.comments.has(c.type));
       if (!next || next.type !== kind || this.fmt.tightness(cur) !== this.fmt.tightness(next)) {
         break;
       }
@@ -1388,7 +1392,9 @@ class Formatter {
   }
 
   tightness(node) {
-    const op = (node.children ?? []).find((c) => c.field === this.flatten.operator);
+    const kids = node.children ?? [];
+    const op = kids.find((c) => c.field === this.flatten.operator)
+      ?? kids.find((c) => this.tokens.has(c.type));
     return (op && this.precedence[op.text]) ?? 0;
   }
 

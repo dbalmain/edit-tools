@@ -627,6 +627,31 @@ test("flatten uses the package's field names", () => {
   assert.equal(run(pkg, chain([["*", "bbb"], ["+", "ccc"]], "aaa", fields), 9), "aaa * bbb\n+ ccc\n");
 });
 
+function fieldlessChain(ops, base) {
+  let node = leaf("name", base);
+  for (const [op, rhs] of ops) {
+    node = {
+      type: "sum",
+      start: 0,
+      end: 0,
+      children: [node, leaf(op, op), leaf("name", rhs)],
+    };
+  }
+  return node;
+}
+
+test("flatten walks a fieldless binary spine", () => {
+  // TypeScript unions are `[operand, "|", operand]` with no left/operator/right
+  // fields. The same opcode has to flatten that shape, or every nested union
+  // staircases.
+  const pkg = toy({
+    sum: ["group", ["flatten", "sum", ["seq", ["line"], ["tok", "|"], ["sp"]]]],
+  });
+  const tree = fieldlessChain([["|", "bbb"], ["|", "ccc"]], "aaa");
+  assert.equal(run(pkg, tree, 80), "aaa | bbb | ccc\n");
+  assert.equal(run(pkg, tree, 4), "aaa\n| bbb\n| ccc\n");
+});
+
 test("flatten_fields refuses a bad header", () => {
   for (const [value, message] of [
     [["left", "operator", "right"], /`flatten_fields` must be an object, got \["left","operator","right"\]/],
