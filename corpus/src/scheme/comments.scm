@@ -1,0 +1,21 @@
+;; Top-level comments. emacs indent-region moves these to comment-column
+;; (default 40), which with indent-tabs-mode t is five tabs.
+; file-level comment at column 0
+
+(define (add a b) ; trailing on a definition
+;; own-line comment inside the body
+(+ a b) ; trailing on a body form
+)
+
+(define values-with-comments
+(list
+1 ; trailing inside a list
+;; own-line inside a list
+2
+#| a one-line block comment |#
+#; skipped
+3
+;; comment before the closing delimiter
+))
+
+; comment at the end of the file

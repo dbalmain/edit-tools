@@ -1,0 +1,63 @@
+# Scheme. Schema: docs/onboarding/WORKFLOW.md, "Stage 0".
+name = "scheme"
+extensions = [".scm"]
+
+# Not on PyPI (404 for tree-sitter-scheme and tree_sitter_scheme, 2026-08-22).
+# The grammar is 6cdh/tree-sitter-scheme; v0.24.7-1 is the latest tag that
+# ships Python bindings (pyproject.toml version 0.24.7-1, commit
+# 933883742f909cf79bd8aa6fde05ef51d79c9263). v0.6.0 is an older numbering and
+# has no pyproject.toml. Imported as tree_sitter_scheme; the module exports
+# language() and it returns a tree_sitter.Language capsule. The grammar parses
+# Scheme as lists on purpose -- it does not special-case define/let/lambda --
+# which is the property this language exists on the roster to measure.
+grammar = "tree-sitter-scheme @ git+https://github.com/6cdh/tree-sitter-scheme@v0.24.7-1"
+grammar_module = "tree_sitter_scheme"
+grammar_symbol = "language"
+
+# Markdown info strings that select this grammar for a fenced region. `scheme`
+# is the canonical name (highlight.js, GitHub linguist). `scm` is a file
+# extension. `racket` / `guile` / `r5rs` are other languages or standards, not
+# aliases I will stand behind.
+injection_aliases = ["scheme"]
+
+# emacs-nox 30.2, observed from `nix run nixpkgs#emacs-nox -- --version`.
+# Source on stdin, indented source on stdout. No fake filename: scheme-mode is
+# selected explicitly, and insert-file-contents of /dev/stdin is the form that
+# worked (verified). Flags kept only after proving they change something:
+#   --batch          required (without it emacs tries to open a frame)
+#   --quick          closes site-start.el (site-run-file is "site-start"
+#                    under --batch and nil under --quick). User init is already
+#                    skipped: --batch implies -q. A planted ~/.emacs setting
+#                    lisp-body-indent=8 is ignored under this command and
+#                    applied under --load; see the report. On this nix
+#                    emacs-nox, --batch vs --batch --quick is byte-identical
+#                    because site-start does not touch scheme indent, but the
+#                    channel exists and --quick is the disable.
+#   scheme-mode      load-bearing: without it, fundamental-mode inserts a tab
+#   indent-region    load-bearing: without it, continuation lines stay at col 0
+# No {width}: indent-region ignores fill-column (40 vs 80 vs default 70 all
+# byte-identical on a 120-character define). fill-region does wrap, but it
+# wraps prose, not Scheme, and is not what scheme-mode indent does.
+# indent-tabs-mode, comment-column, lisp-body-indent are left at scheme-mode
+# defaults (t, 40, 2): pinning them to the default is a no-op, and this
+# command does not load init files that could change them.
+reference = """nix run nixpkgs#emacs-nox -- --batch --quick --eval '(progn (scheme-mode) (setq coding-system-for-read (quote utf-8-unix)) (insert-file-contents "/dev/stdin") (indent-region (point-min) (point-max)) (princ (buffer-substring-no-properties (point-min) (point-max))))'"""
+reference_version = "GNU Emacs 30.2"
+reference_width = "fixed"
+
+# "fixed" requires exactly one width. 80 is an arbitrary measurement width, not
+# an emacs setting (fill-column defaults to 70 and indent-region ignores it).
+# It only feeds the scorer's comparative line-length measure.
+widths = [80]
+
+# Generic default. Parentheses are the structure: (f) is a list containing f,
+# and declaring list transparent would let a formatter turn a call into a bare
+# symbol and pass. The grammar has extras: [] -- comments are named
+# non-extra comment / block_comment nodes -- so the universal extras layer is
+# inert (same class as XML). Destruction is still caught: comments sit in the
+# named-node tree. A data-model loader (Guile read, etc.) would collapse the
+# spellings a formatter must preserve and cannot see indent, so it is the
+# wrong oracle here for the usual reason.
+gate3 = "default"
+transparent_wrappers = []
+equivalent_kinds = []
