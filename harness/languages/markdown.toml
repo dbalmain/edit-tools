@@ -29,6 +29,16 @@ injection_aliases = ["markdown", "md"]
 # 80 vs 40 on a 27-item JSON fence, not by reading --help. Paragraphs, tables,
 # list markers, emphasis and headings do not reflow at the default
 # proseWrap=preserve; fenced JSON/JS and YAML front-matter flow collections do.
+#
+# Two prettier defaults are load-bearing and are deliberately NOT named on the
+# command line, so the manifest keeps measuring prettier-as-shipped:
+#   - proseWrap = "preserve" makes prose layout follow the INPUT's line breaks
+#     rather than the width. Verified: the same words pre-broken across three
+#     source lines stay three lines at --print-width 200. Stage C needs
+#     srcline/srcsoft/srctrail for prose, not a width-driven fill.
+#   - embeddedLanguageFormatting = "auto" is the only reason fence interiors are
+#     formatted at all. With `off` the guest stays verbatim and all five of this
+#     corpus's width-discriminating files stop discriminating.
 reference = "npx --yes prettier@3.9.6 --no-config --stdin-filepath x.md --print-width {width}"
 reference_version = "3.9.6"
 reference_width = "flag"
