@@ -34,3 +34,7 @@ def indented
 end
 
 x = 1; y = 2; z = 3
+
+
+
+over_blanked = true

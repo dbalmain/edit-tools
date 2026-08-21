@@ -1,11 +1,11 @@
 {
  "language": "ruby",
  "source_file": "corpus/src/ruby/normalisation.rb",
- "source": "# Dirty spacing: what syntax_tree rewrites, not what it breaks.\n\ndef  normalise( a ,b )\nresult=a + b*  2\nreturn(result)\nend\n\ndef empty( ) # empty parameter list written with a space\nxs = [ ] # empty array with a space\nys = { } # empty hash with a space\nzs = foo( ) # empty call with a space\nend\n\ndef padded( )\nx = [ 1,2,3 ]\nh = { a:1,b:2 }\nif ( x != nil )\nputs(x)\nx\nelse\nputs(0)\n0\nend\nend\n\ntrailing_spaces = 1       # lots of spaces before this comment\n\ndef indented\n        n = 0\n        if n==0\n                n = 1\n                n\n        end\nend\n\nx = 1; y = 2; z = 3\n",
+ "source": "# Dirty spacing: what syntax_tree rewrites, not what it breaks.\n\ndef  normalise( a ,b )\nresult=a + b*  2\nreturn(result)\nend\n\ndef empty( ) # empty parameter list written with a space\nxs = [ ] # empty array with a space\nys = { } # empty hash with a space\nzs = foo( ) # empty call with a space\nend\n\ndef padded( )\nx = [ 1,2,3 ]\nh = { a:1,b:2 }\nif ( x != nil )\nputs(x)\nx\nelse\nputs(0)\n0\nend\nend\n\ntrailing_spaces = 1       # lots of spaces before this comment\n\ndef indented\n        n = 0\n        if n==0\n                n = 1\n                n\n        end\nend\n\nx = 1; y = 2; z = 3\n\n\n\nover_blanked = true\n",
  "root": {
   "type": "program",
   "start": 0,
-  "end": 574,
+  "end": 597,
   "children": [
    {
     "type": "comment",
@@ -1092,6 +1092,33 @@
       "end": 573,
       "field": "right",
       "text": "3"
+     }
+    ]
+   },
+   {
+    "type": "assignment",
+    "start": 577,
+    "end": 596,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 577,
+      "end": 589,
+      "field": "left",
+      "text": "over_blanked"
+     },
+     {
+      "type": "=",
+      "start": 590,
+      "end": 591,
+      "text": "="
+     },
+     {
+      "type": "true",
+      "start": 592,
+      "end": 596,
+      "field": "right",
+      "text": "true"
      }
     ]
    }
