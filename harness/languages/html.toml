@@ -56,10 +56,12 @@ equivalent_kinds = []
 
 # prettier rewrites that linearity forbids. One construct per file; they
 # still count for gates 0-3 and still get committed reference output.
-# Quotes are anonymous tokens around a named attribute_value, so the generic
-# default already accepts the rewrite -- incomparable here is for agreement,
-# not because gate 3 fails. The void slash *does* fail gate 3: `<br>` is a
-# start_tag and `<br />` is a self_closing_tag.
+# quotes.html carries one prettier rule with two gate-3 outcomes: the delimiter
+# swap (`class='a'` -> `class="a"`) is an anonymous-token rewrite the generic
+# default accepts, so that half is incomparable for agreement only; escape
+# minimisation (`title="&quot;hi&quot;"` -> `title='"hi"'`) rewrites the named
+# attribute_value leaf and *does* fail gate 3. The void slash also fails gate 3:
+# `<br>` is a start_tag and `<br />` is a self_closing_tag.
 [incomparable]
 "quotes.html" = "prettier re-quotes attributes to prefer double quotes (and to minimise escaping)"
 "void_slash.html" = "prettier emits XHTML-style self-closing slashes on void elements (`<br>` -> `<br />`)"
