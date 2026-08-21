@@ -623,7 +623,7 @@ impl<'a> Ctx<'a> {
     /// the operator token. The two shapes are the same walk.
     fn flatten(&mut self, kind: &str, sep: &Expr, f: &Fmt<'a>) -> Result<Doc, Refusal> {
         let fields = &f.pkg.flatten_fields;
-        let fielded = self.node.child_with_field(&fields.left).is_some();
+        let fielded = self.node.children.iter().any(|c| c.field.is_some());
         let left = if fielded {
             Sel::Field(fields.left.clone())
         } else {

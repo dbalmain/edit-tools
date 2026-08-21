@@ -1283,7 +1283,7 @@ class Ctx {
    *  This is the opcode a per-node fold cannot do without. */
   flatten(kind, sep) {
     const fields = this.fmt.flatten;
-    const fielded = (this.node.children ?? []).some((c) => c.field === fields.left);
+    const fielded = (this.node.children ?? []).some((c) => c.field != null);
     const left = fielded ? { field: fields.left } : { named: true };
     const right = fielded ? { field: fields.right } : { named: true };
 
