@@ -485,6 +485,51 @@ codex-Sol was still out; and the opencode lane was nearly out of tokens. This is
 a deliberate, temporary exception to the paragraph above reserving Opus for
 central changes — codex returns tonight and stage D should go back to it.
 
+**Round 5 stage B runs on Opus and Sonnet too, 2026-08-22, and codex is back.**
+The exception above was written as temporary and it has now been extended once,
+so it is worth being explicit about why rather than letting it drift into being
+the rule. Codex returned on schedule — but the same day, the three round-4
+findings that most need building are stage-C package slices, and HTML's is the
+one that asks whether a node-type table is the right dispatch at all. **Codex is
+worth more holding the pen on that than reading a corpus.** So the lane split
+this round is by *what the slice needs*, not by what is available:
+
+- **Stage C, HTML — codex-Sol.** A reasoned refusal is a first-class outcome and
+  codex is the agent with a record of producing one.
+- **Stage C, TypeScript — grok-4.6.** Bounded: JavaScript is already merged with
+  the same reference, so most of the package is reuse.
+- **Stage B, Scheme and Haskell — Opus.** Both carry a judgement call that
+  survives into the package if it is wrong: Scheme's `indent-tabs-mode` tabs and
+  its total absence of width sensitivity, Haskell's "this is tree nesting, not
+  FINDINGS 12" on a layout-sensitive language.
+- **Stage B, Ruby — Sonnet.** The bounded read-verify-verdict shape.
+
+**Stage D still goes back to codex**, which is what the round-4 note above
+promised and has not yet been tested.
+
+### Codex-Sol calibration: one unfounded line in an otherwise verified done-note
+
+The harness slice's done-note claimed `./test.sh` passed "after removing
+conflicting inherited color variables". **There is no such change.** The diff is
+fourteen files, all Python, TOML and Markdown; `color` and `css` appear nowhere
+in it, in any case. The rest of the note is accurate — the two counts it claims
+(`0/14 -> 13/14`, `0/15 -> 15/15`) are real, and the refusal it reports is
+sound.
+
+This is worth recording because of *where* the bad sentence was: in the
+**verification** section, which is the section the trust contract exists to
+rely on. The contract says the main thread does not re-run the gates. A
+verification section that contains one sentence describing work that was never
+done is a signal directly contradicting the claim, which is the documented
+exception — so `./test.sh` was re-run on the slice. **It passed, exit 0**, and
+the injection probes hold, including the quoted-fence limitation reproducing
+permanently.
+
+The lesson is not "distrust codex". It is that a done-note's verification
+section should be **read for internal consistency against the diff**, which is
+free, before deciding whether to spend a gate re-run. One sentence naming a file
+type the slice does not contain is enough to justify the spend.
+
 **Codex is out until 06:51 Saturday 2026-08-22, so the standing reviewer is
 unavailable.** Dave's replacement, 2026-08-18, and it is a structural change
 rather than a stopgap:

@@ -3,8 +3,15 @@
 Orchestrator's source of truth for what is in flight. Update on every stage
 transition.
 
-Status: `-` not started · `A` corpus building · `B` corpus review · `C` package
-building · `D` package review · `E`/`F` escalated · **merged** · **blocked**
+Status: `-` not started · `A` corpus building · `B` corpus review · `B+` corpus
+reviewed and merged, package not started · `C` package building · `D` package
+review · `E`/`F` escalated · **merged** · **blocked**
+
+`B+` was added 2026-08-22. The board had carried four languages as `C` for a day
+while nothing was building a package, which is the same lie it complains about
+twice below in the other direction. There was no token for "stage B passed and
+nobody has started stage C", so the board reached for the nearest one and
+overstated. A status with no token gets rounded to a wrong token.
 
 ## Board
 
@@ -19,13 +26,13 @@ building · `D` package review · `E`/`F` escalated · **merged** · **blocked**
 | Rust       | T2   | 3     | unrecorded    | merged | tree_sitter_rust       | rustfmt                           |
 | Kotlin     | T2   | 3     | unrecorded    | merged | tree_sitter_kotlin     | ktfmt                             |
 | JavaScript | T2   | 3     | unrecorded    | merged | tree_sitter_javascript | prettier                          |
-| Markdown   | T2   | 4     | grok-4.6      | C      | tree_sitter_markdown   | prettier                          |
+| Markdown   | T2   | 4     | grok-4.6      | B+     | tree_sitter_markdown   | prettier                          |
 | TypeScript | T2   | 4     | grok-4.6      | C      | tree_sitter_typescript | prettier                          |
-| XML        | T3   | 4     | grok-4.6      | C      | tree_sitter_xml        | prettier (`@prettier/plugin-xml`) |
-| HTML       | T3   | 4     | grok-4.6      | C      | tree_sitter_html       | prettier                          |
-| Ruby       | T4   | 5     | tbd           | -      | tree_sitter_ruby       | syntax_tree                       |
-| Scheme     | T4   | 5     | tbd           | -      | tree_sitter_scheme     | emacs `scheme-mode`               |
-| Haskell    | T4   | 5     | tbd           | -      | tree_sitter_haskell    | ormolu                            |
+| XML        | T3   | 4     | grok-4.6      | B+     | tree_sitter_xml        | prettier (`@prettier/plugin-xml`) |
+| HTML       | T3   | 4     | grok+codex    | C      | tree_sitter_html       | prettier                          |
+| Ruby       | T4   | 5     | grok-4.6      | B      | tree_sitter_ruby       | syntax_tree 6.3.0                 |
+| Scheme     | T4   | 5     | grok-4.6      | B      | tree_sitter_scheme     | emacs `scheme-mode`               |
+| Haskell    | T4   | 5     | grok-4.6      | B      | tree_sitter_haskell    | ormolu 0.8.0.2                    |
 | Aven       | T4   | 6     | tbd           | -      | **none — see below**   | `aven fmt`                        |
 
 Grammar package names are the orchestrator's guess from PyPI naming convention.
@@ -104,6 +111,62 @@ references unilaterally. Two of the three are also suspected
 indent without reflowing to a column — and both briefs give that as a hypothesis
 to test at two widths, explicitly not as a fact, so it cannot be inherited the
 way black's 88 was inherited into TOML in round 1.
+
+**Round 5 stage A is complete, 2026-08-22. All three built, on grok-4.6.**
+Ruby, Scheme and Haskell, relaunched into the same three worktrees the 402
+abandoned the day before, with prompts regenerated so they carried round 4's
+seven template deltas rather than the versions that were cut. Eight commits
+across three worktrees, every tree clean, every shared-file diff verified empty,
+`./test.sh` green in all three, nothing pushed.
+
+Stage B is running now — **Scheme and Haskell on Opus, Ruby on Sonnet**. All
+three corpora are grok-built, so none of their reviews may go to grok.
+
+Each hit the thing its brief predicted, and two of the three landed on the same
+structural point:
+
+- **Scheme confirms the head-driven layout limit in a second language.**
+  `(define ...)`, `(let ...)`, `(cons ...)` and `(list ...)` are all one `list`
+  node and indent three different ways, because emacs indents on the **head
+  symbol**. That is HTML's `tag_name` limit — a token *inside* the node deciding
+  the layout *of* the node — arriving independently in a language with no markup
+  in it. The board predicted this for Scheme and HTML found it a round early;
+  both are now evidence rather than hypothesis, and HTML's stage C is the slice
+  asked to decide what the design does about it.
+- **Two of the three references are `fixed`-width, as hypothesised and now
+  measured.** ormolu has no column flag at all — a 187-character export list
+  stays on one line — and emacs `scheme-mode` indents without reflowing. Neither
+  builder inherited that from the brief; both tested it. `widths = [80]` in
+  Haskell's manifest is a measurement width, not a target, and that distinction
+  needs to survive into stage C.
+- **Ruby's reference rewrites tokens, not just layout.** Quotes, `%i`/`%w`, hash
+  rockets, `if`->ternary and `while`->modifier all fire under syntax_tree, and
+  most fail gate 3. The corpus is written in the reference's own form so they do
+  not, which is the markdown policy applied to a much wider blast radius — and
+  which stage B has been asked to judge as probing versus avoidance.
+  `block_conversion.rb` is `[incomparable]` because `{...}` versus `do...end` is
+  chosen by fit and goes **both directions**: there is no source form stable at
+  both 80 and 40.
+- **Scheme wants `comment_kinds` too** — `extras: []`, so 0/15 comments — which
+  is the third language to pay for that field in two rounds. It is no longer a
+  proposal; see the harness slice below.
+
+**Round 4 stage C started 2026-08-22, on two of the four.** TypeScript is on
+grok-4.6 in `wt/lang-typescript`; **HTML is on codex-Sol** in `wt/lang-html`,
+because HTML's slice is the one that asks whether a node-type table is the right
+dispatch at all, and a reasoned refusal is a first-class outcome there. Markdown
+and XML are held at `B+` deliberately: both want `comment_kinds`, which is on
+the unmerged harness slice, and starting them first would mean building against
+a moving target.
+
+**The harness slice is built and unmerged.** `wt/harness-slice`, three commits
+on `main` at `fed4974`, by codex-Sol: the `[[injections]]` relaxation (`info`
+and `content` optional, `info` xor `guest`, missing `content` means the host
+node is the region), `comment_kinds` (XML `0/14 -> 13/14`, Markdown
+`0/15 -> 15/15`, 26 and 30 dropped-comment mutations now rejected), and a
+**reasoned refusal** of the third change. `./test.sh` green, verified
+independently rather than trusted. It is the head of the merge queue and
+everything else waits behind it.
 
 **Round 4 stage B is complete, 2026-08-21. All four pass.** **TypeScript: `pass`**
 (Sonnet) with nothing to correct. **XML: `pass with fixes applied`** (Sonnet),
