@@ -114,6 +114,8 @@ def _extras(
     the code it documents, which is destruction by any reading.
     """
     region = injection.region_for(node, source, manifest, aliases)
+    if region is not None and region.content == node:
+        return out
     for child in node.children:
         if child.is_extra or child.type in manifest.comment_kinds:
             if child.is_named or child.type in manifest.comment_kinds:
@@ -204,10 +206,12 @@ def _generic(
             break
         node = inner[0]
     kind = canon.get(node.type, node.type)
+    region = injection.region_for(node, source, manifest, aliases)
+    if region is not None and region.content == node:
+        return ("injection_region", "")
     kids = [c for c in node.children if c.is_named and not c.is_extra]
     if not kids:
         return (kind, _tokens(node, source))
-    region = injection.region_for(node, source, manifest, aliases)
     return (
         kind,
         tuple(
@@ -290,36 +294,39 @@ def _region_signatures(
     out: list[tuple],
 ) -> tuple:
     region = injection.region_for(node, source, manifest, aliases)
+    if region is not None and region.content == node:
+        out.append(_region_signature(region, aliases, parsers))
+        return tuple(out)
     for child in node.children:
         if region is not None and child == region.content:
-            root = injection.parse(region, parsers)
-            if root is None:
-                out.append(("verbatim", region.source))
-            else:
-                guest = region.guest
-                assert guest is not None
-                guest_text = region.source.decode("utf-8")
-                guest_signature = _signature_from_root(
-                    guest_text,
-                    root,
-                    region.source,
-                    guest,
-                    aliases,
-                    parsers,
-                )
-                if guest_signature is None:
-                    out.append(("verbatim", region.source))
-                else:
-                    out.append(
-                        (
-                            "parsed",
-                            guest.name,
-                            guest_signature,
-                        )
-                    )
+            out.append(_region_signature(region, aliases, parsers))
         else:
             _region_signatures(child, source, manifest, aliases, parsers, out)
     return tuple(out)
+
+
+def _region_signature(
+    region,
+    aliases: dict[str, _mf.Manifest],
+    parsers: dict,
+) -> tuple:
+    root = injection.parse(region, parsers)
+    if root is None:
+        return ("verbatim", region.source)
+    guest = region.guest
+    assert guest is not None
+    guest_text = region.source.decode("utf-8")
+    guest_signature = _signature_from_root(
+        guest_text,
+        root,
+        region.source,
+        guest,
+        aliases,
+        parsers,
+    )
+    if guest_signature is None:
+        return ("verbatim", region.source)
+    return ("parsed", guest.name, guest_signature)
 
 
 def _signature_from_root(

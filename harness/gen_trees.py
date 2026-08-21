@@ -62,15 +62,32 @@ def convert(
     """
     outer_source = source if outer_source is None else outer_source
     start, end = base + node.start_byte, base + node.end_byte
+
+    region = root = None
+    if manifest is not None and aliases is not None and parsers is not None:
+        region = injection.region_for(node, source, manifest, aliases)
+        root = injection.parse(region, parsers) if region is not None else None
+    if region is not None and root is not None and region.content == node:
+        guest = region.guest
+        assert guest is not None
+        embedded = convert(
+            root,
+            region.source,
+            field,
+            base=base + region.content.start_byte,
+            outer_source=outer_source,
+            manifest=guest,
+            aliases=aliases,
+            parsers=parsers,
+        )
+        embedded["language"] = guest.name
+        return embedded
+
     out: dict = {"type": node.type, "start": start, "end": end}
     if field is not None:
         out["field"] = field
 
     if node.children:
-        region = root = None
-        if manifest is not None and aliases is not None and parsers is not None:
-            region = injection.region_for(node, source, manifest, aliases)
-            root = injection.parse(region, parsers) if region is not None else None
         children = []
         for i, child in enumerate(node.children):
             child_field = node.field_name_for_child(i)
