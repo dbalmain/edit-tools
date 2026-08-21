@@ -50,8 +50,9 @@ class ManifestError(Exception):
 @dataclass(frozen=True)
 class Injection:
     node: str
-    info: str
-    content: str
+    info: str | None = None
+    content: str | None = None
+    guest: str | None = None
 
 
 @dataclass(frozen=True)
@@ -108,7 +109,7 @@ def _injection_aliases(raw: dict[str, Any], path: Path) -> tuple[str, ...]:
 
 def _injections(raw: dict[str, Any], path: Path) -> tuple[Injection, ...]:
     out = []
-    fields = {"node", "info", "content"}
+    fields = {"node", "info", "content", "guest"}
     entries = raw.get("injections", [])
     if not isinstance(entries, list):
         raise ManifestError(f"{path.name}: `injections` must be a list")
@@ -121,18 +122,29 @@ def _injections(raw: dict[str, Any], path: Path) -> tuple[Injection, ...]:
             raise ManifestError(
                 f"{path.name}: `{name}` has unknown field(s) {sorted(unknown)}"
             )
-        missing = fields - set(entry)
-        if missing:
+        if "node" not in entry:
             raise ManifestError(
-                f"{path.name}: `{name}` missing required field(s) {sorted(missing)}"
+                f"{path.name}: `{name}` missing required field(s) ['node']"
             )
-        for field in sorted(fields):
+        for field in sorted(entry):
             value = entry[field]
             if not isinstance(value, str) or not value:
                 raise ManifestError(
                     f"{path.name}: `{name}.{field}` must be a non-empty string"
                 )
-        out.append(Injection(entry["node"], entry["info"], entry["content"]))
+        routes = [field for field in ("info", "guest") if field in entry]
+        if len(routes) != 1:
+            raise ManifestError(
+                f"{path.name}: `{name}` must declare exactly one of `info` or `guest`"
+            )
+        out.append(
+            Injection(
+                node=entry["node"],
+                info=entry.get("info"),
+                content=entry.get("content"),
+                guest=entry.get("guest"),
+            )
+        )
     return tuple(out)
 
 

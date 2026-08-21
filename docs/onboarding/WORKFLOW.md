@@ -188,11 +188,20 @@ equivalent_kinds = []                 # kinds that are the same thing under a di
 # node = "fenced_code_block"
 # info = "info_string"
 # content = "code_fence_content"
+#
+# A node-type-routed region instead declares `guest`; omitted `content` means
+# the host node itself is the region. Exactly one of `info` or `guest` is
+# required.
+# [[injections]]
+# node = "minus_metadata"
+# guest = "yaml"
 ```
 
 `injection_aliases` is required because info-string spelling is a language fact,
 not a list in `gen_trees.py`; `injections` is optional and describes a host
-grammar's extraction shape. `harness/languages/python.toml` and `json.toml` are
+grammar's extraction shape. A site routes either through an `info` child or a
+fixed `guest`, never both. Its `content` child is optional; without one, the host
+node is the embedded region. `harness/languages/python.toml` and `json.toml` are
 the two worked examples and carry the reasoning for each field they set. Every
 field is validated on load: an unknown key, an unpinned grammar, a `name` that
 does not match the filename, a `{width}` placeholder that a `"fixed"` reference

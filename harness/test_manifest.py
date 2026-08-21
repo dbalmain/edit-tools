@@ -1,7 +1,9 @@
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 
+import injection
 import manifest
 
 
@@ -45,6 +47,36 @@ class InjectionManifestTests(unittest.TestCase):
                 ),
             ),
         )
+
+    def test_guest_routed_host_node_is_valid(self):
+        parsed = self.parse(
+            'injections = [{ node = "minus_metadata", guest = "yaml" }]\n'
+        )
+
+        self.assertEqual(
+            parsed.injections,
+            (manifest.Injection(node="minus_metadata", guest="yaml"),),
+        )
+
+        node = SimpleNamespace(
+            type="minus_metadata",
+            start_byte=0,
+            end_byte=len(b"title: demo"),
+            children=[],
+        )
+        region = injection.region_for(node, b"title: demo", parsed, {"yaml": parsed})
+        self.assertIs(region.content, node)
+        self.assertEqual(region.source, b"title: demo")
+        self.assertIs(region.guest, parsed)
+
+    def test_info_and_guest_are_rejected(self):
+        with self.assertRaisesRegex(
+            manifest.ManifestError, "exactly one of `info` or `guest`"
+        ):
+            self.parse(
+                'injections = [{ node = "script_element", info = "info_string", '
+                'content = "raw_text", guest = "javascript" }]\n'
+            )
 
     def test_alias_cannot_contain_whitespace(self):
         with self.assertRaisesRegex(
