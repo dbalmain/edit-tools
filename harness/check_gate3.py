@@ -82,13 +82,13 @@ def cases(m: mf.Manifest):
             yield (label, source, ref.read_text(), incomparable)
 
 
-def drop_a_comment(text: str, parser) -> str | None:
+def drop_a_comment(text: str, parser, comment_kinds: tuple[str, ...]) -> str | None:
     """Remove one comment. A formatter that did this has destroyed something."""
     root = parser.parse(text.encode()).root_node
     stack, found = [root], None
     while stack:
         n = stack.pop()
-        if n.is_extra and n.is_named:
+        if (n.is_extra and n.is_named) or n.type in comment_kinds:
             found = n
             break
         stack.extend(reversed(n.children))
@@ -405,6 +405,9 @@ def main() -> int:
     parsers = mf.parsers(bootstrapped)
     failures: list[str] = []
     checked = disagreements = destructive = uncompared = 0
+    destructive_counts: dict[str, Counter[str]] = {
+        name: Counter() for name in manifests
+    }
     useful_counts: dict[str, Counter[str]] = {
         name: Counter() for name in manifests
     }
@@ -500,10 +503,14 @@ def main() -> int:
             # --- 3. the gate must still reject destruction
             for what, mutate in (("a dropped comment", drop_a_comment),
                                  ("a dropped token", drop_a_token)):
-                broken = mutate(formatted, parser)
+                if mutate is drop_a_comment:
+                    broken = mutate(formatted, parser, m.comment_kinds)
+                else:
+                    broken = mutate(formatted, parser)
                 if broken is None or broken == formatted:
                     continue
                 destructive += 1
+                destructive_counts[name][what] += 1
                 if (
                     gate3.signature(broken, m, parser, bootstrapped, parsers)
                     == before
@@ -515,6 +522,12 @@ def main() -> int:
     )
 
     for name, m in manifests.items():
+        destructive_for_language = destructive_counts[name]
+        print(
+            f"  destructive {name}: "
+            f"dropped-comment={destructive_for_language['a dropped comment']}, "
+            f"dropped-token={destructive_for_language['a dropped token']}"
+        )
         counts = useful_counts[name]
         total = sum(counts.values())
         families = ", ".join(

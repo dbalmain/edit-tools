@@ -40,7 +40,7 @@ _REQUIRED = ("name", "extensions", "grammar", "grammar_module", "reference",
              "injection_aliases")
 _KNOWN = set(_REQUIRED) | {"grammar_symbol", "gate3_requires",
                            "transparent_wrappers", "equivalent_kinds",
-                           "injections", "incomparable"}
+                           "comment_kinds", "injections", "incomparable"}
 
 
 class ManifestError(Exception):
@@ -74,6 +74,7 @@ class Manifest:
     equivalent_kinds: tuple[frozenset[str], ...]
     incomparable: dict[str, str]  # corpus filename -> why the reference rewrite is not scored
     path: Path
+    comment_kinds: tuple[str, ...] = ()  # non-extra node kinds that hold comments
 
     @property
     def waives_width(self) -> bool:
@@ -146,6 +147,20 @@ def _injections(raw: dict[str, Any], path: Path) -> tuple[Injection, ...]:
             )
         )
     return tuple(out)
+
+
+def _comment_kinds(raw: dict[str, Any], path: Path) -> tuple[str, ...]:
+    kinds = raw.get("comment_kinds", [])
+    if not isinstance(kinds, list):
+        raise ManifestError(f"{path.name}: `comment_kinds` must be a list")
+    for i, kind in enumerate(kinds):
+        if not isinstance(kind, str) or not kind:
+            raise ManifestError(
+                f"{path.name}: `comment_kinds[{i}]` must be a non-empty string"
+            )
+    if len(set(kinds)) != len(kinds):
+        raise ManifestError(f"{path.name}: `comment_kinds` contains duplicates")
+    return tuple(kinds)
 
 
 def _incomparable(
@@ -279,6 +294,7 @@ def parse(path: Path) -> Manifest:
         equivalent_kinds=tuple(equiv),
         incomparable=_incomparable(raw, name, extensions, path),
         path=path,
+        comment_kinds=_comment_kinds(raw, path),
     )
 
 

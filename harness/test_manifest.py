@@ -98,6 +98,26 @@ class InjectionManifestTests(unittest.TestCase):
             manifest.injection_map({"json": first, "other": second})
 
 
+class CommentKindsManifestTests(unittest.TestCase):
+    def parse(self, extra: str = "") -> manifest.Manifest:
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        path = Path(tmp.name) / "json.toml"
+        path.write_text(BASE + extra)
+        return manifest.parse(path)
+
+    def test_omitted_comment_kinds_are_empty(self):
+        self.assertEqual(self.parse().comment_kinds, ())
+
+    def test_comment_kinds_are_preserved(self):
+        parsed = self.parse('comment_kinds = ["Comment", "html_block"]\n')
+        self.assertEqual(parsed.comment_kinds, ("Comment", "html_block"))
+
+    def test_comment_kinds_must_be_non_empty_strings(self):
+        with self.assertRaisesRegex(manifest.ManifestError, "non-empty string"):
+            self.parse('comment_kinds = [""]\n')
+
+
 class IncomparableManifestTests(unittest.TestCase):
     """A table keyed by filename, so a reason cannot drift off its file."""
 

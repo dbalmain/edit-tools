@@ -72,12 +72,13 @@ this section is now the description of what a builder is working against.
 
    **Universal, no opt-out, every language:** the reparse must contain no
    `ERROR` and no `MISSING` node, and the sequence of the grammar's **extra**
-   nodes — which is where `comment` lives in every grammar checked so far — must
-   be unchanged. Order is compared, not just the multiset; the ordered check is
-   strictly stronger and black passes it on the whole corpus, so there was no
-   reason to accept the weaker one. This layer sits _underneath_ any override,
-   which closes a real hole: ordered `json.loads` cannot see a comment at all,
-   so JSON could previously drop every comment in a file and pass gate 3.
+   nodes plus any manifest-declared `comment_kinds` must be unchanged. Most
+   grammars put comments in extras; the declaration covers ordinary named nodes
+   such as XML's `Comment`. Order is compared, not just the multiset; the ordered
+   check is strictly stronger and black passes it on the whole corpus, so there
+   was no reason to accept the weaker one. This layer sits _underneath_ any
+   override, which closes a real hole: ordered `json.loads` cannot see a comment
+   at all, so JSON could previously drop every comment in a file and pass gate 3.
 
    **Structural, per language:** either the generic default — the tree of
    **named** nodes, kind plus leaf text, ignoring anonymous punctuation and
@@ -163,6 +164,7 @@ widths = [60, 80]                     # narrow, and the reference's own default
 
 gate3 = "default"                     # or a named override → languages/<name>_gate3.py
 gate3_requires = []                   # extra pins the override needs, e.g. ["pyyaml==6.0.2"]
+comment_kinds = []                    # non-extra node kinds that contain comments
 
 # Used only by gate3 = "default". Both default to empty, which is the strict end.
 transparent_wrappers = []             # node kinds the formatter may add or remove
