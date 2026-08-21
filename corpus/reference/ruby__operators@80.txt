@@ -1,0 +1,29 @@
+# Binary chains, keyword vs punctuator boolean, unary, safe navigation.
+# `and`/`or` are not rewritten to `&&`/`||`.
+
+simple = a + b # tight in the source, spaced in the output of normalisation
+
+arithmetic_chain =
+  first_operand + second_operand + third_operand + fourth_operand +
+    fifth_operand
+
+mixed_precedence = alpha + beta * gamma - delta / epsilon + zeta * eta
+
+boolean_and =
+  condition_one && condition_two && condition_three && condition_four
+
+boolean_or = first_option || second_option || third_option || fourth_option
+
+keyword_and = condition_one and condition_two
+keyword_or = first_option or second_option
+
+unary = -value
+bang = !some_condition_that_is_fairly_long
+not_expr = (not some_condition)
+
+safe = user&.profile&.address&.city
+
+op_assign = x += 1
+
+range = 1..10
+excl = 1...10

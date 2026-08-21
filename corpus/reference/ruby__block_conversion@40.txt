@@ -1,0 +1,10 @@
+# A single-statement block that fits braces at width 80 and becomes do/end
+# at width 40. syntax_tree picks the delimiters by whether the body fits,
+# not by the source form.
+
+# The conversion is the whole of this file.
+items.each do |item|
+  process_the_item_with_a_fairly_long_method_name(
+    item
+  )
+end
