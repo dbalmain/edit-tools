@@ -1,0 +1,1044 @@
+{
+ "language": "haskell",
+ "source_file": "corpus/src/haskell/where_clauses.hs",
+ "source": "module WhereClauses where\n\n-- where hangs off a declaration and indents relative to it, not the line\nf x = y + z -- uses both locals\n  where\n    y = x + 1\n    z = x * 2\n\ng x = outer\n  where\n    outer = inner + 1\n      where\n        inner = x * 3 -- nested where\n\nh x = a\n  where\n    a | x < 0 = 0\n      | otherwise = b\n      where\n        b = x + 1 -- where hanging off a guarded equation\n\nk x =\n  let y = x + 1\n   in y * 2 -- let/in next to where, for contrast\n    where\n      -- a where on a let-in equation\n      unused = True\n",
+ "root": {
+  "type": "haskell",
+  "start": 0,
+  "end": 530,
+  "children": [
+   {
+    "type": "header",
+    "start": 0,
+    "end": 25,
+    "children": [
+     {
+      "type": "module",
+      "start": 0,
+      "end": 6,
+      "text": "module"
+     },
+     {
+      "type": "module",
+      "start": 7,
+      "end": 19,
+      "field": "module",
+      "children": [
+       {
+        "type": "module_id",
+        "start": 7,
+        "end": 19,
+        "text": "WhereClauses"
+       }
+      ]
+     },
+     {
+      "type": "where",
+      "start": 20,
+      "end": 25,
+      "text": "where"
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 27,
+    "end": 100,
+    "text": "-- where hangs off a declaration and indents relative to it, not the line"
+   },
+   {
+    "type": "declarations",
+    "start": 101,
+    "end": 530,
+    "field": "declarations",
+    "children": [
+     {
+      "type": "function",
+      "start": 101,
+      "end": 168,
+      "children": [
+       {
+        "type": "variable",
+        "start": 101,
+        "end": 102,
+        "field": "name",
+        "text": "f"
+       },
+       {
+        "type": "patterns",
+        "start": 103,
+        "end": 104,
+        "field": "patterns",
+        "children": [
+         {
+          "type": "variable",
+          "start": 103,
+          "end": 104,
+          "text": "x"
+         }
+        ]
+       },
+       {
+        "type": "match",
+        "start": 105,
+        "end": 112,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 105,
+          "end": 106,
+          "text": "="
+         },
+         {
+          "type": "infix",
+          "start": 107,
+          "end": 112,
+          "field": "expression",
+          "children": [
+           {
+            "type": "variable",
+            "start": 107,
+            "end": 108,
+            "field": "left_operand",
+            "text": "y"
+           },
+           {
+            "type": "operator",
+            "start": 109,
+            "end": 110,
+            "field": "operator",
+            "text": "+"
+           },
+           {
+            "type": "variable",
+            "start": 111,
+            "end": 112,
+            "field": "right_operand",
+            "text": "z"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "comment",
+        "start": 113,
+        "end": 132,
+        "text": "-- uses both locals"
+       },
+       {
+        "type": "where",
+        "start": 135,
+        "end": 140,
+        "text": "where"
+       },
+       {
+        "type": "local_binds",
+        "start": 145,
+        "end": 168,
+        "field": "binds",
+        "children": [
+         {
+          "type": "bind",
+          "start": 145,
+          "end": 154,
+          "field": "decl",
+          "children": [
+           {
+            "type": "variable",
+            "start": 145,
+            "end": 146,
+            "field": "name",
+            "text": "y"
+           },
+           {
+            "type": "match",
+            "start": 147,
+            "end": 154,
+            "field": "match",
+            "children": [
+             {
+              "type": "=",
+              "start": 147,
+              "end": 148,
+              "text": "="
+             },
+             {
+              "type": "infix",
+              "start": 149,
+              "end": 154,
+              "field": "expression",
+              "children": [
+               {
+                "type": "variable",
+                "start": 149,
+                "end": 150,
+                "field": "left_operand",
+                "text": "x"
+               },
+               {
+                "type": "operator",
+                "start": 151,
+                "end": 152,
+                "field": "operator",
+                "text": "+"
+               },
+               {
+                "type": "literal",
+                "start": 153,
+                "end": 154,
+                "field": "right_operand",
+                "children": [
+                 {
+                  "type": "integer",
+                  "start": 153,
+                  "end": 154,
+                  "text": "1"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "bind",
+          "start": 159,
+          "end": 168,
+          "field": "decl",
+          "children": [
+           {
+            "type": "variable",
+            "start": 159,
+            "end": 160,
+            "field": "name",
+            "text": "z"
+           },
+           {
+            "type": "match",
+            "start": 161,
+            "end": 168,
+            "field": "match",
+            "children": [
+             {
+              "type": "=",
+              "start": 161,
+              "end": 162,
+              "text": "="
+             },
+             {
+              "type": "infix",
+              "start": 163,
+              "end": 168,
+              "field": "expression",
+              "children": [
+               {
+                "type": "variable",
+                "start": 163,
+                "end": 164,
+                "field": "left_operand",
+                "text": "x"
+               },
+               {
+                "type": "operator",
+                "start": 165,
+                "end": 166,
+                "field": "operator",
+                "children": [
+                 {
+                  "type": "*",
+                  "start": 165,
+                  "end": 166,
+                  "text": "*"
+                 }
+                ]
+               },
+               {
+                "type": "literal",
+                "start": 167,
+                "end": 168,
+                "field": "right_operand",
+                "children": [
+                 {
+                  "type": "integer",
+                  "start": 167,
+                  "end": 168,
+                  "text": "2"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "function",
+      "start": 170,
+      "end": 261,
+      "children": [
+       {
+        "type": "variable",
+        "start": 170,
+        "end": 171,
+        "field": "name",
+        "text": "g"
+       },
+       {
+        "type": "patterns",
+        "start": 172,
+        "end": 173,
+        "field": "patterns",
+        "children": [
+         {
+          "type": "variable",
+          "start": 172,
+          "end": 173,
+          "text": "x"
+         }
+        ]
+       },
+       {
+        "type": "match",
+        "start": 174,
+        "end": 181,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 174,
+          "end": 175,
+          "text": "="
+         },
+         {
+          "type": "variable",
+          "start": 176,
+          "end": 181,
+          "field": "expression",
+          "text": "outer"
+         }
+        ]
+       },
+       {
+        "type": "where",
+        "start": 184,
+        "end": 189,
+        "text": "where"
+       },
+       {
+        "type": "local_binds",
+        "start": 194,
+        "end": 261,
+        "field": "binds",
+        "children": [
+         {
+          "type": "bind",
+          "start": 194,
+          "end": 261,
+          "field": "decl",
+          "children": [
+           {
+            "type": "variable",
+            "start": 194,
+            "end": 199,
+            "field": "name",
+            "text": "outer"
+           },
+           {
+            "type": "match",
+            "start": 200,
+            "end": 211,
+            "field": "match",
+            "children": [
+             {
+              "type": "=",
+              "start": 200,
+              "end": 201,
+              "text": "="
+             },
+             {
+              "type": "infix",
+              "start": 202,
+              "end": 211,
+              "field": "expression",
+              "children": [
+               {
+                "type": "variable",
+                "start": 202,
+                "end": 207,
+                "field": "left_operand",
+                "text": "inner"
+               },
+               {
+                "type": "operator",
+                "start": 208,
+                "end": 209,
+                "field": "operator",
+                "text": "+"
+               },
+               {
+                "type": "literal",
+                "start": 210,
+                "end": 211,
+                "field": "right_operand",
+                "children": [
+                 {
+                  "type": "integer",
+                  "start": 210,
+                  "end": 211,
+                  "text": "1"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "where",
+            "start": 218,
+            "end": 223,
+            "text": "where"
+           },
+           {
+            "type": "local_binds",
+            "start": 232,
+            "end": 261,
+            "field": "binds",
+            "children": [
+             {
+              "type": "bind",
+              "start": 232,
+              "end": 245,
+              "field": "decl",
+              "children": [
+               {
+                "type": "variable",
+                "start": 232,
+                "end": 237,
+                "field": "name",
+                "text": "inner"
+               },
+               {
+                "type": "match",
+                "start": 238,
+                "end": 245,
+                "field": "match",
+                "children": [
+                 {
+                  "type": "=",
+                  "start": 238,
+                  "end": 239,
+                  "text": "="
+                 },
+                 {
+                  "type": "infix",
+                  "start": 240,
+                  "end": 245,
+                  "field": "expression",
+                  "children": [
+                   {
+                    "type": "variable",
+                    "start": 240,
+                    "end": 241,
+                    "field": "left_operand",
+                    "text": "x"
+                   },
+                   {
+                    "type": "operator",
+                    "start": 242,
+                    "end": 243,
+                    "field": "operator",
+                    "children": [
+                     {
+                      "type": "*",
+                      "start": 242,
+                      "end": 243,
+                      "text": "*"
+                     }
+                    ]
+                   },
+                   {
+                    "type": "literal",
+                    "start": 244,
+                    "end": 245,
+                    "field": "right_operand",
+                    "children": [
+                     {
+                      "type": "integer",
+                      "start": 244,
+                      "end": 245,
+                      "text": "3"
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": "comment",
+              "start": 246,
+              "end": 261,
+              "text": "-- nested where"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "function",
+      "start": 263,
+      "end": 388,
+      "children": [
+       {
+        "type": "variable",
+        "start": 263,
+        "end": 264,
+        "field": "name",
+        "text": "h"
+       },
+       {
+        "type": "patterns",
+        "start": 265,
+        "end": 266,
+        "field": "patterns",
+        "children": [
+         {
+          "type": "variable",
+          "start": 265,
+          "end": 266,
+          "text": "x"
+         }
+        ]
+       },
+       {
+        "type": "match",
+        "start": 267,
+        "end": 270,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 267,
+          "end": 268,
+          "text": "="
+         },
+         {
+          "type": "variable",
+          "start": 269,
+          "end": 270,
+          "field": "expression",
+          "text": "a"
+         }
+        ]
+       },
+       {
+        "type": "where",
+        "start": 273,
+        "end": 278,
+        "text": "where"
+       },
+       {
+        "type": "local_binds",
+        "start": 283,
+        "end": 388,
+        "field": "binds",
+        "children": [
+         {
+          "type": "bind",
+          "start": 283,
+          "end": 388,
+          "field": "decl",
+          "children": [
+           {
+            "type": "variable",
+            "start": 283,
+            "end": 284,
+            "field": "name",
+            "text": "a"
+           },
+           {
+            "type": "match",
+            "start": 285,
+            "end": 296,
+            "field": "match",
+            "children": [
+             {
+              "type": "|",
+              "start": 285,
+              "end": 286,
+              "text": "|"
+             },
+             {
+              "type": "guards",
+              "start": 287,
+              "end": 292,
+              "field": "guards",
+              "children": [
+               {
+                "type": "boolean",
+                "start": 287,
+                "end": 292,
+                "field": "guard",
+                "children": [
+                 {
+                  "type": "infix",
+                  "start": 287,
+                  "end": 292,
+                  "children": [
+                   {
+                    "type": "variable",
+                    "start": 287,
+                    "end": 288,
+                    "field": "left_operand",
+                    "text": "x"
+                   },
+                   {
+                    "type": "operator",
+                    "start": 289,
+                    "end": 290,
+                    "field": "operator",
+                    "text": "<"
+                   },
+                   {
+                    "type": "literal",
+                    "start": 291,
+                    "end": 292,
+                    "field": "right_operand",
+                    "children": [
+                     {
+                      "type": "integer",
+                      "start": 291,
+                      "end": 292,
+                      "text": "0"
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": "=",
+              "start": 293,
+              "end": 294,
+              "text": "="
+             },
+             {
+              "type": "literal",
+              "start": 295,
+              "end": 296,
+              "field": "expression",
+              "children": [
+               {
+                "type": "integer",
+                "start": 295,
+                "end": 296,
+                "text": "0"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "match",
+            "start": 303,
+            "end": 318,
+            "field": "match",
+            "children": [
+             {
+              "type": "|",
+              "start": 303,
+              "end": 304,
+              "text": "|"
+             },
+             {
+              "type": "guards",
+              "start": 305,
+              "end": 314,
+              "field": "guards",
+              "children": [
+               {
+                "type": "boolean",
+                "start": 305,
+                "end": 314,
+                "field": "guard",
+                "children": [
+                 {
+                  "type": "variable",
+                  "start": 305,
+                  "end": 314,
+                  "text": "otherwise"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": "=",
+              "start": 315,
+              "end": 316,
+              "text": "="
+             },
+             {
+              "type": "variable",
+              "start": 317,
+              "end": 318,
+              "field": "expression",
+              "text": "b"
+             }
+            ]
+           },
+           {
+            "type": "where",
+            "start": 325,
+            "end": 330,
+            "text": "where"
+           },
+           {
+            "type": "local_binds",
+            "start": 339,
+            "end": 388,
+            "field": "binds",
+            "children": [
+             {
+              "type": "bind",
+              "start": 339,
+              "end": 348,
+              "field": "decl",
+              "children": [
+               {
+                "type": "variable",
+                "start": 339,
+                "end": 340,
+                "field": "name",
+                "text": "b"
+               },
+               {
+                "type": "match",
+                "start": 341,
+                "end": 348,
+                "field": "match",
+                "children": [
+                 {
+                  "type": "=",
+                  "start": 341,
+                  "end": 342,
+                  "text": "="
+                 },
+                 {
+                  "type": "infix",
+                  "start": 343,
+                  "end": 348,
+                  "field": "expression",
+                  "children": [
+                   {
+                    "type": "variable",
+                    "start": 343,
+                    "end": 344,
+                    "field": "left_operand",
+                    "text": "x"
+                   },
+                   {
+                    "type": "operator",
+                    "start": 345,
+                    "end": 346,
+                    "field": "operator",
+                    "text": "+"
+                   },
+                   {
+                    "type": "literal",
+                    "start": 347,
+                    "end": 348,
+                    "field": "right_operand",
+                    "children": [
+                     {
+                      "type": "integer",
+                      "start": 347,
+                      "end": 348,
+                      "text": "1"
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": "comment",
+              "start": 349,
+              "end": 388,
+              "text": "-- where hanging off a guarded equation"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "function",
+      "start": 390,
+      "end": 529,
+      "children": [
+       {
+        "type": "variable",
+        "start": 390,
+        "end": 391,
+        "field": "name",
+        "text": "k"
+       },
+       {
+        "type": "patterns",
+        "start": 392,
+        "end": 393,
+        "field": "patterns",
+        "children": [
+         {
+          "type": "variable",
+          "start": 392,
+          "end": 393,
+          "text": "x"
+         }
+        ]
+       },
+       {
+        "type": "match",
+        "start": 394,
+        "end": 423,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 394,
+          "end": 395,
+          "text": "="
+         },
+         {
+          "type": "let_in",
+          "start": 398,
+          "end": 423,
+          "field": "expression",
+          "children": [
+           {
+            "type": "let",
+            "start": 398,
+            "end": 401,
+            "text": "let"
+           },
+           {
+            "type": "local_binds",
+            "start": 401,
+            "end": 411,
+            "field": "binds",
+            "children": [
+             {
+              "type": "bind",
+              "start": 402,
+              "end": 411,
+              "field": "decl",
+              "children": [
+               {
+                "type": "variable",
+                "start": 402,
+                "end": 403,
+                "field": "name",
+                "text": "y"
+               },
+               {
+                "type": "match",
+                "start": 404,
+                "end": 411,
+                "field": "match",
+                "children": [
+                 {
+                  "type": "=",
+                  "start": 404,
+                  "end": 405,
+                  "text": "="
+                 },
+                 {
+                  "type": "infix",
+                  "start": 406,
+                  "end": 411,
+                  "field": "expression",
+                  "children": [
+                   {
+                    "type": "variable",
+                    "start": 406,
+                    "end": 407,
+                    "field": "left_operand",
+                    "text": "x"
+                   },
+                   {
+                    "type": "operator",
+                    "start": 408,
+                    "end": 409,
+                    "field": "operator",
+                    "text": "+"
+                   },
+                   {
+                    "type": "literal",
+                    "start": 410,
+                    "end": 411,
+                    "field": "right_operand",
+                    "children": [
+                     {
+                      "type": "integer",
+                      "start": 410,
+                      "end": 411,
+                      "text": "1"
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "in",
+            "start": 415,
+            "end": 417,
+            "text": "in"
+           },
+           {
+            "type": "infix",
+            "start": 418,
+            "end": 423,
+            "field": "expression",
+            "children": [
+             {
+              "type": "variable",
+              "start": 418,
+              "end": 419,
+              "field": "left_operand",
+              "text": "y"
+             },
+             {
+              "type": "operator",
+              "start": 420,
+              "end": 421,
+              "field": "operator",
+              "children": [
+               {
+                "type": "*",
+                "start": 420,
+                "end": 421,
+                "text": "*"
+               }
+              ]
+             },
+             {
+              "type": "literal",
+              "start": 422,
+              "end": 423,
+              "field": "right_operand",
+              "children": [
+               {
+                "type": "integer",
+                "start": 422,
+                "end": 423,
+                "text": "2"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "comment",
+        "start": 424,
+        "end": 461,
+        "text": "-- let/in next to where, for contrast"
+       },
+       {
+        "type": "where",
+        "start": 466,
+        "end": 471,
+        "text": "where"
+       },
+       {
+        "type": "comment",
+        "start": 478,
+        "end": 509,
+        "text": "-- a where on a let-in equation"
+       },
+       {
+        "type": "local_binds",
+        "start": 516,
+        "end": 529,
+        "field": "binds",
+        "children": [
+         {
+          "type": "bind",
+          "start": 516,
+          "end": 529,
+          "field": "decl",
+          "children": [
+           {
+            "type": "variable",
+            "start": 516,
+            "end": 522,
+            "field": "name",
+            "text": "unused"
+           },
+           {
+            "type": "match",
+            "start": 523,
+            "end": 529,
+            "field": "match",
+            "children": [
+             {
+              "type": "=",
+              "start": 523,
+              "end": 524,
+              "text": "="
+             },
+             {
+              "type": "constructor",
+              "start": 525,
+              "end": 529,
+              "field": "expression",
+              "text": "True"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

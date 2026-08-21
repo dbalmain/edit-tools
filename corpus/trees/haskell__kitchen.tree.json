@@ -1,0 +1,1481 @@
+{
+ "language": "haskell",
+ "source_file": "corpus/src/haskell/kitchen.hs",
+ "source": "module Kitchen where\n\nimport Data.List (foldl')\n\n-- several constructs interacting: data, where, do, guards, a list, a comment\ndata Rec = Rec {recId :: Int, recName :: String}\n\nprocess records = do\n  let filtered = [r | r <- records, recId r > 0]\n  total <- pure (sumIds filtered)\n  pure (total, names)\n  where\n    names = map recName filtered -- where hanging off a do-bind\n    sumIds = foldl' (\\n r -> n + recId r) 0\n\ndescribe n\n  | n < 0 = \"neg\"\n  | n == 0 = \"zero\"\n  | otherwise = \"pos\"\n\nsample =\n  [ Rec {recId = 1, recName = \"alpha\"}\n  , Rec {recId = 2, recName = \"beta\"} -- trailing on an element\n  ]\n",
+ "root": {
+  "type": "haskell",
+  "start": 0,
+  "end": 608,
+  "children": [
+   {
+    "type": "header",
+    "start": 0,
+    "end": 20,
+    "children": [
+     {
+      "type": "module",
+      "start": 0,
+      "end": 6,
+      "text": "module"
+     },
+     {
+      "type": "module",
+      "start": 7,
+      "end": 14,
+      "field": "module",
+      "children": [
+       {
+        "type": "module_id",
+        "start": 7,
+        "end": 14,
+        "text": "Kitchen"
+       }
+      ]
+     },
+     {
+      "type": "where",
+      "start": 15,
+      "end": 20,
+      "text": "where"
+     }
+    ]
+   },
+   {
+    "type": "imports",
+    "start": 22,
+    "end": 127,
+    "field": "imports",
+    "children": [
+     {
+      "type": "import",
+      "start": 22,
+      "end": 47,
+      "field": "import",
+      "children": [
+       {
+        "type": "import",
+        "start": 22,
+        "end": 28,
+        "text": "import"
+       },
+       {
+        "type": "module",
+        "start": 29,
+        "end": 38,
+        "field": "module",
+        "children": [
+         {
+          "type": "module_id",
+          "start": 29,
+          "end": 33,
+          "text": "Data"
+         },
+         {
+          "type": ".",
+          "start": 33,
+          "end": 34,
+          "text": "."
+         },
+         {
+          "type": "module_id",
+          "start": 34,
+          "end": 38,
+          "text": "List"
+         }
+        ]
+       },
+       {
+        "type": "import_list",
+        "start": 39,
+        "end": 47,
+        "field": "names",
+        "children": [
+         {
+          "type": "(",
+          "start": 39,
+          "end": 40,
+          "text": "("
+         },
+         {
+          "type": "import_name",
+          "start": 40,
+          "end": 46,
+          "field": "name",
+          "children": [
+           {
+            "type": "variable",
+            "start": 40,
+            "end": 46,
+            "field": "variable",
+            "text": "foldl'"
+           }
+          ]
+         },
+         {
+          "type": ")",
+          "start": 46,
+          "end": 47,
+          "text": ")"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 49,
+      "end": 126,
+      "text": "-- several constructs interacting: data, where, do, guards, a list, a comment"
+     }
+    ]
+   },
+   {
+    "type": "declarations",
+    "start": 127,
+    "end": 608,
+    "field": "declarations",
+    "children": [
+     {
+      "type": "data_type",
+      "start": 127,
+      "end": 175,
+      "children": [
+       {
+        "type": "data",
+        "start": 127,
+        "end": 131,
+        "text": "data"
+       },
+       {
+        "type": "name",
+        "start": 132,
+        "end": 135,
+        "field": "name",
+        "text": "Rec"
+       },
+       {
+        "type": "=",
+        "start": 136,
+        "end": 137,
+        "text": "="
+       },
+       {
+        "type": "data_constructors",
+        "start": 138,
+        "end": 175,
+        "field": "constructors",
+        "children": [
+         {
+          "type": "data_constructor",
+          "start": 138,
+          "end": 175,
+          "field": "constructor",
+          "children": [
+           {
+            "type": "record",
+            "start": 138,
+            "end": 175,
+            "field": "constructor",
+            "children": [
+             {
+              "type": "constructor",
+              "start": 138,
+              "end": 141,
+              "field": "name",
+              "text": "Rec"
+             },
+             {
+              "type": "fields",
+              "start": 142,
+              "end": 175,
+              "field": "fields",
+              "children": [
+               {
+                "type": "{",
+                "start": 142,
+                "end": 143,
+                "text": "{"
+               },
+               {
+                "type": "field",
+                "start": 143,
+                "end": 155,
+                "field": "field",
+                "children": [
+                 {
+                  "type": "field_name",
+                  "start": 143,
+                  "end": 148,
+                  "field": "name",
+                  "children": [
+                   {
+                    "type": "variable",
+                    "start": 143,
+                    "end": 148,
+                    "text": "recId"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "::",
+                  "start": 149,
+                  "end": 151,
+                  "text": "::"
+                 },
+                 {
+                  "type": "name",
+                  "start": 152,
+                  "end": 155,
+                  "field": "type",
+                  "text": "Int"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 155,
+                "end": 156,
+                "text": ","
+               },
+               {
+                "type": "field",
+                "start": 157,
+                "end": 174,
+                "field": "field",
+                "children": [
+                 {
+                  "type": "field_name",
+                  "start": 157,
+                  "end": 164,
+                  "field": "name",
+                  "children": [
+                   {
+                    "type": "variable",
+                    "start": 157,
+                    "end": 164,
+                    "text": "recName"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "::",
+                  "start": 165,
+                  "end": 167,
+                  "text": "::"
+                 },
+                 {
+                  "type": "name",
+                  "start": 168,
+                  "end": 174,
+                  "field": "type",
+                  "text": "String"
+                 }
+                ]
+               },
+               {
+                "type": "}",
+                "start": 174,
+                "end": 175,
+                "text": "}"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "function",
+      "start": 177,
+      "end": 418,
+      "children": [
+       {
+        "type": "variable",
+        "start": 177,
+        "end": 184,
+        "field": "name",
+        "text": "process"
+       },
+       {
+        "type": "patterns",
+        "start": 185,
+        "end": 192,
+        "field": "patterns",
+        "children": [
+         {
+          "type": "variable",
+          "start": 185,
+          "end": 192,
+          "text": "records"
+         }
+        ]
+       },
+       {
+        "type": "match",
+        "start": 193,
+        "end": 302,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 193,
+          "end": 194,
+          "text": "="
+         },
+         {
+          "type": "do",
+          "start": 195,
+          "end": 302,
+          "field": "expression",
+          "children": [
+           {
+            "type": "do",
+            "start": 195,
+            "end": 197,
+            "text": "do"
+           },
+           {
+            "type": "let",
+            "start": 200,
+            "end": 246,
+            "field": "statement",
+            "children": [
+             {
+              "type": "let",
+              "start": 200,
+              "end": 203,
+              "text": "let"
+             },
+             {
+              "type": "local_binds",
+              "start": 203,
+              "end": 246,
+              "field": "binds",
+              "children": [
+               {
+                "type": "bind",
+                "start": 204,
+                "end": 246,
+                "field": "decl",
+                "children": [
+                 {
+                  "type": "variable",
+                  "start": 204,
+                  "end": 212,
+                  "field": "name",
+                  "text": "filtered"
+                 },
+                 {
+                  "type": "match",
+                  "start": 213,
+                  "end": 246,
+                  "field": "match",
+                  "children": [
+                   {
+                    "type": "=",
+                    "start": 213,
+                    "end": 214,
+                    "text": "="
+                   },
+                   {
+                    "type": "list_comprehension",
+                    "start": 215,
+                    "end": 246,
+                    "field": "expression",
+                    "children": [
+                     {
+                      "type": "[",
+                      "start": 215,
+                      "end": 216,
+                      "text": "["
+                     },
+                     {
+                      "type": "variable",
+                      "start": 216,
+                      "end": 217,
+                      "field": "expression",
+                      "text": "r"
+                     },
+                     {
+                      "type": "|",
+                      "start": 218,
+                      "end": 219,
+                      "text": "|"
+                     },
+                     {
+                      "type": "qualifiers",
+                      "start": 220,
+                      "end": 245,
+                      "field": "qualifiers",
+                      "children": [
+                       {
+                        "type": "generator",
+                        "start": 220,
+                        "end": 232,
+                        "field": "qualifier",
+                        "children": [
+                         {
+                          "type": "variable",
+                          "start": 220,
+                          "end": 221,
+                          "field": "pattern",
+                          "text": "r"
+                         },
+                         {
+                          "type": "<-",
+                          "start": 222,
+                          "end": 224,
+                          "field": "arrow",
+                          "text": "<-"
+                         },
+                         {
+                          "type": "variable",
+                          "start": 225,
+                          "end": 232,
+                          "field": "expression",
+                          "text": "records"
+                         }
+                        ]
+                       },
+                       {
+                        "type": ",",
+                        "start": 232,
+                        "end": 233,
+                        "text": ","
+                       },
+                       {
+                        "type": "boolean",
+                        "start": 234,
+                        "end": 245,
+                        "field": "qualifier",
+                        "children": [
+                         {
+                          "type": "infix",
+                          "start": 234,
+                          "end": 245,
+                          "children": [
+                           {
+                            "type": "apply",
+                            "start": 234,
+                            "end": 241,
+                            "field": "left_operand",
+                            "children": [
+                             {
+                              "type": "variable",
+                              "start": 234,
+                              "end": 239,
+                              "field": "function",
+                              "text": "recId"
+                             },
+                             {
+                              "type": "variable",
+                              "start": 240,
+                              "end": 241,
+                              "field": "argument",
+                              "text": "r"
+                             }
+                            ]
+                           },
+                           {
+                            "type": "operator",
+                            "start": 242,
+                            "end": 243,
+                            "field": "operator",
+                            "text": ">"
+                           },
+                           {
+                            "type": "literal",
+                            "start": 244,
+                            "end": 245,
+                            "field": "right_operand",
+                            "children": [
+                             {
+                              "type": "integer",
+                              "start": 244,
+                              "end": 245,
+                              "text": "0"
+                             }
+                            ]
+                           }
+                          ]
+                         }
+                        ]
+                       }
+                      ]
+                     },
+                     {
+                      "type": "]",
+                      "start": 245,
+                      "end": 246,
+                      "text": "]"
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "bind",
+            "start": 249,
+            "end": 280,
+            "field": "statement",
+            "children": [
+             {
+              "type": "variable",
+              "start": 249,
+              "end": 254,
+              "field": "pattern",
+              "text": "total"
+             },
+             {
+              "type": "<-",
+              "start": 255,
+              "end": 257,
+              "field": "arrow",
+              "text": "<-"
+             },
+             {
+              "type": "apply",
+              "start": 258,
+              "end": 280,
+              "field": "expression",
+              "children": [
+               {
+                "type": "variable",
+                "start": 258,
+                "end": 262,
+                "field": "function",
+                "text": "pure"
+               },
+               {
+                "type": "parens",
+                "start": 263,
+                "end": 280,
+                "field": "argument",
+                "children": [
+                 {
+                  "type": "(",
+                  "start": 263,
+                  "end": 264,
+                  "text": "("
+                 },
+                 {
+                  "type": "apply",
+                  "start": 264,
+                  "end": 279,
+                  "field": "expression",
+                  "children": [
+                   {
+                    "type": "variable",
+                    "start": 264,
+                    "end": 270,
+                    "field": "function",
+                    "text": "sumIds"
+                   },
+                   {
+                    "type": "variable",
+                    "start": 271,
+                    "end": 279,
+                    "field": "argument",
+                    "text": "filtered"
+                   }
+                  ]
+                 },
+                 {
+                  "type": ")",
+                  "start": 279,
+                  "end": 280,
+                  "text": ")"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "exp",
+            "start": 283,
+            "end": 302,
+            "field": "statement",
+            "children": [
+             {
+              "type": "apply",
+              "start": 283,
+              "end": 302,
+              "children": [
+               {
+                "type": "variable",
+                "start": 283,
+                "end": 287,
+                "field": "function",
+                "text": "pure"
+               },
+               {
+                "type": "tuple",
+                "start": 288,
+                "end": 302,
+                "field": "argument",
+                "children": [
+                 {
+                  "type": "(",
+                  "start": 288,
+                  "end": 289,
+                  "text": "("
+                 },
+                 {
+                  "type": "variable",
+                  "start": 289,
+                  "end": 294,
+                  "field": "element",
+                  "text": "total"
+                 },
+                 {
+                  "type": ",",
+                  "start": 294,
+                  "end": 295,
+                  "text": ","
+                 },
+                 {
+                  "type": "variable",
+                  "start": 296,
+                  "end": 301,
+                  "field": "element",
+                  "text": "names"
+                 },
+                 {
+                  "type": ")",
+                  "start": 301,
+                  "end": 302,
+                  "text": ")"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "where",
+        "start": 305,
+        "end": 310,
+        "text": "where"
+       },
+       {
+        "type": "local_binds",
+        "start": 315,
+        "end": 418,
+        "field": "binds",
+        "children": [
+         {
+          "type": "bind",
+          "start": 315,
+          "end": 343,
+          "field": "decl",
+          "children": [
+           {
+            "type": "variable",
+            "start": 315,
+            "end": 320,
+            "field": "name",
+            "text": "names"
+           },
+           {
+            "type": "match",
+            "start": 321,
+            "end": 343,
+            "field": "match",
+            "children": [
+             {
+              "type": "=",
+              "start": 321,
+              "end": 322,
+              "text": "="
+             },
+             {
+              "type": "apply",
+              "start": 323,
+              "end": 343,
+              "field": "expression",
+              "children": [
+               {
+                "type": "apply",
+                "start": 323,
+                "end": 334,
+                "field": "function",
+                "children": [
+                 {
+                  "type": "variable",
+                  "start": 323,
+                  "end": 326,
+                  "field": "function",
+                  "text": "map"
+                 },
+                 {
+                  "type": "variable",
+                  "start": 327,
+                  "end": 334,
+                  "field": "argument",
+                  "text": "recName"
+                 }
+                ]
+               },
+               {
+                "type": "variable",
+                "start": 335,
+                "end": 343,
+                "field": "argument",
+                "text": "filtered"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "comment",
+          "start": 344,
+          "end": 374,
+          "text": "-- where hanging off a do-bind"
+         },
+         {
+          "type": "bind",
+          "start": 379,
+          "end": 418,
+          "field": "decl",
+          "children": [
+           {
+            "type": "variable",
+            "start": 379,
+            "end": 385,
+            "field": "name",
+            "text": "sumIds"
+           },
+           {
+            "type": "match",
+            "start": 386,
+            "end": 418,
+            "field": "match",
+            "children": [
+             {
+              "type": "=",
+              "start": 386,
+              "end": 387,
+              "text": "="
+             },
+             {
+              "type": "apply",
+              "start": 388,
+              "end": 418,
+              "field": "expression",
+              "children": [
+               {
+                "type": "apply",
+                "start": 388,
+                "end": 416,
+                "field": "function",
+                "children": [
+                 {
+                  "type": "variable",
+                  "start": 388,
+                  "end": 394,
+                  "field": "function",
+                  "text": "foldl'"
+                 },
+                 {
+                  "type": "parens",
+                  "start": 395,
+                  "end": 416,
+                  "field": "argument",
+                  "children": [
+                   {
+                    "type": "(",
+                    "start": 395,
+                    "end": 396,
+                    "text": "("
+                   },
+                   {
+                    "type": "lambda",
+                    "start": 396,
+                    "end": 415,
+                    "field": "expression",
+                    "children": [
+                     {
+                      "type": "\\",
+                      "start": 396,
+                      "end": 397,
+                      "text": "\\"
+                     },
+                     {
+                      "type": "patterns",
+                      "start": 397,
+                      "end": 400,
+                      "field": "patterns",
+                      "children": [
+                       {
+                        "type": "variable",
+                        "start": 397,
+                        "end": 398,
+                        "text": "n"
+                       },
+                       {
+                        "type": "variable",
+                        "start": 399,
+                        "end": 400,
+                        "text": "r"
+                       }
+                      ]
+                     },
+                     {
+                      "type": "->",
+                      "start": 401,
+                      "end": 403,
+                      "text": "->"
+                     },
+                     {
+                      "type": "infix",
+                      "start": 404,
+                      "end": 415,
+                      "field": "expression",
+                      "children": [
+                       {
+                        "type": "variable",
+                        "start": 404,
+                        "end": 405,
+                        "field": "left_operand",
+                        "text": "n"
+                       },
+                       {
+                        "type": "operator",
+                        "start": 406,
+                        "end": 407,
+                        "field": "operator",
+                        "text": "+"
+                       },
+                       {
+                        "type": "apply",
+                        "start": 408,
+                        "end": 415,
+                        "field": "right_operand",
+                        "children": [
+                         {
+                          "type": "variable",
+                          "start": 408,
+                          "end": 413,
+                          "field": "function",
+                          "text": "recId"
+                         },
+                         {
+                          "type": "variable",
+                          "start": 414,
+                          "end": 415,
+                          "field": "argument",
+                          "text": "r"
+                         }
+                        ]
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   {
+                    "type": ")",
+                    "start": 415,
+                    "end": 416,
+                    "text": ")"
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": "literal",
+                "start": 417,
+                "end": 418,
+                "field": "argument",
+                "children": [
+                 {
+                  "type": "integer",
+                  "start": 417,
+                  "end": 418,
+                  "text": "0"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "function",
+      "start": 420,
+      "end": 490,
+      "children": [
+       {
+        "type": "variable",
+        "start": 420,
+        "end": 428,
+        "field": "name",
+        "text": "describe"
+       },
+       {
+        "type": "patterns",
+        "start": 429,
+        "end": 430,
+        "field": "patterns",
+        "children": [
+         {
+          "type": "variable",
+          "start": 429,
+          "end": 430,
+          "text": "n"
+         }
+        ]
+       },
+       {
+        "type": "match",
+        "start": 433,
+        "end": 448,
+        "field": "match",
+        "children": [
+         {
+          "type": "|",
+          "start": 433,
+          "end": 434,
+          "text": "|"
+         },
+         {
+          "type": "guards",
+          "start": 435,
+          "end": 440,
+          "field": "guards",
+          "children": [
+           {
+            "type": "boolean",
+            "start": 435,
+            "end": 440,
+            "field": "guard",
+            "children": [
+             {
+              "type": "infix",
+              "start": 435,
+              "end": 440,
+              "children": [
+               {
+                "type": "variable",
+                "start": 435,
+                "end": 436,
+                "field": "left_operand",
+                "text": "n"
+               },
+               {
+                "type": "operator",
+                "start": 437,
+                "end": 438,
+                "field": "operator",
+                "text": "<"
+               },
+               {
+                "type": "literal",
+                "start": 439,
+                "end": 440,
+                "field": "right_operand",
+                "children": [
+                 {
+                  "type": "integer",
+                  "start": 439,
+                  "end": 440,
+                  "text": "0"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "=",
+          "start": 441,
+          "end": 442,
+          "text": "="
+         },
+         {
+          "type": "literal",
+          "start": 443,
+          "end": 448,
+          "field": "expression",
+          "children": [
+           {
+            "type": "string",
+            "start": 443,
+            "end": 448,
+            "text": "\"neg\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "match",
+        "start": 451,
+        "end": 468,
+        "field": "match",
+        "children": [
+         {
+          "type": "|",
+          "start": 451,
+          "end": 452,
+          "text": "|"
+         },
+         {
+          "type": "guards",
+          "start": 453,
+          "end": 459,
+          "field": "guards",
+          "children": [
+           {
+            "type": "boolean",
+            "start": 453,
+            "end": 459,
+            "field": "guard",
+            "children": [
+             {
+              "type": "infix",
+              "start": 453,
+              "end": 459,
+              "children": [
+               {
+                "type": "variable",
+                "start": 453,
+                "end": 454,
+                "field": "left_operand",
+                "text": "n"
+               },
+               {
+                "type": "operator",
+                "start": 455,
+                "end": 457,
+                "field": "operator",
+                "text": "=="
+               },
+               {
+                "type": "literal",
+                "start": 458,
+                "end": 459,
+                "field": "right_operand",
+                "children": [
+                 {
+                  "type": "integer",
+                  "start": 458,
+                  "end": 459,
+                  "text": "0"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "=",
+          "start": 460,
+          "end": 461,
+          "text": "="
+         },
+         {
+          "type": "literal",
+          "start": 462,
+          "end": 468,
+          "field": "expression",
+          "children": [
+           {
+            "type": "string",
+            "start": 462,
+            "end": 468,
+            "text": "\"zero\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "match",
+        "start": 471,
+        "end": 490,
+        "field": "match",
+        "children": [
+         {
+          "type": "|",
+          "start": 471,
+          "end": 472,
+          "text": "|"
+         },
+         {
+          "type": "guards",
+          "start": 473,
+          "end": 482,
+          "field": "guards",
+          "children": [
+           {
+            "type": "boolean",
+            "start": 473,
+            "end": 482,
+            "field": "guard",
+            "children": [
+             {
+              "type": "variable",
+              "start": 473,
+              "end": 482,
+              "text": "otherwise"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "=",
+          "start": 483,
+          "end": 484,
+          "text": "="
+         },
+         {
+          "type": "literal",
+          "start": 485,
+          "end": 490,
+          "field": "expression",
+          "children": [
+           {
+            "type": "string",
+            "start": 485,
+            "end": 490,
+            "text": "\"pos\""
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "bind",
+      "start": 492,
+      "end": 607,
+      "children": [
+       {
+        "type": "variable",
+        "start": 492,
+        "end": 498,
+        "field": "name",
+        "text": "sample"
+       },
+       {
+        "type": "match",
+        "start": 499,
+        "end": 607,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 499,
+          "end": 500,
+          "text": "="
+         },
+         {
+          "type": "list",
+          "start": 503,
+          "end": 607,
+          "field": "expression",
+          "children": [
+           {
+            "type": "[",
+            "start": 503,
+            "end": 504,
+            "text": "["
+           },
+           {
+            "type": "record",
+            "start": 505,
+            "end": 539,
+            "field": "element",
+            "children": [
+             {
+              "type": "constructor",
+              "start": 505,
+              "end": 508,
+              "field": "expression",
+              "text": "Rec"
+             },
+             {
+              "type": "{",
+              "start": 509,
+              "end": 510,
+              "text": "{"
+             },
+             {
+              "type": "field_update",
+              "start": 510,
+              "end": 519,
+              "field": "field",
+              "children": [
+               {
+                "type": "field_name",
+                "start": 510,
+                "end": 515,
+                "field": "field",
+                "children": [
+                 {
+                  "type": "variable",
+                  "start": 510,
+                  "end": 515,
+                  "text": "recId"
+                 }
+                ]
+               },
+               {
+                "type": "=",
+                "start": 516,
+                "end": 517,
+                "text": "="
+               },
+               {
+                "type": "literal",
+                "start": 518,
+                "end": 519,
+                "field": "expression",
+                "children": [
+                 {
+                  "type": "integer",
+                  "start": 518,
+                  "end": 519,
+                  "text": "1"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 519,
+              "end": 520,
+              "text": ","
+             },
+             {
+              "type": "field_update",
+              "start": 521,
+              "end": 538,
+              "field": "field",
+              "children": [
+               {
+                "type": "field_name",
+                "start": 521,
+                "end": 528,
+                "field": "field",
+                "children": [
+                 {
+                  "type": "variable",
+                  "start": 521,
+                  "end": 528,
+                  "text": "recName"
+                 }
+                ]
+               },
+               {
+                "type": "=",
+                "start": 529,
+                "end": 530,
+                "text": "="
+               },
+               {
+                "type": "literal",
+                "start": 531,
+                "end": 538,
+                "field": "expression",
+                "children": [
+                 {
+                  "type": "string",
+                  "start": 531,
+                  "end": 538,
+                  "text": "\"alpha\""
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": "}",
+              "start": 538,
+              "end": 539,
+              "text": "}"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 542,
+            "end": 543,
+            "text": ","
+           },
+           {
+            "type": "record",
+            "start": 544,
+            "end": 577,
+            "field": "element",
+            "children": [
+             {
+              "type": "constructor",
+              "start": 544,
+              "end": 547,
+              "field": "expression",
+              "text": "Rec"
+             },
+             {
+              "type": "{",
+              "start": 548,
+              "end": 549,
+              "text": "{"
+             },
+             {
+              "type": "field_update",
+              "start": 549,
+              "end": 558,
+              "field": "field",
+              "children": [
+               {
+                "type": "field_name",
+                "start": 549,
+                "end": 554,
+                "field": "field",
+                "children": [
+                 {
+                  "type": "variable",
+                  "start": 549,
+                  "end": 554,
+                  "text": "recId"
+                 }
+                ]
+               },
+               {
+                "type": "=",
+                "start": 555,
+                "end": 556,
+                "text": "="
+               },
+               {
+                "type": "literal",
+                "start": 557,
+                "end": 558,
+                "field": "expression",
+                "children": [
+                 {
+                  "type": "integer",
+                  "start": 557,
+                  "end": 558,
+                  "text": "2"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 558,
+              "end": 559,
+              "text": ","
+             },
+             {
+              "type": "field_update",
+              "start": 560,
+              "end": 576,
+              "field": "field",
+              "children": [
+               {
+                "type": "field_name",
+                "start": 560,
+                "end": 567,
+                "field": "field",
+                "children": [
+                 {
+                  "type": "variable",
+                  "start": 560,
+                  "end": 567,
+                  "text": "recName"
+                 }
+                ]
+               },
+               {
+                "type": "=",
+                "start": 568,
+                "end": 569,
+                "text": "="
+               },
+               {
+                "type": "literal",
+                "start": 570,
+                "end": 576,
+                "field": "expression",
+                "children": [
+                 {
+                  "type": "string",
+                  "start": 570,
+                  "end": 576,
+                  "text": "\"beta\""
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": "}",
+              "start": 576,
+              "end": 577,
+              "text": "}"
+             }
+            ]
+           },
+           {
+            "type": "comment",
+            "start": 578,
+            "end": 603,
+            "text": "-- trailing on an element"
+           },
+           {
+            "type": "]",
+            "start": 606,
+            "end": 607,
+            "text": "]"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

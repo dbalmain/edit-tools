@@ -1,0 +1,20 @@
+module DataTypes where
+
+-- algebraic types, records, newtypes, deriving
+data Colour = Red | Green | Blue deriving (Eq, Show) -- sum, no fields
+
+data Pair a b = Pair a b deriving (Eq, Show)
+
+data Person = Person
+  { personName :: String,
+    personAge :: Int
+  } -- record with leading commas
+
+newtype Tagged a = Tagged {unTagged :: a} deriving (Eq, Show)
+
+data Tree a
+  = Leaf a
+  | Branch (Tree a) (Tree a)
+  deriving (Eq, Show)
+
+emptyPerson = Person {personName = "", personAge = 0} -- record construction
