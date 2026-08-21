@@ -156,6 +156,21 @@ function validatePredicate(value) {
     nodeTypes(value[2]);
     return;
   }
+  if (value[0] === "text" && value.length === 3) {
+    if (!Array.isArray(value[1]) || value[1].length === 0) {
+      throw new Refusal("text predicate path must be a non-empty list");
+    }
+    value[1].forEach(parseSelector);
+    nodeTypes(value[2]);
+    return;
+  }
+  if (value[0] === "multiline" && value.length === 2) {
+    if (!Array.isArray(value[1]) || value[1].length === 0) {
+      throw new Refusal("multiline predicate path must be a non-empty list");
+    }
+    value[1].forEach(parseSelector);
+    return;
+  }
   throw new Refusal(`unknown predicate ${JSON.stringify(value)}`);
 }
 
@@ -190,6 +205,7 @@ function validateExpr(value) {
     case "verbatim":
     case "srcline":
     case "srcsoft":
+    case "srcgap":
     case "cell":
     case "srcbreak":
       arity(0);
@@ -902,6 +918,26 @@ function selectorMatches(fmt, node, sel) {
   return true;
 }
 
+function pathHasText(fmt, node, path, spellings, depth = 0) {
+  if (depth === path.length) {
+    return node.text !== undefined && spellings.includes(node.text);
+  }
+  return (node.children ?? []).some(
+    (child) => selectorMatches(fmt, child, path[depth])
+      && pathHasText(fmt, child, path, spellings, depth + 1),
+  );
+}
+
+function pathHasMultiline(fmt, node, path, depth = 0) {
+  if (depth === path.length) {
+    return node.text !== undefined && /[\r\n]/.test(node.text);
+  }
+  return (node.children ?? []).some(
+    (child) => selectorMatches(fmt, child, path[depth])
+      && pathHasMultiline(fmt, child, path, depth + 1),
+  );
+}
+
 function parseSelector(raw) {
   if (typeof raw !== "string") throw new Refusal(`selector must be a string, got ${raw}`);
   if (raw.startsWith("f:")) return { field: raw.slice(2) };
@@ -1017,6 +1053,8 @@ class Ctx {
         return this.srcBreak(text(" "));
       case "srcsoft":
         return this.srcBreak(nil);
+      case "srcgap":
+        return this.srcGap();
       case "cell":
         return cell;
       case "cellblock":
@@ -1094,6 +1132,12 @@ class Ctx {
       return count === childN;
     }
     if (op === "all") return this.allKinds(parseSelector(raw), childRaw);
+    if (op === "text") {
+      return pathHasText(this.fmt, this.node, raw.map(parseSelector), childRaw);
+    }
+    if (op === "multiline") {
+      return pathHasMultiline(this.fmt, this.node, raw.map(parseSelector));
+    }
     throw new Refusal(`unknown predicate \`${op}\``);
   }
 
@@ -1155,6 +1199,23 @@ class Ctx {
   srcBreak(flat) {
     const item = this.items[this.cursor];
     return item && item.lineBreak ? hard : flat;
+  }
+
+  srcGap() {
+    const previous = this.items[this.cursor - 1];
+    const next = this.items[this.cursor];
+    const from = previous?.node.end ?? this.node.start;
+    const to = next?.node.start ?? this.node.end;
+    const bytes = this.fmt.bytes.subarray(from, to);
+    for (const byte of bytes) {
+      if (byte !== 0x09 && byte !== 0x0a && byte !== 0x0b
+          && byte !== 0x0c && byte !== 0x0d && byte !== 0x20) {
+        throw this.refuse("only whitespace in a `srcgap`");
+      }
+    }
+    if (bytes.length === 0) return nil;
+    if (bytes.includes(0x0a) || bytes.includes(0x0d)) return hard;
+    return ifBreak(hard, text(this.fmt.decoder.decode(bytes)));
   }
 
   /** Consume a redundant token without emitting it -- the only sanctioned

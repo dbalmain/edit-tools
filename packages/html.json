@@ -1,0 +1,261 @@
+{
+  "format": "et-doc-rules/1",
+  "indent": 2,
+
+  "comment_gap": 0,
+  "blank_cap": 1,
+
+  "tokens": ["<", "</", "<!", ">", "/>", "=", "\"", "'", "end_tag"],
+  "comments": [],
+  "descend": [],
+  "optional_parens": [],
+  "precedence": {},
+
+  "defs": {
+    "attributes": [
+      "group",
+      ["tok", "<"],
+      ["child", "t:tag_name"],
+      [
+        "indent",
+        ["line"],
+        ["each", "t:attribute", ["line"]]
+      ],
+      ["soft"],
+      ["tok", ">"]
+    ],
+    "self_closing_attributes": [
+      "group",
+      ["tok", "<"],
+      ["child", "t:tag_name"],
+      [
+        "indent",
+        ["line"],
+        ["each", "t:attribute", ["line"]]
+      ],
+      ["line"],
+      ["tok", "/>"]
+    ],
+    "inline_attributes": [
+      "group",
+      ["tok", "<"],
+      ["child", "t:tag_name"],
+      [
+        "indent",
+        ["line"],
+        ["each", "t:attribute", ["line"]],
+        ["soft"],
+        ["tok", ">"]
+      ]
+    ],
+    "block_element": [
+      "seq",
+      ["child", "t:start_tag"],
+      [
+        "indent",
+        ["hard"],
+        [
+          "each",
+          "named",
+          ["seq", ["hard"], ["blank", 1]]
+        ]
+      ],
+      ["hard"],
+      ["child", "t:end_tag"]
+    ],
+    "prose_element": [
+      "group",
+      ["child", "t:start_tag"],
+      [
+        "indent",
+        ["soft"],
+        ["fill", "named", ["srcgap"]]
+      ],
+      ["soft"],
+      ["child", "t:end_tag"]
+    ],
+    "inline_element": [
+      "group",
+      ["child", "t:start_tag"],
+      [
+        "indent",
+        ["srcgap"],
+        ["each", "named", ["srcgap"]]
+      ],
+      ["srcgap"],
+      ["child", "t:end_tag"]
+    ],
+    "multiline_pre": [
+      "seq",
+      ["child", "t:start_tag"],
+      ["indent", ["hard"], ["each", "named", ["srcgap"]]],
+      ["child", "t:end_tag"]
+    ]
+  },
+
+  "rules": {
+    "document": [
+      "each",
+      "named",
+      ["seq", ["srcgap"], ["blank", 1]]
+    ],
+
+    "doctype": ["verbatim"],
+
+    "element": [
+      "when",
+      ["count", "t:start_tag", 0],
+      ["child", "t:self_closing_tag"],
+      [
+        "when",
+        ["count", "t:end_tag", 0],
+        ["seq", ["child", "t:start_tag"], ["srcgap"]],
+        [
+          "when",
+          ["count", "named", 1],
+          [
+            "when",
+            ["text", ["t:start_tag", "t:tag_name"], ["span"]],
+            [
+              "group",
+              ["child", "t:start_tag"],
+              ["srcgap"],
+              ["child", "t:end_tag"]
+            ],
+            ["seq", ["child", "t:start_tag"], ["child", "t:end_tag"]]
+          ],
+          [
+            "when",
+            ["all", "named", ["start_tag", "comment"]],
+            ["use", "prose_element"],
+            [
+              "when",
+            [
+              "text",
+              ["t:start_tag", "t:tag_name"],
+              [
+                "html", "head", "body", "header", "nav", "main",
+                "ul", "ol", "dl", "table", "thead", "tbody", "tr",
+                "svg", "g"
+              ]
+            ],
+            ["use", "block_element"],
+            [
+              "when",
+              [
+                "text",
+                ["t:element", "t:start_tag", "t:tag_name"],
+                [
+                  "address", "article", "aside", "blockquote", "div", "dl",
+                  "fieldset", "figcaption", "figure", "footer", "form", "h1",
+                  "h2", "h3", "h4", "h5", "h6", "header", "hr", "main",
+                  "nav", "ol", "p", "pre", "section", "table", "ul"
+                ]
+              ],
+              ["use", "block_element"],
+              [
+                "when",
+                [
+                  "text",
+                  ["t:start_tag", "t:tag_name"],
+                  ["pre"]
+                ],
+                [
+                  "when",
+                  ["multiline", ["t:text"]],
+                  ["use", "multiline_pre"],
+                  ["use", "inline_element"]
+                ],
+                [
+                  "when",
+                  [
+                    "text",
+                    ["t:start_tag", "t:tag_name"],
+                    ["p", "h1", "h2", "h3", "h4", "h5", "h6"]
+                  ],
+                  ["use", "prose_element"],
+                  ["use", "inline_element"]
+                ]
+              ]
+            ]
+            ]
+          ]
+        ]
+      ]
+    ],
+
+    "script_element": ["verbatim"],
+    "style_element": ["verbatim"],
+
+    "start_tag": [
+      "when",
+      ["count", "t:attribute", 0],
+      ["seq", ["tok", "<"], ["child", "t:tag_name"], ["tok", ">"]],
+      [
+        "when",
+        [
+          "text",
+          ["t:tag_name"],
+          [
+            "a", "abbr", "b", "bdi", "bdo", "button", "cite", "code",
+            "em", "i", "label", "q", "s", "samp", "small", "span",
+            "strong", "sub", "sup", "time", "u", "var"
+          ]
+        ],
+        ["use", "inline_attributes"],
+        ["use", "attributes"]
+      ]
+    ],
+
+    "self_closing_tag": [
+      "when",
+      ["count", "t:attribute", 0],
+      [
+        "seq",
+        ["tok", "<"],
+        ["child", "t:tag_name"],
+        ["sp"],
+        ["tok", "/>"]
+      ],
+      ["use", "self_closing_attributes"]
+    ],
+
+    "end_tag": [
+      "when",
+      [
+        "text",
+        ["t:tag_name"],
+        [
+          "a", "abbr", "b", "bdi", "bdo", "button", "cite", "code",
+          "em", "i", "label", "q", "s", "samp", "small", "span",
+          "strong", "sub", "sup", "time", "u", "var"
+        ]
+      ],
+      [
+        "seq",
+        ["tok", "</"],
+        ["child", "t:tag_name"],
+        ["soft"],
+        ["tok", ">"]
+      ],
+      [
+        "seq",
+        ["tok", "</"],
+        ["child", "t:tag_name"],
+        ["tok", ">"]
+      ]
+    ],
+
+    "attribute": [
+      "seq",
+      ["child", "t:attribute_name"],
+      [
+        "opt",
+        "t:=",
+        ["seq", ["tok", "="], ["child", "named"]]
+      ]
+    ],
+
+    "quoted_attribute_value": ["verbatim"]
+  }
+}

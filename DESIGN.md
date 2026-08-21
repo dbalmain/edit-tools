@@ -66,6 +66,7 @@ unknown names, bad argument counts and holes outside a definition body.
 | `["hard"]`       | always a newline; forces every enclosing group open      |
 | `["sp"]`         | a space, never a break                                   |
 | `["blank", n]`   | up to `n` blank lines, as the source had them; see below |
+| `["srcgap"]`     | exact horizontal source whitespace flat, newline broken |
 
 `["blank", n]` takes an optional third operand, a list of node types. A gap next
 to one of those types opens to exactly `n` — the cap is also a floor, but only
@@ -123,6 +124,15 @@ node, not the cursor. YAML uses `child-count` to distinguish a value
 a nested mapping or sequence, without making rule selection depend on comment
 decoration. JSON uses `all` to apply `fill` only to numeric arrays.
 
+Two path predicates inspect leaf content without turning dispatch into an
+unbounded descendant search. `["text", [sel…], [spellings…]]` is true when an
+exact direct-child selector path ends at a leaf with one of the listed
+spellings; `["multiline", [sel…]]` tests the same path for a leaf containing a
+line ending. Paths must be non-empty. HTML uses
+`["t:start_tag", "t:tag_name"]` to select block versus inline layout and
+`["t:text"]` to preserve multiline `pre` content. An outer inline tag does not
+accidentally become block merely because a deeper nested element is block.
+
 ### The package header
 
 ```json
@@ -159,6 +169,14 @@ not strings, because packages may choose whitespace quantities but may not emit
 arbitrary text. `blank_cap` applies only inside runtime-owned comment
 attachment; the `blank` opcode's operand still governs gaps between items
 visible to a rule.
+
+`srcgap` is the safe source-aware exception to fixed whitespace. It reads the
+gap between the children on either side of the cursor. An empty gap emits
+nothing and offers no break; horizontal whitespace is preserved byte-for-byte
+when flat and becomes a newline when its group breaks; a source newline remains
+a hard break. A non-whitespace gap is a refusal, so an omitted grammar token can
+never be erased through this opcode. HTML needs all three cases because its
+grammar omits rendering-significant inter-element spaces.
 
 ### A rule, read end to end
 
@@ -331,6 +349,13 @@ Comments are consumed exactly once and in source order, so the partition the
 linearity invariant asks for still holds — the package simply never sees them.
 Every comment also emits a `BreakParent`, so a group can never flatten a comment
 onto the following line.
+
+That attachment is selected by the package's `comments` list. HTML deliberately
+leaves its `comment` node out: an HTML comment is inline markup whose exact
+position can affect rendered whitespace, not a language trailing comment. It
+therefore remains an ordinary leaf consumed by the surrounding element rule.
+This keeps `<span>x</span><!-- c -->` adjacent instead of applying a code-style
+comment gap or moving the comment to the end of the printed line.
 
 ## Two runtimes, written twice
 
