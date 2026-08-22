@@ -13,6 +13,35 @@ twice below in the other direction. There was no token for "stage B passed and
 nobody has started stage C", so the board reached for the nearest one and
 overstated. A status with no token gets rounded to a wrong token.
 
+## Picking this up — paused 2026-08-22, resuming Friday
+
+Read this, the branch table below, and the decisions page. Everything else on
+this document is history.
+
+**Do first, in this order:**
+
+1. **Land the fast-forward** (branch table below). Until it lands, three things
+   are blocked that look like they are not: markdown and XML stage C are waiting
+   on `comment_kinds`, and Scheme's manifest cannot declare it either — that
+   declaration is already made *on the branch*, so merging is what turns it on.
+2. **Stage D for TypeScript and HTML, on codex.** Codex was promised the
+   stage-D return two rounds ago and has not had it. TypeScript's brief must
+   carry the `decorators.ts@40` analysis below — the reviewer rules on the
+   label, and the orchestrator must not pre-empt it.
+3. **Then round 4's remaining stage C** (markdown, XML) and round 5's (Ruby,
+   Scheme, Haskell). Five packages outstanding.
+
+**Two decisions are open and belong to Dave**, both on the decisions artifact
+with options and tradeoffs: what happens to TypeScript's 11/30, and whether Aven
+starts and by which route.
+
+**One thing that will not be obvious:** the orchestrator session was
+worktree-isolated, so its git operations against the shared checkout were
+refused — including read-only ones. That is why the merge was performed in a
+worktree and handed over as a fast-forward rather than done on `main`. If a
+future session should merge directly, that has to be settled at launch, not
+mid-run.
+
 ## Branches, 2026-08-22 — what is on each, for the backup
 
 Work paused here until Saturday. Nothing has ever been pushed by an agent;
