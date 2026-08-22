@@ -32,11 +32,13 @@
       "indent", ["hard"], ["use", "statements"]
     ],
     "bracketed": [
-      "group",
-      ["tok", ["$", 0]],
-      ["indent", ["soft"], ["each", "named", ["seq", ["tok", ","], ["line"]]]],
-      ["soft"],
-      ["tok", ["$", 1]]
+      "when", ["count", "named", 0],
+      ["seq", ["tok", ["$", 0]], ["tok", ["$", 1]]],
+      ["group",
+        ["tok", ["$", 0]],
+        ["indent", ["soft"], ["each", "named", ["seq", ["tok", ","], ["line"]]]],
+        ["soft"],
+        ["tok", ["$", 1]]]
     ],
     "spaced": [
       "group",

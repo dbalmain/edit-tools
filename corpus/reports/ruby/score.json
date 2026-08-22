@@ -10,9 +10,9 @@
   "gate2_width": {
     "pass": true,
     "waived": false,
-    "overflow_lines": 59,
-    "reference_overflow": 62,
-    "note": "every overflow line is one the reference also overflows, except one line of kitchen.rb@40; syntax_tree does not count a trailing comment toward the width, so it manufactures overflow of its own"
+    "overflow_lines": 10,
+    "reference_overflow": 13,
+    "note": "stage-D Ruby-only re-score; syntax_tree does not count a trailing comment toward group fit and can therefore manufacture overflow of its own"
   },
   "gate3_nondestruction": {
     "pass": true,
@@ -68,12 +68,12 @@
   ],
   "size": {
     "js-runtime": 13610,
-    "packages": 12978,
-    "total": 26588,
+    "packages": 1944,
+    "total": 15554,
     "per_language": {
       "ruby": {
-        "package": 1932,
-        "with_runtime": 15542
+        "package": 1944,
+        "with_runtime": 15554
       }
     }
   },
@@ -83,7 +83,7 @@
       "now": 13610,
       "delta": 0
     },
-    "package_gzip": 1932,
+    "package_gzip": 1944,
     "per_edit": []
   },
   "fill": {
@@ -99,10 +99,10 @@
     {
       "case": "collections.rb@40",
       "id": "ruby/collections.rb@40",
-      "hash": "4d1cf1e13ce52cfd44f5df03bea15096ac7697e55f5cb1103f38aa387d2c99b1",
+      "hash": "18f9ccc6a582d56a6d40120bd49e48ce0cfa90484a59fb7e2adc4d2075a6ee28",
       "verdict": "design limit",
       "entry": 6,
-      "kind": "a trailing comment is counted in group fit; syntax_tree never counts one"
+      "kind": "mixed = [...] fits but its trailing comment does not; the group counts it and syntax_tree does not. Stage D fixed the separately expressible empty-array hunk with a zero-child branch"
     },
     {
       "case": "comments.rb@40",
@@ -115,10 +115,10 @@
     {
       "case": "normalisation.rb@40",
       "id": "ruby/normalisation.rb@40",
-      "hash": "89045347918a8a4830508278cf2910673084672fba5b61f7c3f02cfc32b1ccf2",
+      "hash": "bc5e840bc604d346bf3d4811076573cd689996d09ddf3f0c309d0ead5b4bcdba",
       "verdict": "design limit",
       "entry": 6,
-      "kind": "same, on trailing_spaces = 1"
+      "kind": "same, on trailing_spaces = 1. Stage D fixed the separately expressible empty-parameter hunk with the shared zero-child branch"
     },
     {
       "case": "long_sequences.rb@80",
@@ -126,7 +126,7 @@
       "hash": "7da01a3f78c70c9865825719bc0750a91d3ccd9c7e2c862de2c7619a375aa711",
       "verdict": "design limit",
       "entry": 6,
-      "kind": "the 80-character configure() plus a comment reaches 108 and syntax_tree still will not wrap it"
+      "kind": "the 80-character configure() plus a comment reaches 108 and syntax_tree still will not wrap it; the operator chain also needs fill over a flattened spine"
     },
     {
       "case": "chains.rb@80",
@@ -142,12 +142,12 @@
       "hash": "e26f0ce975624f64ec9c5843f5e0e43c29c7e98a339ebdd1c753e6523e0577cf",
       "verdict": "design limit",
       "entry": null,
-      "kind": "same chain limit at the narrow width"
+      "kind": "same chain limit at the narrow width, plus entry 6 on the short chain's trailing comment"
     },
     {
       "case": "kitchen.rb@80",
       "id": "ruby/kitchen.rb@80",
-      "hash": "100a1530253ad12eba4b7992f84558a3b9562bf5fe311d27b67ea7279b21db0e",
+      "hash": "7d3381aae9b4b2bc3933d89dc233efdceada769ad957335cae32189056f4e8e5",
       "verdict": "design limit",
       "entry": 1,
       "kind": "raise KeyError, wraps its second argument to the first argument's column, not to an indent step"
@@ -155,10 +155,10 @@
     {
       "case": "kitchen.rb@40",
       "id": "ruby/kitchen.rb@40",
-      "hash": "feac149a8276e211e39102dca6cae8f3555385cf0424936deeafa38238dbbc0a",
+      "hash": "6770ebd70da5f35ce47465b74fa7040500b26b3aaf8830d0cd6a6758f2434ab2",
       "verdict": "design limit",
       "entry": 1,
-      "kind": "entry 1 twice (raise, rescue exception list), the chain limit once, entry 6 once"
+      "kind": "entry 1 on raise, the rescue exception list, and the on_error continuation; the chain limit once"
     },
     {
       "case": "patterns.rb@40",
@@ -166,7 +166,7 @@
       "hash": "17224478c826a78ccf8a79678769c78f58b510b348fec8b76edeb9c58462baa6",
       "verdict": "design limit",
       "entry": 1,
-      "kind": "a broken hash pattern aligns to the in-clause prefix column and packs onto the aligned line"
+      "kind": "a broken hash pattern aligns to the in-clause prefix column and packs onto the aligned line; the flat find pattern also hits entry 6 because of its trailing comment"
     },
     {
       "case": "nesting.rb@80",
@@ -174,7 +174,7 @@
       "hash": "fd0e7bfc78c2f6d5987833ccb15a9bf0c19e57137be2d0f0086802d452f3f742",
       "verdict": "design limit",
       "entry": 2,
-      "kind": "a hash directly inside a hash breaks when its parent does; arrays and calls in the same position do not. Selective by child kind, so it is entry 2 crossed with entry 10 -- see report"
+      "kind": "a hash directly inside a hash breaks when its parent does; arrays and calls in the same position do not. Selective by child kind, so it is entry 2 crossed with entry 10; row also hits entry 6 at width 80 -- see report"
     },
     {
       "case": "nesting.rb@40",
@@ -189,8 +189,8 @@
       "id": "ruby/long_sequences.rb@40",
       "hash": "2ebe4088325e06d216e99c3eae1a364654d1d99f2643e988dac8253db49fa24c",
       "verdict": "design limit",
-      "entry": 2,
-      "kind": "the hash cascade on an array of hashes, plus the operator-chain packing of entry 8"
+      "entry": 8,
+      "kind": "operator-chain packing; the array of hashes agrees at this width"
     },
     {
       "case": "operators.rb@80",

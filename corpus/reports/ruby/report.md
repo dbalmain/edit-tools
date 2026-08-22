@@ -5,16 +5,16 @@ has had built in the Claude lane; grok is at a 402 and codex holds stage D.
 
 ```
 gate 1 idempotence      pass    (30/30 ruby pairs; 250/250 corpus-wide)
-gate 2 width            pass    59 overflow lines, against the reference's own 62
+gate 2 width            pass    10 overflow lines, against the reference's own 13
 gate 3 non-destruction  pass    (method: default, per harness/languages/ruby.toml)
 gate 4 agreement        9/14 @80,  5/14 @40   =  14/28, block_conversion.rb excluded
 rust/js parity          identical on every file at every width
 refusals                none
-size                    package 1932 B gzip; runtime 13610 B gzip; delta vs main 0 B
+size                    package 1944 B gzip; runtime 13610 B gzip; delta vs main 0 B
 ```
 
-`./test.sh` is green end to end, zero warnings, with no edit anywhere outside
-`packages/ruby.json` and this report.
+`./test.sh` is green end to end, zero warnings. The stage-C slice consists of
+`packages/ruby.json`, this report, and `score.json`.
 
 ## What the number is
 
@@ -25,11 +25,11 @@ cheapest open work.
 
 | Cause | Entry | Pairs |
 | --- | --- | --- |
-| Trailing comment counted in group fit | **6** | 4 |
+| Trailing comment counted in group fit | **6** | 8 |
 | Chain breaks at the dots | DESIGN's named limit | 3 |
 | Continuation aligned to a computed column | **1** | 3 |
-| Hash-in-hash cascade | **2** + **10** | 3 |
-| Operator chain packs rather than breaks all | **8** (extension) | 1 |
+| Hash-in-hash cascade | **2** + **10** | 2 |
+| Operator chain packs rather than breaks all | **8** (extension) | 4 |
 
 Ruby raises the language count on entry 6 from two to three, on entry 2 from one
 to two, and it is the first package anywhere to use `drop`.
@@ -38,36 +38,42 @@ to two, and it is the first package anywhere to use `drop`.
 
 Ids and hashes from `./harness/review_formatter.py . --language ruby --json`.
 
-- `ruby/collections.rb@40` `4d1cf1e1` — **design limit, entry 6.** `empty_array = []`
-  and `mixed = [...]` both fit; their trailing comments do not, and the group
-  measures the comment. syntax_tree never counts one.
+- `ruby/collections.rb@40` `18f9ccc6` — **design limit, entry 6.** `mixed = [...]`
+  fits; its trailing comment does not, and the group measures the comment.
+  syntax_tree never counts one. Stage D added the expressible zero-child branch
+  that keeps `empty_array = []` compact; it was a package bug within this pair.
 - `ruby/comments.rb@40` `59c476a7` — **design limit, entry 6.** `result = a + b`
   is 14 characters and breaks in three because of a 34-character comment.
-- `ruby/normalisation.rb@40` `89045347` — **design limit, entry 6.**
-  `trailing_spaces = 1` plus a comment.
+- `ruby/normalisation.rb@40` `bc5e840b` — **design limit, entry 6.**
+  `trailing_spaces = 1` plus a comment. Stage D's zero-child branch also keeps
+  the empty method parameters compact.
 - `ruby/long_sequences.rb@80` `7da01a3f` — **design limit, entry 6.** The
   80-character `configure(…)` is exactly the width; the comment takes the line
-  to 108 and syntax_tree still refuses to wrap it. Stage A predicted this file
-  would be three of the counted overflow lines and it is.
+  to 108 and syntax_tree still refuses to wrap it. The same pair also hits
+  entry 8: syntax_tree packs the operator chain while `flatten` breaks it all.
+  Stage A predicted this file would be three of the counted overflow lines and
+  it is.
 - `ruby/chains.rb@80` `1cc97aaa`, `ruby/chains.rb@40` `e26f0ce9` — **design
   limit.** A long method chain breaks before every `.`; we break into the last
   call's brackets instead. Same limit DESIGN.md names for Python, with a
-  sharper reason for Ruby — see below.
-- `ruby/kitchen.rb@80` `100a1530` — **design limit, entry 1.** `raise KeyError,`
+  sharper reason for Ruby — see below. At width 40, `short = user.name.upcase`
+  also hits entry 6 because its trailing comment is counted in group fit.
+- `ruby/kitchen.rb@80` `7d3381aa` — **design limit, entry 1.** `raise KeyError,`
   wraps its second argument to the column of the first (14), not to an indent
   step (10). One hunk, nothing else.
-- `ruby/kitchen.rb@40` `feac1497` — **design limit**, three entries at once:
-  entry 1 twice (`raise`, and `rescue KeyError,` aligning `TypeError` under
-  `KeyError`), the chain limit once (`results.sort_by { … }.reverse`), and
-  entry 6 once.
+- `ruby/kitchen.rb@40` `6770ebd7` — **design limit**, two entries: entry 1 on
+  the `raise`, the rescue exception list, and the `on_error` continuation; and
+  the chain limit on `results.sort_by { … }.reverse`.
 - `ruby/patterns.rb@40` `17224478` — **design limit, entry 1.** A broken hash
   pattern aligns its contents to the `in ` prefix (column 5) and its `}` to
   column 3. We indent by 2 from the clause. Also packs both entries onto the
-  aligned line, which we cannot do without the alignment.
+  aligned line, which we cannot do without the alignment. The flat find pattern
+  in the same pair also hits entry 6 because of its trailing comment.
 - `ruby/nesting.rb@80` `fd0e7bfc`, `ruby/nesting.rb@40` `ec71ebe8` — **design
   limit, entries 2 and 10 together.** See below; this is the most valuable thing
-  in the slice.
-- `ruby/long_sequences.rb@40` `2ebe4088` — **design limit**, entries 2 and 8.
+  in the slice. Width 80 also hits entry 6 on `row`'s trailing comment.
+- `ruby/long_sequences.rb@40` `2ebe4088` — **design limit, entry 8.** The array
+  of hashes agrees at this width; only operator-chain packing differs.
 - `ruby/operators.rb@80` `95b2bf67` — **design limit, entry 8 extension.**
   `flatten` joins a chain with a `Concat`, so every operator breaks together;
   syntax_tree packs the chain and wraps, which is exactly `fill`'s decision rule
