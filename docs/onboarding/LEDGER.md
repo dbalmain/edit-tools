@@ -512,6 +512,26 @@ this round is by *what the slice needs*, not by what is available:
 **Stage D still goes back to codex**, which is what the round-4 note above
 promised and has not yet been tested.
 
+**Round 5 stage C runs on Claude, 2026-08-23 — and that is the first time the
+builder lane has been Claude at all.** Grok is still at a 402 with no reset hour;
+codex is needed for stage D on two held branches and on whatever Claude builds.
+Five languages sat at `B+` with no builder, which is a stalled pipeline, not a
+lane preference.
+
+The reason it is safe is the rule that has governed every round: **a reviewer is
+never the same family as the builder.** Claude building means codex reviewing,
+which is a legal pairing and the only one currently available. It also decides
+the two held branches without further thought — TypeScript to codex (grok
+built it), HTML to an Opus subagent (codex-Sol built it and cannot review its
+own family), which is the "central changes to `main`" carve-out being used for
+what it was reserved for: HTML's 25 lines of `DESIGN.md`.
+
+The cost being watched: **Claude is uncalibrated as a builder**, the same way
+every agent was on its first slice, and the orchestrator is also the builder this
+round, so the "the orchestrator does not read the code" property is suspended.
+That is why only two of the five are in flight. Codex's first stage-D verdict on
+a Claude-built package is the calibration datum; the other three are held for it.
+
 ### Two latent items round 5 found, and what happened to each
 
 Both were named by a reviewer who was told not to touch shared files, which is
