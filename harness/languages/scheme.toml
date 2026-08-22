@@ -61,3 +61,9 @@ widths = [80]
 gate3 = "default"
 transparent_wrappers = []
 equivalent_kinds = []
+
+# The grammar declares extras: [], so comments are ordinary named nodes and
+# the universal extras layer sees none of them. Same class as XML. Declared
+# at merge time, once `comment_kinds` reached main: stage B measured the gap
+# and could not close it on a branch where the field did not exist yet.
+comment_kinds = ["comment", "block_comment"]
