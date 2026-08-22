@@ -1,0 +1,20 @@
+;; Input written the way a person writes it and emacs indent-region does
+;; not: intra-line padding is preserved, leading indent is rewritten, an
+;; empty list written with a space in it stays ( ).
+(define( packed x )( + x 1 ))
+
+(define (over-indented x)
+  x)
+
+(define (under-indented x)
+  x)
+
+(define empty-spaced (quote ( )))
+
+(define empty-tight (quote ()))
+
+(define trailing-spaces 1)       ; run of spaces before this comment
+
+(define (mixed-padding a b c)
+  (list  a   b
+	 c))

@@ -1,0 +1,511 @@
+{
+ "language": "scheme",
+ "source_file": "corpus/src/scheme/comments.scm",
+ "source": ";; Top-level comments. emacs indents an own-line comment by its SEMICOLON\n;; COUNT, not by its nesting depth: `;` goes to comment-column (default 40,\n;; five tabs under indent-tabs-mode t), `;;` to the enclosing code indent,\n;; `;;;` to column 0. The `semis` block below is the discriminator.\n; file-level comment at column 0\n\n(define (add a b) ; trailing on a definition\n;; own-line comment inside the body\n(+ a b) ; trailing on a body form\n)\n\n(define values-with-comments\n(list\n1 ; trailing inside a list\n;; own-line inside a list\n2\n#| a one-line block comment |#\n#; skipped\n3\n;; comment before the closing delimiter\n))\n\n;; Semicolon count decides the column, at every depth. One `;` goes to\n;; comment-column even nested two forms deep; `;;;` goes to column 0 even\n;; nested. A rule keyed on nesting depth agrees with the file-level cases\n;; above and diverges on all three lines inside this body.\n(define (semis x)\n(let ((y x))\n; one semi -- comment-column\n;; two semis -- code indent\n;;; three semis -- column 0\n(+ y 1)))\n\n;;; three semis at file level\n; comment at the end of the file\n",
+ "root": {
+  "type": "program",
+  "start": 0,
+  "end": 1091,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 73,
+    "text": ";; Top-level comments. emacs indents an own-line comment by its SEMICOLON"
+   },
+   {
+    "type": "comment",
+    "start": 74,
+    "end": 149,
+    "text": ";; COUNT, not by its nesting depth: `;` goes to comment-column (default 40,"
+   },
+   {
+    "type": "comment",
+    "start": 150,
+    "end": 224,
+    "text": ";; five tabs under indent-tabs-mode t), `;;` to the enclosing code indent,"
+   },
+   {
+    "type": "comment",
+    "start": 225,
+    "end": 292,
+    "text": ";; `;;;` to column 0. The `semis` block below is the discriminator."
+   },
+   {
+    "type": "comment",
+    "start": 293,
+    "end": 325,
+    "text": "; file-level comment at column 0"
+   },
+   {
+    "type": "list",
+    "start": 327,
+    "end": 443,
+    "children": [
+     {
+      "type": "(",
+      "start": 327,
+      "end": 328,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 328,
+      "end": 334,
+      "text": "define"
+     },
+     {
+      "type": "list",
+      "start": 335,
+      "end": 344,
+      "children": [
+       {
+        "type": "(",
+        "start": 335,
+        "end": 336,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 336,
+        "end": 339,
+        "text": "add"
+       },
+       {
+        "type": "symbol",
+        "start": 340,
+        "end": 341,
+        "text": "a"
+       },
+       {
+        "type": "symbol",
+        "start": 342,
+        "end": 343,
+        "text": "b"
+       },
+       {
+        "type": ")",
+        "start": 343,
+        "end": 344,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 345,
+      "end": 371,
+      "text": "; trailing on a definition"
+     },
+     {
+      "type": "comment",
+      "start": 372,
+      "end": 407,
+      "text": ";; own-line comment inside the body"
+     },
+     {
+      "type": "list",
+      "start": 408,
+      "end": 415,
+      "children": [
+       {
+        "type": "(",
+        "start": 408,
+        "end": 409,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 409,
+        "end": 410,
+        "text": "+"
+       },
+       {
+        "type": "symbol",
+        "start": 411,
+        "end": 412,
+        "text": "a"
+       },
+       {
+        "type": "symbol",
+        "start": 413,
+        "end": 414,
+        "text": "b"
+       },
+       {
+        "type": ")",
+        "start": 414,
+        "end": 415,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 416,
+      "end": 441,
+      "text": "; trailing on a body form"
+     },
+     {
+      "type": ")",
+      "start": 442,
+      "end": 443,
+      "text": ")"
+     }
+    ]
+   },
+   {
+    "type": "list",
+    "start": 445,
+    "end": 621,
+    "children": [
+     {
+      "type": "(",
+      "start": 445,
+      "end": 446,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 446,
+      "end": 452,
+      "text": "define"
+     },
+     {
+      "type": "symbol",
+      "start": 453,
+      "end": 473,
+      "text": "values-with-comments"
+     },
+     {
+      "type": "list",
+      "start": 474,
+      "end": 620,
+      "children": [
+       {
+        "type": "(",
+        "start": 474,
+        "end": 475,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 475,
+        "end": 479,
+        "text": "list"
+       },
+       {
+        "type": "number",
+        "start": 480,
+        "end": 481,
+        "text": "1"
+       },
+       {
+        "type": "comment",
+        "start": 482,
+        "end": 506,
+        "text": "; trailing inside a list"
+       },
+       {
+        "type": "comment",
+        "start": 507,
+        "end": 532,
+        "text": ";; own-line inside a list"
+       },
+       {
+        "type": "number",
+        "start": 533,
+        "end": 534,
+        "text": "2"
+       },
+       {
+        "type": "block_comment",
+        "start": 535,
+        "end": 565,
+        "children": [
+         {
+          "type": "#|",
+          "start": 535,
+          "end": 537,
+          "text": "#|"
+         },
+         {
+          "type": "|#",
+          "start": 563,
+          "end": 565,
+          "text": "|#"
+         }
+        ]
+       },
+       {
+        "type": "comment",
+        "start": 566,
+        "end": 576,
+        "children": [
+         {
+          "type": "#;",
+          "start": 566,
+          "end": 568,
+          "text": "#;"
+         },
+         {
+          "type": "symbol",
+          "start": 569,
+          "end": 576,
+          "text": "skipped"
+         }
+        ]
+       },
+       {
+        "type": "number",
+        "start": 577,
+        "end": 578,
+        "text": "3"
+       },
+       {
+        "type": "comment",
+        "start": 579,
+        "end": 618,
+        "text": ";; comment before the closing delimiter"
+       },
+       {
+        "type": ")",
+        "start": 619,
+        "end": 620,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": ")",
+      "start": 620,
+      "end": 621,
+      "text": ")"
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 623,
+    "end": 693,
+    "text": ";; Semicolon count decides the column, at every depth. One `;` goes to"
+   },
+   {
+    "type": "comment",
+    "start": 694,
+    "end": 767,
+    "text": ";; comment-column even nested two forms deep; `;;;` goes to column 0 even"
+   },
+   {
+    "type": "comment",
+    "start": 768,
+    "end": 841,
+    "text": ";; nested. A rule keyed on nesting depth agrees with the file-level cases"
+   },
+   {
+    "type": "comment",
+    "start": 842,
+    "end": 900,
+    "text": ";; above and diverges on all three lines inside this body."
+   },
+   {
+    "type": "list",
+    "start": 901,
+    "end": 1026,
+    "children": [
+     {
+      "type": "(",
+      "start": 901,
+      "end": 902,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 902,
+      "end": 908,
+      "text": "define"
+     },
+     {
+      "type": "list",
+      "start": 909,
+      "end": 918,
+      "children": [
+       {
+        "type": "(",
+        "start": 909,
+        "end": 910,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 910,
+        "end": 915,
+        "text": "semis"
+       },
+       {
+        "type": "symbol",
+        "start": 916,
+        "end": 917,
+        "text": "x"
+       },
+       {
+        "type": ")",
+        "start": 917,
+        "end": 918,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "list",
+      "start": 919,
+      "end": 1025,
+      "children": [
+       {
+        "type": "(",
+        "start": 919,
+        "end": 920,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 920,
+        "end": 923,
+        "text": "let"
+       },
+       {
+        "type": "list",
+        "start": 924,
+        "end": 931,
+        "children": [
+         {
+          "type": "(",
+          "start": 924,
+          "end": 925,
+          "text": "("
+         },
+         {
+          "type": "list",
+          "start": 925,
+          "end": 930,
+          "children": [
+           {
+            "type": "(",
+            "start": 925,
+            "end": 926,
+            "text": "("
+           },
+           {
+            "type": "symbol",
+            "start": 926,
+            "end": 927,
+            "text": "y"
+           },
+           {
+            "type": "symbol",
+            "start": 928,
+            "end": 929,
+            "text": "x"
+           },
+           {
+            "type": ")",
+            "start": 929,
+            "end": 930,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": ")",
+          "start": 930,
+          "end": 931,
+          "text": ")"
+         }
+        ]
+       },
+       {
+        "type": "comment",
+        "start": 932,
+        "end": 960,
+        "text": "; one semi -- comment-column"
+       },
+       {
+        "type": "comment",
+        "start": 961,
+        "end": 988,
+        "text": ";; two semis -- code indent"
+       },
+       {
+        "type": "comment",
+        "start": 989,
+        "end": 1016,
+        "text": ";;; three semis -- column 0"
+       },
+       {
+        "type": "list",
+        "start": 1017,
+        "end": 1024,
+        "children": [
+         {
+          "type": "(",
+          "start": 1017,
+          "end": 1018,
+          "text": "("
+         },
+         {
+          "type": "symbol",
+          "start": 1018,
+          "end": 1019,
+          "text": "+"
+         },
+         {
+          "type": "symbol",
+          "start": 1020,
+          "end": 1021,
+          "text": "y"
+         },
+         {
+          "type": "number",
+          "start": 1022,
+          "end": 1023,
+          "text": "1"
+         },
+         {
+          "type": ")",
+          "start": 1023,
+          "end": 1024,
+          "text": ")"
+         }
+        ]
+       },
+       {
+        "type": ")",
+        "start": 1024,
+        "end": 1025,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": ")",
+      "start": 1025,
+      "end": 1026,
+      "text": ")"
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 1028,
+    "end": 1057,
+    "text": ";;; three semis at file level"
+   },
+   {
+    "type": "comment",
+    "start": 1058,
+    "end": 1090,
+    "text": "; comment at the end of the file"
+   }
+  ]
+ }
+}

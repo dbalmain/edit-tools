@@ -1,0 +1,614 @@
+{
+ "language": "scheme",
+ "source_file": "corpus/src/scheme/macros.scm",
+ "source": ";; syntax-rules. emacs puts 'defun on syntax-rules, so the pattern clauses\n;; indent like a body, not like a call. define-syntax itself is a def* head.\n(define-syntax when-then\n(syntax-rules ()\n((_ test body ...)\n(if test\n(begin body ...)))))\n\n(define-syntax unless-then\n(syntax-rules ()\n((_ test body ...)\n(if test\n#f\n(begin body ...)))))\n\n(define (demo x) ; uses the macros above\n(when-then (positive? x)\n(display x)\n(newline)))\n",
+ "root": {
+  "type": "program",
+  "start": 0,
+  "end": 431,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 74,
+    "text": ";; syntax-rules. emacs puts 'defun on syntax-rules, so the pattern clauses"
+   },
+   {
+    "type": "comment",
+    "start": 75,
+    "end": 151,
+    "text": ";; indent like a body, not like a call. define-syntax itself is a def* head."
+   },
+   {
+    "type": "list",
+    "start": 152,
+    "end": 242,
+    "children": [
+     {
+      "type": "(",
+      "start": 152,
+      "end": 153,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 153,
+      "end": 166,
+      "text": "define-syntax"
+     },
+     {
+      "type": "symbol",
+      "start": 167,
+      "end": 176,
+      "text": "when-then"
+     },
+     {
+      "type": "list",
+      "start": 177,
+      "end": 241,
+      "children": [
+       {
+        "type": "(",
+        "start": 177,
+        "end": 178,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 178,
+        "end": 190,
+        "text": "syntax-rules"
+       },
+       {
+        "type": "list",
+        "start": 191,
+        "end": 193,
+        "children": [
+         {
+          "type": "(",
+          "start": 191,
+          "end": 192,
+          "text": "("
+         },
+         {
+          "type": ")",
+          "start": 192,
+          "end": 193,
+          "text": ")"
+         }
+        ]
+       },
+       {
+        "type": "list",
+        "start": 194,
+        "end": 240,
+        "children": [
+         {
+          "type": "(",
+          "start": 194,
+          "end": 195,
+          "text": "("
+         },
+         {
+          "type": "list",
+          "start": 195,
+          "end": 212,
+          "children": [
+           {
+            "type": "(",
+            "start": 195,
+            "end": 196,
+            "text": "("
+           },
+           {
+            "type": "symbol",
+            "start": 196,
+            "end": 197,
+            "text": "_"
+           },
+           {
+            "type": "symbol",
+            "start": 198,
+            "end": 202,
+            "text": "test"
+           },
+           {
+            "type": "symbol",
+            "start": 203,
+            "end": 207,
+            "text": "body"
+           },
+           {
+            "type": "symbol",
+            "start": 208,
+            "end": 211,
+            "text": "..."
+           },
+           {
+            "type": ")",
+            "start": 211,
+            "end": 212,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": "list",
+          "start": 213,
+          "end": 239,
+          "children": [
+           {
+            "type": "(",
+            "start": 213,
+            "end": 214,
+            "text": "("
+           },
+           {
+            "type": "symbol",
+            "start": 214,
+            "end": 216,
+            "text": "if"
+           },
+           {
+            "type": "symbol",
+            "start": 217,
+            "end": 221,
+            "text": "test"
+           },
+           {
+            "type": "list",
+            "start": 222,
+            "end": 238,
+            "children": [
+             {
+              "type": "(",
+              "start": 222,
+              "end": 223,
+              "text": "("
+             },
+             {
+              "type": "symbol",
+              "start": 223,
+              "end": 228,
+              "text": "begin"
+             },
+             {
+              "type": "symbol",
+              "start": 229,
+              "end": 233,
+              "text": "body"
+             },
+             {
+              "type": "symbol",
+              "start": 234,
+              "end": 237,
+              "text": "..."
+             },
+             {
+              "type": ")",
+              "start": 237,
+              "end": 238,
+              "text": ")"
+             }
+            ]
+           },
+           {
+            "type": ")",
+            "start": 238,
+            "end": 239,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": ")",
+          "start": 239,
+          "end": 240,
+          "text": ")"
+         }
+        ]
+       },
+       {
+        "type": ")",
+        "start": 240,
+        "end": 241,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": ")",
+      "start": 241,
+      "end": 242,
+      "text": ")"
+     }
+    ]
+   },
+   {
+    "type": "list",
+    "start": 244,
+    "end": 339,
+    "children": [
+     {
+      "type": "(",
+      "start": 244,
+      "end": 245,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 245,
+      "end": 258,
+      "text": "define-syntax"
+     },
+     {
+      "type": "symbol",
+      "start": 259,
+      "end": 270,
+      "text": "unless-then"
+     },
+     {
+      "type": "list",
+      "start": 271,
+      "end": 338,
+      "children": [
+       {
+        "type": "(",
+        "start": 271,
+        "end": 272,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 272,
+        "end": 284,
+        "text": "syntax-rules"
+       },
+       {
+        "type": "list",
+        "start": 285,
+        "end": 287,
+        "children": [
+         {
+          "type": "(",
+          "start": 285,
+          "end": 286,
+          "text": "("
+         },
+         {
+          "type": ")",
+          "start": 286,
+          "end": 287,
+          "text": ")"
+         }
+        ]
+       },
+       {
+        "type": "list",
+        "start": 288,
+        "end": 337,
+        "children": [
+         {
+          "type": "(",
+          "start": 288,
+          "end": 289,
+          "text": "("
+         },
+         {
+          "type": "list",
+          "start": 289,
+          "end": 306,
+          "children": [
+           {
+            "type": "(",
+            "start": 289,
+            "end": 290,
+            "text": "("
+           },
+           {
+            "type": "symbol",
+            "start": 290,
+            "end": 291,
+            "text": "_"
+           },
+           {
+            "type": "symbol",
+            "start": 292,
+            "end": 296,
+            "text": "test"
+           },
+           {
+            "type": "symbol",
+            "start": 297,
+            "end": 301,
+            "text": "body"
+           },
+           {
+            "type": "symbol",
+            "start": 302,
+            "end": 305,
+            "text": "..."
+           },
+           {
+            "type": ")",
+            "start": 305,
+            "end": 306,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": "list",
+          "start": 307,
+          "end": 336,
+          "children": [
+           {
+            "type": "(",
+            "start": 307,
+            "end": 308,
+            "text": "("
+           },
+           {
+            "type": "symbol",
+            "start": 308,
+            "end": 310,
+            "text": "if"
+           },
+           {
+            "type": "symbol",
+            "start": 311,
+            "end": 315,
+            "text": "test"
+           },
+           {
+            "type": "boolean",
+            "start": 316,
+            "end": 318,
+            "text": "#f"
+           },
+           {
+            "type": "list",
+            "start": 319,
+            "end": 335,
+            "children": [
+             {
+              "type": "(",
+              "start": 319,
+              "end": 320,
+              "text": "("
+             },
+             {
+              "type": "symbol",
+              "start": 320,
+              "end": 325,
+              "text": "begin"
+             },
+             {
+              "type": "symbol",
+              "start": 326,
+              "end": 330,
+              "text": "body"
+             },
+             {
+              "type": "symbol",
+              "start": 331,
+              "end": 334,
+              "text": "..."
+             },
+             {
+              "type": ")",
+              "start": 334,
+              "end": 335,
+              "text": ")"
+             }
+            ]
+           },
+           {
+            "type": ")",
+            "start": 335,
+            "end": 336,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": ")",
+          "start": 336,
+          "end": 337,
+          "text": ")"
+         }
+        ]
+       },
+       {
+        "type": ")",
+        "start": 337,
+        "end": 338,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": ")",
+      "start": 338,
+      "end": 339,
+      "text": ")"
+     }
+    ]
+   },
+   {
+    "type": "list",
+    "start": 341,
+    "end": 430,
+    "children": [
+     {
+      "type": "(",
+      "start": 341,
+      "end": 342,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 342,
+      "end": 348,
+      "text": "define"
+     },
+     {
+      "type": "list",
+      "start": 349,
+      "end": 357,
+      "children": [
+       {
+        "type": "(",
+        "start": 349,
+        "end": 350,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 350,
+        "end": 354,
+        "text": "demo"
+       },
+       {
+        "type": "symbol",
+        "start": 355,
+        "end": 356,
+        "text": "x"
+       },
+       {
+        "type": ")",
+        "start": 356,
+        "end": 357,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 358,
+      "end": 381,
+      "text": "; uses the macros above"
+     },
+     {
+      "type": "list",
+      "start": 382,
+      "end": 429,
+      "children": [
+       {
+        "type": "(",
+        "start": 382,
+        "end": 383,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 383,
+        "end": 392,
+        "text": "when-then"
+       },
+       {
+        "type": "list",
+        "start": 393,
+        "end": 406,
+        "children": [
+         {
+          "type": "(",
+          "start": 393,
+          "end": 394,
+          "text": "("
+         },
+         {
+          "type": "symbol",
+          "start": 394,
+          "end": 403,
+          "text": "positive?"
+         },
+         {
+          "type": "symbol",
+          "start": 404,
+          "end": 405,
+          "text": "x"
+         },
+         {
+          "type": ")",
+          "start": 405,
+          "end": 406,
+          "text": ")"
+         }
+        ]
+       },
+       {
+        "type": "list",
+        "start": 407,
+        "end": 418,
+        "children": [
+         {
+          "type": "(",
+          "start": 407,
+          "end": 408,
+          "text": "("
+         },
+         {
+          "type": "symbol",
+          "start": 408,
+          "end": 415,
+          "text": "display"
+         },
+         {
+          "type": "symbol",
+          "start": 416,
+          "end": 417,
+          "text": "x"
+         },
+         {
+          "type": ")",
+          "start": 417,
+          "end": 418,
+          "text": ")"
+         }
+        ]
+       },
+       {
+        "type": "list",
+        "start": 419,
+        "end": 428,
+        "children": [
+         {
+          "type": "(",
+          "start": 419,
+          "end": 420,
+          "text": "("
+         },
+         {
+          "type": "symbol",
+          "start": 420,
+          "end": 427,
+          "text": "newline"
+         },
+         {
+          "type": ")",
+          "start": 427,
+          "end": 428,
+          "text": ")"
+         }
+        ]
+       },
+       {
+        "type": ")",
+        "start": 428,
+        "end": 429,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": ")",
+      "start": 429,
+      "end": 430,
+      "text": ")"
+     }
+    ]
+   }
+  ]
+ }
+}

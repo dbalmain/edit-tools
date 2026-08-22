@@ -1,0 +1,1009 @@
+{
+ "language": "scheme",
+ "source_file": "corpus/src/scheme/nesting.scm",
+ "source": ";; Nested lets, already broken, deep enough that emacs emits tabs\n;; (indent-tabs-mode defaults to t; columns 8, 16, 24 become tabs).\n(define (walk tree) ; tree is a nested list of values\n(let ((value (car tree)))\n(let ((kids (cdr tree)))\n(let ((n (length kids)))\n(let ((first (and (pair? kids) (car kids))))\n(let ((rest (and (pair? kids) (cdr kids))))\n(let ((left (and (pair? first) first)))\n(let ((right (and (pair? rest) rest)))\n(list value n left right)))))))))\n",
+ "root": {
+  "type": "program",
+  "start": 0,
+  "end": 466,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 65,
+    "text": ";; Nested lets, already broken, deep enough that emacs emits tabs"
+   },
+   {
+    "type": "comment",
+    "start": 66,
+    "end": 133,
+    "text": ";; (indent-tabs-mode defaults to t; columns 8, 16, 24 become tabs)."
+   },
+   {
+    "type": "list",
+    "start": 134,
+    "end": 465,
+    "children": [
+     {
+      "type": "(",
+      "start": 134,
+      "end": 135,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 135,
+      "end": 141,
+      "text": "define"
+     },
+     {
+      "type": "list",
+      "start": 142,
+      "end": 153,
+      "children": [
+       {
+        "type": "(",
+        "start": 142,
+        "end": 143,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 143,
+        "end": 147,
+        "text": "walk"
+       },
+       {
+        "type": "symbol",
+        "start": 148,
+        "end": 152,
+        "text": "tree"
+       },
+       {
+        "type": ")",
+        "start": 152,
+        "end": 153,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 154,
+      "end": 187,
+      "text": "; tree is a nested list of values"
+     },
+     {
+      "type": "list",
+      "start": 188,
+      "end": 464,
+      "children": [
+       {
+        "type": "(",
+        "start": 188,
+        "end": 189,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 189,
+        "end": 192,
+        "text": "let"
+       },
+       {
+        "type": "list",
+        "start": 193,
+        "end": 213,
+        "children": [
+         {
+          "type": "(",
+          "start": 193,
+          "end": 194,
+          "text": "("
+         },
+         {
+          "type": "list",
+          "start": 194,
+          "end": 212,
+          "children": [
+           {
+            "type": "(",
+            "start": 194,
+            "end": 195,
+            "text": "("
+           },
+           {
+            "type": "symbol",
+            "start": 195,
+            "end": 200,
+            "text": "value"
+           },
+           {
+            "type": "list",
+            "start": 201,
+            "end": 211,
+            "children": [
+             {
+              "type": "(",
+              "start": 201,
+              "end": 202,
+              "text": "("
+             },
+             {
+              "type": "symbol",
+              "start": 202,
+              "end": 205,
+              "text": "car"
+             },
+             {
+              "type": "symbol",
+              "start": 206,
+              "end": 210,
+              "text": "tree"
+             },
+             {
+              "type": ")",
+              "start": 210,
+              "end": 211,
+              "text": ")"
+             }
+            ]
+           },
+           {
+            "type": ")",
+            "start": 211,
+            "end": 212,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": ")",
+          "start": 212,
+          "end": 213,
+          "text": ")"
+         }
+        ]
+       },
+       {
+        "type": "list",
+        "start": 214,
+        "end": 463,
+        "children": [
+         {
+          "type": "(",
+          "start": 214,
+          "end": 215,
+          "text": "("
+         },
+         {
+          "type": "symbol",
+          "start": 215,
+          "end": 218,
+          "text": "let"
+         },
+         {
+          "type": "list",
+          "start": 219,
+          "end": 238,
+          "children": [
+           {
+            "type": "(",
+            "start": 219,
+            "end": 220,
+            "text": "("
+           },
+           {
+            "type": "list",
+            "start": 220,
+            "end": 237,
+            "children": [
+             {
+              "type": "(",
+              "start": 220,
+              "end": 221,
+              "text": "("
+             },
+             {
+              "type": "symbol",
+              "start": 221,
+              "end": 225,
+              "text": "kids"
+             },
+             {
+              "type": "list",
+              "start": 226,
+              "end": 236,
+              "children": [
+               {
+                "type": "(",
+                "start": 226,
+                "end": 227,
+                "text": "("
+               },
+               {
+                "type": "symbol",
+                "start": 227,
+                "end": 230,
+                "text": "cdr"
+               },
+               {
+                "type": "symbol",
+                "start": 231,
+                "end": 235,
+                "text": "tree"
+               },
+               {
+                "type": ")",
+                "start": 235,
+                "end": 236,
+                "text": ")"
+               }
+              ]
+             },
+             {
+              "type": ")",
+              "start": 236,
+              "end": 237,
+              "text": ")"
+             }
+            ]
+           },
+           {
+            "type": ")",
+            "start": 237,
+            "end": 238,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": "list",
+          "start": 239,
+          "end": 462,
+          "children": [
+           {
+            "type": "(",
+            "start": 239,
+            "end": 240,
+            "text": "("
+           },
+           {
+            "type": "symbol",
+            "start": 240,
+            "end": 243,
+            "text": "let"
+           },
+           {
+            "type": "list",
+            "start": 244,
+            "end": 263,
+            "children": [
+             {
+              "type": "(",
+              "start": 244,
+              "end": 245,
+              "text": "("
+             },
+             {
+              "type": "list",
+              "start": 245,
+              "end": 262,
+              "children": [
+               {
+                "type": "(",
+                "start": 245,
+                "end": 246,
+                "text": "("
+               },
+               {
+                "type": "symbol",
+                "start": 246,
+                "end": 247,
+                "text": "n"
+               },
+               {
+                "type": "list",
+                "start": 248,
+                "end": 261,
+                "children": [
+                 {
+                  "type": "(",
+                  "start": 248,
+                  "end": 249,
+                  "text": "("
+                 },
+                 {
+                  "type": "symbol",
+                  "start": 249,
+                  "end": 255,
+                  "text": "length"
+                 },
+                 {
+                  "type": "symbol",
+                  "start": 256,
+                  "end": 260,
+                  "text": "kids"
+                 },
+                 {
+                  "type": ")",
+                  "start": 260,
+                  "end": 261,
+                  "text": ")"
+                 }
+                ]
+               },
+               {
+                "type": ")",
+                "start": 261,
+                "end": 262,
+                "text": ")"
+               }
+              ]
+             },
+             {
+              "type": ")",
+              "start": 262,
+              "end": 263,
+              "text": ")"
+             }
+            ]
+           },
+           {
+            "type": "list",
+            "start": 264,
+            "end": 461,
+            "children": [
+             {
+              "type": "(",
+              "start": 264,
+              "end": 265,
+              "text": "("
+             },
+             {
+              "type": "symbol",
+              "start": 265,
+              "end": 268,
+              "text": "let"
+             },
+             {
+              "type": "list",
+              "start": 269,
+              "end": 308,
+              "children": [
+               {
+                "type": "(",
+                "start": 269,
+                "end": 270,
+                "text": "("
+               },
+               {
+                "type": "list",
+                "start": 270,
+                "end": 307,
+                "children": [
+                 {
+                  "type": "(",
+                  "start": 270,
+                  "end": 271,
+                  "text": "("
+                 },
+                 {
+                  "type": "symbol",
+                  "start": 271,
+                  "end": 276,
+                  "text": "first"
+                 },
+                 {
+                  "type": "list",
+                  "start": 277,
+                  "end": 306,
+                  "children": [
+                   {
+                    "type": "(",
+                    "start": 277,
+                    "end": 278,
+                    "text": "("
+                   },
+                   {
+                    "type": "symbol",
+                    "start": 278,
+                    "end": 281,
+                    "text": "and"
+                   },
+                   {
+                    "type": "list",
+                    "start": 282,
+                    "end": 294,
+                    "children": [
+                     {
+                      "type": "(",
+                      "start": 282,
+                      "end": 283,
+                      "text": "("
+                     },
+                     {
+                      "type": "symbol",
+                      "start": 283,
+                      "end": 288,
+                      "text": "pair?"
+                     },
+                     {
+                      "type": "symbol",
+                      "start": 289,
+                      "end": 293,
+                      "text": "kids"
+                     },
+                     {
+                      "type": ")",
+                      "start": 293,
+                      "end": 294,
+                      "text": ")"
+                     }
+                    ]
+                   },
+                   {
+                    "type": "list",
+                    "start": 295,
+                    "end": 305,
+                    "children": [
+                     {
+                      "type": "(",
+                      "start": 295,
+                      "end": 296,
+                      "text": "("
+                     },
+                     {
+                      "type": "symbol",
+                      "start": 296,
+                      "end": 299,
+                      "text": "car"
+                     },
+                     {
+                      "type": "symbol",
+                      "start": 300,
+                      "end": 304,
+                      "text": "kids"
+                     },
+                     {
+                      "type": ")",
+                      "start": 304,
+                      "end": 305,
+                      "text": ")"
+                     }
+                    ]
+                   },
+                   {
+                    "type": ")",
+                    "start": 305,
+                    "end": 306,
+                    "text": ")"
+                   }
+                  ]
+                 },
+                 {
+                  "type": ")",
+                  "start": 306,
+                  "end": 307,
+                  "text": ")"
+                 }
+                ]
+               },
+               {
+                "type": ")",
+                "start": 307,
+                "end": 308,
+                "text": ")"
+               }
+              ]
+             },
+             {
+              "type": "list",
+              "start": 309,
+              "end": 460,
+              "children": [
+               {
+                "type": "(",
+                "start": 309,
+                "end": 310,
+                "text": "("
+               },
+               {
+                "type": "symbol",
+                "start": 310,
+                "end": 313,
+                "text": "let"
+               },
+               {
+                "type": "list",
+                "start": 314,
+                "end": 352,
+                "children": [
+                 {
+                  "type": "(",
+                  "start": 314,
+                  "end": 315,
+                  "text": "("
+                 },
+                 {
+                  "type": "list",
+                  "start": 315,
+                  "end": 351,
+                  "children": [
+                   {
+                    "type": "(",
+                    "start": 315,
+                    "end": 316,
+                    "text": "("
+                   },
+                   {
+                    "type": "symbol",
+                    "start": 316,
+                    "end": 320,
+                    "text": "rest"
+                   },
+                   {
+                    "type": "list",
+                    "start": 321,
+                    "end": 350,
+                    "children": [
+                     {
+                      "type": "(",
+                      "start": 321,
+                      "end": 322,
+                      "text": "("
+                     },
+                     {
+                      "type": "symbol",
+                      "start": 322,
+                      "end": 325,
+                      "text": "and"
+                     },
+                     {
+                      "type": "list",
+                      "start": 326,
+                      "end": 338,
+                      "children": [
+                       {
+                        "type": "(",
+                        "start": 326,
+                        "end": 327,
+                        "text": "("
+                       },
+                       {
+                        "type": "symbol",
+                        "start": 327,
+                        "end": 332,
+                        "text": "pair?"
+                       },
+                       {
+                        "type": "symbol",
+                        "start": 333,
+                        "end": 337,
+                        "text": "kids"
+                       },
+                       {
+                        "type": ")",
+                        "start": 337,
+                        "end": 338,
+                        "text": ")"
+                       }
+                      ]
+                     },
+                     {
+                      "type": "list",
+                      "start": 339,
+                      "end": 349,
+                      "children": [
+                       {
+                        "type": "(",
+                        "start": 339,
+                        "end": 340,
+                        "text": "("
+                       },
+                       {
+                        "type": "symbol",
+                        "start": 340,
+                        "end": 343,
+                        "text": "cdr"
+                       },
+                       {
+                        "type": "symbol",
+                        "start": 344,
+                        "end": 348,
+                        "text": "kids"
+                       },
+                       {
+                        "type": ")",
+                        "start": 348,
+                        "end": 349,
+                        "text": ")"
+                       }
+                      ]
+                     },
+                     {
+                      "type": ")",
+                      "start": 349,
+                      "end": 350,
+                      "text": ")"
+                     }
+                    ]
+                   },
+                   {
+                    "type": ")",
+                    "start": 350,
+                    "end": 351,
+                    "text": ")"
+                   }
+                  ]
+                 },
+                 {
+                  "type": ")",
+                  "start": 351,
+                  "end": 352,
+                  "text": ")"
+                 }
+                ]
+               },
+               {
+                "type": "list",
+                "start": 353,
+                "end": 459,
+                "children": [
+                 {
+                  "type": "(",
+                  "start": 353,
+                  "end": 354,
+                  "text": "("
+                 },
+                 {
+                  "type": "symbol",
+                  "start": 354,
+                  "end": 357,
+                  "text": "let"
+                 },
+                 {
+                  "type": "list",
+                  "start": 358,
+                  "end": 392,
+                  "children": [
+                   {
+                    "type": "(",
+                    "start": 358,
+                    "end": 359,
+                    "text": "("
+                   },
+                   {
+                    "type": "list",
+                    "start": 359,
+                    "end": 391,
+                    "children": [
+                     {
+                      "type": "(",
+                      "start": 359,
+                      "end": 360,
+                      "text": "("
+                     },
+                     {
+                      "type": "symbol",
+                      "start": 360,
+                      "end": 364,
+                      "text": "left"
+                     },
+                     {
+                      "type": "list",
+                      "start": 365,
+                      "end": 390,
+                      "children": [
+                       {
+                        "type": "(",
+                        "start": 365,
+                        "end": 366,
+                        "text": "("
+                       },
+                       {
+                        "type": "symbol",
+                        "start": 366,
+                        "end": 369,
+                        "text": "and"
+                       },
+                       {
+                        "type": "list",
+                        "start": 370,
+                        "end": 383,
+                        "children": [
+                         {
+                          "type": "(",
+                          "start": 370,
+                          "end": 371,
+                          "text": "("
+                         },
+                         {
+                          "type": "symbol",
+                          "start": 371,
+                          "end": 376,
+                          "text": "pair?"
+                         },
+                         {
+                          "type": "symbol",
+                          "start": 377,
+                          "end": 382,
+                          "text": "first"
+                         },
+                         {
+                          "type": ")",
+                          "start": 382,
+                          "end": 383,
+                          "text": ")"
+                         }
+                        ]
+                       },
+                       {
+                        "type": "symbol",
+                        "start": 384,
+                        "end": 389,
+                        "text": "first"
+                       },
+                       {
+                        "type": ")",
+                        "start": 389,
+                        "end": 390,
+                        "text": ")"
+                       }
+                      ]
+                     },
+                     {
+                      "type": ")",
+                      "start": 390,
+                      "end": 391,
+                      "text": ")"
+                     }
+                    ]
+                   },
+                   {
+                    "type": ")",
+                    "start": 391,
+                    "end": 392,
+                    "text": ")"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "list",
+                  "start": 393,
+                  "end": 458,
+                  "children": [
+                   {
+                    "type": "(",
+                    "start": 393,
+                    "end": 394,
+                    "text": "("
+                   },
+                   {
+                    "type": "symbol",
+                    "start": 394,
+                    "end": 397,
+                    "text": "let"
+                   },
+                   {
+                    "type": "list",
+                    "start": 398,
+                    "end": 431,
+                    "children": [
+                     {
+                      "type": "(",
+                      "start": 398,
+                      "end": 399,
+                      "text": "("
+                     },
+                     {
+                      "type": "list",
+                      "start": 399,
+                      "end": 430,
+                      "children": [
+                       {
+                        "type": "(",
+                        "start": 399,
+                        "end": 400,
+                        "text": "("
+                       },
+                       {
+                        "type": "symbol",
+                        "start": 400,
+                        "end": 405,
+                        "text": "right"
+                       },
+                       {
+                        "type": "list",
+                        "start": 406,
+                        "end": 429,
+                        "children": [
+                         {
+                          "type": "(",
+                          "start": 406,
+                          "end": 407,
+                          "text": "("
+                         },
+                         {
+                          "type": "symbol",
+                          "start": 407,
+                          "end": 410,
+                          "text": "and"
+                         },
+                         {
+                          "type": "list",
+                          "start": 411,
+                          "end": 423,
+                          "children": [
+                           {
+                            "type": "(",
+                            "start": 411,
+                            "end": 412,
+                            "text": "("
+                           },
+                           {
+                            "type": "symbol",
+                            "start": 412,
+                            "end": 417,
+                            "text": "pair?"
+                           },
+                           {
+                            "type": "symbol",
+                            "start": 418,
+                            "end": 422,
+                            "text": "rest"
+                           },
+                           {
+                            "type": ")",
+                            "start": 422,
+                            "end": 423,
+                            "text": ")"
+                           }
+                          ]
+                         },
+                         {
+                          "type": "symbol",
+                          "start": 424,
+                          "end": 428,
+                          "text": "rest"
+                         },
+                         {
+                          "type": ")",
+                          "start": 428,
+                          "end": 429,
+                          "text": ")"
+                         }
+                        ]
+                       },
+                       {
+                        "type": ")",
+                        "start": 429,
+                        "end": 430,
+                        "text": ")"
+                       }
+                      ]
+                     },
+                     {
+                      "type": ")",
+                      "start": 430,
+                      "end": 431,
+                      "text": ")"
+                     }
+                    ]
+                   },
+                   {
+                    "type": "list",
+                    "start": 432,
+                    "end": 457,
+                    "children": [
+                     {
+                      "type": "(",
+                      "start": 432,
+                      "end": 433,
+                      "text": "("
+                     },
+                     {
+                      "type": "symbol",
+                      "start": 433,
+                      "end": 437,
+                      "text": "list"
+                     },
+                     {
+                      "type": "symbol",
+                      "start": 438,
+                      "end": 443,
+                      "text": "value"
+                     },
+                     {
+                      "type": "symbol",
+                      "start": 444,
+                      "end": 445,
+                      "text": "n"
+                     },
+                     {
+                      "type": "symbol",
+                      "start": 446,
+                      "end": 450,
+                      "text": "left"
+                     },
+                     {
+                      "type": "symbol",
+                      "start": 451,
+                      "end": 456,
+                      "text": "right"
+                     },
+                     {
+                      "type": ")",
+                      "start": 456,
+                      "end": 457,
+                      "text": ")"
+                     }
+                    ]
+                   },
+                   {
+                    "type": ")",
+                    "start": 457,
+                    "end": 458,
+                    "text": ")"
+                   }
+                  ]
+                 },
+                 {
+                  "type": ")",
+                  "start": 458,
+                  "end": 459,
+                  "text": ")"
+                 }
+                ]
+               },
+               {
+                "type": ")",
+                "start": 459,
+                "end": 460,
+                "text": ")"
+               }
+              ]
+             },
+             {
+              "type": ")",
+              "start": 460,
+              "end": 461,
+              "text": ")"
+             }
+            ]
+           },
+           {
+            "type": ")",
+            "start": 461,
+            "end": 462,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": ")",
+          "start": 462,
+          "end": 463,
+          "text": ")"
+         }
+        ]
+       },
+       {
+        "type": ")",
+        "start": 463,
+        "end": 464,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": ")",
+      "start": 464,
+      "end": 465,
+      "text": ")"
+     }
+    ]
+   }
+  ]
+ }
+}
