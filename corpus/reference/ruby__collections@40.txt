@@ -1,0 +1,36 @@
+# Arrays, hashes, and percent-arrays already in syntax_tree's form.
+# `[:a, :b]` would become `%i[a b]`; `["a", "b"]` would become `%w[a b]`.
+
+empty_array = [] # written without a space; the spaced form is in normalisation
+empty_hash = {}
+
+short_array = [1, 2, 3]
+short_hash = {
+  host: "localhost",
+  port: 8080
+}
+
+symbols = %i[alpha beta gamma]
+words = %w[alpha beta gamma]
+mixed = [:alpha, "beta", :gamma] # mixed, so it is not rewritten to %i/%w
+
+long_hash = {
+  alpha: 1,
+  beta: 2,
+  gamma: 3,
+  delta: 4,
+  epsilon: 5,
+  zeta: 6,
+  eta: 7,
+  theta: 8
+}
+
+# Parent array breaks; inner hashes stay flat — the opposite of hash-in-hash.
+rows = [
+  { name: "alice", age: 30 },
+  { name: "bob", age: 40 },
+  { name: "carol", age: 50 }
+]
+
+string_key = { "a b" => 1 }
+integer_key = { 1 => :a }

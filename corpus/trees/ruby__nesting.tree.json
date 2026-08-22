@@ -1,0 +1,1684 @@
+{
+ "language": "ruby",
+ "source_file": "corpus/src/ruby/nesting.rb",
+ "source": "# Hashes inside hashes, arrays inside arrays. syntax_tree cascades a broken\n# hash into every hash inside it, even ones that would fit with room to spare.\n\nrow = { name: \"alice\", email: \"alice@example.test\", age: 30, city: \"paris\" } # flat at 80, stacked at 40\n\nconfig = {\n  database: {\n    primary: {\n      host: \"localhost\",\n      port: 5432,\n      pool: 5,\n      adapter: \"postgresql\"\n    },\n    replica: {\n      host: \"backup.example.test\",\n      port: 5432,\n      pool: 2\n    }\n  },\n  cache: {\n    redis: {\n      url: \"redis://localhost:6379/0\",\n      timeout: 1.5\n    }\n  }\n}\n\nmatrix = [\n  [1, 2, 3],\n  [4, 5, 6],\n  [7, 8, 9],\n  [10, 11, 12],\n  [13, 14, 15],\n  [16, 17, 18],\n  [19, 20, 21]\n]\n\n# Tiny inner hashes: when the parent breaks they break too, unlike the arrays.\nnested_tiny = {\n  alpha: { a: 1 },\n  beta: { b: 2 },\n  gamma: { c: 3 },\n  delta: { d: 4 },\n  epsilon: { e: 5 }\n}\n",
+ "root": {
+  "type": "program",
+  "start": 0,
+  "end": 891,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 75,
+    "text": "# Hashes inside hashes, arrays inside arrays. syntax_tree cascades a broken"
+   },
+   {
+    "type": "comment",
+    "start": 76,
+    "end": 154,
+    "text": "# hash into every hash inside it, even ones that would fit with room to spare."
+   },
+   {
+    "type": "assignment",
+    "start": 156,
+    "end": 232,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 156,
+      "end": 159,
+      "field": "left",
+      "text": "row"
+     },
+     {
+      "type": "=",
+      "start": 160,
+      "end": 161,
+      "text": "="
+     },
+     {
+      "type": "hash",
+      "start": 162,
+      "end": 232,
+      "field": "right",
+      "children": [
+       {
+        "type": "{",
+        "start": 162,
+        "end": 163,
+        "text": "{"
+       },
+       {
+        "type": "pair",
+        "start": 164,
+        "end": 177,
+        "children": [
+         {
+          "type": "hash_key_symbol",
+          "start": 164,
+          "end": 168,
+          "field": "key",
+          "text": "name"
+         },
+         {
+          "type": ":",
+          "start": 168,
+          "end": 169,
+          "text": ":"
+         },
+         {
+          "type": "string",
+          "start": 170,
+          "end": 177,
+          "field": "value",
+          "children": [
+           {
+            "type": "\"",
+            "start": 170,
+            "end": 171,
+            "text": "\""
+           },
+           {
+            "type": "string_content",
+            "start": 171,
+            "end": 176,
+            "text": "alice"
+           },
+           {
+            "type": "\"",
+            "start": 176,
+            "end": 177,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 177,
+        "end": 178,
+        "text": ","
+       },
+       {
+        "type": "pair",
+        "start": 179,
+        "end": 206,
+        "children": [
+         {
+          "type": "hash_key_symbol",
+          "start": 179,
+          "end": 184,
+          "field": "key",
+          "text": "email"
+         },
+         {
+          "type": ":",
+          "start": 184,
+          "end": 185,
+          "text": ":"
+         },
+         {
+          "type": "string",
+          "start": 186,
+          "end": 206,
+          "field": "value",
+          "children": [
+           {
+            "type": "\"",
+            "start": 186,
+            "end": 187,
+            "text": "\""
+           },
+           {
+            "type": "string_content",
+            "start": 187,
+            "end": 205,
+            "text": "alice@example.test"
+           },
+           {
+            "type": "\"",
+            "start": 205,
+            "end": 206,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 206,
+        "end": 207,
+        "text": ","
+       },
+       {
+        "type": "pair",
+        "start": 208,
+        "end": 215,
+        "children": [
+         {
+          "type": "hash_key_symbol",
+          "start": 208,
+          "end": 211,
+          "field": "key",
+          "text": "age"
+         },
+         {
+          "type": ":",
+          "start": 211,
+          "end": 212,
+          "text": ":"
+         },
+         {
+          "type": "integer",
+          "start": 213,
+          "end": 215,
+          "field": "value",
+          "text": "30"
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 215,
+        "end": 216,
+        "text": ","
+       },
+       {
+        "type": "pair",
+        "start": 217,
+        "end": 230,
+        "children": [
+         {
+          "type": "hash_key_symbol",
+          "start": 217,
+          "end": 221,
+          "field": "key",
+          "text": "city"
+         },
+         {
+          "type": ":",
+          "start": 221,
+          "end": 222,
+          "text": ":"
+         },
+         {
+          "type": "string",
+          "start": 223,
+          "end": 230,
+          "field": "value",
+          "children": [
+           {
+            "type": "\"",
+            "start": 223,
+            "end": 224,
+            "text": "\""
+           },
+           {
+            "type": "string_content",
+            "start": 224,
+            "end": 229,
+            "text": "paris"
+           },
+           {
+            "type": "\"",
+            "start": 229,
+            "end": 230,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 231,
+        "end": 232,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 233,
+    "end": 260,
+    "text": "# flat at 80, stacked at 40"
+   },
+   {
+    "type": "assignment",
+    "start": 262,
+    "end": 581,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 262,
+      "end": 268,
+      "field": "left",
+      "text": "config"
+     },
+     {
+      "type": "=",
+      "start": 269,
+      "end": 270,
+      "text": "="
+     },
+     {
+      "type": "hash",
+      "start": 271,
+      "end": 581,
+      "field": "right",
+      "children": [
+       {
+        "type": "{",
+        "start": 271,
+        "end": 272,
+        "text": "{"
+       },
+       {
+        "type": "pair",
+        "start": 275,
+        "end": 486,
+        "children": [
+         {
+          "type": "hash_key_symbol",
+          "start": 275,
+          "end": 283,
+          "field": "key",
+          "text": "database"
+         },
+         {
+          "type": ":",
+          "start": 283,
+          "end": 284,
+          "text": ":"
+         },
+         {
+          "type": "hash",
+          "start": 285,
+          "end": 486,
+          "field": "value",
+          "children": [
+           {
+            "type": "{",
+            "start": 285,
+            "end": 286,
+            "text": "{"
+           },
+           {
+            "type": "pair",
+            "start": 291,
+            "end": 393,
+            "children": [
+             {
+              "type": "hash_key_symbol",
+              "start": 291,
+              "end": 298,
+              "field": "key",
+              "text": "primary"
+             },
+             {
+              "type": ":",
+              "start": 298,
+              "end": 299,
+              "text": ":"
+             },
+             {
+              "type": "hash",
+              "start": 300,
+              "end": 393,
+              "field": "value",
+              "children": [
+               {
+                "type": "{",
+                "start": 300,
+                "end": 301,
+                "text": "{"
+               },
+               {
+                "type": "pair",
+                "start": 308,
+                "end": 325,
+                "children": [
+                 {
+                  "type": "hash_key_symbol",
+                  "start": 308,
+                  "end": 312,
+                  "field": "key",
+                  "text": "host"
+                 },
+                 {
+                  "type": ":",
+                  "start": 312,
+                  "end": 313,
+                  "text": ":"
+                 },
+                 {
+                  "type": "string",
+                  "start": 314,
+                  "end": 325,
+                  "field": "value",
+                  "children": [
+                   {
+                    "type": "\"",
+                    "start": 314,
+                    "end": 315,
+                    "text": "\""
+                   },
+                   {
+                    "type": "string_content",
+                    "start": 315,
+                    "end": 324,
+                    "text": "localhost"
+                   },
+                   {
+                    "type": "\"",
+                    "start": 324,
+                    "end": 325,
+                    "text": "\""
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 325,
+                "end": 326,
+                "text": ","
+               },
+               {
+                "type": "pair",
+                "start": 333,
+                "end": 343,
+                "children": [
+                 {
+                  "type": "hash_key_symbol",
+                  "start": 333,
+                  "end": 337,
+                  "field": "key",
+                  "text": "port"
+                 },
+                 {
+                  "type": ":",
+                  "start": 337,
+                  "end": 338,
+                  "text": ":"
+                 },
+                 {
+                  "type": "integer",
+                  "start": 339,
+                  "end": 343,
+                  "field": "value",
+                  "text": "5432"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 343,
+                "end": 344,
+                "text": ","
+               },
+               {
+                "type": "pair",
+                "start": 351,
+                "end": 358,
+                "children": [
+                 {
+                  "type": "hash_key_symbol",
+                  "start": 351,
+                  "end": 355,
+                  "field": "key",
+                  "text": "pool"
+                 },
+                 {
+                  "type": ":",
+                  "start": 355,
+                  "end": 356,
+                  "text": ":"
+                 },
+                 {
+                  "type": "integer",
+                  "start": 357,
+                  "end": 358,
+                  "field": "value",
+                  "text": "5"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 358,
+                "end": 359,
+                "text": ","
+               },
+               {
+                "type": "pair",
+                "start": 366,
+                "end": 387,
+                "children": [
+                 {
+                  "type": "hash_key_symbol",
+                  "start": 366,
+                  "end": 373,
+                  "field": "key",
+                  "text": "adapter"
+                 },
+                 {
+                  "type": ":",
+                  "start": 373,
+                  "end": 374,
+                  "text": ":"
+                 },
+                 {
+                  "type": "string",
+                  "start": 375,
+                  "end": 387,
+                  "field": "value",
+                  "children": [
+                   {
+                    "type": "\"",
+                    "start": 375,
+                    "end": 376,
+                    "text": "\""
+                   },
+                   {
+                    "type": "string_content",
+                    "start": 376,
+                    "end": 386,
+                    "text": "postgresql"
+                   },
+                   {
+                    "type": "\"",
+                    "start": 386,
+                    "end": 387,
+                    "text": "\""
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": "}",
+                "start": 392,
+                "end": 393,
+                "text": "}"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 393,
+            "end": 394,
+            "text": ","
+           },
+           {
+            "type": "pair",
+            "start": 399,
+            "end": 482,
+            "children": [
+             {
+              "type": "hash_key_symbol",
+              "start": 399,
+              "end": 406,
+              "field": "key",
+              "text": "replica"
+             },
+             {
+              "type": ":",
+              "start": 406,
+              "end": 407,
+              "text": ":"
+             },
+             {
+              "type": "hash",
+              "start": 408,
+              "end": 482,
+              "field": "value",
+              "children": [
+               {
+                "type": "{",
+                "start": 408,
+                "end": 409,
+                "text": "{"
+               },
+               {
+                "type": "pair",
+                "start": 416,
+                "end": 443,
+                "children": [
+                 {
+                  "type": "hash_key_symbol",
+                  "start": 416,
+                  "end": 420,
+                  "field": "key",
+                  "text": "host"
+                 },
+                 {
+                  "type": ":",
+                  "start": 420,
+                  "end": 421,
+                  "text": ":"
+                 },
+                 {
+                  "type": "string",
+                  "start": 422,
+                  "end": 443,
+                  "field": "value",
+                  "children": [
+                   {
+                    "type": "\"",
+                    "start": 422,
+                    "end": 423,
+                    "text": "\""
+                   },
+                   {
+                    "type": "string_content",
+                    "start": 423,
+                    "end": 442,
+                    "text": "backup.example.test"
+                   },
+                   {
+                    "type": "\"",
+                    "start": 442,
+                    "end": 443,
+                    "text": "\""
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 443,
+                "end": 444,
+                "text": ","
+               },
+               {
+                "type": "pair",
+                "start": 451,
+                "end": 461,
+                "children": [
+                 {
+                  "type": "hash_key_symbol",
+                  "start": 451,
+                  "end": 455,
+                  "field": "key",
+                  "text": "port"
+                 },
+                 {
+                  "type": ":",
+                  "start": 455,
+                  "end": 456,
+                  "text": ":"
+                 },
+                 {
+                  "type": "integer",
+                  "start": 457,
+                  "end": 461,
+                  "field": "value",
+                  "text": "5432"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 461,
+                "end": 462,
+                "text": ","
+               },
+               {
+                "type": "pair",
+                "start": 469,
+                "end": 476,
+                "children": [
+                 {
+                  "type": "hash_key_symbol",
+                  "start": 469,
+                  "end": 473,
+                  "field": "key",
+                  "text": "pool"
+                 },
+                 {
+                  "type": ":",
+                  "start": 473,
+                  "end": 474,
+                  "text": ":"
+                 },
+                 {
+                  "type": "integer",
+                  "start": 475,
+                  "end": 476,
+                  "field": "value",
+                  "text": "2"
+                 }
+                ]
+               },
+               {
+                "type": "}",
+                "start": 481,
+                "end": 482,
+                "text": "}"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 485,
+            "end": 486,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 486,
+        "end": 487,
+        "text": ","
+       },
+       {
+        "type": "pair",
+        "start": 490,
+        "end": 579,
+        "children": [
+         {
+          "type": "hash_key_symbol",
+          "start": 490,
+          "end": 495,
+          "field": "key",
+          "text": "cache"
+         },
+         {
+          "type": ":",
+          "start": 495,
+          "end": 496,
+          "text": ":"
+         },
+         {
+          "type": "hash",
+          "start": 497,
+          "end": 579,
+          "field": "value",
+          "children": [
+           {
+            "type": "{",
+            "start": 497,
+            "end": 498,
+            "text": "{"
+           },
+           {
+            "type": "pair",
+            "start": 503,
+            "end": 575,
+            "children": [
+             {
+              "type": "hash_key_symbol",
+              "start": 503,
+              "end": 508,
+              "field": "key",
+              "text": "redis"
+             },
+             {
+              "type": ":",
+              "start": 508,
+              "end": 509,
+              "text": ":"
+             },
+             {
+              "type": "hash",
+              "start": 510,
+              "end": 575,
+              "field": "value",
+              "children": [
+               {
+                "type": "{",
+                "start": 510,
+                "end": 511,
+                "text": "{"
+               },
+               {
+                "type": "pair",
+                "start": 518,
+                "end": 549,
+                "children": [
+                 {
+                  "type": "hash_key_symbol",
+                  "start": 518,
+                  "end": 521,
+                  "field": "key",
+                  "text": "url"
+                 },
+                 {
+                  "type": ":",
+                  "start": 521,
+                  "end": 522,
+                  "text": ":"
+                 },
+                 {
+                  "type": "string",
+                  "start": 523,
+                  "end": 549,
+                  "field": "value",
+                  "children": [
+                   {
+                    "type": "\"",
+                    "start": 523,
+                    "end": 524,
+                    "text": "\""
+                   },
+                   {
+                    "type": "string_content",
+                    "start": 524,
+                    "end": 548,
+                    "text": "redis://localhost:6379/0"
+                   },
+                   {
+                    "type": "\"",
+                    "start": 548,
+                    "end": 549,
+                    "text": "\""
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 549,
+                "end": 550,
+                "text": ","
+               },
+               {
+                "type": "pair",
+                "start": 557,
+                "end": 569,
+                "children": [
+                 {
+                  "type": "hash_key_symbol",
+                  "start": 557,
+                  "end": 564,
+                  "field": "key",
+                  "text": "timeout"
+                 },
+                 {
+                  "type": ":",
+                  "start": 564,
+                  "end": 565,
+                  "text": ":"
+                 },
+                 {
+                  "type": "float",
+                  "start": 566,
+                  "end": 569,
+                  "field": "value",
+                  "text": "1.5"
+                 }
+                ]
+               },
+               {
+                "type": "}",
+                "start": 574,
+                "end": 575,
+                "text": "}"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 578,
+            "end": 579,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 580,
+        "end": 581,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "assignment",
+    "start": 583,
+    "end": 697,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 583,
+      "end": 589,
+      "field": "left",
+      "text": "matrix"
+     },
+     {
+      "type": "=",
+      "start": 590,
+      "end": 591,
+      "text": "="
+     },
+     {
+      "type": "array",
+      "start": 592,
+      "end": 697,
+      "field": "right",
+      "children": [
+       {
+        "type": "[",
+        "start": 592,
+        "end": 593,
+        "text": "["
+       },
+       {
+        "type": "array",
+        "start": 596,
+        "end": 605,
+        "children": [
+         {
+          "type": "[",
+          "start": 596,
+          "end": 597,
+          "text": "["
+         },
+         {
+          "type": "integer",
+          "start": 597,
+          "end": 598,
+          "text": "1"
+         },
+         {
+          "type": ",",
+          "start": 598,
+          "end": 599,
+          "text": ","
+         },
+         {
+          "type": "integer",
+          "start": 600,
+          "end": 601,
+          "text": "2"
+         },
+         {
+          "type": ",",
+          "start": 601,
+          "end": 602,
+          "text": ","
+         },
+         {
+          "type": "integer",
+          "start": 603,
+          "end": 604,
+          "text": "3"
+         },
+         {
+          "type": "]",
+          "start": 604,
+          "end": 605,
+          "text": "]"
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 605,
+        "end": 606,
+        "text": ","
+       },
+       {
+        "type": "array",
+        "start": 609,
+        "end": 618,
+        "children": [
+         {
+          "type": "[",
+          "start": 609,
+          "end": 610,
+          "text": "["
+         },
+         {
+          "type": "integer",
+          "start": 610,
+          "end": 611,
+          "text": "4"
+         },
+         {
+          "type": ",",
+          "start": 611,
+          "end": 612,
+          "text": ","
+         },
+         {
+          "type": "integer",
+          "start": 613,
+          "end": 614,
+          "text": "5"
+         },
+         {
+          "type": ",",
+          "start": 614,
+          "end": 615,
+          "text": ","
+         },
+         {
+          "type": "integer",
+          "start": 616,
+          "end": 617,
+          "text": "6"
+         },
+         {
+          "type": "]",
+          "start": 617,
+          "end": 618,
+          "text": "]"
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 618,
+        "end": 619,
+        "text": ","
+       },
+       {
+        "type": "array",
+        "start": 622,
+        "end": 631,
+        "children": [
+         {
+          "type": "[",
+          "start": 622,
+          "end": 623,
+          "text": "["
+         },
+         {
+          "type": "integer",
+          "start": 623,
+          "end": 624,
+          "text": "7"
+         },
+         {
+          "type": ",",
+          "start": 624,
+          "end": 625,
+          "text": ","
+         },
+         {
+          "type": "integer",
+          "start": 626,
+          "end": 627,
+          "text": "8"
+         },
+         {
+          "type": ",",
+          "start": 627,
+          "end": 628,
+          "text": ","
+         },
+         {
+          "type": "integer",
+          "start": 629,
+          "end": 630,
+          "text": "9"
+         },
+         {
+          "type": "]",
+          "start": 630,
+          "end": 631,
+          "text": "]"
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 631,
+        "end": 632,
+        "text": ","
+       },
+       {
+        "type": "array",
+        "start": 635,
+        "end": 647,
+        "children": [
+         {
+          "type": "[",
+          "start": 635,
+          "end": 636,
+          "text": "["
+         },
+         {
+          "type": "integer",
+          "start": 636,
+          "end": 638,
+          "text": "10"
+         },
+         {
+          "type": ",",
+          "start": 638,
+          "end": 639,
+          "text": ","
+         },
+         {
+          "type": "integer",
+          "start": 640,
+          "end": 642,
+          "text": "11"
+         },
+         {
+          "type": ",",
+          "start": 642,
+          "end": 643,
+          "text": ","
+         },
+         {
+          "type": "integer",
+          "start": 644,
+          "end": 646,
+          "text": "12"
+         },
+         {
+          "type": "]",
+          "start": 646,
+          "end": 647,
+          "text": "]"
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 647,
+        "end": 648,
+        "text": ","
+       },
+       {
+        "type": "array",
+        "start": 651,
+        "end": 663,
+        "children": [
+         {
+          "type": "[",
+          "start": 651,
+          "end": 652,
+          "text": "["
+         },
+         {
+          "type": "integer",
+          "start": 652,
+          "end": 654,
+          "text": "13"
+         },
+         {
+          "type": ",",
+          "start": 654,
+          "end": 655,
+          "text": ","
+         },
+         {
+          "type": "integer",
+          "start": 656,
+          "end": 658,
+          "text": "14"
+         },
+         {
+          "type": ",",
+          "start": 658,
+          "end": 659,
+          "text": ","
+         },
+         {
+          "type": "integer",
+          "start": 660,
+          "end": 662,
+          "text": "15"
+         },
+         {
+          "type": "]",
+          "start": 662,
+          "end": 663,
+          "text": "]"
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 663,
+        "end": 664,
+        "text": ","
+       },
+       {
+        "type": "array",
+        "start": 667,
+        "end": 679,
+        "children": [
+         {
+          "type": "[",
+          "start": 667,
+          "end": 668,
+          "text": "["
+         },
+         {
+          "type": "integer",
+          "start": 668,
+          "end": 670,
+          "text": "16"
+         },
+         {
+          "type": ",",
+          "start": 670,
+          "end": 671,
+          "text": ","
+         },
+         {
+          "type": "integer",
+          "start": 672,
+          "end": 674,
+          "text": "17"
+         },
+         {
+          "type": ",",
+          "start": 674,
+          "end": 675,
+          "text": ","
+         },
+         {
+          "type": "integer",
+          "start": 676,
+          "end": 678,
+          "text": "18"
+         },
+         {
+          "type": "]",
+          "start": 678,
+          "end": 679,
+          "text": "]"
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 679,
+        "end": 680,
+        "text": ","
+       },
+       {
+        "type": "array",
+        "start": 683,
+        "end": 695,
+        "children": [
+         {
+          "type": "[",
+          "start": 683,
+          "end": 684,
+          "text": "["
+         },
+         {
+          "type": "integer",
+          "start": 684,
+          "end": 686,
+          "text": "19"
+         },
+         {
+          "type": ",",
+          "start": 686,
+          "end": 687,
+          "text": ","
+         },
+         {
+          "type": "integer",
+          "start": 688,
+          "end": 690,
+          "text": "20"
+         },
+         {
+          "type": ",",
+          "start": 690,
+          "end": 691,
+          "text": ","
+         },
+         {
+          "type": "integer",
+          "start": 692,
+          "end": 694,
+          "text": "21"
+         },
+         {
+          "type": "]",
+          "start": 694,
+          "end": 695,
+          "text": "]"
+         }
+        ]
+       },
+       {
+        "type": "]",
+        "start": 696,
+        "end": 697,
+        "text": "]"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 699,
+    "end": 777,
+    "text": "# Tiny inner hashes: when the parent breaks they break too, unlike the arrays."
+   },
+   {
+    "type": "assignment",
+    "start": 778,
+    "end": 890,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 778,
+      "end": 789,
+      "field": "left",
+      "text": "nested_tiny"
+     },
+     {
+      "type": "=",
+      "start": 790,
+      "end": 791,
+      "text": "="
+     },
+     {
+      "type": "hash",
+      "start": 792,
+      "end": 890,
+      "field": "right",
+      "children": [
+       {
+        "type": "{",
+        "start": 792,
+        "end": 793,
+        "text": "{"
+       },
+       {
+        "type": "pair",
+        "start": 796,
+        "end": 811,
+        "children": [
+         {
+          "type": "hash_key_symbol",
+          "start": 796,
+          "end": 801,
+          "field": "key",
+          "text": "alpha"
+         },
+         {
+          "type": ":",
+          "start": 801,
+          "end": 802,
+          "text": ":"
+         },
+         {
+          "type": "hash",
+          "start": 803,
+          "end": 811,
+          "field": "value",
+          "children": [
+           {
+            "type": "{",
+            "start": 803,
+            "end": 804,
+            "text": "{"
+           },
+           {
+            "type": "pair",
+            "start": 805,
+            "end": 809,
+            "children": [
+             {
+              "type": "hash_key_symbol",
+              "start": 805,
+              "end": 806,
+              "field": "key",
+              "text": "a"
+             },
+             {
+              "type": ":",
+              "start": 806,
+              "end": 807,
+              "text": ":"
+             },
+             {
+              "type": "integer",
+              "start": 808,
+              "end": 809,
+              "field": "value",
+              "text": "1"
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 810,
+            "end": 811,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 811,
+        "end": 812,
+        "text": ","
+       },
+       {
+        "type": "pair",
+        "start": 815,
+        "end": 829,
+        "children": [
+         {
+          "type": "hash_key_symbol",
+          "start": 815,
+          "end": 819,
+          "field": "key",
+          "text": "beta"
+         },
+         {
+          "type": ":",
+          "start": 819,
+          "end": 820,
+          "text": ":"
+         },
+         {
+          "type": "hash",
+          "start": 821,
+          "end": 829,
+          "field": "value",
+          "children": [
+           {
+            "type": "{",
+            "start": 821,
+            "end": 822,
+            "text": "{"
+           },
+           {
+            "type": "pair",
+            "start": 823,
+            "end": 827,
+            "children": [
+             {
+              "type": "hash_key_symbol",
+              "start": 823,
+              "end": 824,
+              "field": "key",
+              "text": "b"
+             },
+             {
+              "type": ":",
+              "start": 824,
+              "end": 825,
+              "text": ":"
+             },
+             {
+              "type": "integer",
+              "start": 826,
+              "end": 827,
+              "field": "value",
+              "text": "2"
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 828,
+            "end": 829,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 829,
+        "end": 830,
+        "text": ","
+       },
+       {
+        "type": "pair",
+        "start": 833,
+        "end": 848,
+        "children": [
+         {
+          "type": "hash_key_symbol",
+          "start": 833,
+          "end": 838,
+          "field": "key",
+          "text": "gamma"
+         },
+         {
+          "type": ":",
+          "start": 838,
+          "end": 839,
+          "text": ":"
+         },
+         {
+          "type": "hash",
+          "start": 840,
+          "end": 848,
+          "field": "value",
+          "children": [
+           {
+            "type": "{",
+            "start": 840,
+            "end": 841,
+            "text": "{"
+           },
+           {
+            "type": "pair",
+            "start": 842,
+            "end": 846,
+            "children": [
+             {
+              "type": "hash_key_symbol",
+              "start": 842,
+              "end": 843,
+              "field": "key",
+              "text": "c"
+             },
+             {
+              "type": ":",
+              "start": 843,
+              "end": 844,
+              "text": ":"
+             },
+             {
+              "type": "integer",
+              "start": 845,
+              "end": 846,
+              "field": "value",
+              "text": "3"
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 847,
+            "end": 848,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 848,
+        "end": 849,
+        "text": ","
+       },
+       {
+        "type": "pair",
+        "start": 852,
+        "end": 867,
+        "children": [
+         {
+          "type": "hash_key_symbol",
+          "start": 852,
+          "end": 857,
+          "field": "key",
+          "text": "delta"
+         },
+         {
+          "type": ":",
+          "start": 857,
+          "end": 858,
+          "text": ":"
+         },
+         {
+          "type": "hash",
+          "start": 859,
+          "end": 867,
+          "field": "value",
+          "children": [
+           {
+            "type": "{",
+            "start": 859,
+            "end": 860,
+            "text": "{"
+           },
+           {
+            "type": "pair",
+            "start": 861,
+            "end": 865,
+            "children": [
+             {
+              "type": "hash_key_symbol",
+              "start": 861,
+              "end": 862,
+              "field": "key",
+              "text": "d"
+             },
+             {
+              "type": ":",
+              "start": 862,
+              "end": 863,
+              "text": ":"
+             },
+             {
+              "type": "integer",
+              "start": 864,
+              "end": 865,
+              "field": "value",
+              "text": "4"
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 866,
+            "end": 867,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 867,
+        "end": 868,
+        "text": ","
+       },
+       {
+        "type": "pair",
+        "start": 871,
+        "end": 888,
+        "children": [
+         {
+          "type": "hash_key_symbol",
+          "start": 871,
+          "end": 878,
+          "field": "key",
+          "text": "epsilon"
+         },
+         {
+          "type": ":",
+          "start": 878,
+          "end": 879,
+          "text": ":"
+         },
+         {
+          "type": "hash",
+          "start": 880,
+          "end": 888,
+          "field": "value",
+          "children": [
+           {
+            "type": "{",
+            "start": 880,
+            "end": 881,
+            "text": "{"
+           },
+           {
+            "type": "pair",
+            "start": 882,
+            "end": 886,
+            "children": [
+             {
+              "type": "hash_key_symbol",
+              "start": 882,
+              "end": 883,
+              "field": "key",
+              "text": "e"
+             },
+             {
+              "type": ":",
+              "start": 883,
+              "end": 884,
+              "text": ":"
+             },
+             {
+              "type": "integer",
+              "start": 885,
+              "end": 886,
+              "field": "value",
+              "text": "5"
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 887,
+            "end": 888,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 889,
+        "end": 890,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

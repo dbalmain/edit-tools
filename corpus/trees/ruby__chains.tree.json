@@ -1,0 +1,774 @@
+{
+ "language": "ruby",
+ "source_file": "corpus/src/ruby/chains.rb",
+ "source": "# Method chains. A short chain stays flat; a medium one breaks at the\n# call's brackets at 40; a long one breaks at the dots even at 80.\n\nshort = user.name.upcase # still one line at 40\n\nmedium = user.accounts.active.where(status: \"open\")\n\nlong =\n  user\n    .accounts\n    .active\n    .where(status: \"open\")\n    .order(:created_at)\n    .limit(10)\n    .map(&:email)\n\n# Brace block stays braces; the chain wraps at 40.\nnames = items.select { |x| x.active? }.map(&:name)\n",
+ "root": {
+  "type": "program",
+  "start": 0,
+  "end": 467,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 69,
+    "text": "# Method chains. A short chain stays flat; a medium one breaks at the"
+   },
+   {
+    "type": "comment",
+    "start": 70,
+    "end": 136,
+    "text": "# call's brackets at 40; a long one breaks at the dots even at 80."
+   },
+   {
+    "type": "assignment",
+    "start": 138,
+    "end": 162,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 138,
+      "end": 143,
+      "field": "left",
+      "text": "short"
+     },
+     {
+      "type": "=",
+      "start": 144,
+      "end": 145,
+      "text": "="
+     },
+     {
+      "type": "call",
+      "start": 146,
+      "end": 162,
+      "field": "right",
+      "children": [
+       {
+        "type": "call",
+        "start": 146,
+        "end": 155,
+        "field": "receiver",
+        "children": [
+         {
+          "type": "identifier",
+          "start": 146,
+          "end": 150,
+          "field": "receiver",
+          "text": "user"
+         },
+         {
+          "type": ".",
+          "start": 150,
+          "end": 151,
+          "field": "operator",
+          "text": "."
+         },
+         {
+          "type": "identifier",
+          "start": 151,
+          "end": 155,
+          "field": "method",
+          "text": "name"
+         }
+        ]
+       },
+       {
+        "type": ".",
+        "start": 155,
+        "end": 156,
+        "field": "operator",
+        "text": "."
+       },
+       {
+        "type": "identifier",
+        "start": 156,
+        "end": 162,
+        "field": "method",
+        "text": "upcase"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 163,
+    "end": 185,
+    "text": "# still one line at 40"
+   },
+   {
+    "type": "assignment",
+    "start": 187,
+    "end": 238,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 187,
+      "end": 193,
+      "field": "left",
+      "text": "medium"
+     },
+     {
+      "type": "=",
+      "start": 194,
+      "end": 195,
+      "text": "="
+     },
+     {
+      "type": "call",
+      "start": 196,
+      "end": 238,
+      "field": "right",
+      "children": [
+       {
+        "type": "call",
+        "start": 196,
+        "end": 216,
+        "field": "receiver",
+        "children": [
+         {
+          "type": "call",
+          "start": 196,
+          "end": 209,
+          "field": "receiver",
+          "children": [
+           {
+            "type": "identifier",
+            "start": 196,
+            "end": 200,
+            "field": "receiver",
+            "text": "user"
+           },
+           {
+            "type": ".",
+            "start": 200,
+            "end": 201,
+            "field": "operator",
+            "text": "."
+           },
+           {
+            "type": "identifier",
+            "start": 201,
+            "end": 209,
+            "field": "method",
+            "text": "accounts"
+           }
+          ]
+         },
+         {
+          "type": ".",
+          "start": 209,
+          "end": 210,
+          "field": "operator",
+          "text": "."
+         },
+         {
+          "type": "identifier",
+          "start": 210,
+          "end": 216,
+          "field": "method",
+          "text": "active"
+         }
+        ]
+       },
+       {
+        "type": ".",
+        "start": 216,
+        "end": 217,
+        "field": "operator",
+        "text": "."
+       },
+       {
+        "type": "identifier",
+        "start": 217,
+        "end": 222,
+        "field": "method",
+        "text": "where"
+       },
+       {
+        "type": "argument_list",
+        "start": 222,
+        "end": 238,
+        "field": "arguments",
+        "children": [
+         {
+          "type": "(",
+          "start": 222,
+          "end": 223,
+          "text": "("
+         },
+         {
+          "type": "pair",
+          "start": 223,
+          "end": 237,
+          "children": [
+           {
+            "type": "hash_key_symbol",
+            "start": 223,
+            "end": 229,
+            "field": "key",
+            "text": "status"
+           },
+           {
+            "type": ":",
+            "start": 229,
+            "end": 230,
+            "text": ":"
+           },
+           {
+            "type": "string",
+            "start": 231,
+            "end": 237,
+            "field": "value",
+            "children": [
+             {
+              "type": "\"",
+              "start": 231,
+              "end": 232,
+              "text": "\""
+             },
+             {
+              "type": "string_content",
+              "start": 232,
+              "end": 236,
+              "text": "open"
+             },
+             {
+              "type": "\"",
+              "start": 236,
+              "end": 237,
+              "text": "\""
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ")",
+          "start": 237,
+          "end": 238,
+          "text": ")"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "assignment",
+    "start": 240,
+    "end": 363,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 240,
+      "end": 244,
+      "field": "left",
+      "text": "long"
+     },
+     {
+      "type": "=",
+      "start": 245,
+      "end": 246,
+      "text": "="
+     },
+     {
+      "type": "call",
+      "start": 249,
+      "end": 363,
+      "field": "right",
+      "children": [
+       {
+        "type": "call",
+        "start": 249,
+        "end": 345,
+        "field": "receiver",
+        "children": [
+         {
+          "type": "call",
+          "start": 249,
+          "end": 330,
+          "field": "receiver",
+          "children": [
+           {
+            "type": "call",
+            "start": 249,
+            "end": 306,
+            "field": "receiver",
+            "children": [
+             {
+              "type": "call",
+              "start": 249,
+              "end": 279,
+              "field": "receiver",
+              "children": [
+               {
+                "type": "call",
+                "start": 249,
+                "end": 267,
+                "field": "receiver",
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 249,
+                  "end": 253,
+                  "field": "receiver",
+                  "text": "user"
+                 },
+                 {
+                  "type": ".",
+                  "start": 258,
+                  "end": 259,
+                  "field": "operator",
+                  "text": "."
+                 },
+                 {
+                  "type": "identifier",
+                  "start": 259,
+                  "end": 267,
+                  "field": "method",
+                  "text": "accounts"
+                 }
+                ]
+               },
+               {
+                "type": ".",
+                "start": 272,
+                "end": 273,
+                "field": "operator",
+                "text": "."
+               },
+               {
+                "type": "identifier",
+                "start": 273,
+                "end": 279,
+                "field": "method",
+                "text": "active"
+               }
+              ]
+             },
+             {
+              "type": ".",
+              "start": 284,
+              "end": 285,
+              "field": "operator",
+              "text": "."
+             },
+             {
+              "type": "identifier",
+              "start": 285,
+              "end": 290,
+              "field": "method",
+              "text": "where"
+             },
+             {
+              "type": "argument_list",
+              "start": 290,
+              "end": 306,
+              "field": "arguments",
+              "children": [
+               {
+                "type": "(",
+                "start": 290,
+                "end": 291,
+                "text": "("
+               },
+               {
+                "type": "pair",
+                "start": 291,
+                "end": 305,
+                "children": [
+                 {
+                  "type": "hash_key_symbol",
+                  "start": 291,
+                  "end": 297,
+                  "field": "key",
+                  "text": "status"
+                 },
+                 {
+                  "type": ":",
+                  "start": 297,
+                  "end": 298,
+                  "text": ":"
+                 },
+                 {
+                  "type": "string",
+                  "start": 299,
+                  "end": 305,
+                  "field": "value",
+                  "children": [
+                   {
+                    "type": "\"",
+                    "start": 299,
+                    "end": 300,
+                    "text": "\""
+                   },
+                   {
+                    "type": "string_content",
+                    "start": 300,
+                    "end": 304,
+                    "text": "open"
+                   },
+                   {
+                    "type": "\"",
+                    "start": 304,
+                    "end": 305,
+                    "text": "\""
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": ")",
+                "start": 305,
+                "end": 306,
+                "text": ")"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ".",
+            "start": 311,
+            "end": 312,
+            "field": "operator",
+            "text": "."
+           },
+           {
+            "type": "identifier",
+            "start": 312,
+            "end": 317,
+            "field": "method",
+            "text": "order"
+           },
+           {
+            "type": "argument_list",
+            "start": 317,
+            "end": 330,
+            "field": "arguments",
+            "children": [
+             {
+              "type": "(",
+              "start": 317,
+              "end": 318,
+              "text": "("
+             },
+             {
+              "type": "simple_symbol",
+              "start": 318,
+              "end": 329,
+              "text": ":created_at"
+             },
+             {
+              "type": ")",
+              "start": 329,
+              "end": 330,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": ".",
+          "start": 335,
+          "end": 336,
+          "field": "operator",
+          "text": "."
+         },
+         {
+          "type": "identifier",
+          "start": 336,
+          "end": 341,
+          "field": "method",
+          "text": "limit"
+         },
+         {
+          "type": "argument_list",
+          "start": 341,
+          "end": 345,
+          "field": "arguments",
+          "children": [
+           {
+            "type": "(",
+            "start": 341,
+            "end": 342,
+            "text": "("
+           },
+           {
+            "type": "integer",
+            "start": 342,
+            "end": 344,
+            "text": "10"
+           },
+           {
+            "type": ")",
+            "start": 344,
+            "end": 345,
+            "text": ")"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ".",
+        "start": 350,
+        "end": 351,
+        "field": "operator",
+        "text": "."
+       },
+       {
+        "type": "identifier",
+        "start": 351,
+        "end": 354,
+        "field": "method",
+        "text": "map"
+       },
+       {
+        "type": "argument_list",
+        "start": 354,
+        "end": 363,
+        "field": "arguments",
+        "children": [
+         {
+          "type": "(",
+          "start": 354,
+          "end": 355,
+          "text": "("
+         },
+         {
+          "type": "block_argument",
+          "start": 355,
+          "end": 362,
+          "children": [
+           {
+            "type": "&",
+            "start": 355,
+            "end": 356,
+            "text": "&"
+           },
+           {
+            "type": "simple_symbol",
+            "start": 356,
+            "end": 362,
+            "text": ":email"
+           }
+          ]
+         },
+         {
+          "type": ")",
+          "start": 362,
+          "end": 363,
+          "text": ")"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 365,
+    "end": 415,
+    "text": "# Brace block stays braces; the chain wraps at 40."
+   },
+   {
+    "type": "assignment",
+    "start": 416,
+    "end": 466,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 416,
+      "end": 421,
+      "field": "left",
+      "text": "names"
+     },
+     {
+      "type": "=",
+      "start": 422,
+      "end": 423,
+      "text": "="
+     },
+     {
+      "type": "call",
+      "start": 424,
+      "end": 466,
+      "field": "right",
+      "children": [
+       {
+        "type": "call",
+        "start": 424,
+        "end": 454,
+        "field": "receiver",
+        "children": [
+         {
+          "type": "identifier",
+          "start": 424,
+          "end": 429,
+          "field": "receiver",
+          "text": "items"
+         },
+         {
+          "type": ".",
+          "start": 429,
+          "end": 430,
+          "field": "operator",
+          "text": "."
+         },
+         {
+          "type": "identifier",
+          "start": 430,
+          "end": 436,
+          "field": "method",
+          "text": "select"
+         },
+         {
+          "type": "block",
+          "start": 437,
+          "end": 454,
+          "field": "block",
+          "children": [
+           {
+            "type": "{",
+            "start": 437,
+            "end": 438,
+            "text": "{"
+           },
+           {
+            "type": "block_parameters",
+            "start": 439,
+            "end": 442,
+            "field": "parameters",
+            "children": [
+             {
+              "type": "|",
+              "start": 439,
+              "end": 440,
+              "text": "|"
+             },
+             {
+              "type": "identifier",
+              "start": 440,
+              "end": 441,
+              "text": "x"
+             },
+             {
+              "type": "|",
+              "start": 441,
+              "end": 442,
+              "text": "|"
+             }
+            ]
+           },
+           {
+            "type": "block_body",
+            "start": 443,
+            "end": 452,
+            "field": "body",
+            "children": [
+             {
+              "type": "call",
+              "start": 443,
+              "end": 452,
+              "children": [
+               {
+                "type": "identifier",
+                "start": 443,
+                "end": 444,
+                "field": "receiver",
+                "text": "x"
+               },
+               {
+                "type": ".",
+                "start": 444,
+                "end": 445,
+                "field": "operator",
+                "text": "."
+               },
+               {
+                "type": "identifier",
+                "start": 445,
+                "end": 452,
+                "field": "method",
+                "text": "active?"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 453,
+            "end": 454,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ".",
+        "start": 454,
+        "end": 455,
+        "field": "operator",
+        "text": "."
+       },
+       {
+        "type": "identifier",
+        "start": 455,
+        "end": 458,
+        "field": "method",
+        "text": "map"
+       },
+       {
+        "type": "argument_list",
+        "start": 458,
+        "end": 466,
+        "field": "arguments",
+        "children": [
+         {
+          "type": "(",
+          "start": 458,
+          "end": 459,
+          "text": "("
+         },
+         {
+          "type": "block_argument",
+          "start": 459,
+          "end": 465,
+          "children": [
+           {
+            "type": "&",
+            "start": 459,
+            "end": 460,
+            "text": "&"
+           },
+           {
+            "type": "simple_symbol",
+            "start": 460,
+            "end": 465,
+            "text": ":name"
+           }
+          ]
+         },
+         {
+          "type": ")",
+          "start": 465,
+          "end": 466,
+          "text": ")"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}
