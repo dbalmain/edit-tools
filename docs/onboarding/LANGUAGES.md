@@ -141,6 +141,34 @@ package-bug (declined). Two isolated runtime edits, +188 B: a fieldless
 rename probe still refuses `Field("left")`, and suffix-comment emission on a
 skipped operand (+127 B) that was breaking `comments.ts` idempotence.
 
+**The one `package-bug` was checked before routing stage D, and the finding is
+that the facts are right and the label is wrong.** The divergence is prettier's
+last-argument hugging: `@logged("debug", { … })` keeps `"debug"` on the head
+line and breaks only the trailing object, while the package breaks every
+argument. Reproduced from the committed reference, not taken from the report.
+
+The builder's stated reason for declining it is *"re-deriving call rules would
+contradict reuse-JS-where-the-construct-is-the-same"*. **That is a choice, not
+an inability**, and the vocabulary is explicit about the difference:
+`design-limit` and `package-bug` mean *we could not*; `reference-quirk` and
+`house-rule` mean *we chose not to*. A divergence declined because fixing it
+would fork a shared rule set is the second kind wearing the first kind's label.
+
+Two things follow, and the second matters more than the first:
+
+- **It is not relabelled here.** The 2026-08-21 decision that made `package-bug`
+  a hard failure predicted exactly this pressure — "creates pressure to relabel
+  to get through" — and the orchestrator relabelling it to unblock a merge is
+  that prediction coming true. **Stage D rules on it**, with this analysis in
+  front of it rather than instead of it.
+- **JavaScript is the cross-check and it is clean.** Same reference, same reused
+  call rules, fourteen divergences, **zero `package-bug`** and nothing of this
+  kind among them. So either JavaScript's corpus never exercises a broken call
+  with a trailing object literal, or its rules already handle it. Stage D should
+  establish which, because "the shared rules have a hole nobody had probed" and
+  "TypeScript diverged from the shared rules" are different findings with
+  different owners.
+
 **The number is not a verdict on the package; it is a measurement of the parked
 decisions.** Sixteen of the nineteen misses are already-documented findings --
 2, 6, 9, 11, 13, 15 and 20 -- landing in one language at once. TypeScript is the

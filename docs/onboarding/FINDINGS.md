@@ -2580,3 +2580,75 @@ is built on.
 Related: entry 13, whose mechanism is the same one seen from the other side —
 there, elision **cannot** fire because the node holds only anonymous tokens; here
 it fires where it should not.
+
+## 26. A token that appears only when the group breaks, at the front
+
+**Status:** open · **Cost:** **3 of 19 divergent pairs in TypeScript** · **Languages:** TypeScript (Rust is the mirror, entry 13)
+
+prettier writes a union that fits as `type T = A | B;` and a union that does not
+as:
+
+```typescript
+type Handler =
+  | ((event: Event) => void)
+  | ((event: Event) => Promise<void>)
+  | null;
+```
+
+The leading `|` on the first alternative **is not in the source** and appears
+**only when the group breaks**. Nothing in the opcode set emits it.
+
+### Why none of the three near-misses works
+
+- **`trail`** adds a token in the broken branch, which is the right conditional
+  — but it is *trailing*, and it is count-gated (entry 21). It puts a token
+  after the last item, never before the first.
+- **`autoparen`** is genuinely `IfBreak`-shaped, and it is the proof the Doc IR
+  can already express this: `IfBreak` exists in the IR. It is welded to
+  parentheses and to one construct.
+- **`drop`** (entry 13) is the exact inverse: rustfmt *removes* a leading `|`
+  the source has, and `drop` was built to express that and then parked for want
+  of a caller gate 3 accepts.
+
+So the IR is not missing the mechanism. **The package format is missing the
+opcode that reaches it**, and it is missing it in both directions at once.
+
+### The shape that would work
+
+`["lead", "|"]` beside `trail`: emit a declared punctuation token in the broken
+branch only, before the first item, consuming no child. Roughly `trail` with the
+position reversed and the count gate removed. TypeScript's stage C asked for
+exactly this and, told not to fake it, declined to build it — correctly. Faking
+an unconditional pipe changes the flat rendering and moves the failure somewhere
+harder to see.
+
+### What it does and does not buy
+
+**It buys three of nineteen divergent pairs**: `unions.ts` at both widths and
+`strings.ts@40`, where a template-literal union grows the pipe at 40. It also
+appears inside `comments.ts@80` alongside other causes.
+
+**It does not rescue TypeScript's agreement.** 11/30 becomes at most 14/30 —
+still far under the 70% floor, because sixteen of the nineteen misses are
+findings 2, 6, 9, 11, 13, 15 and 20 arriving together. **This entry exists to
+stop `lead` being built for the wrong reason.** It is a capability question
+about two languages, not a rescue for one score, and the number it moves is
+small enough that mistaking one for the other is easy.
+
+### Why it is worth building anyway
+
+The two-language bar is met, and met unusually cleanly: **prettier inserts a
+leading `|` and rustfmt deletes one**, and the same opcode family answers both.
+Entry 13 has been parked since round 3 for want of a second caller; this is the
+second caller, approaching from the opposite direction. Building `lead` and
+`drop` together, as one decision about leading delimiters rather than two
+opcodes, is the shape to consider — and it changes entry 13's parking argument,
+which was "no caller worth the bytes", not "wrong idea".
+
+**Decide when:** together with entry 13, not before. Neither is urgent; both are
+now paid for twice.
+
+**What it costs to leave:** three corpus pairs in one language, and entry 13
+stays parked with a built, tested, unused opcode. Nothing is silently wrong —
+every affected pair is classified `design-limit` in TypeScript's report with the
+reason named.
