@@ -1,0 +1,456 @@
+{
+ "language": "scheme",
+ "source_file": "corpus/src/scheme/calls.scm",
+ "source": ";; Same head symbol, two source line-breaks, two indents. `list` with the\n;; first argument on the head line aligns under that argument; with it on\n;; the next line, emacs uses the one-space default. Width is not involved.\n(define (same-line a b c) ; first arg shares the head line\n(list a\nb\nc))\n\n(define (next-line a b c)\n(list\na\nb\nc))\n\n(define (begin-same x y)\n(begin x\ny))\n\n(define (begin-next x y)\n(begin\nx\ny))\n",
+ "root": {
+  "type": "program",
+  "start": 0,
+  "end": 415,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 73,
+    "text": ";; Same head symbol, two source line-breaks, two indents. `list` with the"
+   },
+   {
+    "type": "comment",
+    "start": 74,
+    "end": 147,
+    "text": ";; first argument on the head line aligns under that argument; with it on"
+   },
+   {
+    "type": "comment",
+    "start": 148,
+    "end": 222,
+    "text": ";; the next line, emacs uses the one-space default. Width is not involved."
+   },
+   {
+    "type": "list",
+    "start": 223,
+    "end": 295,
+    "children": [
+     {
+      "type": "(",
+      "start": 223,
+      "end": 224,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 224,
+      "end": 230,
+      "text": "define"
+     },
+     {
+      "type": "list",
+      "start": 231,
+      "end": 248,
+      "children": [
+       {
+        "type": "(",
+        "start": 231,
+        "end": 232,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 232,
+        "end": 241,
+        "text": "same-line"
+       },
+       {
+        "type": "symbol",
+        "start": 242,
+        "end": 243,
+        "text": "a"
+       },
+       {
+        "type": "symbol",
+        "start": 244,
+        "end": 245,
+        "text": "b"
+       },
+       {
+        "type": "symbol",
+        "start": 246,
+        "end": 247,
+        "text": "c"
+       },
+       {
+        "type": ")",
+        "start": 247,
+        "end": 248,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 249,
+      "end": 281,
+      "text": "; first arg shares the head line"
+     },
+     {
+      "type": "list",
+      "start": 282,
+      "end": 294,
+      "children": [
+       {
+        "type": "(",
+        "start": 282,
+        "end": 283,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 283,
+        "end": 287,
+        "text": "list"
+       },
+       {
+        "type": "symbol",
+        "start": 288,
+        "end": 289,
+        "text": "a"
+       },
+       {
+        "type": "symbol",
+        "start": 290,
+        "end": 291,
+        "text": "b"
+       },
+       {
+        "type": "symbol",
+        "start": 292,
+        "end": 293,
+        "text": "c"
+       },
+       {
+        "type": ")",
+        "start": 293,
+        "end": 294,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": ")",
+      "start": 294,
+      "end": 295,
+      "text": ")"
+     }
+    ]
+   },
+   {
+    "type": "list",
+    "start": 297,
+    "end": 336,
+    "children": [
+     {
+      "type": "(",
+      "start": 297,
+      "end": 298,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 298,
+      "end": 304,
+      "text": "define"
+     },
+     {
+      "type": "list",
+      "start": 305,
+      "end": 322,
+      "children": [
+       {
+        "type": "(",
+        "start": 305,
+        "end": 306,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 306,
+        "end": 315,
+        "text": "next-line"
+       },
+       {
+        "type": "symbol",
+        "start": 316,
+        "end": 317,
+        "text": "a"
+       },
+       {
+        "type": "symbol",
+        "start": 318,
+        "end": 319,
+        "text": "b"
+       },
+       {
+        "type": "symbol",
+        "start": 320,
+        "end": 321,
+        "text": "c"
+       },
+       {
+        "type": ")",
+        "start": 321,
+        "end": 322,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "list",
+      "start": 323,
+      "end": 335,
+      "children": [
+       {
+        "type": "(",
+        "start": 323,
+        "end": 324,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 324,
+        "end": 328,
+        "text": "list"
+       },
+       {
+        "type": "symbol",
+        "start": 329,
+        "end": 330,
+        "text": "a"
+       },
+       {
+        "type": "symbol",
+        "start": 331,
+        "end": 332,
+        "text": "b"
+       },
+       {
+        "type": "symbol",
+        "start": 333,
+        "end": 334,
+        "text": "c"
+       },
+       {
+        "type": ")",
+        "start": 334,
+        "end": 335,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": ")",
+      "start": 335,
+      "end": 336,
+      "text": ")"
+     }
+    ]
+   },
+   {
+    "type": "list",
+    "start": 338,
+    "end": 375,
+    "children": [
+     {
+      "type": "(",
+      "start": 338,
+      "end": 339,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 339,
+      "end": 345,
+      "text": "define"
+     },
+     {
+      "type": "list",
+      "start": 346,
+      "end": 362,
+      "children": [
+       {
+        "type": "(",
+        "start": 346,
+        "end": 347,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 347,
+        "end": 357,
+        "text": "begin-same"
+       },
+       {
+        "type": "symbol",
+        "start": 358,
+        "end": 359,
+        "text": "x"
+       },
+       {
+        "type": "symbol",
+        "start": 360,
+        "end": 361,
+        "text": "y"
+       },
+       {
+        "type": ")",
+        "start": 361,
+        "end": 362,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "list",
+      "start": 363,
+      "end": 374,
+      "children": [
+       {
+        "type": "(",
+        "start": 363,
+        "end": 364,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 364,
+        "end": 369,
+        "text": "begin"
+       },
+       {
+        "type": "symbol",
+        "start": 370,
+        "end": 371,
+        "text": "x"
+       },
+       {
+        "type": "symbol",
+        "start": 372,
+        "end": 373,
+        "text": "y"
+       },
+       {
+        "type": ")",
+        "start": 373,
+        "end": 374,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": ")",
+      "start": 374,
+      "end": 375,
+      "text": ")"
+     }
+    ]
+   },
+   {
+    "type": "list",
+    "start": 377,
+    "end": 414,
+    "children": [
+     {
+      "type": "(",
+      "start": 377,
+      "end": 378,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 378,
+      "end": 384,
+      "text": "define"
+     },
+     {
+      "type": "list",
+      "start": 385,
+      "end": 401,
+      "children": [
+       {
+        "type": "(",
+        "start": 385,
+        "end": 386,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 386,
+        "end": 396,
+        "text": "begin-next"
+       },
+       {
+        "type": "symbol",
+        "start": 397,
+        "end": 398,
+        "text": "x"
+       },
+       {
+        "type": "symbol",
+        "start": 399,
+        "end": 400,
+        "text": "y"
+       },
+       {
+        "type": ")",
+        "start": 400,
+        "end": 401,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "list",
+      "start": 402,
+      "end": 413,
+      "children": [
+       {
+        "type": "(",
+        "start": 402,
+        "end": 403,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 403,
+        "end": 408,
+        "text": "begin"
+       },
+       {
+        "type": "symbol",
+        "start": 409,
+        "end": 410,
+        "text": "x"
+       },
+       {
+        "type": "symbol",
+        "start": 411,
+        "end": 412,
+        "text": "y"
+       },
+       {
+        "type": ")",
+        "start": 412,
+        "end": 413,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": ")",
+      "start": 413,
+      "end": 414,
+      "text": ")"
+     }
+    ]
+   }
+  ]
+ }
+}

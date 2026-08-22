@@ -1,0 +1,47 @@
+module LongSequences (alpha, beta, gamma, delta, epsilon, zeta, eta, theta, iota, kappa, lambda, mu, nu, xi, omicron, rho, sigma, tau, upsilon, phi, chi, psi, omega, extra1, extra2) where
+
+-- constructs that overflow a line; ormolu will not break any of these
+data Big
+  = C1 Int
+  | C2 Int
+  | C3 Int
+  | C4 Int
+  | C5 Int
+  | C6 Int
+  | C7 Int
+  | C8 Int
+  | C9 Int
+  | C10 Int
+  | C11 Int
+  | C12 Int
+  deriving (Eq, Ord, Show, Read)
+
+longList = [alpha, beta, gamma, delta, epsilon, zeta, eta, theta, iota, kappa, lambda, mu, nu, xi, omicron, rho, sigma, tau, upsilon, phi, chi, psi, omega]
+
+longCall aaaaaaaaaaaa bbbbbbbbbbbb cccccccccccc dddddddddddd eeeeeeeeeeee ffffffffffff = aaaaaaaaaaaa + bbbbbbbbbbbb + cccccccccccc + dddddddddddd -- trailing on a long equation
+
+alpha = 1
+beta = 2
+gamma = 3
+delta = 4
+epsilon = 5
+zeta = 6
+eta = 7
+theta = 8
+iota = 9
+kappa = 10
+lambda = 11
+mu = 12
+nu = 13
+xi = 14
+omicron = 15
+rho = 16
+sigma = 17
+tau = 18
+upsilon = 19
+phi = 20
+chi = 21
+psi = 22
+omega = 23
+extra1 = 24
+extra2 = 25

@@ -1,0 +1,37 @@
+# Optional parentheses: syntax_tree leaves both forms alone on calls.
+# (It *adds* them on a `def` header; that lives in defs.rb, already parenthesised.)
+
+puts x # bare call
+puts(x) # parenthesised, same call
+
+puts x, y
+puts(x, y)
+
+# Keyword arguments wrap as a group at 40; this line is 80 characters flat.
+configure(
+  host: "localhost",
+  port: 8080,
+  timeout: 30,
+  retries: 3,
+  verbose: true
+)
+
+configure(
+  host: "localhost",
+  port: 8080,
+  timeout: 30,
+  retries: 3,
+  verbose: true,
+  debug: false
+)
+
+foo(*args, **kwargs, &block)
+
+foo(1, 2) { |x| x }
+
+# Trailing comment on a call that already fits; comments do not count toward width.
+configure(
+  host: "localhost",
+  port: 8080,
+  timeout: 30
+) # trailing comment here

@@ -1,0 +1,971 @@
+{
+ "language": "haskell",
+ "source_file": "corpus/src/haskell/signatures.hs",
+ "source": "module Signatures where\n\n-- type signatures, classes, instances, constraints\nclass Eq a => Sized a where\n  size :: a -> Int -- method signature\n\ninstance Sized Int where\n  size = abs\n\ninstance Sized [a] where\n  size = length\n\ncounted :: (Eq a, Sized a, Show a) => a -> String\ncounted x = show x ++ \":\" ++ show (size x) -- uses the class\n\ntype Alias = Maybe Int\n\nkinded :: Maybe Int -> Int\nkinded Nothing = 0\nkinded (Just n) = n\n",
+ "root": {
+  "type": "haskell",
+  "start": 0,
+  "end": 428,
+  "children": [
+   {
+    "type": "header",
+    "start": 0,
+    "end": 23,
+    "children": [
+     {
+      "type": "module",
+      "start": 0,
+      "end": 6,
+      "text": "module"
+     },
+     {
+      "type": "module",
+      "start": 7,
+      "end": 17,
+      "field": "module",
+      "children": [
+       {
+        "type": "module_id",
+        "start": 7,
+        "end": 17,
+        "text": "Signatures"
+       }
+      ]
+     },
+     {
+      "type": "where",
+      "start": 18,
+      "end": 23,
+      "text": "where"
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 25,
+    "end": 76,
+    "text": "-- type signatures, classes, instances, constraints"
+   },
+   {
+    "type": "declarations",
+    "start": 77,
+    "end": 428,
+    "field": "declarations",
+    "children": [
+     {
+      "type": "class",
+      "start": 77,
+      "end": 143,
+      "children": [
+       {
+        "type": "class",
+        "start": 77,
+        "end": 82,
+        "text": "class"
+       },
+       {
+        "type": "context",
+        "start": 82,
+        "end": 90,
+        "field": "context",
+        "children": [
+         {
+          "type": "apply",
+          "start": 83,
+          "end": 87,
+          "field": "context",
+          "children": [
+           {
+            "type": "name",
+            "start": 83,
+            "end": 85,
+            "field": "constructor",
+            "text": "Eq"
+           },
+           {
+            "type": "variable",
+            "start": 86,
+            "end": 87,
+            "field": "argument",
+            "text": "a"
+           }
+          ]
+         },
+         {
+          "type": "=>",
+          "start": 88,
+          "end": 90,
+          "field": "arrow",
+          "text": "=>"
+         }
+        ]
+       },
+       {
+        "type": "name",
+        "start": 91,
+        "end": 96,
+        "field": "name",
+        "text": "Sized"
+       },
+       {
+        "type": "type_params",
+        "start": 97,
+        "end": 98,
+        "field": "patterns",
+        "children": [
+         {
+          "type": "variable",
+          "start": 97,
+          "end": 98,
+          "field": "bind",
+          "text": "a"
+         }
+        ]
+       },
+       {
+        "type": "where",
+        "start": 99,
+        "end": 104,
+        "text": "where"
+       },
+       {
+        "type": "class_declarations",
+        "start": 107,
+        "end": 143,
+        "field": "declarations",
+        "children": [
+         {
+          "type": "signature",
+          "start": 107,
+          "end": 123,
+          "field": "declaration",
+          "children": [
+           {
+            "type": "variable",
+            "start": 107,
+            "end": 111,
+            "field": "name",
+            "text": "size"
+           },
+           {
+            "type": "::",
+            "start": 112,
+            "end": 114,
+            "text": "::"
+           },
+           {
+            "type": "function",
+            "start": 115,
+            "end": 123,
+            "field": "type",
+            "children": [
+             {
+              "type": "variable",
+              "start": 115,
+              "end": 116,
+              "field": "parameter",
+              "text": "a"
+             },
+             {
+              "type": "->",
+              "start": 117,
+              "end": 119,
+              "field": "arrow",
+              "text": "->"
+             },
+             {
+              "type": "name",
+              "start": 120,
+              "end": 123,
+              "field": "result",
+              "text": "Int"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "comment",
+          "start": 124,
+          "end": 143,
+          "text": "-- method signature"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "instance",
+      "start": 145,
+      "end": 182,
+      "children": [
+       {
+        "type": "instance",
+        "start": 145,
+        "end": 153,
+        "text": "instance"
+       },
+       {
+        "type": "name",
+        "start": 154,
+        "end": 159,
+        "field": "name",
+        "text": "Sized"
+       },
+       {
+        "type": "type_patterns",
+        "start": 160,
+        "end": 163,
+        "field": "patterns",
+        "children": [
+         {
+          "type": "name",
+          "start": 160,
+          "end": 163,
+          "text": "Int"
+         }
+        ]
+       },
+       {
+        "type": "where",
+        "start": 164,
+        "end": 169,
+        "text": "where"
+       },
+       {
+        "type": "instance_declarations",
+        "start": 172,
+        "end": 182,
+        "field": "declarations",
+        "children": [
+         {
+          "type": "bind",
+          "start": 172,
+          "end": 182,
+          "field": "declaration",
+          "children": [
+           {
+            "type": "variable",
+            "start": 172,
+            "end": 176,
+            "field": "name",
+            "text": "size"
+           },
+           {
+            "type": "match",
+            "start": 177,
+            "end": 182,
+            "field": "match",
+            "children": [
+             {
+              "type": "=",
+              "start": 177,
+              "end": 178,
+              "text": "="
+             },
+             {
+              "type": "variable",
+              "start": 179,
+              "end": 182,
+              "field": "expression",
+              "text": "abs"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "instance",
+      "start": 184,
+      "end": 224,
+      "children": [
+       {
+        "type": "instance",
+        "start": 184,
+        "end": 192,
+        "text": "instance"
+       },
+       {
+        "type": "name",
+        "start": 193,
+        "end": 198,
+        "field": "name",
+        "text": "Sized"
+       },
+       {
+        "type": "type_patterns",
+        "start": 199,
+        "end": 202,
+        "field": "patterns",
+        "children": [
+         {
+          "type": "list",
+          "start": 199,
+          "end": 202,
+          "children": [
+           {
+            "type": "[",
+            "start": 199,
+            "end": 200,
+            "text": "["
+           },
+           {
+            "type": "variable",
+            "start": 200,
+            "end": 201,
+            "field": "element",
+            "text": "a"
+           },
+           {
+            "type": "]",
+            "start": 201,
+            "end": 202,
+            "text": "]"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "where",
+        "start": 203,
+        "end": 208,
+        "text": "where"
+       },
+       {
+        "type": "instance_declarations",
+        "start": 211,
+        "end": 224,
+        "field": "declarations",
+        "children": [
+         {
+          "type": "bind",
+          "start": 211,
+          "end": 224,
+          "field": "declaration",
+          "children": [
+           {
+            "type": "variable",
+            "start": 211,
+            "end": 215,
+            "field": "name",
+            "text": "size"
+           },
+           {
+            "type": "match",
+            "start": 216,
+            "end": 224,
+            "field": "match",
+            "children": [
+             {
+              "type": "=",
+              "start": 216,
+              "end": 217,
+              "text": "="
+             },
+             {
+              "type": "variable",
+              "start": 218,
+              "end": 224,
+              "field": "expression",
+              "text": "length"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "signature",
+      "start": 226,
+      "end": 275,
+      "children": [
+       {
+        "type": "variable",
+        "start": 226,
+        "end": 233,
+        "field": "name",
+        "text": "counted"
+       },
+       {
+        "type": "::",
+        "start": 234,
+        "end": 236,
+        "text": "::"
+       },
+       {
+        "type": "context",
+        "start": 236,
+        "end": 275,
+        "field": "type",
+        "children": [
+         {
+          "type": "tuple",
+          "start": 237,
+          "end": 260,
+          "field": "context",
+          "children": [
+           {
+            "type": "(",
+            "start": 237,
+            "end": 238,
+            "text": "("
+           },
+           {
+            "type": "apply",
+            "start": 238,
+            "end": 242,
+            "children": [
+             {
+              "type": "name",
+              "start": 238,
+              "end": 240,
+              "field": "constructor",
+              "text": "Eq"
+             },
+             {
+              "type": "variable",
+              "start": 241,
+              "end": 242,
+              "field": "argument",
+              "text": "a"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 242,
+            "end": 243,
+            "text": ","
+           },
+           {
+            "type": "apply",
+            "start": 244,
+            "end": 251,
+            "children": [
+             {
+              "type": "name",
+              "start": 244,
+              "end": 249,
+              "field": "constructor",
+              "text": "Sized"
+             },
+             {
+              "type": "variable",
+              "start": 250,
+              "end": 251,
+              "field": "argument",
+              "text": "a"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 251,
+            "end": 252,
+            "text": ","
+           },
+           {
+            "type": "apply",
+            "start": 253,
+            "end": 259,
+            "children": [
+             {
+              "type": "name",
+              "start": 253,
+              "end": 257,
+              "field": "constructor",
+              "text": "Show"
+             },
+             {
+              "type": "variable",
+              "start": 258,
+              "end": 259,
+              "field": "argument",
+              "text": "a"
+             }
+            ]
+           },
+           {
+            "type": ")",
+            "start": 259,
+            "end": 260,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": "=>",
+          "start": 261,
+          "end": 263,
+          "field": "arrow",
+          "text": "=>"
+         },
+         {
+          "type": "function",
+          "start": 264,
+          "end": 275,
+          "field": "type",
+          "children": [
+           {
+            "type": "variable",
+            "start": 264,
+            "end": 265,
+            "field": "parameter",
+            "text": "a"
+           },
+           {
+            "type": "->",
+            "start": 266,
+            "end": 268,
+            "field": "arrow",
+            "text": "->"
+           },
+           {
+            "type": "name",
+            "start": 269,
+            "end": 275,
+            "field": "result",
+            "text": "String"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "function",
+      "start": 276,
+      "end": 318,
+      "children": [
+       {
+        "type": "variable",
+        "start": 276,
+        "end": 283,
+        "field": "name",
+        "text": "counted"
+       },
+       {
+        "type": "patterns",
+        "start": 284,
+        "end": 285,
+        "field": "patterns",
+        "children": [
+         {
+          "type": "variable",
+          "start": 284,
+          "end": 285,
+          "text": "x"
+         }
+        ]
+       },
+       {
+        "type": "match",
+        "start": 286,
+        "end": 318,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 286,
+          "end": 287,
+          "text": "="
+         },
+         {
+          "type": "infix",
+          "start": 288,
+          "end": 318,
+          "field": "expression",
+          "children": [
+           {
+            "type": "apply",
+            "start": 288,
+            "end": 294,
+            "field": "left_operand",
+            "children": [
+             {
+              "type": "variable",
+              "start": 288,
+              "end": 292,
+              "field": "function",
+              "text": "show"
+             },
+             {
+              "type": "variable",
+              "start": 293,
+              "end": 294,
+              "field": "argument",
+              "text": "x"
+             }
+            ]
+           },
+           {
+            "type": "operator",
+            "start": 295,
+            "end": 297,
+            "field": "operator",
+            "text": "++"
+           },
+           {
+            "type": "infix",
+            "start": 298,
+            "end": 318,
+            "field": "right_operand",
+            "children": [
+             {
+              "type": "literal",
+              "start": 298,
+              "end": 301,
+              "field": "left_operand",
+              "children": [
+               {
+                "type": "string",
+                "start": 298,
+                "end": 301,
+                "text": "\":\""
+               }
+              ]
+             },
+             {
+              "type": "operator",
+              "start": 302,
+              "end": 304,
+              "field": "operator",
+              "text": "++"
+             },
+             {
+              "type": "apply",
+              "start": 305,
+              "end": 318,
+              "field": "right_operand",
+              "children": [
+               {
+                "type": "variable",
+                "start": 305,
+                "end": 309,
+                "field": "function",
+                "text": "show"
+               },
+               {
+                "type": "parens",
+                "start": 310,
+                "end": 318,
+                "field": "argument",
+                "children": [
+                 {
+                  "type": "(",
+                  "start": 310,
+                  "end": 311,
+                  "text": "("
+                 },
+                 {
+                  "type": "apply",
+                  "start": 311,
+                  "end": 317,
+                  "field": "expression",
+                  "children": [
+                   {
+                    "type": "variable",
+                    "start": 311,
+                    "end": 315,
+                    "field": "function",
+                    "text": "size"
+                   },
+                   {
+                    "type": "variable",
+                    "start": 316,
+                    "end": 317,
+                    "field": "argument",
+                    "text": "x"
+                   }
+                  ]
+                 },
+                 {
+                  "type": ")",
+                  "start": 317,
+                  "end": 318,
+                  "text": ")"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 319,
+      "end": 336,
+      "text": "-- uses the class"
+     },
+     {
+      "type": "type_synomym",
+      "start": 338,
+      "end": 360,
+      "children": [
+       {
+        "type": "type",
+        "start": 338,
+        "end": 342,
+        "text": "type"
+       },
+       {
+        "type": "name",
+        "start": 343,
+        "end": 348,
+        "field": "name",
+        "text": "Alias"
+       },
+       {
+        "type": "=",
+        "start": 349,
+        "end": 350,
+        "text": "="
+       },
+       {
+        "type": "apply",
+        "start": 351,
+        "end": 360,
+        "field": "type",
+        "children": [
+         {
+          "type": "name",
+          "start": 351,
+          "end": 356,
+          "field": "constructor",
+          "text": "Maybe"
+         },
+         {
+          "type": "name",
+          "start": 357,
+          "end": 360,
+          "field": "argument",
+          "text": "Int"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "signature",
+      "start": 362,
+      "end": 388,
+      "children": [
+       {
+        "type": "variable",
+        "start": 362,
+        "end": 368,
+        "field": "name",
+        "text": "kinded"
+       },
+       {
+        "type": "::",
+        "start": 369,
+        "end": 371,
+        "text": "::"
+       },
+       {
+        "type": "function",
+        "start": 372,
+        "end": 388,
+        "field": "type",
+        "children": [
+         {
+          "type": "apply",
+          "start": 372,
+          "end": 381,
+          "field": "parameter",
+          "children": [
+           {
+            "type": "name",
+            "start": 372,
+            "end": 377,
+            "field": "constructor",
+            "text": "Maybe"
+           },
+           {
+            "type": "name",
+            "start": 378,
+            "end": 381,
+            "field": "argument",
+            "text": "Int"
+           }
+          ]
+         },
+         {
+          "type": "->",
+          "start": 382,
+          "end": 384,
+          "field": "arrow",
+          "text": "->"
+         },
+         {
+          "type": "name",
+          "start": 385,
+          "end": 388,
+          "field": "result",
+          "text": "Int"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "function",
+      "start": 389,
+      "end": 407,
+      "children": [
+       {
+        "type": "variable",
+        "start": 389,
+        "end": 395,
+        "field": "name",
+        "text": "kinded"
+       },
+       {
+        "type": "patterns",
+        "start": 396,
+        "end": 403,
+        "field": "patterns",
+        "children": [
+         {
+          "type": "constructor",
+          "start": 396,
+          "end": 403,
+          "text": "Nothing"
+         }
+        ]
+       },
+       {
+        "type": "match",
+        "start": 404,
+        "end": 407,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 404,
+          "end": 405,
+          "text": "="
+         },
+         {
+          "type": "literal",
+          "start": 406,
+          "end": 407,
+          "field": "expression",
+          "children": [
+           {
+            "type": "integer",
+            "start": 406,
+            "end": 407,
+            "text": "0"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "function",
+      "start": 408,
+      "end": 427,
+      "children": [
+       {
+        "type": "variable",
+        "start": 408,
+        "end": 414,
+        "field": "name",
+        "text": "kinded"
+       },
+       {
+        "type": "patterns",
+        "start": 415,
+        "end": 423,
+        "field": "patterns",
+        "children": [
+         {
+          "type": "parens",
+          "start": 415,
+          "end": 423,
+          "children": [
+           {
+            "type": "(",
+            "start": 415,
+            "end": 416,
+            "text": "("
+           },
+           {
+            "type": "apply",
+            "start": 416,
+            "end": 422,
+            "field": "pattern",
+            "children": [
+             {
+              "type": "constructor",
+              "start": 416,
+              "end": 420,
+              "field": "function",
+              "text": "Just"
+             },
+             {
+              "type": "variable",
+              "start": 421,
+              "end": 422,
+              "field": "argument",
+              "text": "n"
+             }
+            ]
+           },
+           {
+            "type": ")",
+            "start": 422,
+            "end": 423,
+            "text": ")"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "match",
+        "start": 424,
+        "end": 427,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 424,
+          "end": 425,
+          "text": "="
+         },
+         {
+          "type": "variable",
+          "start": 426,
+          "end": 427,
+          "field": "expression",
+          "text": "n"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

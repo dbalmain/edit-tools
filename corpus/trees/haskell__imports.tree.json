@@ -1,0 +1,603 @@
+{
+ "language": "haskell",
+ "source_file": "corpus/src/haskell/imports.hs",
+ "source": "module Imports where\n\n-- unsorted on purpose: ormolu reorders these alphabetically by module name\nimport Data.Maybe (fromMaybe, isJust)\nimport Control.Monad (guard, when)\nimport Data.List (foldl', sort)\nimport System.IO (hPutStrLn, stderr)\n\nused = (fromMaybe, isJust, guard, when, foldl', sort, hPutStrLn, stderr) -- keep them used\n",
+ "root": {
+  "type": "haskell",
+  "start": 0,
+  "end": 332,
+  "children": [
+   {
+    "type": "header",
+    "start": 0,
+    "end": 20,
+    "children": [
+     {
+      "type": "module",
+      "start": 0,
+      "end": 6,
+      "text": "module"
+     },
+     {
+      "type": "module",
+      "start": 7,
+      "end": 14,
+      "field": "module",
+      "children": [
+       {
+        "type": "module_id",
+        "start": 7,
+        "end": 14,
+        "text": "Imports"
+       }
+      ]
+     },
+     {
+      "type": "where",
+      "start": 15,
+      "end": 20,
+      "text": "where"
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 22,
+    "end": 97,
+    "text": "-- unsorted on purpose: ormolu reorders these alphabetically by module name"
+   },
+   {
+    "type": "imports",
+    "start": 98,
+    "end": 241,
+    "field": "imports",
+    "children": [
+     {
+      "type": "import",
+      "start": 98,
+      "end": 135,
+      "field": "import",
+      "children": [
+       {
+        "type": "import",
+        "start": 98,
+        "end": 104,
+        "text": "import"
+       },
+       {
+        "type": "module",
+        "start": 105,
+        "end": 115,
+        "field": "module",
+        "children": [
+         {
+          "type": "module_id",
+          "start": 105,
+          "end": 109,
+          "text": "Data"
+         },
+         {
+          "type": ".",
+          "start": 109,
+          "end": 110,
+          "text": "."
+         },
+         {
+          "type": "module_id",
+          "start": 110,
+          "end": 115,
+          "text": "Maybe"
+         }
+        ]
+       },
+       {
+        "type": "import_list",
+        "start": 116,
+        "end": 135,
+        "field": "names",
+        "children": [
+         {
+          "type": "(",
+          "start": 116,
+          "end": 117,
+          "text": "("
+         },
+         {
+          "type": "import_name",
+          "start": 117,
+          "end": 126,
+          "field": "name",
+          "children": [
+           {
+            "type": "variable",
+            "start": 117,
+            "end": 126,
+            "field": "variable",
+            "text": "fromMaybe"
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 126,
+          "end": 127,
+          "text": ","
+         },
+         {
+          "type": "import_name",
+          "start": 128,
+          "end": 134,
+          "field": "name",
+          "children": [
+           {
+            "type": "variable",
+            "start": 128,
+            "end": 134,
+            "field": "variable",
+            "text": "isJust"
+           }
+          ]
+         },
+         {
+          "type": ")",
+          "start": 134,
+          "end": 135,
+          "text": ")"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "import",
+      "start": 136,
+      "end": 170,
+      "field": "import",
+      "children": [
+       {
+        "type": "import",
+        "start": 136,
+        "end": 142,
+        "text": "import"
+       },
+       {
+        "type": "module",
+        "start": 143,
+        "end": 156,
+        "field": "module",
+        "children": [
+         {
+          "type": "module_id",
+          "start": 143,
+          "end": 150,
+          "text": "Control"
+         },
+         {
+          "type": ".",
+          "start": 150,
+          "end": 151,
+          "text": "."
+         },
+         {
+          "type": "module_id",
+          "start": 151,
+          "end": 156,
+          "text": "Monad"
+         }
+        ]
+       },
+       {
+        "type": "import_list",
+        "start": 157,
+        "end": 170,
+        "field": "names",
+        "children": [
+         {
+          "type": "(",
+          "start": 157,
+          "end": 158,
+          "text": "("
+         },
+         {
+          "type": "import_name",
+          "start": 158,
+          "end": 163,
+          "field": "name",
+          "children": [
+           {
+            "type": "variable",
+            "start": 158,
+            "end": 163,
+            "field": "variable",
+            "text": "guard"
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 163,
+          "end": 164,
+          "text": ","
+         },
+         {
+          "type": "import_name",
+          "start": 165,
+          "end": 169,
+          "field": "name",
+          "children": [
+           {
+            "type": "variable",
+            "start": 165,
+            "end": 169,
+            "field": "variable",
+            "text": "when"
+           }
+          ]
+         },
+         {
+          "type": ")",
+          "start": 169,
+          "end": 170,
+          "text": ")"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "import",
+      "start": 171,
+      "end": 202,
+      "field": "import",
+      "children": [
+       {
+        "type": "import",
+        "start": 171,
+        "end": 177,
+        "text": "import"
+       },
+       {
+        "type": "module",
+        "start": 178,
+        "end": 187,
+        "field": "module",
+        "children": [
+         {
+          "type": "module_id",
+          "start": 178,
+          "end": 182,
+          "text": "Data"
+         },
+         {
+          "type": ".",
+          "start": 182,
+          "end": 183,
+          "text": "."
+         },
+         {
+          "type": "module_id",
+          "start": 183,
+          "end": 187,
+          "text": "List"
+         }
+        ]
+       },
+       {
+        "type": "import_list",
+        "start": 188,
+        "end": 202,
+        "field": "names",
+        "children": [
+         {
+          "type": "(",
+          "start": 188,
+          "end": 189,
+          "text": "("
+         },
+         {
+          "type": "import_name",
+          "start": 189,
+          "end": 195,
+          "field": "name",
+          "children": [
+           {
+            "type": "variable",
+            "start": 189,
+            "end": 195,
+            "field": "variable",
+            "text": "foldl'"
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 195,
+          "end": 196,
+          "text": ","
+         },
+         {
+          "type": "import_name",
+          "start": 197,
+          "end": 201,
+          "field": "name",
+          "children": [
+           {
+            "type": "variable",
+            "start": 197,
+            "end": 201,
+            "field": "variable",
+            "text": "sort"
+           }
+          ]
+         },
+         {
+          "type": ")",
+          "start": 201,
+          "end": 202,
+          "text": ")"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "import",
+      "start": 203,
+      "end": 239,
+      "field": "import",
+      "children": [
+       {
+        "type": "import",
+        "start": 203,
+        "end": 209,
+        "text": "import"
+       },
+       {
+        "type": "module",
+        "start": 210,
+        "end": 219,
+        "field": "module",
+        "children": [
+         {
+          "type": "module_id",
+          "start": 210,
+          "end": 216,
+          "text": "System"
+         },
+         {
+          "type": ".",
+          "start": 216,
+          "end": 217,
+          "text": "."
+         },
+         {
+          "type": "module_id",
+          "start": 217,
+          "end": 219,
+          "text": "IO"
+         }
+        ]
+       },
+       {
+        "type": "import_list",
+        "start": 220,
+        "end": 239,
+        "field": "names",
+        "children": [
+         {
+          "type": "(",
+          "start": 220,
+          "end": 221,
+          "text": "("
+         },
+         {
+          "type": "import_name",
+          "start": 221,
+          "end": 230,
+          "field": "name",
+          "children": [
+           {
+            "type": "variable",
+            "start": 221,
+            "end": 230,
+            "field": "variable",
+            "text": "hPutStrLn"
+           }
+          ]
+         },
+         {
+          "type": ",",
+          "start": 230,
+          "end": 231,
+          "text": ","
+         },
+         {
+          "type": "import_name",
+          "start": 232,
+          "end": 238,
+          "field": "name",
+          "children": [
+           {
+            "type": "variable",
+            "start": 232,
+            "end": 238,
+            "field": "variable",
+            "text": "stderr"
+           }
+          ]
+         },
+         {
+          "type": ")",
+          "start": 238,
+          "end": 239,
+          "text": ")"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "declarations",
+    "start": 241,
+    "end": 332,
+    "field": "declarations",
+    "children": [
+     {
+      "type": "bind",
+      "start": 241,
+      "end": 313,
+      "children": [
+       {
+        "type": "variable",
+        "start": 241,
+        "end": 245,
+        "field": "name",
+        "text": "used"
+       },
+       {
+        "type": "match",
+        "start": 246,
+        "end": 313,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 246,
+          "end": 247,
+          "text": "="
+         },
+         {
+          "type": "tuple",
+          "start": 248,
+          "end": 313,
+          "field": "expression",
+          "children": [
+           {
+            "type": "(",
+            "start": 248,
+            "end": 249,
+            "text": "("
+           },
+           {
+            "type": "variable",
+            "start": 249,
+            "end": 258,
+            "field": "element",
+            "text": "fromMaybe"
+           },
+           {
+            "type": ",",
+            "start": 258,
+            "end": 259,
+            "text": ","
+           },
+           {
+            "type": "variable",
+            "start": 260,
+            "end": 266,
+            "field": "element",
+            "text": "isJust"
+           },
+           {
+            "type": ",",
+            "start": 266,
+            "end": 267,
+            "text": ","
+           },
+           {
+            "type": "variable",
+            "start": 268,
+            "end": 273,
+            "field": "element",
+            "text": "guard"
+           },
+           {
+            "type": ",",
+            "start": 273,
+            "end": 274,
+            "text": ","
+           },
+           {
+            "type": "variable",
+            "start": 275,
+            "end": 279,
+            "field": "element",
+            "text": "when"
+           },
+           {
+            "type": ",",
+            "start": 279,
+            "end": 280,
+            "text": ","
+           },
+           {
+            "type": "variable",
+            "start": 281,
+            "end": 287,
+            "field": "element",
+            "text": "foldl'"
+           },
+           {
+            "type": ",",
+            "start": 287,
+            "end": 288,
+            "text": ","
+           },
+           {
+            "type": "variable",
+            "start": 289,
+            "end": 293,
+            "field": "element",
+            "text": "sort"
+           },
+           {
+            "type": ",",
+            "start": 293,
+            "end": 294,
+            "text": ","
+           },
+           {
+            "type": "variable",
+            "start": 295,
+            "end": 304,
+            "field": "element",
+            "text": "hPutStrLn"
+           },
+           {
+            "type": ",",
+            "start": 304,
+            "end": 305,
+            "text": ","
+           },
+           {
+            "type": "variable",
+            "start": 306,
+            "end": 312,
+            "field": "element",
+            "text": "stderr"
+           },
+           {
+            "type": ")",
+            "start": 312,
+            "end": 313,
+            "text": ")"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 314,
+      "end": 331,
+      "text": "-- keep them used"
+     }
+    ]
+   }
+  ]
+ }
+}

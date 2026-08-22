@@ -2393,3 +2393,262 @@ as a house rule on a cited regression; the regression is now **measured**, and i
 is larger than the citation said — a let-level group takes Rust from 22/36 to
 17/36, regressing `sequences.rs` and `nesting.rs` at both widths, `macros.rs@60`
 and `strings.rs@100`, while still not fixing `strings.rs@60`.
+
+## 24. An injected region is spliced by offset, and a reflow invents lines the host never saw
+
+**Status:** open · **Cost:** **contextual** · **Languages:** Markdown (HTML next)
+
+A guest region is extracted as a **byte slice** of the host document, parsed by
+the guest grammar, and spliced back by adding one number to every guest offset.
+That works for as long as the guest's bytes are a contiguous, unmodified run of
+the host's bytes. **Markdown's block quote is the first construct where they are
+not**, and it breaks the design in two different places — the second of which
+has no proposed fix at all.
+
+### What a quoted fence is, and what it does
+
+A fenced code block inside a block quote carries a `> ` continuation marker on
+every line:
+
+````markdown
+> ```json
+> { "a": 1, "b": [1, 2, 3] }
+> ```
+````
+
+tree-sitter includes those markers in the span of `code_fence_content`, so
+`injection.region_for` hands the guest parser the markers along with the
+content. Measured, both shapes in one document:
+
+```
+list item:   b'{ "a": 1, "b": [1, 2, 3] }\n  '   -> json.loads OK
+block quote: b'{ "a": 1, "b": [1, 2, 3] }\n> '   -> json.loads FAILS
+```
+
+The list-item form works **by luck**: its continuation is spaces, and JSON
+treats spaces as whitespace. Nothing about it is a designed success. Any host
+construct whose continuation is not whitespace fails the same way — the parse
+fails, the region falls back to `verbatim`, and the fence body is emitted
+untouched with no warning.
+
+### The first defect: stripping breaks the splice
+
+The obvious repair — drop the `block_continuation` children from the region's
+source — was proposed by markdown's stage A with correct file, function and line
+numbers, and is **wrong**. `gen_trees.convert` rebases guest offsets onto the
+host with a **single additive base** and reads each leaf's text from **host**
+bytes. Remove characters from the middle and that correspondence becomes
+piecewise: every leaf after the first stripped marker reads from the wrong
+place. Two agents measured it independently on different fences — **16 of 17**
+and **21 of 23** leaves wrong, `"alpha"` coming back as `' "alp'` — and
+`check_clean` only looks for `ERROR`/`MISSING`, so the corrupted tree looks
+healthy.
+
+That much has a known fix: `Region` carries retained
+`(guest_start, host_start, len)` runs and the consumers use the map instead of a
+scalar. It is a real change across `injection.py`, `gen_trees.py` and
+`gate3.py`, and it is not the hard part.
+
+### The second defect, and the actual finding
+
+**The offset map repairs reading and does nothing for writing.** Strip the `> `
+prefixes and the guest sees clean JSON — then the guest **reflows it**, and the
+lines it emits are lines the host document never contained. Each one needs a
+`> ` prefix that nothing puts back. The host has already handed off; the guest
+does not know it is inside a block quote; no opcode in the package format takes
+a per-line prefix; and the printer's `indent` carries a column count, not a
+string.
+
+So the boundary is wrong in a way an offset map cannot reach: **a host construct
+can own a per-line prefix, and the guest can create lines after the host has
+stopped looking.** Splicing is a byte-range operation and this is not a
+byte-range problem.
+
+Found by codex-Sol on the harness slice, 2026-08-22, having been asked to build
+the offset map and invited to refuse it. It reproduced the first defect, built
+the map on paper, and declined — which is the outcome the prompt named as
+acceptable and is worth more than the implementation would have been.
+
+### Why this is not entry 12
+
+Entry 12 is YAML: **semantic content living in the whitespace between two
+nodes**, invisible to a gate that compares nodes. This one is visible to
+everything — the `> ` markers are right there in the source, in the span, in the
+tree. The problem is not that we cannot see them. It is that we have nowhere to
+**put them back**, on lines that do not exist until after the guest has run.
+
+### What it would take
+
+Not one capability, but a choice between two shapes, and this entry exists to
+make that choice rather than to prejudge it:
+
+- **A per-line prefix on the region**, carried through the printer so every line
+  the guest emits inside the region is prefixed on the way out. Cheap to state,
+  and it puts a host concern inside the guest's printer.
+- **Prefix re-application as a host post-pass**, after the guest returns its
+  rendered block, using the same continuation the host stripped. Keeps the guest
+  ignorant, and needs the host rule to know how many lines came back.
+
+The second looks closer to how `alignCells` already works — a text post-pass
+after `print()` — and cell alignment (entry 18, LEDGER row 1) is the precedent
+for a whole-text pass being the right shape rather than a printer change. That
+is an argument, not a decision.
+
+**Decide when:** a second host language wants it. **HTML is the likely second
+and is already onboarded** — `<script>` and `<style>` inside a construct with a
+continuation marker would hit the identical wall. Markdown alone is not enough
+to build on, which is why this is open rather than scheduled.
+
+**What it costs to leave:** a fenced code block inside a block quote is not
+formatted. It is a common shape in real documents — quoted examples, docs that
+block-quote a snippet — and it is one of the shapes Dave's headline markdown
+requirement is written in. Markdown's corpus avoids it deliberately and its
+report says so, so nothing is silently wrong; the construct is simply out of
+reach. `probe_injection.py` now reproduces the limitation permanently, so the
+next person meets the real problem instead of rediscovering the shallow one.
+
+## 25. Transparent parens are sound against loss and blind to legality
+
+**Status:** open · **Cost:** **contextual — one language so far** · **Languages:** Haskell
+
+`transparent_wrappers` elides a declared node kind when it has exactly one named
+child, so a formatter that removes redundant parentheses is not accused of
+losing a node. Haskell needs it: ormolu rewrites `class Eq a =>` to
+`class (Eq a) =>`, and without the declaration **gate 3 would reject the
+reference formatter's own output**. That is not a corner case, it is the normal
+path.
+
+The declaration was measured rather than assumed, and the sound half is the
+larger half. Of nine paren-drop attacks built against the Haskell corpus, **six
+are rejected**, including every load-bearing one: the application spine,
+precedence, associativity, a negative literal, a type arrow, a lambda argument.
+All 25 `parens` nodes across corpus and reference have exactly one named child,
+so the elision precondition holds wherever it fires. Nothing is being smuggled
+past the gate by accident.
+
+### The hole
+
+`g (do x; y)` elides to `g do x; y`. Gate 3 accepts it, because the two have the
+same elided signature — and **the second is only valid GHC under
+`BlockArguments`**. A formatter that stripped those parens would pass every gate
+and emit a file that does not compile.
+
+So the boundary is: **gate 3 asks whether the tree still means the same thing,
+and cannot ask whether the text is still legal.** Those are different questions
+in a language whose grammar is extension-dependent. Node equivalence is a
+property of the tree; parseability is a property of the tree *plus a set of
+enabled extensions the tree does not carry*.
+
+Found by Haskell's stage B, 2026-08-22, which recorded it rather than
+"fixing" it — correctly, because the obvious fix is worse than the defect.
+
+### Why not just drop the declaration
+
+Because the alternative fails harder and immediately. Not declaring `parens`
+makes gate 3 reject ormolu's own output on the normal path, which means Haskell
+cannot onboard at all. Trading a hole that no formatter on the roster falls
+into for a gate that rejects the reference is not a trade.
+
+Nor is a narrower declaration available today: the elision is keyed on the node
+kind and the one-named-child rule, and `(do …)` is a `parens` with exactly one
+named child like every other. Distinguishing it needs the gate to look at *what*
+the single child is, which it currently does not.
+
+### What it would take
+
+A predicate on the elided child's kind — "elide `parens` unless its single named
+child is a `do` block" — is about the smallest honest shape, and it is a
+per-language exception list rather than a general rule, which is the part worth
+disliking. The general version is bigger: a gate arm that re-parses the
+formatted output with the language's own front end and asks whether it still
+compiles. That is a different kind of gate from the four we have — it needs a
+toolchain per language rather than a grammar — and it would subsume this entry
+along with several others.
+
+**Decide when:** a second language shows the same shape, or a package actually
+attempts the strip. Neither has happened. Note the class is not rare in
+principle — any language with optional syntax extensions can have two spellings
+that are tree-equivalent and not both legal — and Haskell is simply the first on
+the roster with one.
+
+**What it costs to leave:** nothing today. No package strips those parens, and
+the corpus does not contain the shape outside the probe that found it. The risk
+is a future Haskell package that discovers the elision and uses it deliberately,
+which is exactly the failure a recorded limit is meant to make visible before it
+is built on.
+
+Related: entry 13, whose mechanism is the same one seen from the other side —
+there, elision **cannot** fire because the node holds only anonymous tokens; here
+it fires where it should not.
+
+## 26. A token that appears only when the group breaks, at the front
+
+**Status:** open · **Cost:** **3 of 19 divergent pairs in TypeScript** · **Languages:** TypeScript (Rust is the mirror, entry 13)
+
+prettier writes a union that fits as `type T = A | B;` and a union that does not
+as:
+
+```typescript
+type Handler =
+  | ((event: Event) => void)
+  | ((event: Event) => Promise<void>)
+  | null;
+```
+
+The leading `|` on the first alternative **is not in the source** and appears
+**only when the group breaks**. Nothing in the opcode set emits it.
+
+### Why none of the three near-misses works
+
+- **`trail`** adds a token in the broken branch, which is the right conditional
+  — but it is *trailing*, and it is count-gated (entry 21). It puts a token
+  after the last item, never before the first.
+- **`autoparen`** is genuinely `IfBreak`-shaped, and it is the proof the Doc IR
+  can already express this: `IfBreak` exists in the IR. It is welded to
+  parentheses and to one construct.
+- **`drop`** (entry 13) is the exact inverse: rustfmt *removes* a leading `|`
+  the source has, and `drop` was built to express that and then parked for want
+  of a caller gate 3 accepts.
+
+So the IR is not missing the mechanism. **The package format is missing the
+opcode that reaches it**, and it is missing it in both directions at once.
+
+### The shape that would work
+
+`["lead", "|"]` beside `trail`: emit a declared punctuation token in the broken
+branch only, before the first item, consuming no child. Roughly `trail` with the
+position reversed and the count gate removed. TypeScript's stage C asked for
+exactly this and, told not to fake it, declined to build it — correctly. Faking
+an unconditional pipe changes the flat rendering and moves the failure somewhere
+harder to see.
+
+### What it does and does not buy
+
+**It buys three of nineteen divergent pairs**: `unions.ts` at both widths and
+`strings.ts@40`, where a template-literal union grows the pipe at 40. It also
+appears inside `comments.ts@80` alongside other causes.
+
+**It does not rescue TypeScript's agreement.** 11/30 becomes at most 14/30 —
+still far under the 70% floor, because sixteen of the nineteen misses are
+findings 2, 6, 9, 11, 13, 15 and 20 arriving together. **This entry exists to
+stop `lead` being built for the wrong reason.** It is a capability question
+about two languages, not a rescue for one score, and the number it moves is
+small enough that mistaking one for the other is easy.
+
+### Why it is worth building anyway
+
+The two-language bar is met, and met unusually cleanly: **prettier inserts a
+leading `|` and rustfmt deletes one**, and the same opcode family answers both.
+Entry 13 has been parked since round 3 for want of a second caller; this is the
+second caller, approaching from the opposite direction. Building `lead` and
+`drop` together, as one decision about leading delimiters rather than two
+opcodes, is the shape to consider — and it changes entry 13's parking argument,
+which was "no caller worth the bytes", not "wrong idea".
+
+**Decide when:** together with entry 13, not before. Neither is urgent; both are
+now paid for twice.
+
+**What it costs to leave:** three corpus pairs in one language, and entry 13
+stays parked with a built, tested, unused opcode. Nothing is silently wrong —
+every affected pair is classified `design-limit` in TypeScript's report with the
+reason named.

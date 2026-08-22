@@ -1,0 +1,20 @@
+module Signatures where
+
+-- type signatures, classes, instances, constraints
+class Eq a => Sized a where
+  size :: a -> Int -- method signature
+
+instance Sized Int where
+  size = abs
+
+instance Sized [a] where
+  size = length
+
+counted :: (Eq a, Sized a, Show a) => a -> String
+counted x = show x ++ ":" ++ show (size x) -- uses the class
+
+type Alias = Maybe Int
+
+kinded :: Maybe Int -> Int
+kinded Nothing = 0
+kinded (Just n) = n

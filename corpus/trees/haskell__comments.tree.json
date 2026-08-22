@@ -1,0 +1,895 @@
+{
+ "language": "haskell",
+ "source_file": "corpus/src/haskell/comments.hs",
+ "source": "-- File-level comment at the very top of the file.\n\nmodule Comments where\n\nimport Data.List (sort) -- trailing comment on an import\n\n-- | Haddock on a binding.\ndocumented :: Int -> Int\ndocumented a =\n  -- leading comment inside the body\n  a + 1 -- trailing comment on an equation\n\nvalues =\n  [ 1 -- first\n  , 2 -- second\n  -- own-line comment inside a list\n  , 3\n  ]\n\nconfig =\n  Node\n    { value = 1 -- trailing on a field\n    -- own-line comment inside a record\n    , children = []\n    -- comment before the closing brace\n    }\n\nblocky = do\n  {- a block comment on its own line -}\n  x <- pure 1\n  -- comment before the closing of the do\n  pure x\n\ndata Node = Node {value :: Int, children :: [Node]}\n\n-- Comment at the end of the file.\n",
+ "root": {
+  "type": "haskell",
+  "start": 0,
+  "end": 736,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 50,
+    "text": "-- File-level comment at the very top of the file."
+   },
+   {
+    "type": "header",
+    "start": 52,
+    "end": 73,
+    "children": [
+     {
+      "type": "module",
+      "start": 52,
+      "end": 58,
+      "text": "module"
+     },
+     {
+      "type": "module",
+      "start": 59,
+      "end": 67,
+      "field": "module",
+      "children": [
+       {
+        "type": "module_id",
+        "start": 59,
+        "end": 67,
+        "text": "Comments"
+       }
+      ]
+     },
+     {
+      "type": "where",
+      "start": 68,
+      "end": 73,
+      "text": "where"
+     }
+    ]
+   },
+   {
+    "type": "imports",
+    "start": 75,
+    "end": 160,
+    "field": "imports",
+    "children": [
+     {
+      "type": "import",
+      "start": 75,
+      "end": 98,
+      "field": "import",
+      "children": [
+       {
+        "type": "import",
+        "start": 75,
+        "end": 81,
+        "text": "import"
+       },
+       {
+        "type": "module",
+        "start": 82,
+        "end": 91,
+        "field": "module",
+        "children": [
+         {
+          "type": "module_id",
+          "start": 82,
+          "end": 86,
+          "text": "Data"
+         },
+         {
+          "type": ".",
+          "start": 86,
+          "end": 87,
+          "text": "."
+         },
+         {
+          "type": "module_id",
+          "start": 87,
+          "end": 91,
+          "text": "List"
+         }
+        ]
+       },
+       {
+        "type": "import_list",
+        "start": 92,
+        "end": 98,
+        "field": "names",
+        "children": [
+         {
+          "type": "(",
+          "start": 92,
+          "end": 93,
+          "text": "("
+         },
+         {
+          "type": "import_name",
+          "start": 93,
+          "end": 97,
+          "field": "name",
+          "children": [
+           {
+            "type": "variable",
+            "start": 93,
+            "end": 97,
+            "field": "variable",
+            "text": "sort"
+           }
+          ]
+         },
+         {
+          "type": ")",
+          "start": 97,
+          "end": 98,
+          "text": ")"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 99,
+      "end": 131,
+      "text": "-- trailing comment on an import"
+     },
+     {
+      "type": "haddock",
+      "start": 133,
+      "end": 159,
+      "text": "-- | Haddock on a binding."
+     }
+    ]
+   },
+   {
+    "type": "declarations",
+    "start": 160,
+    "end": 736,
+    "field": "declarations",
+    "children": [
+     {
+      "type": "signature",
+      "start": 160,
+      "end": 184,
+      "children": [
+       {
+        "type": "variable",
+        "start": 160,
+        "end": 170,
+        "field": "name",
+        "text": "documented"
+       },
+       {
+        "type": "::",
+        "start": 171,
+        "end": 173,
+        "text": "::"
+       },
+       {
+        "type": "function",
+        "start": 174,
+        "end": 184,
+        "field": "type",
+        "children": [
+         {
+          "type": "name",
+          "start": 174,
+          "end": 177,
+          "field": "parameter",
+          "text": "Int"
+         },
+         {
+          "type": "->",
+          "start": 178,
+          "end": 180,
+          "field": "arrow",
+          "text": "->"
+         },
+         {
+          "type": "name",
+          "start": 181,
+          "end": 184,
+          "field": "result",
+          "text": "Int"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "function",
+      "start": 185,
+      "end": 244,
+      "children": [
+       {
+        "type": "variable",
+        "start": 185,
+        "end": 195,
+        "field": "name",
+        "text": "documented"
+       },
+       {
+        "type": "patterns",
+        "start": 196,
+        "end": 197,
+        "field": "patterns",
+        "children": [
+         {
+          "type": "variable",
+          "start": 196,
+          "end": 197,
+          "text": "a"
+         }
+        ]
+       },
+       {
+        "type": "match",
+        "start": 198,
+        "end": 244,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 198,
+          "end": 199,
+          "text": "="
+         },
+         {
+          "type": "comment",
+          "start": 202,
+          "end": 236,
+          "text": "-- leading comment inside the body"
+         },
+         {
+          "type": "infix",
+          "start": 239,
+          "end": 244,
+          "field": "expression",
+          "children": [
+           {
+            "type": "variable",
+            "start": 239,
+            "end": 240,
+            "field": "left_operand",
+            "text": "a"
+           },
+           {
+            "type": "operator",
+            "start": 241,
+            "end": 242,
+            "field": "operator",
+            "text": "+"
+           },
+           {
+            "type": "literal",
+            "start": 243,
+            "end": 244,
+            "field": "right_operand",
+            "children": [
+             {
+              "type": "integer",
+              "start": 243,
+              "end": 244,
+              "text": "1"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 245,
+      "end": 279,
+      "text": "-- trailing comment on an equation"
+     },
+     {
+      "type": "bind",
+      "start": 281,
+      "end": 366,
+      "children": [
+       {
+        "type": "variable",
+        "start": 281,
+        "end": 287,
+        "field": "name",
+        "text": "values"
+       },
+       {
+        "type": "match",
+        "start": 288,
+        "end": 366,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 288,
+          "end": 289,
+          "text": "="
+         },
+         {
+          "type": "list",
+          "start": 292,
+          "end": 366,
+          "field": "expression",
+          "children": [
+           {
+            "type": "[",
+            "start": 292,
+            "end": 293,
+            "text": "["
+           },
+           {
+            "type": "literal",
+            "start": 294,
+            "end": 295,
+            "field": "element",
+            "children": [
+             {
+              "type": "integer",
+              "start": 294,
+              "end": 295,
+              "text": "1"
+             }
+            ]
+           },
+           {
+            "type": "comment",
+            "start": 296,
+            "end": 304,
+            "text": "-- first"
+           },
+           {
+            "type": ",",
+            "start": 307,
+            "end": 308,
+            "text": ","
+           },
+           {
+            "type": "literal",
+            "start": 309,
+            "end": 310,
+            "field": "element",
+            "children": [
+             {
+              "type": "integer",
+              "start": 309,
+              "end": 310,
+              "text": "2"
+             }
+            ]
+           },
+           {
+            "type": "comment",
+            "start": 311,
+            "end": 320,
+            "text": "-- second"
+           },
+           {
+            "type": "comment",
+            "start": 323,
+            "end": 356,
+            "text": "-- own-line comment inside a list"
+           },
+           {
+            "type": ",",
+            "start": 359,
+            "end": 360,
+            "text": ","
+           },
+           {
+            "type": "literal",
+            "start": 361,
+            "end": 362,
+            "field": "element",
+            "children": [
+             {
+              "type": "integer",
+              "start": 361,
+              "end": 362,
+              "text": "3"
+             }
+            ]
+           },
+           {
+            "type": "]",
+            "start": 365,
+            "end": 366,
+            "text": "]"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "bind",
+      "start": 368,
+      "end": 528,
+      "children": [
+       {
+        "type": "variable",
+        "start": 368,
+        "end": 374,
+        "field": "name",
+        "text": "config"
+       },
+       {
+        "type": "match",
+        "start": 375,
+        "end": 528,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 375,
+          "end": 376,
+          "text": "="
+         },
+         {
+          "type": "record",
+          "start": 379,
+          "end": 528,
+          "field": "expression",
+          "children": [
+           {
+            "type": "constructor",
+            "start": 379,
+            "end": 383,
+            "field": "expression",
+            "text": "Node"
+           },
+           {
+            "type": "{",
+            "start": 388,
+            "end": 389,
+            "text": "{"
+           },
+           {
+            "type": "field_update",
+            "start": 390,
+            "end": 399,
+            "field": "field",
+            "children": [
+             {
+              "type": "field_name",
+              "start": 390,
+              "end": 395,
+              "field": "field",
+              "children": [
+               {
+                "type": "variable",
+                "start": 390,
+                "end": 395,
+                "text": "value"
+               }
+              ]
+             },
+             {
+              "type": "=",
+              "start": 396,
+              "end": 397,
+              "text": "="
+             },
+             {
+              "type": "literal",
+              "start": 398,
+              "end": 399,
+              "field": "expression",
+              "children": [
+               {
+                "type": "integer",
+                "start": 398,
+                "end": 399,
+                "text": "1"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "comment",
+            "start": 400,
+            "end": 422,
+            "text": "-- trailing on a field"
+           },
+           {
+            "type": "comment",
+            "start": 427,
+            "end": 462,
+            "text": "-- own-line comment inside a record"
+           },
+           {
+            "type": ",",
+            "start": 467,
+            "end": 468,
+            "text": ","
+           },
+           {
+            "type": "field_update",
+            "start": 469,
+            "end": 482,
+            "field": "field",
+            "children": [
+             {
+              "type": "field_name",
+              "start": 469,
+              "end": 477,
+              "field": "field",
+              "children": [
+               {
+                "type": "variable",
+                "start": 469,
+                "end": 477,
+                "text": "children"
+               }
+              ]
+             },
+             {
+              "type": "=",
+              "start": 478,
+              "end": 479,
+              "text": "="
+             },
+             {
+              "type": "list",
+              "start": 480,
+              "end": 482,
+              "field": "expression",
+              "children": [
+               {
+                "type": "[",
+                "start": 480,
+                "end": 481,
+                "text": "["
+               },
+               {
+                "type": "]",
+                "start": 481,
+                "end": 482,
+                "text": "]"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "comment",
+            "start": 487,
+            "end": 522,
+            "text": "-- comment before the closing brace"
+           },
+           {
+            "type": "}",
+            "start": 527,
+            "end": 528,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "bind",
+      "start": 530,
+      "end": 646,
+      "children": [
+       {
+        "type": "variable",
+        "start": 530,
+        "end": 536,
+        "field": "name",
+        "text": "blocky"
+       },
+       {
+        "type": "match",
+        "start": 537,
+        "end": 646,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 537,
+          "end": 538,
+          "text": "="
+         },
+         {
+          "type": "do",
+          "start": 539,
+          "end": 646,
+          "field": "expression",
+          "children": [
+           {
+            "type": "do",
+            "start": 539,
+            "end": 541,
+            "text": "do"
+           },
+           {
+            "type": "comment",
+            "start": 544,
+            "end": 581,
+            "text": "{- a block comment on its own line -}"
+           },
+           {
+            "type": "bind",
+            "start": 584,
+            "end": 595,
+            "field": "statement",
+            "children": [
+             {
+              "type": "variable",
+              "start": 584,
+              "end": 585,
+              "field": "pattern",
+              "text": "x"
+             },
+             {
+              "type": "<-",
+              "start": 586,
+              "end": 588,
+              "field": "arrow",
+              "text": "<-"
+             },
+             {
+              "type": "apply",
+              "start": 589,
+              "end": 595,
+              "field": "expression",
+              "children": [
+               {
+                "type": "variable",
+                "start": 589,
+                "end": 593,
+                "field": "function",
+                "text": "pure"
+               },
+               {
+                "type": "literal",
+                "start": 594,
+                "end": 595,
+                "field": "argument",
+                "children": [
+                 {
+                  "type": "integer",
+                  "start": 594,
+                  "end": 595,
+                  "text": "1"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "comment",
+            "start": 598,
+            "end": 637,
+            "text": "-- comment before the closing of the do"
+           },
+           {
+            "type": "exp",
+            "start": 640,
+            "end": 646,
+            "field": "statement",
+            "children": [
+             {
+              "type": "apply",
+              "start": 640,
+              "end": 646,
+              "children": [
+               {
+                "type": "variable",
+                "start": 640,
+                "end": 644,
+                "field": "function",
+                "text": "pure"
+               },
+               {
+                "type": "variable",
+                "start": 645,
+                "end": 646,
+                "field": "argument",
+                "text": "x"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "data_type",
+      "start": 648,
+      "end": 699,
+      "children": [
+       {
+        "type": "data",
+        "start": 648,
+        "end": 652,
+        "text": "data"
+       },
+       {
+        "type": "name",
+        "start": 653,
+        "end": 657,
+        "field": "name",
+        "text": "Node"
+       },
+       {
+        "type": "=",
+        "start": 658,
+        "end": 659,
+        "text": "="
+       },
+       {
+        "type": "data_constructors",
+        "start": 660,
+        "end": 699,
+        "field": "constructors",
+        "children": [
+         {
+          "type": "data_constructor",
+          "start": 660,
+          "end": 699,
+          "field": "constructor",
+          "children": [
+           {
+            "type": "record",
+            "start": 660,
+            "end": 699,
+            "field": "constructor",
+            "children": [
+             {
+              "type": "constructor",
+              "start": 660,
+              "end": 664,
+              "field": "name",
+              "text": "Node"
+             },
+             {
+              "type": "fields",
+              "start": 665,
+              "end": 699,
+              "field": "fields",
+              "children": [
+               {
+                "type": "{",
+                "start": 665,
+                "end": 666,
+                "text": "{"
+               },
+               {
+                "type": "field",
+                "start": 666,
+                "end": 678,
+                "field": "field",
+                "children": [
+                 {
+                  "type": "field_name",
+                  "start": 666,
+                  "end": 671,
+                  "field": "name",
+                  "children": [
+                   {
+                    "type": "variable",
+                    "start": 666,
+                    "end": 671,
+                    "text": "value"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "::",
+                  "start": 672,
+                  "end": 674,
+                  "text": "::"
+                 },
+                 {
+                  "type": "name",
+                  "start": 675,
+                  "end": 678,
+                  "field": "type",
+                  "text": "Int"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 678,
+                "end": 679,
+                "text": ","
+               },
+               {
+                "type": "field",
+                "start": 680,
+                "end": 698,
+                "field": "field",
+                "children": [
+                 {
+                  "type": "field_name",
+                  "start": 680,
+                  "end": 688,
+                  "field": "name",
+                  "children": [
+                   {
+                    "type": "variable",
+                    "start": 680,
+                    "end": 688,
+                    "text": "children"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "::",
+                  "start": 689,
+                  "end": 691,
+                  "text": "::"
+                 },
+                 {
+                  "type": "list",
+                  "start": 692,
+                  "end": 698,
+                  "field": "type",
+                  "children": [
+                   {
+                    "type": "[",
+                    "start": 692,
+                    "end": 693,
+                    "text": "["
+                   },
+                   {
+                    "type": "name",
+                    "start": 693,
+                    "end": 697,
+                    "field": "element",
+                    "text": "Node"
+                   },
+                   {
+                    "type": "]",
+                    "start": 697,
+                    "end": 698,
+                    "text": "]"
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": "}",
+                "start": 698,
+                "end": 699,
+                "text": "}"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 701,
+      "end": 735,
+      "text": "-- Comment at the end of the file."
+     }
+    ]
+   }
+  ]
+ }
+}

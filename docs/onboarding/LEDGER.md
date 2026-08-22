@@ -255,6 +255,11 @@ pattern.
 | 2026-08-21 | `corpus-brief.md`                     | "Put it in its own file and declare it" is **not absolute**; for a reference with many token-level rewrites, write the construct in the reference's canonical form and record the rewrite instead                                                          | Markdown stage B — the reference does ~12 such rewrites, so literal compliance meant 12 incomparable files against 15 comparable ones. The builder invented the right policy and had to disobey the brief to do it                                              |
 | 2026-08-21 | `corpus-brief.md`                     | An `[incomparable]` entry states a **verified gate-3 outcome**, not a prose reason — run the oracle on the file                                                                                                                                          | HTML stage B — `quotes.html` is one prettier rule whose delimiter swap passes and whose escape minimisation rejects, and the prose reason described only the passing half                                                                                       |
 | 2026-08-21 | `corpus-brief.md`                     | A proposal that **changes what a shared function returns** must name its callers and each caller's invariant. Adding a field is not the same as changing behaviour                                                                                       | Markdown stage B — the proposed `region_for` patch was precise, correct in diagnosis, and would have silently corrupted every spliced tree: 16 of 17 leaves reading the wrong host bytes, with no gate to catch it                                              |
+| 2026-08-22 | `review-brief.md`                     | **Precedent before deliberation.** Before ruling on any reference-shape question, grep the other manifests for the same shape. Scheme's reviewer was asked to decide tabs and width-insensitivity; `go.toml` had already answered both, with nearly word-for-word the same rationale and sixteen tab-indented reference files. |
+| 2026-08-22 | `review-brief.md`                     | **`fixed` languages need a different check.** Check 4 (bisect the default) does not apply; check 7 now says *prove the width is inert*, with the two shapes round 5 used -- Haskell's six rejected flags plus inertness in both directions, Scheme's `fill-column` 40 vs 200 on one line. |
+| 2026-08-22 | `review-brief.md`                     | **The four counts are a floor, said where the counts are.** Three of three round-5 probe additions moved no count. Stated at check 3 so a builder does not read a healthy count as a probe audit. |
+| 2026-08-22 | `review-brief.md`                     | **A named rewrite is not an enumerated one.** For every `[incomparable]` construct, ask whether the reference reorders, deletes, merges or renames, and record the negatives. ormolu's import block is sorting *and* collapsing -- the ktfmt precedent in a second formatter. |
+| 2026-08-22 | `corpus-brief.md`                     | **The report-to-corpus direction becomes a builder step.** The normalisation list is now a table with a *forcing file* column and an empty cell where none exists. All four round-5 defects were this shape and none moved a count, so nothing else could catch them. Also: run the markdown formatter before committing the report. |
 
 ## 3. Model scorecard
 
@@ -484,6 +489,115 @@ for all four corpora and a reviewer is never the same family as the builder;
 codex-Sol was still out; and the opencode lane was nearly out of tokens. This is
 a deliberate, temporary exception to the paragraph above reserving Opus for
 central changes — codex returns tonight and stage D should go back to it.
+
+**Round 5 stage B runs on Opus and Sonnet too, 2026-08-22, and codex is back.**
+The exception above was written as temporary and it has now been extended once,
+so it is worth being explicit about why rather than letting it drift into being
+the rule. Codex returned on schedule — but the same day, the three round-4
+findings that most need building are stage-C package slices, and HTML's is the
+one that asks whether a node-type table is the right dispatch at all. **Codex is
+worth more holding the pen on that than reading a corpus.** So the lane split
+this round is by *what the slice needs*, not by what is available:
+
+- **Stage C, HTML — codex-Sol.** A reasoned refusal is a first-class outcome and
+  codex is the agent with a record of producing one.
+- **Stage C, TypeScript — grok-4.6.** Bounded: JavaScript is already merged with
+  the same reference, so most of the package is reuse.
+- **Stage B, Scheme and Haskell — Opus.** Both carry a judgement call that
+  survives into the package if it is wrong: Scheme's `indent-tabs-mode` tabs and
+  its total absence of width sensitivity, Haskell's "this is tree nesting, not
+  FINDINGS 12" on a layout-sensitive language.
+- **Stage B, Ruby — Sonnet.** The bounded read-verify-verdict shape.
+
+**Stage D still goes back to codex**, which is what the round-4 note above
+promised and has not yet been tested.
+
+**Round 5 stage C runs on Claude, 2026-08-23 — and that is the first time the
+builder lane has been Claude at all.** Grok is still at a 402 with no reset hour;
+codex is needed for stage D on two held branches and on whatever Claude builds.
+Five languages sat at `B+` with no builder, which is a stalled pipeline, not a
+lane preference.
+
+The reason it is safe is the rule that has governed every round: **a reviewer is
+never the same family as the builder.** Claude building means codex reviewing,
+which is a legal pairing and the only one currently available. It also decides
+the two held branches without further thought — TypeScript to codex (grok
+built it), HTML to an Opus subagent (codex-Sol built it and cannot review its
+own family), which is the "central changes to `main`" carve-out being used for
+what it was reserved for: HTML's 25 lines of `DESIGN.md`.
+
+The cost being watched: **Claude is uncalibrated as a builder**, the same way
+every agent was on its first slice, and the orchestrator is also the builder this
+round, so the "the orchestrator does not read the code" property is suspended.
+That is why only two of the five are in flight. Codex's first stage-D verdict on
+a Claude-built package is the calibration datum; the other three are held for it.
+
+### Two latent items round 5 found, and what happened to each
+
+Both were named by a reviewer who was told not to touch shared files, which is
+the propose-don't-apply rule working. Neither blocks anything today.
+
+- **`harness/score.py` counted a tab as one column — now fixed.** `overflow_lines` uses
+  `len(line)` with no `expandtabs`, so for a tab-indenting reference every
+  leading tab under-counts by seven. Inert right now — Go's raw and expanded
+  counts both come to 6, Scheme's both to 0 — but Scheme has **11 of 15**
+  reference files containing a tab, so the first Scheme package that overflows
+  will be measured wrong. Found by Scheme's stage B, which named it and left it
+  alone as instructed. Fixed at merge time instead of carried: `overflow_lines`
+  now measures `line.expandtabs(TAB_WIDTH)` with `TAB_WIDTH = 8`, a module
+  constant rather than a manifest field because both tab-indenting references
+  on the roster are 8-column tools and none disagrees. Two unit tests, one for
+  tabs and one confirming spaces are unaffected. Merging tab-indented Scheme
+  onto main while the measurement is known-wrong is worse than a one-line fix.
+- **Paren transparency has a narrow hole in Haskell.** `g (do x; y)` elides to
+  `g do x; y`, which gate 3 accepts and which is only valid GHC under
+  `BlockArguments`. A formatter stripping those parens would pass the gate and
+  emit code that does not compile. The alternative is worse — not declaring
+  `parens` makes the gate reject ormolu's own output — so it is recorded rather
+  than fixed. It belongs in `FINDINGS.md` as a sibling of entry 13's
+  "elision only fires on exactly one named child", and it is not written there
+  yet -- **written up as FINDINGS 25**, 2026-08-22. Found by Haskell's stage B,
+  which also measured the sound half: of nine
+  paren-drop attacks, six are rejected, including every load-bearing one
+  (application spine, precedence, associativity, negative literal, type arrow,
+  lambda argument).
+
+### An orchestrator error worth recording, since the briefs are the product
+
+Scheme's stage-B brief told the reviewer that `comment_kinds` "exists" and that
+the outcome was to declare it and show the count move — and then, two paragraphs
+later, that the branch carrying it is unmerged and must not be touched. **Only
+the second is executable**, and the reviewer spent a cycle discovering that
+`manifest.py` at `fed4974` rejects the field. A capability on an unmerged branch
+is not a capability the slice has; the brief should either gate the instruction
+on the merge or not mention the field at all.
+
+The same brief also invited deliberation on two questions Go's manifest had
+already answered. Both are template deltas against the orchestrator, not against
+any agent.
+
+### Codex-Sol calibration: one unfounded line in an otherwise verified done-note
+
+The harness slice's done-note claimed `./test.sh` passed "after removing
+conflicting inherited color variables". **There is no such change.** The diff is
+fourteen files, all Python, TOML and Markdown; `color` and `css` appear nowhere
+in it, in any case. The rest of the note is accurate — the two counts it claims
+(`0/14 -> 13/14`, `0/15 -> 15/15`) are real, and the refusal it reports is
+sound.
+
+This is worth recording because of *where* the bad sentence was: in the
+**verification** section, which is the section the trust contract exists to
+rely on. The contract says the main thread does not re-run the gates. A
+verification section that contains one sentence describing work that was never
+done is a signal directly contradicting the claim, which is the documented
+exception — so `./test.sh` was re-run on the slice. **It passed, exit 0**, and
+the injection probes hold, including the quoted-fence limitation reproducing
+permanently.
+
+The lesson is not "distrust codex". It is that a done-note's verification
+section should be **read for internal consistency against the diff**, which is
+free, before deciding whether to spend a gate re-run. One sentence naming a file
+type the slice does not contain is enough to justify the spend.
 
 **Codex is out until 06:51 Saturday 2026-08-22, so the standing reviewer is
 unavailable.** Dave's replacement, 2026-08-18, and it is a structural change

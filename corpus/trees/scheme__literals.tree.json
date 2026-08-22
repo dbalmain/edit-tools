@@ -1,0 +1,506 @@
+{
+ "language": "scheme",
+ "source_file": "corpus/src/scheme/literals.scm",
+ "source": ";; Numbers in several bases, booleans, characters, a vector (already\n;; broken), keywords, the empty list. Spellings the grammar distinguishes.\n(define decimal 42) ; integer\n\n(define hex #x2a)\n\n(define binary #b101010)\n\n(define octal #o52)\n\n(define real 3.14)\n\n(define ratio 1/2)\n\n(define true #t)\n\n(define false #f)\n\n(define vec\n#(1\n2\n3\n4\n5))\n\n(define key #:key)\n\n(define none '())\n",
+ "root": {
+  "type": "program",
+  "start": 0,
+  "end": 383,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 68,
+    "text": ";; Numbers in several bases, booleans, characters, a vector (already"
+   },
+   {
+    "type": "comment",
+    "start": 69,
+    "end": 143,
+    "text": ";; broken), keywords, the empty list. Spellings the grammar distinguishes."
+   },
+   {
+    "type": "list",
+    "start": 144,
+    "end": 163,
+    "children": [
+     {
+      "type": "(",
+      "start": 144,
+      "end": 145,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 145,
+      "end": 151,
+      "text": "define"
+     },
+     {
+      "type": "symbol",
+      "start": 152,
+      "end": 159,
+      "text": "decimal"
+     },
+     {
+      "type": "number",
+      "start": 160,
+      "end": 162,
+      "text": "42"
+     },
+     {
+      "type": ")",
+      "start": 162,
+      "end": 163,
+      "text": ")"
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 164,
+    "end": 173,
+    "text": "; integer"
+   },
+   {
+    "type": "list",
+    "start": 175,
+    "end": 192,
+    "children": [
+     {
+      "type": "(",
+      "start": 175,
+      "end": 176,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 176,
+      "end": 182,
+      "text": "define"
+     },
+     {
+      "type": "symbol",
+      "start": 183,
+      "end": 186,
+      "text": "hex"
+     },
+     {
+      "type": "number",
+      "start": 187,
+      "end": 191,
+      "text": "#x2a"
+     },
+     {
+      "type": ")",
+      "start": 191,
+      "end": 192,
+      "text": ")"
+     }
+    ]
+   },
+   {
+    "type": "list",
+    "start": 194,
+    "end": 218,
+    "children": [
+     {
+      "type": "(",
+      "start": 194,
+      "end": 195,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 195,
+      "end": 201,
+      "text": "define"
+     },
+     {
+      "type": "symbol",
+      "start": 202,
+      "end": 208,
+      "text": "binary"
+     },
+     {
+      "type": "number",
+      "start": 209,
+      "end": 217,
+      "text": "#b101010"
+     },
+     {
+      "type": ")",
+      "start": 217,
+      "end": 218,
+      "text": ")"
+     }
+    ]
+   },
+   {
+    "type": "list",
+    "start": 220,
+    "end": 239,
+    "children": [
+     {
+      "type": "(",
+      "start": 220,
+      "end": 221,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 221,
+      "end": 227,
+      "text": "define"
+     },
+     {
+      "type": "symbol",
+      "start": 228,
+      "end": 233,
+      "text": "octal"
+     },
+     {
+      "type": "number",
+      "start": 234,
+      "end": 238,
+      "text": "#o52"
+     },
+     {
+      "type": ")",
+      "start": 238,
+      "end": 239,
+      "text": ")"
+     }
+    ]
+   },
+   {
+    "type": "list",
+    "start": 241,
+    "end": 259,
+    "children": [
+     {
+      "type": "(",
+      "start": 241,
+      "end": 242,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 242,
+      "end": 248,
+      "text": "define"
+     },
+     {
+      "type": "symbol",
+      "start": 249,
+      "end": 253,
+      "text": "real"
+     },
+     {
+      "type": "number",
+      "start": 254,
+      "end": 258,
+      "text": "3.14"
+     },
+     {
+      "type": ")",
+      "start": 258,
+      "end": 259,
+      "text": ")"
+     }
+    ]
+   },
+   {
+    "type": "list",
+    "start": 261,
+    "end": 279,
+    "children": [
+     {
+      "type": "(",
+      "start": 261,
+      "end": 262,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 262,
+      "end": 268,
+      "text": "define"
+     },
+     {
+      "type": "symbol",
+      "start": 269,
+      "end": 274,
+      "text": "ratio"
+     },
+     {
+      "type": "number",
+      "start": 275,
+      "end": 278,
+      "text": "1/2"
+     },
+     {
+      "type": ")",
+      "start": 278,
+      "end": 279,
+      "text": ")"
+     }
+    ]
+   },
+   {
+    "type": "list",
+    "start": 281,
+    "end": 297,
+    "children": [
+     {
+      "type": "(",
+      "start": 281,
+      "end": 282,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 282,
+      "end": 288,
+      "text": "define"
+     },
+     {
+      "type": "symbol",
+      "start": 289,
+      "end": 293,
+      "text": "true"
+     },
+     {
+      "type": "boolean",
+      "start": 294,
+      "end": 296,
+      "text": "#t"
+     },
+     {
+      "type": ")",
+      "start": 296,
+      "end": 297,
+      "text": ")"
+     }
+    ]
+   },
+   {
+    "type": "list",
+    "start": 299,
+    "end": 316,
+    "children": [
+     {
+      "type": "(",
+      "start": 299,
+      "end": 300,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 300,
+      "end": 306,
+      "text": "define"
+     },
+     {
+      "type": "symbol",
+      "start": 307,
+      "end": 312,
+      "text": "false"
+     },
+     {
+      "type": "boolean",
+      "start": 313,
+      "end": 315,
+      "text": "#f"
+     },
+     {
+      "type": ")",
+      "start": 315,
+      "end": 316,
+      "text": ")"
+     }
+    ]
+   },
+   {
+    "type": "list",
+    "start": 318,
+    "end": 343,
+    "children": [
+     {
+      "type": "(",
+      "start": 318,
+      "end": 319,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 319,
+      "end": 325,
+      "text": "define"
+     },
+     {
+      "type": "symbol",
+      "start": 326,
+      "end": 329,
+      "text": "vec"
+     },
+     {
+      "type": "vector",
+      "start": 330,
+      "end": 342,
+      "children": [
+       {
+        "type": "#(",
+        "start": 330,
+        "end": 332,
+        "text": "#("
+       },
+       {
+        "type": "number",
+        "start": 332,
+        "end": 333,
+        "text": "1"
+       },
+       {
+        "type": "number",
+        "start": 334,
+        "end": 335,
+        "text": "2"
+       },
+       {
+        "type": "number",
+        "start": 336,
+        "end": 337,
+        "text": "3"
+       },
+       {
+        "type": "number",
+        "start": 338,
+        "end": 339,
+        "text": "4"
+       },
+       {
+        "type": "number",
+        "start": 340,
+        "end": 341,
+        "text": "5"
+       },
+       {
+        "type": ")",
+        "start": 341,
+        "end": 342,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": ")",
+      "start": 342,
+      "end": 343,
+      "text": ")"
+     }
+    ]
+   },
+   {
+    "type": "list",
+    "start": 345,
+    "end": 363,
+    "children": [
+     {
+      "type": "(",
+      "start": 345,
+      "end": 346,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 346,
+      "end": 352,
+      "text": "define"
+     },
+     {
+      "type": "symbol",
+      "start": 353,
+      "end": 356,
+      "text": "key"
+     },
+     {
+      "type": "keyword",
+      "start": 357,
+      "end": 362,
+      "text": "#:key"
+     },
+     {
+      "type": ")",
+      "start": 362,
+      "end": 363,
+      "text": ")"
+     }
+    ]
+   },
+   {
+    "type": "list",
+    "start": 365,
+    "end": 382,
+    "children": [
+     {
+      "type": "(",
+      "start": 365,
+      "end": 366,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 366,
+      "end": 372,
+      "text": "define"
+     },
+     {
+      "type": "symbol",
+      "start": 373,
+      "end": 377,
+      "text": "none"
+     },
+     {
+      "type": "quote",
+      "start": 378,
+      "end": 381,
+      "children": [
+       {
+        "type": "'",
+        "start": 378,
+        "end": 379,
+        "text": "'"
+       },
+       {
+        "type": "list",
+        "start": 379,
+        "end": 381,
+        "children": [
+         {
+          "type": "(",
+          "start": 379,
+          "end": 380,
+          "text": "("
+         },
+         {
+          "type": ")",
+          "start": 380,
+          "end": 381,
+          "text": ")"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": ")",
+      "start": 381,
+      "end": 382,
+      "text": ")"
+     }
+    ]
+   }
+  ]
+ }
+}

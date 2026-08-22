@@ -1,0 +1,421 @@
+{
+ "language": "scheme",
+ "source_file": "corpus/src/scheme/heads.scm",
+ "source": ";; Smallest case: three `list` nodes, three indents. Dispatch on node.type\n;; cannot tell these apart; emacs scheme-mode keys off the head symbol.\n(define (as-define x)\nx)\n\n(define (as-let x)\n(let ((a 1))\na))\n\n(define (as-cons a b)\n(cons a\nb))\n\n(define (as-call a b)\n(list a\nb))\n",
+ "root": {
+  "type": "program",
+  "start": 0,
+  "end": 279,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 74,
+    "text": ";; Smallest case: three `list` nodes, three indents. Dispatch on node.type"
+   },
+   {
+    "type": "comment",
+    "start": 75,
+    "end": 146,
+    "text": ";; cannot tell these apart; emacs scheme-mode keys off the head symbol."
+   },
+   {
+    "type": "list",
+    "start": 147,
+    "end": 171,
+    "children": [
+     {
+      "type": "(",
+      "start": 147,
+      "end": 148,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 148,
+      "end": 154,
+      "text": "define"
+     },
+     {
+      "type": "list",
+      "start": 155,
+      "end": 168,
+      "children": [
+       {
+        "type": "(",
+        "start": 155,
+        "end": 156,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 156,
+        "end": 165,
+        "text": "as-define"
+       },
+       {
+        "type": "symbol",
+        "start": 166,
+        "end": 167,
+        "text": "x"
+       },
+       {
+        "type": ")",
+        "start": 167,
+        "end": 168,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "symbol",
+      "start": 169,
+      "end": 170,
+      "text": "x"
+     },
+     {
+      "type": ")",
+      "start": 170,
+      "end": 171,
+      "text": ")"
+     }
+    ]
+   },
+   {
+    "type": "list",
+    "start": 173,
+    "end": 208,
+    "children": [
+     {
+      "type": "(",
+      "start": 173,
+      "end": 174,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 174,
+      "end": 180,
+      "text": "define"
+     },
+     {
+      "type": "list",
+      "start": 181,
+      "end": 191,
+      "children": [
+       {
+        "type": "(",
+        "start": 181,
+        "end": 182,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 182,
+        "end": 188,
+        "text": "as-let"
+       },
+       {
+        "type": "symbol",
+        "start": 189,
+        "end": 190,
+        "text": "x"
+       },
+       {
+        "type": ")",
+        "start": 190,
+        "end": 191,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "list",
+      "start": 192,
+      "end": 207,
+      "children": [
+       {
+        "type": "(",
+        "start": 192,
+        "end": 193,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 193,
+        "end": 196,
+        "text": "let"
+       },
+       {
+        "type": "list",
+        "start": 197,
+        "end": 204,
+        "children": [
+         {
+          "type": "(",
+          "start": 197,
+          "end": 198,
+          "text": "("
+         },
+         {
+          "type": "list",
+          "start": 198,
+          "end": 203,
+          "children": [
+           {
+            "type": "(",
+            "start": 198,
+            "end": 199,
+            "text": "("
+           },
+           {
+            "type": "symbol",
+            "start": 199,
+            "end": 200,
+            "text": "a"
+           },
+           {
+            "type": "number",
+            "start": 201,
+            "end": 202,
+            "text": "1"
+           },
+           {
+            "type": ")",
+            "start": 202,
+            "end": 203,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": ")",
+          "start": 203,
+          "end": 204,
+          "text": ")"
+         }
+        ]
+       },
+       {
+        "type": "symbol",
+        "start": 205,
+        "end": 206,
+        "text": "a"
+       },
+       {
+        "type": ")",
+        "start": 206,
+        "end": 207,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": ")",
+      "start": 207,
+      "end": 208,
+      "text": ")"
+     }
+    ]
+   },
+   {
+    "type": "list",
+    "start": 210,
+    "end": 243,
+    "children": [
+     {
+      "type": "(",
+      "start": 210,
+      "end": 211,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 211,
+      "end": 217,
+      "text": "define"
+     },
+     {
+      "type": "list",
+      "start": 218,
+      "end": 231,
+      "children": [
+       {
+        "type": "(",
+        "start": 218,
+        "end": 219,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 219,
+        "end": 226,
+        "text": "as-cons"
+       },
+       {
+        "type": "symbol",
+        "start": 227,
+        "end": 228,
+        "text": "a"
+       },
+       {
+        "type": "symbol",
+        "start": 229,
+        "end": 230,
+        "text": "b"
+       },
+       {
+        "type": ")",
+        "start": 230,
+        "end": 231,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "list",
+      "start": 232,
+      "end": 242,
+      "children": [
+       {
+        "type": "(",
+        "start": 232,
+        "end": 233,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 233,
+        "end": 237,
+        "text": "cons"
+       },
+       {
+        "type": "symbol",
+        "start": 238,
+        "end": 239,
+        "text": "a"
+       },
+       {
+        "type": "symbol",
+        "start": 240,
+        "end": 241,
+        "text": "b"
+       },
+       {
+        "type": ")",
+        "start": 241,
+        "end": 242,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": ")",
+      "start": 242,
+      "end": 243,
+      "text": ")"
+     }
+    ]
+   },
+   {
+    "type": "list",
+    "start": 245,
+    "end": 278,
+    "children": [
+     {
+      "type": "(",
+      "start": 245,
+      "end": 246,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 246,
+      "end": 252,
+      "text": "define"
+     },
+     {
+      "type": "list",
+      "start": 253,
+      "end": 266,
+      "children": [
+       {
+        "type": "(",
+        "start": 253,
+        "end": 254,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 254,
+        "end": 261,
+        "text": "as-call"
+       },
+       {
+        "type": "symbol",
+        "start": 262,
+        "end": 263,
+        "text": "a"
+       },
+       {
+        "type": "symbol",
+        "start": 264,
+        "end": 265,
+        "text": "b"
+       },
+       {
+        "type": ")",
+        "start": 265,
+        "end": 266,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "list",
+      "start": 267,
+      "end": 277,
+      "children": [
+       {
+        "type": "(",
+        "start": 267,
+        "end": 268,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 268,
+        "end": 272,
+        "text": "list"
+       },
+       {
+        "type": "symbol",
+        "start": 273,
+        "end": 274,
+        "text": "a"
+       },
+       {
+        "type": "symbol",
+        "start": 275,
+        "end": 276,
+        "text": "b"
+       },
+       {
+        "type": ")",
+        "start": 276,
+        "end": 277,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": ")",
+      "start": 277,
+      "end": 278,
+      "text": ")"
+     }
+    ]
+   }
+  ]
+ }
+}

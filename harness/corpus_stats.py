@@ -27,9 +27,10 @@ What each one is for:
 - **Differs between widths** -- the corpus must force layout decisions, not just
   accept whatever fits. Constructs the reference cannot break do not count, and
   a fixed-width reference (gofmt) makes this inapplicable rather than zero.
-- **Carries a comment** -- gate 3's universal extras layer takes comments as its
-  only input, so a file without one is a file where that layer is inert. One
-  round-1 corpus had 9 of 14 files with no comment at all.
+- **Carries a comment** -- gate 3's universal comment layer takes named extras
+  and manifest-declared comment node kinds as its only input, so a file without
+  one is a file where that layer is inert. One round-1 corpus had 9 of 14 files
+  with no comment at all.
 - **Reference overflow** -- references overrun their own target width, and all
   of them do. Without this number a stage-C agent reads an over-long reference
   line as a corpus bug and formats away from the reference to "fix" it.
@@ -52,14 +53,13 @@ REFERENCE = ROOT / "corpus/reference"
 TREES = ROOT / "corpus/trees"
 
 
-def comment_count(root) -> int:
-    """Named extras are comments in practice: whitespace extras are anonymous
-    and never appear as nodes."""
+def comment_count(root, comment_kinds: tuple[str, ...]) -> int:
+    """Count named extras and grammar-specific comment node kinds."""
     total = 0
     stack = [root]
     while stack:
         node = stack.pop()
-        if node.is_named and node.is_extra:
+        if (node.is_named and node.is_extra) or node.type in comment_kinds:
             total += 1
         stack.extend(node.children)
     return total
@@ -97,7 +97,7 @@ def stats_for(m: mf.Manifest) -> dict | None:
         if len(set(outputs.values())) > 1:
             width_sensitive += 1
 
-        if comment_count(parser.parse(text.encode()).root_node):
+        if comment_count(parser.parse(text.encode()).root_node, m.comment_kinds):
             commented += 1
 
         tree = TREES / f"{m.name}__{stem}.tree.json"
@@ -145,7 +145,11 @@ def report(name: str, s: dict) -> bool:
         width_ok = share >= 1 / 3
 
     share = s["commented"] / n
-    mark = "" if share > 0.5 else "   [BELOW half -- gate 3's extras layer is inert there]"
+    mark = (
+        ""
+        if share > 0.5
+        else "   [BELOW half -- gate 3's universal comment layer is inert there]"
+    )
     print(f"  carries a comment    {s['commented']}/{n}{mark}")
 
     per_width = "  ".join(f"@{w} {s['overflow'][w]}" for w in s["widths"])

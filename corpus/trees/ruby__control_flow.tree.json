@@ -1,0 +1,693 @@
+{
+ "language": "ruby",
+ "source_file": "corpus/src/ruby/control_flow.rb",
+ "source": "# Multi-branch forms so syntax_tree cannot collapse them to a modifier or\n# a ternary. Single-statement `if`/`while` become modifiers; those rewrites\n# are recorded in the report and written here already in canonical form.\n\nif condition_one\n  first_branch\nelsif condition_two\n  second_branch\nelse\n  fallback\nend\n\ncase value\nwhen 1\n  :one\nwhen 2, 3\n  :few\nelse\n  :many\nend\n\nfor x in xs\n  p x\nend\n\nwork while busy\nwait until ready\n\nbegin\n  risky\nrescue StandardError => e\n  handle(e)\nrescue OtherError\n  retry\nensure\n  cleanup\nend\n\n1 if condition_one and condition_two\n1 if condition_one && condition_two\n",
+ "root": {
+  "type": "program",
+  "start": 0,
+  "end": 603,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 73,
+    "text": "# Multi-branch forms so syntax_tree cannot collapse them to a modifier or"
+   },
+   {
+    "type": "comment",
+    "start": 74,
+    "end": 149,
+    "text": "# a ternary. Single-statement `if`/`while` become modifiers; those rewrites"
+   },
+   {
+    "type": "comment",
+    "start": 150,
+    "end": 222,
+    "text": "# are recorded in the report and written here already in canonical form."
+   },
+   {
+    "type": "if",
+    "start": 224,
+    "end": 311,
+    "children": [
+     {
+      "type": "if",
+      "start": 224,
+      "end": 226,
+      "text": "if"
+     },
+     {
+      "type": "identifier",
+      "start": 227,
+      "end": 240,
+      "field": "condition",
+      "text": "condition_one"
+     },
+     {
+      "type": "then",
+      "start": 240,
+      "end": 255,
+      "field": "consequence",
+      "children": [
+       {
+        "type": "identifier",
+        "start": 243,
+        "end": 255,
+        "text": "first_branch"
+       }
+      ]
+     },
+     {
+      "type": "elsif",
+      "start": 256,
+      "end": 307,
+      "field": "alternative",
+      "children": [
+       {
+        "type": "elsif",
+        "start": 256,
+        "end": 261,
+        "text": "elsif"
+       },
+       {
+        "type": "identifier",
+        "start": 262,
+        "end": 275,
+        "field": "condition",
+        "text": "condition_two"
+       },
+       {
+        "type": "then",
+        "start": 275,
+        "end": 291,
+        "field": "consequence",
+        "children": [
+         {
+          "type": "identifier",
+          "start": 278,
+          "end": 291,
+          "text": "second_branch"
+         }
+        ]
+       },
+       {
+        "type": "else",
+        "start": 292,
+        "end": 307,
+        "field": "alternative",
+        "children": [
+         {
+          "type": "else",
+          "start": 292,
+          "end": 296,
+          "text": "else"
+         },
+         {
+          "type": "identifier",
+          "start": 299,
+          "end": 307,
+          "text": "fallback"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "end",
+      "start": 308,
+      "end": 311,
+      "text": "end"
+     }
+    ]
+   },
+   {
+    "type": "case",
+    "start": 313,
+    "end": 371,
+    "children": [
+     {
+      "type": "case",
+      "start": 313,
+      "end": 317,
+      "text": "case"
+     },
+     {
+      "type": "identifier",
+      "start": 318,
+      "end": 323,
+      "field": "value",
+      "text": "value"
+     },
+     {
+      "type": "when",
+      "start": 324,
+      "end": 337,
+      "children": [
+       {
+        "type": "when",
+        "start": 324,
+        "end": 328,
+        "text": "when"
+       },
+       {
+        "type": "pattern",
+        "start": 329,
+        "end": 330,
+        "field": "pattern",
+        "children": [
+         {
+          "type": "integer",
+          "start": 329,
+          "end": 330,
+          "text": "1"
+         }
+        ]
+       },
+       {
+        "type": "then",
+        "start": 330,
+        "end": 337,
+        "field": "body",
+        "children": [
+         {
+          "type": "simple_symbol",
+          "start": 333,
+          "end": 337,
+          "text": ":one"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "when",
+      "start": 338,
+      "end": 354,
+      "children": [
+       {
+        "type": "when",
+        "start": 338,
+        "end": 342,
+        "text": "when"
+       },
+       {
+        "type": "pattern",
+        "start": 343,
+        "end": 344,
+        "field": "pattern",
+        "children": [
+         {
+          "type": "integer",
+          "start": 343,
+          "end": 344,
+          "text": "2"
+         }
+        ]
+       },
+       {
+        "type": ",",
+        "start": 344,
+        "end": 345,
+        "text": ","
+       },
+       {
+        "type": "pattern",
+        "start": 346,
+        "end": 347,
+        "field": "pattern",
+        "children": [
+         {
+          "type": "integer",
+          "start": 346,
+          "end": 347,
+          "text": "3"
+         }
+        ]
+       },
+       {
+        "type": "then",
+        "start": 347,
+        "end": 354,
+        "field": "body",
+        "children": [
+         {
+          "type": "simple_symbol",
+          "start": 350,
+          "end": 354,
+          "text": ":few"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "else",
+      "start": 355,
+      "end": 367,
+      "children": [
+       {
+        "type": "else",
+        "start": 355,
+        "end": 359,
+        "text": "else"
+       },
+       {
+        "type": "simple_symbol",
+        "start": 362,
+        "end": 367,
+        "text": ":many"
+       }
+      ]
+     },
+     {
+      "type": "end",
+      "start": 368,
+      "end": 371,
+      "text": "end"
+     }
+    ]
+   },
+   {
+    "type": "for",
+    "start": 373,
+    "end": 394,
+    "children": [
+     {
+      "type": "for",
+      "start": 373,
+      "end": 376,
+      "text": "for"
+     },
+     {
+      "type": "identifier",
+      "start": 377,
+      "end": 378,
+      "field": "pattern",
+      "text": "x"
+     },
+     {
+      "type": "in",
+      "start": 379,
+      "end": 384,
+      "field": "value",
+      "children": [
+       {
+        "type": "in",
+        "start": 379,
+        "end": 381,
+        "text": "in"
+       },
+       {
+        "type": "identifier",
+        "start": 382,
+        "end": 384,
+        "text": "xs"
+       }
+      ]
+     },
+     {
+      "type": "do",
+      "start": 384,
+      "end": 394,
+      "field": "body",
+      "children": [
+       {
+        "type": "call",
+        "start": 387,
+        "end": 390,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 387,
+          "end": 388,
+          "field": "method",
+          "text": "p"
+         },
+         {
+          "type": "argument_list",
+          "start": 389,
+          "end": 390,
+          "field": "arguments",
+          "children": [
+           {
+            "type": "identifier",
+            "start": 389,
+            "end": 390,
+            "text": "x"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "end",
+        "start": 391,
+        "end": 394,
+        "text": "end"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "while_modifier",
+    "start": 396,
+    "end": 411,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 396,
+      "end": 400,
+      "field": "body",
+      "text": "work"
+     },
+     {
+      "type": "while",
+      "start": 401,
+      "end": 406,
+      "text": "while"
+     },
+     {
+      "type": "identifier",
+      "start": 407,
+      "end": 411,
+      "field": "condition",
+      "text": "busy"
+     }
+    ]
+   },
+   {
+    "type": "until_modifier",
+    "start": 412,
+    "end": 428,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 412,
+      "end": 416,
+      "field": "body",
+      "text": "wait"
+     },
+     {
+      "type": "until",
+      "start": 417,
+      "end": 422,
+      "text": "until"
+     },
+     {
+      "type": "identifier",
+      "start": 423,
+      "end": 428,
+      "field": "condition",
+      "text": "ready"
+     }
+    ]
+   },
+   {
+    "type": "begin",
+    "start": 430,
+    "end": 528,
+    "children": [
+     {
+      "type": "begin",
+      "start": 430,
+      "end": 435,
+      "text": "begin"
+     },
+     {
+      "type": "identifier",
+      "start": 438,
+      "end": 443,
+      "text": "risky"
+     },
+     {
+      "type": "rescue",
+      "start": 444,
+      "end": 481,
+      "children": [
+       {
+        "type": "rescue",
+        "start": 444,
+        "end": 450,
+        "text": "rescue"
+       },
+       {
+        "type": "exceptions",
+        "start": 451,
+        "end": 464,
+        "field": "exceptions",
+        "children": [
+         {
+          "type": "constant",
+          "start": 451,
+          "end": 464,
+          "text": "StandardError"
+         }
+        ]
+       },
+       {
+        "type": "exception_variable",
+        "start": 465,
+        "end": 469,
+        "field": "variable",
+        "children": [
+         {
+          "type": "=>",
+          "start": 465,
+          "end": 467,
+          "text": "=>"
+         },
+         {
+          "type": "identifier",
+          "start": 468,
+          "end": 469,
+          "text": "e"
+         }
+        ]
+       },
+       {
+        "type": "then",
+        "start": 469,
+        "end": 481,
+        "field": "body",
+        "children": [
+         {
+          "type": "call",
+          "start": 472,
+          "end": 481,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 472,
+            "end": 478,
+            "field": "method",
+            "text": "handle"
+           },
+           {
+            "type": "argument_list",
+            "start": 478,
+            "end": 481,
+            "field": "arguments",
+            "children": [
+             {
+              "type": "(",
+              "start": 478,
+              "end": 479,
+              "text": "("
+             },
+             {
+              "type": "identifier",
+              "start": 479,
+              "end": 480,
+              "text": "e"
+             },
+             {
+              "type": ")",
+              "start": 480,
+              "end": 481,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "rescue",
+      "start": 482,
+      "end": 507,
+      "children": [
+       {
+        "type": "rescue",
+        "start": 482,
+        "end": 488,
+        "text": "rescue"
+       },
+       {
+        "type": "exceptions",
+        "start": 489,
+        "end": 499,
+        "field": "exceptions",
+        "children": [
+         {
+          "type": "constant",
+          "start": 489,
+          "end": 499,
+          "text": "OtherError"
+         }
+        ]
+       },
+       {
+        "type": "then",
+        "start": 499,
+        "end": 507,
+        "field": "body",
+        "children": [
+         {
+          "type": "retry",
+          "start": 502,
+          "end": 507,
+          "children": [
+           {
+            "type": "retry",
+            "start": 502,
+            "end": 507,
+            "text": "retry"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "ensure",
+      "start": 508,
+      "end": 524,
+      "children": [
+       {
+        "type": "ensure",
+        "start": 508,
+        "end": 514,
+        "text": "ensure"
+       },
+       {
+        "type": "identifier",
+        "start": 517,
+        "end": 524,
+        "text": "cleanup"
+       }
+      ]
+     },
+     {
+      "type": "end",
+      "start": 525,
+      "end": 528,
+      "text": "end"
+     }
+    ]
+   },
+   {
+    "type": "if_modifier",
+    "start": 530,
+    "end": 566,
+    "children": [
+     {
+      "type": "integer",
+      "start": 530,
+      "end": 531,
+      "field": "body",
+      "text": "1"
+     },
+     {
+      "type": "if",
+      "start": 532,
+      "end": 534,
+      "text": "if"
+     },
+     {
+      "type": "binary",
+      "start": 535,
+      "end": 566,
+      "field": "condition",
+      "children": [
+       {
+        "type": "identifier",
+        "start": 535,
+        "end": 548,
+        "field": "left",
+        "text": "condition_one"
+       },
+       {
+        "type": "and",
+        "start": 549,
+        "end": 552,
+        "field": "operator",
+        "text": "and"
+       },
+       {
+        "type": "identifier",
+        "start": 553,
+        "end": 566,
+        "field": "right",
+        "text": "condition_two"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "if_modifier",
+    "start": 567,
+    "end": 602,
+    "children": [
+     {
+      "type": "integer",
+      "start": 567,
+      "end": 568,
+      "field": "body",
+      "text": "1"
+     },
+     {
+      "type": "if",
+      "start": 569,
+      "end": 571,
+      "text": "if"
+     },
+     {
+      "type": "binary",
+      "start": 572,
+      "end": 602,
+      "field": "condition",
+      "children": [
+       {
+        "type": "identifier",
+        "start": 572,
+        "end": 585,
+        "field": "left",
+        "text": "condition_one"
+       },
+       {
+        "type": "&&",
+        "start": 586,
+        "end": 588,
+        "field": "operator",
+        "text": "&&"
+       },
+       {
+        "type": "identifier",
+        "start": 589,
+        "end": 602,
+        "field": "right",
+        "text": "condition_two"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

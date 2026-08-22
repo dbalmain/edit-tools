@@ -1,0 +1,90 @@
+# Ruby. Schema: docs/onboarding/WORKFLOW.md, "Stage 0".
+name = "ruby"
+extensions = [".rb"]
+
+# Live PyPI: the distribution name matches the orchestrator's guess
+# (tree-sitter-ruby). 0.7.0 was the template guess; the releases on the
+# index are 0.21.0, 0.23.0 and 0.23.1, and 0.23.1 is latest (checked
+# against https://pypi.org/pypi/tree-sitter-ruby/json, 2026-08-22).
+# Imported as tree_sitter_ruby; the module exports language() (plus
+# HIGHLIGHTS_QUERY, LOCALS_QUERY, TAGS_QUERY) and it returns a
+# tree_sitter.Language capsule. No language_ruby().
+grammar = "tree-sitter-ruby==0.23.1"
+grammar_module = "tree_sitter_ruby"
+grammar_symbol = "language"
+
+# Markdown info strings that select this grammar for a fenced region.
+# `ruby` is the canonical name; `rb` is the conventional short alias
+# (GitHub linguist, highlight.js). No other spelling is worth vouching for.
+injection_aliases = ["ruby", "rb"]
+
+# syntax_tree 6.3.0 observed from `nix shell nixpkgs#rubyPackages.syntax_tree
+# -c stree version`. `nix run nixpkgs#rubyPackages.syntax_tree` does not
+# work: nixpkgs names the default bin `syntax_tree`, but the gem ships
+# `stree` (and `yarv`). `nix shell … -c stree` is the working form, same
+# shape as gofmt.
+#
+# Source on stdin, formatted source on stdout. No fake filename is needed:
+# the CLI's default `--extension` is `.rb`, and `--extension=.rb` is
+# byte-identical to omitting it (verified). `--extension` is therefore
+# omitted rather than invented.
+#
+# `--print-width` honours `{width}`: established by diffing 80 vs 40, not
+# by reading --help. A formatted call of exactly 80 characters stays flat
+# at `--print-width=80` and wraps at 79.
+#
+# `--config /dev/null` is load-bearing. With no flag, stree always reads
+# `.streerc` from *cwd only* (not ancestors; verified). Config arguments
+# are prepended, then the CLI; OptionParser last-wins per flag, so
+# `--print-width` on the command line beats a file `--print-width=20`
+# (verified — that is the trap: testing with the option you already pass
+# hides the leak). What a discovered file still supplies is every option
+# the CLI does not name. A planted `--plugins=plugin/single_quotes`
+# rewrote `"hello"` to `'hello'` even with `--print-width=80` on the CLI.
+# `--config /dev/null` yields empty arguments and suppresses the cwd file
+# (verified: same planted plugin, output stays `"hello"`). There is no
+# `--no-config`. Residual channels the disable leaves open: an explicit
+# `--config path` (we pass `/dev/null`); no STREERC / SYNTAX_TREE_CONFIG
+# env (verified). `--target-ruby-version` is not passed: it defaults to
+# the runner's RUBY_VERSION, which for this nix package is 3.4.9, and
+# the only in-gem branch on it is a hash-pattern spacing change below
+# 2.7.3. Pinning it would be a no-op on this corpus.
+reference = "nix shell nixpkgs#rubyPackages.syntax_tree -c stree format --config /dev/null --print-width={width}"
+reference_version = "6.3.0"
+reference_width = "flag"
+
+# 80 is syntax_tree's own default, established by bisection rather than
+# from --help (which also says 80, but the bisection is what counts): a
+# formatted call of exactly 80 characters is produced with no width flag
+# and with `--print-width=80`; `--print-width=79` wraps it. Unprompted
+# output is byte-identical to `--print-width=80` on every probe tried.
+# 40 is the narrow width; it is the first round number at which kwargs
+# lists, nested hashes, and single-statement blocks actually split, and
+# at which the brace/do-end conversion fires on a block that still fits
+# at 80.
+widths = [80, 40]
+
+# Generic default. A Ruby AST dump (Ripper, Prism, RubyVM::AbstractSyntaxTree)
+# would collapse the spellings syntax_tree itself preserves (`1_000`,
+# `0xdead` vs `0xDEAD`, `"double"` vs a rewritten `'single'`, `puts x`
+# vs `puts(x)`) and would be weaker than the named-node comparison. Leave
+# wrappers/equivalences empty until the gate names a kind — syntax_tree
+# keeps redundant parentheses (`((1 + 2))` stays) and does not rename a
+# node by parenthesising it. Brace blocks (`block`) and `do/end` blocks
+# (`do_block`) are *not* the same construct under a different name: the
+# reference converts one to the other, but that is a token rewrite, not
+# a transparent wrapper.
+gate3 = "default"
+
+transparent_wrappers = []
+equivalent_kinds = []
+
+# syntax_tree picks `{…}` vs `do…end` by whether the block's body fits on
+# one line at the target width, not by the source delimiters. A
+# single-statement block that is braces at 80 becomes do/end at 40 (and
+# a fitting do/end becomes braces at 80). That is a named-node rewrite
+# (`block` → `do_block`) the generic default rejects. One construct, one
+# file; the rest of the corpus writes whichever form is stable at both
+# widths so the conversion is not hiding inside comparable files.
+[incomparable]
+"block_conversion.rb" = "syntax_tree rewrites `{…}` to `do…end` (and the reverse) by whether the body fits at the target width; gate 3 rejects the named-node change `block` → `do_block`"

@@ -1,0 +1,18 @@
+# Method chains. A short chain stays flat; a medium one breaks at the
+# call's brackets at 40; a long one breaks at the dots even at 80.
+
+short = user.name.upcase # still one line at 40
+
+medium = user.accounts.active.where(status: "open")
+
+long =
+  user
+    .accounts
+    .active
+    .where(status: "open")
+    .order(:created_at)
+    .limit(10)
+    .map(&:email)
+
+# Brace block stays braces; the chain wraps at 40.
+names = items.select { |x| x.active? }.map(&:name)

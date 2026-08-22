@@ -39,6 +39,16 @@ Check, in roughly this order of importance:
    the narrow width? Does it cover comments in every position? Is there anything
    characteristic of {{LANG}} that a person would notice missing?
 
+   **The four counts are a floor, not the probe-quality test.** They are worth
+   running and worth trusting as a floor — but a genuine missing probe passes
+   them untouched, and round 5 made that three-for-three: Ruby's blank-line
+   probe, Scheme's semicolon-count probe and Haskell's two import probes moved
+   **no count at all**, because every one was a width-insensitive rewrite in a
+   file that already changed and already carried a comment. The check that finds
+   those is number 10, not this one. For an indent-only or otherwise
+   width-insensitive reference, treat this check as necessary and nowhere near
+   sufficient.
+
    **Run `./harness/corpus_stats.py --language {{LANG}}` yourself. Do not read
    the counts out of the report.** It prints all four -- how many files the
    reference changes, how many differ between the two widths, how many carry a
@@ -57,6 +67,16 @@ Check, in roughly this order of importance:
    level, as opposed to what it breaks at line level. taplo normalises nine
    distinct things and the corpus probed one.
 
+**Before ruling on any reference-shape question, grep the other manifests for
+the same shape.** Round 5 asked Scheme's reviewer to decide two things — keep
+emacs's tabs or pin `indent-tabs-mode nil`, and whether a corpus with no width
+sensitivity can support a package — and both were already settled by
+`harness/languages/go.toml`, which declares `reference_width = "fixed"`,
+`widths = [80]` with nearly word-for-word the same rationale and has all sixteen
+of its reference files tab-indented. The reviewer found the precedent and said
+so, which is the right answer; the deliberation it displaced was the waste.
+`grep -l 'reference_width = "fixed"' harness/languages/*.toml` costs nothing.
+
 4. **Is `widths` the reference's own default, established by bisection?** This
    is the round-1 delta and it recurred at stage B: TOML's builder found taplo's
    default of 80, wrote it in a comment, and set `widths = [88, 60]` anyway
@@ -70,6 +90,15 @@ Check, in roughly this order of importance:
 7. **Is `reference_width = "fixed"` honest** where used — does the reference
    genuinely not honour a width, or did the builder waive a gate it found
    inconvenient?
+
+   For a `fixed` language, **check 4 does not apply and this one replaces it**:
+   the useful instruction is not "bisect the default" but **"prove the width is
+   inert"**, and it is one command. Round 5 did it twice: Haskell rejected six
+   different width flags and then showed a 266-character list staying on one
+   line *and* a trivially-fitting broken list staying broken — inert in both
+   directions, not merely "does not wrap". Scheme ran `fill-column` 40 against
+   200 on a 100-column line and got byte-identical output. Either shape is
+   enough; asserting `fixed` without one of them is not.
 8. **What did the builder change outside `corpus/` and `harness/languages/`?**
    Every such edit needs a reason. Edits to `rust/` or `runtime-js/` at stage A
    are a strong smell.
@@ -108,6 +137,16 @@ Check, in roughly this order of importance:
     check is yours. Omitting a construct the reference rewrites — rather than
     declaring a dedicated file — is the older failure this field exists to stop.
     The `kitchen` file must not be listed.
+
+    **And a named rewrite is not an enumerated one.** Haskell's builder declared
+    `imports.hs` incomparable for *sorting*, wrote a careful file dedicated to
+    sorting alone, and never asked whether ormolu does anything **else** to
+    imports. It does: it **collapses** repeated imports of one module, dropping
+    an exact duplicate and merging two `Data.List` imports into one. That is the
+    ktfmt `sortedAndDistinctImports` precedent — two exclusions wearing one name
+    — landing in a second formatter, and it took three probe inputs to find. For
+    every `[incomparable]` construct, ask whether the reference **reorders,
+    deletes, merges or renames** on it, and record the negatives too.
 
 You **may make small corrections yourself** in the worktree — a wrong pin, a
 missing probe file, a stale number in the report — and re-verify. Anything

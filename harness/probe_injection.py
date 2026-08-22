@@ -17,6 +17,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import gen_trees  # noqa: E402
+import gate3  # noqa: E402
+import injection  # noqa: E402
 import manifest as mf  # noqa: E402
 import score  # noqa: E402
 
@@ -28,6 +30,15 @@ MARKDOWN_PACKAGE = FIXTURES / "markdown.json"
 JSON_PACKAGE = ROOT / "packages" / "json.json"
 FMT_JS = ROOT / "fmt-js"
 RUST_BIN = ROOT / "rust" / "target" / "release" / "docfmt"
+QUOTED_SOURCE = (
+    b'> ```json\n'
+    b'> {\n'
+    b'>   "alpha": [1, 2],\n'
+    b'>   "beta": {"x": true}\n'
+    b'> }\n'
+    b'> ```\n'
+)
+FRONT_MATTER_SOURCE = b"---\ntags: [alpha,beta]\n---\n"
 
 
 class Failed(Exception):
@@ -45,6 +56,46 @@ def direct(node: dict, kind: str) -> dict | None:
         (child for child in node.get("children", []) if child["type"] == kind),
         None,
     )
+
+
+def tree_sitter_node(root, kind: str):
+    stack = [root]
+    while stack:
+        node = stack.pop()
+        if node.type == kind:
+            return node
+        stack.extend(node.children)
+    return None
+
+
+def without_continuations(content, source: bytes) -> bytes:
+    """The tempting quoted-fence patch, retained here only to disprove it."""
+    parts = []
+    at = content.start_byte
+    for child in content.children:
+        if child.type != "block_continuation":
+            continue
+        parts.append(source[at:child.start_byte])
+        at = child.end_byte
+    parts.append(source[at:content.end_byte])
+    return b"".join(parts)
+
+
+def scalar_base_mismatches(
+    root, guest: bytes, host: bytes, base: int
+) -> tuple[int, int]:
+    """How many guest leaves a single additive host base misreads."""
+    mismatches = leaves = 0
+    stack = [root]
+    while stack:
+        node = stack.pop()
+        if not node.children:
+            leaves += 1
+            guest_text = guest[node.start_byte:node.end_byte]
+            host_text = host[base + node.start_byte:base + node.end_byte]
+            mismatches += guest_text != host_text
+        stack.extend(node.children)
+    return mismatches, leaves
 
 
 def info(fence: dict, source: bytes) -> str | None:
@@ -161,6 +212,75 @@ def main() -> int:
     if any("language" in node for node in walk(broken)):
         raise Failed("the malformed JSON fence was stamped")
     print("  malformed JSON: unstamped; emitted outer tree stays ERROR-free")
+
+    quoted_root = parsers[markdown.name].parse(QUOTED_SOURCE).root_node
+    quoted_fence = tree_sitter_node(quoted_root, "fenced_code_block")
+    if quoted_fence is None:
+        raise Failed("quoted fixture did not yield a fenced code block")
+    quoted_content = tree_sitter_node(quoted_fence, "code_fence_content")
+    quoted_region = injection.region_for(
+        quoted_fence,
+        QUOTED_SOURCE,
+        markdown,
+        mf.injection_map(manifests),
+    )
+    if quoted_content is None or quoted_region is None:
+        raise Failed("quoted fixture did not yield its declared injection region")
+    if injection.parse(quoted_region, parsers) is not None:
+        raise Failed("quoted JSON unexpectedly parsed with its continuation markers")
+    stripped = without_continuations(quoted_content, QUOTED_SOURCE)
+    stripped_root = parsers["json"].parse(stripped).root_node
+    if gen_trees.check_clean(stripped_root, SOURCE):
+        raise Failed("continuation-stripped quoted JSON did not parse cleanly")
+    mismatches, leaves = scalar_base_mismatches(
+        stripped_root,
+        stripped,
+        QUOTED_SOURCE,
+        quoted_content.start_byte,
+    )
+    if mismatches == 0:
+        raise Failed("naive continuation stripping no longer disproves scalar rebasing")
+    quoted_doc, quoted_problems = gen_trees.parse_doc(
+        markdown,
+        QUOTED_SOURCE,
+        "quoted.md",
+        manifests,
+        parsers,
+    )
+    if quoted_problems or any("language" in node for node in walk(quoted_doc["root"])):
+        raise Failed("quoted JSON did not conservatively remain host content")
+    print(
+        "  quoted JSON: verbatim; naive stripping parses but scalar rebasing "
+        f"misreads {mismatches}/{leaves} leaves"
+    )
+
+    front_matter_doc, front_matter_problems = gen_trees.parse_doc(
+        markdown,
+        FRONT_MATTER_SOURCE,
+        "front-matter.md",
+        manifests,
+        parsers,
+    )
+    yaml_roots = [
+        node
+        for node in walk(front_matter_doc["root"])
+        if node.get("language") == "yaml"
+    ]
+    if front_matter_problems or len(yaml_roots) != 1:
+        raise Failed("host-node YAML front matter did not splice exactly once")
+    if any(
+        node["type"] == "minus_metadata"
+        for node in walk(front_matter_doc["root"])
+    ):
+        raise Failed("the YAML root did not replace the host-node region")
+    check_offsets(front_matter_doc["root"], FRONT_MATTER_SOURCE)
+    before = FRONT_MATTER_SOURCE.decode()
+    after = "---\ntags: [alpha, beta]\n---\n"
+    if gate3.signature(before, markdown, parsers[markdown.name], manifests, parsers) != (
+        gate3.signature(after, markdown, parsers[markdown.name], manifests, parsers)
+    ):
+        raise Failed("gate 3 rejected a valid host-node guest reformat")
+    print("  host-node region: YAML front matter spliced and gate 3 accepted reformat")
 
     with tempfile.TemporaryDirectory(prefix="injection-probe-") as tmp:
         tmp_path = Path(tmp)

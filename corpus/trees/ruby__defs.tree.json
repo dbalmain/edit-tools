@@ -1,0 +1,1038 @@
+{
+ "language": "ruby",
+ "source_file": "corpus/src/ruby/defs.rb",
+ "source": "# Methods, classes, modules. Headers are already parenthesised: syntax_tree\n# adds parens to `def foo a, b` and would make that a token rewrite.\n\nclass Widget < Base\n  attr_reader :name, :age\n\n  def initialize(name, age)\n    @name = name\n    @age = age\n  end\n\n  def self.build(name, age = 0)\n    new(name, age)\n  end\n\n  def configure(host:, port: 80, timeout: 30, retries: 3)\n    @host = host\n    @port = port\n  end\nend\n\nmodule Helpers\n  module_function\n\n  def shout(text)\n    text.upcase # trailing\n  end\nend\n\ndef add(x) = x + 1\n\ndef forward(...)\n  bar(...)\nend\n\nclass << self\n  def singleton_hook\n    1\n  end\nend\n",
+ "root": {
+  "type": "program",
+  "start": 0,
+  "end": 615,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 75,
+    "text": "# Methods, classes, modules. Headers are already parenthesised: syntax_tree"
+   },
+   {
+    "type": "comment",
+    "start": 76,
+    "end": 144,
+    "text": "# adds parens to `def foo a, b` and would make that a token rewrite."
+   },
+   {
+    "type": "class",
+    "start": 146,
+    "end": 419,
+    "children": [
+     {
+      "type": "class",
+      "start": 146,
+      "end": 151,
+      "text": "class"
+     },
+     {
+      "type": "constant",
+      "start": 152,
+      "end": 158,
+      "field": "name",
+      "text": "Widget"
+     },
+     {
+      "type": "superclass",
+      "start": 159,
+      "end": 165,
+      "field": "superclass",
+      "children": [
+       {
+        "type": "<",
+        "start": 159,
+        "end": 160,
+        "text": "<"
+       },
+       {
+        "type": "constant",
+        "start": 161,
+        "end": 165,
+        "text": "Base"
+       }
+      ]
+     },
+     {
+      "type": "body_statement",
+      "start": 168,
+      "end": 415,
+      "field": "body",
+      "children": [
+       {
+        "type": "call",
+        "start": 168,
+        "end": 191,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 168,
+          "end": 179,
+          "field": "method",
+          "text": "attr_reader"
+         },
+         {
+          "type": "argument_list",
+          "start": 180,
+          "end": 191,
+          "field": "arguments",
+          "children": [
+           {
+            "type": "simple_symbol",
+            "start": 180,
+            "end": 185,
+            "text": ":name"
+           },
+           {
+            "type": ",",
+            "start": 185,
+            "end": 186,
+            "text": ","
+           },
+           {
+            "type": "simple_symbol",
+            "start": 187,
+            "end": 191,
+            "text": ":age"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "method",
+        "start": 195,
+        "end": 258,
+        "children": [
+         {
+          "type": "def",
+          "start": 195,
+          "end": 198,
+          "text": "def"
+         },
+         {
+          "type": "identifier",
+          "start": 199,
+          "end": 209,
+          "field": "name",
+          "text": "initialize"
+         },
+         {
+          "type": "method_parameters",
+          "start": 209,
+          "end": 220,
+          "field": "parameters",
+          "children": [
+           {
+            "type": "(",
+            "start": 209,
+            "end": 210,
+            "text": "("
+           },
+           {
+            "type": "identifier",
+            "start": 210,
+            "end": 214,
+            "text": "name"
+           },
+           {
+            "type": ",",
+            "start": 214,
+            "end": 215,
+            "text": ","
+           },
+           {
+            "type": "identifier",
+            "start": 216,
+            "end": 219,
+            "text": "age"
+           },
+           {
+            "type": ")",
+            "start": 219,
+            "end": 220,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": "body_statement",
+          "start": 225,
+          "end": 252,
+          "field": "body",
+          "children": [
+           {
+            "type": "assignment",
+            "start": 225,
+            "end": 237,
+            "children": [
+             {
+              "type": "instance_variable",
+              "start": 225,
+              "end": 230,
+              "field": "left",
+              "text": "@name"
+             },
+             {
+              "type": "=",
+              "start": 231,
+              "end": 232,
+              "text": "="
+             },
+             {
+              "type": "identifier",
+              "start": 233,
+              "end": 237,
+              "field": "right",
+              "text": "name"
+             }
+            ]
+           },
+           {
+            "type": "assignment",
+            "start": 242,
+            "end": 252,
+            "children": [
+             {
+              "type": "instance_variable",
+              "start": 242,
+              "end": 246,
+              "field": "left",
+              "text": "@age"
+             },
+             {
+              "type": "=",
+              "start": 247,
+              "end": 248,
+              "text": "="
+             },
+             {
+              "type": "identifier",
+              "start": 249,
+              "end": 252,
+              "field": "right",
+              "text": "age"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "end",
+          "start": 255,
+          "end": 258,
+          "text": "end"
+         }
+        ]
+       },
+       {
+        "type": "singleton_method",
+        "start": 262,
+        "end": 316,
+        "children": [
+         {
+          "type": "def",
+          "start": 262,
+          "end": 265,
+          "text": "def"
+         },
+         {
+          "type": "self",
+          "start": 266,
+          "end": 270,
+          "field": "object",
+          "text": "self"
+         },
+         {
+          "type": ".",
+          "start": 270,
+          "end": 271,
+          "text": "."
+         },
+         {
+          "type": "identifier",
+          "start": 271,
+          "end": 276,
+          "field": "name",
+          "text": "build"
+         },
+         {
+          "type": "method_parameters",
+          "start": 276,
+          "end": 291,
+          "field": "parameters",
+          "children": [
+           {
+            "type": "(",
+            "start": 276,
+            "end": 277,
+            "text": "("
+           },
+           {
+            "type": "identifier",
+            "start": 277,
+            "end": 281,
+            "text": "name"
+           },
+           {
+            "type": ",",
+            "start": 281,
+            "end": 282,
+            "text": ","
+           },
+           {
+            "type": "optional_parameter",
+            "start": 283,
+            "end": 290,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 283,
+              "end": 286,
+              "field": "name",
+              "text": "age"
+             },
+             {
+              "type": "=",
+              "start": 287,
+              "end": 288,
+              "text": "="
+             },
+             {
+              "type": "integer",
+              "start": 289,
+              "end": 290,
+              "field": "value",
+              "text": "0"
+             }
+            ]
+           },
+           {
+            "type": ")",
+            "start": 290,
+            "end": 291,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": "body_statement",
+          "start": 296,
+          "end": 310,
+          "field": "body",
+          "children": [
+           {
+            "type": "call",
+            "start": 296,
+            "end": 310,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 296,
+              "end": 299,
+              "field": "method",
+              "text": "new"
+             },
+             {
+              "type": "argument_list",
+              "start": 299,
+              "end": 310,
+              "field": "arguments",
+              "children": [
+               {
+                "type": "(",
+                "start": 299,
+                "end": 300,
+                "text": "("
+               },
+               {
+                "type": "identifier",
+                "start": 300,
+                "end": 304,
+                "text": "name"
+               },
+               {
+                "type": ",",
+                "start": 304,
+                "end": 305,
+                "text": ","
+               },
+               {
+                "type": "identifier",
+                "start": 306,
+                "end": 309,
+                "text": "age"
+               },
+               {
+                "type": ")",
+                "start": 309,
+                "end": 310,
+                "text": ")"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "end",
+          "start": 313,
+          "end": 316,
+          "text": "end"
+         }
+        ]
+       },
+       {
+        "type": "method",
+        "start": 320,
+        "end": 415,
+        "children": [
+         {
+          "type": "def",
+          "start": 320,
+          "end": 323,
+          "text": "def"
+         },
+         {
+          "type": "identifier",
+          "start": 324,
+          "end": 333,
+          "field": "name",
+          "text": "configure"
+         },
+         {
+          "type": "method_parameters",
+          "start": 333,
+          "end": 375,
+          "field": "parameters",
+          "children": [
+           {
+            "type": "(",
+            "start": 333,
+            "end": 334,
+            "text": "("
+           },
+           {
+            "type": "keyword_parameter",
+            "start": 334,
+            "end": 339,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 334,
+              "end": 338,
+              "field": "name",
+              "text": "host"
+             },
+             {
+              "type": ":",
+              "start": 338,
+              "end": 339,
+              "text": ":"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 339,
+            "end": 340,
+            "text": ","
+           },
+           {
+            "type": "keyword_parameter",
+            "start": 341,
+            "end": 349,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 341,
+              "end": 345,
+              "field": "name",
+              "text": "port"
+             },
+             {
+              "type": ":",
+              "start": 345,
+              "end": 346,
+              "text": ":"
+             },
+             {
+              "type": "integer",
+              "start": 347,
+              "end": 349,
+              "field": "value",
+              "text": "80"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 349,
+            "end": 350,
+            "text": ","
+           },
+           {
+            "type": "keyword_parameter",
+            "start": 351,
+            "end": 362,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 351,
+              "end": 358,
+              "field": "name",
+              "text": "timeout"
+             },
+             {
+              "type": ":",
+              "start": 358,
+              "end": 359,
+              "text": ":"
+             },
+             {
+              "type": "integer",
+              "start": 360,
+              "end": 362,
+              "field": "value",
+              "text": "30"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 362,
+            "end": 363,
+            "text": ","
+           },
+           {
+            "type": "keyword_parameter",
+            "start": 364,
+            "end": 374,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 364,
+              "end": 371,
+              "field": "name",
+              "text": "retries"
+             },
+             {
+              "type": ":",
+              "start": 371,
+              "end": 372,
+              "text": ":"
+             },
+             {
+              "type": "integer",
+              "start": 373,
+              "end": 374,
+              "field": "value",
+              "text": "3"
+             }
+            ]
+           },
+           {
+            "type": ")",
+            "start": 374,
+            "end": 375,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": "body_statement",
+          "start": 380,
+          "end": 409,
+          "field": "body",
+          "children": [
+           {
+            "type": "assignment",
+            "start": 380,
+            "end": 392,
+            "children": [
+             {
+              "type": "instance_variable",
+              "start": 380,
+              "end": 385,
+              "field": "left",
+              "text": "@host"
+             },
+             {
+              "type": "=",
+              "start": 386,
+              "end": 387,
+              "text": "="
+             },
+             {
+              "type": "identifier",
+              "start": 388,
+              "end": 392,
+              "field": "right",
+              "text": "host"
+             }
+            ]
+           },
+           {
+            "type": "assignment",
+            "start": 397,
+            "end": 409,
+            "children": [
+             {
+              "type": "instance_variable",
+              "start": 397,
+              "end": 402,
+              "field": "left",
+              "text": "@port"
+             },
+             {
+              "type": "=",
+              "start": 403,
+              "end": 404,
+              "text": "="
+             },
+             {
+              "type": "identifier",
+              "start": 405,
+              "end": 409,
+              "field": "right",
+              "text": "port"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "end",
+          "start": 412,
+          "end": 415,
+          "text": "end"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "end",
+      "start": 416,
+      "end": 419,
+      "text": "end"
+     }
+    ]
+   },
+   {
+    "type": "module",
+    "start": 421,
+    "end": 509,
+    "children": [
+     {
+      "type": "module",
+      "start": 421,
+      "end": 427,
+      "text": "module"
+     },
+     {
+      "type": "constant",
+      "start": 428,
+      "end": 435,
+      "field": "name",
+      "text": "Helpers"
+     },
+     {
+      "type": "body_statement",
+      "start": 438,
+      "end": 505,
+      "field": "body",
+      "children": [
+       {
+        "type": "identifier",
+        "start": 438,
+        "end": 453,
+        "text": "module_function"
+       },
+       {
+        "type": "method",
+        "start": 457,
+        "end": 505,
+        "children": [
+         {
+          "type": "def",
+          "start": 457,
+          "end": 460,
+          "text": "def"
+         },
+         {
+          "type": "identifier",
+          "start": 461,
+          "end": 466,
+          "field": "name",
+          "text": "shout"
+         },
+         {
+          "type": "method_parameters",
+          "start": 466,
+          "end": 472,
+          "field": "parameters",
+          "children": [
+           {
+            "type": "(",
+            "start": 466,
+            "end": 467,
+            "text": "("
+           },
+           {
+            "type": "identifier",
+            "start": 467,
+            "end": 471,
+            "text": "text"
+           },
+           {
+            "type": ")",
+            "start": 471,
+            "end": 472,
+            "text": ")"
+           }
+          ]
+         },
+         {
+          "type": "body_statement",
+          "start": 477,
+          "end": 499,
+          "field": "body",
+          "children": [
+           {
+            "type": "call",
+            "start": 477,
+            "end": 488,
+            "children": [
+             {
+              "type": "identifier",
+              "start": 477,
+              "end": 481,
+              "field": "receiver",
+              "text": "text"
+             },
+             {
+              "type": ".",
+              "start": 481,
+              "end": 482,
+              "field": "operator",
+              "text": "."
+             },
+             {
+              "type": "identifier",
+              "start": 482,
+              "end": 488,
+              "field": "method",
+              "text": "upcase"
+             }
+            ]
+           },
+           {
+            "type": "comment",
+            "start": 489,
+            "end": 499,
+            "text": "# trailing"
+           }
+          ]
+         },
+         {
+          "type": "end",
+          "start": 502,
+          "end": 505,
+          "text": "end"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "end",
+      "start": 506,
+      "end": 509,
+      "text": "end"
+     }
+    ]
+   },
+   {
+    "type": "method",
+    "start": 511,
+    "end": 529,
+    "children": [
+     {
+      "type": "def",
+      "start": 511,
+      "end": 514,
+      "text": "def"
+     },
+     {
+      "type": "identifier",
+      "start": 515,
+      "end": 518,
+      "field": "name",
+      "text": "add"
+     },
+     {
+      "type": "method_parameters",
+      "start": 518,
+      "end": 521,
+      "field": "parameters",
+      "children": [
+       {
+        "type": "(",
+        "start": 518,
+        "end": 519,
+        "text": "("
+       },
+       {
+        "type": "identifier",
+        "start": 519,
+        "end": 520,
+        "text": "x"
+       },
+       {
+        "type": ")",
+        "start": 520,
+        "end": 521,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "=",
+      "start": 522,
+      "end": 523,
+      "text": "="
+     },
+     {
+      "type": "binary",
+      "start": 524,
+      "end": 529,
+      "field": "body",
+      "children": [
+       {
+        "type": "identifier",
+        "start": 524,
+        "end": 525,
+        "field": "left",
+        "text": "x"
+       },
+       {
+        "type": "+",
+        "start": 526,
+        "end": 527,
+        "field": "operator",
+        "text": "+"
+       },
+       {
+        "type": "integer",
+        "start": 528,
+        "end": 529,
+        "field": "right",
+        "text": "1"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "method",
+    "start": 531,
+    "end": 562,
+    "children": [
+     {
+      "type": "def",
+      "start": 531,
+      "end": 534,
+      "text": "def"
+     },
+     {
+      "type": "identifier",
+      "start": 535,
+      "end": 542,
+      "field": "name",
+      "text": "forward"
+     },
+     {
+      "type": "method_parameters",
+      "start": 542,
+      "end": 547,
+      "field": "parameters",
+      "children": [
+       {
+        "type": "(",
+        "start": 542,
+        "end": 543,
+        "text": "("
+       },
+       {
+        "type": "forward_parameter",
+        "start": 543,
+        "end": 546,
+        "children": [
+         {
+          "type": "...",
+          "start": 543,
+          "end": 546,
+          "text": "..."
+         }
+        ]
+       },
+       {
+        "type": ")",
+        "start": 546,
+        "end": 547,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "body_statement",
+      "start": 550,
+      "end": 558,
+      "field": "body",
+      "children": [
+       {
+        "type": "call",
+        "start": 550,
+        "end": 558,
+        "children": [
+         {
+          "type": "identifier",
+          "start": 550,
+          "end": 553,
+          "field": "method",
+          "text": "bar"
+         },
+         {
+          "type": "argument_list",
+          "start": 553,
+          "end": 558,
+          "field": "arguments",
+          "children": [
+           {
+            "type": "(",
+            "start": 553,
+            "end": 554,
+            "text": "("
+           },
+           {
+            "type": "forward_argument",
+            "start": 554,
+            "end": 557,
+            "children": [
+             {
+              "type": "...",
+              "start": 554,
+              "end": 557,
+              "text": "..."
+             }
+            ]
+           },
+           {
+            "type": ")",
+            "start": 557,
+            "end": 558,
+            "text": ")"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "end",
+      "start": 559,
+      "end": 562,
+      "text": "end"
+     }
+    ]
+   },
+   {
+    "type": "singleton_class",
+    "start": 564,
+    "end": 614,
+    "children": [
+     {
+      "type": "class",
+      "start": 564,
+      "end": 569,
+      "text": "class"
+     },
+     {
+      "type": "<<",
+      "start": 570,
+      "end": 572,
+      "text": "<<"
+     },
+     {
+      "type": "self",
+      "start": 573,
+      "end": 577,
+      "field": "value",
+      "text": "self"
+     },
+     {
+      "type": "body_statement",
+      "start": 580,
+      "end": 610,
+      "field": "body",
+      "children": [
+       {
+        "type": "method",
+        "start": 580,
+        "end": 610,
+        "children": [
+         {
+          "type": "def",
+          "start": 580,
+          "end": 583,
+          "text": "def"
+         },
+         {
+          "type": "identifier",
+          "start": 584,
+          "end": 598,
+          "field": "name",
+          "text": "singleton_hook"
+         },
+         {
+          "type": "body_statement",
+          "start": 603,
+          "end": 604,
+          "field": "body",
+          "children": [
+           {
+            "type": "integer",
+            "start": 603,
+            "end": 604,
+            "text": "1"
+           }
+          ]
+         },
+         {
+          "type": "end",
+          "start": 607,
+          "end": 610,
+          "text": "end"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "end",
+      "start": 611,
+      "end": 614,
+      "text": "end"
+     }
+    ]
+   }
+  ]
+ }
+}

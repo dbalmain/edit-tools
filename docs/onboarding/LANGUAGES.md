@@ -3,8 +3,94 @@
 Orchestrator's source of truth for what is in flight. Update on every stage
 transition.
 
-Status: `-` not started · `A` corpus building · `B` corpus review · `C` package
-building · `D` package review · `E`/`F` escalated · **merged** · **blocked**
+Status: `-` not started · `A` corpus building · `B` corpus review · `B+` corpus
+reviewed and merged, package not started · `C` package building · `D` package
+review · `E`/`F` escalated · **merged** · **blocked**
+
+`B+` was added 2026-08-22. The board had carried four languages as `C` for a day
+while nothing was building a package, which is the same lie it complains about
+twice below in the other direction. There was no token for "stage B passed and
+nobody has started stage C", so the board reached for the nearest one and
+overstated. A status with no token gets rounded to a wrong token.
+
+## Picking this up — paused 2026-08-22, resuming Friday
+
+Read this, the branch table below, and the decisions page. Everything else on
+this document is history.
+
+**Do first, in this order:**
+
+1. **Land the fast-forward** (branch table below). Until it lands, three things
+   are blocked that look like they are not: markdown and XML stage C are waiting
+   on `comment_kinds`, and Scheme's manifest cannot declare it either — that
+   declaration is already made *on the branch*, so merging is what turns it on.
+2. **Stage D for TypeScript and HTML, on codex.** Codex was promised the
+   stage-D return two rounds ago and has not had it. TypeScript's brief must
+   carry the `decorators.ts@40` analysis below — the reviewer rules on the
+   label, and the orchestrator must not pre-empt it.
+3. **Then round 4's remaining stage C** (markdown, XML) and round 5's (Ruby,
+   Scheme, Haskell). Five packages outstanding.
+
+**Two decisions are open and belong to Dave**, both on the decisions artifact
+with options and tradeoffs: what happens to TypeScript's 11/30, and whether Aven
+starts and by which route.
+
+**One thing that will not be obvious:** the orchestrator session was
+worktree-isolated, so its git operations against the shared checkout were
+refused — including read-only ones. That is why the merge was performed in a
+worktree and handed over as a fast-forward rather than done on `main`. If a
+future session should merge directly, that has to be settled at launch, not
+mid-run.
+
+## Branches, 2026-08-22 — what is on each, for the backup
+
+Work paused here until Saturday. Nothing has ever been pushed by an agent;
+every branch below is local and clean, with `./test.sh` green where it applies.
+
+| Branch | Base | Holds | State |
+| --- | --- | --- | --- |
+| `worktree-feat-cell-scope` | `fed4974` | The merge. Harness slice + Ruby + Scheme + Haskell corpora, Scheme's `comment_kinds`, the `score.py` tab fix, FINDINGS 24/25/26, board and ledger | **Ready — `git merge --ff-only` from main** |
+| `wt/harness-slice` | `fed4974` | Injection relaxation, `comment_kinds`, the quoted-fence refusal | Contained in the above |
+| `wt/lang-ruby` | `fed4974` | Stage A + B corpus | Contained in the above |
+| `wt/lang-scheme` | `fed4974` | Stage A + B corpus | Contained in the above |
+| `wt/lang-haskell` | `fed4974` | Stage A + B corpus | Contained in the above |
+| `wt/lang-typescript` | `fed4974` | Stage C package, 4 commits, 11/30 | **Held — needs stage D** |
+| `wt/lang-html` | `fed4974` | Stage C package, 2 commits, 23/26 | **Held — needs stage D** |
+
+The two held branches both edit `runtime-js/bundle.js` and `rust/src/eval.rs`,
+so whichever merges second needs a real merge rather than a fast-forward. HTML
+also adds 25 lines to `DESIGN.md`. That is a stage-D problem and it is written
+down here so it is not a surprise later.
+
+**Everything above the two held branches collapses into one fast-forward.** The
+merge was done in a worktree rather than on main because the orchestrator
+session is worktree-isolated and its git operations against the shared checkout
+are refused — so the four merges, the conflict check and the green suite are
+already done, and main only has to move.
+
+## 2026-08-23 — the merge landed, and Claude takes the builder lane
+
+`worktree-feat-cell-scope` fast-forwarded onto `main` (`b0a7791`). The branch
+table above is now history: everything it listed as ready is on `main`, and only
+the two held stage-C branches (`wt/lang-typescript`, `wt/lang-html`) are still
+outside it, still waiting on stage D.
+
+**Ruby and Scheme move to stage C with Claude as the builder.** This is a lane
+swap, not a new lane: grok is still at a 402 with no reset hour, codex is the
+reviewer, and five languages were sitting at `B+` with nothing building. Claude
+has never built a package, so it is uncalibrated in exactly the way every other
+builder was on its first slice.
+
+The ledger's rule survives the swap and is the reason the pairing works: **a
+reviewer is never the same family as the builder**, so Claude-built packages go
+to **codex-Sol** at stage D. That also settles the two held branches — codex
+takes TypeScript (grok-built), and HTML goes to an Opus subagent, because
+codex-Sol built it and cannot review its own family.
+
+Two of five, not five of five, deliberately. The first codex stage-D verdict on
+a Claude-built package is the calibration; the remaining three (Haskell,
+Markdown, XML) are held until it lands, so an uncalibrated builder cannot get the
+same shape wrong five times in parallel.
 
 ## Board
 
@@ -19,13 +105,13 @@ building · `D` package review · `E`/`F` escalated · **merged** · **blocked**
 | Rust       | T2   | 3     | unrecorded    | merged | tree_sitter_rust       | rustfmt                           |
 | Kotlin     | T2   | 3     | unrecorded    | merged | tree_sitter_kotlin     | ktfmt                             |
 | JavaScript | T2   | 3     | unrecorded    | merged | tree_sitter_javascript | prettier                          |
-| Markdown   | T2   | 4     | grok-4.6      | C      | tree_sitter_markdown   | prettier                          |
-| TypeScript | T2   | 4     | grok-4.6      | C      | tree_sitter_typescript | prettier                          |
-| XML        | T3   | 4     | grok-4.6      | C      | tree_sitter_xml        | prettier (`@prettier/plugin-xml`) |
-| HTML       | T3   | 4     | grok-4.6      | C      | tree_sitter_html       | prettier                          |
-| Ruby       | T4   | 5     | tbd           | -      | tree_sitter_ruby       | syntax_tree                       |
-| Scheme     | T4   | 5     | tbd           | -      | tree_sitter_scheme     | emacs `scheme-mode`               |
-| Haskell    | T4   | 5     | tbd           | -      | tree_sitter_haskell    | ormolu                            |
+| Markdown   | T2   | 4     | grok-4.6      | B+     | tree_sitter_markdown   | prettier                          |
+| TypeScript | T2   | 4     | grok-4.6      | D      | tree_sitter_typescript | prettier                          |
+| XML        | T3   | 4     | grok-4.6      | B+     | tree_sitter_xml        | prettier (`@prettier/plugin-xml`) |
+| HTML       | T3   | 4     | grok+codex    | D      | tree_sitter_html       | prettier                          |
+| Ruby       | T4   | 5     | grok+Claude   | merged | tree_sitter_ruby       | syntax_tree 6.3.0                 |
+| Scheme     | T4   | 5     | grok+Claude   | D      | tree_sitter_scheme     | emacs `scheme-mode`               |
+| Haskell    | T4   | 5     | grok-4.6      | B+     | tree_sitter_haskell    | ormolu 0.8.0.2                    |
 | Aven       | T4   | 6     | tbd           | -      | **none — see below**   | `aven fmt`                        |
 
 Grammar package names are the orchestrator's guess from PyPI naming convention.
@@ -105,6 +191,190 @@ indent without reflowing to a column — and both briefs give that as a hypothes
 to test at two widths, explicitly not as a fact, so it cannot be inherited the
 way black's 88 was inherited into TOML in round 1.
 
+**Round 4 stage C is complete on two of four, 2026-08-22. Both built; neither is
+reviewed.** HTML on codex-Sol (`77b635b`, `f17d03a`), TypeScript on grok-4.6
+(`b043b9c` and three runtime commits). Both worktrees clean, nothing pushed.
+Neither is merged: a package merges after stage D, not after stage C.
+
+**HTML built rather than refused, and took the middle door.** Asked whether
+per-tag behaviour wants a new selector, package data, or a refusal, it answered
+*both of the first two*: generic exact-leaf-path predicates in the runtime, with
+the block/inline tag names kept as **package data**. 32/32 coverage,
+idempotence, non-destruction and Rust/JS parity all pass; agreement 11/13 @80
+and 12/13 @40; width sweep identical across widths 1-120. Every divergence a
+design limit, **no `package-bug`, no `reference-quirk`**, no refusals. Runtime
++381 B in three pieces: exact leaf-path text predicate +144 B, source-derived
+whitespace gap +172 B, exact leaf-path multiline predicate +65 B. It also added
+25 lines to `DESIGN.md`, which is a shared file and needs reading at stage D.
+
+So the answer to the question HTML was on the roster to ask is **"a token inside
+the node can drive layout, and the tag names belong in the package rather than
+the runtime."** Scheme's stage B reached the same shape from the other end. That
+is now two languages agreeing, which is the bar this project uses.
+
+**TypeScript is at 11/30 agreement, and the leading `|` is only 3 of the 19
+misses.** It parked the leading-`|` opcode for the same reason `drop` is parked
+and classified every divergence: 17 design-limit, 1 reference-quirk, 1
+package-bug (declined). Two isolated runtime edits, +188 B: a fieldless
+`flatten` fallback (+61 B) that fires only when *no* child has a field, so the
+rename probe still refuses `Field("left")`, and suffix-comment emission on a
+skipped operand (+127 B) that was breaking `comments.ts` idempotence.
+
+**The one `package-bug` was checked before routing stage D, and the finding is
+that the facts are right and the label is wrong.** The divergence is prettier's
+last-argument hugging: `@logged("debug", { … })` keeps `"debug"` on the head
+line and breaks only the trailing object, while the package breaks every
+argument. Reproduced from the committed reference, not taken from the report.
+
+The builder's stated reason for declining it is *"re-deriving call rules would
+contradict reuse-JS-where-the-construct-is-the-same"*. **That is a choice, not
+an inability**, and the vocabulary is explicit about the difference:
+`design-limit` and `package-bug` mean *we could not*; `reference-quirk` and
+`house-rule` mean *we chose not to*. A divergence declined because fixing it
+would fork a shared rule set is the second kind wearing the first kind's label.
+
+Two things follow, and the second matters more than the first:
+
+- **It is not relabelled here.** The 2026-08-21 decision that made `package-bug`
+  a hard failure predicted exactly this pressure — "creates pressure to relabel
+  to get through" — and the orchestrator relabelling it to unblock a merge is
+  that prediction coming true. **Stage D rules on it**, with this analysis in
+  front of it rather than instead of it.
+- **JavaScript is the cross-check and it is clean.** Same reference, same reused
+  call rules, fourteen divergences, **zero `package-bug`** and nothing of this
+  kind among them. So either JavaScript's corpus never exercises a broken call
+  with a trailing object literal, or its rules already handle it. Stage D should
+  establish which, because "the shared rules have a hole nobody had probed" and
+  "TypeScript diverged from the shared rules" are different findings with
+  different owners.
+
+**The number is not a verdict on the package; it is a measurement of the parked
+decisions.** Sixteen of the nineteen misses are already-documented findings --
+2, 6, 9, 11, 13, 15 and 20 -- landing in one language at once. TypeScript is the
+first language to pay all of them together, and gate 4's floor is
+**review coverage**, not raw agreement, so stage D approving the classifications
+is what clears it. The one `package-bug` cannot be approved: that verdict is a
+hard scorer failure by the 2026-08-21 decision, so it must be fixed or
+overturned.
+
+**Round 5 stage B is complete, 2026-08-22. All three pass with fixes applied.**
+Ruby on Sonnet (`a9784fb`), Scheme on Opus (`e5f49a7`, `ecbcb82`), Haskell on
+Opus (`ad73c31`, `924441a`). Every tree clean, nothing pushed, and all three
+reviewers reproduced the builder's counts independently rather than taking them
+— no mismatch of the round-1 kind in any of the three.
+
+**All four defects found were the same shape, and it is a shape no count can
+see: a rewrite the report claimed or implied, which no corpus file forces the
+reference to perform.**
+
+- **Ruby** claimed syntax_tree collapses three-or-more blank lines to one. No
+  file contained three blank lines. (Verified: two are preserved, three and four
+  both collapse to one.)
+- **Scheme** described emacs's comment placement as nesting-driven. The real
+  rule is **semicolon count** at every depth — `;` to `comment-column` 40, `;;`
+  to code indent, `;;;` to column 0 — and `comments.scm` happened to contain
+  only the two cells where both rules agree. A stage-C package built on the
+  report would have passed while being wrong on **three of six cells**.
+- **Haskell** declared `imports.hs` incomparable for sorting and stopped there.
+  ormolu also **collapses** repeated imports of one module: an exact duplicate
+  is dropped, and two imports of `Data.List` merge into one. That is the ktfmt
+  `sortedAndDistinctImports` precedent landing exactly as the stage-B brief
+  predicted it would — two exclusions wearing one name — in a second formatter.
+  A second dedicated `[incomparable]` file now probes collapsing alone.
+- **Haskell** also claimed ormolu inserts a blank line after `module X where`,
+  which all fifteen source files already supplied.
+
+**Not one of those four moved any of the four counts.** Every fix was a
+width-insensitive rewrite in a file that already changed and already carried a
+comment. This is now the third round in which the counts confirmed a corpus that
+was not probing what its report said it probed, and it is the argument for the
+report-to-corpus check existing at all: **the counts are a floor, not evidence.**
+
+Three results worth carrying beyond round 5:
+
+- **Two claims were tested rather than inherited, and both held.** Haskell
+  rejected six different width flags and then generated a 266-character list
+  that stays on one line and a trivially-fitting broken list that stays broken —
+  line structure is source-driven in both directions, so `widths = [80]` is a
+  measurement scale, not black's 88 smuggled in a second time. Scheme did the
+  same with `fill-column` 40 versus 200 on a 100-column line: byte-identical.
+- **FINDINGS 12 does not reach Haskell, with evidence instead of an argument.**
+  The reviewer built eight layout edits that change meaning — a where-clause
+  escaping its parent, a `do` statement leaving the block, a `let` binding
+  vanishing, a guard becoming a new equation — and gate 3 **rejects all eight**.
+  The offside rule is consumed into the tree. That is the expensive call to get
+  wrong and it is now measured.
+- **Scheme's two "decisions" were already settled precedent, and asking for them
+  was an orchestrator error.** `go.toml` already declares
+  `reference_width = "fixed"` with nearly the same rationale, and all sixteen
+  gofmt reference files are tab-indented — so keep Scheme's tabs, and yes the
+  corpus supports stage C, on exactly the terms Go is already accepted on. The
+  rule that would have saved the work: **before ruling on a reference-shape
+  question, grep the other manifests for the same shape.**
+
+`comment_kinds` splits the round: **Scheme wants it** (`["comment",
+"block_comment"]`, expect 0/15 to 15/15) and **Haskell does not** — its
+`comment`, `haddock` and `pragma` are genuine tree-sitter extras, which the
+16/16 comment count confirms. Neither could declare it: `manifest.py` at
+`fed4974` rejects the field, because it lives only on the unmerged harness
+slice. That is one more thing waiting on the merge.
+
+**Round 5 stage A is complete, 2026-08-22. All three built, on grok-4.6.**
+Ruby, Scheme and Haskell, relaunched into the same three worktrees the 402
+abandoned the day before, with prompts regenerated so they carried round 4's
+seven template deltas rather than the versions that were cut. Eight commits
+across three worktrees, every tree clean, every shared-file diff verified empty,
+`./test.sh` green in all three, nothing pushed.
+
+Stage B is running now — **Scheme and Haskell on Opus, Ruby on Sonnet**. All
+three corpora are grok-built, so none of their reviews may go to grok.
+
+Each hit the thing its brief predicted, and two of the three landed on the same
+structural point:
+
+- **Scheme confirms the head-driven layout limit in a second language.**
+  `(define ...)`, `(let ...)`, `(cons ...)` and `(list ...)` are all one `list`
+  node and indent three different ways, because emacs indents on the **head
+  symbol**. That is HTML's `tag_name` limit — a token *inside* the node deciding
+  the layout *of* the node — arriving independently in a language with no markup
+  in it. The board predicted this for Scheme and HTML found it a round early;
+  both are now evidence rather than hypothesis, and HTML's stage C is the slice
+  asked to decide what the design does about it.
+- **Two of the three references are `fixed`-width, as hypothesised and now
+  measured.** ormolu has no column flag at all — a 187-character export list
+  stays on one line — and emacs `scheme-mode` indents without reflowing. Neither
+  builder inherited that from the brief; both tested it. `widths = [80]` in
+  Haskell's manifest is a measurement width, not a target, and that distinction
+  needs to survive into stage C.
+- **Ruby's reference rewrites tokens, not just layout.** Quotes, `%i`/`%w`, hash
+  rockets, `if`->ternary and `while`->modifier all fire under syntax_tree, and
+  most fail gate 3. The corpus is written in the reference's own form so they do
+  not, which is the markdown policy applied to a much wider blast radius — and
+  which stage B has been asked to judge as probing versus avoidance.
+  `block_conversion.rb` is `[incomparable]` because `{...}` versus `do...end` is
+  chosen by fit and goes **both directions**: there is no source form stable at
+  both 80 and 40.
+- **Scheme wants `comment_kinds` too** — `extras: []`, so 0/15 comments — which
+  is the third language to pay for that field in two rounds. It is no longer a
+  proposal; see the harness slice below.
+
+**Round 4 stage C started 2026-08-22, on two of the four.** TypeScript is on
+grok-4.6 in `wt/lang-typescript`; **HTML is on codex-Sol** in `wt/lang-html`,
+because HTML's slice is the one that asks whether a node-type table is the right
+dispatch at all, and a reasoned refusal is a first-class outcome there. Markdown
+and XML are held at `B+` deliberately: both want `comment_kinds`, which is on
+the unmerged harness slice, and starting them first would mean building against
+a moving target.
+
+**The harness slice is built and unmerged.** `wt/harness-slice`, three commits
+on `main` at `fed4974`, by codex-Sol: the `[[injections]]` relaxation (`info`
+and `content` optional, `info` xor `guest`, missing `content` means the host
+node is the region), `comment_kinds` (XML `0/14 -> 13/14`, Markdown
+`0/15 -> 15/15`, 26 and 30 dropped-comment mutations now rejected), and a
+**reasoned refusal** of the third change. `./test.sh` green, verified
+independently rather than trusted. It is the head of the merge queue and
+everything else waits behind it.
+
 **Round 4 stage B is complete, 2026-08-21. All four pass.** **TypeScript: `pass`**
 (Sonnet) with nothing to correct. **XML: `pass with fixes applied`** (Sonnet),
 one commit — the report had covered three of the plugin's four XML options and
@@ -163,9 +433,15 @@ validation twice. Land together: `info` and `content` both optional, require
 change — its routing key is an attribute value, not a node type, so `guest`
 structurally cannot express it.
 
-**One decision is open and is on the decisions page**: what to do about the
-quoted-fence splice defect. It blocks no required gate today because markdown's
-corpus avoids the shape by design.
+**The quoted-fence splice needs more than the proposed offset map.** The map is
+necessary: stripping continuation bytes makes guest-to-host offsets piecewise.
+It is not sufficient: replacing the content node also removes the semantic `> `
+prefixes, and the guest package can introduce new line breaks without a host or
+runtime seam that can restore them. The harness slice therefore did not build
+the map in isolation. The committed injection probe reproduces both the clean
+stripped parse and scalar-offset corruption; `docs/injection.md` records the
+additional prefix-emission requirement. This blocks no current gate because the
+Markdown corpus deliberately avoids quoted fences.
 
 **Round 4 stage A, 2026-08-21.** All four launched on grok-4.6 in parallel
 worktrees, each with the corpus brief plus its own "known stresses" note. All
