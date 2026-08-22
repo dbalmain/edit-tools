@@ -68,6 +68,30 @@ session is worktree-isolated and its git operations against the shared checkout
 are refused — so the four merges, the conflict check and the green suite are
 already done, and main only has to move.
 
+## 2026-08-23 — the merge landed, and Claude takes the builder lane
+
+`worktree-feat-cell-scope` fast-forwarded onto `main` (`b0a7791`). The branch
+table above is now history: everything it listed as ready is on `main`, and only
+the two held stage-C branches (`wt/lang-typescript`, `wt/lang-html`) are still
+outside it, still waiting on stage D.
+
+**Ruby and Scheme move to stage C with Claude as the builder.** This is a lane
+swap, not a new lane: grok is still at a 402 with no reset hour, codex is the
+reviewer, and five languages were sitting at `B+` with nothing building. Claude
+has never built a package, so it is uncalibrated in exactly the way every other
+builder was on its first slice.
+
+The ledger's rule survives the swap and is the reason the pairing works: **a
+reviewer is never the same family as the builder**, so Claude-built packages go
+to **codex-Sol** at stage D. That also settles the two held branches — codex
+takes TypeScript (grok-built), and HTML goes to an Opus subagent, because
+codex-Sol built it and cannot review its own family.
+
+Two of five, not five of five, deliberately. The first codex stage-D verdict on
+a Claude-built package is the calibration; the remaining three (Haskell,
+Markdown, XML) are held until it lands, so an uncalibrated builder cannot get the
+same shape wrong five times in parallel.
+
 ## Board
 
 | Language   | Tier | Round | Builder       | Status | Grammar                | Reference                         |
@@ -85,8 +109,8 @@ already done, and main only has to move.
 | TypeScript | T2   | 4     | grok-4.6      | D      | tree_sitter_typescript | prettier                          |
 | XML        | T3   | 4     | grok-4.6      | B+     | tree_sitter_xml        | prettier (`@prettier/plugin-xml`) |
 | HTML       | T3   | 4     | grok+codex    | D      | tree_sitter_html       | prettier                          |
-| Ruby       | T4   | 5     | grok-4.6      | B+     | tree_sitter_ruby       | syntax_tree 6.3.0                 |
-| Scheme     | T4   | 5     | grok-4.6      | B+     | tree_sitter_scheme     | emacs `scheme-mode`               |
+| Ruby       | T4   | 5     | grok+Claude   | merged | tree_sitter_ruby       | syntax_tree 6.3.0                 |
+| Scheme     | T4   | 5     | grok+Claude   | D      | tree_sitter_scheme     | emacs `scheme-mode`               |
 | Haskell    | T4   | 5     | grok-4.6      | B+     | tree_sitter_haskell    | ormolu 0.8.0.2                    |
 | Aven       | T4   | 6     | tbd           | -      | **none — see below**   | `aven fmt`                        |
 
