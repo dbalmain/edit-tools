@@ -1,0 +1,303 @@
+{
+  "format": "et-doc-rules/1",
+  "indent": 2,
+  "comment_gap": 1,
+  "blank_cap": 1,
+  "tokens": [
+    "!", "!=", "\"", "#{", "%i(", "%w(", "&", "&&", "&.", "(", ")", "*", "**",
+    "+", "+=", ",", "-", ".", "..", "...", "/", ":", ";", "<", "<<", "=", "==",
+    "=>", ">", "[", "]", "and", "or", "not", "def", "end", "{", "}", "|", "||",
+    "comment", "rescue", "ensure"
+  ],
+  "comments": ["comment"],
+  "descend": ["body_statement", "then", "do"],
+  "optional_parens": [],
+  "precedence": {
+    "*": 4, "/": 4, "%": 4,
+    "+": 5, "-": 5,
+    "<<": 6,
+    "<": 8, ">": 8, "<=": 8, ">=": 8, "==": 9, "!=": 9,
+    "&&": 10, "||": 11,
+    "and": 13, "or": 13
+  },
+  "defs": {
+    "statements": [
+      "each", "named",
+      ["seq",
+        ["opt", "t:;", ["seq", ["drop", ";"], ["hard"]]],
+        ["srcsoft"],
+        ["blank", 1]]
+    ],
+    "body": [
+      "indent", ["hard"], ["use", "statements"]
+    ],
+    "bracketed": [
+      "when", ["count", "named", 0],
+      ["seq", ["tok", ["$", 0]], ["tok", ["$", 1]]],
+      ["group",
+        ["tok", ["$", 0]],
+        ["indent", ["soft"], ["each", "named", ["seq", ["tok", ","], ["line"]]]],
+        ["soft"],
+        ["tok", ["$", 1]]]
+    ],
+    "spaced": [
+      "group",
+      ["tok", ["$", 0]],
+      ["indent", ["soft"], ["each", "named", ["line"]]],
+      ["soft"],
+      ["tok", ["$", 1]]
+    ],
+    "braced": [
+      "when", ["count", "named", 0],
+      ["seq", ["tok", "{"], ["tok", "}"]],
+      ["group",
+        ["tok", "{"],
+        ["indent", ["line"], ["each", "named", ["seq", ["tok", ","], ["line"]]]],
+        ["line"],
+        ["tok", "}"]]
+    ]
+  },
+  "rules": {
+    "program": ["use", "statements"],
+    "body_statement": ["use", "body"],
+    "then": ["use", "body"],
+    "block_body": ["each", "named", ["sp"]],
+    "do": ["seq", ["use", "body"], ["hard"], ["tok", "end"]],
+
+    "assignment": [
+      "when",
+      ["all", "f:right", ["hash", "array", "symbol_array", "string_array", "heredoc_beginning"]],
+      ["group", ["child", "f:left"], ["sp"], ["tok", "="], ["sp"], ["child", "f:right"]],
+      ["group", ["child", "f:left"], ["sp"], ["tok", "="],
+        ["indent", ["line"], ["child", "f:right"]]]
+    ],
+    "operator_assignment": [
+      "group", ["child", "f:left"], ["sp"], ["child", "f:operator"],
+      ["indent", ["line"], ["child", "f:right"]]
+    ],
+
+    "binary": [
+      "when",
+      ["all", "f:right", ["hash", "array", "symbol_array", "string_array"]],
+      ["seq", ["child", "f:left"], ["sp"], ["child", "f:operator"], ["sp"],
+        ["child", "f:right"]],
+      ["group",
+        ["indent",
+          ["flatten", "binary", ["seq", ["sp"], ["child", "f:operator"], ["line"]]]]]
+    ],
+    "unary": [
+      "when", ["count", "t:not", 1],
+      ["seq", ["child", "f:operator"], ["sp"], ["child", "f:operand"]],
+      ["seq", ["child", "f:operator"], ["child", "f:operand"]]
+    ],
+    "range": ["seq", ["child", "f:begin"], ["child", "f:operator"], ["child", "f:end"]],
+    "parenthesized_statements": [
+      "seq", ["tok", "("], ["each", "named", ["hard"]], ["tok", ")"]
+    ],
+
+    "call": [
+      "seq",
+      ["opt", "f:receiver", ["seq", ["child", "f:receiver"], ["child", "f:operator"]]],
+      ["child", "f:method"],
+      ["opt", "f:arguments",
+        ["when", ["child-count", "f:arguments", "t:(", 1],
+          ["child", "f:arguments"],
+          ["seq", ["sp"], ["child", "f:arguments"]]]],
+      ["opt", "f:block", ["seq", ["sp"], ["child", "f:block"]]]
+    ],
+    "argument_list": [
+      "when", ["count", "t:(", 1],
+      ["use", "bracketed", "(", ")"],
+      ["group", ["indent", ["each", "named", ["seq", ["tok", ","], ["line"]]]]]
+    ],
+    "splat_argument": ["seq", ["tok", "*"], ["child", "*"]],
+    "hash_splat_argument": ["seq", ["tok", "**"], ["child", "*"]],
+    "block_argument": ["seq", ["tok", "&"], ["child", "*"]],
+    "forward_argument": ["tok", "..."],
+    "element_reference": [
+      "seq", ["child", "f:object"], ["tok", "["],
+      ["each", "named", ["seq", ["tok", ","], ["sp"]]], ["tok", "]"]
+    ],
+
+    "array": ["use", "bracketed", "[", "]"],
+    "hash": ["use", "braced"],
+    "pair": [
+      "when", ["count", "t:=>", 1],
+      ["seq", ["child", "f:key"], ["sp"], ["tok", "=>"], ["sp"], ["child", "f:value"]],
+      ["seq", ["child", "f:key"], ["tok", ":"], ["sp"], ["child", "f:value"]]
+    ],
+    "symbol_array": ["use", "spaced", "%i[", "]"],
+    "string_array": ["use", "spaced", "%w[", "]"],
+    "bare_symbol": ["child", "*"],
+    "bare_string": ["child", "*"],
+    "string": ["verbatim"],
+    "regex": ["verbatim"],
+    "heredoc_body": ["verbatim"],
+    "interpolation": ["seq", ["tok", "#{"], ["child", "named"], ["tok", "}"]],
+
+    "method": [
+      "when", ["count", "t:end", 1],
+      ["seq", ["tok", "def"], ["sp"], ["child", "f:name"],
+        ["opt", "f:parameters", ["child", "f:parameters"]],
+        ["when", ["count", "f:body", 1],
+          ["child", "f:body"],
+          ["indent"]],
+        ["hard"], ["tok", "end"]],
+      ["seq", ["tok", "def"], ["sp"], ["child", "f:name"],
+        ["opt", "f:parameters", ["child", "f:parameters"]],
+        ["sp"], ["tok", "="], ["sp"], ["child", "f:body"]]
+    ],
+    "singleton_method": [
+      "seq", ["tok", "def"], ["sp"], ["child", "f:object"], ["tok", "."],
+      ["child", "f:name"],
+      ["opt", "f:parameters", ["child", "f:parameters"]],
+      ["opt", "f:body", ["child", "f:body"]],
+      ["hard"], ["tok", "end"]
+    ],
+    "method_parameters": ["use", "bracketed", "(", ")"],
+    "optional_parameter": [
+      "seq", ["child", "f:name"], ["sp"], ["tok", "="], ["sp"], ["child", "f:value"]
+    ],
+    "keyword_parameter": [
+      "seq", ["child", "f:name"], ["tok", ":"],
+      ["opt", "f:value", ["seq", ["sp"], ["child", "f:value"]]]
+    ],
+    "splat_parameter": ["seq", ["tok", "*"], ["opt", "f:name", ["child", "f:name"]]],
+    "forward_parameter": ["tok", "..."],
+
+    "block": [
+      "seq", ["tok", "{"], ["sp"],
+      ["opt", "f:parameters", ["seq", ["child", "f:parameters"], ["sp"]]],
+      ["child", "f:body"], ["sp"], ["tok", "}"]
+    ],
+    "do_block": [
+      "seq", ["tok", "do"],
+      ["opt", "f:parameters", ["seq", ["sp"], ["child", "f:parameters"]]],
+      ["opt", "f:body", ["child", "f:body"]],
+      ["hard"], ["tok", "end"]
+    ],
+    "block_parameters": [
+      "seq", ["tok", "|"],
+      ["each", "named",
+        ["seq", ["opt", "t:,", ["seq", ["tok", ","], ["sp"]]],
+                ["opt", "t:;", ["seq", ["tok", ";"], ["sp"]]]]],
+      ["tok", "|"]
+    ],
+
+    "class": [
+      "seq", ["tok", "class"], ["sp"], ["child", "f:name"],
+      ["opt", "f:superclass", ["seq", ["sp"], ["child", "f:superclass"]]],
+      ["opt", "f:body", ["child", "f:body"]],
+      ["hard"], ["tok", "end"]
+    ],
+    "superclass": ["seq", ["tok", "<"], ["sp"], ["child", "*"]],
+    "singleton_class": [
+      "seq", ["tok", "class"], ["sp"], ["tok", "<<"], ["sp"], ["child", "f:value"],
+      ["opt", "f:body", ["child", "f:body"]],
+      ["hard"], ["tok", "end"]
+    ],
+    "module": [
+      "seq", ["tok", "module"], ["sp"], ["child", "f:name"],
+      ["opt", "f:body", ["child", "f:body"]],
+      ["hard"], ["tok", "end"]
+    ],
+
+    "if": [
+      "seq", ["tok", "if"], ["sp"], ["child", "f:condition"],
+      ["child", "f:consequence"],
+      ["opt", "f:alternative", ["child", "f:alternative"]],
+      ["hard"], ["tok", "end"]
+    ],
+    "elsif": [
+      "seq", ["hard"], ["tok", "elsif"], ["sp"], ["child", "f:condition"],
+      ["child", "f:consequence"],
+      ["opt", "f:alternative", ["child", "f:alternative"]]
+    ],
+    "else": ["seq", ["hard"], ["tok", "else"], ["use", "body"]],
+    "if_modifier": [
+      "seq", ["child", "f:body"], ["sp"], ["tok", "if"], ["sp"], ["child", "f:condition"]
+    ],
+    "unless_modifier": [
+      "seq", ["child", "f:body"], ["sp"], ["tok", "unless"], ["sp"], ["child", "f:condition"]
+    ],
+    "while_modifier": [
+      "seq", ["child", "f:body"], ["sp"], ["tok", "while"], ["sp"], ["child", "f:condition"]
+    ],
+    "until_modifier": [
+      "seq", ["child", "f:body"], ["sp"], ["tok", "until"], ["sp"], ["child", "f:condition"]
+    ],
+
+    "case": [
+      "seq", ["tok", "case"], ["sp"], ["child", "f:value"],
+      ["each", "t:when", ["seq"]],
+      ["opt", "t:else", ["child", "t:else"]],
+      ["hard"], ["tok", "end"]
+    ],
+    "when": [
+      "seq", ["hard"], ["tok", "when"], ["sp"],
+      ["each", "f:pattern", ["seq", ["tok", ","], ["sp"]]],
+      ["child", "f:body"]
+    ],
+    "pattern": ["child", "*"],
+    "case_match": [
+      "seq", ["tok", "case"], ["sp"], ["child", "f:value"],
+      ["each", "t:in_clause", ["seq"]],
+      ["opt", "t:else", ["child", "t:else"]],
+      ["hard"], ["tok", "end"]
+    ],
+    "in_clause": [
+      "seq", ["hard"], ["tok", "in"], ["sp"], ["child", "f:pattern"],
+      ["opt", "f:guard", ["seq", ["sp"], ["child", "f:guard"]]],
+      ["child", "f:body"]
+    ],
+    "if_guard": ["seq", ["tok", "if"], ["sp"], ["child", "f:condition"]],
+    "array_pattern": ["use", "bracketed", "[", "]"],
+    "find_pattern": ["use", "bracketed", "[", "]"],
+    "hash_pattern": ["use", "braced"],
+    "keyword_pattern": [
+      "seq", ["child", "f:key"], ["tok", ":"],
+      ["opt", "f:value", ["seq", ["sp"], ["child", "f:value"]]]
+    ],
+    "as_pattern": [
+      "seq", ["child", "f:value"], ["sp"], ["tok", "=>"], ["sp"], ["child", "f:name"]
+    ],
+    "test_pattern": [
+      "seq", ["child", "f:value"], ["sp"], ["tok", "in"], ["sp"], ["child", "f:pattern"]
+    ],
+
+    "for": [
+      "seq", ["tok", "for"], ["sp"], ["child", "f:pattern"], ["sp"],
+      ["child", "f:value"], ["child", "f:body"]
+    ],
+    "in": ["seq", ["tok", "in"], ["sp"], ["child", "*"]],
+
+    "begin": [
+      "seq", ["tok", "begin"], ["use", "body"],
+      ["each", "t:rescue", ["seq"]],
+      ["opt", "t:ensure", ["child", "t:ensure"]],
+      ["hard"], ["tok", "end"]
+    ],
+    "rescue": [
+      "seq", ["hard"], ["tok", "rescue"],
+      ["opt", "f:exceptions", ["seq", ["sp"], ["child", "f:exceptions"]]],
+      ["opt", "f:variable", ["seq", ["sp"], ["child", "f:variable"]]],
+      ["child", "f:body"]
+    ],
+    "exceptions": [
+      "group", ["indent", ["each", "named", ["seq", ["tok", ","], ["line"]]]]
+    ],
+    "exception_variable": ["seq", ["tok", "=>"], ["sp"], ["child", "*"]],
+    "ensure": ["seq", ["hard"], ["tok", "ensure"], ["use", "body"]],
+
+    "return": [
+      "seq", ["tok", "return"],
+      ["opt", "t:argument_list",
+        ["when", ["child-count", "t:argument_list", "t:(", 1],
+          ["child", "t:argument_list"],
+          ["seq", ["sp"], ["child", "t:argument_list"]]]]
+    ],
+    "next": ["tok", "next"],
+    "retry": ["tok", "retry"],
+    "nil": ["tok", "nil"]
+  }
+}
