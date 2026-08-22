@@ -92,6 +92,31 @@ a Claude-built package is the calibration; the remaining three (Haskell,
 Markdown, XML) are held until it lands, so an uncalibrated builder cannot get the
 same shape wrong five times in parallel.
 
+## 2026-08-23 — html merged, and a parity defect the corpus could not hold
+
+HTML's stage D ran on **Claude**, because codex-Sol built it and a reviewer is
+never the same family as the builder. Verdict `merge after fixes`; merged.
+
+All three of its runtime edits are warranted, and both new path predicates have
+the narrow direct-child shape rather than the over-wide subtree search that YAML's
+semantic-gap bypass shipped with. The review found one defect no gate could
+see: `srcgap` refuses a non-whitespace gap, and the two runtimes disagreed on
+what whitespace *is* — Rust's `is_ascii_whitespace` excludes vertical tab, which
+matches the HTML spec, and the JS list included it. One U+000B split the
+runtimes, one exited 1 and the other exited 0 on the same input.
+
+**The general lesson is about where parity is measured.** Rust/JS parity is a
+hard requirement checked by the scorer over the corpus, and the corpus can only
+check the bytes it contains. A runtime capability with a **refusal condition**
+has branches no corpus file reaches, and those branches are exactly where two
+independently written implementations drift. When a slice adds one, diff the two
+refusal conditions by hand and build an input for each branch.
+
+The review's own template delta cuts the other way, at the reviewer: the first
+version of the fix carried a five-line comment in `runtime-js/bundle.js` that
+cost **140 B gzip**, three times the fix, in a budget the builder had measured
+edit by edit. A reviewer editing a scored file is spending the same budget.
+
 ## Board
 
 | Language   | Tier | Round | Builder       | Status | Grammar                | Reference                         |
@@ -108,7 +133,7 @@ same shape wrong five times in parallel.
 | Markdown   | T2   | 4     | grok-4.6      | B+     | tree_sitter_markdown   | prettier                          |
 | TypeScript | T2   | 4     | grok-4.6      | D      | tree_sitter_typescript | prettier                          |
 | XML        | T3   | 4     | grok-4.6      | B+     | tree_sitter_xml        | prettier (`@prettier/plugin-xml`) |
-| HTML       | T3   | 4     | grok+codex    | D      | tree_sitter_html       | prettier                          |
+| HTML       | T3   | 4     | grok+codex    | merged | tree_sitter_html       | prettier                          |
 | Ruby       | T4   | 5     | grok+Claude   | merged | tree_sitter_ruby       | syntax_tree 6.3.0                 |
 | Scheme     | T4   | 5     | grok+Claude   | D      | tree_sitter_scheme     | emacs `scheme-mode`               |
 | Haskell    | T4   | 5     | grok-4.6      | B+     | tree_sitter_haskell    | ormolu 0.8.0.2                    |
