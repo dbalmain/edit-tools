@@ -16,7 +16,6 @@ No edit outside `packages/scheme.json` and this report. `./test.sh` green.
 
 ## The number is 2/15, and it is the measurement this language exists to produce
 
-
 `LANGUAGES.md` flagged Scheme as "the sharpest possible test" of node-type
 dispatch and `FINDINGS` 10 repeated it. It is. **308 of the 320 branch nodes in
 this corpus are `list`**, the grammar parses code as lists on purpose, and every
