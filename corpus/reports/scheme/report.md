@@ -12,7 +12,8 @@ refusals                none
 size                    package 447 B gzip; runtime 13610 B gzip; delta vs main 0 B
 ```
 
-No edit outside `packages/scheme.json` and this report. `./test.sh` green.
+The stage-C slice consists of `packages/scheme.json`, this report and
+`score.json`. `./test.sh` green.
 
 ## The number is 2/15, and it is the measurement this language exists to produce
 
@@ -22,31 +23,43 @@ this corpus are `list`**, the grammar parses code as lists on purpose, and every
 layout decision emacs makes keys off something inside the node rather than the
 node's type. The package therefore has one rule for every form in the language,
 and one uniform indent, and the interesting output is not the 2 — it is which
-lines the uniform rule gets right and why the rest are unreachable.
+lines the uniform rule gets right and why the rest differ.
 
 ### File agreement is the wrong resolution for an indent-only reference
 
 `indent-region` rewrites leading whitespace and nothing else, so a single wrong
 column fails a whole file. Two files match exactly; a third (`nesting.scm`)
-gets **every column right** and fails on whitespace *spelling*. Measured at line
-resolution, with tabs expanded to 8-column stops:
+gets **every column right** and fails on whitespace *spelling*.
+
+Stage D re-derived the line measure independently and found the original
+`248/369` accounting was not reproducible: it counted a phantom terminal empty
+record for every file and its numerators did not match the shipped package.
+The corrected primary measure expands tabs to 8-column stops, compares physical
+line positions where the two files have the same structure, and content-aligns
+the one file (`comments.scm`) where the formatter removes two blank lines and
+inserts one. Inserted output lines remain denominator slots, so the alignment
+cannot flatter the result:
 
 ```
-line agreement   248/369 = 67.2%      exact files 2/15
+line agreement   246/355 = 69.3%      exact files 2/15
 ```
 
-Per file, lines whose column is wrong after expanding tabs:
+A literal line-number zip gives `238/354 = 67.2%`; its lower numerator is the
+expected shift artefact in `comments.scm`. The original rounded percentage was
+therefore right only by coincidence.
+
+Per file, nonmatching lines after expanding tabs:
 
 | File | wrong / total | File | wrong / total |
 | --- | --- | --- | --- |
-| `literals` | **0** / 12 | `macros` | 7 / 20 |
-| `strings` | **0** / 16 | `bindings` | 10 / 29 |
-| `nesting` | **0** / 21 (tab spelling only) | `control` | 13 / 38 |
-| `define` | 1 / 19 | `kitchen` | 17 / 31 |
-| `lambda` | 1 / 21 | `comments` | 23 / 36 |
-| `heads` | 2 / 17 | `long_sequences` | 34 / 42 |
-| `quote` | 2 / 14 | `calls` | 6 / 23 |
-| `normalisation` | 5 / 21 | | |
+| `literals` | **0** / 28 | `macros` | 7 / 19 |
+| `strings` | **0** / 16 | `bindings` | 10 / 28 |
+| `nesting` | **0** / 11 (tab spelling only) | `control` | 11 / 37 |
+| `define` | 1 / 18 | `kitchen` | 15 / 30 |
+| `lambda` | 1 / 20 | `comments` | 15 / 36 aligned slots |
+| `heads` | 2 / 16 | `long_sequences` | 34 / 41 |
+| `quote` | 2 / 13 | `calls` | 6 / 22 |
+| `normalisation` | 5 / 20 | | |
 
 ### The uniform indent was chosen by measurement, not by argument
 
@@ -56,14 +69,16 @@ starts a line (1 column past the open paren). Both were built and scored:
 
 | Uniform rule | line agreement | exact files |
 | --- | --- | --- |
-| **+2, `lisp-body-indent`** | **248/369 = 67.2%** | **2** |
-| +1, the nil-property default | 169/369 = 45.8% | 1 |
+| **+2, `lisp-body-indent`** | **246/355 = 69.3%** | **2** |
+| +1, the nil-property default | 170/355 = 47.9% | 1 |
 
 +2 wins because `define`, `let` and `lambda` bodies dominate real Scheme, and
 the package ships it. Neither is right for the language; this is picking the
-better of two wrong answers, which is what a node-type table can do here.
+better of two wrong answers, which is what a node-type table can do here. A
+literal physical-line zip (`238/354` versus `166/354`) reaches the same A/B
+decision.
 
-## Why the other five sixths are unreachable
+## Why the other thirteen files diverge
 
 Five separate limits, in descending order of how many lines they cost.
 
@@ -74,28 +89,32 @@ an exact property on the head symbol, a `def`-prefix rule, the cadr shape for
 named `let`, and whether the first argument shares the head line. The package
 sees `list` for all of them.
 
-`heads.scm` is the two-line proof and it costs 2 lines of 17: `(cons a / b)`
+`heads.scm` is the two-line proof and it costs 2 lines of 16: `(cons a / b)`
 and `(list a / b)` want a tab, `(let ((a 1)) / a)` wants 4, `(define (f x) / x)`
 wants 2 — one node type, three columns.
 
-**Scheme adds nothing new to the argument for entry 10; it adds the size of the
+**Scheme adds nothing new to the shape of entry 10; it adds the size of the
 bill.** CSS's version was one node kind under two parents. Here it is the whole
-language: with head dispatch the package would be a table of maybe twenty heads,
-and without it there is no second-best that reaches 3/15.
+language: with head dispatch the package would be a table of maybe twenty heads.
+Stage D found one shape-specific quasiquote branch that could reach 3/15, but it
+does not generalise the list rule and was rejected as a one-file special case.
 
-### 2. The continuation column is relative to the paren, not the indent level
+### 2. The continuation column depends on source structure and the current column
 
-This is the single largest cause of wrong lines and it is **not** head dispatch.
-For a form whose first argument starts the next line, emacs indents every
-continuation to **one column past the open paren** — the paren's *actual*
-column, wherever the form happens to start. The IR's `indent` is relative to
-the enclosing indent level. When a form begins at the current indent the two
-coincide; when anything shifts it — a quote mark, a form that starts mid-line,
-a deeper nest — they differ by exactly that shift.
+This is the largest visible cluster of wrong lines, but Stage D found that its
+count overlaps head dispatch and cannot honestly be subtracted from entry 10.
+When the first argument starts on the next line, ordinary forms indent relative
+to the open paren's *actual* column; when it shares the head line, continuations
+align to the actual first-argument column. The IR's `indent` is relative to the
+enclosing indent level and a rule cannot select an indent anchor from the source
+line break.
 
-`quote.scm` is the smallest case: a `` ` `` before the paren moves the column by
-one and every continuation line under it is one column out. `long_sequences.scm`
-is the largest: 34 of 42 lines, almost all of them this.
+`calls.scm` is the decisive case: the same `list` head wants column 8 when its
+first argument shares the head line and column 3 when the argument starts the
+next line, so a head table alone cannot solve it. `long_sequences.scm` is the
+largest manifestation at 34 of 41 lines, but a head table could also hard-code
+the two corpus heads (`+` and `list`), so those 34 lines are evidence for both
+capabilities rather than an exclusive bill for this one.
 
 The runtime already exposes the source's line structure to *breaks* —
 `srcline`, `srcsoft`, `srcbreak` — which is exactly the information this needs,
@@ -110,9 +129,10 @@ delimiter already occupies, which the printer knows when it emits it.
 `;` goes to `comment-column` (40), `;;` to the code indent, `;;;` to column 0,
 at every depth. The runtime places every attached comment at the code indent,
 so the package gets `;;` right and the other two wrong wherever they appear.
-`comments.scm` costs 23 lines of 36, and stage B built the `semis` block
-specifically so this could not hide. Nothing about it is expressible: the
-package never sees the comment.
+`comments.scm` also contains opener-relative indentation and the `blank_cap`
+trade described below; stage B built the `semis` block specifically so the
+semicolon distinction could not hide. Nothing about that distinction is
+expressible: the package never sees the comment.
 
 ### 4. Indentation is a column rendered as tabs-then-spaces
 
@@ -125,7 +145,8 @@ column*, which neither setting can produce.
 **`nesting.scm` is the clean demonstration and it is worth more than a passing
 file:** every column in it is right, and it fails on nothing but the spelling.
 A `tab_indent` that meant "render the final column as tabs to the nearest 8 then
-spaces" would flip that file with no change to any rule.
+spaces" would flip that file with no change to any rule. Stage D applied exactly
+that leading-whitespace transform and confirmed byte identity.
 
 ### 5. Intra-line spacing is preserved by the reference and canonical in the IR
 
@@ -134,8 +155,18 @@ back unchanged; we emit `(define (packed x) (+ x 1))`. A run of spaces before a
 trailing comment is likewise preserved by emacs and collapsed to `comment_gap`
 by us. Both are the linearity invariant working as designed — no opcode emits
 arbitrary text — and `normalisation.scm` is where they are billed, 5 lines of
-21. This is not a defect and it is not fixable without a whitespace-preserving
+20. This is not a defect and it is not fixable without a whitespace-preserving
 opcode, which would be a much worse trade than the 5 lines it buys.
+
+## One chosen divergence: `quote.scm`
+
+Stage D rejected the proposed `design limit` verdict for this file. A
+package-only `child-count` branch can add one indent when the quasiquoted list
+has no direct list child; that makes `quote.scm` exact and changes no other
+corpus output. The branch is nevertheless a shape-specific rule firing in one
+file, exactly the kind of score-chasing exception house style says not to add.
+The accepted verdict is therefore **house rule**: uniform +2 is the deliberate
+economy/consistency choice, not an IR impossibility.
 
 ## The two gate failures on the way, because both were destruction
 
@@ -170,33 +201,39 @@ and fails idempotence.
 `blank_cap: 0` pins it: the spurious blank stays at exactly one and the output
 is stable. That is a workaround for a real gap, and the gap is that **a rule
 cannot tell that a comment is pending at the cursor**. `FINDINGS` 7 is the
-nearest entry — a rule cannot tell a comment-forced break from a width-forced
-one — and this is the same blindness one step earlier: not why the break
-happened, but whether one is about to be emitted for me. Entry 7 currently has
-one language and says "decide when a second language genuinely hits it". Stage D
-should rule on whether this counts as that second language or wants its own
-entry; I have deliberately not decided it here.
+nearest entry, but Stage D ruled that Scheme does **not** become its second
+language. Entry 7 is a print-time choice between layouts based on why a group
+broke. Scheme's condition is already known while the evaluator walks attached
+comments: `srcsoft` needs to coalesce with a pending comment break. That is a
+separate, cheaper capability (or a narrower correction to the source-break
+opcodes), not width-versus-comment break provenance.
+
+The workaround has a package-wide cost. A focused source-structure probe put an
+own-line comment before a closer and, separately, an attached leading comment
+with an intentional blank below it. At `blank_cap: 1` the closer blank grew on
+pass two; at `blank_cap: 0` the output was idempotent but the intentional blank
+after the other comment was deleted. The corpus already contains both symptoms
+in `comments.scm`, but the combined probe establishes that they cannot be tuned
+independently.
 
 ## What I would ask for, if one thing
 
-**`srcindent`** — limit 2 above. It is the largest single cause, it is not
-entry 10, and unlike head dispatch it is a small, local capability the printer
-already has the information for. Head dispatch is the bigger prize and the much
-bigger build; this one would move `long_sequences`, `quote`, `calls` and part of
-`bindings` without touching the dispatch question at all.
+**Source-line-sensitive current-column indentation** (`srcindent`, if that is
+the chosen opcode) — limit 2 above. `calls.scm` proves it is distinct from entry
+10, because the head is identical and only the source line structure changes.
+It would move `calls`, `long_sequences` and part of `bindings`, but the bills
+overlap: head dispatch could also hard-code the known heads in
+`long_sequences`. Stage D also showed that `quote.scm` alone is package-
+expressible with a `child-count` branch, so it is not evidence for this opcode.
 
 ## Template delta
 
-**The stage-C brief's gate list assumes a reflowing reference and gives a
-`fixed`-width language nothing to aim at.** Gate 4 is "byte-identical to the
-reference, per corpus file, floor 70% of files" — for an indent-only reference a
-single wrong column fails the file, so the floor is unreachable for reasons that
-have nothing to do with package quality, and the number it produces (2/15) does
-not distinguish "the package is close" from "the package is nowhere". The brief
-should tell a `reference_width = "fixed"` builder to report **line-level
-agreement as well**, and say that file agreement is expected to be low. Go is
-the only other `fixed` language and its reference is a full formatter, so this
-has not bitten before.
+**The stage-C brief needs a defined metric before asking a fixed, indent-only
+language for line agreement.** Gate 4 is byte-identical per file, so its 2/15
+does not distinguish "close" from "nowhere" here. An optional line measure is
+useful, but the template must name a shared implementation or specify terminal
+newline handling, tab expansion and insertion/deletion alignment. Asking each
+builder for an ad-hoc loop recreates the measurement error Stage D found here.
 
 **Second:** the brief says to test package-level workarounds at "one
 adversarially narrow width". For a `fixed` language there is no other width, and
@@ -204,8 +241,5 @@ the equivalent check is a different axis: an adversarial *source line
 structure*. Both destruction bugs above were found that way and neither would
 have been found by varying the width.
 
-**Third, and the same one Ruby's report raises:** `DESIGN.md` does not document
-`srcline`, `srcsoft`, `srcbreak`, `srctrail`, `drop`, `cell` or `cellblock`.
-This package is built almost entirely out of `srcline` and `srcsoft`. A builder
-who reads what the brief points at cannot discover the opcodes this language
-needs most.
+The opcode-documentation drift is the same already-confirmed Ruby template
+delta and is not a new Scheme finding.

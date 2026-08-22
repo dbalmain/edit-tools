@@ -44,16 +44,27 @@
     "note": "file agreement is the wrong resolution for an indent-only reference; see line_agreement"
   },
   "line_agreement": {
-    "same": 248,
-    "of": 369,
-    "ratio": 0.672,
-    "method": "tabs expanded to 8-column stops, line-for-line against the reference",
+    "same": 246,
+    "of": 355,
+    "ratio": 0.693,
+    "method": "tabs expanded to 8-column stops; physical positions for equal-length pairs, deindented-content alignment for comments.scm, with inserted output lines retained as denominator slots",
+    "physical_index_cross_check": {
+      "same": 238,
+      "of": 354,
+      "ratio": 0.672,
+      "note": "literal line-number zip; comments.scm has a net line deletion, so later logical lines shift"
+    },
     "alternative_uniform_indent": {
       "rule": "+1, nil-property default",
-      "same": 169,
-      "of": 369,
-      "ratio": 0.458,
-      "exact_files": 1
+      "same": 170,
+      "of": 355,
+      "ratio": 0.479,
+      "exact_files": 1,
+      "physical_index_cross_check": {
+        "same": 166,
+        "of": 354,
+        "ratio": 0.469
+      }
     }
   },
   "rust_js_parity": "identical",
@@ -97,42 +108,42 @@
       "id": "scheme/bindings.scm@80",
       "verdict": "design limit",
       "entry": 10,
-      "kind": "named-let cadr shape and head-symbol indent properties"
+      "kind": "head/cadr dispatch plus binding and continuation columns anchored to the actual opener or first argument"
     },
     {
       "case": "calls.scm@80",
       "id": "scheme/calls.scm@80",
       "verdict": "design limit",
-      "entry": 10,
-      "kind": "first argument on the head line aligns under it; on the next line indents one past the paren"
+      "entry": null,
+      "kind": "the same list head aligns to the first argument when it shares the line and to the opener when it starts the next line; head dispatch alone cannot separate the cases"
     },
     {
       "case": "comments.scm@80",
       "id": "scheme/comments.scm@80",
       "verdict": "design limit",
       "entry": 9,
-      "kind": "own-line comments are placed by semicolon count, not by code indent"
+      "kind": "semicolon-count comment placement, opener-relative list indentation, and the package-wide blank_cap trade around a pending closer comment"
     },
     {
       "case": "control.scm@80",
       "id": "scheme/control.scm@80",
       "verdict": "design limit",
       "entry": 10,
-      "kind": "head-symbol indent properties for cond/case/when/do"
+      "kind": "head-symbol indent properties plus continuation columns anchored to actual arguments/openers"
     },
     {
       "case": "define.scm@80",
       "id": "scheme/define.scm@80",
       "verdict": "design limit",
       "entry": 10,
-      "kind": "the def-prefix rule: any head starting def indents defun-style"
+      "kind": "defxyz and list have the same child shape but require defun-body versus first-argument continuation indentation"
     },
     {
       "case": "heads.scm@80",
       "id": "scheme/heads.scm@80",
       "verdict": "design limit",
       "entry": 10,
-      "kind": "three indents from one node type; the smallest case in the corpus"
+      "kind": "head-sensitive body rules and actual-first-argument alignment on structurally similar list nodes"
     },
     {
       "case": "kitchen.scm@80",
@@ -153,14 +164,14 @@
       "id": "scheme/long_sequences.scm@80",
       "verdict": "design limit",
       "entry": null,
-      "kind": "paren-relative continuation column; no srcindent"
+      "kind": "actual-first-argument continuation column; overlaps head dispatch because the corpus uses only + and list, while calls.scm proves the distinct source-structure capability"
     },
     {
       "case": "macros.scm@80",
       "id": "scheme/macros.scm@80",
       "verdict": "design limit",
       "entry": 10,
-      "kind": "syntax-rules head properties"
+      "kind": "syntax-rules head properties plus first-argument alignment in the macro call"
     },
     {
       "case": "nesting.scm@80",
@@ -179,9 +190,9 @@
     {
       "case": "quote.scm@80",
       "id": "scheme/quote.scm@80",
-      "verdict": "design limit",
+      "verdict": "house rule",
       "entry": null,
-      "kind": "a quote mark shifts the paren column and every continuation under it"
+      "kind": "a package-only child-count branch makes the file exact, but keeping uniform +2 avoids a one-file quoted-list shape special case"
     }
   ]
 }
