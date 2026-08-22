@@ -75,3 +75,107 @@ context-specific child rule, conceptually
 against the selected child instead of performing global node-type dispatch.
 That keeps context explicit and local, and is smaller than inherited mutable
 state or ancestor predicates throughout the evaluator.
+
+## Stage D review
+
+**Reviewer:** Claude (Opus 5). **Verdict: merge after fixes — fixes applied.**
+
+The lane is unusual and worth recording: codex-Sol built this package, and a
+reviewer is never the same family as the builder, so it could not review it.
+grok is at a 402. That leaves Claude, which is also the carve-out the ledger
+reserves Opus subagents for — this slice edits `DESIGN.md` and both runtimes, so
+a wrong call here costs every language.
+
+### The defect: the two runtimes did not mean the same thing by "whitespace"
+
+`srcgap` refuses a gap that is not whitespace. Rust asks
+`u8::is_ascii_whitespace`, which excludes **vertical tab** (U+000B) — that is
+deliberate in Rust and it happens to match the HTML spec, whose ASCII whitespace
+is tab, LF, FF, CR and space. The JS side hand-listed six bytes and included
+`0x0b`.
+
+So one vertical tab in a source gap split the runtimes. Demonstrated by patching
+a single byte of the `inline.html` tree — one byte for one byte, so every offset
+stays valid — after which `fmt-rust` exited 1 with a refusal and `fmt-js` exited
+0 with formatted output. **Rust/JS parity is a hard requirement, and no corpus
+file contains U+000B**, so no gate could have caught this.
+
+Fixed by removing `0x0b` from the JS set, with a unit test pinning the refusal
+in both directions. The condition itself got smaller; the runtime is **+45 B
+gzip** against the builder's measurement, and that is the one-line comment
+naming the whitespace set. It is kept deliberately: a bare list of five magic
+bytes with no explanation is exactly what let the two implementations drift
+apart, and 45 B is a cheap fence.
+
+### Runtime edits: all three warranted
+
+- **exact leaf-path `text` predicate (+144 B) — warranted, shape correct.**
+  `element` is the node type for both `div` and `span`, and the tag name is a
+  leaf inside `start_tag`; no member of the `count` / `child-count` / `all`
+  family can read it. The shape is the narrow one: it walks exactly as many
+  levels of *direct* children as the path has, so a nested block tag cannot
+  classify an inline ancestor. That is the failure mode YAML's semantic-gap
+  bypass had, and this predicate does not have it — there is a unit test in both
+  runtimes pinning the direct-versus-nested distinction.
+- **`srcgap` (+172 B) — warranted, one defect, fixed above.** The dilemma is
+  real: `srcsoft` drops the spaces in `<span> world </span>` and `srcline`
+  invents one between source-adjacent spans, and in HTML both are rendering
+  changes. Refusing a non-whitespace gap is the right guard — an omitted grammar
+  token can never be erased through it.
+- **exact leaf-path `multiline` predicate (+65 B) — warranted.** The smallest of
+  the three and the case is genuine: a multiline `pre` leaf must start on the
+  next line while `kitchen.html`'s single-line `pre` stays flat, and the gap
+  between `start_tag` and the text is empty, so no `src*` opcode fires.
+
+`srcgap` does widen the linearity invariant — it is the first opcode that emits
+a run of source-derived text, bounded to whitespace. That is a real change to
+"there is no opcode that emits arbitrary text" and the builder documented it in
+`DESIGN.md` rather than leaving it implicit, which is the right call.
+
+### One thing the report did not say, and it is not a blocker
+
+The fallback for the un-huggable start tag **introduces whitespace inside an
+inline element**. Prettier's hug-close exists precisely to avoid that: `<span
+\n  >outer` renders identically to `<span>outer`, while our `<span>\n  outer`
+does not, because HTML collapses that newline to a rendered space. In
+`inline.html` the span sits at block level, so nothing visible changes — but the
+general case (`foo<span>bar</span>` breaking to `foo<span>\n  bar</span>`) is a
+rendering change.
+
+**Gate 3 structurally cannot see it**, because the whitespace is layout emitted
+between children, not text inside a leaf, so the named-node comparison is
+identical. This is `FINDINGS` 12's class — semantic content living in the
+whitespace *between* two nodes — and it is recorded on both `inline.html`
+verdicts so it is not rediscovered later as a bug. It does not block the merge:
+the package cannot express hug-close on a shared `start_tag` rule, which is the
+`child-as` request the report already makes.
+
+### Classifications
+
+All nine records approved as `design limit`, three comparable and six on the
+manifest's incomparable files. Two were tested rather than read: the
+`normalisation.html` gap claim was reproduced against the reference, and the
+`inline.html` disproof (hugging the shared start-tag rule regresses the
+adjacent-span line, which currently matches) holds.
+
+Final: **23 agreement, 3 accepted, 0 stale, 0 unreviewed, 0 defect of 26**,
+three files excluded, review coverage 100%.
+
+### Template delta
+
+**The stage-C brief tells a builder to measure the gzip delta of each runtime
+edit separately, and that is working — but nothing tells a reviewer that their
+own fix is scored too.** The obvious fix here was a five-line comment in
+`runtime-js/bundle.js` explaining why vertical tab is excluded; it cost **140 B
+gzip**, three times the fix itself, in a budget the builder had measured to the
+byte. A reviewer editing a scored file should measure the same way a builder
+does. The explanation now lives in the test file, which is not scored.
+
+**Second:** the brief's item 4 says to check whether a runtime edit's predicate
+is implemented too broadly, and gives YAML's over-wide search as the example.
+That is the right instruction and it found nothing here. It does not tell a
+reviewer to check the *two implementations against each other* — which is where
+this slice's only defect was. Parity is listed as a hard requirement measured by
+the corpus, and the corpus can only measure the bytes it contains. Suggest: when
+a slice adds a runtime capability with a **refusal condition**, diff the two
+refusal conditions by hand and construct one input for each branch.
