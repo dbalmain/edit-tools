@@ -109,7 +109,7 @@ same shape wrong five times in parallel.
 | TypeScript | T2   | 4     | grok-4.6      | D      | tree_sitter_typescript | prettier                          |
 | XML        | T3   | 4     | grok-4.6      | B+     | tree_sitter_xml        | prettier (`@prettier/plugin-xml`) |
 | HTML       | T3   | 4     | grok+codex    | D      | tree_sitter_html       | prettier                          |
-| Ruby       | T4   | 5     | grok+Claude   | D      | tree_sitter_ruby       | syntax_tree 6.3.0                 |
+| Ruby       | T4   | 5     | grok+Claude   | merged | tree_sitter_ruby       | syntax_tree 6.3.0                 |
 | Scheme     | T4   | 5     | grok+Claude   | D      | tree_sitter_scheme     | emacs `scheme-mode`               |
 | Haskell    | T4   | 5     | grok-4.6      | B+     | tree_sitter_haskell    | ormolu 0.8.0.2                    |
 | Aven       | T4   | 6     | tbd           | -      | **none — see below**   | `aven fmt`                        |
