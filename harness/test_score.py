@@ -410,5 +410,27 @@ class IncomparableScoreTests(unittest.TestCase):
         self.assertEqual(report["excluded"], 1)
 
 
+class TabsCountAsColumns(unittest.TestCase):
+    """A tab-indented reference is measured in columns, not characters.
+
+    gofmt indents with tabs always, and emacs `scheme-mode` does in 11 of 15
+    scheme corpus files. Counting a tab as one character under-measures every
+    indented line by seven, so a package that overflows the box is scored as
+    fitting it.
+    """
+
+    def test_a_tab_indented_line_is_measured_in_columns(self):
+        # Two tabs plus 10 characters: 16 columns of indent, 26 in total.
+        line = "\t\t0123456789"
+        self.assertEqual(len(line), 12)
+        self.assertEqual(score.overflow_lines(line, 20, []), 1)
+        self.assertEqual(score.overflow_lines(line, 30, []), 0)
+
+    def test_spaces_are_unaffected(self):
+        line = " " * 16 + "0123456789"
+        self.assertEqual(score.overflow_lines(line, 20, []), 1)
+        self.assertEqual(score.overflow_lines(line, 30, []), 0)
+
+
 if __name__ == "__main__":
     unittest.main()

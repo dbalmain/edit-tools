@@ -507,17 +507,23 @@ this round is by *what the slice needs*, not by what is available:
 **Stage D still goes back to codex**, which is what the round-4 note above
 promised and has not yet been tested.
 
-### Two latent items round 5 found and deliberately did not fix
+### Two latent items round 5 found, and what happened to each
 
 Both were named by a reviewer who was told not to touch shared files, which is
 the propose-don't-apply rule working. Neither blocks anything today.
 
-- **`harness/score.py:160` counts a tab as one column.** `overflow_lines` uses
+- **`harness/score.py` counted a tab as one column — now fixed.** `overflow_lines` uses
   `len(line)` with no `expandtabs`, so for a tab-indenting reference every
   leading tab under-counts by seven. Inert right now — Go's raw and expanded
   counts both come to 6, Scheme's both to 0 — but Scheme has **11 of 15**
   reference files containing a tab, so the first Scheme package that overflows
-  will be measured wrong. Found by Scheme's stage B.
+  will be measured wrong. Found by Scheme's stage B, which named it and left it
+  alone as instructed. Fixed at merge time instead of carried: `overflow_lines`
+  now measures `line.expandtabs(TAB_WIDTH)` with `TAB_WIDTH = 8`, a module
+  constant rather than a manifest field because both tab-indenting references
+  on the roster are 8-column tools and none disagrees. Two unit tests, one for
+  tabs and one confirming spaces are unaffected. Merging tab-indented Scheme
+  onto main while the measurement is known-wrong is worse than a one-line fix.
 - **Paren transparency has a narrow hole in Haskell.** `g (do x; y)` elides to
   `g do x; y`, which gate 3 accepts and which is only valid GHC under
   `BlockArguments`. A formatter stripping those parens would pass the gate and
@@ -525,7 +531,8 @@ the propose-don't-apply rule working. Neither blocks anything today.
   `parens` makes the gate reject ormolu's own output — so it is recorded rather
   than fixed. It belongs in `FINDINGS.md` as a sibling of entry 13's
   "elision only fires on exactly one named child", and it is not written there
-  yet. Found by Haskell's stage B, which also measured the sound half: of nine
+  yet -- **written up as FINDINGS 25**, 2026-08-22. Found by Haskell's stage B,
+  which also measured the sound half: of nine
   paren-drop attacks, six are rejected, including every load-bearing one
   (application spine, precedence, associativity, negative literal, type arrow,
   lambda argument).

@@ -157,6 +157,14 @@ def gzipped_tree(path: Path) -> int:
     return len(gzip.compress(blob, 9))
 
 
+# Columns a tab advances to, for width measurement only. Two references indent
+# with tabs -- gofmt always, and emacs `scheme-mode` in 11 of 15 scheme files --
+# and `len()` counts each one as a single column, under-measuring every indented
+# line by seven. Both are 8-column tools, and no roster reference disagrees, so
+# this is a constant rather than a manifest field until one does.
+TAB_WIDTH = 8
+
+
 def overflow_lines(text: str, width: int, tokens: list[str]) -> int:
     """Lines over budget.
 
@@ -171,7 +179,7 @@ def overflow_lines(text: str, width: int, tokens: list[str]) -> int:
     unbreakable = [t for t in tokens if len(t) > width]
     count = 0
     for line in text.split("\n"):
-        if len(line) <= width:
+        if len(line.expandtabs(TAB_WIDTH)) <= width:
             continue
         if any(t in line for t in unbreakable):
             continue

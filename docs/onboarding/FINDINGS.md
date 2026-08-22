@@ -2506,3 +2506,77 @@ requirement is written in. Markdown's corpus avoids it deliberately and its
 report says so, so nothing is silently wrong; the construct is simply out of
 reach. `probe_injection.py` now reproduces the limitation permanently, so the
 next person meets the real problem instead of rediscovering the shallow one.
+
+## 25. Transparent parens are sound against loss and blind to legality
+
+**Status:** open · **Cost:** **contextual — one language so far** · **Languages:** Haskell
+
+`transparent_wrappers` elides a declared node kind when it has exactly one named
+child, so a formatter that removes redundant parentheses is not accused of
+losing a node. Haskell needs it: ormolu rewrites `class Eq a =>` to
+`class (Eq a) =>`, and without the declaration **gate 3 would reject the
+reference formatter's own output**. That is not a corner case, it is the normal
+path.
+
+The declaration was measured rather than assumed, and the sound half is the
+larger half. Of nine paren-drop attacks built against the Haskell corpus, **six
+are rejected**, including every load-bearing one: the application spine,
+precedence, associativity, a negative literal, a type arrow, a lambda argument.
+All 25 `parens` nodes across corpus and reference have exactly one named child,
+so the elision precondition holds wherever it fires. Nothing is being smuggled
+past the gate by accident.
+
+### The hole
+
+`g (do x; y)` elides to `g do x; y`. Gate 3 accepts it, because the two have the
+same elided signature — and **the second is only valid GHC under
+`BlockArguments`**. A formatter that stripped those parens would pass every gate
+and emit a file that does not compile.
+
+So the boundary is: **gate 3 asks whether the tree still means the same thing,
+and cannot ask whether the text is still legal.** Those are different questions
+in a language whose grammar is extension-dependent. Node equivalence is a
+property of the tree; parseability is a property of the tree *plus a set of
+enabled extensions the tree does not carry*.
+
+Found by Haskell's stage B, 2026-08-22, which recorded it rather than
+"fixing" it — correctly, because the obvious fix is worse than the defect.
+
+### Why not just drop the declaration
+
+Because the alternative fails harder and immediately. Not declaring `parens`
+makes gate 3 reject ormolu's own output on the normal path, which means Haskell
+cannot onboard at all. Trading a hole that no formatter on the roster falls
+into for a gate that rejects the reference is not a trade.
+
+Nor is a narrower declaration available today: the elision is keyed on the node
+kind and the one-named-child rule, and `(do …)` is a `parens` with exactly one
+named child like every other. Distinguishing it needs the gate to look at *what*
+the single child is, which it currently does not.
+
+### What it would take
+
+A predicate on the elided child's kind — "elide `parens` unless its single named
+child is a `do` block" — is about the smallest honest shape, and it is a
+per-language exception list rather than a general rule, which is the part worth
+disliking. The general version is bigger: a gate arm that re-parses the
+formatted output with the language's own front end and asks whether it still
+compiles. That is a different kind of gate from the four we have — it needs a
+toolchain per language rather than a grammar — and it would subsume this entry
+along with several others.
+
+**Decide when:** a second language shows the same shape, or a package actually
+attempts the strip. Neither has happened. Note the class is not rare in
+principle — any language with optional syntax extensions can have two spellings
+that are tree-equivalent and not both legal — and Haskell is simply the first on
+the roster with one.
+
+**What it costs to leave:** nothing today. No package strips those parens, and
+the corpus does not contain the shape outside the probe that found it. The risk
+is a future Haskell package that discovers the elision and uses it deliberately,
+which is exactly the failure a recorded limit is meant to make visible before it
+is built on.
+
+Related: entry 13, whose mechanism is the same one seen from the other side —
+there, elision **cannot** fire because the node holds only anonymous tokens; here
+it fires where it should not.
