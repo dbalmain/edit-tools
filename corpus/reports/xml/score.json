@@ -1,0 +1,108 @@
+{
+  "language": "xml",
+  "submission": "lang-xml",
+  "builder": "Claude (Opus 5), orchestrator session",
+  "gate1_idempotence": {
+    "pass": true,
+    "got": 28,
+    "of": 28
+  },
+  "gate2_width": {
+    "pass": true,
+    "waived": false,
+    "overflow_lines": 16,
+    "reference_overflow": 16,
+    "note": "identical to the reference; every overflow line is one prettier also overflows"
+  },
+  "gate3_nondestruction": {
+    "pass": true,
+    "got": 28,
+    "of": 28,
+    "method": "default + comment_kinds"
+  },
+  "gate4_agreement": {
+    "by_width": {
+      "80": {
+        "agreement": 13,
+        "of": 13,
+        "accepted": 0,
+        "stale": 0,
+        "unreviewed": 0,
+        "excluded": 1,
+        "review_coverage": 1.0,
+        "review_threshold_met": true
+      },
+      "40": {
+        "agreement": 13,
+        "of": 13,
+        "accepted": 0,
+        "stale": 0,
+        "unreviewed": 0,
+        "excluded": 1,
+        "review_coverage": 1.0,
+        "review_threshold_met": true
+      }
+    },
+    "agreement": 26,
+    "of": 26,
+    "accepted": 0,
+    "stale": 0,
+    "unreviewed": 0,
+    "excluded": 1,
+    "review_coverage": 1.0,
+    "review_threshold_met": true,
+    "note": "full agreement. gate 4 for XML measures tag layout only: the reference does not re-indent content, so content whitespace is source-preserved on both sides."
+  },
+  "rust_js_parity": "identical",
+  "refusals": [],
+  "matching_files": [
+    "comments.xml",
+    "doctype.xml",
+    "kitchen.xml",
+    "literals.xml",
+    "long_attributes.xml",
+    "mixed_content.xml",
+    "namespaces.xml",
+    "nesting.xml",
+    "normalisation.xml",
+    "prolog.xml",
+    "quotes.xml",
+    "self_closing.xml",
+    "whitespace.xml"
+  ],
+  "size": {
+    "js-runtime": 13610,
+    "packages": 12472,
+    "total": 26082,
+    "per_language": {
+      "xml": {
+        "package": 847,
+        "with_runtime": 14457
+      }
+    }
+  },
+  "size_delta_vs_main": {
+    "js_runtime_gzip": {
+      "main": 13610,
+      "now": 13610,
+      "delta": 0
+    },
+    "package_gzip": 847,
+    "per_edit": []
+  },
+  "runtime_edits": [],
+  "harness_edits": [],
+  "fill": {
+    "wanted": false,
+    "used": true,
+    "files_that_would_benefit": [],
+    "note": "fill is used, not requested: the doctype external ID packs at 80 and breaks at 40, and the PUBLIC keyword must be a fill item rather than a fixed prefix"
+  },
+  "divergences": [],
+  "excluded": [
+    {
+      "case": "empty_to_self_closing.xml",
+      "reason": "prettier rewrites an empty element pair to a self-closing tag, replacing two named nodes (STag, ETag) with one (EmptyElemTag); gate 3 rejects it and no sanctioned token policy deletes a tag"
+    }
+  ]
+}
