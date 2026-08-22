@@ -1,0 +1,1094 @@
+{
+ "language": "haskell",
+ "source_file": "corpus/src/haskell/data_types.hs",
+ "source": "module DataTypes where\n\n-- algebraic types, records, newtypes, deriving\ndata Colour = Red | Green | Blue deriving (Eq, Show) -- sum, no fields\n\ndata Pair a b = Pair a b deriving (Eq, Show)\n\ndata Person = Person\n  { personName :: String\n  , personAge :: Int\n  } -- record with leading commas\n\nnewtype Tagged a = Tagged {unTagged :: a} deriving (Eq, Show)\n\ndata Tree a\n  = Leaf a\n  | Branch (Tree a) (Tree a)\n  deriving (Eq, Show)\n\nemptyPerson = Person {personName = \"\", personAge = 0} -- record construction\n",
+ "root": {
+  "type": "haskell",
+  "start": 0,
+  "end": 507,
+  "children": [
+   {
+    "type": "header",
+    "start": 0,
+    "end": 22,
+    "children": [
+     {
+      "type": "module",
+      "start": 0,
+      "end": 6,
+      "text": "module"
+     },
+     {
+      "type": "module",
+      "start": 7,
+      "end": 16,
+      "field": "module",
+      "children": [
+       {
+        "type": "module_id",
+        "start": 7,
+        "end": 16,
+        "text": "DataTypes"
+       }
+      ]
+     },
+     {
+      "type": "where",
+      "start": 17,
+      "end": 22,
+      "text": "where"
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 24,
+    "end": 71,
+    "text": "-- algebraic types, records, newtypes, deriving"
+   },
+   {
+    "type": "declarations",
+    "start": 72,
+    "end": 507,
+    "field": "declarations",
+    "children": [
+     {
+      "type": "data_type",
+      "start": 72,
+      "end": 124,
+      "children": [
+       {
+        "type": "data",
+        "start": 72,
+        "end": 76,
+        "text": "data"
+       },
+       {
+        "type": "name",
+        "start": 77,
+        "end": 83,
+        "field": "name",
+        "text": "Colour"
+       },
+       {
+        "type": "=",
+        "start": 84,
+        "end": 85,
+        "text": "="
+       },
+       {
+        "type": "data_constructors",
+        "start": 86,
+        "end": 104,
+        "field": "constructors",
+        "children": [
+         {
+          "type": "data_constructor",
+          "start": 86,
+          "end": 89,
+          "field": "constructor",
+          "children": [
+           {
+            "type": "prefix",
+            "start": 86,
+            "end": 89,
+            "field": "constructor",
+            "children": [
+             {
+              "type": "constructor",
+              "start": 86,
+              "end": 89,
+              "field": "name",
+              "text": "Red"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "|",
+          "start": 90,
+          "end": 91,
+          "text": "|"
+         },
+         {
+          "type": "data_constructor",
+          "start": 92,
+          "end": 97,
+          "field": "constructor",
+          "children": [
+           {
+            "type": "prefix",
+            "start": 92,
+            "end": 97,
+            "field": "constructor",
+            "children": [
+             {
+              "type": "constructor",
+              "start": 92,
+              "end": 97,
+              "field": "name",
+              "text": "Green"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "|",
+          "start": 98,
+          "end": 99,
+          "text": "|"
+         },
+         {
+          "type": "data_constructor",
+          "start": 100,
+          "end": 104,
+          "field": "constructor",
+          "children": [
+           {
+            "type": "prefix",
+            "start": 100,
+            "end": 104,
+            "field": "constructor",
+            "children": [
+             {
+              "type": "constructor",
+              "start": 100,
+              "end": 104,
+              "field": "name",
+              "text": "Blue"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "deriving",
+        "start": 105,
+        "end": 124,
+        "field": "deriving",
+        "children": [
+         {
+          "type": "deriving",
+          "start": 105,
+          "end": 113,
+          "text": "deriving"
+         },
+         {
+          "type": "tuple",
+          "start": 114,
+          "end": 124,
+          "field": "classes",
+          "children": [
+           {
+            "type": "(",
+            "start": 114,
+            "end": 115,
+            "text": "("
+           },
+           {
+            "type": "name",
+            "start": 115,
+            "end": 117,
+            "text": "Eq"
+           },
+           {
+            "type": ",",
+            "start": 117,
+            "end": 118,
+            "text": ","
+           },
+           {
+            "type": "name",
+            "start": 119,
+            "end": 123,
+            "text": "Show"
+           },
+           {
+            "type": ")",
+            "start": 123,
+            "end": 124,
+            "text": ")"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 125,
+      "end": 142,
+      "text": "-- sum, no fields"
+     },
+     {
+      "type": "data_type",
+      "start": 144,
+      "end": 188,
+      "children": [
+       {
+        "type": "data",
+        "start": 144,
+        "end": 148,
+        "text": "data"
+       },
+       {
+        "type": "name",
+        "start": 149,
+        "end": 153,
+        "field": "name",
+        "text": "Pair"
+       },
+       {
+        "type": "type_params",
+        "start": 154,
+        "end": 157,
+        "field": "patterns",
+        "children": [
+         {
+          "type": "variable",
+          "start": 154,
+          "end": 155,
+          "field": "bind",
+          "text": "a"
+         },
+         {
+          "type": "variable",
+          "start": 156,
+          "end": 157,
+          "field": "bind",
+          "text": "b"
+         }
+        ]
+       },
+       {
+        "type": "=",
+        "start": 158,
+        "end": 159,
+        "text": "="
+       },
+       {
+        "type": "data_constructors",
+        "start": 160,
+        "end": 168,
+        "field": "constructors",
+        "children": [
+         {
+          "type": "data_constructor",
+          "start": 160,
+          "end": 168,
+          "field": "constructor",
+          "children": [
+           {
+            "type": "prefix",
+            "start": 160,
+            "end": 168,
+            "field": "constructor",
+            "children": [
+             {
+              "type": "constructor",
+              "start": 160,
+              "end": 164,
+              "field": "name",
+              "text": "Pair"
+             },
+             {
+              "type": "variable",
+              "start": 165,
+              "end": 166,
+              "field": "field",
+              "text": "a"
+             },
+             {
+              "type": "variable",
+              "start": 167,
+              "end": 168,
+              "field": "field",
+              "text": "b"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "deriving",
+        "start": 169,
+        "end": 188,
+        "field": "deriving",
+        "children": [
+         {
+          "type": "deriving",
+          "start": 169,
+          "end": 177,
+          "text": "deriving"
+         },
+         {
+          "type": "tuple",
+          "start": 178,
+          "end": 188,
+          "field": "classes",
+          "children": [
+           {
+            "type": "(",
+            "start": 178,
+            "end": 179,
+            "text": "("
+           },
+           {
+            "type": "name",
+            "start": 179,
+            "end": 181,
+            "text": "Eq"
+           },
+           {
+            "type": ",",
+            "start": 181,
+            "end": 182,
+            "text": ","
+           },
+           {
+            "type": "name",
+            "start": 183,
+            "end": 187,
+            "text": "Show"
+           },
+           {
+            "type": ")",
+            "start": 187,
+            "end": 188,
+            "text": ")"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "data_type",
+      "start": 190,
+      "end": 260,
+      "children": [
+       {
+        "type": "data",
+        "start": 190,
+        "end": 194,
+        "text": "data"
+       },
+       {
+        "type": "name",
+        "start": 195,
+        "end": 201,
+        "field": "name",
+        "text": "Person"
+       },
+       {
+        "type": "=",
+        "start": 202,
+        "end": 203,
+        "text": "="
+       },
+       {
+        "type": "data_constructors",
+        "start": 204,
+        "end": 260,
+        "field": "constructors",
+        "children": [
+         {
+          "type": "data_constructor",
+          "start": 204,
+          "end": 260,
+          "field": "constructor",
+          "children": [
+           {
+            "type": "record",
+            "start": 204,
+            "end": 260,
+            "field": "constructor",
+            "children": [
+             {
+              "type": "constructor",
+              "start": 204,
+              "end": 210,
+              "field": "name",
+              "text": "Person"
+             },
+             {
+              "type": "fields",
+              "start": 213,
+              "end": 260,
+              "field": "fields",
+              "children": [
+               {
+                "type": "{",
+                "start": 213,
+                "end": 214,
+                "text": "{"
+               },
+               {
+                "type": "field",
+                "start": 215,
+                "end": 235,
+                "field": "field",
+                "children": [
+                 {
+                  "type": "field_name",
+                  "start": 215,
+                  "end": 225,
+                  "field": "name",
+                  "children": [
+                   {
+                    "type": "variable",
+                    "start": 215,
+                    "end": 225,
+                    "text": "personName"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "::",
+                  "start": 226,
+                  "end": 228,
+                  "text": "::"
+                 },
+                 {
+                  "type": "name",
+                  "start": 229,
+                  "end": 235,
+                  "field": "type",
+                  "text": "String"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 238,
+                "end": 239,
+                "text": ","
+               },
+               {
+                "type": "field",
+                "start": 240,
+                "end": 256,
+                "field": "field",
+                "children": [
+                 {
+                  "type": "field_name",
+                  "start": 240,
+                  "end": 249,
+                  "field": "name",
+                  "children": [
+                   {
+                    "type": "variable",
+                    "start": 240,
+                    "end": 249,
+                    "text": "personAge"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "::",
+                  "start": 250,
+                  "end": 252,
+                  "text": "::"
+                 },
+                 {
+                  "type": "name",
+                  "start": 253,
+                  "end": 256,
+                  "field": "type",
+                  "text": "Int"
+                 }
+                ]
+               },
+               {
+                "type": "}",
+                "start": 259,
+                "end": 260,
+                "text": "}"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 261,
+      "end": 290,
+      "text": "-- record with leading commas"
+     },
+     {
+      "type": "newtype",
+      "start": 292,
+      "end": 353,
+      "children": [
+       {
+        "type": "newtype",
+        "start": 292,
+        "end": 299,
+        "text": "newtype"
+       },
+       {
+        "type": "name",
+        "start": 300,
+        "end": 306,
+        "field": "name",
+        "text": "Tagged"
+       },
+       {
+        "type": "type_params",
+        "start": 307,
+        "end": 308,
+        "field": "patterns",
+        "children": [
+         {
+          "type": "variable",
+          "start": 307,
+          "end": 308,
+          "field": "bind",
+          "text": "a"
+         }
+        ]
+       },
+       {
+        "type": "=",
+        "start": 309,
+        "end": 310,
+        "text": "="
+       },
+       {
+        "type": "newtype_constructor",
+        "start": 311,
+        "end": 333,
+        "field": "constructor",
+        "children": [
+         {
+          "type": "constructor",
+          "start": 311,
+          "end": 317,
+          "field": "name",
+          "text": "Tagged"
+         },
+         {
+          "type": "record",
+          "start": 318,
+          "end": 333,
+          "field": "field",
+          "children": [
+           {
+            "type": "{",
+            "start": 318,
+            "end": 319,
+            "text": "{"
+           },
+           {
+            "type": "field",
+            "start": 319,
+            "end": 332,
+            "field": "field",
+            "children": [
+             {
+              "type": "field_name",
+              "start": 319,
+              "end": 327,
+              "field": "name",
+              "children": [
+               {
+                "type": "variable",
+                "start": 319,
+                "end": 327,
+                "text": "unTagged"
+               }
+              ]
+             },
+             {
+              "type": "::",
+              "start": 328,
+              "end": 330,
+              "text": "::"
+             },
+             {
+              "type": "variable",
+              "start": 331,
+              "end": 332,
+              "field": "type",
+              "text": "a"
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 332,
+            "end": 333,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "deriving",
+        "start": 334,
+        "end": 353,
+        "field": "deriving",
+        "children": [
+         {
+          "type": "deriving",
+          "start": 334,
+          "end": 342,
+          "text": "deriving"
+         },
+         {
+          "type": "tuple",
+          "start": 343,
+          "end": 353,
+          "field": "classes",
+          "children": [
+           {
+            "type": "(",
+            "start": 343,
+            "end": 344,
+            "text": "("
+           },
+           {
+            "type": "name",
+            "start": 344,
+            "end": 346,
+            "text": "Eq"
+           },
+           {
+            "type": ",",
+            "start": 346,
+            "end": 347,
+            "text": ","
+           },
+           {
+            "type": "name",
+            "start": 348,
+            "end": 352,
+            "text": "Show"
+           },
+           {
+            "type": ")",
+            "start": 352,
+            "end": 353,
+            "text": ")"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "data_type",
+      "start": 355,
+      "end": 428,
+      "children": [
+       {
+        "type": "data",
+        "start": 355,
+        "end": 359,
+        "text": "data"
+       },
+       {
+        "type": "name",
+        "start": 360,
+        "end": 364,
+        "field": "name",
+        "text": "Tree"
+       },
+       {
+        "type": "type_params",
+        "start": 365,
+        "end": 366,
+        "field": "patterns",
+        "children": [
+         {
+          "type": "variable",
+          "start": 365,
+          "end": 366,
+          "field": "bind",
+          "text": "a"
+         }
+        ]
+       },
+       {
+        "type": "=",
+        "start": 369,
+        "end": 370,
+        "text": "="
+       },
+       {
+        "type": "data_constructors",
+        "start": 371,
+        "end": 406,
+        "field": "constructors",
+        "children": [
+         {
+          "type": "data_constructor",
+          "start": 371,
+          "end": 377,
+          "field": "constructor",
+          "children": [
+           {
+            "type": "prefix",
+            "start": 371,
+            "end": 377,
+            "field": "constructor",
+            "children": [
+             {
+              "type": "constructor",
+              "start": 371,
+              "end": 375,
+              "field": "name",
+              "text": "Leaf"
+             },
+             {
+              "type": "variable",
+              "start": 376,
+              "end": 377,
+              "field": "field",
+              "text": "a"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "|",
+          "start": 380,
+          "end": 381,
+          "text": "|"
+         },
+         {
+          "type": "data_constructor",
+          "start": 382,
+          "end": 406,
+          "field": "constructor",
+          "children": [
+           {
+            "type": "prefix",
+            "start": 382,
+            "end": 406,
+            "field": "constructor",
+            "children": [
+             {
+              "type": "constructor",
+              "start": 382,
+              "end": 388,
+              "field": "name",
+              "text": "Branch"
+             },
+             {
+              "type": "parens",
+              "start": 389,
+              "end": 397,
+              "field": "field",
+              "children": [
+               {
+                "type": "(",
+                "start": 389,
+                "end": 390,
+                "text": "("
+               },
+               {
+                "type": "apply",
+                "start": 390,
+                "end": 396,
+                "field": "type",
+                "children": [
+                 {
+                  "type": "name",
+                  "start": 390,
+                  "end": 394,
+                  "field": "constructor",
+                  "text": "Tree"
+                 },
+                 {
+                  "type": "variable",
+                  "start": 395,
+                  "end": 396,
+                  "field": "argument",
+                  "text": "a"
+                 }
+                ]
+               },
+               {
+                "type": ")",
+                "start": 396,
+                "end": 397,
+                "text": ")"
+               }
+              ]
+             },
+             {
+              "type": "parens",
+              "start": 398,
+              "end": 406,
+              "field": "field",
+              "children": [
+               {
+                "type": "(",
+                "start": 398,
+                "end": 399,
+                "text": "("
+               },
+               {
+                "type": "apply",
+                "start": 399,
+                "end": 405,
+                "field": "type",
+                "children": [
+                 {
+                  "type": "name",
+                  "start": 399,
+                  "end": 403,
+                  "field": "constructor",
+                  "text": "Tree"
+                 },
+                 {
+                  "type": "variable",
+                  "start": 404,
+                  "end": 405,
+                  "field": "argument",
+                  "text": "a"
+                 }
+                ]
+               },
+               {
+                "type": ")",
+                "start": 405,
+                "end": 406,
+                "text": ")"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "deriving",
+        "start": 409,
+        "end": 428,
+        "field": "deriving",
+        "children": [
+         {
+          "type": "deriving",
+          "start": 409,
+          "end": 417,
+          "text": "deriving"
+         },
+         {
+          "type": "tuple",
+          "start": 418,
+          "end": 428,
+          "field": "classes",
+          "children": [
+           {
+            "type": "(",
+            "start": 418,
+            "end": 419,
+            "text": "("
+           },
+           {
+            "type": "name",
+            "start": 419,
+            "end": 421,
+            "text": "Eq"
+           },
+           {
+            "type": ",",
+            "start": 421,
+            "end": 422,
+            "text": ","
+           },
+           {
+            "type": "name",
+            "start": 423,
+            "end": 427,
+            "text": "Show"
+           },
+           {
+            "type": ")",
+            "start": 427,
+            "end": 428,
+            "text": ")"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "bind",
+      "start": 430,
+      "end": 483,
+      "children": [
+       {
+        "type": "variable",
+        "start": 430,
+        "end": 441,
+        "field": "name",
+        "text": "emptyPerson"
+       },
+       {
+        "type": "match",
+        "start": 442,
+        "end": 483,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 442,
+          "end": 443,
+          "text": "="
+         },
+         {
+          "type": "record",
+          "start": 444,
+          "end": 483,
+          "field": "expression",
+          "children": [
+           {
+            "type": "constructor",
+            "start": 444,
+            "end": 450,
+            "field": "expression",
+            "text": "Person"
+           },
+           {
+            "type": "{",
+            "start": 451,
+            "end": 452,
+            "text": "{"
+           },
+           {
+            "type": "field_update",
+            "start": 452,
+            "end": 467,
+            "field": "field",
+            "children": [
+             {
+              "type": "field_name",
+              "start": 452,
+              "end": 462,
+              "field": "field",
+              "children": [
+               {
+                "type": "variable",
+                "start": 452,
+                "end": 462,
+                "text": "personName"
+               }
+              ]
+             },
+             {
+              "type": "=",
+              "start": 463,
+              "end": 464,
+              "text": "="
+             },
+             {
+              "type": "literal",
+              "start": 465,
+              "end": 467,
+              "field": "expression",
+              "children": [
+               {
+                "type": "string",
+                "start": 465,
+                "end": 467,
+                "text": "\"\""
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 467,
+            "end": 468,
+            "text": ","
+           },
+           {
+            "type": "field_update",
+            "start": 469,
+            "end": 482,
+            "field": "field",
+            "children": [
+             {
+              "type": "field_name",
+              "start": 469,
+              "end": 478,
+              "field": "field",
+              "children": [
+               {
+                "type": "variable",
+                "start": 469,
+                "end": 478,
+                "text": "personAge"
+               }
+              ]
+             },
+             {
+              "type": "=",
+              "start": 479,
+              "end": 480,
+              "text": "="
+             },
+             {
+              "type": "literal",
+              "start": 481,
+              "end": 482,
+              "field": "expression",
+              "children": [
+               {
+                "type": "integer",
+                "start": 481,
+                "end": 482,
+                "text": "0"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 482,
+            "end": 483,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 484,
+      "end": 506,
+      "text": "-- record construction"
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -1,0 +1,454 @@
+{
+ "language": "haskell",
+ "source_file": "corpus/src/haskell/import_merging.hs",
+ "source": "module ImportMerging where\n\n-- ormolu collapses repeated imports of one module into a single declaration:\n-- an exact duplicate is dropped, and two lists for the same module are unioned.\n-- Modules and names are written in the order ormolu already emits them, so this\n-- file probes collapsing alone and never statement reordering (imports.hs).\nimport Control.Monad (when)\nimport Control.Monad (when)\nimport Data.List (nub)\nimport Data.List (sort)\n\nused = (when, nub, sort) -- keep them used\n",
+ "root": {
+  "type": "haskell",
+  "start": 0,
+  "end": 492,
+  "children": [
+   {
+    "type": "header",
+    "start": 0,
+    "end": 26,
+    "children": [
+     {
+      "type": "module",
+      "start": 0,
+      "end": 6,
+      "text": "module"
+     },
+     {
+      "type": "module",
+      "start": 7,
+      "end": 20,
+      "field": "module",
+      "children": [
+       {
+        "type": "module_id",
+        "start": 7,
+        "end": 20,
+        "text": "ImportMerging"
+       }
+      ]
+     },
+     {
+      "type": "where",
+      "start": 21,
+      "end": 26,
+      "text": "where"
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 28,
+    "end": 344,
+    "text": "-- ormolu collapses repeated imports of one module into a single declaration:\n-- an exact duplicate is dropped, and two lists for the same module are unioned.\n-- Modules and names are written in the order ormolu already emits them, so this\n-- file probes collapsing alone and never statement reordering (imports.hs)."
+   },
+   {
+    "type": "imports",
+    "start": 345,
+    "end": 449,
+    "field": "imports",
+    "children": [
+     {
+      "type": "import",
+      "start": 345,
+      "end": 372,
+      "field": "import",
+      "children": [
+       {
+        "type": "import",
+        "start": 345,
+        "end": 351,
+        "text": "import"
+       },
+       {
+        "type": "module",
+        "start": 352,
+        "end": 365,
+        "field": "module",
+        "children": [
+         {
+          "type": "module_id",
+          "start": 352,
+          "end": 359,
+          "text": "Control"
+         },
+         {
+          "type": ".",
+          "start": 359,
+          "end": 360,
+          "text": "."
+         },
+         {
+          "type": "module_id",
+          "start": 360,
+          "end": 365,
+          "text": "Monad"
+         }
+        ]
+       },
+       {
+        "type": "import_list",
+        "start": 366,
+        "end": 372,
+        "field": "names",
+        "children": [
+         {
+          "type": "(",
+          "start": 366,
+          "end": 367,
+          "text": "("
+         },
+         {
+          "type": "import_name",
+          "start": 367,
+          "end": 371,
+          "field": "name",
+          "children": [
+           {
+            "type": "variable",
+            "start": 367,
+            "end": 371,
+            "field": "variable",
+            "text": "when"
+           }
+          ]
+         },
+         {
+          "type": ")",
+          "start": 371,
+          "end": 372,
+          "text": ")"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "import",
+      "start": 373,
+      "end": 400,
+      "field": "import",
+      "children": [
+       {
+        "type": "import",
+        "start": 373,
+        "end": 379,
+        "text": "import"
+       },
+       {
+        "type": "module",
+        "start": 380,
+        "end": 393,
+        "field": "module",
+        "children": [
+         {
+          "type": "module_id",
+          "start": 380,
+          "end": 387,
+          "text": "Control"
+         },
+         {
+          "type": ".",
+          "start": 387,
+          "end": 388,
+          "text": "."
+         },
+         {
+          "type": "module_id",
+          "start": 388,
+          "end": 393,
+          "text": "Monad"
+         }
+        ]
+       },
+       {
+        "type": "import_list",
+        "start": 394,
+        "end": 400,
+        "field": "names",
+        "children": [
+         {
+          "type": "(",
+          "start": 394,
+          "end": 395,
+          "text": "("
+         },
+         {
+          "type": "import_name",
+          "start": 395,
+          "end": 399,
+          "field": "name",
+          "children": [
+           {
+            "type": "variable",
+            "start": 395,
+            "end": 399,
+            "field": "variable",
+            "text": "when"
+           }
+          ]
+         },
+         {
+          "type": ")",
+          "start": 399,
+          "end": 400,
+          "text": ")"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "import",
+      "start": 401,
+      "end": 423,
+      "field": "import",
+      "children": [
+       {
+        "type": "import",
+        "start": 401,
+        "end": 407,
+        "text": "import"
+       },
+       {
+        "type": "module",
+        "start": 408,
+        "end": 417,
+        "field": "module",
+        "children": [
+         {
+          "type": "module_id",
+          "start": 408,
+          "end": 412,
+          "text": "Data"
+         },
+         {
+          "type": ".",
+          "start": 412,
+          "end": 413,
+          "text": "."
+         },
+         {
+          "type": "module_id",
+          "start": 413,
+          "end": 417,
+          "text": "List"
+         }
+        ]
+       },
+       {
+        "type": "import_list",
+        "start": 418,
+        "end": 423,
+        "field": "names",
+        "children": [
+         {
+          "type": "(",
+          "start": 418,
+          "end": 419,
+          "text": "("
+         },
+         {
+          "type": "import_name",
+          "start": 419,
+          "end": 422,
+          "field": "name",
+          "children": [
+           {
+            "type": "variable",
+            "start": 419,
+            "end": 422,
+            "field": "variable",
+            "text": "nub"
+           }
+          ]
+         },
+         {
+          "type": ")",
+          "start": 422,
+          "end": 423,
+          "text": ")"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "import",
+      "start": 424,
+      "end": 447,
+      "field": "import",
+      "children": [
+       {
+        "type": "import",
+        "start": 424,
+        "end": 430,
+        "text": "import"
+       },
+       {
+        "type": "module",
+        "start": 431,
+        "end": 440,
+        "field": "module",
+        "children": [
+         {
+          "type": "module_id",
+          "start": 431,
+          "end": 435,
+          "text": "Data"
+         },
+         {
+          "type": ".",
+          "start": 435,
+          "end": 436,
+          "text": "."
+         },
+         {
+          "type": "module_id",
+          "start": 436,
+          "end": 440,
+          "text": "List"
+         }
+        ]
+       },
+       {
+        "type": "import_list",
+        "start": 441,
+        "end": 447,
+        "field": "names",
+        "children": [
+         {
+          "type": "(",
+          "start": 441,
+          "end": 442,
+          "text": "("
+         },
+         {
+          "type": "import_name",
+          "start": 442,
+          "end": 446,
+          "field": "name",
+          "children": [
+           {
+            "type": "variable",
+            "start": 442,
+            "end": 446,
+            "field": "variable",
+            "text": "sort"
+           }
+          ]
+         },
+         {
+          "type": ")",
+          "start": 446,
+          "end": 447,
+          "text": ")"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "declarations",
+    "start": 449,
+    "end": 492,
+    "field": "declarations",
+    "children": [
+     {
+      "type": "bind",
+      "start": 449,
+      "end": 473,
+      "children": [
+       {
+        "type": "variable",
+        "start": 449,
+        "end": 453,
+        "field": "name",
+        "text": "used"
+       },
+       {
+        "type": "match",
+        "start": 454,
+        "end": 473,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 454,
+          "end": 455,
+          "text": "="
+         },
+         {
+          "type": "tuple",
+          "start": 456,
+          "end": 473,
+          "field": "expression",
+          "children": [
+           {
+            "type": "(",
+            "start": 456,
+            "end": 457,
+            "text": "("
+           },
+           {
+            "type": "variable",
+            "start": 457,
+            "end": 461,
+            "field": "element",
+            "text": "when"
+           },
+           {
+            "type": ",",
+            "start": 461,
+            "end": 462,
+            "text": ","
+           },
+           {
+            "type": "variable",
+            "start": 463,
+            "end": 466,
+            "field": "element",
+            "text": "nub"
+           },
+           {
+            "type": ",",
+            "start": 466,
+            "end": 467,
+            "text": ","
+           },
+           {
+            "type": "variable",
+            "start": 468,
+            "end": 472,
+            "field": "element",
+            "text": "sort"
+           },
+           {
+            "type": ")",
+            "start": 472,
+            "end": 473,
+            "text": ")"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 474,
+      "end": 491,
+      "text": "-- keep them used"
+     }
+    ]
+   }
+  ]
+ }
+}

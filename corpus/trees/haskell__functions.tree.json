@@ -1,0 +1,917 @@
+{
+ "language": "haskell",
+ "source_file": "corpus/src/haskell/functions.hs",
+ "source": "module Functions where\n\n-- multiple equations, patterns, lambdas, infix declarations\nfact 0=1\nfact n=n*fact (n-1) -- two equations of the same function\n\nswap ( a,b )=( b,a ) -- tuple pattern\n\nfirst (x:_) =x\nfirst []=error \"empty\" -- list patterns\n\nconst' = \\x y -> x -- lambda\n\nbetween a b c=a<=b&&b<=c\n\ninfixl 5 `plus`\n\nplus a b = a + b -- infix function\n",
+ "root": {
+  "type": "haskell",
+  "start": 0,
+  "end": 356,
+  "children": [
+   {
+    "type": "header",
+    "start": 0,
+    "end": 22,
+    "children": [
+     {
+      "type": "module",
+      "start": 0,
+      "end": 6,
+      "text": "module"
+     },
+     {
+      "type": "module",
+      "start": 7,
+      "end": 16,
+      "field": "module",
+      "children": [
+       {
+        "type": "module_id",
+        "start": 7,
+        "end": 16,
+        "text": "Functions"
+       }
+      ]
+     },
+     {
+      "type": "where",
+      "start": 17,
+      "end": 22,
+      "text": "where"
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 24,
+    "end": 84,
+    "text": "-- multiple equations, patterns, lambdas, infix declarations"
+   },
+   {
+    "type": "declarations",
+    "start": 85,
+    "end": 356,
+    "field": "declarations",
+    "children": [
+     {
+      "type": "function",
+      "start": 85,
+      "end": 93,
+      "children": [
+       {
+        "type": "variable",
+        "start": 85,
+        "end": 89,
+        "field": "name",
+        "text": "fact"
+       },
+       {
+        "type": "patterns",
+        "start": 90,
+        "end": 91,
+        "field": "patterns",
+        "children": [
+         {
+          "type": "literal",
+          "start": 90,
+          "end": 91,
+          "children": [
+           {
+            "type": "integer",
+            "start": 90,
+            "end": 91,
+            "text": "0"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "match",
+        "start": 91,
+        "end": 93,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 91,
+          "end": 92,
+          "text": "="
+         },
+         {
+          "type": "literal",
+          "start": 92,
+          "end": 93,
+          "field": "expression",
+          "children": [
+           {
+            "type": "integer",
+            "start": 92,
+            "end": 93,
+            "text": "1"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "function",
+      "start": 94,
+      "end": 113,
+      "children": [
+       {
+        "type": "variable",
+        "start": 94,
+        "end": 98,
+        "field": "name",
+        "text": "fact"
+       },
+       {
+        "type": "patterns",
+        "start": 99,
+        "end": 100,
+        "field": "patterns",
+        "children": [
+         {
+          "type": "variable",
+          "start": 99,
+          "end": 100,
+          "text": "n"
+         }
+        ]
+       },
+       {
+        "type": "match",
+        "start": 100,
+        "end": 113,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 100,
+          "end": 101,
+          "text": "="
+         },
+         {
+          "type": "infix",
+          "start": 101,
+          "end": 113,
+          "field": "expression",
+          "children": [
+           {
+            "type": "variable",
+            "start": 101,
+            "end": 102,
+            "field": "left_operand",
+            "text": "n"
+           },
+           {
+            "type": "operator",
+            "start": 102,
+            "end": 103,
+            "field": "operator",
+            "children": [
+             {
+              "type": "*",
+              "start": 102,
+              "end": 103,
+              "text": "*"
+             }
+            ]
+           },
+           {
+            "type": "apply",
+            "start": 103,
+            "end": 113,
+            "field": "right_operand",
+            "children": [
+             {
+              "type": "variable",
+              "start": 103,
+              "end": 107,
+              "field": "function",
+              "text": "fact"
+             },
+             {
+              "type": "parens",
+              "start": 108,
+              "end": 113,
+              "field": "argument",
+              "children": [
+               {
+                "type": "(",
+                "start": 108,
+                "end": 109,
+                "text": "("
+               },
+               {
+                "type": "infix",
+                "start": 109,
+                "end": 112,
+                "field": "expression",
+                "children": [
+                 {
+                  "type": "variable",
+                  "start": 109,
+                  "end": 110,
+                  "field": "left_operand",
+                  "text": "n"
+                 },
+                 {
+                  "type": "operator",
+                  "start": 110,
+                  "end": 111,
+                  "field": "operator",
+                  "text": "-"
+                 },
+                 {
+                  "type": "literal",
+                  "start": 111,
+                  "end": 112,
+                  "field": "right_operand",
+                  "children": [
+                   {
+                    "type": "integer",
+                    "start": 111,
+                    "end": 112,
+                    "text": "1"
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": ")",
+                "start": 112,
+                "end": 113,
+                "text": ")"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 114,
+      "end": 151,
+      "text": "-- two equations of the same function"
+     },
+     {
+      "type": "function",
+      "start": 153,
+      "end": 173,
+      "children": [
+       {
+        "type": "variable",
+        "start": 153,
+        "end": 157,
+        "field": "name",
+        "text": "swap"
+       },
+       {
+        "type": "patterns",
+        "start": 158,
+        "end": 165,
+        "field": "patterns",
+        "children": [
+         {
+          "type": "tuple",
+          "start": 158,
+          "end": 165,
+          "children": [
+           {
+            "type": "(",
+            "start": 158,
+            "end": 159,
+            "text": "("
+           },
+           {
+            "type": "variable",
+            "start": 160,
+            "end": 161,
+            "field": "element",
+            "text": "a"
+           },
+           {
+            "type": ",",
+            "start": 161,
+            "end": 162,
+            "text": ","
+           },
+           {
+            "type": "variable",
+            "start": 162,
+            "end": 163,
+            "field": "element",
+            "text": "b"
+           },
+           {
+            "type": ")",
+            "start": 164,
+            "end": 165,
+            "text": ")"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "match",
+        "start": 165,
+        "end": 173,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 165,
+          "end": 166,
+          "text": "="
+         },
+         {
+          "type": "tuple",
+          "start": 166,
+          "end": 173,
+          "field": "expression",
+          "children": [
+           {
+            "type": "(",
+            "start": 166,
+            "end": 167,
+            "text": "("
+           },
+           {
+            "type": "variable",
+            "start": 168,
+            "end": 169,
+            "field": "element",
+            "text": "b"
+           },
+           {
+            "type": ",",
+            "start": 169,
+            "end": 170,
+            "text": ","
+           },
+           {
+            "type": "variable",
+            "start": 170,
+            "end": 171,
+            "field": "element",
+            "text": "a"
+           },
+           {
+            "type": ")",
+            "start": 172,
+            "end": 173,
+            "text": ")"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 174,
+      "end": 190,
+      "text": "-- tuple pattern"
+     },
+     {
+      "type": "function",
+      "start": 192,
+      "end": 206,
+      "children": [
+       {
+        "type": "variable",
+        "start": 192,
+        "end": 197,
+        "field": "name",
+        "text": "first"
+       },
+       {
+        "type": "patterns",
+        "start": 198,
+        "end": 203,
+        "field": "patterns",
+        "children": [
+         {
+          "type": "parens",
+          "start": 198,
+          "end": 203,
+          "children": [
+           {
+            "type": "(",
+            "start": 198,
+            "end": 199,
+            "text": "("
+           },
+           {
+            "type": "infix",
+            "start": 199,
+            "end": 202,
+            "field": "pattern",
+            "children": [
+             {
+              "type": "variable",
+              "start": 199,
+              "end": 200,
+              "field": "left_operand",
+              "text": "x"
+             },
+             {
+              "type": "constructor_operator",
+              "start": 200,
+              "end": 201,
+              "field": "operator",
+              "text": ":"
+             },
+             {
+              "type": "wildcard",
+              "start": 201,
+              "end": 202,
+              "field": "right_operand",
+              "children": [
+               {
+                "type": "_",
+                "start": 201,
+                "end": 202,
+                "text": "_"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ")",
+            "start": 202,
+            "end": 203,
+            "text": ")"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "match",
+        "start": 204,
+        "end": 206,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 204,
+          "end": 205,
+          "text": "="
+         },
+         {
+          "type": "variable",
+          "start": 205,
+          "end": 206,
+          "field": "expression",
+          "text": "x"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "function",
+      "start": 207,
+      "end": 229,
+      "children": [
+       {
+        "type": "variable",
+        "start": 207,
+        "end": 212,
+        "field": "name",
+        "text": "first"
+       },
+       {
+        "type": "patterns",
+        "start": 213,
+        "end": 215,
+        "field": "patterns",
+        "children": [
+         {
+          "type": "list",
+          "start": 213,
+          "end": 215,
+          "children": [
+           {
+            "type": "[",
+            "start": 213,
+            "end": 214,
+            "text": "["
+           },
+           {
+            "type": "]",
+            "start": 214,
+            "end": 215,
+            "text": "]"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "match",
+        "start": 215,
+        "end": 229,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 215,
+          "end": 216,
+          "text": "="
+         },
+         {
+          "type": "apply",
+          "start": 216,
+          "end": 229,
+          "field": "expression",
+          "children": [
+           {
+            "type": "variable",
+            "start": 216,
+            "end": 221,
+            "field": "function",
+            "text": "error"
+           },
+           {
+            "type": "literal",
+            "start": 222,
+            "end": 229,
+            "field": "argument",
+            "children": [
+             {
+              "type": "string",
+              "start": 222,
+              "end": 229,
+              "text": "\"empty\""
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 230,
+      "end": 246,
+      "text": "-- list patterns"
+     },
+     {
+      "type": "bind",
+      "start": 248,
+      "end": 266,
+      "children": [
+       {
+        "type": "variable",
+        "start": 248,
+        "end": 254,
+        "field": "name",
+        "text": "const'"
+       },
+       {
+        "type": "match",
+        "start": 255,
+        "end": 266,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 255,
+          "end": 256,
+          "text": "="
+         },
+         {
+          "type": "lambda",
+          "start": 257,
+          "end": 266,
+          "field": "expression",
+          "children": [
+           {
+            "type": "\\",
+            "start": 257,
+            "end": 258,
+            "text": "\\"
+           },
+           {
+            "type": "patterns",
+            "start": 258,
+            "end": 261,
+            "field": "patterns",
+            "children": [
+             {
+              "type": "variable",
+              "start": 258,
+              "end": 259,
+              "text": "x"
+             },
+             {
+              "type": "variable",
+              "start": 260,
+              "end": 261,
+              "text": "y"
+             }
+            ]
+           },
+           {
+            "type": "->",
+            "start": 262,
+            "end": 264,
+            "text": "->"
+           },
+           {
+            "type": "variable",
+            "start": 265,
+            "end": 266,
+            "field": "expression",
+            "text": "x"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 267,
+      "end": 276,
+      "text": "-- lambda"
+     },
+     {
+      "type": "function",
+      "start": 278,
+      "end": 302,
+      "children": [
+       {
+        "type": "variable",
+        "start": 278,
+        "end": 285,
+        "field": "name",
+        "text": "between"
+       },
+       {
+        "type": "patterns",
+        "start": 286,
+        "end": 291,
+        "field": "patterns",
+        "children": [
+         {
+          "type": "variable",
+          "start": 286,
+          "end": 287,
+          "text": "a"
+         },
+         {
+          "type": "variable",
+          "start": 288,
+          "end": 289,
+          "text": "b"
+         },
+         {
+          "type": "variable",
+          "start": 290,
+          "end": 291,
+          "text": "c"
+         }
+        ]
+       },
+       {
+        "type": "match",
+        "start": 291,
+        "end": 302,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 291,
+          "end": 292,
+          "text": "="
+         },
+         {
+          "type": "infix",
+          "start": 292,
+          "end": 302,
+          "field": "expression",
+          "children": [
+           {
+            "type": "variable",
+            "start": 292,
+            "end": 293,
+            "field": "left_operand",
+            "text": "a"
+           },
+           {
+            "type": "operator",
+            "start": 293,
+            "end": 295,
+            "field": "operator",
+            "text": "<="
+           },
+           {
+            "type": "infix",
+            "start": 295,
+            "end": 302,
+            "field": "right_operand",
+            "children": [
+             {
+              "type": "variable",
+              "start": 295,
+              "end": 296,
+              "field": "left_operand",
+              "text": "b"
+             },
+             {
+              "type": "operator",
+              "start": 296,
+              "end": 298,
+              "field": "operator",
+              "text": "&&"
+             },
+             {
+              "type": "infix",
+              "start": 298,
+              "end": 302,
+              "field": "right_operand",
+              "children": [
+               {
+                "type": "variable",
+                "start": 298,
+                "end": 299,
+                "field": "left_operand",
+                "text": "b"
+               },
+               {
+                "type": "operator",
+                "start": 299,
+                "end": 301,
+                "field": "operator",
+                "text": "<="
+               },
+               {
+                "type": "variable",
+                "start": 301,
+                "end": 302,
+                "field": "right_operand",
+                "text": "c"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "fixity",
+      "start": 304,
+      "end": 319,
+      "children": [
+       {
+        "type": "infixl",
+        "start": 304,
+        "end": 310,
+        "field": "associativity",
+        "text": "infixl"
+       },
+       {
+        "type": "integer",
+        "start": 311,
+        "end": 312,
+        "field": "precedence",
+        "text": "5"
+       },
+       {
+        "type": "infix_id",
+        "start": 313,
+        "end": 319,
+        "field": "operator",
+        "children": [
+         {
+          "type": "`",
+          "start": 313,
+          "end": 314,
+          "text": "`"
+         },
+         {
+          "type": "variable",
+          "start": 314,
+          "end": 318,
+          "text": "plus"
+         },
+         {
+          "type": "`",
+          "start": 318,
+          "end": 319,
+          "text": "`"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "function",
+      "start": 321,
+      "end": 337,
+      "children": [
+       {
+        "type": "variable",
+        "start": 321,
+        "end": 325,
+        "field": "name",
+        "text": "plus"
+       },
+       {
+        "type": "patterns",
+        "start": 326,
+        "end": 329,
+        "field": "patterns",
+        "children": [
+         {
+          "type": "variable",
+          "start": 326,
+          "end": 327,
+          "text": "a"
+         },
+         {
+          "type": "variable",
+          "start": 328,
+          "end": 329,
+          "text": "b"
+         }
+        ]
+       },
+       {
+        "type": "match",
+        "start": 330,
+        "end": 337,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 330,
+          "end": 331,
+          "text": "="
+         },
+         {
+          "type": "infix",
+          "start": 332,
+          "end": 337,
+          "field": "expression",
+          "children": [
+           {
+            "type": "variable",
+            "start": 332,
+            "end": 333,
+            "field": "left_operand",
+            "text": "a"
+           },
+           {
+            "type": "operator",
+            "start": 334,
+            "end": 335,
+            "field": "operator",
+            "text": "+"
+           },
+           {
+            "type": "variable",
+            "start": 336,
+            "end": 337,
+            "field": "right_operand",
+            "text": "b"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 338,
+      "end": 355,
+      "text": "-- infix function"
+     }
+    ]
+   }
+  ]
+ }
+}

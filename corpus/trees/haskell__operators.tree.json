@@ -1,0 +1,1145 @@
+{
+ "language": "haskell",
+ "source_file": "corpus/src/haskell/operators.hs",
+ "source": "module Operators where\n\n-- infix chains, application, composition, prefix operators\narith = 1 + 2 * 3 - 4 / 5 -- mixed precedence, no extra parens\n\nlogic = a && b || c\n\npiped = f $ g $ h x -- right-assoc dollar\n\ncomposed = f . g . h -- right-assoc compose\n\nappended = xs ++ ys ++ zs\n\nbroken =\n  a\n    +++ b\n    +++ c -- hanging infix; ormolu keeps this shape at default fixity\n\nprefixPlus = (+) 1 2\n\na = True\nb = False\nc = True\nf = id\ng = id\nh = id\nx = True\nxs = []\nys = []\nzs = []\n",
+ "root": {
+  "type": "haskell",
+  "start": 0,
+  "end": 482,
+  "children": [
+   {
+    "type": "header",
+    "start": 0,
+    "end": 22,
+    "children": [
+     {
+      "type": "module",
+      "start": 0,
+      "end": 6,
+      "text": "module"
+     },
+     {
+      "type": "module",
+      "start": 7,
+      "end": 16,
+      "field": "module",
+      "children": [
+       {
+        "type": "module_id",
+        "start": 7,
+        "end": 16,
+        "text": "Operators"
+       }
+      ]
+     },
+     {
+      "type": "where",
+      "start": 17,
+      "end": 22,
+      "text": "where"
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 24,
+    "end": 83,
+    "text": "-- infix chains, application, composition, prefix operators"
+   },
+   {
+    "type": "declarations",
+    "start": 84,
+    "end": 482,
+    "field": "declarations",
+    "children": [
+     {
+      "type": "bind",
+      "start": 84,
+      "end": 109,
+      "children": [
+       {
+        "type": "variable",
+        "start": 84,
+        "end": 89,
+        "field": "name",
+        "text": "arith"
+       },
+       {
+        "type": "match",
+        "start": 90,
+        "end": 109,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 90,
+          "end": 91,
+          "text": "="
+         },
+         {
+          "type": "infix",
+          "start": 92,
+          "end": 109,
+          "field": "expression",
+          "children": [
+           {
+            "type": "literal",
+            "start": 92,
+            "end": 93,
+            "field": "left_operand",
+            "children": [
+             {
+              "type": "integer",
+              "start": 92,
+              "end": 93,
+              "text": "1"
+             }
+            ]
+           },
+           {
+            "type": "operator",
+            "start": 94,
+            "end": 95,
+            "field": "operator",
+            "text": "+"
+           },
+           {
+            "type": "infix",
+            "start": 96,
+            "end": 109,
+            "field": "right_operand",
+            "children": [
+             {
+              "type": "literal",
+              "start": 96,
+              "end": 97,
+              "field": "left_operand",
+              "children": [
+               {
+                "type": "integer",
+                "start": 96,
+                "end": 97,
+                "text": "2"
+               }
+              ]
+             },
+             {
+              "type": "operator",
+              "start": 98,
+              "end": 99,
+              "field": "operator",
+              "children": [
+               {
+                "type": "*",
+                "start": 98,
+                "end": 99,
+                "text": "*"
+               }
+              ]
+             },
+             {
+              "type": "infix",
+              "start": 100,
+              "end": 109,
+              "field": "right_operand",
+              "children": [
+               {
+                "type": "literal",
+                "start": 100,
+                "end": 101,
+                "field": "left_operand",
+                "children": [
+                 {
+                  "type": "integer",
+                  "start": 100,
+                  "end": 101,
+                  "text": "3"
+                 }
+                ]
+               },
+               {
+                "type": "operator",
+                "start": 102,
+                "end": 103,
+                "field": "operator",
+                "text": "-"
+               },
+               {
+                "type": "infix",
+                "start": 104,
+                "end": 109,
+                "field": "right_operand",
+                "children": [
+                 {
+                  "type": "literal",
+                  "start": 104,
+                  "end": 105,
+                  "field": "left_operand",
+                  "children": [
+                   {
+                    "type": "integer",
+                    "start": 104,
+                    "end": 105,
+                    "text": "4"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "operator",
+                  "start": 106,
+                  "end": 107,
+                  "field": "operator",
+                  "text": "/"
+                 },
+                 {
+                  "type": "literal",
+                  "start": 108,
+                  "end": 109,
+                  "field": "right_operand",
+                  "children": [
+                   {
+                    "type": "integer",
+                    "start": 108,
+                    "end": 109,
+                    "text": "5"
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 110,
+      "end": 146,
+      "text": "-- mixed precedence, no extra parens"
+     },
+     {
+      "type": "bind",
+      "start": 148,
+      "end": 167,
+      "children": [
+       {
+        "type": "variable",
+        "start": 148,
+        "end": 153,
+        "field": "name",
+        "text": "logic"
+       },
+       {
+        "type": "match",
+        "start": 154,
+        "end": 167,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 154,
+          "end": 155,
+          "text": "="
+         },
+         {
+          "type": "infix",
+          "start": 156,
+          "end": 167,
+          "field": "expression",
+          "children": [
+           {
+            "type": "variable",
+            "start": 156,
+            "end": 157,
+            "field": "left_operand",
+            "text": "a"
+           },
+           {
+            "type": "operator",
+            "start": 158,
+            "end": 160,
+            "field": "operator",
+            "text": "&&"
+           },
+           {
+            "type": "infix",
+            "start": 161,
+            "end": 167,
+            "field": "right_operand",
+            "children": [
+             {
+              "type": "variable",
+              "start": 161,
+              "end": 162,
+              "field": "left_operand",
+              "text": "b"
+             },
+             {
+              "type": "operator",
+              "start": 163,
+              "end": 165,
+              "field": "operator",
+              "text": "||"
+             },
+             {
+              "type": "variable",
+              "start": 166,
+              "end": 167,
+              "field": "right_operand",
+              "text": "c"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "bind",
+      "start": 169,
+      "end": 188,
+      "children": [
+       {
+        "type": "variable",
+        "start": 169,
+        "end": 174,
+        "field": "name",
+        "text": "piped"
+       },
+       {
+        "type": "match",
+        "start": 175,
+        "end": 188,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 175,
+          "end": 176,
+          "text": "="
+         },
+         {
+          "type": "infix",
+          "start": 177,
+          "end": 188,
+          "field": "expression",
+          "children": [
+           {
+            "type": "variable",
+            "start": 177,
+            "end": 178,
+            "field": "left_operand",
+            "text": "f"
+           },
+           {
+            "type": "operator",
+            "start": 179,
+            "end": 180,
+            "field": "operator",
+            "text": "$"
+           },
+           {
+            "type": "infix",
+            "start": 181,
+            "end": 188,
+            "field": "right_operand",
+            "children": [
+             {
+              "type": "variable",
+              "start": 181,
+              "end": 182,
+              "field": "left_operand",
+              "text": "g"
+             },
+             {
+              "type": "operator",
+              "start": 183,
+              "end": 184,
+              "field": "operator",
+              "text": "$"
+             },
+             {
+              "type": "apply",
+              "start": 185,
+              "end": 188,
+              "field": "right_operand",
+              "children": [
+               {
+                "type": "variable",
+                "start": 185,
+                "end": 186,
+                "field": "function",
+                "text": "h"
+               },
+               {
+                "type": "variable",
+                "start": 187,
+                "end": 188,
+                "field": "argument",
+                "text": "x"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 189,
+      "end": 210,
+      "text": "-- right-assoc dollar"
+     },
+     {
+      "type": "bind",
+      "start": 212,
+      "end": 232,
+      "children": [
+       {
+        "type": "variable",
+        "start": 212,
+        "end": 220,
+        "field": "name",
+        "text": "composed"
+       },
+       {
+        "type": "match",
+        "start": 221,
+        "end": 232,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 221,
+          "end": 222,
+          "text": "="
+         },
+         {
+          "type": "infix",
+          "start": 223,
+          "end": 232,
+          "field": "expression",
+          "children": [
+           {
+            "type": "variable",
+            "start": 223,
+            "end": 224,
+            "field": "left_operand",
+            "text": "f"
+           },
+           {
+            "type": "operator",
+            "start": 225,
+            "end": 226,
+            "field": "operator",
+            "text": "."
+           },
+           {
+            "type": "infix",
+            "start": 227,
+            "end": 232,
+            "field": "right_operand",
+            "children": [
+             {
+              "type": "variable",
+              "start": 227,
+              "end": 228,
+              "field": "left_operand",
+              "text": "g"
+             },
+             {
+              "type": "operator",
+              "start": 229,
+              "end": 230,
+              "field": "operator",
+              "text": "."
+             },
+             {
+              "type": "variable",
+              "start": 231,
+              "end": 232,
+              "field": "right_operand",
+              "text": "h"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 233,
+      "end": 255,
+      "text": "-- right-assoc compose"
+     },
+     {
+      "type": "bind",
+      "start": 257,
+      "end": 282,
+      "children": [
+       {
+        "type": "variable",
+        "start": 257,
+        "end": 265,
+        "field": "name",
+        "text": "appended"
+       },
+       {
+        "type": "match",
+        "start": 266,
+        "end": 282,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 266,
+          "end": 267,
+          "text": "="
+         },
+         {
+          "type": "infix",
+          "start": 268,
+          "end": 282,
+          "field": "expression",
+          "children": [
+           {
+            "type": "variable",
+            "start": 268,
+            "end": 270,
+            "field": "left_operand",
+            "text": "xs"
+           },
+           {
+            "type": "operator",
+            "start": 271,
+            "end": 273,
+            "field": "operator",
+            "text": "++"
+           },
+           {
+            "type": "infix",
+            "start": 274,
+            "end": 282,
+            "field": "right_operand",
+            "children": [
+             {
+              "type": "variable",
+              "start": 274,
+              "end": 276,
+              "field": "left_operand",
+              "text": "ys"
+             },
+             {
+              "type": "operator",
+              "start": 277,
+              "end": 279,
+              "field": "operator",
+              "text": "++"
+             },
+             {
+              "type": "variable",
+              "start": 280,
+              "end": 282,
+              "field": "right_operand",
+              "text": "zs"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "bind",
+      "start": 284,
+      "end": 316,
+      "children": [
+       {
+        "type": "variable",
+        "start": 284,
+        "end": 290,
+        "field": "name",
+        "text": "broken"
+       },
+       {
+        "type": "match",
+        "start": 291,
+        "end": 316,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 291,
+          "end": 292,
+          "text": "="
+         },
+         {
+          "type": "infix",
+          "start": 295,
+          "end": 316,
+          "field": "expression",
+          "children": [
+           {
+            "type": "variable",
+            "start": 295,
+            "end": 296,
+            "field": "left_operand",
+            "text": "a"
+           },
+           {
+            "type": "operator",
+            "start": 301,
+            "end": 304,
+            "field": "operator",
+            "text": "+++"
+           },
+           {
+            "type": "infix",
+            "start": 305,
+            "end": 316,
+            "field": "right_operand",
+            "children": [
+             {
+              "type": "variable",
+              "start": 305,
+              "end": 306,
+              "field": "left_operand",
+              "text": "b"
+             },
+             {
+              "type": "operator",
+              "start": 311,
+              "end": 314,
+              "field": "operator",
+              "text": "+++"
+             },
+             {
+              "type": "variable",
+              "start": 315,
+              "end": 316,
+              "field": "right_operand",
+              "text": "c"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 317,
+      "end": 376,
+      "text": "-- hanging infix; ormolu keeps this shape at default fixity"
+     },
+     {
+      "type": "bind",
+      "start": 378,
+      "end": 398,
+      "children": [
+       {
+        "type": "variable",
+        "start": 378,
+        "end": 388,
+        "field": "name",
+        "text": "prefixPlus"
+       },
+       {
+        "type": "match",
+        "start": 389,
+        "end": 398,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 389,
+          "end": 390,
+          "text": "="
+         },
+         {
+          "type": "apply",
+          "start": 391,
+          "end": 398,
+          "field": "expression",
+          "children": [
+           {
+            "type": "apply",
+            "start": 391,
+            "end": 396,
+            "field": "function",
+            "children": [
+             {
+              "type": "prefix_id",
+              "start": 391,
+              "end": 394,
+              "field": "function",
+              "children": [
+               {
+                "type": "(",
+                "start": 391,
+                "end": 392,
+                "text": "("
+               },
+               {
+                "type": "operator",
+                "start": 392,
+                "end": 393,
+                "text": "+"
+               },
+               {
+                "type": ")",
+                "start": 393,
+                "end": 394,
+                "text": ")"
+               }
+              ]
+             },
+             {
+              "type": "literal",
+              "start": 395,
+              "end": 396,
+              "field": "argument",
+              "children": [
+               {
+                "type": "integer",
+                "start": 395,
+                "end": 396,
+                "text": "1"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "literal",
+            "start": 397,
+            "end": 398,
+            "field": "argument",
+            "children": [
+             {
+              "type": "integer",
+              "start": 397,
+              "end": 398,
+              "text": "2"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "bind",
+      "start": 400,
+      "end": 408,
+      "children": [
+       {
+        "type": "variable",
+        "start": 400,
+        "end": 401,
+        "field": "name",
+        "text": "a"
+       },
+       {
+        "type": "match",
+        "start": 402,
+        "end": 408,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 402,
+          "end": 403,
+          "text": "="
+         },
+         {
+          "type": "constructor",
+          "start": 404,
+          "end": 408,
+          "field": "expression",
+          "text": "True"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "bind",
+      "start": 409,
+      "end": 418,
+      "children": [
+       {
+        "type": "variable",
+        "start": 409,
+        "end": 410,
+        "field": "name",
+        "text": "b"
+       },
+       {
+        "type": "match",
+        "start": 411,
+        "end": 418,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 411,
+          "end": 412,
+          "text": "="
+         },
+         {
+          "type": "constructor",
+          "start": 413,
+          "end": 418,
+          "field": "expression",
+          "text": "False"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "bind",
+      "start": 419,
+      "end": 427,
+      "children": [
+       {
+        "type": "variable",
+        "start": 419,
+        "end": 420,
+        "field": "name",
+        "text": "c"
+       },
+       {
+        "type": "match",
+        "start": 421,
+        "end": 427,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 421,
+          "end": 422,
+          "text": "="
+         },
+         {
+          "type": "constructor",
+          "start": 423,
+          "end": 427,
+          "field": "expression",
+          "text": "True"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "bind",
+      "start": 428,
+      "end": 434,
+      "children": [
+       {
+        "type": "variable",
+        "start": 428,
+        "end": 429,
+        "field": "name",
+        "text": "f"
+       },
+       {
+        "type": "match",
+        "start": 430,
+        "end": 434,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 430,
+          "end": 431,
+          "text": "="
+         },
+         {
+          "type": "variable",
+          "start": 432,
+          "end": 434,
+          "field": "expression",
+          "text": "id"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "bind",
+      "start": 435,
+      "end": 441,
+      "children": [
+       {
+        "type": "variable",
+        "start": 435,
+        "end": 436,
+        "field": "name",
+        "text": "g"
+       },
+       {
+        "type": "match",
+        "start": 437,
+        "end": 441,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 437,
+          "end": 438,
+          "text": "="
+         },
+         {
+          "type": "variable",
+          "start": 439,
+          "end": 441,
+          "field": "expression",
+          "text": "id"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "bind",
+      "start": 442,
+      "end": 448,
+      "children": [
+       {
+        "type": "variable",
+        "start": 442,
+        "end": 443,
+        "field": "name",
+        "text": "h"
+       },
+       {
+        "type": "match",
+        "start": 444,
+        "end": 448,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 444,
+          "end": 445,
+          "text": "="
+         },
+         {
+          "type": "variable",
+          "start": 446,
+          "end": 448,
+          "field": "expression",
+          "text": "id"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "bind",
+      "start": 449,
+      "end": 457,
+      "children": [
+       {
+        "type": "variable",
+        "start": 449,
+        "end": 450,
+        "field": "name",
+        "text": "x"
+       },
+       {
+        "type": "match",
+        "start": 451,
+        "end": 457,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 451,
+          "end": 452,
+          "text": "="
+         },
+         {
+          "type": "constructor",
+          "start": 453,
+          "end": 457,
+          "field": "expression",
+          "text": "True"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "bind",
+      "start": 458,
+      "end": 465,
+      "children": [
+       {
+        "type": "variable",
+        "start": 458,
+        "end": 460,
+        "field": "name",
+        "text": "xs"
+       },
+       {
+        "type": "match",
+        "start": 461,
+        "end": 465,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 461,
+          "end": 462,
+          "text": "="
+         },
+         {
+          "type": "list",
+          "start": 463,
+          "end": 465,
+          "field": "expression",
+          "children": [
+           {
+            "type": "[",
+            "start": 463,
+            "end": 464,
+            "text": "["
+           },
+           {
+            "type": "]",
+            "start": 464,
+            "end": 465,
+            "text": "]"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "bind",
+      "start": 466,
+      "end": 473,
+      "children": [
+       {
+        "type": "variable",
+        "start": 466,
+        "end": 468,
+        "field": "name",
+        "text": "ys"
+       },
+       {
+        "type": "match",
+        "start": 469,
+        "end": 473,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 469,
+          "end": 470,
+          "text": "="
+         },
+         {
+          "type": "list",
+          "start": 471,
+          "end": 473,
+          "field": "expression",
+          "children": [
+           {
+            "type": "[",
+            "start": 471,
+            "end": 472,
+            "text": "["
+           },
+           {
+            "type": "]",
+            "start": 472,
+            "end": 473,
+            "text": "]"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "bind",
+      "start": 474,
+      "end": 481,
+      "children": [
+       {
+        "type": "variable",
+        "start": 474,
+        "end": 476,
+        "field": "name",
+        "text": "zs"
+       },
+       {
+        "type": "match",
+        "start": 477,
+        "end": 481,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 477,
+          "end": 478,
+          "text": "="
+         },
+         {
+          "type": "list",
+          "start": 479,
+          "end": 481,
+          "field": "expression",
+          "children": [
+           {
+            "type": "[",
+            "start": 479,
+            "end": 480,
+            "text": "["
+           },
+           {
+            "type": "]",
+            "start": 480,
+            "end": 481,
+            "text": "]"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

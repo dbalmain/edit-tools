@@ -1,0 +1,18 @@
+module Functions where
+
+-- multiple equations, patterns, lambdas, infix declarations
+fact 0 = 1
+fact n = n * fact (n - 1) -- two equations of the same function
+
+swap (a, b) = (b, a) -- tuple pattern
+
+first (x : _) = x
+first [] = error "empty" -- list patterns
+
+const' = \x y -> x -- lambda
+
+between a b c = a <= b && b <= c
+
+infixl 5 `plus`
+
+plus a b = a + b -- infix function
