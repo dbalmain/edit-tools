@@ -75,9 +75,13 @@
     ],
 
     "binary": [
-      "group",
-      ["indent",
-        ["flatten", "binary", ["seq", ["sp"], ["child", "f:operator"], ["line"]]]]
+      "when",
+      ["all", "f:right", ["hash", "array", "symbol_array", "string_array"]],
+      ["seq", ["child", "f:left"], ["sp"], ["child", "f:operator"], ["sp"],
+        ["child", "f:right"]],
+      ["group",
+        ["indent",
+          ["flatten", "binary", ["seq", ["sp"], ["child", "f:operator"], ["line"]]]]]
     ],
     "unary": [
       "when", ["count", "t:not", 1],
