@@ -27,9 +27,9 @@ overstated. A status with no token gets rounded to a wrong token.
 | Kotlin     | T2   | 3     | unrecorded    | merged | tree_sitter_kotlin     | ktfmt                             |
 | JavaScript | T2   | 3     | unrecorded    | merged | tree_sitter_javascript | prettier                          |
 | Markdown   | T2   | 4     | grok-4.6      | B+     | tree_sitter_markdown   | prettier                          |
-| TypeScript | T2   | 4     | grok-4.6      | C      | tree_sitter_typescript | prettier                          |
+| TypeScript | T2   | 4     | grok-4.6      | D      | tree_sitter_typescript | prettier                          |
 | XML        | T3   | 4     | grok-4.6      | B+     | tree_sitter_xml        | prettier (`@prettier/plugin-xml`) |
-| HTML       | T3   | 4     | grok+codex    | C      | tree_sitter_html       | prettier                          |
+| HTML       | T3   | 4     | grok+codex    | D      | tree_sitter_html       | prettier                          |
 | Ruby       | T4   | 5     | grok-4.6      | B+     | tree_sitter_ruby       | syntax_tree 6.3.0                 |
 | Scheme     | T4   | 5     | grok-4.6      | B+     | tree_sitter_scheme     | emacs `scheme-mode`               |
 | Haskell    | T4   | 5     | grok-4.6      | B+     | tree_sitter_haskell    | ormolu 0.8.0.2                    |
@@ -111,6 +111,44 @@ references unilaterally. Two of the three are also suspected
 indent without reflowing to a column — and both briefs give that as a hypothesis
 to test at two widths, explicitly not as a fact, so it cannot be inherited the
 way black's 88 was inherited into TOML in round 1.
+
+**Round 4 stage C is complete on two of four, 2026-08-22. Both built; neither is
+reviewed.** HTML on codex-Sol (`77b635b`, `f17d03a`), TypeScript on grok-4.6
+(`b043b9c` and three runtime commits). Both worktrees clean, nothing pushed.
+Neither is merged: a package merges after stage D, not after stage C.
+
+**HTML built rather than refused, and took the middle door.** Asked whether
+per-tag behaviour wants a new selector, package data, or a refusal, it answered
+*both of the first two*: generic exact-leaf-path predicates in the runtime, with
+the block/inline tag names kept as **package data**. 32/32 coverage,
+idempotence, non-destruction and Rust/JS parity all pass; agreement 11/13 @80
+and 12/13 @40; width sweep identical across widths 1-120. Every divergence a
+design limit, **no `package-bug`, no `reference-quirk`**, no refusals. Runtime
++381 B in three pieces: exact leaf-path text predicate +144 B, source-derived
+whitespace gap +172 B, exact leaf-path multiline predicate +65 B. It also added
+25 lines to `DESIGN.md`, which is a shared file and needs reading at stage D.
+
+So the answer to the question HTML was on the roster to ask is **"a token inside
+the node can drive layout, and the tag names belong in the package rather than
+the runtime."** Scheme's stage B reached the same shape from the other end. That
+is now two languages agreeing, which is the bar this project uses.
+
+**TypeScript is at 11/30 agreement, and the leading `|` is only 3 of the 19
+misses.** It parked the leading-`|` opcode for the same reason `drop` is parked
+and classified every divergence: 17 design-limit, 1 reference-quirk, 1
+package-bug (declined). Two isolated runtime edits, +188 B: a fieldless
+`flatten` fallback (+61 B) that fires only when *no* child has a field, so the
+rename probe still refuses `Field("left")`, and suffix-comment emission on a
+skipped operand (+127 B) that was breaking `comments.ts` idempotence.
+
+**The number is not a verdict on the package; it is a measurement of the parked
+decisions.** Sixteen of the nineteen misses are already-documented findings --
+2, 6, 9, 11, 13, 15 and 20 -- landing in one language at once. TypeScript is the
+first language to pay all of them together, and gate 4's floor is
+**review coverage**, not raw agreement, so stage D approving the classifications
+is what clears it. The one `package-bug` cannot be approved: that verdict is a
+hard scorer failure by the 2026-08-21 decision, so it must be fixed or
+overturned.
 
 **Round 5 stage B is complete, 2026-08-22. All three pass with fixes applied.**
 Ruby on Sonnet (`a9784fb`), Scheme on Opus (`e5f49a7`, `ecbcb82`), Haskell on
