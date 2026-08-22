@@ -109,6 +109,67 @@ test("drop refuses a token the package has not declared punctuation", () => {
   );
 });
 
+test("text and multiline predicates follow exact child paths", () => {
+  const wrapper = (value) => ({
+    type: "wrapper", start: 0, end: 0,
+    children: [leaf("name", value)],
+  });
+  const root = (value) => ({
+    type: "file", start: 0, end: 0,
+    children: [wrapper(value), leaf("word", "x")],
+  });
+  const pkg = toy({
+    file: [
+      "when", ["text", ["t:wrapper", "t:name"], ["block"]],
+      ["each", "named", ["sp"]],
+      ["each", "named", ["seq"]],
+    ],
+    wrapper: ["each", "named", ["seq"]],
+  });
+  assert.equal(run(pkg, root("block"), 80), "block x\n");
+  assert.equal(run(pkg, root("inline"), 80), "inlinex\n");
+
+  const multilinePkg = toy({
+    file: [
+      "when", ["multiline", ["t:wrapper", "t:name"]],
+      ["each", "named", ["sp"]],
+      ["each", "named", ["seq"]],
+    ],
+    wrapper: ["each", "named", ["seq"]],
+  });
+  assert.equal(run(multilinePkg, root("a\nb"), 80), "a\nb x\n");
+});
+
+test("srcgap preserves horizontal space and safely breaks it", () => {
+  const pkg = toy({
+    file: ["group", ["child", "named"], ["srcgap"], ["child", "named"]],
+  });
+  const root = {
+    type: "file", start: 0, end: 4,
+    children: [span("name", 0, 1, "a"), span("name", 3, 4, "b")],
+  };
+  assert.equal(runOn(pkg, "a  b", root, 80), "a  b\n");
+  assert.equal(runOn(pkg, "a  b", root, 1), "a\nb\n");
+  const omitted = {
+    type: "file", start: 0, end: 3,
+    children: [span("name", 0, 1, "a"), span("name", 2, 3, "b")],
+  };
+  assert.throws(() => runOn(pkg, "a+b", omitted, 80), /only whitespace in a `srcgap`/);
+
+  // Vertical tab is not HTML whitespace and is not Rust's
+  // `u8::is_ascii_whitespace` either, so both runtimes must refuse it. This
+  // pins the parity: the corpus contains no U+000B, so nothing else can catch
+  // the two implementations drifting apart here.
+  const vertical = {
+    type: "file", start: 0, end: 3,
+    children: [span("name", 0, 1, "a"), span("name", 2, 3, "b")],
+  };
+  assert.throws(
+    () => runOn(pkg, "a\u000bb", vertical, 80),
+    /only whitespace in a `srcgap`/,
+  );
+});
+
 test("a group fraction breaks a construct that still fits the line", () => {
   const rule = [
     "group", 0.18, ["tok", "("],

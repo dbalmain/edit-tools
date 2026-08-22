@@ -265,6 +265,7 @@ impl<'a> Ctx<'a> {
             Expr::Sp => Ok(Doc::text(" ")),
             Expr::SrcLine => Ok(self.src_break(Doc::text(" "))),
             Expr::SrcSoft => Ok(self.src_break(Doc::nil())),
+            Expr::SrcGap => self.src_gap(f),
             Expr::SrcBreak => Ok(self.src_break(Doc::Line)),
             Expr::SrcTrail(sep) => self.srctrail(sep, f),
             Expr::Drop(want) => self.drop_token(want, f),
@@ -380,6 +381,41 @@ impl<'a> Ctx<'a> {
         } else {
             flat
         }
+    }
+
+    /// Whitespace between the children on either side of the cursor. Exact
+    /// horizontal bytes are semantic in HTML, so they are the flat form; a
+    /// broken group may replace them with a newline. Newline-bearing gaps stay
+    /// broken, while a non-whitespace gap is a refusal rather than lost text.
+    fn src_gap(&self, f: &Fmt<'a>) -> Result<Doc, Refusal> {
+        let from = self
+            .cursor
+            .checked_sub(1)
+            .and_then(|i| self.items.get(i))
+            .map_or(self.node.start, |item| item.node.end);
+        let to = self
+            .items
+            .get(self.cursor)
+            .map_or(self.node.end, |item| item.node.start);
+        let bytes = f
+            .src
+            .get(from..to)
+            .ok_or_else(|| self.refuse("a valid source gap"))?;
+        if !bytes.iter().all(u8::is_ascii_whitespace) {
+            return Err(self.refuse("only whitespace in a `srcgap`"));
+        }
+        if bytes.is_empty() {
+            return Ok(Doc::nil());
+        }
+        if bytes.iter().any(|b| matches!(b, b'\r' | b'\n')) {
+            return Ok(Doc::Hard);
+        }
+        let flat = std::str::from_utf8(bytes)
+            .map_err(|_| self.refuse("UTF-8 whitespace in a `srcgap`"))?;
+        Ok(Doc::IfBreak(
+            Box::new(Doc::Hard),
+            Box::new(Doc::text(flat)),
+        ))
     }
 
     /// The trailing-separator policy for a source-driven list: adopt a
@@ -585,6 +621,8 @@ impl<'a> Ctx<'a> {
             Pred::Count(sel, n) => self.tally(sel, pkg) == *n,
             Pred::ChildCount(parent, child, n) => self.child_tally(parent, child, pkg) == *n,
             Pred::All(sel, kinds) => self.all_kinds(sel, kinds, pkg),
+            Pred::Text(path, spellings) => path_has_text(self.node, path, spellings, pkg),
+            Pred::Multiline(path) => path_has_multiline(self.node, path, pkg),
         }
     }
 
@@ -669,6 +707,32 @@ impl<'a> Ctx<'a> {
         }
         Ok(())
     }
+}
+
+fn path_has_text(node: &Node, path: &[Sel], spellings: &[String], pkg: &Package) -> bool {
+    let Some((head, tail)) = path.split_first() else {
+        return node
+            .text
+            .as_ref()
+            .is_some_and(|text| spellings.iter().any(|spelling| spelling == text));
+    };
+    node.children
+        .iter()
+        .filter(|child| node_matches(child, head, pkg))
+        .any(|child| path_has_text(child, tail, spellings, pkg))
+}
+
+fn path_has_multiline(node: &Node, path: &[Sel], pkg: &Package) -> bool {
+    let Some((head, tail)) = path.split_first() else {
+        return node
+            .text
+            .as_ref()
+            .is_some_and(|text| text.contains(['\r', '\n']));
+    };
+    node.children
+        .iter()
+        .filter(|child| node_matches(child, head, pkg))
+        .any(|child| path_has_multiline(child, tail, pkg))
 }
 
 /// Walk the rightmost spine: the declaring token must be the last leaf of the
@@ -1934,6 +1998,105 @@ try {{
             }]
         });
         assert_eq!(run_on(&pkg, "|", root, 80).expect("ok"), "|\n");
+    }
+
+    #[test]
+    fn text_predicate_follows_an_exact_child_path() {
+        let pkg = one(serde_json::from_value(json!({
+            "format": "et-doc-rules/1",
+            "indent": 2,
+            "rules": {
+                "file": [
+                    "when", ["text", ["t:wrapper", "t:name"], ["block"]],
+                    ["each", "named", ["sp"]],
+                    ["each", "named", ["seq"]]
+                ],
+                "wrapper": ["each", "named", ["seq"]]
+            }
+        }))
+        .expect("text-path package parses"));
+        let direct = json!({
+            "type": "file", "start": 0, "end": 0,
+            "children": [
+                { "type": "wrapper", "start": 0, "end": 0, "children": [
+                    { "type": "name", "start": 0, "end": 0, "text": "block" }
+                ]},
+                { "type": "word", "start": 0, "end": 0, "text": "x" }
+            ]
+        });
+        assert_eq!(run(&pkg, direct, 80).expect("direct path matches"), "block x\n");
+
+        let nested = json!({
+            "type": "file", "start": 0, "end": 0,
+            "children": [
+                { "type": "wrapper", "start": 0, "end": 0, "children": [
+                    { "type": "name", "start": 0, "end": 0, "text": "inline" },
+                    { "type": "wrapper", "start": 0, "end": 0, "children": [
+                        { "type": "name", "start": 0, "end": 0, "text": "block" }
+                    ]}
+                ]},
+                { "type": "word", "start": 0, "end": 0, "text": "x" }
+            ]
+        });
+        assert_eq!(
+            run(&pkg, nested, 80).expect("deeper text does not match"),
+            "inlineblockx\n"
+        );
+    }
+
+    #[test]
+    fn multiline_predicate_follows_an_exact_child_path() {
+        let pkg = one(serde_json::from_value(json!({
+            "format": "et-doc-rules/1",
+            "indent": 2,
+            "rules": {
+                "file": [
+                    "when", ["multiline", ["t:wrapper", "t:name"]],
+                    ["each", "named", ["sp"]],
+                    ["each", "named", ["seq"]]
+                ],
+                "wrapper": ["each", "named", ["seq"]]
+            }
+        }))
+        .expect("multiline-path package parses"));
+        let root = json!({
+            "type": "file", "start": 0, "end": 0,
+            "children": [
+                { "type": "wrapper", "start": 0, "end": 0, "children": [
+                    { "type": "name", "start": 0, "end": 0, "text": "a\nb" }
+                ]},
+                { "type": "word", "start": 0, "end": 0, "text": "x" }
+            ]
+        });
+        assert_eq!(run(&pkg, root, 80).expect("multiline path matches"), "a\nb x\n");
+    }
+
+    #[test]
+    fn srcgap_preserves_horizontal_space_and_breaks_without_trailing_space() {
+        let pkg = toy(json!({
+            "file": ["group", ["child", "named"], ["srcgap"], ["child", "named"]]
+        }));
+        let root = json!({
+            "type": "file", "start": 0, "end": 4,
+            "children": [
+                { "type": "name", "start": 0, "end": 1, "text": "a" },
+                { "type": "name", "start": 3, "end": 4, "text": "b" }
+            ]
+        });
+        assert_eq!(run_on(&pkg, "a  b", root.clone(), 80).expect("flat"), "a  b\n");
+        assert_eq!(run_on(&pkg, "a  b", root, 1).expect("broken"), "a\nb\n");
+
+        let omitted = json!({
+            "type": "file", "start": 0, "end": 3,
+            "children": [
+                { "type": "name", "start": 0, "end": 1, "text": "a" },
+                { "type": "name", "start": 2, "end": 3, "text": "b" }
+            ]
+        });
+        assert!(run_on(&pkg, "a+b", omitted, 80)
+            .expect_err("non-whitespace gap refuses")
+            .0
+            .contains("only whitespace in a `srcgap`"));
     }
 
     fn all_pkg() -> PackageMap {

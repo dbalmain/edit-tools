@@ -1,0 +1,269 @@
+{
+  "language": "html",
+  "submission": "lang-html",
+  "gates": {
+    "0-coverage": {
+      "pass": true,
+      "got": 32,
+      "of": 32,
+      "what": "formatted every corpus file at every width"
+    },
+    "1-agreement": {
+      "pass": true,
+      "got": 32,
+      "of": 32,
+      "what": "rust and js byte-identical"
+    },
+    "2-idempotence": {
+      "pass": true,
+      "got": 32,
+      "of": 32,
+      "what": "fmt(fmt(x)) == fmt(x)"
+    },
+    "3-nondestruction": {
+      "pass": true,
+      "got": 32,
+      "of": 32,
+      "what": "meaning and comments preserved"
+    }
+  },
+  "measures": {
+    "4-overflow-lines": 1,
+    "5-size-gzip": {
+      "js-runtime": 13991,
+      "packages": 1144,
+      "total": 15135,
+      "per_language": {
+        "html": {
+          "package": 1144,
+          "with_runtime": 15135
+        }
+      }
+    },
+    "6-reference-agreement": {
+      "agreement": 23,
+      "accepted": 0,
+      "stale": 0,
+      "unreviewed": 3,
+      "of": 26,
+      "agreement_fraction": 0.885,
+      "review_coverage": 0.885,
+      "review_threshold": 0.7,
+      "review_threshold_met": true,
+      "by_language": {
+        "html": {
+          "reference": "3.9.6",
+          "waived": false,
+          "agreement": 23,
+          "accepted": 0,
+          "stale": 0,
+          "unreviewed": 3,
+          "of": 26,
+          "reference_overflow": 1,
+          "missing": [],
+          "accepted_divergences": [],
+          "stale_divergences": [],
+          "unreviewed_divergences": [
+            {
+              "case": "inline.html@80",
+              "hash": "737ce194eab235747e760d193b9f1980245bf66c5d2d03d21f8114c38148fcbc"
+            },
+            {
+              "case": "inline.html@40",
+              "hash": "1c7ccc2927f0c9d00d6a8e39cf24b17546b1cad0f322b22d9bf426f38492add5"
+            },
+            {
+              "case": "normalisation.html@80",
+              "hash": "778b3c82ea082fc1d15baab40cfee1b17c9d6e2e6af40eb63b0966687a05bd28"
+            }
+          ],
+          "by_width": {
+            "80": {
+              "agreement": 11,
+              "accepted": 0,
+              "stale": 0,
+              "unreviewed": 2,
+              "of": 13,
+              "review_coverage": 0.846,
+              "review_threshold_met": true
+            },
+            "40": {
+              "agreement": 12,
+              "accepted": 0,
+              "stale": 0,
+              "unreviewed": 1,
+              "of": 13,
+              "review_coverage": 0.923,
+              "review_threshold_met": true
+            }
+          }
+        }
+      }
+    }
+  },
+  "pending": [],
+  "gate1_idempotence": {
+    "pass": true,
+    "got": 32,
+    "of": 32,
+    "failing_files": []
+  },
+  "gate2_width": {
+    "pass": true,
+    "waived": false,
+    "overflow_lines": 1,
+    "reference_overflow": 1,
+    "exception": "comments.html@40 has an indivisible 40-column comment token under two columns of required indent"
+  },
+  "gate3_nondestruction": {
+    "pass": true,
+    "got": 32,
+    "of": 32,
+    "method": "default"
+  },
+  "gate4_agreement": {
+    "by_width": {
+      "80": {
+        "agreement": 11,
+        "of": 13,
+        "accepted": 2,
+        "stale": 0,
+        "unreviewed": 0,
+        "excluded": 3,
+        "review_coverage": 1.0,
+        "review_threshold_met": true
+      },
+      "40": {
+        "agreement": 12,
+        "of": 13,
+        "accepted": 1,
+        "stale": 0,
+        "unreviewed": 0,
+        "excluded": 3,
+        "review_coverage": 1.0,
+        "review_threshold_met": true
+      }
+    },
+    "agreement": 23,
+    "of": 26,
+    "accepted": 3,
+    "stale": 0,
+    "unreviewed": 0,
+    "excluded": 3,
+    "review_coverage": 1.0,
+    "review_threshold_met": true
+  },
+  "rust_js_parity": "identical",
+  "refusals": [],
+  "size": {
+    "js-runtime": 14036,
+    "packages": 1144,
+    "total": 15180,
+    "per_language": {
+      "html": {
+        "package": 1144,
+        "with_runtime": 15180
+      }
+    }
+  },
+  "size_delta_vs_main": {
+    "js_runtime_gzip": {
+      "main": 13610,
+      "now": 14036,
+      "delta": 426
+    },
+    "package_gzip": 1144,
+    "per_edit": [
+      {
+        "construct": "exact leaf-path text predicate",
+        "gzip_delta": 144,
+        "from": 13610,
+        "to": 13754
+      },
+      {
+        "construct": "source-derived whitespace gap",
+        "gzip_delta": 172,
+        "from": 13754,
+        "to": 13926
+      },
+      {
+        "construct": "exact leaf-path multiline predicate",
+        "gzip_delta": 65,
+        "from": 13926,
+        "to": 13991
+      },
+      {
+        "construct": "stage D: js srcgap whitespace set aligned with rust, plus the one-line comment pinning it",
+        "gzip_delta": 45,
+        "from": 13991,
+        "to": 14036,
+        "note": "the condition itself shrank; the 45 B is the comment, kept because a bare list of five magic bytes is what let the two runtimes drift apart in the first place"
+      }
+    ]
+  },
+  "divergences": [
+    {
+      "id": "html/inline.html@80",
+      "hash": "737ce194eab235747e760d193b9f1980245bf66c5d2d03d21f8114c38148fcbc",
+      "classification": "design limit"
+    },
+    {
+      "id": "html/inline.html@40",
+      "hash": "1c7ccc2927f0c9d00d6a8e39cf24b17546b1cad0f322b22d9bf426f38492add5",
+      "classification": "design limit"
+    },
+    {
+      "id": "html/normalisation.html@80",
+      "hash": "778b3c82ea082fc1d15baab40cfee1b17c9d6e2e6af40eb63b0966687a05bd28",
+      "classification": "design limit"
+    },
+    {
+      "id": "html/prose.html@80",
+      "hash": "2d2b28c345094bed8f6d928933f1e04b363819f5ed2b5562a1c855b90eaf0e9a",
+      "classification": "design limit",
+      "excluded": true
+    },
+    {
+      "id": "html/prose.html@40",
+      "hash": "2135416cc1d05e8bf7db570a38a02a0f6314eb6b984a1741bebfd6a70c7588bc",
+      "classification": "design limit",
+      "excluded": true
+    },
+    {
+      "id": "html/quotes.html@80",
+      "hash": "197c8cb648dd72f5068bd3f9979c267481724d32c7e88e2fde45d4620962c32b",
+      "classification": "design limit",
+      "excluded": true
+    },
+    {
+      "id": "html/quotes.html@40",
+      "hash": "efb487810553067b81da795026877c489a93f921bc80e7c6fbaf458aa210d7dc",
+      "classification": "design limit",
+      "excluded": true
+    },
+    {
+      "id": "html/void_slash.html@80",
+      "hash": "6e2a9218d404ea80bc99c17a7e29680e06abbb99cfc668b02d2ea8adfa03ba34",
+      "classification": "design limit",
+      "excluded": true
+    },
+    {
+      "id": "html/void_slash.html@40",
+      "hash": "6e2a9218d404ea80bc99c17a7e29680e06abbb99cfc668b02d2ea8adfa03ba34",
+      "classification": "design limit",
+      "excluded": true
+    }
+  ],
+  "stage_d": {
+    "reviewer": "Claude (Opus 5)",
+    "verdict": "merge after fixes",
+    "runtime_edit_verdicts": {
+      "exact leaf-path text predicate": "warranted",
+      "srcgap": "warranted, one parity defect fixed",
+      "exact leaf-path multiline predicate": "warranted"
+    },
+    "defects_found": [
+      "js srcgap accepted vertical tab (0x0b) where rust refuses it; rust/js parity is a hard requirement and no corpus file contains U+000B"
+    ]
+  }
+}
