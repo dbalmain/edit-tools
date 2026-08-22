@@ -155,6 +155,19 @@ test("srcgap preserves horizontal space and safely breaks it", () => {
     children: [span("name", 0, 1, "a"), span("name", 2, 3, "b")],
   };
   assert.throws(() => runOn(pkg, "a+b", omitted, 80), /only whitespace in a `srcgap`/);
+
+  // Vertical tab is not HTML whitespace and is not Rust's
+  // `u8::is_ascii_whitespace` either, so both runtimes must refuse it. This
+  // pins the parity: the corpus contains no U+000B, so nothing else can catch
+  // the two implementations drifting apart here.
+  const vertical = {
+    type: "file", start: 0, end: 3,
+    children: [span("name", 0, 1, "a"), span("name", 2, 3, "b")],
+  };
+  assert.throws(
+    () => runOn(pkg, "a\u000bb", vertical, 80),
+    /only whitespace in a `srcgap`/,
+  );
 });
 
 test("a group fraction breaks a construct that still fits the line", () => {

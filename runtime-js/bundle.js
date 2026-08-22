@@ -1208,7 +1208,11 @@ class Ctx {
     const to = next?.node.start ?? this.node.end;
     const bytes = this.fmt.bytes.subarray(from, to);
     for (const byte of bytes) {
-      if (byte !== 0x09 && byte !== 0x0a && byte !== 0x0b
+      // Tab, LF, FF, CR, space -- the HTML spec's ASCII whitespace, which is
+      // also what Rust's `u8::is_ascii_whitespace` accepts. Vertical tab
+      // (0x0b) is deliberately absent from both: HTML does not treat it as
+      // whitespace, so a gap containing one is a refusal, not a gap.
+      if (byte !== 0x09 && byte !== 0x0a
           && byte !== 0x0c && byte !== 0x0d && byte !== 0x20) {
         throw this.refuse("only whitespace in a `srcgap`");
       }
