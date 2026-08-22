@@ -13,6 +13,32 @@ twice below in the other direction. There was no token for "stage B passed and
 nobody has started stage C", so the board reached for the nearest one and
 overstated. A status with no token gets rounded to a wrong token.
 
+## Branches, 2026-08-22 — what is on each, for the backup
+
+Work paused here until Saturday. Nothing has ever been pushed by an agent;
+every branch below is local and clean, with `./test.sh` green where it applies.
+
+| Branch | Base | Holds | State |
+| --- | --- | --- | --- |
+| `worktree-feat-cell-scope` | `fed4974` | The merge. Harness slice + Ruby + Scheme + Haskell corpora, Scheme's `comment_kinds`, the `score.py` tab fix, FINDINGS 24/25/26, board and ledger | **Ready — `git merge --ff-only` from main** |
+| `wt/harness-slice` | `fed4974` | Injection relaxation, `comment_kinds`, the quoted-fence refusal | Contained in the above |
+| `wt/lang-ruby` | `fed4974` | Stage A + B corpus | Contained in the above |
+| `wt/lang-scheme` | `fed4974` | Stage A + B corpus | Contained in the above |
+| `wt/lang-haskell` | `fed4974` | Stage A + B corpus | Contained in the above |
+| `wt/lang-typescript` | `fed4974` | Stage C package, 4 commits, 11/30 | **Held — needs stage D** |
+| `wt/lang-html` | `fed4974` | Stage C package, 2 commits, 23/26 | **Held — needs stage D** |
+
+The two held branches both edit `runtime-js/bundle.js` and `rust/src/eval.rs`,
+so whichever merges second needs a real merge rather than a fast-forward. HTML
+also adds 25 lines to `DESIGN.md`. That is a stage-D problem and it is written
+down here so it is not a surprise later.
+
+**Everything above the two held branches collapses into one fast-forward.** The
+merge was done in a worktree rather than on main because the orchestrator
+session is worktree-isolated and its git operations against the shared checkout
+are refused — so the four merges, the conflict check and the green suite are
+already done, and main only has to move.
+
 ## Board
 
 | Language   | Tier | Round | Builder       | Status | Grammar                | Reference                         |
