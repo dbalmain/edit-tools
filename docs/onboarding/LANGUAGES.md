@@ -132,7 +132,7 @@ edit by edit. A reviewer editing a scored file is spending the same budget.
 | JavaScript | T2   | 3     | unrecorded    | merged | tree_sitter_javascript | prettier                          |
 | Markdown   | T2   | 4     | grok-4.6      | B+     | tree_sitter_markdown   | prettier                          |
 | TypeScript | T2   | 4     | grok-4.6      | D      | tree_sitter_typescript | prettier                          |
-| XML        | T3   | 4     | grok-4.6      | B+     | tree_sitter_xml        | prettier (`@prettier/plugin-xml`) |
+| XML        | T3   | 4     | grok+Claude   | D      | tree_sitter_xml        | prettier (`@prettier/plugin-xml`) |
 | HTML       | T3   | 4     | grok+codex    | merged | tree_sitter_html       | prettier                          |
 | Ruby       | T4   | 5     | grok+Claude   | merged | tree_sitter_ruby       | syntax_tree 6.3.0                 |
 | Scheme     | T4   | 5     | grok+Claude   | D      | tree_sitter_scheme     | emacs `scheme-mode`               |
