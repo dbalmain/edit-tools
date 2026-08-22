@@ -1,0 +1,187 @@
+{
+  "language": "scheme",
+  "submission": "lang-scheme",
+  "builder": "Claude (Opus 5), orchestrator session",
+  "gate1_idempotence": {
+    "pass": true,
+    "got": 15,
+    "of": 15
+  },
+  "gate2_width": {
+    "pass": true,
+    "waived": true,
+    "overflow_lines": 0,
+    "reference_overflow": 0,
+    "note": "reference_width = fixed; neither side overflows 80"
+  },
+  "gate3_nondestruction": {
+    "pass": true,
+    "got": 15,
+    "of": 15,
+    "method": "default + comment_kinds"
+  },
+  "gate4_agreement": {
+    "by_width": {
+      "80": {
+        "agreement": 2,
+        "of": 15,
+        "accepted": 0,
+        "stale": 0,
+        "unreviewed": 13,
+        "excluded": 0,
+        "review_coverage": 0.133,
+        "review_threshold_met": false
+      }
+    },
+    "agreement": 2,
+    "of": 15,
+    "accepted": 0,
+    "stale": 0,
+    "unreviewed": 13,
+    "excluded": 0,
+    "review_coverage": 0.133,
+    "review_threshold_met": false,
+    "note": "file agreement is the wrong resolution for an indent-only reference; see line_agreement"
+  },
+  "line_agreement": {
+    "same": 248,
+    "of": 369,
+    "ratio": 0.672,
+    "method": "tabs expanded to 8-column stops, line-for-line against the reference",
+    "alternative_uniform_indent": {
+      "rule": "+1, nil-property default",
+      "same": 169,
+      "of": 369,
+      "ratio": 0.458,
+      "exact_files": 1
+    }
+  },
+  "rust_js_parity": "identical",
+  "refusals": [],
+  "matching_files": [
+    "literals.scm",
+    "strings.scm"
+  ],
+  "column_correct_but_tab_spelling_wrong": [
+    "nesting.scm"
+  ],
+  "size": {
+    "js-runtime": 13610,
+    "packages": 11625,
+    "total": 25235,
+    "per_language": {
+      "scheme": {
+        "package": 447,
+        "with_runtime": 14057
+      }
+    }
+  },
+  "size_delta_vs_main": {
+    "js_runtime_gzip": {
+      "main": 13610,
+      "now": 13610,
+      "delta": 0
+    },
+    "package_gzip": 447,
+    "per_edit": []
+  },
+  "runtime_edits": [],
+  "harness_edits": [],
+  "fill": {
+    "wanted": false,
+    "files_that_would_benefit": []
+  },
+  "divergences": [
+    {
+      "case": "bindings.scm@80",
+      "id": "scheme/bindings.scm@80",
+      "verdict": "design limit",
+      "entry": 10,
+      "kind": "named-let cadr shape and head-symbol indent properties"
+    },
+    {
+      "case": "calls.scm@80",
+      "id": "scheme/calls.scm@80",
+      "verdict": "design limit",
+      "entry": 10,
+      "kind": "first argument on the head line aligns under it; on the next line indents one past the paren"
+    },
+    {
+      "case": "comments.scm@80",
+      "id": "scheme/comments.scm@80",
+      "verdict": "design limit",
+      "entry": 9,
+      "kind": "own-line comments are placed by semicolon count, not by code indent"
+    },
+    {
+      "case": "control.scm@80",
+      "id": "scheme/control.scm@80",
+      "verdict": "design limit",
+      "entry": 10,
+      "kind": "head-symbol indent properties for cond/case/when/do"
+    },
+    {
+      "case": "define.scm@80",
+      "id": "scheme/define.scm@80",
+      "verdict": "design limit",
+      "entry": 10,
+      "kind": "the def-prefix rule: any head starting def indents defun-style"
+    },
+    {
+      "case": "heads.scm@80",
+      "id": "scheme/heads.scm@80",
+      "verdict": "design limit",
+      "entry": 10,
+      "kind": "three indents from one node type; the smallest case in the corpus"
+    },
+    {
+      "case": "kitchen.scm@80",
+      "id": "scheme/kitchen.scm@80",
+      "verdict": "design limit",
+      "entry": 10,
+      "kind": "head dispatch and paren-relative continuation together"
+    },
+    {
+      "case": "lambda.scm@80",
+      "id": "scheme/lambda.scm@80",
+      "verdict": "design limit",
+      "entry": 10,
+      "kind": "lambda is specform 1: its parameter list indents differently from its body"
+    },
+    {
+      "case": "long_sequences.scm@80",
+      "id": "scheme/long_sequences.scm@80",
+      "verdict": "design limit",
+      "entry": null,
+      "kind": "paren-relative continuation column; no srcindent"
+    },
+    {
+      "case": "macros.scm@80",
+      "id": "scheme/macros.scm@80",
+      "verdict": "design limit",
+      "entry": 10,
+      "kind": "syntax-rules head properties"
+    },
+    {
+      "case": "nesting.scm@80",
+      "id": "scheme/nesting.scm@80",
+      "verdict": "design limit",
+      "entry": null,
+      "kind": "every column correct; emacs renders column 8 as a tab and the runtime has no tabs-then-spaces mode"
+    },
+    {
+      "case": "normalisation.scm@80",
+      "id": "scheme/normalisation.scm@80",
+      "verdict": "design limit",
+      "entry": null,
+      "kind": "emacs preserves intra-line spacing and the pre-comment space run; the IR emits canonical whitespace by construction"
+    },
+    {
+      "case": "quote.scm@80",
+      "id": "scheme/quote.scm@80",
+      "verdict": "design limit",
+      "entry": null,
+      "kind": "a quote mark shifts the paren column and every continuation under it"
+    }
+  ]
+}
