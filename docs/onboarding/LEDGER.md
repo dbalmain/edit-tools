@@ -507,6 +507,43 @@ this round is by *what the slice needs*, not by what is available:
 **Stage D still goes back to codex**, which is what the round-4 note above
 promised and has not yet been tested.
 
+### Two latent items round 5 found and deliberately did not fix
+
+Both were named by a reviewer who was told not to touch shared files, which is
+the propose-don't-apply rule working. Neither blocks anything today.
+
+- **`harness/score.py:160` counts a tab as one column.** `overflow_lines` uses
+  `len(line)` with no `expandtabs`, so for a tab-indenting reference every
+  leading tab under-counts by seven. Inert right now — Go's raw and expanded
+  counts both come to 6, Scheme's both to 0 — but Scheme has **11 of 15**
+  reference files containing a tab, so the first Scheme package that overflows
+  will be measured wrong. Found by Scheme's stage B.
+- **Paren transparency has a narrow hole in Haskell.** `g (do x; y)` elides to
+  `g do x; y`, which gate 3 accepts and which is only valid GHC under
+  `BlockArguments`. A formatter stripping those parens would pass the gate and
+  emit code that does not compile. The alternative is worse — not declaring
+  `parens` makes the gate reject ormolu's own output — so it is recorded rather
+  than fixed. It belongs in `FINDINGS.md` as a sibling of entry 13's
+  "elision only fires on exactly one named child", and it is not written there
+  yet. Found by Haskell's stage B, which also measured the sound half: of nine
+  paren-drop attacks, six are rejected, including every load-bearing one
+  (application spine, precedence, associativity, negative literal, type arrow,
+  lambda argument).
+
+### An orchestrator error worth recording, since the briefs are the product
+
+Scheme's stage-B brief told the reviewer that `comment_kinds` "exists" and that
+the outcome was to declare it and show the count move — and then, two paragraphs
+later, that the branch carrying it is unmerged and must not be touched. **Only
+the second is executable**, and the reviewer spent a cycle discovering that
+`manifest.py` at `fed4974` rejects the field. A capability on an unmerged branch
+is not a capability the slice has; the brief should either gate the instruction
+on the merge or not mention the field at all.
+
+The same brief also invited deliberation on two questions Go's manifest had
+already answered. Both are template deltas against the orchestrator, not against
+any agent.
+
 ### Codex-Sol calibration: one unfounded line in an otherwise verified done-note
 
 The harness slice's done-note claimed `./test.sh` passed "after removing

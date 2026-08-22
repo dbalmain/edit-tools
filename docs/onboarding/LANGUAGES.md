@@ -30,9 +30,9 @@ overstated. A status with no token gets rounded to a wrong token.
 | TypeScript | T2   | 4     | grok-4.6      | C      | tree_sitter_typescript | prettier                          |
 | XML        | T3   | 4     | grok-4.6      | B+     | tree_sitter_xml        | prettier (`@prettier/plugin-xml`) |
 | HTML       | T3   | 4     | grok+codex    | C      | tree_sitter_html       | prettier                          |
-| Ruby       | T4   | 5     | grok-4.6      | B      | tree_sitter_ruby       | syntax_tree 6.3.0                 |
-| Scheme     | T4   | 5     | grok-4.6      | B      | tree_sitter_scheme     | emacs `scheme-mode`               |
-| Haskell    | T4   | 5     | grok-4.6      | B      | tree_sitter_haskell    | ormolu 0.8.0.2                    |
+| Ruby       | T4   | 5     | grok-4.6      | B+     | tree_sitter_ruby       | syntax_tree 6.3.0                 |
+| Scheme     | T4   | 5     | grok-4.6      | B+     | tree_sitter_scheme     | emacs `scheme-mode`               |
+| Haskell    | T4   | 5     | grok-4.6      | B+     | tree_sitter_haskell    | ormolu 0.8.0.2                    |
 | Aven       | T4   | 6     | tbd           | -      | **none — see below**   | `aven fmt`                        |
 
 Grammar package names are the orchestrator's guess from PyPI naming convention.
@@ -111,6 +111,68 @@ references unilaterally. Two of the three are also suspected
 indent without reflowing to a column — and both briefs give that as a hypothesis
 to test at two widths, explicitly not as a fact, so it cannot be inherited the
 way black's 88 was inherited into TOML in round 1.
+
+**Round 5 stage B is complete, 2026-08-22. All three pass with fixes applied.**
+Ruby on Sonnet (`a9784fb`), Scheme on Opus (`e5f49a7`, `ecbcb82`), Haskell on
+Opus (`ad73c31`, `924441a`). Every tree clean, nothing pushed, and all three
+reviewers reproduced the builder's counts independently rather than taking them
+— no mismatch of the round-1 kind in any of the three.
+
+**All four defects found were the same shape, and it is a shape no count can
+see: a rewrite the report claimed or implied, which no corpus file forces the
+reference to perform.**
+
+- **Ruby** claimed syntax_tree collapses three-or-more blank lines to one. No
+  file contained three blank lines. (Verified: two are preserved, three and four
+  both collapse to one.)
+- **Scheme** described emacs's comment placement as nesting-driven. The real
+  rule is **semicolon count** at every depth — `;` to `comment-column` 40, `;;`
+  to code indent, `;;;` to column 0 — and `comments.scm` happened to contain
+  only the two cells where both rules agree. A stage-C package built on the
+  report would have passed while being wrong on **three of six cells**.
+- **Haskell** declared `imports.hs` incomparable for sorting and stopped there.
+  ormolu also **collapses** repeated imports of one module: an exact duplicate
+  is dropped, and two imports of `Data.List` merge into one. That is the ktfmt
+  `sortedAndDistinctImports` precedent landing exactly as the stage-B brief
+  predicted it would — two exclusions wearing one name — in a second formatter.
+  A second dedicated `[incomparable]` file now probes collapsing alone.
+- **Haskell** also claimed ormolu inserts a blank line after `module X where`,
+  which all fifteen source files already supplied.
+
+**Not one of those four moved any of the four counts.** Every fix was a
+width-insensitive rewrite in a file that already changed and already carried a
+comment. This is now the third round in which the counts confirmed a corpus that
+was not probing what its report said it probed, and it is the argument for the
+report-to-corpus check existing at all: **the counts are a floor, not evidence.**
+
+Three results worth carrying beyond round 5:
+
+- **Two claims were tested rather than inherited, and both held.** Haskell
+  rejected six different width flags and then generated a 266-character list
+  that stays on one line and a trivially-fitting broken list that stays broken —
+  line structure is source-driven in both directions, so `widths = [80]` is a
+  measurement scale, not black's 88 smuggled in a second time. Scheme did the
+  same with `fill-column` 40 versus 200 on a 100-column line: byte-identical.
+- **FINDINGS 12 does not reach Haskell, with evidence instead of an argument.**
+  The reviewer built eight layout edits that change meaning — a where-clause
+  escaping its parent, a `do` statement leaving the block, a `let` binding
+  vanishing, a guard becoming a new equation — and gate 3 **rejects all eight**.
+  The offside rule is consumed into the tree. That is the expensive call to get
+  wrong and it is now measured.
+- **Scheme's two "decisions" were already settled precedent, and asking for them
+  was an orchestrator error.** `go.toml` already declares
+  `reference_width = "fixed"` with nearly the same rationale, and all sixteen
+  gofmt reference files are tab-indented — so keep Scheme's tabs, and yes the
+  corpus supports stage C, on exactly the terms Go is already accepted on. The
+  rule that would have saved the work: **before ruling on a reference-shape
+  question, grep the other manifests for the same shape.**
+
+`comment_kinds` splits the round: **Scheme wants it** (`["comment",
+"block_comment"]`, expect 0/15 to 15/15) and **Haskell does not** — its
+`comment`, `haddock` and `pragma` are genuine tree-sitter extras, which the
+16/16 comment count confirms. Neither could declare it: `manifest.py` at
+`fed4974` rejects the field, because it lives only on the unmerged harness
+slice. That is one more thing waiting on the merge.
 
 **Round 5 stage A is complete, 2026-08-22. All three built, on grok-4.6.**
 Ruby, Scheme and Haskell, relaunched into the same three worktrees the 402
