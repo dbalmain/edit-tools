@@ -30,16 +30,18 @@ def region_for(
     if site is None:
         return None
 
-    content = _direct(node, site.content)
+    content = node if site.content is None else _direct(node, site.content)
     if content is None:
         return None
-    info = _direct(node, site.info)
+    info = _direct(node, site.info) if site.info is not None else None
     words = (
         source[info.start_byte : info.end_byte].decode("utf-8").split()
         if info is not None
         else []
     )
-    guest = aliases.get(words[0]) if words else None
+    guest = aliases.get(site.guest) if site.guest is not None else None
+    if guest is None and words:
+        guest = aliases.get(words[0])
     return Region(
         content,
         source[content.start_byte : content.end_byte],

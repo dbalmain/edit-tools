@@ -288,9 +288,15 @@ validation twice. Land together: `info` and `content` both optional, require
 change — its routing key is an attribute value, not a node type, so `guest`
 structurally cannot express it.
 
-**One decision is open and is on the decisions page**: what to do about the
-quoted-fence splice defect. It blocks no required gate today because markdown's
-corpus avoids the shape by design.
+**The quoted-fence splice needs more than the proposed offset map.** The map is
+necessary: stripping continuation bytes makes guest-to-host offsets piecewise.
+It is not sufficient: replacing the content node also removes the semantic `> `
+prefixes, and the guest package can introduce new line breaks without a host or
+runtime seam that can restore them. The harness slice therefore did not build
+the map in isolation. The committed injection probe reproduces both the clean
+stripped parse and scalar-offset corruption; `docs/injection.md` records the
+additional prefix-emission requirement. This blocks no current gate because the
+Markdown corpus deliberately avoids quoted fences.
 
 **Round 4 stage A, 2026-08-21.** All four launched on grok-4.6 in parallel
 worktrees, each with the corpus brief plus its own "known stresses" note. All

@@ -40,7 +40,7 @@ _REQUIRED = ("name", "extensions", "grammar", "grammar_module", "reference",
              "injection_aliases")
 _KNOWN = set(_REQUIRED) | {"grammar_symbol", "gate3_requires",
                            "transparent_wrappers", "equivalent_kinds",
-                           "injections", "incomparable"}
+                           "comment_kinds", "injections", "incomparable"}
 
 
 class ManifestError(Exception):
@@ -50,8 +50,9 @@ class ManifestError(Exception):
 @dataclass(frozen=True)
 class Injection:
     node: str
-    info: str
-    content: str
+    info: str | None = None
+    content: str | None = None
+    guest: str | None = None
 
 
 @dataclass(frozen=True)
@@ -73,6 +74,7 @@ class Manifest:
     equivalent_kinds: tuple[frozenset[str], ...]
     incomparable: dict[str, str]  # corpus filename -> why the reference rewrite is not scored
     path: Path
+    comment_kinds: tuple[str, ...] = ()  # non-extra node kinds that hold comments
 
     @property
     def waives_width(self) -> bool:
@@ -108,7 +110,7 @@ def _injection_aliases(raw: dict[str, Any], path: Path) -> tuple[str, ...]:
 
 def _injections(raw: dict[str, Any], path: Path) -> tuple[Injection, ...]:
     out = []
-    fields = {"node", "info", "content"}
+    fields = {"node", "info", "content", "guest"}
     entries = raw.get("injections", [])
     if not isinstance(entries, list):
         raise ManifestError(f"{path.name}: `injections` must be a list")
@@ -121,19 +123,44 @@ def _injections(raw: dict[str, Any], path: Path) -> tuple[Injection, ...]:
             raise ManifestError(
                 f"{path.name}: `{name}` has unknown field(s) {sorted(unknown)}"
             )
-        missing = fields - set(entry)
-        if missing:
+        if "node" not in entry:
             raise ManifestError(
-                f"{path.name}: `{name}` missing required field(s) {sorted(missing)}"
+                f"{path.name}: `{name}` missing required field(s) ['node']"
             )
-        for field in sorted(fields):
+        for field in sorted(entry):
             value = entry[field]
             if not isinstance(value, str) or not value:
                 raise ManifestError(
                     f"{path.name}: `{name}.{field}` must be a non-empty string"
                 )
-        out.append(Injection(entry["node"], entry["info"], entry["content"]))
+        routes = [field for field in ("info", "guest") if field in entry]
+        if len(routes) != 1:
+            raise ManifestError(
+                f"{path.name}: `{name}` must declare exactly one of `info` or `guest`"
+            )
+        out.append(
+            Injection(
+                node=entry["node"],
+                info=entry.get("info"),
+                content=entry.get("content"),
+                guest=entry.get("guest"),
+            )
+        )
     return tuple(out)
+
+
+def _comment_kinds(raw: dict[str, Any], path: Path) -> tuple[str, ...]:
+    kinds = raw.get("comment_kinds", [])
+    if not isinstance(kinds, list):
+        raise ManifestError(f"{path.name}: `comment_kinds` must be a list")
+    for i, kind in enumerate(kinds):
+        if not isinstance(kind, str) or not kind:
+            raise ManifestError(
+                f"{path.name}: `comment_kinds[{i}]` must be a non-empty string"
+            )
+    if len(set(kinds)) != len(kinds):
+        raise ManifestError(f"{path.name}: `comment_kinds` contains duplicates")
+    return tuple(kinds)
 
 
 def _incomparable(
@@ -267,6 +294,7 @@ def parse(path: Path) -> Manifest:
         equivalent_kinds=tuple(equiv),
         incomparable=_incomparable(raw, name, extensions, path),
         path=path,
+        comment_kinds=_comment_kinds(raw, path),
     )
 
 

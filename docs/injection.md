@@ -197,6 +197,17 @@ through the same place.
 - **The reference formatter.** Prettier formats embedded code in markdown, so
   there is ground truth to measure against — but prettier's markdown defaults
   matter enormously here, and one of them is load-bearing (below).
+- **Host line prefixes inside a guest region.** A fenced block inside a Markdown
+  block quote includes `block_continuation` children (`> `) inside the content
+  span. Removing those bytes lets JSON parse, but it makes guest-to-host offsets
+  piecewise: the injection probe measures 21 of 23 leaves misread by the current
+  additive base. A retained-run offset map would repair the frozen leaf ranges,
+  but not formatting. The spliced guest replaces the content node, so the `> `
+  nodes disappear, and the JSON package emits newlines without giving the host
+  package a seam at which to restore them. Supporting this shape therefore also
+  needs a prefix-aware Doc/runtime mechanism or a host-owned wrapper that can
+  reinsert excluded runs at guest line breaks. An offset-map-only patch would
+  produce a truthful tree that formats into invalid Markdown.
 
 ## `proseWrap` decides whether markdown needs `fill`
 

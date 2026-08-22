@@ -55,6 +55,10 @@ gate3 = "default"
 transparent_wrappers = []
 equivalent_kinds = []
 
+# tree-sitter-xml represents comments as ordinary named `Comment` nodes rather
+# than extras. Gate 3 and the corpus measurements treat these as comments.
+comment_kinds = ["Comment"]
+
 # prettier rewrites an empty element pair to a self-closing tag
 # (`<a></a>` -> `<a />`). That is STag+ETag to EmptyElemTag, a named-tree
 # change the linearity invariant forbids a package from matching. One
