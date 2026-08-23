@@ -79,6 +79,18 @@ to one of those types opens to exactly `n` — the cap is also a floor, but only
 there. `module` passes the definition types at 2, `block` the same list at 1,
 which is black's depth rule with no extra concept.
 
+The previous item's contribution to that gap is **not always `node.end`**. A
+grammar may let a node swallow the line ending that terminates it — tree-sitter
+markdown's `atx_heading` does, and so does tree-sitter-go's `statement_list` —
+and measuring from `node.end` then counts one newline too few, so a source blank
+line reads as no gap at all. The runtime measures from the node's **content
+end**: at most one trailing line terminator (LF, CR or CRLF), plus the
+horizontal whitespace on either side of it. The bound is the point. Walking back
+to the last non-whitespace byte is wrong, because some grammars swallow the
+*following blank run* as well and that run is already visible as trailing blanks
+at the end of the node's own rule; peeling it would count the same blank twice.
+One terminator is the unique amount that separates the two shapes.
+
 It also takes an optional fourth operand, a list of exact leaf spellings after
 which the source gap must not be capped. This is for syntax whose semantic
 whitespace lives outside the declaring CST node: tree-sitter-yaml ends a `|+`
