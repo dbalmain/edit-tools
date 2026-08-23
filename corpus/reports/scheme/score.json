@@ -1,0 +1,198 @@
+{
+  "language": "scheme",
+  "submission": "lang-scheme",
+  "builder": "Claude (Opus 5), orchestrator session",
+  "gate1_idempotence": {
+    "pass": true,
+    "got": 15,
+    "of": 15
+  },
+  "gate2_width": {
+    "pass": true,
+    "waived": true,
+    "overflow_lines": 0,
+    "reference_overflow": 0,
+    "note": "reference_width = fixed; neither side overflows 80"
+  },
+  "gate3_nondestruction": {
+    "pass": true,
+    "got": 15,
+    "of": 15,
+    "method": "default + comment_kinds"
+  },
+  "gate4_agreement": {
+    "by_width": {
+      "80": {
+        "agreement": 2,
+        "of": 15,
+        "accepted": 0,
+        "stale": 0,
+        "unreviewed": 13,
+        "excluded": 0,
+        "review_coverage": 0.133,
+        "review_threshold_met": false
+      }
+    },
+    "agreement": 2,
+    "of": 15,
+    "accepted": 0,
+    "stale": 0,
+    "unreviewed": 13,
+    "excluded": 0,
+    "review_coverage": 0.133,
+    "review_threshold_met": false,
+    "note": "file agreement is the wrong resolution for an indent-only reference; see line_agreement"
+  },
+  "line_agreement": {
+    "same": 246,
+    "of": 355,
+    "ratio": 0.693,
+    "method": "tabs expanded to 8-column stops; physical positions for equal-length pairs, deindented-content alignment for comments.scm, with inserted output lines retained as denominator slots",
+    "physical_index_cross_check": {
+      "same": 238,
+      "of": 354,
+      "ratio": 0.672,
+      "note": "literal line-number zip; comments.scm has a net line deletion, so later logical lines shift"
+    },
+    "alternative_uniform_indent": {
+      "rule": "+1, nil-property default",
+      "same": 170,
+      "of": 355,
+      "ratio": 0.479,
+      "exact_files": 1,
+      "physical_index_cross_check": {
+        "same": 166,
+        "of": 354,
+        "ratio": 0.469
+      }
+    }
+  },
+  "rust_js_parity": "identical",
+  "refusals": [],
+  "matching_files": [
+    "literals.scm",
+    "strings.scm"
+  ],
+  "column_correct_but_tab_spelling_wrong": [
+    "nesting.scm"
+  ],
+  "size": {
+    "js-runtime": 13610,
+    "packages": 11625,
+    "total": 25235,
+    "per_language": {
+      "scheme": {
+        "package": 447,
+        "with_runtime": 14057
+      }
+    }
+  },
+  "size_delta_vs_main": {
+    "js_runtime_gzip": {
+      "main": 13610,
+      "now": 13610,
+      "delta": 0
+    },
+    "package_gzip": 447,
+    "per_edit": []
+  },
+  "runtime_edits": [],
+  "harness_edits": [],
+  "fill": {
+    "wanted": false,
+    "files_that_would_benefit": []
+  },
+  "divergences": [
+    {
+      "case": "bindings.scm@80",
+      "id": "scheme/bindings.scm@80",
+      "verdict": "design limit",
+      "entry": 10,
+      "kind": "head/cadr dispatch plus binding and continuation columns anchored to the actual opener or first argument"
+    },
+    {
+      "case": "calls.scm@80",
+      "id": "scheme/calls.scm@80",
+      "verdict": "design limit",
+      "entry": null,
+      "kind": "the same list head aligns to the first argument when it shares the line and to the opener when it starts the next line; head dispatch alone cannot separate the cases"
+    },
+    {
+      "case": "comments.scm@80",
+      "id": "scheme/comments.scm@80",
+      "verdict": "design limit",
+      "entry": 9,
+      "kind": "semicolon-count comment placement, opener-relative list indentation, and the package-wide blank_cap trade around a pending closer comment"
+    },
+    {
+      "case": "control.scm@80",
+      "id": "scheme/control.scm@80",
+      "verdict": "design limit",
+      "entry": 10,
+      "kind": "head-symbol indent properties plus continuation columns anchored to actual arguments/openers"
+    },
+    {
+      "case": "define.scm@80",
+      "id": "scheme/define.scm@80",
+      "verdict": "design limit",
+      "entry": 10,
+      "kind": "defxyz and list have the same child shape but require defun-body versus first-argument continuation indentation"
+    },
+    {
+      "case": "heads.scm@80",
+      "id": "scheme/heads.scm@80",
+      "verdict": "design limit",
+      "entry": 10,
+      "kind": "head-sensitive body rules and actual-first-argument alignment on structurally similar list nodes"
+    },
+    {
+      "case": "kitchen.scm@80",
+      "id": "scheme/kitchen.scm@80",
+      "verdict": "design limit",
+      "entry": 10,
+      "kind": "head dispatch and paren-relative continuation together"
+    },
+    {
+      "case": "lambda.scm@80",
+      "id": "scheme/lambda.scm@80",
+      "verdict": "design limit",
+      "entry": 10,
+      "kind": "lambda is specform 1: its parameter list indents differently from its body"
+    },
+    {
+      "case": "long_sequences.scm@80",
+      "id": "scheme/long_sequences.scm@80",
+      "verdict": "design limit",
+      "entry": null,
+      "kind": "actual-first-argument continuation column; overlaps head dispatch because the corpus uses only + and list, while calls.scm proves the distinct source-structure capability"
+    },
+    {
+      "case": "macros.scm@80",
+      "id": "scheme/macros.scm@80",
+      "verdict": "design limit",
+      "entry": 10,
+      "kind": "syntax-rules head properties plus first-argument alignment in the macro call"
+    },
+    {
+      "case": "nesting.scm@80",
+      "id": "scheme/nesting.scm@80",
+      "verdict": "design limit",
+      "entry": null,
+      "kind": "every column correct; emacs renders column 8 as a tab and the runtime has no tabs-then-spaces mode"
+    },
+    {
+      "case": "normalisation.scm@80",
+      "id": "scheme/normalisation.scm@80",
+      "verdict": "design limit",
+      "entry": null,
+      "kind": "emacs preserves intra-line spacing and the pre-comment space run; the IR emits canonical whitespace by construction"
+    },
+    {
+      "case": "quote.scm@80",
+      "id": "scheme/quote.scm@80",
+      "verdict": "house rule",
+      "entry": null,
+      "kind": "a package-only child-count branch makes the file exact, but keeping uniform +2 avoids a one-file quoted-list shape special case"
+    }
+  ]
+}
