@@ -2402,8 +2402,43 @@ code — Rust's missing-operator-text branch disagreed with JS — which was fix
 before the merge. Third such defect in three consecutive slices, all in newly
 added runtime capability, none visible to any gate.
 
-**Rust has not picked it up.** `or_patterns.rs@60` is what opened this entry and
-it is still accepted as a divergence; the capability now exists for it.
+**Rust cannot pick it up, and measuring that is the correction this entry
+needed.** `or_patterns.rs@60` opened the entry, and with the fallback in place
+`flatten` no longer refuses it — so the entry read as unblocked. It is not.
+`flatten` builds a `Doc::Concat`, so a `group` around it breaks **every**
+separator:
+
+```rust
+        LongVariantNameOne
+        | LongVariantNameTwo
+        | LongVariantNameThree
+        | LongVariantNameFour => {
+```
+
+rustfmt **packs**:
+
+```rust
+        LongVariantNameOne | LongVariantNameTwo
+        | LongVariantNameThree | LongVariantNameFour => {
+```
+
+The entry's own body had both halves of this and did not put them together: it
+records that `fill` gives "the right style, wrong packing" and that `flatten`
+refuses, then proposes the spine walk as the repair. The spine walk was the
+repair for the **refusal**. The layout wanted is a `fill` over a flattened run,
+and no opcode composes the two — `fill` iterates the children of one node, and
+`Doc::fill` asserts its parts alternate content and whitespace, which
+`flatten`'s parts (comment docs and `flush_after` interleaved) do not.
+
+So Rust's pickup is a **new capability**, not a package edit: a fill mode for
+`flatten`. Nobody had measured `flatten`'s *output* here because it refused
+before the output existed.
+
+**The general lesson, which is not about `flatten`.** "The opcode stopped
+refusing" and "the opcode produces the reference's bytes" are different claims,
+and a refusal hides the second one until it is lifted. An entry marked built on
+the strength of the first will send the next builder to a pickup that is not
+there. Price a pickup by running it, not by reasoning that the blocker is gone.
 
 ### The original entry, as written before it was built
 
@@ -2900,19 +2935,36 @@ only to source line structure), while correcting the report's claim that it is
 *larger* than head dispatch — some of those lines could also be bought by a head
 table.
 
-**(b) The column has to be rendered as tabs, then spaces.** `indent-tabs-mode`
-is `t` in scheme-mode, so column 8 is one tab and column 9 is a tab plus a
-space. `tab_indent` means one tab **per level**, which is right for gofmt and
-cannot produce this. `nesting.scm` is the clean demonstration and it is worth
-more than a passing file: **every column in it is correct** and it fails on
-nothing but the spelling. Stage D verified that re-rendering the final indent
-column as tabs-to-8 plus residual spaces makes the file byte-identical **without
-changing a single rule**.
+**(b) The column has to be rendered as tabs, then spaces.** **Built**
+(2026-08-23, `tab_stop`, **+346 B gzip runtime, +11 B scheme.json**).
+`indent-tabs-mode` is `t` in scheme-mode, so column 8 is one tab and column 9 is
+a tab plus a space. `tab_indent` means one tab **per level**, which is right for
+gofmt and cannot produce this. `nesting.scm` was the clean demonstration and was
+worth more than a passing file: **every column in it was correct** and it failed
+on nothing but the spelling.
 
-**Decide when:** (b) now — it is the cheapest open item in the register, it is a
-change to how one string is built, and it converts a measured near-miss into a
-pass. (a) with entry 10, since a head table and a column anchor are the two
-halves of Lisp indentation and building either alone leaves Scheme short.
+`tab_stop` leaves the levels alone and respells the column they add up to, at
+the one point the printer writes an indent. The prediction held exactly —
+scheme.json gained one header line, no rule moved, and the file is byte-identical.
+`kitchen.scm` shrank from 38 diff lines to 34; `bindings.scm` and `macros.scm`
+kept their size with the spelling on their already-correct lines fixed. Nothing
+regressed.
+
+Two header combinations are refused rather than reconciled: `tab_stop` with
+`tab_indent` (two answers to one question), and `tab_stop` with `comment_cells`
+(the alignment pass counts characters in the rendered line, and a tab is one
+character several columns wide). The second refuses a combination nothing uses
+today, which is the point — it would have been a silent column bug the first
+time something did.
+
+At **+346 B** this is the most expensive of the three capabilities built this
+week — `paren true` was +43, the fieldless `flatten` fallback +66 — and about a
+third of it is refusal message text. Worth recording as the price of a header
+flag that has to be validated in two runtimes rather than the price of the
+rendering, which is four lines.
+
+**Decide when:** (a) with entry 10, since a head table and a column anchor are
+the two halves of Lisp indentation and building either alone leaves Scheme short.
 
 ## 30. A node that includes its terminating newline makes the gap measure short
 
@@ -3036,3 +3088,74 @@ expanded even when it fits flat, and a plain width-driven `group` is exactly the
 `collapse` setting a naive package implements. JavaScript can pass its corpus
 with a group and diverge on real input. Now that the capability exists, that is a
 package edit and a re-review away.
+
+---
+
+## 33. A flat `fill` separator does not flush a suffix, and a line comment then eats the next one
+
+**Status:** open — **destroys, and only gate 3 sees it** · **Cost:** local ·
+**Languages:** JavaScript (`comments.js`, both widths), TypeScript (latent — its
+corpus cannot reach it)
+
+TypeScript's stage D found the old JavaScript note "`fill` mishandles suffix
+comments" to be stale, and it was right about TypeScript: `fill` preserves
+`BreakParent` now, and `sequences.ts@80` came back as agreement. JavaScript's
+`sequences.js@80` is the same shape and the same one-line package edit, and
+applying it **destroys data**:
+
+```js
+const arr = [
+  1, // trailing on the first item
+  // own-line comment between items
+  2,
+```
+
+becomes
+
+```js
+const arr = [
+  1, // own-line comment between items // trailing on the first item
+  2, /* block comment inline */
+```
+
+Two comments on one line, the second inside the first. `// trailing on the first
+item` is no longer a comment at all — it is text inside another comment, and
+gate 3 reports it as lost. Reversed, too: the suffix of item 1 is emitted
+**after** the leading comment of item 2.
+
+**The mechanism is exact and is not about comments.** `Doc::Suffix` is deferred
+into a `suffixes` vector and flushed at the next **breaking** `Line` / `Soft` /
+`Hard`. A fill separator that stays flat is not a break, so it does not flush.
+The suffix therefore outlives the item it belongs to and lands after whatever the
+next item emits first — which, for a leading comment, is on the same line. `each`
+never shows this because every separator in a broken group *is* a break.
+
+So the repair is not "make `fill` carry comments". It is that **a fill separator
+must break when a suffix is pending**, the same way a `BreakParent` already
+forces the enclosing group. Either that, or `fill` refuses when it is handed a
+run with suffixes — which is what the old, now-stale note believed already
+happened.
+
+**`BreakParent` reaching the enclosing group is not enough, and that is the
+subtle part.** It forces the group open; it does not force the *particular
+separator* the comment sits beside. Entry 8 records `fill` and comments as an
+interaction; this is the sharp end of it, and the severity is different from
+everything else in that entry: not a worse layout, but code deleted.
+
+### How it was found, which is the recurring part
+
+By taking a pickup another language's review had priced. TypeScript's report said
+the coupling was stale and named JavaScript; the claim was true for TypeScript
+and false for JavaScript, because **`sequences.ts` has a number array with no
+comments and `comments.ts` has no number array, so nothing in that corpus routes
+a commented number array through `fill`.** JavaScript's `comments.js` does.
+
+This is the exact mirror of the `decorators.ts` finding from the same review — a
+rule shared by two languages, clean in one only because that corpus never probes
+it. Twice in two consecutive slices, in opposite directions, between the same
+pair of languages. **A cross-language "this is stale, language X can pick it up"
+is a hypothesis about X's corpus, not a measurement of it.**
+
+And TypeScript is **latent, not safe**: the same `fill_list` sits in
+`typescript.json` today, and the first commented number array a user writes hits
+it. Gate 3 catches it on our corpus. Nothing catches it on theirs.

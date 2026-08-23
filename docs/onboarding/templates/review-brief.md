@@ -281,10 +281,27 @@ whether the package is right. Budget your effort here:
      intended one and run it. Correcting the shape is part of the verdict, not a
      separate finding.
 
-5. **Read the package for what gates cannot see**: design fit, whether it reuses
+5. **A pickup another language priced is a hypothesis, not a measurement.** When
+   a report says a limit is stale and names a second language that can now pick
+   it up, that claim was verified against the *first* language's corpus. Run it
+   on the second before repeating it. Twice in consecutive slices between
+   TypeScript and JavaScript, a rule shared by both was clean in one only
+   because that corpus never probed it: `decorators.ts` in one direction, and
+   in the other a `fill` pickup that passes every gate in TypeScript and
+   **destroys comments** in JavaScript (FINDINGS 33). Note also that "the opcode
+   stopped refusing" is not "the opcode emits the reference's bytes" — a
+   refusal hides the output until it is lifted, and Rust's `or_patterns.rs`
+   pickup evaporated on exactly that (FINDINGS 23).
+6. **Package edits must be surgical text edits.** The size metric gzips
+   `packages/*.json` **as written on disk**, so loading a package and dumping it
+   back reformats the whole file and charges the change for it. Measured:
+   `javascript.json` went 16764 -> 34887 bytes on disk and the metric read +513
+   B gzip for an edit that actually cost +114. If a diff touches lines the
+   change did not, the number in the report is wrong.
+7. **Read the package for what gates cannot see**: design fit, whether it reuses
    the existing concepts or invents parallel ones, whether the rule table reads
    like `packages/python.json` or like something bolted on.
-6. **Is refusal being used to dodge?** Refusing a construct the package could
+8. **Is refusal being used to dodge?** Refusing a construct the package could
    have handled inflates gate 1–3 at the cost of usefulness.
 
 ### Merge bar

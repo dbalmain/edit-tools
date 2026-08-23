@@ -202,6 +202,20 @@ arbitrary text. `blank_cap` applies only inside runtime-owned comment
 attachment; the `blank` opcode's operand still governs gaps between items
 visible to a rule.
 
+`indent` is how many spaces one level writes. Two header fields override that
+spelling and they answer different questions, so a package that sets both is
+refused rather than reconciled. `tab_indent` makes one **level** a tab, which is
+gofmt's house style. `tab_stop` leaves the levels alone and respells the
+**column** they add up to, as tabs to the stop plus residual spaces — emacs
+`scheme-mode` with `indent-tabs-mode` `t` writes column 8 as one tab and column
+9 as a tab and a space, and no per-level unit produces that. Respelling happens
+once, where the printer writes an indent after a newline, and only when the
+whole column is spaces: a nested language region may have concatenated a tab
+unit of its own, and that column is not ours to guess. The measured column never
+moves, so nothing the printer already decided changes. `tab_stop` is also
+refused alongside `comment_cells`, because the alignment pass counts characters
+in the rendered line and a tab is one character spanning several columns.
+
 `srcgap` is the safe source-aware exception to fixed whitespace. It reads the
 gap between the children on either side of the cursor. An empty gap emits
 nothing and offers no break; horizontal whitespace is preserved byte-for-byte
