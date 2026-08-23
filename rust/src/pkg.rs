@@ -501,9 +501,15 @@ pub enum Pred {
     ChildCount(Sel, Sel, usize),
     /// Every `sel` child has a type in the list. Zero matches is true.
     All(Sel, Vec<String>),
+    /// At least one exact direct-child path ends at a leaf with listed text.
+    Text(Vec<Sel>, Vec<String>),
+    /// At least one exact direct-child path ends at a multiline leaf.
+    Multiline(Vec<Sel>),
+    /// The node's own source range contains a line ending.
+    SourceMultiline,
 }
 
-/// One expression of the package language. Twenty opcodes; see DESIGN.md.
+/// One expression of the package language. Twenty-seven opcodes; see DESIGN.md.
 #[derive(Debug, Deserialize)]
 #[serde(try_from = "Value")]
 pub enum Expr {
@@ -523,7 +529,7 @@ pub enum Expr {
     Verbatim,
     Opt(Sel, Box<Expr>),
     Trail(String, Sel),
-    Paren(Vec<Expr>),
+    Paren(bool, Vec<Expr>),
     AutoParen(Sel),
     When(Pred, Box<Expr>, Box<Expr>),
     Flatten(String, Box<Expr>),
@@ -536,6 +542,8 @@ pub enum Expr {
     SrcLine,
     /// `SrcLine`'s nothing-when-flat sibling.
     SrcSoft,
+    /// Exact horizontal source whitespace when flat, a newline when broken.
+    SrcGap,
     /// `SrcLine`'s group-sensitive sibling: a `Line` that is `Hard` when the
     /// source had a line break before the cursor.
     SrcBreak,
@@ -590,7 +598,17 @@ impl TryFrom<Value> for Expr {
                 Ok(Expr::Group(max, rest(parts)?))
             }
             "indent" => Ok(Expr::Indent(rest(parts)?)),
-            "paren" => Ok(Expr::Paren(rest(parts)?)),
+            "paren" => {
+                let always = match parts.first() {
+                    Some(Value::Bool(always)) => {
+                        let always = *always;
+                        parts.remove(0);
+                        always
+                    }
+                    _ => false,
+                };
+                Ok(Expr::Paren(always, rest(parts)?))
+            }
             "line" => arity(0).map(|()| Expr::Line),
             "soft" => arity(0).map(|()| Expr::Soft),
             "hard" => arity(0).map(|()| Expr::Hard),
@@ -598,6 +616,7 @@ impl TryFrom<Value> for Expr {
             "verbatim" => arity(0).map(|()| Expr::Verbatim),
             "srcline" => arity(0).map(|()| Expr::SrcLine),
             "srcsoft" => arity(0).map(|()| Expr::SrcSoft),
+            "srcgap" => arity(0).map(|()| Expr::SrcGap),
             "cell" => arity(0).map(|()| Expr::Cell),
             "srcbreak" => arity(0).map(|()| Expr::SrcBreak),
             "srctrail" => {
@@ -734,6 +753,36 @@ fn predicate(value: &Value) -> Result<Pred, String> {
         Some("all") if parts.len() == 3 => {
             Ok(Pred::All(selector(&parts[1])?, node_types(&parts[2])?))
         }
+        Some("text") if parts.len() == 3 => {
+            let Value::Array(path) = &parts[1] else {
+                return Err(format!(
+                    "text predicate path must be a list, got {}",
+                    parts[1]
+                ));
+            };
+            if path.is_empty() {
+                return Err("text predicate path must not be empty".to_owned());
+            }
+            Ok(Pred::Text(
+                path.iter().map(selector).collect::<Result<_, _>>()?,
+                node_types(&parts[2])?,
+            ))
+        }
+        Some("multiline") if parts.len() == 2 => {
+            let Value::Array(path) = &parts[1] else {
+                return Err(format!(
+                    "multiline predicate path must be a list, got {}",
+                    parts[1]
+                ));
+            };
+            if path.is_empty() {
+                return Err("multiline predicate path must not be empty".to_owned());
+            }
+            Ok(Pred::Multiline(
+                path.iter().map(selector).collect::<Result<_, _>>()?,
+            ))
+        }
+        Some("source-multiline") if parts.len() == 1 => Ok(Pred::SourceMultiline),
         _ => Err(format!("unknown predicate {value}")),
     }
 }

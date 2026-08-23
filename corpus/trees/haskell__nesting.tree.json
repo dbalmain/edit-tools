@@ -1,0 +1,1691 @@
+{
+ "language": "haskell",
+ "source_file": "corpus/src/haskell/nesting.hs",
+ "source": "module Nesting where\n\n-- nested containers: records in lists in records; inner one-liners stay flat\ndata Tree = Node {value :: Int, children :: [Tree]}\n\nleaf = Node {value = 0, children = []} -- empty children stay on the line\n\ntree =\n  Node\n    { value = 1\n    , children =\n        [ Node {value = 2, children = []}\n        , Node {value = 3, children = [Node {value = 4, children = []}, Node {value = 5, children = [Node {value = 6, children = []}]}]}\n        ]\n    }\n\nmatrix =\n  [ [1, 2, 3]\n  , [4, 5, 6]\n  , [7, 8, 9]\n  ]\n\npairs =\n  [ (1, (2, 3))\n  , (4, (5, 6))\n  ]\n",
+ "root": {
+  "type": "haskell",
+  "start": 0,
+  "end": 571,
+  "children": [
+   {
+    "type": "header",
+    "start": 0,
+    "end": 20,
+    "children": [
+     {
+      "type": "module",
+      "start": 0,
+      "end": 6,
+      "text": "module"
+     },
+     {
+      "type": "module",
+      "start": 7,
+      "end": 14,
+      "field": "module",
+      "children": [
+       {
+        "type": "module_id",
+        "start": 7,
+        "end": 14,
+        "text": "Nesting"
+       }
+      ]
+     },
+     {
+      "type": "where",
+      "start": 15,
+      "end": 20,
+      "text": "where"
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 22,
+    "end": 99,
+    "text": "-- nested containers: records in lists in records; inner one-liners stay flat"
+   },
+   {
+    "type": "declarations",
+    "start": 100,
+    "end": 571,
+    "field": "declarations",
+    "children": [
+     {
+      "type": "data_type",
+      "start": 100,
+      "end": 151,
+      "children": [
+       {
+        "type": "data",
+        "start": 100,
+        "end": 104,
+        "text": "data"
+       },
+       {
+        "type": "name",
+        "start": 105,
+        "end": 109,
+        "field": "name",
+        "text": "Tree"
+       },
+       {
+        "type": "=",
+        "start": 110,
+        "end": 111,
+        "text": "="
+       },
+       {
+        "type": "data_constructors",
+        "start": 112,
+        "end": 151,
+        "field": "constructors",
+        "children": [
+         {
+          "type": "data_constructor",
+          "start": 112,
+          "end": 151,
+          "field": "constructor",
+          "children": [
+           {
+            "type": "record",
+            "start": 112,
+            "end": 151,
+            "field": "constructor",
+            "children": [
+             {
+              "type": "constructor",
+              "start": 112,
+              "end": 116,
+              "field": "name",
+              "text": "Node"
+             },
+             {
+              "type": "fields",
+              "start": 117,
+              "end": 151,
+              "field": "fields",
+              "children": [
+               {
+                "type": "{",
+                "start": 117,
+                "end": 118,
+                "text": "{"
+               },
+               {
+                "type": "field",
+                "start": 118,
+                "end": 130,
+                "field": "field",
+                "children": [
+                 {
+                  "type": "field_name",
+                  "start": 118,
+                  "end": 123,
+                  "field": "name",
+                  "children": [
+                   {
+                    "type": "variable",
+                    "start": 118,
+                    "end": 123,
+                    "text": "value"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "::",
+                  "start": 124,
+                  "end": 126,
+                  "text": "::"
+                 },
+                 {
+                  "type": "name",
+                  "start": 127,
+                  "end": 130,
+                  "field": "type",
+                  "text": "Int"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 130,
+                "end": 131,
+                "text": ","
+               },
+               {
+                "type": "field",
+                "start": 132,
+                "end": 150,
+                "field": "field",
+                "children": [
+                 {
+                  "type": "field_name",
+                  "start": 132,
+                  "end": 140,
+                  "field": "name",
+                  "children": [
+                   {
+                    "type": "variable",
+                    "start": 132,
+                    "end": 140,
+                    "text": "children"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "::",
+                  "start": 141,
+                  "end": 143,
+                  "text": "::"
+                 },
+                 {
+                  "type": "list",
+                  "start": 144,
+                  "end": 150,
+                  "field": "type",
+                  "children": [
+                   {
+                    "type": "[",
+                    "start": 144,
+                    "end": 145,
+                    "text": "["
+                   },
+                   {
+                    "type": "name",
+                    "start": 145,
+                    "end": 149,
+                    "field": "element",
+                    "text": "Tree"
+                   },
+                   {
+                    "type": "]",
+                    "start": 149,
+                    "end": 150,
+                    "text": "]"
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "type": "}",
+                "start": 150,
+                "end": 151,
+                "text": "}"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "bind",
+      "start": 153,
+      "end": 191,
+      "children": [
+       {
+        "type": "variable",
+        "start": 153,
+        "end": 157,
+        "field": "name",
+        "text": "leaf"
+       },
+       {
+        "type": "match",
+        "start": 158,
+        "end": 191,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 158,
+          "end": 159,
+          "text": "="
+         },
+         {
+          "type": "record",
+          "start": 160,
+          "end": 191,
+          "field": "expression",
+          "children": [
+           {
+            "type": "constructor",
+            "start": 160,
+            "end": 164,
+            "field": "expression",
+            "text": "Node"
+           },
+           {
+            "type": "{",
+            "start": 165,
+            "end": 166,
+            "text": "{"
+           },
+           {
+            "type": "field_update",
+            "start": 166,
+            "end": 175,
+            "field": "field",
+            "children": [
+             {
+              "type": "field_name",
+              "start": 166,
+              "end": 171,
+              "field": "field",
+              "children": [
+               {
+                "type": "variable",
+                "start": 166,
+                "end": 171,
+                "text": "value"
+               }
+              ]
+             },
+             {
+              "type": "=",
+              "start": 172,
+              "end": 173,
+              "text": "="
+             },
+             {
+              "type": "literal",
+              "start": 174,
+              "end": 175,
+              "field": "expression",
+              "children": [
+               {
+                "type": "integer",
+                "start": 174,
+                "end": 175,
+                "text": "0"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 175,
+            "end": 176,
+            "text": ","
+           },
+           {
+            "type": "field_update",
+            "start": 177,
+            "end": 190,
+            "field": "field",
+            "children": [
+             {
+              "type": "field_name",
+              "start": 177,
+              "end": 185,
+              "field": "field",
+              "children": [
+               {
+                "type": "variable",
+                "start": 177,
+                "end": 185,
+                "text": "children"
+               }
+              ]
+             },
+             {
+              "type": "=",
+              "start": 186,
+              "end": 187,
+              "text": "="
+             },
+             {
+              "type": "list",
+              "start": 188,
+              "end": 190,
+              "field": "expression",
+              "children": [
+               {
+                "type": "[",
+                "start": 188,
+                "end": 189,
+                "text": "["
+               },
+               {
+                "type": "]",
+                "start": 189,
+                "end": 190,
+                "text": "]"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 190,
+            "end": 191,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 192,
+      "end": 226,
+      "text": "-- empty children stay on the line"
+     },
+     {
+      "type": "bind",
+      "start": 228,
+      "end": 469,
+      "children": [
+       {
+        "type": "variable",
+        "start": 228,
+        "end": 232,
+        "field": "name",
+        "text": "tree"
+       },
+       {
+        "type": "match",
+        "start": 233,
+        "end": 469,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 233,
+          "end": 234,
+          "text": "="
+         },
+         {
+          "type": "record",
+          "start": 237,
+          "end": 469,
+          "field": "expression",
+          "children": [
+           {
+            "type": "constructor",
+            "start": 237,
+            "end": 241,
+            "field": "expression",
+            "text": "Node"
+           },
+           {
+            "type": "{",
+            "start": 246,
+            "end": 247,
+            "text": "{"
+           },
+           {
+            "type": "field_update",
+            "start": 248,
+            "end": 257,
+            "field": "field",
+            "children": [
+             {
+              "type": "field_name",
+              "start": 248,
+              "end": 253,
+              "field": "field",
+              "children": [
+               {
+                "type": "variable",
+                "start": 248,
+                "end": 253,
+                "text": "value"
+               }
+              ]
+             },
+             {
+              "type": "=",
+              "start": 254,
+              "end": 255,
+              "text": "="
+             },
+             {
+              "type": "literal",
+              "start": 256,
+              "end": 257,
+              "field": "expression",
+              "children": [
+               {
+                "type": "integer",
+                "start": 256,
+                "end": 257,
+                "text": "1"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 262,
+            "end": 263,
+            "text": ","
+           },
+           {
+            "type": "field_update",
+            "start": 264,
+            "end": 463,
+            "field": "field",
+            "children": [
+             {
+              "type": "field_name",
+              "start": 264,
+              "end": 272,
+              "field": "field",
+              "children": [
+               {
+                "type": "variable",
+                "start": 264,
+                "end": 272,
+                "text": "children"
+               }
+              ]
+             },
+             {
+              "type": "=",
+              "start": 273,
+              "end": 274,
+              "text": "="
+             },
+             {
+              "type": "list",
+              "start": 283,
+              "end": 463,
+              "field": "expression",
+              "children": [
+               {
+                "type": "[",
+                "start": 283,
+                "end": 284,
+                "text": "["
+               },
+               {
+                "type": "record",
+                "start": 285,
+                "end": 316,
+                "field": "element",
+                "children": [
+                 {
+                  "type": "constructor",
+                  "start": 285,
+                  "end": 289,
+                  "field": "expression",
+                  "text": "Node"
+                 },
+                 {
+                  "type": "{",
+                  "start": 290,
+                  "end": 291,
+                  "text": "{"
+                 },
+                 {
+                  "type": "field_update",
+                  "start": 291,
+                  "end": 300,
+                  "field": "field",
+                  "children": [
+                   {
+                    "type": "field_name",
+                    "start": 291,
+                    "end": 296,
+                    "field": "field",
+                    "children": [
+                     {
+                      "type": "variable",
+                      "start": 291,
+                      "end": 296,
+                      "text": "value"
+                     }
+                    ]
+                   },
+                   {
+                    "type": "=",
+                    "start": 297,
+                    "end": 298,
+                    "text": "="
+                   },
+                   {
+                    "type": "literal",
+                    "start": 299,
+                    "end": 300,
+                    "field": "expression",
+                    "children": [
+                     {
+                      "type": "integer",
+                      "start": 299,
+                      "end": 300,
+                      "text": "2"
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 {
+                  "type": ",",
+                  "start": 300,
+                  "end": 301,
+                  "text": ","
+                 },
+                 {
+                  "type": "field_update",
+                  "start": 302,
+                  "end": 315,
+                  "field": "field",
+                  "children": [
+                   {
+                    "type": "field_name",
+                    "start": 302,
+                    "end": 310,
+                    "field": "field",
+                    "children": [
+                     {
+                      "type": "variable",
+                      "start": 302,
+                      "end": 310,
+                      "text": "children"
+                     }
+                    ]
+                   },
+                   {
+                    "type": "=",
+                    "start": 311,
+                    "end": 312,
+                    "text": "="
+                   },
+                   {
+                    "type": "list",
+                    "start": 313,
+                    "end": 315,
+                    "field": "expression",
+                    "children": [
+                     {
+                      "type": "[",
+                      "start": 313,
+                      "end": 314,
+                      "text": "["
+                     },
+                     {
+                      "type": "]",
+                      "start": 314,
+                      "end": 315,
+                      "text": "]"
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 {
+                  "type": "}",
+                  "start": 315,
+                  "end": 316,
+                  "text": "}"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 325,
+                "end": 326,
+                "text": ","
+               },
+               {
+                "type": "record",
+                "start": 327,
+                "end": 453,
+                "field": "element",
+                "children": [
+                 {
+                  "type": "constructor",
+                  "start": 327,
+                  "end": 331,
+                  "field": "expression",
+                  "text": "Node"
+                 },
+                 {
+                  "type": "{",
+                  "start": 332,
+                  "end": 333,
+                  "text": "{"
+                 },
+                 {
+                  "type": "field_update",
+                  "start": 333,
+                  "end": 342,
+                  "field": "field",
+                  "children": [
+                   {
+                    "type": "field_name",
+                    "start": 333,
+                    "end": 338,
+                    "field": "field",
+                    "children": [
+                     {
+                      "type": "variable",
+                      "start": 333,
+                      "end": 338,
+                      "text": "value"
+                     }
+                    ]
+                   },
+                   {
+                    "type": "=",
+                    "start": 339,
+                    "end": 340,
+                    "text": "="
+                   },
+                   {
+                    "type": "literal",
+                    "start": 341,
+                    "end": 342,
+                    "field": "expression",
+                    "children": [
+                     {
+                      "type": "integer",
+                      "start": 341,
+                      "end": 342,
+                      "text": "3"
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 {
+                  "type": ",",
+                  "start": 342,
+                  "end": 343,
+                  "text": ","
+                 },
+                 {
+                  "type": "field_update",
+                  "start": 344,
+                  "end": 452,
+                  "field": "field",
+                  "children": [
+                   {
+                    "type": "field_name",
+                    "start": 344,
+                    "end": 352,
+                    "field": "field",
+                    "children": [
+                     {
+                      "type": "variable",
+                      "start": 344,
+                      "end": 352,
+                      "text": "children"
+                     }
+                    ]
+                   },
+                   {
+                    "type": "=",
+                    "start": 353,
+                    "end": 354,
+                    "text": "="
+                   },
+                   {
+                    "type": "list",
+                    "start": 355,
+                    "end": 452,
+                    "field": "expression",
+                    "children": [
+                     {
+                      "type": "[",
+                      "start": 355,
+                      "end": 356,
+                      "text": "["
+                     },
+                     {
+                      "type": "record",
+                      "start": 356,
+                      "end": 387,
+                      "field": "element",
+                      "children": [
+                       {
+                        "type": "constructor",
+                        "start": 356,
+                        "end": 360,
+                        "field": "expression",
+                        "text": "Node"
+                       },
+                       {
+                        "type": "{",
+                        "start": 361,
+                        "end": 362,
+                        "text": "{"
+                       },
+                       {
+                        "type": "field_update",
+                        "start": 362,
+                        "end": 371,
+                        "field": "field",
+                        "children": [
+                         {
+                          "type": "field_name",
+                          "start": 362,
+                          "end": 367,
+                          "field": "field",
+                          "children": [
+                           {
+                            "type": "variable",
+                            "start": 362,
+                            "end": 367,
+                            "text": "value"
+                           }
+                          ]
+                         },
+                         {
+                          "type": "=",
+                          "start": 368,
+                          "end": 369,
+                          "text": "="
+                         },
+                         {
+                          "type": "literal",
+                          "start": 370,
+                          "end": 371,
+                          "field": "expression",
+                          "children": [
+                           {
+                            "type": "integer",
+                            "start": 370,
+                            "end": 371,
+                            "text": "4"
+                           }
+                          ]
+                         }
+                        ]
+                       },
+                       {
+                        "type": ",",
+                        "start": 371,
+                        "end": 372,
+                        "text": ","
+                       },
+                       {
+                        "type": "field_update",
+                        "start": 373,
+                        "end": 386,
+                        "field": "field",
+                        "children": [
+                         {
+                          "type": "field_name",
+                          "start": 373,
+                          "end": 381,
+                          "field": "field",
+                          "children": [
+                           {
+                            "type": "variable",
+                            "start": 373,
+                            "end": 381,
+                            "text": "children"
+                           }
+                          ]
+                         },
+                         {
+                          "type": "=",
+                          "start": 382,
+                          "end": 383,
+                          "text": "="
+                         },
+                         {
+                          "type": "list",
+                          "start": 384,
+                          "end": 386,
+                          "field": "expression",
+                          "children": [
+                           {
+                            "type": "[",
+                            "start": 384,
+                            "end": 385,
+                            "text": "["
+                           },
+                           {
+                            "type": "]",
+                            "start": 385,
+                            "end": 386,
+                            "text": "]"
+                           }
+                          ]
+                         }
+                        ]
+                       },
+                       {
+                        "type": "}",
+                        "start": 386,
+                        "end": 387,
+                        "text": "}"
+                       }
+                      ]
+                     },
+                     {
+                      "type": ",",
+                      "start": 387,
+                      "end": 388,
+                      "text": ","
+                     },
+                     {
+                      "type": "record",
+                      "start": 389,
+                      "end": 451,
+                      "field": "element",
+                      "children": [
+                       {
+                        "type": "constructor",
+                        "start": 389,
+                        "end": 393,
+                        "field": "expression",
+                        "text": "Node"
+                       },
+                       {
+                        "type": "{",
+                        "start": 394,
+                        "end": 395,
+                        "text": "{"
+                       },
+                       {
+                        "type": "field_update",
+                        "start": 395,
+                        "end": 404,
+                        "field": "field",
+                        "children": [
+                         {
+                          "type": "field_name",
+                          "start": 395,
+                          "end": 400,
+                          "field": "field",
+                          "children": [
+                           {
+                            "type": "variable",
+                            "start": 395,
+                            "end": 400,
+                            "text": "value"
+                           }
+                          ]
+                         },
+                         {
+                          "type": "=",
+                          "start": 401,
+                          "end": 402,
+                          "text": "="
+                         },
+                         {
+                          "type": "literal",
+                          "start": 403,
+                          "end": 404,
+                          "field": "expression",
+                          "children": [
+                           {
+                            "type": "integer",
+                            "start": 403,
+                            "end": 404,
+                            "text": "5"
+                           }
+                          ]
+                         }
+                        ]
+                       },
+                       {
+                        "type": ",",
+                        "start": 404,
+                        "end": 405,
+                        "text": ","
+                       },
+                       {
+                        "type": "field_update",
+                        "start": 406,
+                        "end": 450,
+                        "field": "field",
+                        "children": [
+                         {
+                          "type": "field_name",
+                          "start": 406,
+                          "end": 414,
+                          "field": "field",
+                          "children": [
+                           {
+                            "type": "variable",
+                            "start": 406,
+                            "end": 414,
+                            "text": "children"
+                           }
+                          ]
+                         },
+                         {
+                          "type": "=",
+                          "start": 415,
+                          "end": 416,
+                          "text": "="
+                         },
+                         {
+                          "type": "list",
+                          "start": 417,
+                          "end": 450,
+                          "field": "expression",
+                          "children": [
+                           {
+                            "type": "[",
+                            "start": 417,
+                            "end": 418,
+                            "text": "["
+                           },
+                           {
+                            "type": "record",
+                            "start": 418,
+                            "end": 449,
+                            "field": "element",
+                            "children": [
+                             {
+                              "type": "constructor",
+                              "start": 418,
+                              "end": 422,
+                              "field": "expression",
+                              "text": "Node"
+                             },
+                             {
+                              "type": "{",
+                              "start": 423,
+                              "end": 424,
+                              "text": "{"
+                             },
+                             {
+                              "type": "field_update",
+                              "start": 424,
+                              "end": 433,
+                              "field": "field",
+                              "children": [
+                               {
+                                "type": "field_name",
+                                "start": 424,
+                                "end": 429,
+                                "field": "field",
+                                "children": [
+                                 {
+                                  "type": "variable",
+                                  "start": 424,
+                                  "end": 429,
+                                  "text": "value"
+                                 }
+                                ]
+                               },
+                               {
+                                "type": "=",
+                                "start": 430,
+                                "end": 431,
+                                "text": "="
+                               },
+                               {
+                                "type": "literal",
+                                "start": 432,
+                                "end": 433,
+                                "field": "expression",
+                                "children": [
+                                 {
+                                  "type": "integer",
+                                  "start": 432,
+                                  "end": 433,
+                                  "text": "6"
+                                 }
+                                ]
+                               }
+                              ]
+                             },
+                             {
+                              "type": ",",
+                              "start": 433,
+                              "end": 434,
+                              "text": ","
+                             },
+                             {
+                              "type": "field_update",
+                              "start": 435,
+                              "end": 448,
+                              "field": "field",
+                              "children": [
+                               {
+                                "type": "field_name",
+                                "start": 435,
+                                "end": 443,
+                                "field": "field",
+                                "children": [
+                                 {
+                                  "type": "variable",
+                                  "start": 435,
+                                  "end": 443,
+                                  "text": "children"
+                                 }
+                                ]
+                               },
+                               {
+                                "type": "=",
+                                "start": 444,
+                                "end": 445,
+                                "text": "="
+                               },
+                               {
+                                "type": "list",
+                                "start": 446,
+                                "end": 448,
+                                "field": "expression",
+                                "children": [
+                                 {
+                                  "type": "[",
+                                  "start": 446,
+                                  "end": 447,
+                                  "text": "["
+                                 },
+                                 {
+                                  "type": "]",
+                                  "start": 447,
+                                  "end": 448,
+                                  "text": "]"
+                                 }
+                                ]
+                               }
+                              ]
+                             },
+                             {
+                              "type": "}",
+                              "start": 448,
+                              "end": 449,
+                              "text": "}"
+                             }
+                            ]
+                           },
+                           {
+                            "type": "]",
+                            "start": 449,
+                            "end": 450,
+                            "text": "]"
+                           }
+                          ]
+                         }
+                        ]
+                       },
+                       {
+                        "type": "}",
+                        "start": 450,
+                        "end": 451,
+                        "text": "}"
+                       }
+                      ]
+                     },
+                     {
+                      "type": "]",
+                      "start": 451,
+                      "end": 452,
+                      "text": "]"
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 {
+                  "type": "}",
+                  "start": 452,
+                  "end": 453,
+                  "text": "}"
+                 }
+                ]
+               },
+               {
+                "type": "]",
+                "start": 462,
+                "end": 463,
+                "text": "]"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 468,
+            "end": 469,
+            "text": "}"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "bind",
+      "start": 471,
+      "end": 525,
+      "children": [
+       {
+        "type": "variable",
+        "start": 471,
+        "end": 477,
+        "field": "name",
+        "text": "matrix"
+       },
+       {
+        "type": "match",
+        "start": 478,
+        "end": 525,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 478,
+          "end": 479,
+          "text": "="
+         },
+         {
+          "type": "list",
+          "start": 482,
+          "end": 525,
+          "field": "expression",
+          "children": [
+           {
+            "type": "[",
+            "start": 482,
+            "end": 483,
+            "text": "["
+           },
+           {
+            "type": "list",
+            "start": 484,
+            "end": 493,
+            "field": "element",
+            "children": [
+             {
+              "type": "[",
+              "start": 484,
+              "end": 485,
+              "text": "["
+             },
+             {
+              "type": "literal",
+              "start": 485,
+              "end": 486,
+              "field": "element",
+              "children": [
+               {
+                "type": "integer",
+                "start": 485,
+                "end": 486,
+                "text": "1"
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 486,
+              "end": 487,
+              "text": ","
+             },
+             {
+              "type": "literal",
+              "start": 488,
+              "end": 489,
+              "field": "element",
+              "children": [
+               {
+                "type": "integer",
+                "start": 488,
+                "end": 489,
+                "text": "2"
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 489,
+              "end": 490,
+              "text": ","
+             },
+             {
+              "type": "literal",
+              "start": 491,
+              "end": 492,
+              "field": "element",
+              "children": [
+               {
+                "type": "integer",
+                "start": 491,
+                "end": 492,
+                "text": "3"
+               }
+              ]
+             },
+             {
+              "type": "]",
+              "start": 492,
+              "end": 493,
+              "text": "]"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 496,
+            "end": 497,
+            "text": ","
+           },
+           {
+            "type": "list",
+            "start": 498,
+            "end": 507,
+            "field": "element",
+            "children": [
+             {
+              "type": "[",
+              "start": 498,
+              "end": 499,
+              "text": "["
+             },
+             {
+              "type": "literal",
+              "start": 499,
+              "end": 500,
+              "field": "element",
+              "children": [
+               {
+                "type": "integer",
+                "start": 499,
+                "end": 500,
+                "text": "4"
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 500,
+              "end": 501,
+              "text": ","
+             },
+             {
+              "type": "literal",
+              "start": 502,
+              "end": 503,
+              "field": "element",
+              "children": [
+               {
+                "type": "integer",
+                "start": 502,
+                "end": 503,
+                "text": "5"
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 503,
+              "end": 504,
+              "text": ","
+             },
+             {
+              "type": "literal",
+              "start": 505,
+              "end": 506,
+              "field": "element",
+              "children": [
+               {
+                "type": "integer",
+                "start": 505,
+                "end": 506,
+                "text": "6"
+               }
+              ]
+             },
+             {
+              "type": "]",
+              "start": 506,
+              "end": 507,
+              "text": "]"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 510,
+            "end": 511,
+            "text": ","
+           },
+           {
+            "type": "list",
+            "start": 512,
+            "end": 521,
+            "field": "element",
+            "children": [
+             {
+              "type": "[",
+              "start": 512,
+              "end": 513,
+              "text": "["
+             },
+             {
+              "type": "literal",
+              "start": 513,
+              "end": 514,
+              "field": "element",
+              "children": [
+               {
+                "type": "integer",
+                "start": 513,
+                "end": 514,
+                "text": "7"
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 514,
+              "end": 515,
+              "text": ","
+             },
+             {
+              "type": "literal",
+              "start": 516,
+              "end": 517,
+              "field": "element",
+              "children": [
+               {
+                "type": "integer",
+                "start": 516,
+                "end": 517,
+                "text": "8"
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 517,
+              "end": 518,
+              "text": ","
+             },
+             {
+              "type": "literal",
+              "start": 519,
+              "end": 520,
+              "field": "element",
+              "children": [
+               {
+                "type": "integer",
+                "start": 519,
+                "end": 520,
+                "text": "9"
+               }
+              ]
+             },
+             {
+              "type": "]",
+              "start": 520,
+              "end": 521,
+              "text": "]"
+             }
+            ]
+           },
+           {
+            "type": "]",
+            "start": 524,
+            "end": 525,
+            "text": "]"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "bind",
+      "start": 527,
+      "end": 570,
+      "children": [
+       {
+        "type": "variable",
+        "start": 527,
+        "end": 532,
+        "field": "name",
+        "text": "pairs"
+       },
+       {
+        "type": "match",
+        "start": 533,
+        "end": 570,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 533,
+          "end": 534,
+          "text": "="
+         },
+         {
+          "type": "list",
+          "start": 537,
+          "end": 570,
+          "field": "expression",
+          "children": [
+           {
+            "type": "[",
+            "start": 537,
+            "end": 538,
+            "text": "["
+           },
+           {
+            "type": "tuple",
+            "start": 539,
+            "end": 550,
+            "field": "element",
+            "children": [
+             {
+              "type": "(",
+              "start": 539,
+              "end": 540,
+              "text": "("
+             },
+             {
+              "type": "literal",
+              "start": 540,
+              "end": 541,
+              "field": "element",
+              "children": [
+               {
+                "type": "integer",
+                "start": 540,
+                "end": 541,
+                "text": "1"
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 541,
+              "end": 542,
+              "text": ","
+             },
+             {
+              "type": "tuple",
+              "start": 543,
+              "end": 549,
+              "field": "element",
+              "children": [
+               {
+                "type": "(",
+                "start": 543,
+                "end": 544,
+                "text": "("
+               },
+               {
+                "type": "literal",
+                "start": 544,
+                "end": 545,
+                "field": "element",
+                "children": [
+                 {
+                  "type": "integer",
+                  "start": 544,
+                  "end": 545,
+                  "text": "2"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 545,
+                "end": 546,
+                "text": ","
+               },
+               {
+                "type": "literal",
+                "start": 547,
+                "end": 548,
+                "field": "element",
+                "children": [
+                 {
+                  "type": "integer",
+                  "start": 547,
+                  "end": 548,
+                  "text": "3"
+                 }
+                ]
+               },
+               {
+                "type": ")",
+                "start": 548,
+                "end": 549,
+                "text": ")"
+               }
+              ]
+             },
+             {
+              "type": ")",
+              "start": 549,
+              "end": 550,
+              "text": ")"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 553,
+            "end": 554,
+            "text": ","
+           },
+           {
+            "type": "tuple",
+            "start": 555,
+            "end": 566,
+            "field": "element",
+            "children": [
+             {
+              "type": "(",
+              "start": 555,
+              "end": 556,
+              "text": "("
+             },
+             {
+              "type": "literal",
+              "start": 556,
+              "end": 557,
+              "field": "element",
+              "children": [
+               {
+                "type": "integer",
+                "start": 556,
+                "end": 557,
+                "text": "4"
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 557,
+              "end": 558,
+              "text": ","
+             },
+             {
+              "type": "tuple",
+              "start": 559,
+              "end": 565,
+              "field": "element",
+              "children": [
+               {
+                "type": "(",
+                "start": 559,
+                "end": 560,
+                "text": "("
+               },
+               {
+                "type": "literal",
+                "start": 560,
+                "end": 561,
+                "field": "element",
+                "children": [
+                 {
+                  "type": "integer",
+                  "start": 560,
+                  "end": 561,
+                  "text": "5"
+                 }
+                ]
+               },
+               {
+                "type": ",",
+                "start": 561,
+                "end": 562,
+                "text": ","
+               },
+               {
+                "type": "literal",
+                "start": 563,
+                "end": 564,
+                "field": "element",
+                "children": [
+                 {
+                  "type": "integer",
+                  "start": 563,
+                  "end": 564,
+                  "text": "6"
+                 }
+                ]
+               },
+               {
+                "type": ")",
+                "start": 564,
+                "end": 565,
+                "text": ")"
+               }
+              ]
+             },
+             {
+              "type": ")",
+              "start": 565,
+              "end": 566,
+              "text": ")"
+             }
+            ]
+           },
+           {
+            "type": "]",
+            "start": 569,
+            "end": 570,
+            "text": "]"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

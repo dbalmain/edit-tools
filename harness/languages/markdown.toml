@@ -63,6 +63,10 @@ gate3 = "default"
 transparent_wrappers = []
 equivalent_kinds = []
 
+# The block grammar has no extras. HTML comments are `html_block` nodes; they
+# remain structurally checked and also feed gate 3's universal comment layer.
+comment_kinds = ["html_block"]
+
 # Measurement exclusions forced by the linearity invariant. prettier rewrites
 # that no package may match, so each lives in its own file:
 #   - `*em*` -> `_em_` (emphasis delimiter)

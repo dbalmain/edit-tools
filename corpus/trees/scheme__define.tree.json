@@ -1,0 +1,438 @@
+{
+ "language": "scheme",
+ "source_file": "corpus/src/scheme/define.scm",
+ "source": ";; define variable, define procedure, define-syntax. Also a `defxyz` call:\n;; emacs treats any head whose name starts with \"def\" as defun-style, so\n;; (defxyz a / b) indents like define, not like list.\n(define answer 42) ; a variable\n\n(define (square x)\n(* x x))\n\n(define (defxyz a b) ; name starts with \"def\"; the *call* below is the probe\na)\n\n(define (use-decoy a b)\n(defxyz a\nb))\n\n(define (use-ordinary a b)\n(list a\nb))\n",
+ "root": {
+  "type": "program",
+  "start": 0,
+  "end": 423,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 74,
+    "text": ";; define variable, define procedure, define-syntax. Also a `defxyz` call:"
+   },
+   {
+    "type": "comment",
+    "start": 75,
+    "end": 147,
+    "text": ";; emacs treats any head whose name starts with \"def\" as defun-style, so"
+   },
+   {
+    "type": "comment",
+    "start": 148,
+    "end": 201,
+    "text": ";; (defxyz a / b) indents like define, not like list."
+   },
+   {
+    "type": "list",
+    "start": 202,
+    "end": 220,
+    "children": [
+     {
+      "type": "(",
+      "start": 202,
+      "end": 203,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 203,
+      "end": 209,
+      "text": "define"
+     },
+     {
+      "type": "symbol",
+      "start": 210,
+      "end": 216,
+      "text": "answer"
+     },
+     {
+      "type": "number",
+      "start": 217,
+      "end": 219,
+      "text": "42"
+     },
+     {
+      "type": ")",
+      "start": 219,
+      "end": 220,
+      "text": ")"
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 221,
+    "end": 233,
+    "text": "; a variable"
+   },
+   {
+    "type": "list",
+    "start": 235,
+    "end": 262,
+    "children": [
+     {
+      "type": "(",
+      "start": 235,
+      "end": 236,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 236,
+      "end": 242,
+      "text": "define"
+     },
+     {
+      "type": "list",
+      "start": 243,
+      "end": 253,
+      "children": [
+       {
+        "type": "(",
+        "start": 243,
+        "end": 244,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 244,
+        "end": 250,
+        "text": "square"
+       },
+       {
+        "type": "symbol",
+        "start": 251,
+        "end": 252,
+        "text": "x"
+       },
+       {
+        "type": ")",
+        "start": 252,
+        "end": 253,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "list",
+      "start": 254,
+      "end": 261,
+      "children": [
+       {
+        "type": "(",
+        "start": 254,
+        "end": 255,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 255,
+        "end": 256,
+        "text": "*"
+       },
+       {
+        "type": "symbol",
+        "start": 257,
+        "end": 258,
+        "text": "x"
+       },
+       {
+        "type": "symbol",
+        "start": 259,
+        "end": 260,
+        "text": "x"
+       },
+       {
+        "type": ")",
+        "start": 260,
+        "end": 261,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": ")",
+      "start": 261,
+      "end": 262,
+      "text": ")"
+     }
+    ]
+   },
+   {
+    "type": "list",
+    "start": 264,
+    "end": 343,
+    "children": [
+     {
+      "type": "(",
+      "start": 264,
+      "end": 265,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 265,
+      "end": 271,
+      "text": "define"
+     },
+     {
+      "type": "list",
+      "start": 272,
+      "end": 284,
+      "children": [
+       {
+        "type": "(",
+        "start": 272,
+        "end": 273,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 273,
+        "end": 279,
+        "text": "defxyz"
+       },
+       {
+        "type": "symbol",
+        "start": 280,
+        "end": 281,
+        "text": "a"
+       },
+       {
+        "type": "symbol",
+        "start": 282,
+        "end": 283,
+        "text": "b"
+       },
+       {
+        "type": ")",
+        "start": 283,
+        "end": 284,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 285,
+      "end": 340,
+      "text": "; name starts with \"def\"; the *call* below is the probe"
+     },
+     {
+      "type": "symbol",
+      "start": 341,
+      "end": 342,
+      "text": "a"
+     },
+     {
+      "type": ")",
+      "start": 342,
+      "end": 343,
+      "text": ")"
+     }
+    ]
+   },
+   {
+    "type": "list",
+    "start": 345,
+    "end": 382,
+    "children": [
+     {
+      "type": "(",
+      "start": 345,
+      "end": 346,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 346,
+      "end": 352,
+      "text": "define"
+     },
+     {
+      "type": "list",
+      "start": 353,
+      "end": 368,
+      "children": [
+       {
+        "type": "(",
+        "start": 353,
+        "end": 354,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 354,
+        "end": 363,
+        "text": "use-decoy"
+       },
+       {
+        "type": "symbol",
+        "start": 364,
+        "end": 365,
+        "text": "a"
+       },
+       {
+        "type": "symbol",
+        "start": 366,
+        "end": 367,
+        "text": "b"
+       },
+       {
+        "type": ")",
+        "start": 367,
+        "end": 368,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "list",
+      "start": 369,
+      "end": 381,
+      "children": [
+       {
+        "type": "(",
+        "start": 369,
+        "end": 370,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 370,
+        "end": 376,
+        "text": "defxyz"
+       },
+       {
+        "type": "symbol",
+        "start": 377,
+        "end": 378,
+        "text": "a"
+       },
+       {
+        "type": "symbol",
+        "start": 379,
+        "end": 380,
+        "text": "b"
+       },
+       {
+        "type": ")",
+        "start": 380,
+        "end": 381,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": ")",
+      "start": 381,
+      "end": 382,
+      "text": ")"
+     }
+    ]
+   },
+   {
+    "type": "list",
+    "start": 384,
+    "end": 422,
+    "children": [
+     {
+      "type": "(",
+      "start": 384,
+      "end": 385,
+      "text": "("
+     },
+     {
+      "type": "symbol",
+      "start": 385,
+      "end": 391,
+      "text": "define"
+     },
+     {
+      "type": "list",
+      "start": 392,
+      "end": 410,
+      "children": [
+       {
+        "type": "(",
+        "start": 392,
+        "end": 393,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 393,
+        "end": 405,
+        "text": "use-ordinary"
+       },
+       {
+        "type": "symbol",
+        "start": 406,
+        "end": 407,
+        "text": "a"
+       },
+       {
+        "type": "symbol",
+        "start": 408,
+        "end": 409,
+        "text": "b"
+       },
+       {
+        "type": ")",
+        "start": 409,
+        "end": 410,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "list",
+      "start": 411,
+      "end": 421,
+      "children": [
+       {
+        "type": "(",
+        "start": 411,
+        "end": 412,
+        "text": "("
+       },
+       {
+        "type": "symbol",
+        "start": 412,
+        "end": 416,
+        "text": "list"
+       },
+       {
+        "type": "symbol",
+        "start": 417,
+        "end": 418,
+        "text": "a"
+       },
+       {
+        "type": "symbol",
+        "start": 419,
+        "end": 420,
+        "text": "b"
+       },
+       {
+        "type": ")",
+        "start": 420,
+        "end": 421,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": ")",
+      "start": 421,
+      "end": 422,
+      "text": ")"
+     }
+    ]
+   }
+  ]
+ }
+}

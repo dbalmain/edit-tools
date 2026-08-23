@@ -1,0 +1,13 @@
+;; quote, quasiquote, unquote, unquote-splicing. Each is its own node
+;; wrapping a datum, not a list headed by the word quote.
+(define quoted '(a b c)) ; quote
+
+(define nested-quote '(a (b (c d)) e))
+
+(define (fill-template x ys)
+`(+ ,x ,@ys))
+
+(define (build xs)
+`(begin
+,@xs
+x))

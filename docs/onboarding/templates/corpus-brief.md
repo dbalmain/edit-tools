@@ -381,6 +381,36 @@ also rejected by your override. It reports the useful count and fails rather
 than claiming success when that count is zero. A disagreement is a real finding
 about {{LANG}} and belongs in the report even when you remove the override.
 
+## Every normalisation you claim needs a file that forces it
+
+Write the normalisation list as a **table with a "forcing file" column**, and
+**leave the cell empty when there is no such file**. That empty cell is the
+artefact; do not quietly drop the row instead.
+
+This is the single highest-yield check in the whole pipeline and it currently
+runs only at stage B, one stage too late. Round 5 found four defects and **all
+four were this shape** — a rewrite the report claimed which no corpus file made
+the reference perform:
+
+- Ruby claimed three-or-more blank lines collapse to one. No file had three.
+- **Scheme described comment placement as nesting-driven. The real rule is
+  semicolon count** — `;` to `comment-column`, `;;` to code indent, `;;;` to
+  column 0, at every depth — and the corpus happened to contain only the two
+  cells where both rules agree. A package built on the report would have passed
+  while being wrong on three of six cells.
+- Haskell claimed a blank line is inserted after `module X where`. All fifteen
+  files already supplied it.
+- Haskell declared imports incomparable for sorting and missed collapsing.
+
+**None of the four moved any of the four counts**, so nothing but this check
+could have caught them. Writing the table is what surfaces them, and it takes
+about a minute.
+
+**Run the repo's markdown formatter over the report before committing it.** A
+report that is not formatter-clean produces a several-hundred-line cosmetic diff
+the moment a reviewer edits one sentence, which buries the actual change. This
+recurs every round.
+
 ## Report
 
 Write `corpus/reports/{{LANG}}/corpus-report.md`:

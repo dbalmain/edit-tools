@@ -1,0 +1,220 @@
+{
+  "language": "ruby",
+  "submission": "lang-ruby",
+  "builder": "Claude (Opus 5), orchestrator session",
+  "gate1_idempotence": {
+    "pass": true,
+    "got": 30,
+    "of": 30
+  },
+  "gate2_width": {
+    "pass": true,
+    "waived": false,
+    "overflow_lines": 10,
+    "reference_overflow": 13,
+    "note": "stage-D Ruby-only re-score; syntax_tree does not count a trailing comment toward group fit and can therefore manufacture overflow of its own"
+  },
+  "gate3_nondestruction": {
+    "pass": true,
+    "got": 30,
+    "of": 30,
+    "method": "default"
+  },
+  "gate4_agreement": {
+    "by_width": {
+      "80": {
+        "agreement": 9,
+        "of": 14,
+        "accepted": 0,
+        "stale": 0,
+        "unreviewed": 5,
+        "excluded": 1,
+        "review_coverage": 0.643,
+        "review_threshold_met": false
+      },
+      "40": {
+        "agreement": 5,
+        "of": 14,
+        "accepted": 0,
+        "stale": 0,
+        "unreviewed": 9,
+        "excluded": 1,
+        "review_coverage": 0.357,
+        "review_threshold_met": false
+      }
+    },
+    "agreement": 14,
+    "of": 28,
+    "accepted": 0,
+    "stale": 0,
+    "unreviewed": 14,
+    "excluded": 1,
+    "review_coverage": 0.5,
+    "review_threshold_met": false,
+    "note": "review coverage is 0 accepted by construction: stage C classifies, stage D records the verdicts with --approve. Every divergence below is classified and none is a package bug."
+  },
+  "rust_js_parity": "identical",
+  "refusals": [],
+  "matching_files": [
+    "blocks.rb",
+    "calls.rb",
+    "collections.rb",
+    "comments.rb",
+    "control_flow.rb",
+    "defs.rb",
+    "normalisation.rb",
+    "patterns.rb",
+    "strings.rb"
+  ],
+  "size": {
+    "js-runtime": 13610,
+    "packages": 1944,
+    "total": 15554,
+    "per_language": {
+      "ruby": {
+        "package": 1944,
+        "with_runtime": 15554
+      }
+    }
+  },
+  "size_delta_vs_main": {
+    "js_runtime_gzip": {
+      "main": 13610,
+      "now": 13610,
+      "delta": 0
+    },
+    "package_gzip": 1944,
+    "per_edit": []
+  },
+  "fill": {
+    "wanted": true,
+    "files_that_would_benefit": [
+      "operators.rb@80"
+    ],
+    "note": "not fill over a child list, which is built. Ruby wants fill's per-separator decision applied to a flatten spine: syntax_tree packs an operator chain and wraps, while flatten joins with a Concat so every operator breaks together. Worth exactly one pair here."
+  },
+  "runtime_edits": [],
+  "harness_edits": [],
+  "divergences": [
+    {
+      "case": "collections.rb@40",
+      "id": "ruby/collections.rb@40",
+      "hash": "18f9ccc6a582d56a6d40120bd49e48ce0cfa90484a59fb7e2adc4d2075a6ee28",
+      "verdict": "design limit",
+      "entry": 6,
+      "kind": "mixed = [...] fits but its trailing comment does not; the group counts it and syntax_tree does not. Stage D fixed the separately expressible empty-array hunk with a zero-child branch"
+    },
+    {
+      "case": "comments.rb@40",
+      "id": "ruby/comments.rb@40",
+      "hash": "59c476a7ed39fd557c6b1f29e19d02aa4d71c703964fb95acf197bb809121055",
+      "verdict": "design limit",
+      "entry": 6,
+      "kind": "same: a 14-character assignment breaks in three because of its comment"
+    },
+    {
+      "case": "normalisation.rb@40",
+      "id": "ruby/normalisation.rb@40",
+      "hash": "bc5e840bc604d346bf3d4811076573cd689996d09ddf3f0c309d0ead5b4bcdba",
+      "verdict": "design limit",
+      "entry": 6,
+      "kind": "same, on trailing_spaces = 1. Stage D fixed the separately expressible empty-parameter hunk with the shared zero-child branch"
+    },
+    {
+      "case": "long_sequences.rb@80",
+      "id": "ruby/long_sequences.rb@80",
+      "hash": "7da01a3f78c70c9865825719bc0750a91d3ccd9c7e2c862de2c7619a375aa711",
+      "verdict": "design limit",
+      "entry": 6,
+      "kind": "the 80-character configure() plus a comment reaches 108 and syntax_tree still will not wrap it; the operator chain also needs fill over a flattened spine"
+    },
+    {
+      "case": "chains.rb@80",
+      "id": "ruby/chains.rb@80",
+      "hash": "1cc97aaaa9280cd3b7b189301aa7bde721cb17f62e24af14e12bc75eb4bad2e5",
+      "verdict": "design limit",
+      "entry": null,
+      "kind": "method chain breaks at the dots; flatten's three-field spine cannot fold a call that also carries arguments and a block"
+    },
+    {
+      "case": "chains.rb@40",
+      "id": "ruby/chains.rb@40",
+      "hash": "e26f0ce975624f64ec9c5843f5e0e43c29c7e98a339ebdd1c753e6523e0577cf",
+      "verdict": "design limit",
+      "entry": null,
+      "kind": "same chain limit at the narrow width, plus entry 6 on the short chain's trailing comment"
+    },
+    {
+      "case": "kitchen.rb@80",
+      "id": "ruby/kitchen.rb@80",
+      "hash": "7d3381aae9b4b2bc3933d89dc233efdceada769ad957335cae32189056f4e8e5",
+      "verdict": "design limit",
+      "entry": 1,
+      "kind": "raise KeyError, wraps its second argument to the first argument's column, not to an indent step"
+    },
+    {
+      "case": "kitchen.rb@40",
+      "id": "ruby/kitchen.rb@40",
+      "hash": "6770ebd70da5f35ce47465b74fa7040500b26b3aaf8830d0cd6a6758f2434ab2",
+      "verdict": "design limit",
+      "entry": 1,
+      "kind": "entry 1 on raise, the rescue exception list, and the on_error continuation; the chain limit once"
+    },
+    {
+      "case": "patterns.rb@40",
+      "id": "ruby/patterns.rb@40",
+      "hash": "17224478c826a78ccf8a79678769c78f58b510b348fec8b76edeb9c58462baa6",
+      "verdict": "design limit",
+      "entry": 1,
+      "kind": "a broken hash pattern aligns to the in-clause prefix column and packs onto the aligned line; the flat find pattern also hits entry 6 because of its trailing comment"
+    },
+    {
+      "case": "nesting.rb@80",
+      "id": "ruby/nesting.rb@80",
+      "hash": "fd0e7bfc78c2f6d5987833ccb15a9bf0c19e57137be2d0f0086802d452f3f742",
+      "verdict": "design limit",
+      "entry": 2,
+      "kind": "a hash directly inside a hash breaks when its parent does; arrays and calls in the same position do not. Selective by child kind, so it is entry 2 crossed with entry 10; row also hits entry 6 at width 80 -- see report"
+    },
+    {
+      "case": "nesting.rb@40",
+      "id": "ruby/nesting.rb@40",
+      "hash": "ec71ebe80070856499efb5adac9a59fba7ee69a9753b9db8d344079da7a85cbf",
+      "verdict": "design limit",
+      "entry": 2,
+      "kind": "same cascade at the narrow width"
+    },
+    {
+      "case": "long_sequences.rb@40",
+      "id": "ruby/long_sequences.rb@40",
+      "hash": "2ebe4088325e06d216e99c3eae1a364654d1d99f2643e988dac8253db49fa24c",
+      "verdict": "design limit",
+      "entry": 8,
+      "kind": "operator-chain packing; the array of hashes agrees at this width"
+    },
+    {
+      "case": "operators.rb@80",
+      "id": "ruby/operators.rb@80",
+      "hash": "95b2bf67273801bec9bb46063eb8fcfadb3e1204b7a4cceee61cd84fcc1233a0",
+      "verdict": "design limit",
+      "entry": 8,
+      "kind": "flatten joins with a Concat so every operator breaks together; syntax_tree packs the chain"
+    },
+    {
+      "case": "operators.rb@40",
+      "id": "ruby/operators.rb@40",
+      "hash": "7b88c61d5eef7205ddee48af0d16ef34ae9da8ea3f9acffc44e40fbca09c1ebb",
+      "verdict": "design limit",
+      "entry": 8,
+      "kind": "the same packing limit, plus entry 6 on simple = a + b"
+    }
+  ],
+  "excluded": [
+    {
+      "case": "block_conversion.rb@40",
+      "id": "ruby/block_conversion.rb@40",
+      "hash": "dcf408ea474cc64b455b7ee94ee31ba4ed04ea324ee2f3ccfdbfcdf79c7f8abf",
+      "reason": "declared incomparable in harness/languages/ruby.toml: syntax_tree rewrites { ... } to do ... end by whether the body fits, which is a named-node rewrite gate 3 rejects"
+    }
+  ]
+}

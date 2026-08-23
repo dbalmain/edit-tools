@@ -27,7 +27,10 @@ here are the evidence: their rules use the same small Doc language.
 ## The rule language
 
 An expression is a JSON array whose first element is the opcode. The set is
-small and closed; an unknown opcode is a load-time refusal in both runtimes.
+small and closed — **twenty-seven opcodes**, listed in the tables below — and an
+unknown opcode is a load-time refusal in both runtimes. `rust/src/pkg.rs`'s
+`Expr` loader and `runtime-js/bundle.js`'s `validateExpr` are the contract;
+this document explains it and has drifted behind it before.
 
 Repeated rule shapes can be named in `defs` and instantiated with `use`:
 
@@ -66,6 +69,10 @@ unknown names, bad argument counts and holes outside a definition body.
 | `["hard"]`       | always a newline; forces every enclosing group open      |
 | `["sp"]`         | a space, never a break                                   |
 | `["blank", n]`   | up to `n` blank lines, as the source had them; see below |
+| `["srcgap"]`     | exact horizontal source whitespace flat, newline broken |
+| `["srcline"]`    | a space, or a newline where the source broke the line    |
+| `["srcsoft"]`    | nothing, or a newline where the source broke the line    |
+| `["srcbreak"]`   | a `line`, or a hard newline where the source broke it    |
 
 `["blank", n]` takes an optional third operand, a list of node types. A gap next
 to one of those types opens to exactly `n` — the cap is also a floor, but only
@@ -92,6 +99,8 @@ Every opcode that emits a child **consumes** it. See _linearity_ below.
 | `["opt", sel, e]`        | evaluate `e` only if the child under the cursor matches `sel`                                                      |
 | `["verbatim"]`           | take every child and emit the node's original source text, exactly — after the subtree's offsets check out         |
 | `["flatten", type, sep]` | collect a left-nested operator chain and join it — see below                                                       |
+| `["drop", "s"]`          | consume the token `s` without emitting it, if it is there — the only sanctioned deletion                          |
+| `["srctrail", "s"]`      | adopt a source separator and emit it only when what follows starts a fresh line                                    |
 
 `fill` has the same cursor and separator-consumption contract as `each`, but
 builds an alternating content/separator Doc. At each separator the printer asks
@@ -102,6 +111,28 @@ content broken too. A `Hard` or `BreakParent` still propagates through a fill to
 force its enclosing group open; that does not turn the fill back into an
 all-or-nothing list.
 
+The four `src*` opcodes mirror the **source's own line structure** rather than a
+group's fit, and they are what a source-preserving reference needs. `srcline`,
+`srcsoft` and `srcbreak` ask only whether the source put a line break before the
+child under the cursor; `srcgap` reads the whitespace itself. Go uses three of
+them, JavaScript one, Scheme is built almost entirely out of two, and HTML's
+`srcgap` is the one that reads bytes rather than a flag. A reference that
+reflows — black, prettier, rustfmt — should not reach for these; a reference
+that only re-indents cannot be expressed without them.
+
+`["drop", "s"]` is the mirror of the linearity invariant that forbids inventing
+token text: it deletes one **declared-punctuation** token, refuses on a named
+node, and refuses if the token carries a comment. Ruby uses it to turn
+`x = 1; y = 2` into two statements.
+
+`["cell"]` and `["cellblock", e…]` mark column positions for the alignment pass
+in `rust/src/align.rs`, which the `comment_cells` header field scopes. They are
+not layout in the Wadler sense and a package that does not align uses neither.
+
+`["group", 0.18, e…]` takes an optional leading fraction: the group must fit
+within that fraction of the width, not the whole of it. rustfmt's nine widths are
+what forced it.
+
 ### Choice
 
 | Opcode                       | Meaning                                             |
@@ -110,6 +141,8 @@ all-or-nothing list.
 | `["trail", "s", sel]`        | the trailing-separator policy — see below           |
 | `["paren", e…]`              | the balanced-paren policy — see below               |
 | `["autoparen", sel]`         | `paren` applied to a child, if its type asks for it |
+| `["cell"]`                   | a column marker for the alignment pass              |
+| `["cellblock", e…]`          | the region a column of `cell` markers may align in  |
 
 Selectors pick a child: `"f:name"` (tree-sitter field), `"t:identifier"` (node
 type), `"named"` (any type not listed in the package's `tokens`), `"*"`. The
@@ -122,6 +155,15 @@ node, not the cursor. YAML uses `child-count` to distinguish a value
 `block_node` whose direct child is a block scalar from the same wrapper around
 a nested mapping or sequence, without making rule selection depend on comment
 decoration. JSON uses `all` to apply `fill` only to numeric arrays.
+
+Two path predicates inspect leaf content without turning dispatch into an
+unbounded descendant search. `["text", [sel…], [spellings…]]` is true when an
+exact direct-child selector path ends at a leaf with one of the listed
+spellings; `["multiline", [sel…]]` tests the same path for a leaf containing a
+line ending. Paths must be non-empty. HTML uses
+`["t:start_tag", "t:tag_name"]` to select block versus inline layout and
+`["t:text"]` to preserve multiline `pre` content. An outer inline tag does not
+accidentally become block merely because a deeper nested element is block.
 
 ### The package header
 
@@ -159,6 +201,14 @@ not strings, because packages may choose whitespace quantities but may not emit
 arbitrary text. `blank_cap` applies only inside runtime-owned comment
 attachment; the `blank` opcode's operand still governs gaps between items
 visible to a rule.
+
+`srcgap` is the safe source-aware exception to fixed whitespace. It reads the
+gap between the children on either side of the cursor. An empty gap emits
+nothing and offers no break; horizontal whitespace is preserved byte-for-byte
+when flat and becomes a newline when its group breaks; a source newline remains
+a hard break. A non-whitespace gap is a refusal, so an omitted grammar token can
+never be erased through this opcode. HTML needs all three cases because its
+grammar omits rendering-significant inter-element spaces.
 
 ### A rule, read end to end
 
@@ -331,6 +381,13 @@ Comments are consumed exactly once and in source order, so the partition the
 linearity invariant asks for still holds — the package simply never sees them.
 Every comment also emits a `BreakParent`, so a group can never flatten a comment
 onto the following line.
+
+That attachment is selected by the package's `comments` list. HTML deliberately
+leaves its `comment` node out: an HTML comment is inline markup whose exact
+position can affect rendered whitespace, not a language trailing comment. It
+therefore remains an ordinary leaf consumed by the surrounding element rule.
+This keeps `<span>x</span><!-- c -->` adjacent instead of applying a code-style
+comment gap or moving the comment to the end of the printed line.
 
 ## Two runtimes, written twice
 

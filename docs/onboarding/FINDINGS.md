@@ -454,6 +454,34 @@ it for exactly that reason.
 **Decide when:** a second language hits it. One divergence in one language does
 not buy an IR feature.
 
+### Ruby is the second language, and it disproves the cheap version
+
+**2026-08-23.** syntax_tree cascades a broken hash into a hash **value** — and
+into nothing else. Five constructions run against the reference at width 80,
+reproduced independently at stage D:
+
+| Construction | Parent breaks | Inner |
+| --- | --- | --- |
+| hash of hashes | yes | **breaks** |
+| hash of arrays | yes | stays flat |
+| hash of calls | yes | stays flat |
+| array of hashes | yes | stays flat |
+| array of arrays | yes | stays flat |
+
+So the "decide when" condition is met — **and the entry should be re-read before
+it is built.** A generic *expanded parent forces expanded children* would break
+the arrays and calls that syntax_tree leaves flat, trading `nesting.rb` for
+`collections.rb` rather than fixing anything. Stage D tested the package-level
+version of the same idea (a group-less `hash`) and measured exactly that: it
+fixed `nesting@40` and regressed `collections@80`.
+
+What Ruby needs is inheritance **the parent asks for, per child kind**. The
+`pair` rule can already see that its value is a hash — `["all","f:value",["hash"]]`
+is an existing predicate on an existing node — and needs a way to format that
+child without its own group. That is one child-emitting opcode, decidable before
+layout, which puts it on entry 10's side of the line stage D drew for CSS rather
+than in the layout-time context this entry describes.
+
 ## 3. A break-only separator pins its group
 
 **Status:** open · **Cost:** local · **Languages:** TOML (2), CSS (2), YAML (4),
@@ -698,10 +726,19 @@ the pair `group` fixes those scalar lines and regresses every broken flow
 collection, so the package has a choice between two wrong answers and no way to
 ask for the right one.
 
+**Ruby is the third language, and the second in prettier's direction.**
+syntax_tree never counts a trailing comment: `configure(…)` is exactly 80
+characters, its comment takes the line to 108, and the formatter still refuses to
+wrap it. Stage D attributed **eight of Ruby's fourteen divergent pairs** to this
+entry — `collections@40`, `comments@40`, `normalisation@40`, `long_sequences@80`
+and four more where it compounds with another cause. Ruby's report notes that
+syntax_tree therefore *manufactures* overflow, which is reference behaviour and
+not a package defect.
+
 **Decide when: now — this is the cheapest open entry with real evidence behind
-it.** A local opcode, both modes proven necessary by two references pulling in
-opposite directions, and five divergences in one language waiting on it. It is
-the second thing to build after `fill` (entry 8), and arguably before.
+it.** A local opcode, both modes proven necessary by three references, and
+thirteen divergences across two languages waiting on it. It is the second thing
+to build after `fill` (entry 8), and arguably before.
 
 ## 7. A rule cannot tell a comment-forced break from a width-forced break
 
@@ -732,6 +769,14 @@ finding reported from _corpus_ observation is a hypothesis about the reference,
 and only a package makes it a claim about the IR. That is exactly why "needs
 stage-C confirmation" exists, and it earned its place on the first use.
 
+**Scheme was considered for it and ruled out, 2026-08-23.** Its package hits
+something adjacent — `srcsoft` double-breaking against the runtime's own comment
+flush — and stage D ruled that this is earlier and narrower than break
+provenance: not *why* the group broke, but whether a break is about to be
+emitted for me. That is **entry 28**, not this one. Recorded here because the
+temptation to bank it as the second language was real and the entry has already
+been overcounted once.
+
 **Decide when:** a second language genuinely hits it. One divergence in one
 language does not buy an IR feature, and this entry has already been overcounted
 once.
@@ -747,6 +792,15 @@ package on top of the earlier **+44 B** · **Languages:** CSS (measured), JSON
 The IR breaks a group all-or-nothing: every separator breaks, or none does.
 Neither reference does that. prettier packs short items onto a line and wraps to
 the next, and it decides per line rather than per group.
+
+**XML is a third language and it uses `fill` without asking for anything.**
+`@prettier/plugin-xml` packs the doctype's external ID — both literals on the
+`PUBLIC` line at width 80, all three lines at 40 — and a `group` gets one of the
+two widths wrong whichever way it is written. The whole rule is
+`["indent", ["fill", "*", ["line"]]]`, and the `*` is the interesting part: the
+`PUBLIC` keyword has to be a fill **item** rather than a fixed prefix, because
+the first break falls after it at 40 and not at 80. Third language, third
+construct shape, no extension needed.
 
 **This is the best-evidenced request in the register, and the cheapest.** It was
 asked for by CSS's stage-C builder, corroborated independently against JSON
@@ -851,6 +905,14 @@ context and was not built). Agreement **4/6 → 6/6**; both `nested.json` review
 retired.
 
 ## 9. Comment placement cannot see the surrounding syntax
+
+**Haskell is the second language, 2026-08-23**, which is this entry's own stated
+trigger. The record-comment hunk in `comments.hs` is exactly it: an own-line
+comment inside a record is bound to the following field by runtime attachment
+before any rule runs, so no package expression can place it. Unlike TOML's
+instance — which this entry correctly reassigns to entry 1 — Haskell's has
+nothing to do with rendered widths, so it is this entry and not that one.
+
 
 **Status:** open, **promoted** · **Cost:** contextual · **Languages:** CSS,
 YAML, Go — and TOML retrospectively
@@ -1114,7 +1176,18 @@ preferred handling, and a sharper signal than a divergence would have been,
 because the language had to give up measuring the construct at all. Two
 languages now want `drop`, which is the condition this entry set for deciding.
 
-### Built. It works, and it earns nothing yet.
+### Built. It works, and Ruby is the caller it was waiting for.
+
+**2026-08-23.** `drop` was built for rustfmt's leading `|`, which is parked, and
+this section said for three rounds that nothing used it. Ruby uses it:
+`x = 1; y = 2; z = 3` becomes three statements only because the package can drop
+the `;` its grammar leaves between them, and `normalisation.rb` matches the
+reference at both widths on that basis. The parking argument was "no caller
+worth the bytes"; there is now a caller, in a merged language, and entry 26
+proposes a second from the opposite direction.
+
+### The original note, for the record
+
 
 `["drop", "|"]` consumes a token without emitting it. Absent is fine — a package
 says "drop this if it is here". Two refusals guard it, because this entry said
@@ -2009,8 +2082,33 @@ Two lessons worth keeping:
 
 ## 20. `paren` waits for a break; prettier adds parens that never wait
 
-**Status:** open · **Cost:** **local** · **Languages:** JavaScript (2 corpus
-files), TypeScript (unonboarded, same reference)
+**Status:** **built** (2026-08-23, by Haskell's stage C) · **Cost:** **+43 B
+gzip**, as predicted · **Languages:** JavaScript (2 corpus files, unclaimed),
+Haskell (built it), TypeScript (unonboarded, same reference)
+
+### Built, by the second reference to demand it
+
+`["paren", true, e…]` takes an optional leading boolean; the unflagged form is
+unchanged, so no existing package moved. ormolu is the second reference: it
+writes `class (Eq a) => Sized a` on a line that never breaks, and Haskell's stage
+D confirmed by test that the unflagged policy emits nothing in flat layout at any
+width, and that forcing the break to make `IfBreak` fire produces `(\n  a\n)` —
+the wrong bytes. So this entry's "no opcode can express that today" was exact.
+
+Stage D also verdicted the **shape**: the flag narrows rather than widens.
+`always` is ignored when `adopt` fires, both refusal branches are unchanged, and
+an unconditional wrap is easier to audit than a conditional one — which is what
+this entry argued when it asked for it.
+
+**JavaScript has not picked it up.** The pickup this entry priced (7/14 → 9/14
+at width 80) is still available, and it is not quite free: JavaScript's two
+affected divergences carry accepted ledger reviews, and changing the package
+makes those records **stale**, which is a hard scorer failure until a reviewer
+re-approves or retires them. The work is a package edit plus a re-review, not a
+package edit alone. `autoparen` also has no `always` form yet — only `paren`
+does — so check which of the two JavaScript actually needs before starting.
+
+### The original entry, as written before it was built
 
 `paren` and `autoparen` are the two sanctioned token-addition policies, and both
 are **break-driven**: they emit `(` `)` through `IfBreak`, so a group that fits
@@ -2393,3 +2491,494 @@ as a house rule on a cited regression; the regression is now **measured**, and i
 is larger than the citation said — a let-level group takes Rust from 22/36 to
 17/36, regressing `sequences.rs` and `nesting.rs` at both widths, `macros.rs@60`
 and `strings.rs@100`, while still not fixing `strings.rs@60`.
+
+## 24. An injected region is spliced by offset, and a reflow invents lines the host never saw
+
+**Status:** open · **Cost:** **contextual** · **Languages:** Markdown (HTML next)
+
+A guest region is extracted as a **byte slice** of the host document, parsed by
+the guest grammar, and spliced back by adding one number to every guest offset.
+That works for as long as the guest's bytes are a contiguous, unmodified run of
+the host's bytes. **Markdown's block quote is the first construct where they are
+not**, and it breaks the design in two different places — the second of which
+has no proposed fix at all.
+
+### What a quoted fence is, and what it does
+
+A fenced code block inside a block quote carries a `> ` continuation marker on
+every line:
+
+````markdown
+> ```json
+> { "a": 1, "b": [1, 2, 3] }
+> ```
+````
+
+tree-sitter includes those markers in the span of `code_fence_content`, so
+`injection.region_for` hands the guest parser the markers along with the
+content. Measured, both shapes in one document:
+
+```
+list item:   b'{ "a": 1, "b": [1, 2, 3] }\n  '   -> json.loads OK
+block quote: b'{ "a": 1, "b": [1, 2, 3] }\n> '   -> json.loads FAILS
+```
+
+The list-item form works **by luck**: its continuation is spaces, and JSON
+treats spaces as whitespace. Nothing about it is a designed success. Any host
+construct whose continuation is not whitespace fails the same way — the parse
+fails, the region falls back to `verbatim`, and the fence body is emitted
+untouched with no warning.
+
+### The first defect: stripping breaks the splice
+
+The obvious repair — drop the `block_continuation` children from the region's
+source — was proposed by markdown's stage A with correct file, function and line
+numbers, and is **wrong**. `gen_trees.convert` rebases guest offsets onto the
+host with a **single additive base** and reads each leaf's text from **host**
+bytes. Remove characters from the middle and that correspondence becomes
+piecewise: every leaf after the first stripped marker reads from the wrong
+place. Two agents measured it independently on different fences — **16 of 17**
+and **21 of 23** leaves wrong, `"alpha"` coming back as `' "alp'` — and
+`check_clean` only looks for `ERROR`/`MISSING`, so the corrupted tree looks
+healthy.
+
+That much has a known fix: `Region` carries retained
+`(guest_start, host_start, len)` runs and the consumers use the map instead of a
+scalar. It is a real change across `injection.py`, `gen_trees.py` and
+`gate3.py`, and it is not the hard part.
+
+### The second defect, and the actual finding
+
+**The offset map repairs reading and does nothing for writing.** Strip the `> `
+prefixes and the guest sees clean JSON — then the guest **reflows it**, and the
+lines it emits are lines the host document never contained. Each one needs a
+`> ` prefix that nothing puts back. The host has already handed off; the guest
+does not know it is inside a block quote; no opcode in the package format takes
+a per-line prefix; and the printer's `indent` carries a column count, not a
+string.
+
+So the boundary is wrong in a way an offset map cannot reach: **a host construct
+can own a per-line prefix, and the guest can create lines after the host has
+stopped looking.** Splicing is a byte-range operation and this is not a
+byte-range problem.
+
+Found by codex-Sol on the harness slice, 2026-08-22, having been asked to build
+the offset map and invited to refuse it. It reproduced the first defect, built
+the map on paper, and declined — which is the outcome the prompt named as
+acceptable and is worth more than the implementation would have been.
+
+### Why this is not entry 12
+
+Entry 12 is YAML: **semantic content living in the whitespace between two
+nodes**, invisible to a gate that compares nodes. This one is visible to
+everything — the `> ` markers are right there in the source, in the span, in the
+tree. The problem is not that we cannot see them. It is that we have nowhere to
+**put them back**, on lines that do not exist until after the guest has run.
+
+### What it would take
+
+Not one capability, but a choice between two shapes, and this entry exists to
+make that choice rather than to prejudge it:
+
+- **A per-line prefix on the region**, carried through the printer so every line
+  the guest emits inside the region is prefixed on the way out. Cheap to state,
+  and it puts a host concern inside the guest's printer.
+- **Prefix re-application as a host post-pass**, after the guest returns its
+  rendered block, using the same continuation the host stripped. Keeps the guest
+  ignorant, and needs the host rule to know how many lines came back.
+
+The second looks closer to how `alignCells` already works — a text post-pass
+after `print()` — and cell alignment (entry 18, LEDGER row 1) is the precedent
+for a whole-text pass being the right shape rather than a printer change. That
+is an argument, not a decision.
+
+**Decide when:** a second host language wants it. **HTML is the likely second
+and is already onboarded** — `<script>` and `<style>` inside a construct with a
+continuation marker would hit the identical wall. Markdown alone is not enough
+to build on, which is why this is open rather than scheduled.
+
+**What it costs to leave:** a fenced code block inside a block quote is not
+formatted. It is a common shape in real documents — quoted examples, docs that
+block-quote a snippet — and it is one of the shapes Dave's headline markdown
+requirement is written in. Markdown's corpus avoids it deliberately and its
+report says so, so nothing is silently wrong; the construct is simply out of
+reach. `probe_injection.py` now reproduces the limitation permanently, so the
+next person meets the real problem instead of rediscovering the shallow one.
+
+## 25. Transparent parens are sound against loss and blind to legality
+
+**Status:** open · **Cost:** **contextual — one language so far** · **Languages:** Haskell
+
+`transparent_wrappers` elides a declared node kind when it has exactly one named
+child, so a formatter that removes redundant parentheses is not accused of
+losing a node. Haskell needs it: ormolu rewrites `class Eq a =>` to
+`class (Eq a) =>`, and without the declaration **gate 3 would reject the
+reference formatter's own output**. That is not a corner case, it is the normal
+path.
+
+The declaration was measured rather than assumed, and the sound half is the
+larger half. Of nine paren-drop attacks built against the Haskell corpus, **six
+are rejected**, including every load-bearing one: the application spine,
+precedence, associativity, a negative literal, a type arrow, a lambda argument.
+All 25 `parens` nodes across corpus and reference have exactly one named child,
+so the elision precondition holds wherever it fires. Nothing is being smuggled
+past the gate by accident.
+
+### The hole
+
+`g (do x; y)` elides to `g do x; y`. Gate 3 accepts it, because the two have the
+same elided signature — and **the second is only valid GHC under
+`BlockArguments`**. A formatter that stripped those parens would pass every gate
+and emit a file that does not compile.
+
+So the boundary is: **gate 3 asks whether the tree still means the same thing,
+and cannot ask whether the text is still legal.** Those are different questions
+in a language whose grammar is extension-dependent. Node equivalence is a
+property of the tree; parseability is a property of the tree *plus a set of
+enabled extensions the tree does not carry*.
+
+Found by Haskell's stage B, 2026-08-22, which recorded it rather than
+"fixing" it — correctly, because the obvious fix is worse than the defect.
+
+### Why not just drop the declaration
+
+Because the alternative fails harder and immediately. Not declaring `parens`
+makes gate 3 reject ormolu's own output on the normal path, which means Haskell
+cannot onboard at all. Trading a hole that no formatter on the roster falls
+into for a gate that rejects the reference is not a trade.
+
+Nor is a narrower declaration available today: the elision is keyed on the node
+kind and the one-named-child rule, and `(do …)` is a `parens` with exactly one
+named child like every other. Distinguishing it needs the gate to look at *what*
+the single child is, which it currently does not.
+
+### What it would take
+
+A predicate on the elided child's kind — "elide `parens` unless its single named
+child is a `do` block" — is about the smallest honest shape, and it is a
+per-language exception list rather than a general rule, which is the part worth
+disliking. The general version is bigger: a gate arm that re-parses the
+formatted output with the language's own front end and asks whether it still
+compiles. That is a different kind of gate from the four we have — it needs a
+toolchain per language rather than a grammar — and it would subsume this entry
+along with several others.
+
+**Decide when:** a second language shows the same shape, or a package actually
+attempts the strip. Neither has happened. Note the class is not rare in
+principle — any language with optional syntax extensions can have two spellings
+that are tree-equivalent and not both legal — and Haskell is simply the first on
+the roster with one.
+
+**What it costs to leave:** nothing today. No package strips those parens, and
+the corpus does not contain the shape outside the probe that found it. The risk
+is a future Haskell package that discovers the elision and uses it deliberately,
+which is exactly the failure a recorded limit is meant to make visible before it
+is built on.
+
+Related: entry 13, whose mechanism is the same one seen from the other side —
+there, elision **cannot** fire because the node holds only anonymous tokens; here
+it fires where it should not.
+
+## 26. A token that appears only when the group breaks, at the front
+
+**Status:** open · **Cost:** **3 of 19 divergent pairs in TypeScript** · **Languages:** TypeScript (Rust is the mirror, entry 13)
+
+prettier writes a union that fits as `type T = A | B;` and a union that does not
+as:
+
+```typescript
+type Handler =
+  | ((event: Event) => void)
+  | ((event: Event) => Promise<void>)
+  | null;
+```
+
+The leading `|` on the first alternative **is not in the source** and appears
+**only when the group breaks**. Nothing in the opcode set emits it.
+
+### Why none of the three near-misses works
+
+- **`trail`** adds a token in the broken branch, which is the right conditional
+  — but it is *trailing*, and it is count-gated (entry 21). It puts a token
+  after the last item, never before the first.
+- **`autoparen`** is genuinely `IfBreak`-shaped, and it is the proof the Doc IR
+  can already express this: `IfBreak` exists in the IR. It is welded to
+  parentheses and to one construct.
+- **`drop`** (entry 13) is the exact inverse: rustfmt *removes* a leading `|`
+  the source has, and `drop` was built to express that and then parked for want
+  of a caller gate 3 accepts.
+
+So the IR is not missing the mechanism. **The package format is missing the
+opcode that reaches it**, and it is missing it in both directions at once.
+
+### The shape that would work
+
+`["lead", "|"]` beside `trail`: emit a declared punctuation token in the broken
+branch only, before the first item, consuming no child. Roughly `trail` with the
+position reversed and the count gate removed. TypeScript's stage C asked for
+exactly this and, told not to fake it, declined to build it — correctly. Faking
+an unconditional pipe changes the flat rendering and moves the failure somewhere
+harder to see.
+
+### What it does and does not buy
+
+**It buys three of nineteen divergent pairs**: `unions.ts` at both widths and
+`strings.ts@40`, where a template-literal union grows the pipe at 40. It also
+appears inside `comments.ts@80` alongside other causes.
+
+**It does not rescue TypeScript's agreement.** 11/30 becomes at most 14/30 —
+still far under the 70% floor, because sixteen of the nineteen misses are
+findings 2, 6, 9, 11, 13, 15 and 20 arriving together. **This entry exists to
+stop `lead` being built for the wrong reason.** It is a capability question
+about two languages, not a rescue for one score, and the number it moves is
+small enough that mistaking one for the other is easy.
+
+### Why it is worth building anyway
+
+The two-language bar is met, and met unusually cleanly: **prettier inserts a
+leading `|` and rustfmt deletes one**, and the same opcode family answers both.
+Entry 13 has been parked since round 3 for want of a second caller; this is the
+second caller, approaching from the opposite direction. Building `lead` and
+`drop` together, as one decision about leading delimiters rather than two
+opcodes, is the shape to consider — and it changes entry 13's parking argument,
+which was "no caller worth the bytes", not "wrong idea".
+
+**Decide when:** together with entry 13, not before. Neither is urgent; both are
+now paid for twice.
+
+**What it costs to leave:** three corpus pairs in one language, and entry 13
+stays parked with a built, tested, unused opcode. Nothing is silently wrong —
+every affected pair is classified `design-limit` in TypeScript's report with the
+reason named.
+
+## 27. The reference changes which named node the tree contains
+
+**Status:** open (recorded, not yet argued) · **Cost:** structural · **Languages:**
+Ruby (1 excluded file), HTML (1), XML (1) — three references, three spellings,
+one limit
+
+Three round-4/5 languages each had exactly one corpus file declared
+`[incomparable]`, and after three independent stage-C slices the three reasons
+turn out to be the same reason:
+
+| Language | Reference does | Named-node change |
+| --- | --- | --- |
+| Ruby | `{ … }` → `do … end` when the body stops fitting | `block` → `do_block` |
+| HTML | `<br>` → `<br />` | `start_tag` → `self_closing_tag` |
+| XML | `<a></a>` → `<a />` | `STag` + `ETag` → `EmptyElemTag` |
+
+None of these is a token rewrite that linearity forbids by itself — the runtime
+could emit the bytes. What stops all three is **gate 3**: the reparsed output
+holds a different named node than the source did, which is precisely what the
+ordered structural comparison exists to catch, and it cannot distinguish "the
+formatter chose an equivalent spelling" from "the formatter lost something".
+
+`equivalent_kinds` is the manifest field that looks like the answer and is not.
+Ruby's stage A considered it and rejected it in writing: brace blocks and
+`do`/`end` blocks "are not the same construct under a different name — the
+reference converts one to the other, but that is a token rewrite, not a
+transparent wrapper". Declaring them equivalent would make gate 3 blind to a
+real class of destruction in order to buy one file.
+
+**Why record it now rather than argue it.** Each language on its own looks like
+a curiosity worth one excluded file. Three of them, on three unrelated
+references, is a pattern: **references normalise between spellings that the
+grammar distinguishes**, and this design has decided — correctly, so far — that
+non-destruction outranks agreement every time. The open question is whether a
+fourth instance should still cost a file, or whether there is a sound way to
+declare a *directional*, gate-3-checked spelling equivalence that is narrower
+than `equivalent_kinds`.
+
+**Decide when:** a fourth language hits it, or someone proposes a directional
+equivalence with a story for how gate 3 stays honest. Not urgent: the cost is
+one file per language and every one is declared, classified and visible.
+
+## 28. A rule cannot see that a comment is about to be flushed
+
+**Status:** open · **Cost:** local · **Languages:** Scheme (1 file, plus a
+package-wide `blank_cap` workaround)
+
+Scheme's package needs `srcsoft` before a closing paren, so a `)` the source put
+on its own line stays there. When the last thing before that closer is an
+own-line comment, **two breaks are emitted for one line ending**: the package's
+`srcsoft`, and the runtime's own flush of the pending comment, which prepends
+its own `Hard`. The result is a blank line that was not in the source — and on
+the next pass that blank *is* in the source, so it grows by one line per pass
+and fails idempotence.
+
+The package ships `blank_cap: 0` to pin it at exactly one blank, which is
+stable. Stage D confirmed the cause and also confirmed the cost: `blank_cap` is
+package-wide, so it additionally deletes an intentional blank after any other
+attached leading comment. It is a real trade, not a corpus-local setting.
+
+**This is not entry 7**, and stage D ruled on that explicitly. Entry 7 is a
+print-time choice based on *why* a group broke — width or a comment. This is
+earlier and narrower: a rule cannot ask whether a comment is pending at the
+cursor, so it cannot suppress its own break in favour of the one the runtime is
+about to emit. A `srcsoft` that coalesced with a pending comment break would fix
+it with no new predicate and no new context.
+
+**Decide when:** a second language hits it, or Scheme's `blank_cap` workaround
+blocks something. It is cheap enough that it may be worth doing on one language.
+
+## 29. Indentation is a repeated unit; some references indent to a column
+
+**Status:** open · **Cost:** local · **Languages:** Scheme (2 files, from
+opposite directions)
+
+Two distinct gaps, both about the same assumption — that one indent level is a
+fixed unit repeated N times.
+
+**(a) The column is relative to a delimiter, not to the nesting level.** emacs
+`scheme-mode` indents a form's continuation lines to **one column past its open
+paren**, wherever that paren actually sits. The IR's `indent` is relative to the
+enclosing indent level; the two coincide only when the form starts at the
+current indent, and any shift — a quote mark before the paren, a form beginning
+mid-line — moves them apart. `quote.scm` is the one-character case: a leading
+`` ` `` puts every continuation line one column out. `long_sequences.scm` is the
+large one.
+
+The runtime already exposes the source's line structure to *breaks* — that is
+the whole `src*` family — and exposes nothing equivalent to indent. **There is
+no `srcindent`.** Stage D confirmed the gap is real and distinct from entry 10
+(`calls.scm` proves it: the same `list` head needs different anchors according
+only to source line structure), while correcting the report's claim that it is
+*larger* than head dispatch — some of those lines could also be bought by a head
+table.
+
+**(b) The column has to be rendered as tabs, then spaces.** `indent-tabs-mode`
+is `t` in scheme-mode, so column 8 is one tab and column 9 is a tab plus a
+space. `tab_indent` means one tab **per level**, which is right for gofmt and
+cannot produce this. `nesting.scm` is the clean demonstration and it is worth
+more than a passing file: **every column in it is correct** and it fails on
+nothing but the spelling. Stage D verified that re-rendering the final indent
+column as tabs-to-8 plus residual spaces makes the file byte-identical **without
+changing a single rule**.
+
+**Decide when:** (b) now — it is the cheapest open item in the register, it is a
+change to how one string is built, and it converts a measured near-miss into a
+pass. (a) with entry 10, since a head table and a column anchor are the two
+halves of Lisp indentation and building either alone leaves Scheme short.
+
+## 30. A node that includes its terminating newline makes the gap measure short
+
+**Status:** open, from an **unfinished** slice · **Cost:** local · **Languages:**
+Markdown (blocks the blank-line policy outright), Ruby (survivable, worked around)
+
+`blank` measures the source gap between two items by counting newlines between
+the previous item's end and the next item's start. That is correct only if a
+node's range stops at its content. When a grammar lets a block node **swallow
+the newline that ends its own line**, every gap after such a node measures one
+newline short, and `blank` cannot tell "the source had a blank line here" from
+"the source had none".
+
+Markdown is where it bites hardest. In `headings.md` the `atx_heading` for
+`# Alpha` spans 49–81 while its `inline` ends at 80, so the node covers the `\n`
+that ends the line; the blank line before `## Bravo` is then measured as zero.
+Both available policies are wrong, in opposite directions:
+
+- `["blank", 1]` under-inserts wherever a block ate its own newline — most of
+  `headings.md`.
+- `["blank", 1, [block types]]` makes the cap a floor and fixes those, then
+  over-inserts in `links.md` and `strings.md`, where adjacent blocks genuinely
+  have no blank and prettier keeps none. **Both files matched before the floor
+  and stopped matching after it**, which is the cleanest demonstration available
+  that this is not a policy choice.
+
+No package expression distinguishes the two cases: both present to `blank` as a
+zero-newline gap.
+
+**Ruby hit the same shape and survived it.** A heredoc body is a program-level
+sibling that begins with its own newline, so a statement separator emitting
+`hard` manufactured a blank line. There the fix was in reach — `srcsoft` mirrors
+the source's own break instead of forcing one, and the `;` branch supplies its
+own `hard` — because Ruby needed to *suppress* a break rather than *discover* a
+missing one. Markdown needs the missing one, and mirroring cannot invent it.
+
+**What it would take.** Either a gap measurement that walks to the last
+non-whitespace byte of the previous item rather than trusting `node.end`, or an
+opcode that reads the source gap the way `srcgap` does and exposes its newline
+count to `blank`. The first is a runtime correction with no package surface and
+would change nothing for any language whose grammar does not do this; the second
+is a new opcode. The first looks obviously right and that is exactly why it
+wants measuring before it is built — `srcgap` already reads the same bytes, so
+the two are closer than they look.
+
+**Decide when:** whenever Markdown is picked up again. It is the one thing
+standing between that package and a blank-line policy, and the package cannot be
+finished around it. Recorded now, from `wt/lang-markdown`, which **refuses on two
+files and is not merged** — so this is a measured claim about the IR from a
+package that does not yet work, and should be re-confirmed when it does.
+
+## 31. A separator cannot compare a leaf across adjacent siblings
+
+**Status:** open · **Cost:** local · **Languages:** Haskell (all three of its
+accepted divergences reduce to this)
+
+`blank`'s operands are a list of node **kinds** and a list of literal
+**spellings**. Neither can express "these two siblings share a name".
+
+ormolu's top-level blank-line rule is the case, and stage D established it by
+experiment rather than by reading the report's assertion. **ormolu inserts a
+blank between every top-level pair except a same-name group:**
+
+```
+add a b = …                    -- function, name `add`
+                               -- blank inserted
+scale x = …                    -- function, name `scale`
+
+sigDiff :: Int                 -- signature, name `sigDiff`
+                               -- blank inserted
+other x = 1                    -- function,  name `other`
+
+same :: Int                    -- signature, name `same`
+same = 3                       -- function,  name `same`   -- NO blank
+```
+
+The discriminator is the **binding name**, not the node kind and not the source
+gap. A kind-based floor gets the first two right and the third wrong; preserving
+the source gap gets the third right and the first two wrong. The only package
+expression left is enumerating this corpus's identifiers in the spellings list,
+which is a rule that fires on one corpus and no other.
+
+What it wants is small and it is worth saying precisely, because it is easy to
+mistake for something expensive: a **separator predicate that compares a selected
+leaf across the two siblings it sits between**. No rendered widths, so it is not
+entry 1. No ancestor state and no dispatch change, so it is not entry 10. No
+second pass. It is one comparison, available at the point the separator is
+already being evaluated.
+
+**Decide when:** a second language hits it. Haskell's builder asked for it
+independently of the reviewer, which is worth one line of corroboration but not
+two languages.
+
+## 32. Layout selected by the source's span, not by width or by one break
+
+**Status:** **built** (2026-08-23, `source-multiline`, **+42 B gzip**) ·
+**Languages:** Haskell (built it), JavaScript (prettier's `objectWrap`, named but
+not yet claimed)
+
+A reference class no entry named: **the layout of a container is decided by
+whether its source spanned more than one line**, as a whole, rather than by
+whether it fits a width or by where a single break sat.
+
+The `src*` family mirrors **one break position** — did the source break *here*,
+before the child under the cursor. That is the wrong question for ormolu, which
+asks whether the author broke the container *anywhere* inside it. A `group` is
+the other candidate and is wrong by construction rather than by degree: it is
+width-driven and ormolu is width-inert.
+
+Stage D checked the shape by building the inputs that separate "the author broke
+this container" from "there is a newline somewhere in the span" — a nested broken
+list inside a flat outer list, a block comment carrying an embedded newline, a
+Haskell string gap, and a newline inside the tested node but outside its braces.
+**ormolu goes multiline on all four**, so the implemented predicate and the
+reference's rule are the same rule, and the span-based spelling is faithful
+rather than approximate.
+
+**This is prettier's `objectWrap: preserve` too**, which JavaScript's stage B
+named as a trap: an object literal whose source has a newline after `{` stays
+expanded even when it fits flat, and a plain width-driven `group` is exactly the
+`collapse` setting a naive package implements. JavaScript can pass its corpus
+with a group and diverge on real input. Now that the capability exists, that is a
+package edit and a re-review away.

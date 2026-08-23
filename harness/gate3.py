@@ -3,12 +3,11 @@
 Two layers, and the split is the whole point.
 
 **Universal, every language, no opt-out.** The reparse must contain no `ERROR`
-and no `MISSING` node, and the sequence of *extra* nodes -- which is where every
-grammar we checked puts comments -- must be unchanged. Comments sit outside the
-structural comparison because a formatter is allowed to move a comment to a
-different parent; losing or duplicating one is real destruction. The old JSON
-checker compared `json.loads` output, which cannot see a comment at all, so
-dropping every comment in a JSON file passed gate 3. That hole is closed here.
+and no `MISSING` node, and the sequence of named extras plus manifest-declared
+comment node kinds must be unchanged. Most grammars put comments in extras; the
+declaration covers grammars that do not. The old JSON checker compared
+`json.loads` output, which cannot see a comment at all, so dropping every
+comment in a JSON file passed gate 3. That hole is closed here.
 
 **Structural, per language.** Either the generic default below, or an override
 the language's manifest names. An override is a file of its own so a builder
@@ -101,13 +100,12 @@ def _extras(
     aliases: dict[str, _mf.Manifest],
     out: list[str],
 ) -> list[str]:
-    """Named extras, in document order.
+    """Named extras and declared comment node kinds, in document order.
 
     Verified on tree-sitter-python 0.25.0 and tree-sitter-json 0.24.8: `comment`
     is a named node with `is_extra` set in both. Whitespace extras are anonymous
-    and never appear as nodes, so "named extras" is "comments" in practice --
-    but it is stated in terms of `is_extra` so a grammar with another kind of
-    extra is covered without anyone having to notice.
+    and never appear as nodes. Grammars whose comments are ordinary named nodes
+    declare their kinds in the manifest.
 
     Order is compared, not just the multiset. The multiset is what the workflow
     doc specified; the ordered sequence is strictly stronger, and black passes it
@@ -116,9 +114,11 @@ def _extras(
     the code it documents, which is destruction by any reading.
     """
     region = injection.region_for(node, source, manifest, aliases)
+    if region is not None and region.content == node:
+        return out
     for child in node.children:
-        if child.is_extra:
-            if child.is_named:
+        if child.is_extra or child.type in manifest.comment_kinds:
+            if child.is_named or child.type in manifest.comment_kinds:
                 out.append(source[child.start_byte:child.end_byte].decode().strip())
         elif region is not None and child == region.content:
             # A routed guest contributes its own extras through its recursive
@@ -206,10 +206,12 @@ def _generic(
             break
         node = inner[0]
     kind = canon.get(node.type, node.type)
+    region = injection.region_for(node, source, manifest, aliases)
+    if region is not None and region.content == node:
+        return ("injection_region", "")
     kids = [c for c in node.children if c.is_named and not c.is_extra]
     if not kids:
         return (kind, _tokens(node, source))
-    region = injection.region_for(node, source, manifest, aliases)
     return (
         kind,
         tuple(
@@ -292,36 +294,39 @@ def _region_signatures(
     out: list[tuple],
 ) -> tuple:
     region = injection.region_for(node, source, manifest, aliases)
+    if region is not None and region.content == node:
+        out.append(_region_signature(region, aliases, parsers))
+        return tuple(out)
     for child in node.children:
         if region is not None and child == region.content:
-            root = injection.parse(region, parsers)
-            if root is None:
-                out.append(("verbatim", region.source))
-            else:
-                guest = region.guest
-                assert guest is not None
-                guest_text = region.source.decode("utf-8")
-                guest_signature = _signature_from_root(
-                    guest_text,
-                    root,
-                    region.source,
-                    guest,
-                    aliases,
-                    parsers,
-                )
-                if guest_signature is None:
-                    out.append(("verbatim", region.source))
-                else:
-                    out.append(
-                        (
-                            "parsed",
-                            guest.name,
-                            guest_signature,
-                        )
-                    )
+            out.append(_region_signature(region, aliases, parsers))
         else:
             _region_signatures(child, source, manifest, aliases, parsers, out)
     return tuple(out)
+
+
+def _region_signature(
+    region,
+    aliases: dict[str, _mf.Manifest],
+    parsers: dict,
+) -> tuple:
+    root = injection.parse(region, parsers)
+    if root is None:
+        return ("verbatim", region.source)
+    guest = region.guest
+    assert guest is not None
+    guest_text = region.source.decode("utf-8")
+    guest_signature = _signature_from_root(
+        guest_text,
+        root,
+        region.source,
+        guest,
+        aliases,
+        parsers,
+    )
+    if guest_signature is None:
+        return ("verbatim", region.source)
+    return ("parsed", guest.name, guest_signature)
 
 
 def _signature_from_root(

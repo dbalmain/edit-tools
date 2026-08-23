@@ -1,0 +1,842 @@
+{
+ "language": "ruby",
+ "source_file": "corpus/src/ruby/blocks.rb",
+ "source": "# Block forms that are stable at both 80 and 40. The width-dependent\n# conversion lives in block_conversion.rb.\n\n# Short brace blocks stay braces at both widths.\nxs.each { |x| x } # identity\n\n# Nested braces that still fit at 40.\nxs.each { |x| ys.each { |y| x + y } }\n\n# Multi-statement blocks stay do/end at both widths.\nxs.each do |x|\n  handle(x)\n  log(x)\nend\n\n# A block as the last argument of a parenthesised call keeps braces.\nfoo(1, 2) { |x| x }\n\n# A block after a bare call must be do/end: braces would bind to the last arg.\nfoo 1, 2 do |x|\n  x\nend\n\n# Block-local variables.\nxs.each { |x; acc| acc = x }\n",
+ "root": {
+  "type": "program",
+  "start": 0,
+  "end": 611,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 68,
+    "text": "# Block forms that are stable at both 80 and 40. The width-dependent"
+   },
+   {
+    "type": "comment",
+    "start": 69,
+    "end": 111,
+    "text": "# conversion lives in block_conversion.rb."
+   },
+   {
+    "type": "comment",
+    "start": 113,
+    "end": 161,
+    "text": "# Short brace blocks stay braces at both widths."
+   },
+   {
+    "type": "call",
+    "start": 162,
+    "end": 179,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 162,
+      "end": 164,
+      "field": "receiver",
+      "text": "xs"
+     },
+     {
+      "type": ".",
+      "start": 164,
+      "end": 165,
+      "field": "operator",
+      "text": "."
+     },
+     {
+      "type": "identifier",
+      "start": 165,
+      "end": 169,
+      "field": "method",
+      "text": "each"
+     },
+     {
+      "type": "block",
+      "start": 170,
+      "end": 179,
+      "field": "block",
+      "children": [
+       {
+        "type": "{",
+        "start": 170,
+        "end": 171,
+        "text": "{"
+       },
+       {
+        "type": "block_parameters",
+        "start": 172,
+        "end": 175,
+        "field": "parameters",
+        "children": [
+         {
+          "type": "|",
+          "start": 172,
+          "end": 173,
+          "text": "|"
+         },
+         {
+          "type": "identifier",
+          "start": 173,
+          "end": 174,
+          "text": "x"
+         },
+         {
+          "type": "|",
+          "start": 174,
+          "end": 175,
+          "text": "|"
+         }
+        ]
+       },
+       {
+        "type": "block_body",
+        "start": 176,
+        "end": 177,
+        "field": "body",
+        "children": [
+         {
+          "type": "identifier",
+          "start": 176,
+          "end": 177,
+          "text": "x"
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 178,
+        "end": 179,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 180,
+    "end": 190,
+    "text": "# identity"
+   },
+   {
+    "type": "comment",
+    "start": 192,
+    "end": 229,
+    "text": "# Nested braces that still fit at 40."
+   },
+   {
+    "type": "call",
+    "start": 230,
+    "end": 267,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 230,
+      "end": 232,
+      "field": "receiver",
+      "text": "xs"
+     },
+     {
+      "type": ".",
+      "start": 232,
+      "end": 233,
+      "field": "operator",
+      "text": "."
+     },
+     {
+      "type": "identifier",
+      "start": 233,
+      "end": 237,
+      "field": "method",
+      "text": "each"
+     },
+     {
+      "type": "block",
+      "start": 238,
+      "end": 267,
+      "field": "block",
+      "children": [
+       {
+        "type": "{",
+        "start": 238,
+        "end": 239,
+        "text": "{"
+       },
+       {
+        "type": "block_parameters",
+        "start": 240,
+        "end": 243,
+        "field": "parameters",
+        "children": [
+         {
+          "type": "|",
+          "start": 240,
+          "end": 241,
+          "text": "|"
+         },
+         {
+          "type": "identifier",
+          "start": 241,
+          "end": 242,
+          "text": "x"
+         },
+         {
+          "type": "|",
+          "start": 242,
+          "end": 243,
+          "text": "|"
+         }
+        ]
+       },
+       {
+        "type": "block_body",
+        "start": 244,
+        "end": 265,
+        "field": "body",
+        "children": [
+         {
+          "type": "call",
+          "start": 244,
+          "end": 265,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 244,
+            "end": 246,
+            "field": "receiver",
+            "text": "ys"
+           },
+           {
+            "type": ".",
+            "start": 246,
+            "end": 247,
+            "field": "operator",
+            "text": "."
+           },
+           {
+            "type": "identifier",
+            "start": 247,
+            "end": 251,
+            "field": "method",
+            "text": "each"
+           },
+           {
+            "type": "block",
+            "start": 252,
+            "end": 265,
+            "field": "block",
+            "children": [
+             {
+              "type": "{",
+              "start": 252,
+              "end": 253,
+              "text": "{"
+             },
+             {
+              "type": "block_parameters",
+              "start": 254,
+              "end": 257,
+              "field": "parameters",
+              "children": [
+               {
+                "type": "|",
+                "start": 254,
+                "end": 255,
+                "text": "|"
+               },
+               {
+                "type": "identifier",
+                "start": 255,
+                "end": 256,
+                "text": "y"
+               },
+               {
+                "type": "|",
+                "start": 256,
+                "end": 257,
+                "text": "|"
+               }
+              ]
+             },
+             {
+              "type": "block_body",
+              "start": 258,
+              "end": 263,
+              "field": "body",
+              "children": [
+               {
+                "type": "binary",
+                "start": 258,
+                "end": 263,
+                "children": [
+                 {
+                  "type": "identifier",
+                  "start": 258,
+                  "end": 259,
+                  "field": "left",
+                  "text": "x"
+                 },
+                 {
+                  "type": "+",
+                  "start": 260,
+                  "end": 261,
+                  "field": "operator",
+                  "text": "+"
+                 },
+                 {
+                  "type": "identifier",
+                  "start": 262,
+                  "end": 263,
+                  "field": "right",
+                  "text": "y"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": "}",
+              "start": 264,
+              "end": 265,
+              "text": "}"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 266,
+        "end": 267,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 269,
+    "end": 321,
+    "text": "# Multi-statement blocks stay do/end at both widths."
+   },
+   {
+    "type": "call",
+    "start": 322,
+    "end": 361,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 322,
+      "end": 324,
+      "field": "receiver",
+      "text": "xs"
+     },
+     {
+      "type": ".",
+      "start": 324,
+      "end": 325,
+      "field": "operator",
+      "text": "."
+     },
+     {
+      "type": "identifier",
+      "start": 325,
+      "end": 329,
+      "field": "method",
+      "text": "each"
+     },
+     {
+      "type": "do_block",
+      "start": 330,
+      "end": 361,
+      "field": "block",
+      "children": [
+       {
+        "type": "do",
+        "start": 330,
+        "end": 332,
+        "text": "do"
+       },
+       {
+        "type": "block_parameters",
+        "start": 333,
+        "end": 336,
+        "field": "parameters",
+        "children": [
+         {
+          "type": "|",
+          "start": 333,
+          "end": 334,
+          "text": "|"
+         },
+         {
+          "type": "identifier",
+          "start": 334,
+          "end": 335,
+          "text": "x"
+         },
+         {
+          "type": "|",
+          "start": 335,
+          "end": 336,
+          "text": "|"
+         }
+        ]
+       },
+       {
+        "type": "body_statement",
+        "start": 339,
+        "end": 357,
+        "field": "body",
+        "children": [
+         {
+          "type": "call",
+          "start": 339,
+          "end": 348,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 339,
+            "end": 345,
+            "field": "method",
+            "text": "handle"
+           },
+           {
+            "type": "argument_list",
+            "start": 345,
+            "end": 348,
+            "field": "arguments",
+            "children": [
+             {
+              "type": "(",
+              "start": 345,
+              "end": 346,
+              "text": "("
+             },
+             {
+              "type": "identifier",
+              "start": 346,
+              "end": 347,
+              "text": "x"
+             },
+             {
+              "type": ")",
+              "start": 347,
+              "end": 348,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "call",
+          "start": 351,
+          "end": 357,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 351,
+            "end": 354,
+            "field": "method",
+            "text": "log"
+           },
+           {
+            "type": "argument_list",
+            "start": 354,
+            "end": 357,
+            "field": "arguments",
+            "children": [
+             {
+              "type": "(",
+              "start": 354,
+              "end": 355,
+              "text": "("
+             },
+             {
+              "type": "identifier",
+              "start": 355,
+              "end": 356,
+              "text": "x"
+             },
+             {
+              "type": ")",
+              "start": 356,
+              "end": 357,
+              "text": ")"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "end",
+        "start": 358,
+        "end": 361,
+        "text": "end"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 363,
+    "end": 431,
+    "text": "# A block as the last argument of a parenthesised call keeps braces."
+   },
+   {
+    "type": "call",
+    "start": 432,
+    "end": 451,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 432,
+      "end": 435,
+      "field": "method",
+      "text": "foo"
+     },
+     {
+      "type": "argument_list",
+      "start": 435,
+      "end": 441,
+      "field": "arguments",
+      "children": [
+       {
+        "type": "(",
+        "start": 435,
+        "end": 436,
+        "text": "("
+       },
+       {
+        "type": "integer",
+        "start": 436,
+        "end": 437,
+        "text": "1"
+       },
+       {
+        "type": ",",
+        "start": 437,
+        "end": 438,
+        "text": ","
+       },
+       {
+        "type": "integer",
+        "start": 439,
+        "end": 440,
+        "text": "2"
+       },
+       {
+        "type": ")",
+        "start": 440,
+        "end": 441,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": "block",
+      "start": 442,
+      "end": 451,
+      "field": "block",
+      "children": [
+       {
+        "type": "{",
+        "start": 442,
+        "end": 443,
+        "text": "{"
+       },
+       {
+        "type": "block_parameters",
+        "start": 444,
+        "end": 447,
+        "field": "parameters",
+        "children": [
+         {
+          "type": "|",
+          "start": 444,
+          "end": 445,
+          "text": "|"
+         },
+         {
+          "type": "identifier",
+          "start": 445,
+          "end": 446,
+          "text": "x"
+         },
+         {
+          "type": "|",
+          "start": 446,
+          "end": 447,
+          "text": "|"
+         }
+        ]
+       },
+       {
+        "type": "block_body",
+        "start": 448,
+        "end": 449,
+        "field": "body",
+        "children": [
+         {
+          "type": "identifier",
+          "start": 448,
+          "end": 449,
+          "text": "x"
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 450,
+        "end": 451,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 453,
+    "end": 531,
+    "text": "# A block after a bare call must be do/end: braces would bind to the last arg."
+   },
+   {
+    "type": "call",
+    "start": 532,
+    "end": 555,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 532,
+      "end": 535,
+      "field": "method",
+      "text": "foo"
+     },
+     {
+      "type": "argument_list",
+      "start": 536,
+      "end": 540,
+      "field": "arguments",
+      "children": [
+       {
+        "type": "integer",
+        "start": 536,
+        "end": 537,
+        "text": "1"
+       },
+       {
+        "type": ",",
+        "start": 537,
+        "end": 538,
+        "text": ","
+       },
+       {
+        "type": "integer",
+        "start": 539,
+        "end": 540,
+        "text": "2"
+       }
+      ]
+     },
+     {
+      "type": "do_block",
+      "start": 541,
+      "end": 555,
+      "field": "block",
+      "children": [
+       {
+        "type": "do",
+        "start": 541,
+        "end": 543,
+        "text": "do"
+       },
+       {
+        "type": "block_parameters",
+        "start": 544,
+        "end": 547,
+        "field": "parameters",
+        "children": [
+         {
+          "type": "|",
+          "start": 544,
+          "end": 545,
+          "text": "|"
+         },
+         {
+          "type": "identifier",
+          "start": 545,
+          "end": 546,
+          "text": "x"
+         },
+         {
+          "type": "|",
+          "start": 546,
+          "end": 547,
+          "text": "|"
+         }
+        ]
+       },
+       {
+        "type": "body_statement",
+        "start": 550,
+        "end": 551,
+        "field": "body",
+        "children": [
+         {
+          "type": "identifier",
+          "start": 550,
+          "end": 551,
+          "text": "x"
+         }
+        ]
+       },
+       {
+        "type": "end",
+        "start": 552,
+        "end": 555,
+        "text": "end"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 557,
+    "end": 581,
+    "text": "# Block-local variables."
+   },
+   {
+    "type": "call",
+    "start": 582,
+    "end": 610,
+    "children": [
+     {
+      "type": "identifier",
+      "start": 582,
+      "end": 584,
+      "field": "receiver",
+      "text": "xs"
+     },
+     {
+      "type": ".",
+      "start": 584,
+      "end": 585,
+      "field": "operator",
+      "text": "."
+     },
+     {
+      "type": "identifier",
+      "start": 585,
+      "end": 589,
+      "field": "method",
+      "text": "each"
+     },
+     {
+      "type": "block",
+      "start": 590,
+      "end": 610,
+      "field": "block",
+      "children": [
+       {
+        "type": "{",
+        "start": 590,
+        "end": 591,
+        "text": "{"
+       },
+       {
+        "type": "block_parameters",
+        "start": 592,
+        "end": 600,
+        "field": "parameters",
+        "children": [
+         {
+          "type": "|",
+          "start": 592,
+          "end": 593,
+          "text": "|"
+         },
+         {
+          "type": "identifier",
+          "start": 593,
+          "end": 594,
+          "text": "x"
+         },
+         {
+          "type": ";",
+          "start": 594,
+          "end": 595,
+          "text": ";"
+         },
+         {
+          "type": "identifier",
+          "start": 596,
+          "end": 599,
+          "field": "locals",
+          "text": "acc"
+         },
+         {
+          "type": "|",
+          "start": 599,
+          "end": 600,
+          "text": "|"
+         }
+        ]
+       },
+       {
+        "type": "block_body",
+        "start": 601,
+        "end": 608,
+        "field": "body",
+        "children": [
+         {
+          "type": "assignment",
+          "start": 601,
+          "end": 608,
+          "children": [
+           {
+            "type": "identifier",
+            "start": 601,
+            "end": 604,
+            "field": "left",
+            "text": "acc"
+           },
+           {
+            "type": "=",
+            "start": 605,
+            "end": 606,
+            "text": "="
+           },
+           {
+            "type": "identifier",
+            "start": 607,
+            "end": 608,
+            "field": "right",
+            "text": "x"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "}",
+        "start": 609,
+        "end": 610,
+        "text": "}"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

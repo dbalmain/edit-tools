@@ -1,0 +1,110 @@
+# Haskell. Schema: docs/onboarding/WORKFLOW.md, "Stage 0".
+name = "haskell"
+extensions = [".hs"]
+
+# Live PyPI: the distribution name matches the orchestrator's guess
+# (tree-sitter-haskell). Releases on the index are 0.21.0, 0.23.0, 0.23.1;
+# 0.23.1 is latest (checked against https://pypi.org/pypi/tree-sitter-haskell/json).
+# Imported as tree_sitter_haskell; the module exports language() (plus
+# HIGHLIGHTS_QUERY, INJECTIONS_QUERY, LOCALS_QUERY) and it returns a
+# tree_sitter.Language capsule.
+grammar = "tree-sitter-haskell==0.23.1"
+grammar_module = "tree_sitter_haskell"
+grammar_symbol = "language"
+
+# Markdown info strings that select this grammar for a fenced region.
+# `haskell` is the canonical name; `hs` is the conventional short alias
+# (highlight.js lists haskell, hs, lhs). `lhs` is literate Haskell, a
+# different surface syntax, and is not this grammar's job.
+injection_aliases = ["haskell", "hs"]
+
+# ormolu 0.8.0.2 observed from `nix run nixpkgs#ormolu -- --version`
+# (also prints `using ghc-lib-parser 9.12.3.20251228`).
+#
+# `--no-cabal` is required for stdin: without it ormolu exits 9 with
+# "The --stdin-input-file option is necessary when using input from stdin
+# and accounting for .cabal files". A planted dummy.cabal with
+# `default-extensions: ImportQualifiedPost` rewrites
+# `import qualified Data.List as L` to `import Data.List qualified as L`
+# when `--stdin-input-file` points at a file next to that cabal; `--no-cabal`
+# leaves the qualified-pre form in place. Command-line `-o -X…` still
+# applies (verified with `-o -XImportQualifiedPost`); that is the residual
+# channel, and this command does not pass `-o`.
+#
+# `--no-dot-ormolu` closes the other documented config channel. `.ormolu`
+# is discovered from a file path (`--stdin-input-file` or a FILE arg), not
+# from cwd on bare stdin: a planted `infixr 0 +++` changes a broken operator
+# chain from hanging-infix to a right-assoc staircase when a path is
+# supplied, and `--no-dot-ormolu` suppresses that. Bare stdin never opens
+# the channel, so the flag is a no-op on this exact command and is kept
+# because it is the disable for a channel we established exists — the
+# moment someone adds `--stdin-input-file`, `.ormolu` next to that path
+# would apply without it. Residual with the flag: `-f` / `-r` on the
+# command line still apply; no ORMOLU_CONFIG env was observed.
+#
+# `--stdin-input-file x.hs` is a no-op once `--no-cabal` is set and we are
+# not trying to find a .cabal: omitted, x.hs, and x.haskell are
+# byte-identical. `-t module` is identical to auto on `module X where`
+# files. `--color never` is identical to auto on a pipe (no ANSI either
+# way). None of those three are kept.
+#
+# `.editorconfig` is ignored (planted indent_size=8 / max_line_length=20
+# in cwd, output identical). No env var applies a config.
+#
+# There is no width flag (tried --column, --print-width, --line-length,
+# --max-width: all reprint usage). A 190-character export list, a
+# 165-character data declaration and a 153-character list all stay on one
+# line. `reference_width = "fixed"`; `{width}` is forbidden.
+reference = "nix run nixpkgs#ormolu -- --no-cabal --no-dot-ormolu"
+reference_version = "ormolu 0.8.0.2"
+reference_width = "fixed"
+
+# One entry only, as the loader requires for a fixed reference. 80 is an
+# arbitrary round measurement width, not an ormolu setting: ormolu has no
+# column limit (fourmolu added one because ormolu does not). It only feeds
+# the scorer's comparative line-length measure, which ormolu ignores.
+widths = [80]
+
+# Generic default. A GHC AST dump or haskell-src-exts parse would collapse
+# the spellings ormolu itself preserves (`1_000`, `0xdead`, `"caf\xe9"` vs
+# `"café"`, explicit `{;}` braces vs layout) and would be weaker than the
+# named-node comparison. Operator sections are `left_section` /
+# `right_section` / `prefix_id`, not `parens`; those parens are structural
+# and are not declared transparent.
+gate3 = "default"
+
+# Established by running ormolu over the corpus, not by reading the grammar:
+# ormolu parenthesises a single-constraint context (`class Eq a =>` becomes
+# `class (Eq a) =>`), which wraps the `apply` in a one-child `parens`. Gate 3
+# named this kind. `parens` is always one named child (tuples are `tuple`,
+# unit is `unit`, sections are `left_section`/`right_section`/`prefix_id`).
+# Eliding it does not hide a dropped argument: `show (size x)` vs `show size x`
+# reparses as different `apply` spines, so the parent still fails.
+transparent_wrappers = ["parens"]
+equivalent_kinds = []
+
+# ormolu rewrites the import block in two separable ways, and each gets its
+# own dedicated file so neither hides the other (the ktfmt
+# `sortedAndDistinctImports` precedent: one exclusion named, two performed).
+#
+#   1. It REORDERS declarations — alphabetically by module name, and it
+#      flattens blank-line groups into one list. `imports.hs` holds four
+#      distinct unsorted imports with already-sorted names inside each list,
+#      so it probes statement reordering alone.
+#   2. It COLLAPSES repeated imports of one module — an exact duplicate
+#      declaration is dropped, and two lists for the same module are unioned.
+#      `import_merging.hs` writes its modules and names in the order ormolu
+#      already emits them, so it probes collapsing alone and never reordering.
+#
+# Both are moves a linear formatter cannot make. Verified: gate 3 rejects (1)
+# with `leaf text 'Data' became 'Control'` and (2) with `4 named children
+# became 2`.
+#
+# Also observed and deliberately NOT probed here: ormolu sorts and
+# de-duplicates the NAMES inside a single import list
+# (`(sort, nub, foldl')` -> `(foldl', nub, sort)`, `(sort, nub, sort)` ->
+# `(nub, sort)`). That is the same reorder class as (1); every corpus import
+# list is written already-sorted and duplicate-free so no file depends on it.
+[incomparable]
+"imports.hs" = "ormolu sorts import declarations; gate 3 rejects with leaf text 'Data' became 'Control'"
+"import_merging.hs" = "ormolu collapses repeated imports of one module (duplicate dropped, lists unioned); gate 3 rejects with 4 named children became 2"

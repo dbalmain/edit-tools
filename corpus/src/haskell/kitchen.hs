@@ -1,0 +1,24 @@
+module Kitchen where
+
+import Data.List (foldl')
+
+-- several constructs interacting: data, where, do, guards, a list, a comment
+data Rec = Rec {recId :: Int, recName :: String}
+
+process records = do
+  let filtered = [r | r <- records, recId r > 0]
+  total <- pure (sumIds filtered)
+  pure (total, names)
+  where
+    names = map recName filtered -- where hanging off a do-bind
+    sumIds = foldl' (\n r -> n + recId r) 0
+
+describe n
+  | n < 0 = "neg"
+  | n == 0 = "zero"
+  | otherwise = "pos"
+
+sample =
+  [ Rec {recId = 1, recName = "alpha"}
+  , Rec {recId = 2, recName = "beta"} -- trailing on an element
+  ]

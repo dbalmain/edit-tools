@@ -1,0 +1,1177 @@
+{
+ "language": "haskell",
+ "source_file": "corpus/src/haskell/lists.hs",
+ "source": "module Lists where\n\n-- lists, tuples, ranges, comprehensions; empty already in canonical form\nempty = [] -- the space-padded form lives in normalisation.hs\n\nunit = ()\n\npair = (1, 2)\n\ntriple = (1, 2, 3)\n\nshort = [1, 2, 3]\n\nbroken =\n  [ 1\n  , 2\n  , 3\n  ]\n\nrange = [1 .. 10]\n\nstepped = [1, 3 .. 9]\n\ncomp = [x * 2 | x <- [1 .. 10], even x] -- filter in a comprehension\n\nnested = [[1, 2], [3, 4], [5, 6]]\n",
+ "root": {
+  "type": "haskell",
+  "start": 0,
+  "end": 400,
+  "children": [
+   {
+    "type": "header",
+    "start": 0,
+    "end": 18,
+    "children": [
+     {
+      "type": "module",
+      "start": 0,
+      "end": 6,
+      "text": "module"
+     },
+     {
+      "type": "module",
+      "start": 7,
+      "end": 12,
+      "field": "module",
+      "children": [
+       {
+        "type": "module_id",
+        "start": 7,
+        "end": 12,
+        "text": "Lists"
+       }
+      ]
+     },
+     {
+      "type": "where",
+      "start": 13,
+      "end": 18,
+      "text": "where"
+     }
+    ]
+   },
+   {
+    "type": "comment",
+    "start": 20,
+    "end": 93,
+    "text": "-- lists, tuples, ranges, comprehensions; empty already in canonical form"
+   },
+   {
+    "type": "declarations",
+    "start": 94,
+    "end": 400,
+    "field": "declarations",
+    "children": [
+     {
+      "type": "bind",
+      "start": 94,
+      "end": 104,
+      "children": [
+       {
+        "type": "variable",
+        "start": 94,
+        "end": 99,
+        "field": "name",
+        "text": "empty"
+       },
+       {
+        "type": "match",
+        "start": 100,
+        "end": 104,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 100,
+          "end": 101,
+          "text": "="
+         },
+         {
+          "type": "list",
+          "start": 102,
+          "end": 104,
+          "field": "expression",
+          "children": [
+           {
+            "type": "[",
+            "start": 102,
+            "end": 103,
+            "text": "["
+           },
+           {
+            "type": "]",
+            "start": 103,
+            "end": 104,
+            "text": "]"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 105,
+      "end": 155,
+      "text": "-- the space-padded form lives in normalisation.hs"
+     },
+     {
+      "type": "bind",
+      "start": 157,
+      "end": 166,
+      "children": [
+       {
+        "type": "variable",
+        "start": 157,
+        "end": 161,
+        "field": "name",
+        "text": "unit"
+       },
+       {
+        "type": "match",
+        "start": 162,
+        "end": 166,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 162,
+          "end": 163,
+          "text": "="
+         },
+         {
+          "type": "unit",
+          "start": 164,
+          "end": 166,
+          "field": "expression",
+          "children": [
+           {
+            "type": "(",
+            "start": 164,
+            "end": 165,
+            "text": "("
+           },
+           {
+            "type": ")",
+            "start": 165,
+            "end": 166,
+            "text": ")"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "bind",
+      "start": 168,
+      "end": 181,
+      "children": [
+       {
+        "type": "variable",
+        "start": 168,
+        "end": 172,
+        "field": "name",
+        "text": "pair"
+       },
+       {
+        "type": "match",
+        "start": 173,
+        "end": 181,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 173,
+          "end": 174,
+          "text": "="
+         },
+         {
+          "type": "tuple",
+          "start": 175,
+          "end": 181,
+          "field": "expression",
+          "children": [
+           {
+            "type": "(",
+            "start": 175,
+            "end": 176,
+            "text": "("
+           },
+           {
+            "type": "literal",
+            "start": 176,
+            "end": 177,
+            "field": "element",
+            "children": [
+             {
+              "type": "integer",
+              "start": 176,
+              "end": 177,
+              "text": "1"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 177,
+            "end": 178,
+            "text": ","
+           },
+           {
+            "type": "literal",
+            "start": 179,
+            "end": 180,
+            "field": "element",
+            "children": [
+             {
+              "type": "integer",
+              "start": 179,
+              "end": 180,
+              "text": "2"
+             }
+            ]
+           },
+           {
+            "type": ")",
+            "start": 180,
+            "end": 181,
+            "text": ")"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "bind",
+      "start": 183,
+      "end": 201,
+      "children": [
+       {
+        "type": "variable",
+        "start": 183,
+        "end": 189,
+        "field": "name",
+        "text": "triple"
+       },
+       {
+        "type": "match",
+        "start": 190,
+        "end": 201,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 190,
+          "end": 191,
+          "text": "="
+         },
+         {
+          "type": "tuple",
+          "start": 192,
+          "end": 201,
+          "field": "expression",
+          "children": [
+           {
+            "type": "(",
+            "start": 192,
+            "end": 193,
+            "text": "("
+           },
+           {
+            "type": "literal",
+            "start": 193,
+            "end": 194,
+            "field": "element",
+            "children": [
+             {
+              "type": "integer",
+              "start": 193,
+              "end": 194,
+              "text": "1"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 194,
+            "end": 195,
+            "text": ","
+           },
+           {
+            "type": "literal",
+            "start": 196,
+            "end": 197,
+            "field": "element",
+            "children": [
+             {
+              "type": "integer",
+              "start": 196,
+              "end": 197,
+              "text": "2"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 197,
+            "end": 198,
+            "text": ","
+           },
+           {
+            "type": "literal",
+            "start": 199,
+            "end": 200,
+            "field": "element",
+            "children": [
+             {
+              "type": "integer",
+              "start": 199,
+              "end": 200,
+              "text": "3"
+             }
+            ]
+           },
+           {
+            "type": ")",
+            "start": 200,
+            "end": 201,
+            "text": ")"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "bind",
+      "start": 203,
+      "end": 220,
+      "children": [
+       {
+        "type": "variable",
+        "start": 203,
+        "end": 208,
+        "field": "name",
+        "text": "short"
+       },
+       {
+        "type": "match",
+        "start": 209,
+        "end": 220,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 209,
+          "end": 210,
+          "text": "="
+         },
+         {
+          "type": "list",
+          "start": 211,
+          "end": 220,
+          "field": "expression",
+          "children": [
+           {
+            "type": "[",
+            "start": 211,
+            "end": 212,
+            "text": "["
+           },
+           {
+            "type": "literal",
+            "start": 212,
+            "end": 213,
+            "field": "element",
+            "children": [
+             {
+              "type": "integer",
+              "start": 212,
+              "end": 213,
+              "text": "1"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 213,
+            "end": 214,
+            "text": ","
+           },
+           {
+            "type": "literal",
+            "start": 215,
+            "end": 216,
+            "field": "element",
+            "children": [
+             {
+              "type": "integer",
+              "start": 215,
+              "end": 216,
+              "text": "2"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 216,
+            "end": 217,
+            "text": ","
+           },
+           {
+            "type": "literal",
+            "start": 218,
+            "end": 219,
+            "field": "element",
+            "children": [
+             {
+              "type": "integer",
+              "start": 218,
+              "end": 219,
+              "text": "3"
+             }
+            ]
+           },
+           {
+            "type": "]",
+            "start": 219,
+            "end": 220,
+            "text": "]"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "bind",
+      "start": 222,
+      "end": 252,
+      "children": [
+       {
+        "type": "variable",
+        "start": 222,
+        "end": 228,
+        "field": "name",
+        "text": "broken"
+       },
+       {
+        "type": "match",
+        "start": 229,
+        "end": 252,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 229,
+          "end": 230,
+          "text": "="
+         },
+         {
+          "type": "list",
+          "start": 233,
+          "end": 252,
+          "field": "expression",
+          "children": [
+           {
+            "type": "[",
+            "start": 233,
+            "end": 234,
+            "text": "["
+           },
+           {
+            "type": "literal",
+            "start": 235,
+            "end": 236,
+            "field": "element",
+            "children": [
+             {
+              "type": "integer",
+              "start": 235,
+              "end": 236,
+              "text": "1"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 239,
+            "end": 240,
+            "text": ","
+           },
+           {
+            "type": "literal",
+            "start": 241,
+            "end": 242,
+            "field": "element",
+            "children": [
+             {
+              "type": "integer",
+              "start": 241,
+              "end": 242,
+              "text": "2"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 245,
+            "end": 246,
+            "text": ","
+           },
+           {
+            "type": "literal",
+            "start": 247,
+            "end": 248,
+            "field": "element",
+            "children": [
+             {
+              "type": "integer",
+              "start": 247,
+              "end": 248,
+              "text": "3"
+             }
+            ]
+           },
+           {
+            "type": "]",
+            "start": 251,
+            "end": 252,
+            "text": "]"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "bind",
+      "start": 254,
+      "end": 271,
+      "children": [
+       {
+        "type": "variable",
+        "start": 254,
+        "end": 259,
+        "field": "name",
+        "text": "range"
+       },
+       {
+        "type": "match",
+        "start": 260,
+        "end": 271,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 260,
+          "end": 261,
+          "text": "="
+         },
+         {
+          "type": "arithmetic_sequence",
+          "start": 262,
+          "end": 271,
+          "field": "expression",
+          "children": [
+           {
+            "type": "[",
+            "start": 262,
+            "end": 263,
+            "text": "["
+           },
+           {
+            "type": "literal",
+            "start": 263,
+            "end": 264,
+            "field": "from",
+            "children": [
+             {
+              "type": "integer",
+              "start": 263,
+              "end": 264,
+              "text": "1"
+             }
+            ]
+           },
+           {
+            "type": "..",
+            "start": 265,
+            "end": 267,
+            "text": ".."
+           },
+           {
+            "type": "literal",
+            "start": 268,
+            "end": 270,
+            "field": "to",
+            "children": [
+             {
+              "type": "integer",
+              "start": 268,
+              "end": 270,
+              "text": "10"
+             }
+            ]
+           },
+           {
+            "type": "]",
+            "start": 270,
+            "end": 271,
+            "text": "]"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "bind",
+      "start": 273,
+      "end": 294,
+      "children": [
+       {
+        "type": "variable",
+        "start": 273,
+        "end": 280,
+        "field": "name",
+        "text": "stepped"
+       },
+       {
+        "type": "match",
+        "start": 281,
+        "end": 294,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 281,
+          "end": 282,
+          "text": "="
+         },
+         {
+          "type": "arithmetic_sequence",
+          "start": 283,
+          "end": 294,
+          "field": "expression",
+          "children": [
+           {
+            "type": "[",
+            "start": 283,
+            "end": 284,
+            "text": "["
+           },
+           {
+            "type": "literal",
+            "start": 284,
+            "end": 285,
+            "field": "from",
+            "children": [
+             {
+              "type": "integer",
+              "start": 284,
+              "end": 285,
+              "text": "1"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 285,
+            "end": 286,
+            "text": ","
+           },
+           {
+            "type": "literal",
+            "start": 287,
+            "end": 288,
+            "field": "step",
+            "children": [
+             {
+              "type": "integer",
+              "start": 287,
+              "end": 288,
+              "text": "3"
+             }
+            ]
+           },
+           {
+            "type": "..",
+            "start": 289,
+            "end": 291,
+            "text": ".."
+           },
+           {
+            "type": "literal",
+            "start": 292,
+            "end": 293,
+            "field": "to",
+            "children": [
+             {
+              "type": "integer",
+              "start": 292,
+              "end": 293,
+              "text": "9"
+             }
+            ]
+           },
+           {
+            "type": "]",
+            "start": 293,
+            "end": 294,
+            "text": "]"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "bind",
+      "start": 296,
+      "end": 335,
+      "children": [
+       {
+        "type": "variable",
+        "start": 296,
+        "end": 300,
+        "field": "name",
+        "text": "comp"
+       },
+       {
+        "type": "match",
+        "start": 301,
+        "end": 335,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 301,
+          "end": 302,
+          "text": "="
+         },
+         {
+          "type": "list_comprehension",
+          "start": 303,
+          "end": 335,
+          "field": "expression",
+          "children": [
+           {
+            "type": "[",
+            "start": 303,
+            "end": 304,
+            "text": "["
+           },
+           {
+            "type": "infix",
+            "start": 304,
+            "end": 309,
+            "field": "expression",
+            "children": [
+             {
+              "type": "variable",
+              "start": 304,
+              "end": 305,
+              "field": "left_operand",
+              "text": "x"
+             },
+             {
+              "type": "operator",
+              "start": 306,
+              "end": 307,
+              "field": "operator",
+              "children": [
+               {
+                "type": "*",
+                "start": 306,
+                "end": 307,
+                "text": "*"
+               }
+              ]
+             },
+             {
+              "type": "literal",
+              "start": 308,
+              "end": 309,
+              "field": "right_operand",
+              "children": [
+               {
+                "type": "integer",
+                "start": 308,
+                "end": 309,
+                "text": "2"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "|",
+            "start": 310,
+            "end": 311,
+            "text": "|"
+           },
+           {
+            "type": "qualifiers",
+            "start": 312,
+            "end": 334,
+            "field": "qualifiers",
+            "children": [
+             {
+              "type": "generator",
+              "start": 312,
+              "end": 326,
+              "field": "qualifier",
+              "children": [
+               {
+                "type": "variable",
+                "start": 312,
+                "end": 313,
+                "field": "pattern",
+                "text": "x"
+               },
+               {
+                "type": "<-",
+                "start": 314,
+                "end": 316,
+                "field": "arrow",
+                "text": "<-"
+               },
+               {
+                "type": "arithmetic_sequence",
+                "start": 317,
+                "end": 326,
+                "field": "expression",
+                "children": [
+                 {
+                  "type": "[",
+                  "start": 317,
+                  "end": 318,
+                  "text": "["
+                 },
+                 {
+                  "type": "literal",
+                  "start": 318,
+                  "end": 319,
+                  "field": "from",
+                  "children": [
+                   {
+                    "type": "integer",
+                    "start": 318,
+                    "end": 319,
+                    "text": "1"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "..",
+                  "start": 320,
+                  "end": 322,
+                  "text": ".."
+                 },
+                 {
+                  "type": "literal",
+                  "start": 323,
+                  "end": 325,
+                  "field": "to",
+                  "children": [
+                   {
+                    "type": "integer",
+                    "start": 323,
+                    "end": 325,
+                    "text": "10"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "]",
+                  "start": 325,
+                  "end": 326,
+                  "text": "]"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 326,
+              "end": 327,
+              "text": ","
+             },
+             {
+              "type": "boolean",
+              "start": 328,
+              "end": 334,
+              "field": "qualifier",
+              "children": [
+               {
+                "type": "apply",
+                "start": 328,
+                "end": 334,
+                "children": [
+                 {
+                  "type": "variable",
+                  "start": 328,
+                  "end": 332,
+                  "field": "function",
+                  "text": "even"
+                 },
+                 {
+                  "type": "variable",
+                  "start": 333,
+                  "end": 334,
+                  "field": "argument",
+                  "text": "x"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "]",
+            "start": 334,
+            "end": 335,
+            "text": "]"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 336,
+      "end": 364,
+      "text": "-- filter in a comprehension"
+     },
+     {
+      "type": "bind",
+      "start": 366,
+      "end": 399,
+      "children": [
+       {
+        "type": "variable",
+        "start": 366,
+        "end": 372,
+        "field": "name",
+        "text": "nested"
+       },
+       {
+        "type": "match",
+        "start": 373,
+        "end": 399,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 373,
+          "end": 374,
+          "text": "="
+         },
+         {
+          "type": "list",
+          "start": 375,
+          "end": 399,
+          "field": "expression",
+          "children": [
+           {
+            "type": "[",
+            "start": 375,
+            "end": 376,
+            "text": "["
+           },
+           {
+            "type": "list",
+            "start": 376,
+            "end": 382,
+            "field": "element",
+            "children": [
+             {
+              "type": "[",
+              "start": 376,
+              "end": 377,
+              "text": "["
+             },
+             {
+              "type": "literal",
+              "start": 377,
+              "end": 378,
+              "field": "element",
+              "children": [
+               {
+                "type": "integer",
+                "start": 377,
+                "end": 378,
+                "text": "1"
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 378,
+              "end": 379,
+              "text": ","
+             },
+             {
+              "type": "literal",
+              "start": 380,
+              "end": 381,
+              "field": "element",
+              "children": [
+               {
+                "type": "integer",
+                "start": 380,
+                "end": 381,
+                "text": "2"
+               }
+              ]
+             },
+             {
+              "type": "]",
+              "start": 381,
+              "end": 382,
+              "text": "]"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 382,
+            "end": 383,
+            "text": ","
+           },
+           {
+            "type": "list",
+            "start": 384,
+            "end": 390,
+            "field": "element",
+            "children": [
+             {
+              "type": "[",
+              "start": 384,
+              "end": 385,
+              "text": "["
+             },
+             {
+              "type": "literal",
+              "start": 385,
+              "end": 386,
+              "field": "element",
+              "children": [
+               {
+                "type": "integer",
+                "start": 385,
+                "end": 386,
+                "text": "3"
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 386,
+              "end": 387,
+              "text": ","
+             },
+             {
+              "type": "literal",
+              "start": 388,
+              "end": 389,
+              "field": "element",
+              "children": [
+               {
+                "type": "integer",
+                "start": 388,
+                "end": 389,
+                "text": "4"
+               }
+              ]
+             },
+             {
+              "type": "]",
+              "start": 389,
+              "end": 390,
+              "text": "]"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 390,
+            "end": 391,
+            "text": ","
+           },
+           {
+            "type": "list",
+            "start": 392,
+            "end": 398,
+            "field": "element",
+            "children": [
+             {
+              "type": "[",
+              "start": 392,
+              "end": 393,
+              "text": "["
+             },
+             {
+              "type": "literal",
+              "start": 393,
+              "end": 394,
+              "field": "element",
+              "children": [
+               {
+                "type": "integer",
+                "start": 393,
+                "end": 394,
+                "text": "5"
+               }
+              ]
+             },
+             {
+              "type": ",",
+              "start": 394,
+              "end": 395,
+              "text": ","
+             },
+             {
+              "type": "literal",
+              "start": 396,
+              "end": 397,
+              "field": "element",
+              "children": [
+               {
+                "type": "integer",
+                "start": 396,
+                "end": 397,
+                "text": "6"
+               }
+              ]
+             },
+             {
+              "type": "]",
+              "start": 397,
+              "end": 398,
+              "text": "]"
+             }
+            ]
+           },
+           {
+            "type": "]",
+            "start": 398,
+            "end": 399,
+            "text": "]"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

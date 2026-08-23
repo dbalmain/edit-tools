@@ -1,0 +1,35 @@
+;; Top-level comments. emacs indents an own-line comment by its SEMICOLON
+;; COUNT, not by its nesting depth: `;` goes to comment-column (default 40,
+;; five tabs under indent-tabs-mode t), `;;` to the enclosing code indent,
+;; `;;;` to column 0. The `semis` block below is the discriminator.
+; file-level comment at column 0
+
+(define (add a b) ; trailing on a definition
+;; own-line comment inside the body
+(+ a b) ; trailing on a body form
+)
+
+(define values-with-comments
+(list
+1 ; trailing inside a list
+;; own-line inside a list
+2
+#| a one-line block comment |#
+#; skipped
+3
+;; comment before the closing delimiter
+))
+
+;; Semicolon count decides the column, at every depth. One `;` goes to
+;; comment-column even nested two forms deep; `;;;` goes to column 0 even
+;; nested. A rule keyed on nesting depth agrees with the file-level cases
+;; above and diverges on all three lines inside this body.
+(define (semis x)
+(let ((y x))
+; one semi -- comment-column
+;; two semis -- code indent
+;;; three semis -- column 0
+(+ y 1)))
+
+;;; three semis at file level
+; comment at the end of the file

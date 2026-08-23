@@ -1,0 +1,34 @@
+# The constructs that most often overflow a line: kwargs, argument lists,
+# symbol arrays, and an array of hashes.
+
+configure(host: "localhost", port: 8080, timeout: 30, retries: 3, verbose: true) # 80-char call; wraps at 40
+
+items = %i[
+  alpha
+  beta
+  gamma
+  delta
+  epsilon
+  zeta
+  eta
+  theta
+  iota
+  kappa
+  lambda
+  mu
+  nu
+  xi
+  omicron
+]
+
+sum =
+  first_operand + second_operand + third_operand + fourth_operand +
+    fifth_operand
+
+rows = [
+  { name: "alice", age: 30, city: "paris" },
+  { name: "bob", age: 40, city: "london" },
+  { name: "carol", age: 50, city: "tokyo" }
+]
+
+render(title, subtitle, body, author, published_at, tags, comments, metadata)

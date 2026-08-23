@@ -1,0 +1,35 @@
+# Double quotes are syntax_tree's default. A string that contains `"` stays
+# single-quoted; every other plain string is rewritten to doubles, so the
+# corpus is written that way already.
+
+short = "hello" # default delimiter
+
+said = 'she said "hi"'
+
+inner_single = "she said 'hi'"
+
+long_string =
+  "this is a very long string literal that must never be reflowed by the formatter"
+
+interpolated =
+  "user #{name} has #{count} items in #{container_name} as of #{timestamp}"
+
+percent_q = %Q[hello #{name}]
+
+regex = /foo#{bar}/i
+
+escape = "line one\nline two\ttabbed"
+
+unicode_literal = "café"
+
+# astral characters: width must be counted in scalar values, not UTF-16 units
+astral =
+  "🙂🙂🙂🙂🙂🙂 a string whose width differs between JS and Rust naively"
+
+message = <<~MSG
+  hello #{name}
+MSG
+
+raw_heredoc = <<~'LIT'
+  no interpolation #{here}
+LIT

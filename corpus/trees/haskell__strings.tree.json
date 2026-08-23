@@ -1,0 +1,695 @@
+{
+ "language": "haskell",
+ "source_file": "corpus/src/haskell/strings.hs",
+ "source": "module Strings where\n\nplain=\"hello world\" -- ordinary string\n\nescaped=\"line one\\nline two\\ttabbed \\\"quoted\\\"\"\n\nhexed=\"caf\\xe9\"\n\nslashed=\"back\\\\slash\"\n\nchar1 = 'a'\n\nchar2 = '\\n'\n\nchar3 = '\\''\n\nunicode=\"café ☕\"\n\n-- astral characters: width must be counted in scalar values, not UTF-16 units\nastral = \"🙂🙂🙂🙂🙂🙂\"\n\ncontinued =\n  \"multi\\\n  \\line\"\n\nn1 = 1_000\n\nn2 = 0xdead\n\nn3 = 1.5e-2\n\nn4 = 0o10\n\nn5 = 0b1010\n",
+ "root": {
+  "type": "haskell",
+  "start": 0,
+  "end": 422,
+  "children": [
+   {
+    "type": "header",
+    "start": 0,
+    "end": 20,
+    "children": [
+     {
+      "type": "module",
+      "start": 0,
+      "end": 6,
+      "text": "module"
+     },
+     {
+      "type": "module",
+      "start": 7,
+      "end": 14,
+      "field": "module",
+      "children": [
+       {
+        "type": "module_id",
+        "start": 7,
+        "end": 14,
+        "text": "Strings"
+       }
+      ]
+     },
+     {
+      "type": "where",
+      "start": 15,
+      "end": 20,
+      "text": "where"
+     }
+    ]
+   },
+   {
+    "type": "declarations",
+    "start": 22,
+    "end": 422,
+    "field": "declarations",
+    "children": [
+     {
+      "type": "bind",
+      "start": 22,
+      "end": 41,
+      "children": [
+       {
+        "type": "variable",
+        "start": 22,
+        "end": 27,
+        "field": "name",
+        "text": "plain"
+       },
+       {
+        "type": "match",
+        "start": 27,
+        "end": 41,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 27,
+          "end": 28,
+          "text": "="
+         },
+         {
+          "type": "literal",
+          "start": 28,
+          "end": 41,
+          "field": "expression",
+          "children": [
+           {
+            "type": "string",
+            "start": 28,
+            "end": 41,
+            "text": "\"hello world\""
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 42,
+      "end": 60,
+      "text": "-- ordinary string"
+     },
+     {
+      "type": "bind",
+      "start": 62,
+      "end": 109,
+      "children": [
+       {
+        "type": "variable",
+        "start": 62,
+        "end": 69,
+        "field": "name",
+        "text": "escaped"
+       },
+       {
+        "type": "match",
+        "start": 69,
+        "end": 109,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 69,
+          "end": 70,
+          "text": "="
+         },
+         {
+          "type": "literal",
+          "start": 70,
+          "end": 109,
+          "field": "expression",
+          "children": [
+           {
+            "type": "string",
+            "start": 70,
+            "end": 109,
+            "text": "\"line one\\nline two\\ttabbed \\\"quoted\\\"\""
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "bind",
+      "start": 111,
+      "end": 126,
+      "children": [
+       {
+        "type": "variable",
+        "start": 111,
+        "end": 116,
+        "field": "name",
+        "text": "hexed"
+       },
+       {
+        "type": "match",
+        "start": 116,
+        "end": 126,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 116,
+          "end": 117,
+          "text": "="
+         },
+         {
+          "type": "literal",
+          "start": 117,
+          "end": 126,
+          "field": "expression",
+          "children": [
+           {
+            "type": "string",
+            "start": 117,
+            "end": 126,
+            "text": "\"caf\\xe9\""
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "bind",
+      "start": 128,
+      "end": 149,
+      "children": [
+       {
+        "type": "variable",
+        "start": 128,
+        "end": 135,
+        "field": "name",
+        "text": "slashed"
+       },
+       {
+        "type": "match",
+        "start": 135,
+        "end": 149,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 135,
+          "end": 136,
+          "text": "="
+         },
+         {
+          "type": "literal",
+          "start": 136,
+          "end": 149,
+          "field": "expression",
+          "children": [
+           {
+            "type": "string",
+            "start": 136,
+            "end": 149,
+            "text": "\"back\\\\slash\""
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "bind",
+      "start": 151,
+      "end": 162,
+      "children": [
+       {
+        "type": "variable",
+        "start": 151,
+        "end": 156,
+        "field": "name",
+        "text": "char1"
+       },
+       {
+        "type": "match",
+        "start": 157,
+        "end": 162,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 157,
+          "end": 158,
+          "text": "="
+         },
+         {
+          "type": "literal",
+          "start": 159,
+          "end": 162,
+          "field": "expression",
+          "children": [
+           {
+            "type": "char",
+            "start": 159,
+            "end": 162,
+            "text": "'a'"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "bind",
+      "start": 164,
+      "end": 176,
+      "children": [
+       {
+        "type": "variable",
+        "start": 164,
+        "end": 169,
+        "field": "name",
+        "text": "char2"
+       },
+       {
+        "type": "match",
+        "start": 170,
+        "end": 176,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 170,
+          "end": 171,
+          "text": "="
+         },
+         {
+          "type": "literal",
+          "start": 172,
+          "end": 176,
+          "field": "expression",
+          "children": [
+           {
+            "type": "char",
+            "start": 172,
+            "end": 176,
+            "text": "'\\n'"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "bind",
+      "start": 178,
+      "end": 190,
+      "children": [
+       {
+        "type": "variable",
+        "start": 178,
+        "end": 183,
+        "field": "name",
+        "text": "char3"
+       },
+       {
+        "type": "match",
+        "start": 184,
+        "end": 190,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 184,
+          "end": 185,
+          "text": "="
+         },
+         {
+          "type": "literal",
+          "start": 186,
+          "end": 190,
+          "field": "expression",
+          "children": [
+           {
+            "type": "char",
+            "start": 186,
+            "end": 190,
+            "text": "'\\''"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "bind",
+      "start": 192,
+      "end": 211,
+      "children": [
+       {
+        "type": "variable",
+        "start": 192,
+        "end": 199,
+        "field": "name",
+        "text": "unicode"
+       },
+       {
+        "type": "match",
+        "start": 199,
+        "end": 211,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 199,
+          "end": 200,
+          "text": "="
+         },
+         {
+          "type": "literal",
+          "start": 200,
+          "end": 211,
+          "field": "expression",
+          "children": [
+           {
+            "type": "string",
+            "start": 200,
+            "end": 211,
+            "text": "\"café ☕\""
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "comment",
+      "start": 213,
+      "end": 291,
+      "text": "-- astral characters: width must be counted in scalar values, not UTF-16 units"
+     },
+     {
+      "type": "bind",
+      "start": 292,
+      "end": 327,
+      "children": [
+       {
+        "type": "variable",
+        "start": 292,
+        "end": 298,
+        "field": "name",
+        "text": "astral"
+       },
+       {
+        "type": "match",
+        "start": 299,
+        "end": 327,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 299,
+          "end": 300,
+          "text": "="
+         },
+         {
+          "type": "literal",
+          "start": 301,
+          "end": 327,
+          "field": "expression",
+          "children": [
+           {
+            "type": "string",
+            "start": 301,
+            "end": 327,
+            "text": "\"🙂🙂🙂🙂🙂🙂\""
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "bind",
+      "start": 329,
+      "end": 359,
+      "children": [
+       {
+        "type": "variable",
+        "start": 329,
+        "end": 338,
+        "field": "name",
+        "text": "continued"
+       },
+       {
+        "type": "match",
+        "start": 339,
+        "end": 359,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 339,
+          "end": 340,
+          "text": "="
+         },
+         {
+          "type": "literal",
+          "start": 343,
+          "end": 359,
+          "field": "expression",
+          "children": [
+           {
+            "type": "string",
+            "start": 343,
+            "end": 359,
+            "text": "\"multi\\\n  \\line\""
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "bind",
+      "start": 361,
+      "end": 371,
+      "children": [
+       {
+        "type": "variable",
+        "start": 361,
+        "end": 363,
+        "field": "name",
+        "text": "n1"
+       },
+       {
+        "type": "match",
+        "start": 364,
+        "end": 371,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 364,
+          "end": 365,
+          "text": "="
+         },
+         {
+          "type": "literal",
+          "start": 366,
+          "end": 371,
+          "field": "expression",
+          "children": [
+           {
+            "type": "integer",
+            "start": 366,
+            "end": 371,
+            "text": "1_000"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "bind",
+      "start": 373,
+      "end": 384,
+      "children": [
+       {
+        "type": "variable",
+        "start": 373,
+        "end": 375,
+        "field": "name",
+        "text": "n2"
+       },
+       {
+        "type": "match",
+        "start": 376,
+        "end": 384,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 376,
+          "end": 377,
+          "text": "="
+         },
+         {
+          "type": "literal",
+          "start": 378,
+          "end": 384,
+          "field": "expression",
+          "children": [
+           {
+            "type": "integer",
+            "start": 378,
+            "end": 384,
+            "text": "0xdead"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "bind",
+      "start": 386,
+      "end": 397,
+      "children": [
+       {
+        "type": "variable",
+        "start": 386,
+        "end": 388,
+        "field": "name",
+        "text": "n3"
+       },
+       {
+        "type": "match",
+        "start": 389,
+        "end": 397,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 389,
+          "end": 390,
+          "text": "="
+         },
+         {
+          "type": "literal",
+          "start": 391,
+          "end": 397,
+          "field": "expression",
+          "children": [
+           {
+            "type": "float",
+            "start": 391,
+            "end": 397,
+            "text": "1.5e-2"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "bind",
+      "start": 399,
+      "end": 408,
+      "children": [
+       {
+        "type": "variable",
+        "start": 399,
+        "end": 401,
+        "field": "name",
+        "text": "n4"
+       },
+       {
+        "type": "match",
+        "start": 402,
+        "end": 408,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 402,
+          "end": 403,
+          "text": "="
+         },
+         {
+          "type": "literal",
+          "start": 404,
+          "end": 408,
+          "field": "expression",
+          "children": [
+           {
+            "type": "integer",
+            "start": 404,
+            "end": 408,
+            "text": "0o10"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "bind",
+      "start": 410,
+      "end": 421,
+      "children": [
+       {
+        "type": "variable",
+        "start": 410,
+        "end": 412,
+        "field": "name",
+        "text": "n5"
+       },
+       {
+        "type": "match",
+        "start": 413,
+        "end": 421,
+        "field": "match",
+        "children": [
+         {
+          "type": "=",
+          "start": 413,
+          "end": 414,
+          "text": "="
+         },
+         {
+          "type": "literal",
+          "start": 415,
+          "end": 421,
+          "field": "expression",
+          "children": [
+           {
+            "type": "integer",
+            "start": 415,
+            "end": 421,
+            "text": "0b1010"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}
