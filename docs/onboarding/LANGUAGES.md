@@ -140,6 +140,235 @@ Two things to carry, both from stage D rather than from building:
   whitespace; Scheme reaches 2/15 because its grammar deliberately erases the
   distinctions its layout depends on.
 
+## 2026-08-23, later — the register caught up with the round
+
+`DESIGN.md` now documents all **twenty-seven** opcodes the loaders accept, after
+three consecutive slices reported the drift. The count is worth a line of its
+own: codex's review said twenty-six and I was one command from copying it into
+the document — counting the loader's arms gives twenty-seven. That is two agents
+in a row getting a number wrong by not deriving it, in the same week the Ruby and
+Scheme reviews caught the builder doing exactly that twice. The document now
+names `rust/src/pkg.rs` and `runtime-js/bundle.js` as the contract and says
+plainly that it has drifted behind them before.
+
+Three new `FINDINGS` entries, all from round 4/5 stage-D work:
+
+- **27** — the reference changes which named node the tree contains. Ruby's
+  brace conversion, HTML's void slash and XML's empty-to-self-closing are one
+  limit in three spellings, one excluded file each, and `equivalent_kinds` is
+  the field that looks like the answer and is not.
+- **28** — a rule cannot see that a comment is about to be flushed. Scheme's
+  `srcsoft` double-breaks against the runtime's own comment flush. Stage D ruled
+  this is *not* entry 7's second language.
+- **29** — indentation is a repeated unit; some references indent to a column.
+  Part (b) is the cheapest open item in the register: re-rendering the final
+  indent column as tabs-then-spaces makes `nesting.scm` byte-identical without
+  changing a rule.
+
+Four existing entries moved: **2** (Ruby is the second language *and* disproves
+the cheap version), **6** (third language, eight pairs), **8** (XML uses `fill`
+with a token as a fill item), **13** (`drop` finally has a caller).
+
+**Markdown is a WIP that refuses** — `wt/lang-markdown`, and like Haskell it says
+so in its own commits. Its blocker is worth knowing before anyone picks it up:
+tree-sitter-markdown's block nodes **include their terminating newline**, so the
+gap between two blocks measures one newline short and both obvious blank-line
+policies fail in opposite directions. No package expression distinguishes "the
+source had a blank that the node ate" from "the source had none".
+
+## 2026-08-23 — XML's stage D returned `escalate`, and it was right
+
+The 26/26 was genuine for the corpus as it stood, and **the corpus was the
+problem**. `XMLDecl` hard-coded `["tok","\""]` for every quote and
+`["child","t:yes"]` for the standalone value, so both runtimes **refused**
+`standalone="no"` and single-quoted declaration values — input prettier formats
+without complaint. codex-Sol found it with two probes of its own, called them
+package bugs rather than design limits, and declined to fix them itself, which is
+what the stage-D brief asks for.
+
+**A refusal on valid input is worse than a divergence, and only one of the two
+is visible in the score.** A divergence is counted, classified and argued; a
+refusal on a construct the corpus happens not to contain shows up the first time
+someone formats a real file. Nothing in the gate suite can see it, because gate 0
+only formats the corpus.
+
+Fixed by the builder, `declaration.xml` added to probe all three variants, and
+XML is now 28/28 — two pairs bigger corpus, not a luckier package. Back with the
+reviewer for the re-review an escalation requires.
+
+The reviewer's template delta is the one to adopt, and it is sharper than the
+builder's. A report claiming full agreement should have to answer: **which
+alternatives to every hard-coded token or type selector are absent from the
+corpus, and what out-of-corpus probe tested them?** A perfect score is evidence
+about the corpus at least as much as about the package.
+
+## 2026-08-23 — Haskell built on Sol, and Opus has its stage D
+
+The Claude draft refused on four rules and was committed saying so; codex-Sol
+finished it from that diagnosis. **11/14 at width 80**, hard gates 16/16, no
+refusals, no package bugs, and a width sweep of 1920/1920 across widths 1-120.
+
+Three of the four diagnoses in the handover prompt were right and **one was
+wrong in a way worth keeping**: `lists.hs` was not a single refusal but an
+incorrect `descend` *plus* a width-driven bracket rule, and the builder's answer
+was to empty `descend` entirely — every entry, not just the one named. The
+prompt also overstated the collision set (`data` and `type` are not collisions)
+and claimed 65 branch kinds where the draft covered 64.
+
+**It edits both runtimes**, which is why stage D went to an Opus subagent rather
+than another codex pass: the ledger reserves that lane for central changes to
+`main`, and a wrong runtime shape costs all fifteen merged languages. Two
+additions, +85 B gzip together — a `source-multiline` predicate (+42 B) for
+source-broken lists and leading record commas, and an **unconditional balanced
+`paren`** (+43 B), because the existing policy only adds parens when a region
+breaks and ormolu writes `class (Eq a) =>` on a line that never breaks.
+
+The reviewer was told to do one thing the brief does not yet ask for, and it
+comes straight from HTML's stage D: **diff the two runtime implementations by
+hand and build an input for each branch of each condition.** Parity is checked by
+the scorer over the corpus, and the corpus can only check the bytes it contains —
+which is how a vertical tab split the runtimes with every gate green. Both of
+Haskell's additions are the shape that hides this: one reads the source, the
+other mutates tokens.
+
+## 2026-08-23 — TypeScript merged, and rounds 4 and 5 are closed
+
+The last held branch, unreviewed since round 4. **11/30 was partly the
+calendar.** Four of its nineteen divergences were stale rather than real, and
+three of those were stale only because the branch sat while capabilities landed:
+`assertions.ts` at both widths came back with the unconditional `paren` Haskell
+built the same day — `FINDINGS` 20 had named TypeScript and priced this — and
+`sequences.ts@80` came back with a guarded `fill`.
+
+**The fourth was not stale, it was invalid.** `annotations.ts@40` was classified
+against a corpus file the TypeScript compiler rejects: a rest parameter followed
+by a comma is TS1013, confirmed against 5.9.3. tree-sitter parsed it happily, so
+stage B's "do the corpus files parse cleanly" passed it. **Parsing cleanly is not
+the same as being valid in the language**, and a divergence measured against
+invalid input measures nothing.
+
+**The contested `package-bug` is ruled `house-rule`.** The report's own words
+gave it away — "Python's two-group list expresses that; JavaScript's `list` does
+not" — so the design can express prettier's last-argument hugging and the package
+chose not to fork a shared rule set. That is the *we chose not to* half of the
+vocabulary wearing the *we could not* half's label, which is precisely what the
+2026-08-21 decision predicted would happen once `package-bug` became a hard
+failure. The board declined to relabel it to clear the merge bar and left it to
+stage D; stage D relabelled it with a reason instead of an assertion.
+
+And the cross-check is answered. JavaScript is clean **because its corpus never
+probes a multi-argument call ending in an object**, not because its rules handle
+it. The hole is in the shared rules and nobody had walked into it — "the shared
+rules have a hole nobody probed" was the right one of the two candidate findings.
+
+**Three consecutive slices, three parity defects, all found by hand-diffing the
+two runtimes and none visible to any gate.** HTML's `srcgap` disagreed about
+vertical tab; Haskell's `source-multiline` disagreed about a range past the end
+of the source; TypeScript's `flatten` disagreed about missing operator text. The
+instruction that finds them is now in the review brief rather than in a prompt.
+
+`main` stands at **373/373 on all four gates, 0 package bugs, and 100% review
+coverage** — every divergence in every merged language has a recorded verdict.
+
+## 2026-08-23 — three register pickups, and the one that agreed and was wrong
+
+No new language: the first round spent entirely on the open register, at
+`wt/pickups-r6`, built by Claude and reviewed by codex-Sol at **medium** effort
+rather than high. Three items were taken. **One landed, one landed after being
+overturned in review, and one turned out not to exist.**
+
+**FINDINGS 29(b) is built** — `tab_stop`, +352 B runtime and +11 B in
+`scheme.json`. The entry predicted `nesting.scm` would go byte-identical without
+changing a single rule and it did, exactly. Scheme is 2/15 → 3/15.
+
+**FINDINGS 23's Rust pickup does not exist.** The entry was marked built and
+said Rust could pick up `or_patterns.rs@60`; measured, `flatten` stops refusing
+and then breaks every separator where rustfmt packs. The entry had both halves
+of this already and read the spine walk as the repair for the layout when it was
+the repair for the refusal. **"The opcode stopped refusing" is not "the opcode
+emits the reference's bytes"**, and a refusal hides the second claim until it is
+lifted.
+
+**FINDINGS 20's JavaScript pickup was half right, and the wrong half passed
+every gate.** The augmented-assignment branch stands and stage D strengthened it
+against prettier. The bitwise branch made `operators.js` byte-identical at
+**both** widths, with all four gates green — and mis-parenthesised `a | b | c`,
+because prettier's boundary is operator-pair sensitive and the rule keyed on a
+static bitwise set. The corpus has no same-operator bitwise chain. JavaScript
+lands at 8/14 @80, not the 9/14 the entry priced from two corpus hunks.
+
+That is the third consecutive slice in which **a rule was clean only because
+nothing probed it** — `decorators.ts`, FINDINGS 33, and this — and the first
+where the builder's own file *agreed with the reference* and was still wrong.
+Corpus agreement is evidence about the corpus. The stage-D brief now carries the
+check: for a rule keyed on a set, write the inputs the set is meant to separate
+and run them against the reference.
+
+**A fourth pickup was refused by gate 3, and became FINDINGS 33.** TypeScript's
+review had called JavaScript's `fill`/comment coupling stale and named the
+pickup. Applied, it **destroys code**: `Doc::Suffix` flushes only at a breaking
+line, a flat fill separator is not one, so a trailing comment outlives its item
+and lands inside the next item's `//` comment. Confirmed in both runtimes on
+off-corpus TypeScript input, so `typescript.json` is latent-unsafe today.
+
+**A fourth parity defect, of a shape the first three did not have.** The three
+before it were conditionals; this one was the accepted numeric *domain* —
+`tab_stop`'s two validators had identical conditions and different ranges,
+because JS `Number.isInteger` admits values Rust's integer deserialisation
+rejects. A branch-by-branch hand-diff walks straight past that, so the brief now
+says to compare domains as well as branches.
+
+`main` after this round: **373/373 on all four gates, 235/358 agreement, 0 stale,
+0 unreviewed, 0 package bugs, 100% review coverage.**
+
+## 2026-08-23, later — the destroying defect is fixed, and the fill was hiding two
+
+`wt/fill-suffix`, built by Claude and reviewed by codex-Sol at medium. This was
+the one open item about **correctness** rather than a percentage:
+`typescript.json` shipped a path that deleted code.
+
+**The fix is an invariant, not a change to `fill`.** Every `Doc::Suffix` is
+emitted with a `Doc::BreakParent`, so a queued suffix already means the
+enclosing group is open. The fill separator is the only site in the printer that
+picks its mode without consulting forced breaks, so it alone could reach a
+`Line` flat with a comment queued. Four lines per runtime: **if suffixes are
+pending, break.** Stage D verified the invariant independently in both runtimes
+and confirmed there are exactly two suffix emission paths in each.
+
+**The regression experiment came back empty, which is the reasoning confirming
+itself.** `fill` serves CSS, JSON and TypeScript, so this could have moved
+packing anywhere. Runtime change alone, no package change: every language scored
+identically, **zero bytes of corpus output moved**. Outside a fill a pending
+suffix already implied a broken group, so there was nothing else to change.
+
+JavaScript then took the pickup gate 3 had refused a round earlier —
+`sequences.js@80` is agreement and the corpus is **236/360**.
+
+**First slice in five with no parity defect.** HTML, Haskell, TypeScript and
+`tab_stop` each hid one in new runtime code; the hand-diff here found nothing,
+and stage D's own branch-by-branch check agreed. Worth noting the streak broke
+on the slice where the change was four lines rather than a new opcode.
+
+**A new register entry, and the review sharpened it.** Fixing the destruction
+exposed FINDINGS 34: prettier turns packing off for a whole list the moment any
+comment appears in it. The report described this as prettier stopping "packing
+the remainder"; measured against prettier, it is **retroactive** — the items
+*before* the comment are un-packed too, so it is a property of the container
+rather than a barrier the fill runs into. A package cannot reach it, because
+comment attachment is runtime-owned and no predicate can ask whether a node
+contains a comment.
+
+**And the probe criticism has a measured answer.** Stage D judged
+`comment_fill.ts` imperfectly isolated and suggested a future split. No split
+helps: the smallest commented array that exercises the construct at all already
+trips entry 34, so every possible probe carries the same two ledger records. The
+bundling is a property of the construct, and entry 16's usual complaint does not
+apply.
+
+`main` after this round: **375/375 on all four gates, 236/360 agreement, 0 stale,
+0 unreviewed, 0 package bugs, 100% review coverage**, and no known
+data-destroying path in any shipped package.
+
 ## Board
 
 | Language   | Tier | Round | Builder       | Status | Grammar                | Reference                         |
@@ -153,13 +382,13 @@ Two things to carry, both from stage D rather than from building:
 | Rust       | T2   | 3     | unrecorded    | merged | tree_sitter_rust       | rustfmt                           |
 | Kotlin     | T2   | 3     | unrecorded    | merged | tree_sitter_kotlin     | ktfmt                             |
 | JavaScript | T2   | 3     | unrecorded    | merged | tree_sitter_javascript | prettier                          |
-| Markdown   | T2   | 4     | grok-4.6      | B+     | tree_sitter_markdown   | prettier                          |
-| TypeScript | T2   | 4     | grok-4.6      | D      | tree_sitter_typescript | prettier                          |
-| XML        | T3   | 4     | grok+Claude   | D      | tree_sitter_xml        | prettier (`@prettier/plugin-xml`) |
+| Markdown   | T2   | 4     | grok+Claude   | C      | tree_sitter_markdown   | prettier                          |
+| TypeScript | T2   | 4     | grok-4.6      | merged | tree_sitter_typescript | prettier                          |
+| XML        | T3   | 4     | grok+Claude   | merged | tree_sitter_xml        | prettier (`@prettier/plugin-xml`) |
 | HTML       | T3   | 4     | grok+codex    | merged | tree_sitter_html       | prettier                          |
 | Ruby       | T4   | 5     | grok+Claude   | merged | tree_sitter_ruby       | syntax_tree 6.3.0                 |
 | Scheme     | T4   | 5     | grok+Claude   | merged | tree_sitter_scheme     | emacs `scheme-mode`               |
-| Haskell    | T4   | 5     | grok+Claude   | C      | tree_sitter_haskell    | ormolu 0.8.0.2                    |
+| Haskell    | T4   | 5     | grok+codex    | merged | tree_sitter_haskell    | ormolu 0.8.0.2                    |
 | Aven       | T4   | 6     | tbd           | -      | **none — see below**   | `aven fmt`                        |
 
 Grammar package names are the orchestrator's guess from PyPI naming convention.

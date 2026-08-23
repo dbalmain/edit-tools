@@ -171,6 +171,7 @@ function validatePredicate(value) {
     value[1].forEach(parseSelector);
     return;
   }
+  if (value[0] === "source-multiline" && value.length === 1) return;
   throw new Refusal(`unknown predicate ${JSON.stringify(value)}`);
 }
 
@@ -189,10 +190,14 @@ function validateExpr(value) {
   switch (op) {
     case "seq":
     case "indent":
-    case "paren":
     case "cellblock":
       rest.forEach(validateExpr);
       return;
+    case "paren": {
+      const body = typeof rest[0] === "boolean" ? rest.slice(1) : rest;
+      body.forEach(validateExpr);
+      return;
+    }
     case "group": {
       const body = typeof rest[0] === "number" ? (parseGroupMax(rest[0]), rest.slice(1)) : rest;
       body.forEach(validateExpr);
@@ -337,9 +342,26 @@ function commentCellsField(pkg) {
   throw new Refusal('`comment_cells` must be a boolean or "block"');
 }
 
+function tabStopField(pkg, comment_cells) {
+  const stop = pkg.tab_stop === undefined ? 0 : pkg.tab_stop;
+  if (!Number.isSafeInteger(stop) || stop < 0) {
+    throw new Refusal("`tab_stop` must be a non-negative safe integer");
+  }
+  if (stop > 0) {
+    if (pkg.tab_indent) {
+      throw new Refusal("`tab_stop` and `tab_indent` both spell the indent; pick one");
+    }
+    if (comment_cells !== CELLS_OFF) {
+      throw new Refusal("`tab_stop` and `comment_cells` disagree about columns");
+    }
+  }
+  return stop;
+}
+
 function buildPackage(pkg) {
   validatePackageFormat(pkg);
   const comment_cells = commentCellsField(pkg);
+  const tab_stop = tabStopField(pkg, comment_cells);
   const comment_gap = gapField(pkg, "comment_gap");
   const blank_cap = gapField(pkg, "blank_cap");
   const flatten_fields = flattenFields(pkg);
@@ -365,7 +387,7 @@ function buildPackage(pkg) {
       return [name, expanded];
     }),
   );
-  return { ...pkg, comment_cells, comment_gap, blank_cap, flatten_fields, rules };
+  return { ...pkg, comment_cells, tab_stop, comment_gap, blank_cap, flatten_fields, rules };
 }
 
 // ---------------------------------------------------------------- the Doc IR
@@ -477,7 +499,15 @@ function fits(next, rest, rem, mustBeFlat = false) {
 }
 
 /** Indentation is written lazily, so a blank line is genuinely empty. */
-function print(doc, cols) {
+// Respell a finished indent column as tabs to `stop`, then spaces. All-space
+// indents only: a nested region's own tab unit is not ours to guess. The
+// column count does not move, so nothing already measured does either.
+function respell(ind, stop) {
+  if (stop === 0 || ind.length === 0 || /[^ ]/.test(ind)) return ind;
+  return "\t".repeat(Math.floor(ind.length / stop)) + " ".repeat(ind.length % stop);
+}
+
+function print(doc, cols, tabStop = 0) {
   const out = [];
   let pos = 0;
   let pending = "";
@@ -545,15 +575,19 @@ function print(doc, cols) {
         case "line":
         case "soft":
         case "hard": {
-          const breaking = mode === BREAK || d.k === "hard";
+          // A queued suffix means a break is due: every suffix travels with a
+          // breakParent, so its group is open. A fill separator is the one that
+          // picks its mode without consulting forced breaks. FINDINGS 33.
+          const m = suffixes.length > 0 ? BREAK : mode;
+          const breaking = m === BREAK || d.k === "hard";
           if (breaking && suffixes.length > 0) {
-            stack.push(cmd, ...suffixes.reverse());
+            stack.push([ind, m, d], ...suffixes.reverse());
             suffixes = [];
             break;
           }
           if (breaking) {
             out.push("\n");
-            pending = ind;
+            pending = respell(ind, tabStop);
             pos = width(ind);
           } else if (d.k === "line") {
             write(" ");
@@ -1080,7 +1114,7 @@ class Ctx {
       case "trail":
         return this.trail(rest[0], parseSelector(rest[1]));
       case "paren":
-        return this.paren(rest);
+        return this.paren(typeof rest[0] === "boolean" ? rest.slice(1) : rest, rest[0] === true);
       case "autoparen":
         return this.autoparen(parseSelector(rest[0]));
       case "when":
@@ -1137,6 +1171,10 @@ class Ctx {
     }
     if (op === "multiline") {
       return pathHasMultiline(this.fmt, this.node, raw.map(parseSelector));
+    }
+    if (op === "source-multiline") {
+      const source = this.fmt.bytes.subarray(this.node.start, this.node.end);
+      return source.includes(0x0a) || source.includes(0x0d);
     }
     throw new Refusal(`unknown predicate \`${op}\``);
   }
@@ -1263,7 +1301,7 @@ class Ctx {
 
   /** The balanced-paren policy: adopt the pair the source already has, or add
    *  one when the region breaks. */
-  paren(body) {
+  paren(body, always = false) {
     const last = this.items.length - 1;
     const opener = this.cursor;
     const adopt =
@@ -1274,6 +1312,8 @@ class Ctx {
     let open;
     if (adopt) {
       open = this.tok("(");
+    } else if (always) {
+      open = text("(");
     } else {
       open = ifBreak(text("("), nil);
     }
@@ -1285,6 +1325,8 @@ class Ctx {
     if (adopt) {
       if (this.cursor !== last) throw this.refuse("the closing `)` of the region it wraps");
       close = this.tok(")");
+    } else if (always) {
+      close = text(")");
     } else {
       close = ifBreak(text(")"), nil);
     }
@@ -1348,12 +1390,16 @@ class Ctx {
    *  This is the opcode a per-node fold cannot do without. */
   flatten(kind, sep) {
     const fields = this.fmt.flatten;
-    const left = { field: fields.left };
-    const right = { field: fields.right };
+    const fielded = (this.node.children ?? []).some((c) => c.field != null);
+    const left = fielded ? { field: fields.left } : { named: true };
+    const right = fielded ? { field: fields.right } : { named: true };
 
     const spine = [];
     for (let cur = this.node; ; ) {
-      const next = (cur.children ?? []).find((c) => c.field === fields.left);
+      const kids = cur.children ?? [];
+      const next = fielded
+        ? kids.find((c) => c.field === fields.left)
+        : kids.find((c) => !this.fmt.comments.has(c.type));
       if (!next || next.type !== kind || this.fmt.tightness(cur) !== this.fmt.tightness(next)) {
         break;
       }
@@ -1363,16 +1409,20 @@ class Ctx {
     const inner = spine.map((n) => new Ctx(this.fmt, n));
 
     const parts = [];
+    let outerSkipped;
+    const skippedComments = Array(inner.length).fill(undefined);
     if (inner.length === 0) {
       parts.push(this.child(left));
     } else {
       parts.push(inner[inner.length - 1].child(left));
-      this.skip(left);
-      for (let i = 0; i < inner.length - 1; i++) inner[i].skip(left);
+      outerSkipped = this.skip(left);
+      for (let i = 0; i < inner.length - 1; i++) skippedComments[i] = inner[i].skip(left);
     }
     for (let i = inner.length - 1; i >= 0; i--) {
+      if (skippedComments[i] !== undefined) parts.push(skippedComments[i]);
       parts.push(inner[i].eval(sep), inner[i].child(right));
     }
+    if (outerSkipped !== undefined) parts.push(outerSkipped);
     parts.push(this.eval(sep), this.child(right));
 
     for (const ctx of inner) {
@@ -1384,13 +1434,25 @@ class Ctx {
     return concat(parts);
   }
 
-  /** Step over a child the chain emits elsewhere. It is still consumed exactly
-   *  once, so long as nothing was attached to it here. */
+  /** Step over a child the chain emits elsewhere. Leading comments still
+   *  refuse — those belong on the inner context — but a suffix or after
+   *  comment on the skipped node is returned so flatten can emit it after
+   *  the nested chain. */
   skip(sel) {
     const at = this.take(sel, "the left operand of a chain");
-    if (decorated(this.items[at])) {
-      throw this.refuse("no comment on an operand of a flattened chain");
+    const item = this.items[at];
+    if (item.lead.length > 0) {
+      throw this.refuse("no leading comment on an operand of a flattened chain");
     }
+    const suffixParts = [];
+    const gap = " ".repeat(this.fmt.commentGap);
+    for (const s of item.suffix) suffixParts.push(suffix(text(`${gap}${s}`)));
+    if (item.suffix.length > 0) suffixParts.push(breakParent);
+    item.suffix = [];
+    const after = item.after;
+    item.after = [];
+    suffixParts.push(afterDocs(this.fmt, after));
+    return concat(suffixParts);
   }
 }
 
@@ -1453,7 +1515,9 @@ class Formatter {
   }
 
   tightness(node) {
-    const op = (node.children ?? []).find((c) => c.field === this.flatten.operator);
+    const kids = node.children ?? [];
+    const op = kids.find((c) => c.field === this.flatten.operator)
+      ?? kids.find((c) => this.tokens.has(c.type));
     return (op && this.precedence[op.text]) ?? 0;
   }
 
@@ -1495,7 +1559,7 @@ class Formatter {
 function format(tree, packages, cols) {
   const bytes = new TextEncoder().encode(tree.source ?? "");
   const fmt = new Formatter(packages, tree.language, bytes, new TextDecoder());
-  let out = print(fmt.node(tree.root), cols);
+  let out = print(fmt.node(tree.root), cols, fmt.pkg.tab_stop);
   out = alignCells(out, fmt.pkg.comment_cells === CELLS_BLOCK, " ".repeat(fmt.commentGap), cols);
   if (fmt.semanticEof) {
     const suffix = (tree.source ?? "").match(/(?:\r\n|\r|\n)+$/)?.[0] ?? "";

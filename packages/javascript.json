@@ -43,6 +43,18 @@
   },
 
   "defs": {
+    "fill_list": [
+      "group",
+      ["tok", ["$", 0]],
+      [
+        "indent",
+        ["soft"],
+        ["fill", "named", ["seq", ["tok", ["$", 1]], ["line"]]],
+        ["trail", ["$", 1], "named"]
+      ],
+      ["soft"],
+      ["tok", ["$", 2]]
+    ],
     "list": [
       "group",
       ["tok", ["$", 0]],
@@ -142,6 +154,17 @@
     ],
     "variable_declarator": [
       "when",
+      ["count", "t:augmented_assignment_expression", 1],
+      [
+        "seq",
+        ["child", "f:name"],
+        ["sp"],
+        ["tok", "="],
+        ["sp"],
+        ["paren", true, ["child", "f:value"]]
+      ],
+      [
+      "when",
       ["count", "t:binary_expression", 1],
       ["use", "assign", "f:name", "f:value"],
       [
@@ -162,6 +185,7 @@
           ]
         ]
       ]
+      ]
     ],
 
     "array": [
@@ -175,7 +199,7 @@
           "when",
           ["count", "named", 1],
           ["use", "one_list", "[", ",", "]"],
-          ["use", "list", "[", ",", "]"]
+          ["use", "fill_list", "[", ",", "]"]
         ],
         [
           "when",

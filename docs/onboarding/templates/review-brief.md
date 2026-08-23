@@ -83,7 +83,15 @@ so, which is the right answer; the deliberation it displaced was the waste.
    because 88 "matches the other languages". 88 is black's, inherited through
    the python manifest. Agreement measured at a width no user of that reference
    ever sees is not agreement. Check the number, do not read it.
-5. **Do the corpus files parse cleanly** — no `ERROR`, no `MISSING`?
+5. **Do the corpus files parse cleanly** — no `ERROR`, no `MISSING`? **And are
+   they valid in the language?** These are different questions and the second one
+   has now been missed. TypeScript's `annotations.ts` carried a rest parameter
+   followed by a comma; tree-sitter parsed it happily, stage B passed it, and
+   stage D found the compiler rejects it (TS1013, checked against 5.9.3) — after
+   a stage-C builder had classified a divergence against it. **A divergence
+   measured against invalid input measures nothing.** Where the language has a
+   compiler or validator that the harness does not run, run it once over the
+   corpus yourself; where it does not, say so.
 6. **Is `gate3` right for this language?** If the builder took the default when
    a real semantic checker was available, say so. If it declared an override, is
    the override actually stronger?
@@ -215,6 +223,18 @@ whether the package is right. Budget your effort here:
    `--reason`, and `--reviewed-by` flags; the resulting JSONL diff is part of
    the review.
 
+   **A reason must account for every hunk in the diff, not the first one.** A
+   divergence is one record and often several distinct causes; a reason that
+   explains the hunk the builder noticed and is silent on the rest reads as
+   settled and is not. Check the whole diff against the whole reason.
+
+   **A classification can go stale with the package untouched.** A
+   `design limit` naming a capability the runtime has since gained is no longer
+   a limit, and a held branch accumulates these silently — TypeScript, unreviewed
+   for one round, had three, and two of them came back for a one-word edit.
+   Before accepting a `design limit` that names a missing opcode or policy, check
+   `rust/src/pkg.rs` for whether it is still missing.
+
 4. **Verdict each runtime edit**: `warranted` | `unnecessary` |
    `needs-redesign`. A verdict of `unnecessary` is a **retroactive freeze for
    this run**: revert the edit and require the package to be expressed without
@@ -230,6 +250,34 @@ whether the package is right. Budget your effort here:
      scored one — a `group`-based composition can match a fixed-width reference
      perfectly at width 80 and still be wrong, because it is width-sensitive
      where the reference is not.
+
+     For a `reference_width = "fixed"` language there is no second width, and
+     the equivalent axis is an adversarial **source line structure**. Stage B's
+     item 7 already knows fixed references need a different probe and says so;
+     this section did not, until Haskell. For a source-driven predicate the
+     sharpest test is **idempotence on off-corpus line structures** — a
+     source-sensitive rule is exactly the shape that can oscillate where the
+     corpus never shows it.
+   - **Do the two runtimes mean the same thing by it?** Parity is a hard
+     requirement measured **by the scorer over the corpus**, and the corpus can
+     only check the bytes it contains. A new capability has branches no corpus
+     file reaches — every refusal, every empty input, every out-of-range or
+     malformed path — and those are exactly where two independently written
+     implementations drift. **Diff the Rust and JS implementations by hand and
+     construct an input for each branch of each condition.** This has now found
+     two defects in two consecutive slices, both invisible to every gate: HTML's
+     `srcgap` disagreed about whether vertical tab is whitespace, and Haskell's
+     `source-multiline` disagreed about a node range running past the source,
+     because **Rust's `slice::get` returns `None` where JS's `subarray` clamps**.
+     That asymmetry is worth checking for by name; a third instance of it sits on
+     `main` today in `Formatter.slice`, on a path no package currently takes.
+     **Compare accepted numeric domains, not only branches.** A header validator
+     is the case a branch-by-branch diff walks past: `tab_stop`'s two validators
+     had identical conditions and different accepted ranges, because JS
+     `Number.isInteger` admits values Rust's integer deserialisation rejects. A
+     package that loads in one runtime and refuses in the other is a parity
+     break, and it is invisible to every gate.
+
    - **Is its _shape_ right?** A warranted capability can still be implemented
      too broadly, and gates cannot see that: every gate passes either way. Read
      the predicate. YAML's semantic-gap bypass was warranted and searched the
@@ -239,10 +287,43 @@ whether the package is right. Budget your effort here:
      intended one and run it. Correcting the shape is part of the verdict, not a
      separate finding.
 
-5. **Read the package for what gates cannot see**: design fit, whether it reuses
+5. **A pickup another language priced is a hypothesis, not a measurement.** When
+   a report says a limit is stale and names a second language that can now pick
+   it up, that claim was verified against the *first* language's corpus. Run it
+   on the second before repeating it. Twice in consecutive slices between
+   TypeScript and JavaScript, a rule shared by both was clean in one only
+   because that corpus never probed it: `decorators.ts` in one direction, and
+   in the other a `fill` pickup that passes every gate in TypeScript and
+   **destroys comments** in JavaScript (FINDINGS 33). Note also that "the opcode
+   stopped refusing" is not "the opcode emits the reference's bytes" — a
+   refusal hides the output until it is lifted, and Rust's `or_patterns.rs`
+   pickup evaporated on exactly that (FINDINGS 23).
+
+   **And a rule that reproduces the reference byte-for-byte can still be
+   wrong.** JavaScript's bitwise-paren rule made `operators.js` identical at
+   both measured widths with every gate green, and mis-parenthesised
+   `a | b | c` — a construct no corpus file contains. For any rule that keys on
+   a *set* (of operators, of node kinds), write the inputs the set is supposed
+   to separate and run them against the reference directly. Corpus agreement is
+   evidence about the corpus.
+6. **Package edits must be surgical text edits.** The size metric gzips
+   `packages/*.json` **as written on disk**, so loading a package and dumping it
+   back reformats the whole file and charges the change for it. Measured:
+   `javascript.json` went 16764 -> 34887 bytes on disk and the metric read +513
+   B gzip for an edit that actually cost +114. If a diff touches lines the
+   change did not, the number in the report is wrong.
+7. **A corpus file added for a safety regression still needs its ledger reason
+   to name every cause.** A hard-gate probe earns its place by failing the gate
+   when the fix is reverted — check that by reverting, not by assuming. But it
+   will usually diverge from the reference for reasons unrelated to the bug, and
+   the reason recorded for it must account for those too. Before asking for a
+   more isolated probe, check whether isolation is even available: for
+   `comment_fill.ts` the smallest case that exercises the construct still trips
+   FINDINGS 34, so no split would have produced a clean file.
+8. **Read the package for what gates cannot see**: design fit, whether it reuses
    the existing concepts or invents parallel ones, whether the rule table reads
    like `packages/python.json` or like something bolted on.
-6. **Is refusal being used to dodge?** Refusing a construct the package could
+9. **Is refusal being used to dodge?** Refusing a construct the package could
    have handled inflates gate 1–3 at the cost of usefulness.
 
 ### Merge bar

@@ -454,6 +454,34 @@ it for exactly that reason.
 **Decide when:** a second language hits it. One divergence in one language does
 not buy an IR feature.
 
+### Ruby is the second language, and it disproves the cheap version
+
+**2026-08-23.** syntax_tree cascades a broken hash into a hash **value** — and
+into nothing else. Five constructions run against the reference at width 80,
+reproduced independently at stage D:
+
+| Construction | Parent breaks | Inner |
+| --- | --- | --- |
+| hash of hashes | yes | **breaks** |
+| hash of arrays | yes | stays flat |
+| hash of calls | yes | stays flat |
+| array of hashes | yes | stays flat |
+| array of arrays | yes | stays flat |
+
+So the "decide when" condition is met — **and the entry should be re-read before
+it is built.** A generic *expanded parent forces expanded children* would break
+the arrays and calls that syntax_tree leaves flat, trading `nesting.rb` for
+`collections.rb` rather than fixing anything. Stage D tested the package-level
+version of the same idea (a group-less `hash`) and measured exactly that: it
+fixed `nesting@40` and regressed `collections@80`.
+
+What Ruby needs is inheritance **the parent asks for, per child kind**. The
+`pair` rule can already see that its value is a hash — `["all","f:value",["hash"]]`
+is an existing predicate on an existing node — and needs a way to format that
+child without its own group. That is one child-emitting opcode, decidable before
+layout, which puts it on entry 10's side of the line stage D drew for CSS rather
+than in the layout-time context this entry describes.
+
 ## 3. A break-only separator pins its group
 
 **Status:** open · **Cost:** local · **Languages:** TOML (2), CSS (2), YAML (4),
@@ -698,10 +726,19 @@ the pair `group` fixes those scalar lines and regresses every broken flow
 collection, so the package has a choice between two wrong answers and no way to
 ask for the right one.
 
+**Ruby is the third language, and the second in prettier's direction.**
+syntax_tree never counts a trailing comment: `configure(…)` is exactly 80
+characters, its comment takes the line to 108, and the formatter still refuses to
+wrap it. Stage D attributed **eight of Ruby's fourteen divergent pairs** to this
+entry — `collections@40`, `comments@40`, `normalisation@40`, `long_sequences@80`
+and four more where it compounds with another cause. Ruby's report notes that
+syntax_tree therefore *manufactures* overflow, which is reference behaviour and
+not a package defect.
+
 **Decide when: now — this is the cheapest open entry with real evidence behind
-it.** A local opcode, both modes proven necessary by two references pulling in
-opposite directions, and five divergences in one language waiting on it. It is
-the second thing to build after `fill` (entry 8), and arguably before.
+it.** A local opcode, both modes proven necessary by three references, and
+thirteen divergences across two languages waiting on it. It is the second thing
+to build after `fill` (entry 8), and arguably before.
 
 ## 7. A rule cannot tell a comment-forced break from a width-forced break
 
@@ -732,6 +769,14 @@ finding reported from _corpus_ observation is a hypothesis about the reference,
 and only a package makes it a claim about the IR. That is exactly why "needs
 stage-C confirmation" exists, and it earned its place on the first use.
 
+**Scheme was considered for it and ruled out, 2026-08-23.** Its package hits
+something adjacent — `srcsoft` double-breaking against the runtime's own comment
+flush — and stage D ruled that this is earlier and narrower than break
+provenance: not *why* the group broke, but whether a break is about to be
+emitted for me. That is **entry 28**, not this one. Recorded here because the
+temptation to bank it as the second language was real and the entry has already
+been overcounted once.
+
 **Decide when:** a second language genuinely hits it. One divergence in one
 language does not buy an IR feature, and this entry has already been overcounted
 once.
@@ -747,6 +792,23 @@ package on top of the earlier **+44 B** · **Languages:** CSS (measured), JSON
 The IR breaks a group all-or-nothing: every separator breaks, or none does.
 Neither reference does that. prettier packs short items onto a line and wraps to
 the next, and it decides per line rather than per group.
+
+**XML is a third language and it uses `fill` without asking for anything.**
+`@prettier/plugin-xml` packs the doctype's external ID — both literals on the
+`PUBLIC` line at width 80, all three lines at 40 — and a `group` gets one of the
+two widths wrong whichever way it is written. The whole rule is
+`["indent", ["fill", "*", ["line"]]]`, and the `*` is the interesting part: the
+`PUBLIC` keyword has to be a fill **item** rather than a fixed prefix, because
+the first break falls after it at 40 and not at 80. Third language, third
+construct shape, no extension needed.
+
+**`fill` does not reserve the separator `trail` adds afterwards.** Found by
+TypeScript's stage D on `sequences.ts@40`: `fill` decides whether the next item
+fits using the item's own width, and `trail` then appends a comma that `fill`
+never budgeted for, so the last item on a line can overrun by exactly one
+character. It is a small, precise interaction between two built opcodes rather
+than a limit of either, and it is why that file stayed divergent after the `@80`
+case was recovered.
 
 **This is the best-evidenced request in the register, and the cheapest.** It was
 asked for by CSS's stage-C builder, corroborated independently against JSON
@@ -852,6 +914,14 @@ retired.
 
 ## 9. Comment placement cannot see the surrounding syntax
 
+**Haskell is the second language, 2026-08-23**, which is this entry's own stated
+trigger. The record-comment hunk in `comments.hs` is exactly it: an own-line
+comment inside a record is bound to the following field by runtime attachment
+before any rule runs, so no package expression can place it. Unlike TOML's
+instance — which this entry correctly reassigns to entry 1 — Haskell's has
+nothing to do with rendered widths, so it is this entry and not that one.
+
+
 **Status:** open, **promoted** · **Cost:** contextual · **Languages:** CSS,
 YAML, Go — and TOML retrospectively
 
@@ -945,6 +1015,26 @@ the head of a form at arbitrary depth.
 **Decide when: before round 3 launches.** This was previously "before Scheme
 (round 5)". Three languages, eight accepted divergences and one shipped
 workaround have moved it up.
+
+## 10b. `drop` deletes the right token and the wrong one, for want of a parent
+
+**Recorded 2026-08-23 under entry 10**, because it is entry 10's shape rather
+than a limit of `drop`.
+
+TypeScript's `normalisation.ts` wants prettier's deletion of a redundant
+`((1 + 2))`. `drop` reaches it: the parens are declared punctuation, they carry
+no comment, so both of `drop`'s guards pass and the token is deleted. **It also
+deletes the parentheses around an `if` condition**, which are required, because
+`parenthesized_expression` has one rule and that rule cannot see whether its
+parent is an expression or an `if`.
+
+So the capability is right and the dispatch is wrong, which is entry 10 exactly:
+*a rule cannot vary by where its node appears*. It is worth recording here rather
+than against `drop`, because the tempting fix — a narrower `drop` — would be
+solving the wrong problem, and because it is the first case where entry 10's
+absence would cause **destruction** rather than a layout miss. `drop` is the one
+opcode that deletes, and a package that cannot tell a redundant paren from a
+required one must not delete either.
 
 ## 11. Two smaller CSS findings, recorded but not yet argued
 
@@ -1114,7 +1204,18 @@ preferred handling, and a sharper signal than a divergence would have been,
 because the language had to give up measuring the construct at all. Two
 languages now want `drop`, which is the condition this entry set for deciding.
 
-### Built. It works, and it earns nothing yet.
+### Built. It works, and Ruby is the caller it was waiting for.
+
+**2026-08-23.** `drop` was built for rustfmt's leading `|`, which is parked, and
+this section said for three rounds that nothing used it. Ruby uses it:
+`x = 1; y = 2; z = 3` becomes three statements only because the package can drop
+the `;` its grammar leaves between them, and `normalisation.rb` matches the
+reference at both widths on that basis. The parking argument was "no caller
+worth the bytes"; there is now a caller, in a merged language, and entry 26
+proposes a second from the opposite direction.
+
+### The original note, for the record
+
 
 `["drop", "|"]` consumes a token without emitting it. Absent is fine — a package
 says "drop this if it is here". Two refusals guard it, because this entry said
@@ -2009,8 +2110,70 @@ Two lessons worth keeping:
 
 ## 20. `paren` waits for a break; prettier adds parens that never wait
 
-**Status:** open · **Cost:** **local** · **Languages:** JavaScript (2 corpus
-files), TypeScript (unonboarded, same reference)
+**Status:** **built** (2026-08-23, by Haskell's stage C) · **Cost:** **+43 B
+gzip**, as predicted · **Languages:** JavaScript (2 corpus files, unclaimed),
+Haskell (built it), TypeScript (unonboarded, same reference)
+
+### Built, by the second reference to demand it
+
+`["paren", true, e…]` takes an optional leading boolean; the unflagged form is
+unchanged, so no existing package moved. ormolu is the second reference: it
+writes `class (Eq a) => Sized a` on a line that never breaks, and Haskell's stage
+D confirmed by test that the unflagged policy emits nothing in flat layout at any
+width, and that forcing the break to make `IfBreak` fire produces `(\n  a\n)` —
+the wrong bytes. So this entry's "no opcode can express that today" was exact.
+
+Stage D also verdicted the **shape**: the flag narrows rather than widens.
+`always` is ignored when `adopt` fires, both refusal branches are unchanged, and
+an unconditional wrap is easier to audit than a conditional one — which is what
+this entry argued when it asked for it.
+
+**TypeScript picked it up the same day, and it worked.** `assertions.ts` at both
+widths — prettier wraps `(a + b) as number` while the line still fits — came back
+as agreement for a one-word package edit, which is exactly what this entry
+predicted for exactly the reason it gave. That is the second reference and the
+first measured pickup.
+
+**JavaScript's pickup is half of what this entry priced, and the other half was
+a wrong rule that passed every gate.** The augmented-assignment branch is valid
+and closes `modern.js@80` — prettier 3.x keeps the parens for **all fifteen**
+compound assignment operators, not only the three logical ones the corpus
+contains, so the rule is right off-corpus as well as on it.
+
+The bitwise branch is reverted. It made `operators.js` byte-identical at **both**
+widths and was still wrong, because prettier's boundary is **operator-pair**
+sensitive rather than bitwise-membership sensitive. Measured against prettier
+directly:
+
+```js
+const same       = a | b | c | d;      // unparenthesised -- flattened
+const mixLogical = a && b | c;         // unparenthesised
+const mixMod     = (a % b) * c;        // parenthesised, and not bitwise at all
+const mixShift   = (a << b) | c;
+```
+
+A static bitwise set gets the first two wrong — it wraps every same-operator
+chain, turning one flattened group into a nested staircase — and cannot reach
+the third at all. JavaScript therefore reaches **8/14 at width 80, not the 9/14
+this entry predicted**; the prediction was made from two corpus hunks and the
+corpus contains no same-operator bitwise chain.
+
+**The gates cannot see this and neither can the reference.** Byte-identical
+output at both measured widths, all four gates green, and the rule is still
+wrong on ordinary JavaScript. That is the third time in three slices that a
+shared rule was clean only because no corpus file probed it — `decorators.ts`,
+FINDINGS 33, and now this — and the first where the *builder's own* file agreed
+with the reference. Corpus agreement is evidence about the corpus.
+
+**The original state of this line, for the record:** The pickup this entry priced (7/14 → 9/14
+at width 80) is still available, and it is not quite free: JavaScript's two
+affected divergences carry accepted ledger reviews, and changing the package
+makes those records **stale**, which is a hard scorer failure until a reviewer
+re-approves or retires them. The work is a package edit plus a re-review, not a
+package edit alone. `autoparen` also has no `always` form yet — only `paren`
+does — so check which of the two JavaScript actually needs before starting.
+
+### The original entry, as written before it was built
 
 `paren` and `autoparen` are the two sanctioned token-addition policies, and both
 are **break-driven**: they emit `(` `)` through `IfBreak`, so a group that fits
@@ -2252,8 +2415,63 @@ reusable lesson, not the algorithm.
 
 ## 23. `flatten` walks a spine by field name, and not every spine has fields
 
-**Status:** open · **Cost:** **local** · **Languages:** Rust
-(`or_patterns.rs@60`)
+**Status:** **built** (2026-08-23, by TypeScript's stage C) · **Cost:** **+66 B
+gzip** · **Languages:** Rust (`or_patterns.rs@60`, the case that opened it),
+TypeScript (built it)
+
+### Built — a positional fallback, narrowly gated
+
+`flatten` now falls back to a positional `[operand, token, operand]` spine walk
+**only when no child of the node carries a field at all**. Stage D verdicted it
+`warranted` and confirmed the gate is the narrow one: the rename probe still
+refuses `Field("left")`, so a grammar that names its spine fields differently is
+still a refusal rather than a silent positional guess — which is what this entry
+asked for and what makes the fallback safe.
+
+Hand-diffing the two runtimes during that review found a parity defect in the new
+code — Rust's missing-operator-text branch disagreed with JS — which was fixed
+before the merge. Third such defect in three consecutive slices, all in newly
+added runtime capability, none visible to any gate.
+
+**Rust cannot pick it up, and measuring that is the correction this entry
+needed.** `or_patterns.rs@60` opened the entry, and with the fallback in place
+`flatten` no longer refuses it — so the entry read as unblocked. It is not.
+`flatten` builds a `Doc::Concat`, so a `group` around it breaks **every**
+separator:
+
+```rust
+        LongVariantNameOne
+        | LongVariantNameTwo
+        | LongVariantNameThree
+        | LongVariantNameFour => {
+```
+
+rustfmt **packs**:
+
+```rust
+        LongVariantNameOne | LongVariantNameTwo
+        | LongVariantNameThree | LongVariantNameFour => {
+```
+
+The entry's own body had both halves of this and did not put them together: it
+records that `fill` gives "the right style, wrong packing" and that `flatten`
+refuses, then proposes the spine walk as the repair. The spine walk was the
+repair for the **refusal**. The layout wanted is a `fill` over a flattened run,
+and no opcode composes the two — `fill` iterates the children of one node, and
+`Doc::fill` asserts its parts alternate content and whitespace, which
+`flatten`'s parts (comment docs and `flush_after` interleaved) do not.
+
+So Rust's pickup is a **new capability**, not a package edit: a fill mode for
+`flatten`. Nobody had measured `flatten`'s *output* here because it refused
+before the output existed.
+
+**The general lesson, which is not about `flatten`.** "The opcode stopped
+refusing" and "the opcode produces the reference's bytes" are different claims,
+and a refusal hides the second one until it is lifted. An entry marked built on
+the strength of the first will send the next builder to a pickup that is not
+there. Price a pickup by running it, not by reasoning that the blocker is gone.
+
+### The original entry, as written before it was built
 
 rustfmt wraps a long or-pattern by packing alternatives per line and putting the
 `|` at the **start** of each continuation line:
@@ -2652,3 +2870,420 @@ now paid for twice.
 stays parked with a built, tested, unused opcode. Nothing is silently wrong —
 every affected pair is classified `design-limit` in TypeScript's report with the
 reason named.
+
+## 27. The reference changes which named node the tree contains
+
+**Status:** open (recorded, not yet argued) · **Cost:** structural · **Languages:**
+Ruby (1 excluded file), HTML (1), XML (1) — three references, three spellings,
+one limit
+
+Three round-4/5 languages each had exactly one corpus file declared
+`[incomparable]`, and after three independent stage-C slices the three reasons
+turn out to be the same reason:
+
+| Language | Reference does | Named-node change |
+| --- | --- | --- |
+| Ruby | `{ … }` → `do … end` when the body stops fitting | `block` → `do_block` |
+| HTML | `<br>` → `<br />` | `start_tag` → `self_closing_tag` |
+| XML | `<a></a>` → `<a />` | `STag` + `ETag` → `EmptyElemTag` |
+
+None of these is a token rewrite that linearity forbids by itself — the runtime
+could emit the bytes. What stops all three is **gate 3**: the reparsed output
+holds a different named node than the source did, which is precisely what the
+ordered structural comparison exists to catch, and it cannot distinguish "the
+formatter chose an equivalent spelling" from "the formatter lost something".
+
+`equivalent_kinds` is the manifest field that looks like the answer and is not.
+Ruby's stage A considered it and rejected it in writing: brace blocks and
+`do`/`end` blocks "are not the same construct under a different name — the
+reference converts one to the other, but that is a token rewrite, not a
+transparent wrapper". Declaring them equivalent would make gate 3 blind to a
+real class of destruction in order to buy one file.
+
+**Why record it now rather than argue it.** Each language on its own looks like
+a curiosity worth one excluded file. Three of them, on three unrelated
+references, is a pattern: **references normalise between spellings that the
+grammar distinguishes**, and this design has decided — correctly, so far — that
+non-destruction outranks agreement every time. The open question is whether a
+fourth instance should still cost a file, or whether there is a sound way to
+declare a *directional*, gate-3-checked spelling equivalence that is narrower
+than `equivalent_kinds`.
+
+**Decide when:** a fourth language hits it, or someone proposes a directional
+equivalence with a story for how gate 3 stays honest. Not urgent: the cost is
+one file per language and every one is declared, classified and visible.
+
+## 28. A rule cannot see that a comment is about to be flushed
+
+**Status:** open · **Cost:** local · **Languages:** Scheme (1 file, plus a
+package-wide `blank_cap` workaround)
+
+Scheme's package needs `srcsoft` before a closing paren, so a `)` the source put
+on its own line stays there. When the last thing before that closer is an
+own-line comment, **two breaks are emitted for one line ending**: the package's
+`srcsoft`, and the runtime's own flush of the pending comment, which prepends
+its own `Hard`. The result is a blank line that was not in the source — and on
+the next pass that blank *is* in the source, so it grows by one line per pass
+and fails idempotence.
+
+The package ships `blank_cap: 0` to pin it at exactly one blank, which is
+stable. Stage D confirmed the cause and also confirmed the cost: `blank_cap` is
+package-wide, so it additionally deletes an intentional blank after any other
+attached leading comment. It is a real trade, not a corpus-local setting.
+
+**This is not entry 7**, and stage D ruled on that explicitly. Entry 7 is a
+print-time choice based on *why* a group broke — width or a comment. This is
+earlier and narrower: a rule cannot ask whether a comment is pending at the
+cursor, so it cannot suppress its own break in favour of the one the runtime is
+about to emit. A `srcsoft` that coalesced with a pending comment break would fix
+it with no new predicate and no new context.
+
+**Decide when:** a second language hits it, or Scheme's `blank_cap` workaround
+blocks something. It is cheap enough that it may be worth doing on one language.
+
+## 29. Indentation is a repeated unit; some references indent to a column
+
+**Status:** open · **Cost:** local · **Languages:** Scheme (2 files, from
+opposite directions)
+
+Two distinct gaps, both about the same assumption — that one indent level is a
+fixed unit repeated N times.
+
+**(a) The column is relative to a delimiter, not to the nesting level.** emacs
+`scheme-mode` indents a form's continuation lines to **one column past its open
+paren**, wherever that paren actually sits. The IR's `indent` is relative to the
+enclosing indent level; the two coincide only when the form starts at the
+current indent, and any shift — a quote mark before the paren, a form beginning
+mid-line — moves them apart. `quote.scm` is the one-character case: a leading
+`` ` `` puts every continuation line one column out. `long_sequences.scm` is the
+large one.
+
+The runtime already exposes the source's line structure to *breaks* — that is
+the whole `src*` family — and exposes nothing equivalent to indent. **There is
+no `srcindent`.** Stage D confirmed the gap is real and distinct from entry 10
+(`calls.scm` proves it: the same `list` head needs different anchors according
+only to source line structure), while correcting the report's claim that it is
+*larger* than head dispatch — some of those lines could also be bought by a head
+table.
+
+**(b) The column has to be rendered as tabs, then spaces.** **Built**
+(2026-08-23, `tab_stop`, **+352 B gzip runtime, +11 B scheme.json**).
+`indent-tabs-mode` is `t` in scheme-mode, so column 8 is one tab and column 9 is
+a tab plus a space. `tab_indent` means one tab **per level**, which is right for
+gofmt and cannot produce this. `nesting.scm` was the clean demonstration and was
+worth more than a passing file: **every column in it was correct** and it failed
+on nothing but the spelling.
+
+`tab_stop` leaves the levels alone and respells the column they add up to, at
+the one point the printer writes an indent. The prediction held exactly —
+scheme.json gained one header line, no rule moved, and the file is byte-identical.
+`kitchen.scm` shrank from 38 diff lines to 34; `bindings.scm` and `macros.scm`
+kept their size with the spelling on their already-correct lines fixed. Nothing
+regressed.
+
+Two header combinations are refused rather than reconciled: `tab_stop` with
+`tab_indent` (two answers to one question), and `tab_stop` with `comment_cells`
+(the alignment pass counts characters in the rendered line, and a tab is one
+character several columns wide). The second refuses a combination nothing uses
+today, which is the point — it would have been a silent column bug the first
+time something did.
+
+Stage D found and fixed a **validator-domain** parity defect, the fourth in as
+many slices and the first that was not in the layout code: JavaScript's
+`Number.isInteger` accepts values Rust's integer deserialisation rejects, so a
+package could load in one runtime and refuse in the other. Both now require a
+non-negative **JSON-safe** integer, and Rust stores `tab_stop` as `u64`. Worth
+naming as its own shape — the three before it were all conditionals, and this
+one was the accepted numeric *domain*, which a branch-by-branch hand-diff walks
+straight past.
+
+At **+352 B** this is the most expensive of the three capabilities built this
+week — `paren true` was +43, the fieldless `flatten` fallback +66 — and about a
+third of it is refusal message text. Worth recording as the price of a header
+flag that has to be validated in two runtimes rather than the price of the
+rendering, which is four lines.
+
+**Decide when:** (a) with entry 10, since a head table and a column anchor are
+the two halves of Lisp indentation and building either alone leaves Scheme short.
+
+## 30. A node that includes its terminating newline makes the gap measure short
+
+**Status:** open, from an **unfinished** slice · **Cost:** local · **Languages:**
+Markdown (blocks the blank-line policy outright), Ruby (survivable, worked around)
+
+`blank` measures the source gap between two items by counting newlines between
+the previous item's end and the next item's start. That is correct only if a
+node's range stops at its content. When a grammar lets a block node **swallow
+the newline that ends its own line**, every gap after such a node measures one
+newline short, and `blank` cannot tell "the source had a blank line here" from
+"the source had none".
+
+Markdown is where it bites hardest. In `headings.md` the `atx_heading` for
+`# Alpha` spans 49–81 while its `inline` ends at 80, so the node covers the `\n`
+that ends the line; the blank line before `## Bravo` is then measured as zero.
+Both available policies are wrong, in opposite directions:
+
+- `["blank", 1]` under-inserts wherever a block ate its own newline — most of
+  `headings.md`.
+- `["blank", 1, [block types]]` makes the cap a floor and fixes those, then
+  over-inserts in `links.md` and `strings.md`, where adjacent blocks genuinely
+  have no blank and prettier keeps none. **Both files matched before the floor
+  and stopped matching after it**, which is the cleanest demonstration available
+  that this is not a policy choice.
+
+No package expression distinguishes the two cases: both present to `blank` as a
+zero-newline gap.
+
+**Ruby hit the same shape and survived it.** A heredoc body is a program-level
+sibling that begins with its own newline, so a statement separator emitting
+`hard` manufactured a blank line. There the fix was in reach — `srcsoft` mirrors
+the source's own break instead of forcing one, and the `;` branch supplies its
+own `hard` — because Ruby needed to *suppress* a break rather than *discover* a
+missing one. Markdown needs the missing one, and mirroring cannot invent it.
+
+**What it would take.** Either a gap measurement that walks to the last
+non-whitespace byte of the previous item rather than trusting `node.end`, or an
+opcode that reads the source gap the way `srcgap` does and exposes its newline
+count to `blank`. The first is a runtime correction with no package surface and
+would change nothing for any language whose grammar does not do this; the second
+is a new opcode. The first looks obviously right and that is exactly why it
+wants measuring before it is built — `srcgap` already reads the same bytes, so
+the two are closer than they look.
+
+**Decide when:** whenever Markdown is picked up again. It is the one thing
+standing between that package and a blank-line policy, and the package cannot be
+finished around it. Recorded now, from `wt/lang-markdown`, which **refuses on two
+files and is not merged** — so this is a measured claim about the IR from a
+package that does not yet work, and should be re-confirmed when it does.
+
+## 31. A separator cannot compare a leaf across adjacent siblings
+
+**Status:** open · **Cost:** local · **Languages:** Haskell (all three of its
+accepted divergences reduce to this)
+
+`blank`'s operands are a list of node **kinds** and a list of literal
+**spellings**. Neither can express "these two siblings share a name".
+
+ormolu's top-level blank-line rule is the case, and stage D established it by
+experiment rather than by reading the report's assertion. **ormolu inserts a
+blank between every top-level pair except a same-name group:**
+
+```
+add a b = …                    -- function, name `add`
+                               -- blank inserted
+scale x = …                    -- function, name `scale`
+
+sigDiff :: Int                 -- signature, name `sigDiff`
+                               -- blank inserted
+other x = 1                    -- function,  name `other`
+
+same :: Int                    -- signature, name `same`
+same = 3                       -- function,  name `same`   -- NO blank
+```
+
+The discriminator is the **binding name**, not the node kind and not the source
+gap. A kind-based floor gets the first two right and the third wrong; preserving
+the source gap gets the third right and the first two wrong. The only package
+expression left is enumerating this corpus's identifiers in the spellings list,
+which is a rule that fires on one corpus and no other.
+
+What it wants is small and it is worth saying precisely, because it is easy to
+mistake for something expensive: a **separator predicate that compares a selected
+leaf across the two siblings it sits between**. No rendered widths, so it is not
+entry 1. No ancestor state and no dispatch change, so it is not entry 10. No
+second pass. It is one comparison, available at the point the separator is
+already being evaluated.
+
+**Decide when:** a second language hits it. Haskell's builder asked for it
+independently of the reviewer, which is worth one line of corroboration but not
+two languages.
+
+## 32. Layout selected by the source's span, not by width or by one break
+
+**Status:** **built** (2026-08-23, `source-multiline`, **+42 B gzip**) ·
+**Languages:** Haskell (built it), JavaScript (prettier's `objectWrap`, named but
+not yet claimed)
+
+A reference class no entry named: **the layout of a container is decided by
+whether its source spanned more than one line**, as a whole, rather than by
+whether it fits a width or by where a single break sat.
+
+The `src*` family mirrors **one break position** — did the source break *here*,
+before the child under the cursor. That is the wrong question for ormolu, which
+asks whether the author broke the container *anywhere* inside it. A `group` is
+the other candidate and is wrong by construction rather than by degree: it is
+width-driven and ormolu is width-inert.
+
+Stage D checked the shape by building the inputs that separate "the author broke
+this container" from "there is a newline somewhere in the span" — a nested broken
+list inside a flat outer list, a block comment carrying an embedded newline, a
+Haskell string gap, and a newline inside the tested node but outside its braces.
+**ormolu goes multiline on all four**, so the implemented predicate and the
+reference's rule are the same rule, and the span-based spelling is faithful
+rather than approximate.
+
+**This is prettier's `objectWrap: preserve` too**, which JavaScript's stage B
+named as a trap: an object literal whose source has a newline after `{` stays
+expanded even when it fits flat, and a plain width-driven `group` is exactly the
+`collapse` setting a naive package implements. JavaScript can pass its corpus
+with a group and diverge on real input. Now that the capability exists, that is a
+package edit and a re-review away.
+
+---
+
+## 33. A flat `fill` separator does not flush a suffix, and a line comment then eats the next one
+
+**Status:** **built** (2026-08-23, **+123 B gzip runtime**) · **Cost:** local ·
+**Languages:** JavaScript (built it, and took the pickup it had been blocking),
+TypeScript (was latent-unsafe; now has the corpus file)
+
+### Built — the invariant restored at the Line, not a change to `fill`
+
+Every `Doc::Suffix` is emitted with a `Doc::BreakParent`, so a queued suffix
+means the enclosing group is already open and a break is due before the next
+content. A `fill` separator is the one place in the printer that picks its own
+mode without consulting forced breaks, so it alone can reach a `Line` flat with
+a suffix still queued. The repair is to say so at the `Line`: **if suffixes are
+pending, this separator breaks.** Four lines in each runtime.
+
+**The regression experiment came back empty, which is the reasoning confirming
+itself.** `fill` is used by CSS, JSON and TypeScript, so forcing this break could
+have moved packing anywhere. With the runtime change and no package change,
+every language scored identically — 235/358, all four gates green, not one byte
+of corpus output moved. Outside a fill, a pending suffix already implied a
+broken group, so there was nothing else for the rule to change.
+
+**JavaScript then took the pickup gate 3 had refused.** `javascript.json` gains
+the `fill_list` def TypeScript already had, and `sequences.js@80` becomes
+agreement. `comments.js` keeps its two runtime-attachment hunks (entry 9) and
+all six of its comments.
+
+`corpus/src/typescript/comment_fill.ts` is the file neither existing corpus
+could be. Verified it earns its place rather than assumed: with the fix reverted
+it fails gate 3 with two comments lost **and** gate 2 as non-idempotent, and
+passes with it. Also verified valid under `tsc 5.9.3 --strict`, because the
+previous TypeScript slice classified a divergence against a file the compiler
+rejects.
+
+### The entry as written when it was open
+
+TypeScript's stage D found the old JavaScript note "`fill` mishandles suffix
+comments" to be stale, and it was right about TypeScript: `fill` preserves
+`BreakParent` now, and `sequences.ts@80` came back as agreement. JavaScript's
+`sequences.js@80` is the same shape and the same one-line package edit, and
+applying it **destroys data**:
+
+```js
+const arr = [
+  1, // trailing on the first item
+  // own-line comment between items
+  2,
+```
+
+becomes
+
+```js
+const arr = [
+  1, // own-line comment between items // trailing on the first item
+  2, /* block comment inline */
+```
+
+Two comments on one line, the second inside the first. `// trailing on the first
+item` is no longer a comment at all — it is text inside another comment, and
+gate 3 reports it as lost. Reversed, too: the suffix of item 1 is emitted
+**after** the leading comment of item 2.
+
+**The mechanism is exact and is not about comments.** `Doc::Suffix` is deferred
+into a `suffixes` vector and flushed at the next **breaking** `Line` / `Soft` /
+`Hard`. A fill separator that stays flat is not a break, so it does not flush.
+The suffix therefore outlives the item it belongs to and lands after whatever the
+next item emits first — which, for a leading comment, is on the same line. `each`
+never shows this because every separator in a broken group *is* a break.
+
+So the repair is not "make `fill` carry comments". It is that **a fill separator
+must break when a suffix is pending**, the same way a `BreakParent` already
+forces the enclosing group. Either that, or `fill` refuses when it is handed a
+run with suffixes — which is what the old, now-stale note believed already
+happened.
+
+**`BreakParent` reaching the enclosing group is not enough, and that is the
+subtle part.** It forces the group open; it does not force the *particular
+separator* the comment sits beside. Entry 8 records `fill` and comments as an
+interaction; this is the sharp end of it, and the severity is different from
+everything else in that entry: not a worse layout, but code deleted.
+
+### How it was found, which is the recurring part
+
+By taking a pickup another language's review had priced. TypeScript's report said
+the coupling was stale and named JavaScript; the claim was true for TypeScript
+and false for JavaScript, because **`sequences.ts` has a number array with no
+comments and `comments.ts` has no number array, so nothing in that corpus routes
+a commented number array through `fill`.** JavaScript's `comments.js` does.
+
+This is the exact mirror of the `decorators.ts` finding from the same review — a
+rule shared by two languages, clean in one only because that corpus never probes
+it. Twice in two consecutive slices, in opposite directions, between the same
+pair of languages. **A cross-language "this is stale, language X can pick it up"
+is a hypothesis about X's corpus, not a measurement of it.**
+
+And TypeScript is **latent, not safe**: the same `fill_list` sits in
+`typescript.json` today, and the first commented number array a user writes hits
+it. Gate 3 catches it on our corpus. Nothing catches it on theirs. Stage D
+reproduced the destruction in **both** runtimes on an off-corpus TypeScript
+commented number array, so this is the shipped behaviour of a merged package and
+not a JavaScript-only hazard.
+
+**TypeScript should not be called safe until three things exist**: the runtime
+either breaks a fill separator when a suffix is pending or refuses that fill;
+mirrored Rust and JS unit tests; and a commented-number-array file in the
+TypeScript corpus, so gate 3 owns the regression instead of this entry. *All
+three now exist; the first was the option taken.*
+
+---
+
+## 34. A comment anywhere in a list turns off packing for the whole list
+
+**Status:** open · **Cost:** contextual — a rule cannot see comment decoration ·
+**Languages:** JavaScript (`comments.js`, both widths), TypeScript
+(`comment_fill.ts`, both widths)
+
+Found by FINDINGS 33's stage D, as the *other* thing wrong with a commented
+`fill` once the destruction was fixed. Distinct from entry 9 (where a comment
+attaches) and from entry 8 (how `fill` packs an ordinary run).
+
+prettier packs a numeric array — and abandons packing entirely the moment any
+comment appears in it:
+
+```js
+const b = [1, 2, 3, …, 23];        // packs: "1, 2, 3, … 22," / "23,"
+const a = [1, 2, 3, // note
+           4, …, 23];              // every item on its own line
+```
+
+**It is retroactive, and that is the part worth recording.** The stage-D report
+described it as prettier stopping "packing the remainder"; measured, it un-packs
+the items *before* the comment too. `1`, `2` and `3` each get their own line
+although nothing about them changed. So it is not a barrier the fill runs into
+part-way — it is a property of the whole container, decided once by *whether the
+container contains a comment at all*. The smallest case shows it: a six-element
+array that fits flat becomes six lines because one item carries a trailing `//`.
+
+Ours resumes the general fill after each comment-forced break, so it packs both
+sides. The mandatory break itself is correct and is FINDINGS 33; what remains is
+the policy either side of it.
+
+**A package cannot reach this.** Comment attachment is runtime-owned and runs
+before any rule, so no predicate in the `count` / `child-count` / `all` / `text`
+/ `multiline` family can ask "does this node contain a comment" and route to
+`each` instead of `fill`. That is the missing capability, and it is one
+predicate rather than a new opcode — `fill` already does both behaviours.
+
+### Why the probe cannot be made to agree, which answers the obvious objection
+
+Stage D noted that `comment_fill.ts` bundles this with entry 9's attachment and
+suggested a future split into a minimal destructive case. Measured, **no
+commented-fill probe can agree with prettier**: the smallest one that exercises
+the construct at all — one trailing comment on a short array — already trips
+this entry. A split would produce a second file carrying the same two ledger
+records, not a clean one. The bundling is a property of the construct, not a
+defect in the probe, and entry 16's usual complaint does not apply here.

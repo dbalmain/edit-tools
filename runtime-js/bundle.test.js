@@ -109,6 +109,12 @@ test("drop refuses a token the package has not declared punctuation", () => {
   );
 });
 
+test("paren true adds a balanced pair in flat layout", () => {
+  const pkg = toy({ list: ["paren", true, ["child", "*"]] });
+  const root = dropList([leaf("a", "a")]);
+  assert.equal(run(pkg, root, 80), "(a)\n");
+});
+
 test("text and multiline predicates follow exact child paths", () => {
   const wrapper = (value) => ({
     type: "wrapper", start: 0, end: 0,
@@ -138,6 +144,29 @@ test("text and multiline predicates follow exact child paths", () => {
     wrapper: ["each", "named", ["seq"]],
   });
   assert.equal(run(multilinePkg, root("a\nb"), 80), "a\nb x\n");
+});
+
+test("source-multiline predicate inspects the node range", () => {
+  const pkg = toy({
+    file: [
+      "when", ["source-multiline"],
+      ["seq", ["child", "named"], ["hard"], ["child", "named"]],
+      ["each", "named", ["sp"]],
+    ],
+  });
+  const root = {
+    type: "file", start: 0, end: 3,
+    children: [span("name", 0, 1, "a"), span("name", 2, 3, "b")],
+  };
+  assert.equal(runOn(pkg, "a\nb", root, 80), "a\nb\n");
+  assert.equal(runOn(pkg, "a b", root, 80), "a b\n");
+
+  // A range running past the source clamps; Rust clamps its slice to match.
+  const past = {
+    type: "file", start: 0, end: 99,
+    children: [span("name", 0, 1, "a"), span("name", 2, 3, "b")],
+  };
+  assert.equal(runOn(pkg, "a\nb", past, 80), "a\nb\n");
 });
 
 test("srcgap preserves horizontal space and safely breaks it", () => {
@@ -686,6 +715,164 @@ test("flatten uses the package's field names", () => {
   assert.equal(run(pkg, tree, 4), "aaa\n+ bbb\n+ ccc\n");
   // Tightness must read `op` too, or mixed precedence would not split.
   assert.equal(run(pkg, chain([["*", "bbb"], ["+", "ccc"]], "aaa", fields), 9), "aaa * bbb\n+ ccc\n");
+});
+
+function fieldlessChain(ops, base) {
+  let node = leaf("name", base);
+  for (const [op, rhs] of ops) {
+    node = {
+      type: "sum",
+      start: 0,
+      end: 0,
+      children: [node, leaf(op, op), leaf("name", rhs)],
+    };
+  }
+  return node;
+}
+
+test("flatten walks a fieldless binary spine", () => {
+  // TypeScript unions are `[operand, "|", operand]` with no left/operator/right
+  // fields. The same opcode has to flatten that shape, or every nested union
+  // staircases.
+  const pkg = toy({
+    sum: ["group", ["flatten", "sum", ["seq", ["line"], ["tok", "|"], ["sp"]]]],
+  });
+  const tree = fieldlessChain([["|", "bbb"], ["|", "ccc"]], "aaa");
+  assert.equal(run(pkg, tree, 80), "aaa | bbb | ccc\n");
+  assert.equal(run(pkg, tree, 4), "aaa\n| bbb\n| ccc\n");
+});
+
+test("flatten keeps a suffix comment on a skipped left", () => {
+  const pkg = {
+    format: "et-doc-rules/1",
+    indent: 2,
+    tokens: ["|"],
+    comments: ["comment"],
+    rules: {
+      sum: ["group", ["flatten", "sum", ["seq", ["line"], ["tok", "|"], ["sp"]]]],
+    },
+  };
+  const source = "aaa | bbb /* c */ | ccc";
+  const tree = {
+    type: "sum",
+    start: 0,
+    end: source.length,
+    children: [
+      {
+        type: "sum",
+        start: 0,
+        end: 9,
+        children: [
+          { type: "name", start: 0, end: 3, text: "aaa" },
+          { type: "|", start: 4, end: 5, text: "|" },
+          { type: "name", start: 6, end: 9, text: "bbb" },
+        ],
+      },
+      { type: "comment", start: 10, end: 17, text: "/* c */" },
+      { type: "|", start: 18, end: 19, text: "|" },
+      { type: "name", start: 20, end: 23, text: "ccc" },
+    ],
+  };
+  const got = runOn(pkg, source, tree, 80);
+  assert.match(got, /\/\* c \*\//);
+  assert.match(got, /ccc/);
+});
+
+test("flatten emits skipped suffix comments at their own spine levels", () => {
+  const pkg = {
+    format: "et-doc-rules/1",
+    indent: 2,
+    tokens: ["|"],
+    comments: ["comment"],
+    rules: {
+      sum: ["group", ["flatten", "sum", ["seq", ["line"], ["tok", "|"], ["sp"]]]],
+    },
+  };
+  const source = "aaa | bbb /* one */ | ccc /* two */ | ddd";
+  const first = {
+    type: "sum", start: 0, end: 9,
+    children: [span("name", 0, 3, "aaa"), span("|", 4, 5, "|"), span("name", 6, 9, "bbb")],
+  };
+  const second = {
+    type: "sum", start: 0, end: 25,
+    children: [first, span("comment", 10, 19, "/* one */"), span("|", 20, 21, "|"), span("name", 22, 25, "ccc")],
+  };
+  const root = {
+    type: "sum", start: 0, end: source.length,
+    children: [second, span("comment", 26, 35, "/* two */"), span("|", 36, 37, "|"), span("name", 38, 41, "ddd")],
+  };
+  assert.equal(runOn(pkg, source, root, 80), "aaa\n| bbb /* one */\n| ccc /* two */\n| ddd\n");
+});
+
+test("flatten fieldless fallback keeps the leading-comment refusal", () => {
+  const pkg = {
+    format: "et-doc-rules/1",
+    indent: 2,
+    tokens: ["|"],
+    comments: ["comment"],
+    rules: {
+      sum: ["group", ["flatten", "sum", ["seq", ["line"], ["tok", "|"], ["sp"]]]],
+    },
+  };
+  const left = fieldlessChain([["|", "bbb"]], "aaa");
+  const root = {
+    type: "sum", start: 0, end: 0,
+    children: [leaf("comment", "/* lead */"), left, leaf("|", "|"), leaf("name", "ccc")],
+  };
+  assert.throws(
+    () => run(pkg, root, 80),
+    (err) => err instanceof Refusal && /no leading comment on an operand/.test(err.message),
+  );
+});
+
+test("flatten emits an after-comment from a skipped fielded operand", () => {
+  const pkg = {
+    format: "et-doc-rules/1",
+    indent: 2,
+    tokens: ["|", "rhs"],
+    comments: ["comment"],
+    precedence: { "|": 1 },
+    rules: {
+      sum: ["group", ["flatten", "sum", ["seq", ["line"], ["child", "f:operator"], ["sp"]]]],
+    },
+  };
+  const source = "aaa | bbb\n/* after */\n| rhs";
+  const left = chain([["|", "bbb"]], "aaa");
+  left.field = "left";
+  const root = {
+    type: "sum", start: 0, end: source.length,
+    children: [
+      left,
+      span("comment", 10, 21, "/* after */"),
+      { ...span("|", 22, 23, "|"), field: "operator" },
+      { ...span("rhs", 24, 27, "rhs"), field: "right" },
+    ],
+  };
+  assert.equal(runOn(pkg, source, root, 80), "aaa\n| bbb\n/* after */\n| rhs\n");
+});
+
+test("flatten does not infer tightness past a fielded operator without text", () => {
+  const pkg = {
+    format: "et-doc-rules/1",
+    indent: 2,
+    tokens: ["+", "*"],
+    precedence: { "+": 5, "*": 4 },
+    rules: {
+      sum: ["group", ["flatten", "sum", ["seq", ["line"], ["child", "f:operator"], ["child", "*"], ["sp"]]]],
+      marker: [],
+    },
+  };
+  const marked = (left, op, rhs) => ({
+    type: "sum", start: 0, end: 0,
+    children: [
+      { ...left, field: "left" },
+      { type: "marker", start: 0, end: 0, field: "operator", children: [] },
+      leaf(op, op),
+      { ...leaf("name", rhs), field: "right" },
+    ],
+  });
+  const tree = marked(marked(leaf("name", "aaa"), "*", "bbb"), "+", "ccc");
+  assert.equal(run(pkg, tree, 9), "aaa\n* bbb\n+ ccc\n");
 });
 
 test("flatten_fields refuses a bad header", () => {
@@ -1341,4 +1528,83 @@ test("two packages with the same shape do not share an expansion", () => {
   });
   assert.equal(runOn(pkgWith("[", "]"), "[]", root("[", "]"), 80), "[]\n");
   assert.equal(runOn(pkgWith("{", "}"), "{}", root("{", "}"), 80), "{}\n");
+});
+
+test("tab_stop respells a finished indent column, and refuses the two clashes", () => {
+  // indent 9 under a stop of 8: one tab, then the residual space.
+  const pkg = (fields) => ({
+    format: "et-doc-rules/1",
+    indent: 9,
+    tokens: ["("],
+    rules: { list: ["seq", ["tok", "("], ["indent", ["hard"], ["child", "named"]]] },
+    ...fields,
+  });
+  const root = { type: "list", start: 0, end: 0, children: [leaf("(", "("), leaf("name", "b")] };
+  assert.equal(run(pkg({}), root, 80), "(\n         b\n");
+  assert.equal(run(pkg({ tab_stop: 8 }), root, 80), "(\n\t b\n");
+  assert.equal(run({ ...pkg({ tab_stop: 8 }), indent: 8 }, root, 80), "(\n\tb\n");
+  const blank = {
+    type: "list", start: 0, end: 0,
+    children: [leaf("(", "("), leaf("name", "b")],
+  };
+  const blankPkg = {
+    ...pkg({ tab_stop: 8 }),
+    rules: { list: ["seq", ["tok", "("], ["hard"], ["hard"], ["child", "named"]] },
+  };
+  assert.equal(run(blankPkg, blank, 80), "(\n\nb\n");
+  assert.throws(
+    () => run(pkg({ tab_stop: 8, tab_indent: true }), root, 80),
+    (err) => err instanceof Refusal && /both spell the indent/.test(err.message),
+  );
+  assert.throws(
+    () => run(pkg({ tab_stop: 8, comment_cells: true }), root, 80),
+    (err) => err instanceof Refusal && /disagree about columns/.test(err.message),
+  );
+  assert.throws(() => run(pkg({ tab_stop: 8, comment_cells: "block" }), root, 80));
+  assert.doesNotThrow(() => run(pkg({ tab_stop: 0, tab_indent: true }), root, 80));
+  assert.doesNotThrow(() => run(pkg({ tab_stop: 0, comment_cells: "block" }), root, 80));
+  for (const tab_stop of [-1, 1.5, "8", Number.MAX_SAFE_INTEGER + 1]) {
+    assert.throws(
+      () => run(pkg({ tab_stop }), root, 80),
+      (err) => err instanceof Refusal && /non-negative safe integer/.test(err.message),
+    );
+  }
+});
+
+test("a fill separator breaks while a suffix is pending", () => {
+  // FINDINGS 33, the JS mirror of doc.rs's
+  // a_fill_separator_breaks_while_a_suffix_is_pending. `a` carries a trailing
+  // comment queued until a break. A flat separator does not flush it, so it
+  // would land after `b` -- and after anything `b` emits first, which for a
+  // leading line comment means inside it.
+  const pkg = {
+    ...toy({
+      list: [
+        "group", ["tok", "("],
+        ["indent", ["soft"], ["fill", "named", ["seq", ["tok", ","], ["line"]]]],
+        ["soft"], ["tok", ")"],
+      ],
+    }),
+    comments: ["comment"],
+  };
+  // `a # one` then a leading `# two` on `b`: the two comments must not merge.
+  const source = "(a# one\n# two\n,b,c)";
+  const root = {
+    type: "list", start: 0, end: 19,
+    children: [
+      span("(", 0, 1, "("),
+      span("name", 1, 2, "a"),
+      span("comment", 2, 7, "# one"),
+      span("comment", 8, 13, "# two"),
+      span(",", 13, 14, ","),
+      span("name", 14, 15, "b"),
+      span(",", 15, 16, ","),
+      span("name", 16, 17, "c"),
+      span(")", 18, 19, ")"),
+    ],
+  };
+  const out = runOn(pkg, source, root, 80);
+  assert.equal(out, "(\n  a, # one\n  # two\n  b, c\n)\n");
+  // The two comments stay two comments: nothing follows `# one` on its line.
+  assert.ok(!/# one .*# two/.test(out), `comments merged onto one line: ${out}`);
 });

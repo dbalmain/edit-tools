@@ -20,6 +20,7 @@ const MAX_JSON_INTEGER: f64 = 9_007_199_254_740_991.0;
 /// `comment_gap` is one string -- so this exists to make a typo a named error
 /// rather than a silently strange package.
 const MAX_GAP: usize = 8;
+const MAX_SAFE_INTEGER: u64 = 9_007_199_254_740_991;
 
 fn one() -> usize {
     1
@@ -96,6 +97,13 @@ pub struct Package {
     /// is the first reference whose house style is tab-indented.
     #[serde(default)]
     pub tab_indent: bool,
+    /// Tab stop for re-spelling a finished indent column, or 0 for off. Not
+    /// `tab_indent`: that writes one tab *per level*, this leaves the levels
+    /// alone and respells the column they add up to as tabs-to-the-stop plus
+    /// residual spaces. emacs `scheme-mode` with `indent-tabs-mode` t is the
+    /// first reference that needs it (FINDINGS 29b).
+    #[serde(default)]
+    pub tab_stop: u64,
     /// Node types that are punctuation or keywords; `named` skips them.
     #[serde(default)]
     pub tokens: HashSet<String>,
@@ -139,6 +147,8 @@ struct RawPackage {
     #[serde(default)]
     tab_indent: bool,
     #[serde(default)]
+    tab_stop: u64,
+    #[serde(default)]
     tokens: HashSet<String>,
     #[serde(default)]
     comments: HashSet<String>,
@@ -173,6 +183,25 @@ impl TryFrom<RawPackage> for Package {
                 ));
             }
         }
+        let comment_cells = CommentCells::try_from(raw.comment_cells)?;
+        if raw.tab_stop > MAX_SAFE_INTEGER {
+            return Err("`tab_stop` must be a non-negative safe integer".to_owned());
+        }
+        if raw.tab_stop > 0 {
+            if raw.tab_indent {
+                return Err(
+                    "`tab_stop` and `tab_indent` both spell the indent; pick one".to_owned(),
+                );
+            }
+            if comment_cells != CommentCells::Off {
+                return Err(
+                    "`tab_stop` and `comment_cells` disagree about columns: the alignment \
+                     pass counts characters in the rendered line, and a tab is one character \
+                     spanning several columns"
+                        .to_owned(),
+                );
+            }
+        }
         let flatten_fields = flatten_fields(raw.flatten_fields)?;
         let rules = expand_rules(&raw.defs, raw.rules)?
             .into_iter()
@@ -180,8 +209,9 @@ impl TryFrom<RawPackage> for Package {
             .collect::<Result<_, String>>()?;
         Ok(Self {
             indent: raw.indent,
-            comment_cells: CommentCells::try_from(raw.comment_cells)?,
+            comment_cells,
             tab_indent: raw.tab_indent,
+            tab_stop: raw.tab_stop,
             tokens: raw.tokens,
             comments: raw.comments,
             descend: raw.descend,
@@ -505,9 +535,11 @@ pub enum Pred {
     Text(Vec<Sel>, Vec<String>),
     /// At least one exact direct-child path ends at a multiline leaf.
     Multiline(Vec<Sel>),
+    /// The node's own source range contains a line ending.
+    SourceMultiline,
 }
 
-/// One expression of the package language. Twenty opcodes; see DESIGN.md.
+/// One expression of the package language. Twenty-seven opcodes; see DESIGN.md.
 #[derive(Debug, Deserialize)]
 #[serde(try_from = "Value")]
 pub enum Expr {
@@ -527,7 +559,7 @@ pub enum Expr {
     Verbatim,
     Opt(Sel, Box<Expr>),
     Trail(String, Sel),
-    Paren(Vec<Expr>),
+    Paren(bool, Vec<Expr>),
     AutoParen(Sel),
     When(Pred, Box<Expr>, Box<Expr>),
     Flatten(String, Box<Expr>),
@@ -596,7 +628,17 @@ impl TryFrom<Value> for Expr {
                 Ok(Expr::Group(max, rest(parts)?))
             }
             "indent" => Ok(Expr::Indent(rest(parts)?)),
-            "paren" => Ok(Expr::Paren(rest(parts)?)),
+            "paren" => {
+                let always = match parts.first() {
+                    Some(Value::Bool(always)) => {
+                        let always = *always;
+                        parts.remove(0);
+                        always
+                    }
+                    _ => false,
+                };
+                Ok(Expr::Paren(always, rest(parts)?))
+            }
             "line" => arity(0).map(|()| Expr::Line),
             "soft" => arity(0).map(|()| Expr::Soft),
             "hard" => arity(0).map(|()| Expr::Hard),
@@ -770,6 +812,7 @@ fn predicate(value: &Value) -> Result<Pred, String> {
                 path.iter().map(selector).collect::<Result<_, _>>()?,
             ))
         }
+        Some("source-multiline") if parts.len() == 1 => Ok(Pred::SourceMultiline),
         _ => Err(format!("unknown predicate {value}")),
     }
 }
@@ -970,6 +1013,58 @@ mod tests {
                 .expect("must refuse")
                 .to_string();
             assert!(err.contains(want), "wanted {want:?} in {err}");
+        }
+    }
+
+    #[test]
+    fn tab_stop_refuses_the_two_headers_it_contradicts() {
+        // `tab_indent` writes a tab per level; `tab_stop` respells the column
+        // those levels add up to. A package that asks for both has not said
+        // which spelling it wants. `comment_cells` counts characters in the
+        // rendered line, and a tab is one character several columns wide.
+        let cases = [
+            (
+                json!({"tab_stop": 8, "tab_indent": true}),
+                "`tab_stop` and `tab_indent` both spell the indent; pick one",
+            ),
+            (
+                json!({"tab_stop": 8, "comment_cells": true}),
+                "`tab_stop` and `comment_cells` disagree about columns",
+            ),
+        ];
+        for (fields, want) in cases {
+            let mut raw = package(FORMAT);
+            for (key, value) in fields.as_object().expect("object") {
+                raw[key] = value.clone();
+            }
+            let err = serde_json::from_value::<Package>(raw)
+                .err()
+                .expect("must refuse")
+                .to_string();
+            assert!(err.contains(want), "wanted {want:?} in {err}");
+        }
+
+        // Zero means off, so it does not conflict with either existing mode.
+        for fields in [
+            json!({"tab_stop": 0, "tab_indent": true}),
+            json!({"tab_stop": 0, "comment_cells": "block"}),
+        ] {
+            let mut raw = package(FORMAT);
+            for (key, value) in fields.as_object().expect("object") {
+                raw[key] = value.clone();
+            }
+            serde_json::from_value::<Package>(raw).expect("zero tab stop is disabled");
+        }
+
+        for bad in [
+            json!(-1),
+            json!(1.5),
+            json!("8"),
+            json!(MAX_SAFE_INTEGER + 1),
+        ] {
+            let mut raw = package(FORMAT);
+            raw["tab_stop"] = bad;
+            assert!(serde_json::from_value::<Package>(raw).is_err());
         }
     }
 

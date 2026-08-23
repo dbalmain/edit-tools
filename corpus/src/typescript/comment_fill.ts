@@ -1,0 +1,17 @@
+// A number array that `fill` packs, carrying comments. The two together are
+// FINDINGS 33: a flat fill separator does not flush a pending suffix, so a
+// trailing comment outlived its item and landed inside the next item's line
+// comment. `sequences.ts` has the packing without the comments and
+// `comments.ts` has the comments without an all-number array, so neither file
+// reaches this intersection and gate 3 could not see the regression.
+const measurements: number[] = [
+  10, // first reading
+  // taken again after the recalibration
+  20,
+  /* inline */ 30,
+  40, // last of the morning batch
+  50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200,
+  // trailing note before the bracket
+];
+
+const clean: number[] = [1, 2, 3, 4, 5];

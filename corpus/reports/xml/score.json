@@ -1,0 +1,120 @@
+{
+  "language": "xml",
+  "submission": "lang-xml",
+  "builder": "Claude (Opus 5), orchestrator session",
+  "gate1_idempotence": {
+    "pass": true,
+    "got": 30,
+    "of": 30
+  },
+  "gate2_width": {
+    "pass": true,
+    "waived": false,
+    "overflow_lines": 19,
+    "reference_overflow": 19,
+    "note": "identical to the reference; every overflow line is one prettier also overflows"
+  },
+  "gate3_nondestruction": {
+    "pass": true,
+    "got": 30,
+    "of": 30,
+    "method": "default + comment_kinds"
+  },
+  "gate4_agreement": {
+    "by_width": {
+      "80": {
+        "agreement": 14,
+        "of": 14,
+        "accepted": 0,
+        "stale": 0,
+        "unreviewed": 0,
+        "excluded": 1,
+        "review_coverage": 1.0,
+        "review_threshold_met": true
+      },
+      "40": {
+        "agreement": 14,
+        "of": 14,
+        "accepted": 0,
+        "stale": 0,
+        "unreviewed": 0,
+        "excluded": 1,
+        "review_coverage": 1.0,
+        "review_threshold_met": true
+      }
+    },
+    "agreement": 28,
+    "of": 28,
+    "accepted": 0,
+    "stale": 0,
+    "unreviewed": 0,
+    "excluded": 1,
+    "review_coverage": 1.0,
+    "review_threshold_met": true,
+    "note": "full agreement. gate 4 for XML measures tag layout plus source-preserved content whitespace: the reference does not re-indent content, and normalisation.xml and whitespace.xml both probe that it does not."
+  },
+  "rust_js_parity": "identical",
+  "refusals": [],
+  "matching_files": [
+    "comments.xml",
+    "declaration.xml",
+    "doctype.xml",
+    "kitchen.xml",
+    "literals.xml",
+    "long_attributes.xml",
+    "mixed_content.xml",
+    "namespaces.xml",
+    "nesting.xml",
+    "normalisation.xml",
+    "prolog.xml",
+    "quotes.xml",
+    "self_closing.xml",
+    "whitespace.xml"
+  ],
+  "size": {
+    "js-runtime": 14131,
+    "packages": 14848,
+    "total": 28979,
+    "per_language": {
+      "xml": {
+        "package": 843,
+        "with_runtime": 14974
+      }
+    }
+  },
+  "size_delta_vs_main": {
+    "js_runtime_gzip": {
+      "main": 14131,
+      "now": 14131,
+      "delta": 0
+    },
+    "package_gzip": 843,
+    "per_edit": []
+  },
+  "runtime_edits": [],
+  "harness_edits": [],
+  "fill": {
+    "wanted": false,
+    "used": true,
+    "files_that_would_benefit": [],
+    "note": "fill is used, not requested: the doctype external ID packs at 80 and breaks at 40, and the PUBLIC keyword must be a fill item rather than a fixed prefix"
+  },
+  "divergences": [],
+  "excluded": [
+    {
+      "case": "empty_to_self_closing.xml",
+      "reason": "prettier rewrites an empty element pair to a self-closing tag, replacing two named nodes (STag, ETag) with one (EmptyElemTag); gate 3 rejects it and no sanctioned token policy deletes a tag"
+    }
+  ],
+  "stage_d": {
+    "reviewer": "codex-Sol",
+    "verdict": "escalate",
+    "escalation": "fixed by the builder, re-review required",
+    "blocking_finding": "XMLDecl hard-coded the double quote and the `yes` spelling, so standalone='no' and single-quoted declaration values refused in both runtimes while prettier formats them. Package bugs, not design limits.",
+    "claims_upheld": [
+      "content indentation is source-preserved by the reference, and the corpus does probe it",
+      "wrapping only content in indent is correct, verified at width 12 and depth six against prettier",
+      "fill with a * selector consumes exactly the ExternalID children and swallows nothing"
+    ]
+  }
+}
