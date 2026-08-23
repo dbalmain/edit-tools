@@ -231,6 +231,45 @@ which is how a vertical tab split the runtimes with every gate green. Both of
 Haskell's additions are the shape that hides this: one reads the source, the
 other mutates tokens.
 
+## 2026-08-23 — TypeScript merged, and rounds 4 and 5 are closed
+
+The last held branch, unreviewed since round 4. **11/30 was partly the
+calendar.** Four of its nineteen divergences were stale rather than real, and
+three of those were stale only because the branch sat while capabilities landed:
+`assertions.ts` at both widths came back with the unconditional `paren` Haskell
+built the same day — `FINDINGS` 20 had named TypeScript and priced this — and
+`sequences.ts@80` came back with a guarded `fill`.
+
+**The fourth was not stale, it was invalid.** `annotations.ts@40` was classified
+against a corpus file the TypeScript compiler rejects: a rest parameter followed
+by a comma is TS1013, confirmed against 5.9.3. tree-sitter parsed it happily, so
+stage B's "do the corpus files parse cleanly" passed it. **Parsing cleanly is not
+the same as being valid in the language**, and a divergence measured against
+invalid input measures nothing.
+
+**The contested `package-bug` is ruled `house-rule`.** The report's own words
+gave it away — "Python's two-group list expresses that; JavaScript's `list` does
+not" — so the design can express prettier's last-argument hugging and the package
+chose not to fork a shared rule set. That is the *we chose not to* half of the
+vocabulary wearing the *we could not* half's label, which is precisely what the
+2026-08-21 decision predicted would happen once `package-bug` became a hard
+failure. The board declined to relabel it to clear the merge bar and left it to
+stage D; stage D relabelled it with a reason instead of an assertion.
+
+And the cross-check is answered. JavaScript is clean **because its corpus never
+probes a multi-argument call ending in an object**, not because its rules handle
+it. The hole is in the shared rules and nobody had walked into it — "the shared
+rules have a hole nobody probed" was the right one of the two candidate findings.
+
+**Three consecutive slices, three parity defects, all found by hand-diffing the
+two runtimes and none visible to any gate.** HTML's `srcgap` disagreed about
+vertical tab; Haskell's `source-multiline` disagreed about a range past the end
+of the source; TypeScript's `flatten` disagreed about missing operator text. The
+instruction that finds them is now in the review brief rather than in a prompt.
+
+`main` stands at **373/373 on all four gates, 0 package bugs, and 100% review
+coverage** — every divergence in every merged language has a recorded verdict.
+
 ## Board
 
 | Language   | Tier | Round | Builder       | Status | Grammar                | Reference                         |
@@ -245,7 +284,7 @@ other mutates tokens.
 | Kotlin     | T2   | 3     | unrecorded    | merged | tree_sitter_kotlin     | ktfmt                             |
 | JavaScript | T2   | 3     | unrecorded    | merged | tree_sitter_javascript | prettier                          |
 | Markdown   | T2   | 4     | grok+Claude   | C      | tree_sitter_markdown   | prettier                          |
-| TypeScript | T2   | 4     | grok-4.6      | D      | tree_sitter_typescript | prettier                          |
+| TypeScript | T2   | 4     | grok-4.6      | merged | tree_sitter_typescript | prettier                          |
 | XML        | T3   | 4     | grok+Claude   | merged | tree_sitter_xml        | prettier (`@prettier/plugin-xml`) |
 | HTML       | T3   | 4     | grok+codex    | merged | tree_sitter_html       | prettier                          |
 | Ruby       | T4   | 5     | grok+Claude   | merged | tree_sitter_ruby       | syntax_tree 6.3.0                 |
