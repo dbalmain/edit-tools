@@ -865,8 +865,10 @@ function splitChildren(fmt, node) {
       // its last statement), which would make an own-line comment
       // look adjacent if we used node.end.
       const kids = last?.node.children ?? [];
-      const contentEnd = kids.length > 0 ? kids[kids.length - 1].end : last?.node.end;
-      const shareLine = last && newlinesBetween(fmt.bytes, contentEnd, child.start) === 0;
+      // Named `lastChildEnd`, not `contentEnd`: a local of that name would
+      // shadow the contentEnd() function above for the rest of this block.
+      const lastChildEnd = kids.length > 0 ? kids[kids.length - 1].end : last?.node.end;
+      const shareLine = last && newlinesBetween(fmt.bytes, lastChildEnd, child.start) === 0;
       const text = commentText(fmt, child);
       if (shareLine) last.suffix.push(text);
       else lead.push({ text, blanks: Math.max(gap - 1, 0) });
