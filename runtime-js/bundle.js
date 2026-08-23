@@ -1361,12 +1361,16 @@ class Ctx {
    *  This is the opcode a per-node fold cannot do without. */
   flatten(kind, sep) {
     const fields = this.fmt.flatten;
-    const left = { field: fields.left };
-    const right = { field: fields.right };
+    const fielded = (this.node.children ?? []).some((c) => c.field != null);
+    const left = fielded ? { field: fields.left } : { named: true };
+    const right = fielded ? { field: fields.right } : { named: true };
 
     const spine = [];
     for (let cur = this.node; ; ) {
-      const next = (cur.children ?? []).find((c) => c.field === fields.left);
+      const kids = cur.children ?? [];
+      const next = fielded
+        ? kids.find((c) => c.field === fields.left)
+        : kids.find((c) => !this.fmt.comments.has(c.type));
       if (!next || next.type !== kind || this.fmt.tightness(cur) !== this.fmt.tightness(next)) {
         break;
       }
@@ -1376,16 +1380,20 @@ class Ctx {
     const inner = spine.map((n) => new Ctx(this.fmt, n));
 
     const parts = [];
+    let outerSkipped;
+    const skippedComments = Array(inner.length).fill(undefined);
     if (inner.length === 0) {
       parts.push(this.child(left));
     } else {
       parts.push(inner[inner.length - 1].child(left));
-      this.skip(left);
-      for (let i = 0; i < inner.length - 1; i++) inner[i].skip(left);
+      outerSkipped = this.skip(left);
+      for (let i = 0; i < inner.length - 1; i++) skippedComments[i] = inner[i].skip(left);
     }
     for (let i = inner.length - 1; i >= 0; i--) {
+      if (skippedComments[i] !== undefined) parts.push(skippedComments[i]);
       parts.push(inner[i].eval(sep), inner[i].child(right));
     }
+    if (outerSkipped !== undefined) parts.push(outerSkipped);
     parts.push(this.eval(sep), this.child(right));
 
     for (const ctx of inner) {
@@ -1397,13 +1405,25 @@ class Ctx {
     return concat(parts);
   }
 
-  /** Step over a child the chain emits elsewhere. It is still consumed exactly
-   *  once, so long as nothing was attached to it here. */
+  /** Step over a child the chain emits elsewhere. Leading comments still
+   *  refuse — those belong on the inner context — but a suffix or after
+   *  comment on the skipped node is returned so flatten can emit it after
+   *  the nested chain. */
   skip(sel) {
     const at = this.take(sel, "the left operand of a chain");
-    if (decorated(this.items[at])) {
-      throw this.refuse("no comment on an operand of a flattened chain");
+    const item = this.items[at];
+    if (item.lead.length > 0) {
+      throw this.refuse("no leading comment on an operand of a flattened chain");
     }
+    const suffixParts = [];
+    const gap = " ".repeat(this.fmt.commentGap);
+    for (const s of item.suffix) suffixParts.push(suffix(text(`${gap}${s}`)));
+    if (item.suffix.length > 0) suffixParts.push(breakParent);
+    item.suffix = [];
+    const after = item.after;
+    item.after = [];
+    suffixParts.push(afterDocs(this.fmt, after));
+    return concat(suffixParts);
   }
 }
 
@@ -1466,7 +1486,9 @@ class Formatter {
   }
 
   tightness(node) {
-    const op = (node.children ?? []).find((c) => c.field === this.flatten.operator);
+    const kids = node.children ?? [];
+    const op = kids.find((c) => c.field === this.flatten.operator)
+      ?? kids.find((c) => this.tokens.has(c.type));
     return (op && this.precedence[op.text]) ?? 0;
   }
 
