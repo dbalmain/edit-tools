@@ -344,8 +344,8 @@ function commentCellsField(pkg) {
 
 function tabStopField(pkg, comment_cells) {
   const stop = pkg.tab_stop === undefined ? 0 : pkg.tab_stop;
-  if (!Number.isInteger(stop) || stop < 0) {
-    throw new Refusal("`tab_stop` must be a non-negative integer");
+  if (!Number.isSafeInteger(stop) || stop < 0) {
+    throw new Refusal("`tab_stop` must be a non-negative safe integer");
   }
   if (stop > 0) {
     if (pkg.tab_indent) {

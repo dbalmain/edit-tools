@@ -1563,10 +1563,10 @@ test("tab_stop respells a finished indent column, and refuses the two clashes", 
   assert.throws(() => run(pkg({ tab_stop: 8, comment_cells: "block" }), root, 80));
   assert.doesNotThrow(() => run(pkg({ tab_stop: 0, tab_indent: true }), root, 80));
   assert.doesNotThrow(() => run(pkg({ tab_stop: 0, comment_cells: "block" }), root, 80));
-  for (const tab_stop of [-1, 1.5, "8"]) {
+  for (const tab_stop of [-1, 1.5, "8", Number.MAX_SAFE_INTEGER + 1]) {
     assert.throws(
       () => run(pkg({ tab_stop }), root, 80),
-      (err) => err instanceof Refusal && /non-negative integer/.test(err.message),
+      (err) => err instanceof Refusal && /non-negative safe integer/.test(err.message),
     );
   }
 });

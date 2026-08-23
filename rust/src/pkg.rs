@@ -20,6 +20,7 @@ const MAX_JSON_INTEGER: f64 = 9_007_199_254_740_991.0;
 /// `comment_gap` is one string -- so this exists to make a typo a named error
 /// rather than a silently strange package.
 const MAX_GAP: usize = 8;
+const MAX_SAFE_INTEGER: u64 = 9_007_199_254_740_991;
 
 fn one() -> usize {
     1
@@ -102,7 +103,7 @@ pub struct Package {
     /// residual spaces. emacs `scheme-mode` with `indent-tabs-mode` t is the
     /// first reference that needs it (FINDINGS 29b).
     #[serde(default)]
-    pub tab_stop: usize,
+    pub tab_stop: u64,
     /// Node types that are punctuation or keywords; `named` skips them.
     #[serde(default)]
     pub tokens: HashSet<String>,
@@ -146,7 +147,7 @@ struct RawPackage {
     #[serde(default)]
     tab_indent: bool,
     #[serde(default)]
-    tab_stop: usize,
+    tab_stop: u64,
     #[serde(default)]
     tokens: HashSet<String>,
     #[serde(default)]
@@ -183,6 +184,9 @@ impl TryFrom<RawPackage> for Package {
             }
         }
         let comment_cells = CommentCells::try_from(raw.comment_cells)?;
+        if raw.tab_stop > MAX_SAFE_INTEGER {
+            return Err("`tab_stop` must be a non-negative safe integer".to_owned());
+        }
         if raw.tab_stop > 0 {
             if raw.tab_indent {
                 return Err(
@@ -1052,7 +1056,12 @@ mod tests {
             serde_json::from_value::<Package>(raw).expect("zero tab stop is disabled");
         }
 
-        for bad in [json!(-1), json!(1.5), json!("8")] {
+        for bad in [
+            json!(-1),
+            json!(1.5),
+            json!("8"),
+            json!(MAX_SAFE_INTEGER + 1),
+        ] {
             let mut raw = package(FORMAT);
             raw["tab_stop"] = bad;
             assert!(serde_json::from_value::<Package>(raw).is_err());

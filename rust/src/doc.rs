@@ -237,16 +237,17 @@ fn fits<'a>(
 /// concatenated a tab unit of its own, and its column is not ours to guess.
 /// The column count is unchanged, so nothing the printer already measured
 /// moves.
-fn respell(ind: String, stop: usize) -> String {
+fn respell(ind: String, stop: u64) -> String {
     if stop == 0 || ind.is_empty() || !ind.bytes().all(|b| b == b' ') {
         return ind;
     }
-    let mut out = "\t".repeat(ind.len() / stop);
-    out.push_str(&" ".repeat(ind.len() % stop));
+    let len = ind.len() as u64;
+    let mut out = "\t".repeat((len / stop) as usize);
+    out.push_str(&" ".repeat((len % stop) as usize));
     out
 }
 
-pub fn print(doc: &Doc, width: usize, tab_stop: usize) -> String {
+pub fn print(doc: &Doc, width: usize, tab_stop: u64) -> String {
     let mut forced = Forced::new();
     collect_forced(doc, &mut forced);
     let mut out = String::new();
