@@ -575,9 +575,13 @@ function print(doc, cols, tabStop = 0) {
         case "line":
         case "soft":
         case "hard": {
-          const breaking = mode === BREAK || d.k === "hard";
+          // A queued suffix means a break is due: every suffix travels with a
+          // breakParent, so its group is open. A fill separator is the one that
+          // picks its mode without consulting forced breaks. FINDINGS 33.
+          const m = suffixes.length > 0 ? BREAK : mode;
+          const breaking = m === BREAK || d.k === "hard";
           if (breaking && suffixes.length > 0) {
-            stack.push(cmd, ...suffixes.reverse());
+            stack.push([ind, m, d], ...suffixes.reverse());
             suffixes = [];
             break;
           }

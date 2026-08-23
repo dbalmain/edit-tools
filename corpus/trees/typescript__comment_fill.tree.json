@@ -1,0 +1,584 @@
+{
+ "language": "typescript",
+ "source_file": "corpus/src/typescript/comment_fill.ts",
+ "source": "// A number array that `fill` packs, carrying comments. The two together are\n// FINDINGS 33: a flat fill separator does not flush a pending suffix, so a\n// trailing comment outlived its item and landed inside the next item's line\n// comment. `sequences.ts` has the packing without the comments and\n// `comments.ts` has the comments without an all-number array, so neither file\n// reaches this intersection and gate 3 could not see the regression.\nconst measurements: number[] = [\n  10, // first reading\n  // taken again after the recalibration\n  20,\n  /* inline */ 30,\n  40, // last of the morning batch\n  50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200,\n  // trailing note before the bracket\n];\n\nconst clean: number[] = [1, 2, 3, 4, 5];\n",
+ "root": {
+  "type": "program",
+  "start": 0,
+  "end": 764,
+  "children": [
+   {
+    "type": "comment",
+    "start": 0,
+    "end": 76,
+    "text": "// A number array that `fill` packs, carrying comments. The two together are"
+   },
+   {
+    "type": "comment",
+    "start": 77,
+    "end": 152,
+    "text": "// FINDINGS 33: a flat fill separator does not flush a pending suffix, so a"
+   },
+   {
+    "type": "comment",
+    "start": 153,
+    "end": 229,
+    "text": "// trailing comment outlived its item and landed inside the next item's line"
+   },
+   {
+    "type": "comment",
+    "start": 230,
+    "end": 297,
+    "text": "// comment. `sequences.ts` has the packing without the comments and"
+   },
+   {
+    "type": "comment",
+    "start": 298,
+    "end": 376,
+    "text": "// `comments.ts` has the comments without an all-number array, so neither file"
+   },
+   {
+    "type": "comment",
+    "start": 377,
+    "end": 446,
+    "text": "// reaches this intersection and gate 3 could not see the regression."
+   },
+   {
+    "type": "lexical_declaration",
+    "start": 447,
+    "end": 721,
+    "children": [
+     {
+      "type": "const",
+      "start": 447,
+      "end": 452,
+      "field": "kind",
+      "text": "const"
+     },
+     {
+      "type": "variable_declarator",
+      "start": 453,
+      "end": 720,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 453,
+        "end": 465,
+        "field": "name",
+        "text": "measurements"
+       },
+       {
+        "type": "type_annotation",
+        "start": 465,
+        "end": 475,
+        "field": "type",
+        "children": [
+         {
+          "type": ":",
+          "start": 465,
+          "end": 466,
+          "text": ":"
+         },
+         {
+          "type": "array_type",
+          "start": 467,
+          "end": 475,
+          "children": [
+           {
+            "type": "predefined_type",
+            "start": 467,
+            "end": 473,
+            "children": [
+             {
+              "type": "number",
+              "start": 467,
+              "end": 473,
+              "text": "number"
+             }
+            ]
+           },
+           {
+            "type": "[",
+            "start": 473,
+            "end": 474,
+            "text": "["
+           },
+           {
+            "type": "]",
+            "start": 474,
+            "end": 475,
+            "text": "]"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "=",
+        "start": 476,
+        "end": 477,
+        "text": "="
+       },
+       {
+        "type": "array",
+        "start": 478,
+        "end": 720,
+        "field": "value",
+        "children": [
+         {
+          "type": "[",
+          "start": 478,
+          "end": 479,
+          "text": "["
+         },
+         {
+          "type": "number",
+          "start": 482,
+          "end": 484,
+          "text": "10"
+         },
+         {
+          "type": ",",
+          "start": 484,
+          "end": 485,
+          "text": ","
+         },
+         {
+          "type": "comment",
+          "start": 486,
+          "end": 502,
+          "text": "// first reading"
+         },
+         {
+          "type": "comment",
+          "start": 505,
+          "end": 543,
+          "text": "// taken again after the recalibration"
+         },
+         {
+          "type": "number",
+          "start": 546,
+          "end": 548,
+          "text": "20"
+         },
+         {
+          "type": ",",
+          "start": 548,
+          "end": 549,
+          "text": ","
+         },
+         {
+          "type": "comment",
+          "start": 552,
+          "end": 564,
+          "text": "/* inline */"
+         },
+         {
+          "type": "number",
+          "start": 565,
+          "end": 567,
+          "text": "30"
+         },
+         {
+          "type": ",",
+          "start": 567,
+          "end": 568,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 571,
+          "end": 573,
+          "text": "40"
+         },
+         {
+          "type": ",",
+          "start": 573,
+          "end": 574,
+          "text": ","
+         },
+         {
+          "type": "comment",
+          "start": 575,
+          "end": 603,
+          "text": "// last of the morning batch"
+         },
+         {
+          "type": "number",
+          "start": 606,
+          "end": 608,
+          "text": "50"
+         },
+         {
+          "type": ",",
+          "start": 608,
+          "end": 609,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 610,
+          "end": 612,
+          "text": "60"
+         },
+         {
+          "type": ",",
+          "start": 612,
+          "end": 613,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 614,
+          "end": 616,
+          "text": "70"
+         },
+         {
+          "type": ",",
+          "start": 616,
+          "end": 617,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 618,
+          "end": 620,
+          "text": "80"
+         },
+         {
+          "type": ",",
+          "start": 620,
+          "end": 621,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 622,
+          "end": 624,
+          "text": "90"
+         },
+         {
+          "type": ",",
+          "start": 624,
+          "end": 625,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 626,
+          "end": 629,
+          "text": "100"
+         },
+         {
+          "type": ",",
+          "start": 629,
+          "end": 630,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 631,
+          "end": 634,
+          "text": "110"
+         },
+         {
+          "type": ",",
+          "start": 634,
+          "end": 635,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 636,
+          "end": 639,
+          "text": "120"
+         },
+         {
+          "type": ",",
+          "start": 639,
+          "end": 640,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 641,
+          "end": 644,
+          "text": "130"
+         },
+         {
+          "type": ",",
+          "start": 644,
+          "end": 645,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 646,
+          "end": 649,
+          "text": "140"
+         },
+         {
+          "type": ",",
+          "start": 649,
+          "end": 650,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 651,
+          "end": 654,
+          "text": "150"
+         },
+         {
+          "type": ",",
+          "start": 654,
+          "end": 655,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 656,
+          "end": 659,
+          "text": "160"
+         },
+         {
+          "type": ",",
+          "start": 659,
+          "end": 660,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 661,
+          "end": 664,
+          "text": "170"
+         },
+         {
+          "type": ",",
+          "start": 664,
+          "end": 665,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 666,
+          "end": 669,
+          "text": "180"
+         },
+         {
+          "type": ",",
+          "start": 669,
+          "end": 670,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 671,
+          "end": 674,
+          "text": "190"
+         },
+         {
+          "type": ",",
+          "start": 674,
+          "end": 675,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 676,
+          "end": 679,
+          "text": "200"
+         },
+         {
+          "type": ",",
+          "start": 679,
+          "end": 680,
+          "text": ","
+         },
+         {
+          "type": "comment",
+          "start": 683,
+          "end": 718,
+          "text": "// trailing note before the bracket"
+         },
+         {
+          "type": "]",
+          "start": 719,
+          "end": 720,
+          "text": "]"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": ";",
+      "start": 720,
+      "end": 721,
+      "text": ";"
+     }
+    ]
+   },
+   {
+    "type": "lexical_declaration",
+    "start": 723,
+    "end": 763,
+    "children": [
+     {
+      "type": "const",
+      "start": 723,
+      "end": 728,
+      "field": "kind",
+      "text": "const"
+     },
+     {
+      "type": "variable_declarator",
+      "start": 729,
+      "end": 762,
+      "children": [
+       {
+        "type": "identifier",
+        "start": 729,
+        "end": 734,
+        "field": "name",
+        "text": "clean"
+       },
+       {
+        "type": "type_annotation",
+        "start": 734,
+        "end": 744,
+        "field": "type",
+        "children": [
+         {
+          "type": ":",
+          "start": 734,
+          "end": 735,
+          "text": ":"
+         },
+         {
+          "type": "array_type",
+          "start": 736,
+          "end": 744,
+          "children": [
+           {
+            "type": "predefined_type",
+            "start": 736,
+            "end": 742,
+            "children": [
+             {
+              "type": "number",
+              "start": 736,
+              "end": 742,
+              "text": "number"
+             }
+            ]
+           },
+           {
+            "type": "[",
+            "start": 742,
+            "end": 743,
+            "text": "["
+           },
+           {
+            "type": "]",
+            "start": 743,
+            "end": 744,
+            "text": "]"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "=",
+        "start": 745,
+        "end": 746,
+        "text": "="
+       },
+       {
+        "type": "array",
+        "start": 747,
+        "end": 762,
+        "field": "value",
+        "children": [
+         {
+          "type": "[",
+          "start": 747,
+          "end": 748,
+          "text": "["
+         },
+         {
+          "type": "number",
+          "start": 748,
+          "end": 749,
+          "text": "1"
+         },
+         {
+          "type": ",",
+          "start": 749,
+          "end": 750,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 751,
+          "end": 752,
+          "text": "2"
+         },
+         {
+          "type": ",",
+          "start": 752,
+          "end": 753,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 754,
+          "end": 755,
+          "text": "3"
+         },
+         {
+          "type": ",",
+          "start": 755,
+          "end": 756,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 757,
+          "end": 758,
+          "text": "4"
+         },
+         {
+          "type": ",",
+          "start": 758,
+          "end": 759,
+          "text": ","
+         },
+         {
+          "type": "number",
+          "start": 760,
+          "end": 761,
+          "text": "5"
+         },
+         {
+          "type": "]",
+          "start": 761,
+          "end": 762,
+          "text": "]"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": ";",
+      "start": 762,
+      "end": 763,
+      "text": ";"
+     }
+    ]
+   }
+  ]
+ }
+}

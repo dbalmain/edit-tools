@@ -1570,3 +1570,41 @@ test("tab_stop respells a finished indent column, and refuses the two clashes", 
     );
   }
 });
+
+test("a fill separator breaks while a suffix is pending", () => {
+  // FINDINGS 33, the JS mirror of doc.rs's
+  // a_fill_separator_breaks_while_a_suffix_is_pending. `a` carries a trailing
+  // comment queued until a break. A flat separator does not flush it, so it
+  // would land after `b` -- and after anything `b` emits first, which for a
+  // leading line comment means inside it.
+  const pkg = {
+    ...toy({
+      list: [
+        "group", ["tok", "("],
+        ["indent", ["soft"], ["fill", "named", ["seq", ["tok", ","], ["line"]]]],
+        ["soft"], ["tok", ")"],
+      ],
+    }),
+    comments: ["comment"],
+  };
+  // `a # one` then a leading `# two` on `b`: the two comments must not merge.
+  const source = "(a# one\n# two\n,b,c)";
+  const root = {
+    type: "list", start: 0, end: 19,
+    children: [
+      span("(", 0, 1, "("),
+      span("name", 1, 2, "a"),
+      span("comment", 2, 7, "# one"),
+      span("comment", 8, 13, "# two"),
+      span(",", 13, 14, ","),
+      span("name", 14, 15, "b"),
+      span(",", 15, 16, ","),
+      span("name", 16, 17, "c"),
+      span(")", 18, 19, ")"),
+    ],
+  };
+  const out = runOn(pkg, source, root, 80);
+  assert.equal(out, "(\n  a, # one\n  # two\n  b, c\n)\n");
+  // The two comments stay two comments: nothing follows `# one` on its line.
+  assert.ok(!/# one .*# two/.test(out), `comments merged onto one line: ${out}`);
+});

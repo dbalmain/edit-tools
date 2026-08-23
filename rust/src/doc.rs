@@ -350,6 +350,20 @@ pub fn print(doc: &Doc, width: usize, tab_stop: u64) -> String {
                     ));
                 }
                 Doc::Line | Doc::Soft | Doc::Hard => {
+                    // A queued suffix means a break is already due here: every
+                    // `Suffix` is emitted with a `BreakParent`, so its enclosing
+                    // group is open and every separator inside it is in break
+                    // mode. A `fill` separator is the one place that picks its
+                    // own mode without consulting forced breaks, so it can reach
+                    // this point flat with a suffix still queued -- and staying
+                    // flat flushes that suffix *after* the next item's leading
+                    // comment, inside it when the leading comment is a line
+                    // comment. FINDINGS 33.
+                    let mode = if suffixes.is_empty() {
+                        mode
+                    } else {
+                        Mode::Break
+                    };
                     let breaking = mode == Mode::Break || matches!(doc, Doc::Hard);
                     if breaking && !suffixes.is_empty() {
                         stack.push((ind, mode, doc));
@@ -565,6 +579,40 @@ mod tests {
             ]),
         );
         assert_eq!(print(&doc, 10, 0), "100 200\n  300 400");
+    }
+
+    #[test]
+    fn a_fill_separator_breaks_while_a_suffix_is_pending() {
+        // FINDINGS 33. The separator after "100" fits flat, but "100" carries a
+        // trailing comment that is queued until a break. Staying flat would
+        // flush that comment *after* "200" -- and after anything "200" emits
+        // first, which for a leading line comment means inside it. Everywhere
+        // outside a fill this cannot arise: a Suffix always travels with a
+        // BreakParent, so the enclosing group is already open.
+        let commented = Doc::Concat(vec![
+            Doc::text("100"),
+            Doc::Suffix(Box::new(Doc::text(" // note"))),
+            Doc::BreakParent,
+        ]);
+        let doc = Doc::fill(vec![
+            commented,
+            Doc::Line,
+            Doc::text("200"),
+            Doc::Line,
+            Doc::text("300"),
+        ]);
+        assert_eq!(print(&doc, 80, 0), "100 // note\n200 300");
+
+        // Without the suffix the same fill packs, so the break above is the
+        // pending comment and not a lost packing decision.
+        let plain = Doc::fill(vec![
+            Doc::text("100"),
+            Doc::Line,
+            Doc::text("200"),
+            Doc::Line,
+            Doc::text("300"),
+        ]);
+        assert_eq!(print(&plain, 80, 0), "100 200 300");
     }
 
     #[test]
