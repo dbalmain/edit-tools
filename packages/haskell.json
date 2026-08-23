@@ -1466,8 +1466,24 @@
     "context": [
       "seq",
       [
-        "autoparen",
-        "f:context"
+        "when",
+        [
+          "count",
+          "t:parens",
+          1
+        ],
+        [
+          "child",
+          "f:context"
+        ],
+        [
+          "paren",
+          true,
+          [
+            "child",
+            "f:context"
+          ]
+        ]
       ],
       [
         "sp"
@@ -1512,9 +1528,5 @@
         "f:operator"
       ]
     ]
-  },
-  "optional_parens": [
-    "apply",
-    "tuple"
-  ]
+  }
 }

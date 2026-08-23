@@ -289,7 +289,7 @@ impl<'a> Ctx<'a> {
                 }
             }
             Expr::Trail(sep, sel) => self.trail(sep, sel, f),
-            Expr::Paren(es) => self.paren(es, f),
+            Expr::Paren(always, es) => self.paren(*always, es, f),
             Expr::AutoParen(sel) => self.autoparen(sel, f),
             Expr::When(pred, then, alt) => {
                 let hit = self.test(pred, f);
@@ -527,7 +527,7 @@ impl<'a> Ctx<'a> {
 
     /// The balanced-paren policy: adopt the pair the source already has, or
     /// add one when the region breaks.
-    fn paren(&mut self, body: &[Expr], f: &Fmt<'a>) -> Result<Doc, Refusal> {
+    fn paren(&mut self, always: bool, body: &[Expr], f: &Fmt<'a>) -> Result<Doc, Refusal> {
         let last = self.items.len().saturating_sub(1);
         let opener = self.cursor;
         let adopt = opener + 1 < self.items.len()
@@ -536,6 +536,8 @@ impl<'a> Ctx<'a> {
 
         let open = if adopt {
             self.tok("(", f)?
+        } else if always {
+            Doc::text("(")
         } else {
             Doc::IfBreak(Box::new(Doc::text("(")), Box::new(Doc::nil()))
         };
@@ -550,6 +552,8 @@ impl<'a> Ctx<'a> {
                 return Err(self.refuse("the closing `)` of the region it wraps"));
             }
             self.tok(")", f)?
+        } else if always {
+            Doc::text(")")
         } else {
             Doc::IfBreak(Box::new(Doc::text(")")), Box::new(Doc::nil()))
         };
@@ -1138,6 +1142,16 @@ mod tests {
         });
         let err = run(&pkg, root, 80).expect_err("must refuse");
         assert!(err.0.contains("not declared punctuation"), "{}", err.0);
+    }
+
+    #[test]
+    fn paren_true_adds_a_balanced_pair_in_flat_layout() {
+        let pkg = toy(json!({ "list": ["paren", true, ["child", "*"]] }));
+        let root = json!({
+            "type": "list", "start": 0, "end": 0,
+            "children": [leaf("a", "a")]
+        });
+        assert_eq!(run(&pkg, root, 80).expect("always parens"), "(a)\n");
     }
 
     #[test]

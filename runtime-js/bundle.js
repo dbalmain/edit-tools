@@ -190,10 +190,14 @@ function validateExpr(value) {
   switch (op) {
     case "seq":
     case "indent":
-    case "paren":
     case "cellblock":
       rest.forEach(validateExpr);
       return;
+    case "paren": {
+      const body = typeof rest[0] === "boolean" ? rest.slice(1) : rest;
+      body.forEach(validateExpr);
+      return;
+    }
     case "group": {
       const body = typeof rest[0] === "number" ? (parseGroupMax(rest[0]), rest.slice(1)) : rest;
       body.forEach(validateExpr);
@@ -1081,7 +1085,7 @@ class Ctx {
       case "trail":
         return this.trail(rest[0], parseSelector(rest[1]));
       case "paren":
-        return this.paren(rest);
+        return this.paren(typeof rest[0] === "boolean" ? rest.slice(1) : rest, rest[0] === true);
       case "autoparen":
         return this.autoparen(parseSelector(rest[0]));
       case "when":
@@ -1268,7 +1272,7 @@ class Ctx {
 
   /** The balanced-paren policy: adopt the pair the source already has, or add
    *  one when the region breaks. */
-  paren(body) {
+  paren(body, always = false) {
     const last = this.items.length - 1;
     const opener = this.cursor;
     const adopt =
@@ -1279,6 +1283,8 @@ class Ctx {
     let open;
     if (adopt) {
       open = this.tok("(");
+    } else if (always) {
+      open = text("(");
     } else {
       open = ifBreak(text("("), nil);
     }
@@ -1290,6 +1296,8 @@ class Ctx {
     if (adopt) {
       if (this.cursor !== last) throw this.refuse("the closing `)` of the region it wraps");
       close = this.tok(")");
+    } else if (always) {
+      close = text(")");
     } else {
       close = ifBreak(text(")"), nil);
     }

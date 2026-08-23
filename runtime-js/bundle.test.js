@@ -109,6 +109,12 @@ test("drop refuses a token the package has not declared punctuation", () => {
   );
 });
 
+test("paren true adds a balanced pair in flat layout", () => {
+  const pkg = toy({ list: ["paren", true, ["child", "*"]] });
+  const root = dropList([leaf("a", "a")]);
+  assert.equal(run(pkg, root, 80), "(a)\n");
+});
+
 test("text and multiline predicates follow exact child paths", () => {
   const wrapper = (value) => ({
     type: "wrapper", start: 0, end: 0,

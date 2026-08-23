@@ -529,7 +529,7 @@ pub enum Expr {
     Verbatim,
     Opt(Sel, Box<Expr>),
     Trail(String, Sel),
-    Paren(Vec<Expr>),
+    Paren(bool, Vec<Expr>),
     AutoParen(Sel),
     When(Pred, Box<Expr>, Box<Expr>),
     Flatten(String, Box<Expr>),
@@ -598,7 +598,17 @@ impl TryFrom<Value> for Expr {
                 Ok(Expr::Group(max, rest(parts)?))
             }
             "indent" => Ok(Expr::Indent(rest(parts)?)),
-            "paren" => Ok(Expr::Paren(rest(parts)?)),
+            "paren" => {
+                let always = match parts.first() {
+                    Some(Value::Bool(always)) => {
+                        let always = *always;
+                        parts.remove(0);
+                        always
+                    }
+                    _ => false,
+                };
+                Ok(Expr::Paren(always, rest(parts)?))
+            }
             "line" => arity(0).map(|()| Expr::Line),
             "soft" => arity(0).map(|()| Expr::Soft),
             "hard" => arity(0).map(|()| Expr::Hard),
