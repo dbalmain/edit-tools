@@ -507,7 +507,7 @@ pub enum Pred {
     Multiline(Vec<Sel>),
 }
 
-/// One expression of the package language. Twenty opcodes; see DESIGN.md.
+/// One expression of the package language. Twenty-seven opcodes; see DESIGN.md.
 #[derive(Debug, Deserialize)]
 #[serde(try_from = "Value")]
 pub enum Expr {
