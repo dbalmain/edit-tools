@@ -1039,6 +1039,24 @@ mod tests {
                 .to_string();
             assert!(err.contains(want), "wanted {want:?} in {err}");
         }
+
+        // Zero means off, so it does not conflict with either existing mode.
+        for fields in [
+            json!({"tab_stop": 0, "tab_indent": true}),
+            json!({"tab_stop": 0, "comment_cells": "block"}),
+        ] {
+            let mut raw = package(FORMAT);
+            for (key, value) in fields.as_object().expect("object") {
+                raw[key] = value.clone();
+            }
+            serde_json::from_value::<Package>(raw).expect("zero tab stop is disabled");
+        }
+
+        for bad in [json!(-1), json!(1.5), json!("8")] {
+            let mut raw = package(FORMAT);
+            raw["tab_stop"] = bad;
+            assert!(serde_json::from_value::<Package>(raw).is_err());
+        }
     }
 
     #[test]

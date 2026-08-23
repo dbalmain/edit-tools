@@ -1542,6 +1542,16 @@ test("tab_stop respells a finished indent column, and refuses the two clashes", 
   const root = { type: "list", start: 0, end: 0, children: [leaf("(", "("), leaf("name", "b")] };
   assert.equal(run(pkg({}), root, 80), "(\n         b\n");
   assert.equal(run(pkg({ tab_stop: 8 }), root, 80), "(\n\t b\n");
+  assert.equal(run({ ...pkg({ tab_stop: 8 }), indent: 8 }, root, 80), "(\n\tb\n");
+  const blank = {
+    type: "list", start: 0, end: 0,
+    children: [leaf("(", "("), leaf("name", "b")],
+  };
+  const blankPkg = {
+    ...pkg({ tab_stop: 8 }),
+    rules: { list: ["seq", ["tok", "("], ["hard"], ["hard"], ["child", "named"]] },
+  };
+  assert.equal(run(blankPkg, blank, 80), "(\n\nb\n");
   assert.throws(
     () => run(pkg({ tab_stop: 8, tab_indent: true }), root, 80),
     (err) => err instanceof Refusal && /both spell the indent/.test(err.message),
@@ -1550,8 +1560,13 @@ test("tab_stop respells a finished indent column, and refuses the two clashes", 
     () => run(pkg({ tab_stop: 8, comment_cells: true }), root, 80),
     (err) => err instanceof Refusal && /disagree about columns/.test(err.message),
   );
-  assert.throws(
-    () => run(pkg({ tab_stop: -1 }), root, 80),
-    (err) => err instanceof Refusal && /non-negative integer/.test(err.message),
-  );
+  assert.throws(() => run(pkg({ tab_stop: 8, comment_cells: "block" }), root, 80));
+  assert.doesNotThrow(() => run(pkg({ tab_stop: 0, tab_indent: true }), root, 80));
+  assert.doesNotThrow(() => run(pkg({ tab_stop: 0, comment_cells: "block" }), root, 80));
+  for (const tab_stop of [-1, 1.5, "8"]) {
+    assert.throws(
+      () => run(pkg({ tab_stop }), root, 80),
+      (err) => err instanceof Refusal && /non-negative integer/.test(err.message),
+    );
+  }
 });

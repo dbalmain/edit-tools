@@ -523,11 +523,28 @@ mod tests {
         ]);
         assert_eq!(print(&doc, 80, 0), "a\n         b");
         assert_eq!(print(&doc, 80, 8), "a\n\t b");
+        let exact = Doc::Concat(vec![
+            Doc::text("a"),
+            Doc::indent(8, Doc::Concat(vec![Doc::Hard, Doc::text("b")])),
+        ]);
+        assert_eq!(print(&exact, 80, 8), "a\n\tb");
+        // A root-level blank line reaches the empty-indent fast path.
+        assert_eq!(
+            print(
+                &seq(vec![Doc::text("a"), Doc::Hard, Doc::Hard, Doc::text("b")]),
+                80,
+                8
+            ),
+            "a\n\nb"
+        );
         // A tab unit somewhere in the column means the column is not ours to
         // respell: a nested region put it there.
         let mixed = Doc::Concat(vec![
             Doc::text("a"),
-            Doc::indent_unit("\t", Doc::indent(2, Doc::Concat(vec![Doc::Hard, Doc::text("b")]))),
+            Doc::indent_unit(
+                "\t",
+                Doc::indent(2, Doc::Concat(vec![Doc::Hard, Doc::text("b")])),
+            ),
         ]);
         assert_eq!(print(&mixed, 80, 8), "a\n\t  b");
     }
