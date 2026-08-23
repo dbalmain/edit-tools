@@ -194,6 +194,7 @@ accidentally become block merely because a deeper nested element is block.
   "tokens": ["(", ")", ",", ":", "and", "or", "def", …],
   "comments": ["comment"],
   "descend": ["block"],
+  "gap_owner": { "list": ["list_item"] },
   "optional_parens": ["binary_operator", "boolean_operator", …],
   "precedence": { "|": 9, "^": 8, "+": 5, "*": 4, … },
   "rules": { … }
@@ -210,6 +211,25 @@ these". `comments` and `descend` drive comment attachment; `optional_parens` and
 `precedence` drive `autoparen` and `flatten`. The field names `flatten` walks
 default to `left` / `operator` / `right`; a package whose parser uses different
 ones says so in `flatten_fields`, next to `precedence`.
+
+`gap_owner` names, for one parent type, the child types whose **following**
+source gap that parent owns. It exists because a blank line can sit *inside* the
+previous sibling's subtree rather than between the siblings: tree-sitter-markdown
+keeps the blank that makes a list loose inside the preceding `list_item`, below
+where the runtime's one-terminator bound reaches. For a declared pair the gap is
+measured to that child's deepest non-empty descendant; every other consumer keeps
+the shallow bound.
+
+The reason this is a package fact rather than a runtime constant is measured, not
+assumed. Peeling deeper *globally* — at depth 2, 3, or unbounded — is worse than
+peeling one terminator, and worse for markdown itself, not merely as a trade
+against TOML. One source blank becomes visible to a rule, to its parent's
+separator, and to the floor above that, and every one of them renders it. So the
+question is never how deep to look; it is which single rule may spend the gap,
+and only the package knows, because only the package knows what its rules emit.
+
+The node's own **trailing** blank measure always keeps the shallow bound, which
+is what stops a node and its parent claiming the same newline. FINDINGS 30.
 
 `comment_gap` chooses how many spaces precede a trailing comment, and
 `blank_cap` limits the source blank lines preserved next to a comment. Both

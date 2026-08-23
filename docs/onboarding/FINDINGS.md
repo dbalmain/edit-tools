@@ -3149,10 +3149,10 @@ the two halves of Lisp indentation and building either alone leaves Scheme short
 
 ## 30. A node that includes its terminating newline makes the gap measure short
 
-**Status:** runtime half **built** (2026-08-23, **+389 B gzip**), package half
-**open and measured closed** · **Cost:** local · **Languages:** Markdown
-(package built; this is now the **only** thing blocking its merge), Ruby
-(survivable, worked around)
+**Status:** **built, both halves** — runtime bound 2026-08-23 (**+389 B gzip**),
+gap ownership 2026-08-24 (**+425 B gzip**) · **Cost:** local · **Languages:**
+Markdown (unblocked and merging), Ruby (survivable, worked around), TOML and
+YAML (unaffected by construction)
 
 ### Built — and the repair this entry proposed was the wrong one
 
@@ -3360,8 +3360,53 @@ want gap ownership too and wants it *dynamically* — a rule that owns the gap o
 sometimes — then a header list cannot say that and shape 1's protocol is the real
 requirement.
 
-**Not started.** This entry now holds the measurement that says what to build; it
-does not hold a build.
+### Built — option A, and the measurement is what chose it
+
+Dave took shape 2, the package-declared owner. `gap_owner` maps a parent type to
+the child types whose **following** gap that parent owns. For a declared pair the
+gap is measured to the child's deepest non-empty descendant; every other consumer
+keeps the shallow bound. Markdown declares one line:
+
+```json
+"gap_owner": { "list": ["list_item"] }
+```
+
+**The part that does not fall out of the design**, and the reason the first
+attempt at it still scored 22/30: the node's own **trailing** blank measure must
+keep the shallow bound *unconditionally*. A nested `list`'s trailing `blank` and
+the enclosing `list`'s separator can otherwise see the same newline and both
+render it — which is the same double-count as the global-depth spike, just one
+level down. Splitting the two measurements is four lines and it is the whole
+difference between 22/30 and 30/30. Both runtimes carry a test for it.
+
+Validator domains were matched deliberately rather than discovered later: Rust
+deserialises a map of node type to a set of node types, and the JS loader checks
+the same shape instead of accepting what serde would reject. That is FINDINGS
+29(b)'s lesson applied before it could bite, and both runtimes test the
+acceptance domain.
+
+**Measured, everything green:**
+
+```
+0-coverage       405/405   1-agreement      405/405
+2-idempotence    405/405   3-nondestruction 405/405
+
+markdown   15/24 agreement, 0 stale, 0 unreviewed, 0 package bug
+corpus     251/384, review coverage 100%
+TOML 23/30 and YAML 12/32, both byte-identical to before
+```
+
+`lists.md` now matches prettier at both widths, so its two accepted-divergence
+records were retired rather than re-argued. `./test.sh` exits 0 with the
+sixteenth language in it.
+
+**What this entry cost in total, against what it predicted.** The entry proposed
+walking to the last non-whitespace byte and called it "obviously right"; that was
+measured wrong. It then framed the remainder as a choice of depth; that was
+measured wrong too, and in a way that no amount of re-reading would have found —
+every depth is worse than none. Both errors were the same shape: **reasoning
+about where a bound should sit, when the question was who owns the thing being
+bounded.**
 
 **`share_line` is entry 9, not this entry.** It still decides suffix-versus-own-line
 from the last child's `end`, a second spelling of "where does this item's content
