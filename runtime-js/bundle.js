@@ -818,6 +818,26 @@ function commentText(fmt, node) {
   return fmt.decoder.decode(fmt.bytes.subarray(node.start, commentContentEnd(fmt, node)));
 }
 
+// The end of a node's own content, which is not always `node.end`: a grammar
+// may let a node swallow the line ending that terminates it, and the following
+// gap then measures one newline short (FINDINGS 30). At most ONE line
+// terminator comes off, and that bound is the whole trick -- markdown's
+// atx_heading swallows exactly its newline while toml's table_array_element
+// swallows the newline and the blank run after it, and removing all trailing
+// whitespace cannot tell them apart. Tab, LF, FF, CR, space; not vertical tab,
+// matching srcGap.
+function contentEnd(bytes, node) {
+  const end = Math.min(node.end, bytes.length);
+  const start = Math.min(node.start, end);
+  const horiz = (b) => b === 0x20 || b === 0x09 || b === 0x0c;
+  let at = end;
+  while (at > start && horiz(bytes[at - 1])) at -= 1;
+  if (at > start && bytes[at - 1] === 0x0a) at -= 1;
+  if (at > start && bytes[at - 1] === 0x0d) at -= 1;
+  while (at > start && horiz(bytes[at - 1])) at -= 1;
+  return at;
+}
+
 function newlinesBetween(bytes, from, to) {
   let n = 0;
   for (let i = Math.max(from, 0); i < Math.min(to, bytes.length); i++) {
@@ -835,7 +855,7 @@ function splitChildren(fmt, node) {
 
   for (const child of node.children ?? []) {
     const gap = newlinesBetween(fmt.bytes, prevEnd, child.start);
-    prevEnd = child.end;
+    prevEnd = contentEnd(fmt.bytes, child);
 
     if (fmt.comments.has(child.type)) {
       const last = items[items.length - 1];

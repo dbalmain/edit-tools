@@ -66,6 +66,47 @@ fn comment_content_end(node: &Node, src: &[u8]) -> usize {
     end
 }
 
+/// The end of a node's own content, which is not always `node.end`: a grammar
+/// may let a node swallow the line ending that terminates it. Measuring the
+/// following gap from `node.end` then counts one newline too few, and `blank`
+/// cannot tell "the source had a blank line here" from "the source had none"
+/// -- FINDINGS 30.
+///
+/// **At most one line terminator comes off**, and that bound is the whole
+/// difference between this working and not. Two grammars swallow different
+/// amounts: tree-sitter-markdown's `atx_heading` takes exactly the newline that
+/// ends its line, while tree-sitter-toml's `table_array_element` takes that
+/// newline *and the blank run after it*. Walking back over all trailing
+/// whitespace -- the repair FINDINGS 30 proposed and called obviously right --
+/// cannot distinguish them: it hands TOML's gap a blank line the node has
+/// already accounted for, and measured, that costs TOML 8 of its 23 agreements
+/// while markdown drops from 4 to 0. Removing one terminator turns "the node
+/// ate its own line ending" into "it did not" and leaves everything else where
+/// the grammar put it.
+///
+/// Horizontal whitespace before the terminator comes off too, since trailing
+/// spaces are not content for this purpose. The set is tab, LF, FF, CR and
+/// space -- `u8::is_ascii_whitespace`, and deliberately not vertical tab,
+/// matching `srcgap` in both runtimes.
+fn content_end(src: &[u8], node: &Node) -> usize {
+    let end = node.end.min(src.len());
+    let start = node.start.min(end);
+    let mut at = end;
+    while at > start && matches!(src[at - 1], b' ' | b'\t' | 0x0C) {
+        at -= 1;
+    }
+    if at > start && src[at - 1] == b'\n' {
+        at -= 1;
+    }
+    if at > start && src[at - 1] == b'\r' {
+        at -= 1;
+    }
+    while at > start && matches!(src[at - 1], b' ' | b'\t' | 0x0C) {
+        at -= 1;
+    }
+    at
+}
+
 fn newlines(src: &[u8], from: usize, to: usize) -> usize {
     if from >= to || to > src.len() {
         return 0;
@@ -94,7 +135,7 @@ pub fn split<'a>(node: &'a Node, src: &[u8], pkg: &Package) -> Split<'a> {
 
     for child in &node.children {
         let gap = newlines(src, prev_end, child.start);
-        prev_end = child.end;
+        prev_end = content_end(src, child);
 
         if pkg.comments.contains(&child.kind) {
             let text = comment_text(child, src);
