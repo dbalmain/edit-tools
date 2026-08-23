@@ -202,6 +202,35 @@ alternatives to every hard-coded token or type selector are absent from the
 corpus, and what out-of-corpus probe tested them?** A perfect score is evidence
 about the corpus at least as much as about the package.
 
+## 2026-08-23 — Haskell built on Sol, and Opus has its stage D
+
+The Claude draft refused on four rules and was committed saying so; codex-Sol
+finished it from that diagnosis. **11/14 at width 80**, hard gates 16/16, no
+refusals, no package bugs, and a width sweep of 1920/1920 across widths 1-120.
+
+Three of the four diagnoses in the handover prompt were right and **one was
+wrong in a way worth keeping**: `lists.hs` was not a single refusal but an
+incorrect `descend` *plus* a width-driven bracket rule, and the builder's answer
+was to empty `descend` entirely — every entry, not just the one named. The
+prompt also overstated the collision set (`data` and `type` are not collisions)
+and claimed 65 branch kinds where the draft covered 64.
+
+**It edits both runtimes**, which is why stage D went to an Opus subagent rather
+than another codex pass: the ledger reserves that lane for central changes to
+`main`, and a wrong runtime shape costs all fifteen merged languages. Two
+additions, +85 B gzip together — a `source-multiline` predicate (+42 B) for
+source-broken lists and leading record commas, and an **unconditional balanced
+`paren`** (+43 B), because the existing policy only adds parens when a region
+breaks and ormolu writes `class (Eq a) =>` on a line that never breaks.
+
+The reviewer was told to do one thing the brief does not yet ask for, and it
+comes straight from HTML's stage D: **diff the two runtime implementations by
+hand and build an input for each branch of each condition.** Parity is checked by
+the scorer over the corpus, and the corpus can only check the bytes it contains —
+which is how a vertical tab split the runtimes with every gate green. Both of
+Haskell's additions are the shape that hides this: one reads the source, the
+other mutates tokens.
+
 ## Board
 
 | Language   | Tier | Round | Builder       | Status | Grammar                | Reference                         |
@@ -221,7 +250,7 @@ about the corpus at least as much as about the package.
 | HTML       | T3   | 4     | grok+codex    | merged | tree_sitter_html       | prettier                          |
 | Ruby       | T4   | 5     | grok+Claude   | merged | tree_sitter_ruby       | syntax_tree 6.3.0                 |
 | Scheme     | T4   | 5     | grok+Claude   | merged | tree_sitter_scheme     | emacs `scheme-mode`               |
-| Haskell    | T4   | 5     | grok+Claude   | C      | tree_sitter_haskell    | ormolu 0.8.0.2                    |
+| Haskell    | T4   | 5     | grok+codex    | D      | tree_sitter_haskell    | ormolu 0.8.0.2                    |
 | Aven       | T4   | 6     | tbd           | -      | **none — see below**   | `aven fmt`                        |
 
 Grammar package names are the orchestrator's guess from PyPI naming convention.
