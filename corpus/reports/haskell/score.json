@@ -1,0 +1,155 @@
+{
+  "language": "haskell",
+  "submission": "lang-haskell",
+  "gates": {
+    "0-coverage": {
+      "pass": true,
+      "got": 16,
+      "of": 16,
+      "what": "formatted every corpus file at width 80"
+    },
+    "1-agreement": {
+      "pass": true,
+      "got": 16,
+      "of": 16,
+      "what": "rust and js byte-identical"
+    },
+    "2-idempotence": {
+      "pass": true,
+      "got": 16,
+      "of": 16,
+      "what": "fmt(fmt(x)) == fmt(x)"
+    },
+    "3-nondestruction": {
+      "pass": true,
+      "got": 16,
+      "of": 16,
+      "method": "default named-tree comparison with transparent parens",
+      "what": "meaning and comments preserved"
+    }
+  },
+  "measures": {
+    "4-overflow-lines": 5,
+    "5-size-gzip": {
+      "js-runtime": 14216,
+      "packages": 2040,
+      "total": 16256,
+      "per_language": {
+        "haskell": {
+          "package": 2040,
+          "with_runtime": 16256
+        }
+      }
+    },
+    "6-reference-agreement": {
+      "agreement": 11,
+      "accepted": 0,
+      "stale": 0,
+      "unreviewed": 3,
+      "defect": 0,
+      "excluded": 2,
+      "of": 14,
+      "agreement_fraction": 0.786,
+      "review_coverage": 0.786,
+      "review_threshold": 0.7,
+      "review_threshold_met": true,
+      "by_width": {
+        "80": {
+          "agreement": 11,
+          "accepted": 0,
+          "stale": 0,
+          "unreviewed": 3,
+          "defect": 0,
+          "of": 14,
+          "review_coverage": 0.786,
+          "review_threshold_met": true
+        }
+      }
+    }
+  },
+  "reference": {
+    "name": "ormolu 0.8.0.2",
+    "width": 80,
+    "width_policy": "fixed",
+    "width_gate_waived": true,
+    "overflow_lines": 4
+  },
+  "rust_js_parity": "identical",
+  "refusals": [],
+  "width_sweep": {
+    "from": 1,
+    "to": 120,
+    "agreement": 1920,
+    "of": 1920
+  },
+  "size_delta_vs_main": {
+    "js_runtime_gzip": {
+      "main": 14131,
+      "now": 14216,
+      "delta": 85
+    },
+    "package_gzip": 2040,
+    "per_edit": [
+      {
+        "commit": "adc0807",
+        "feature": "source-multiline predicate",
+        "construct": "source-broken lists and records with leading commas",
+        "before": 14131,
+        "after": 14173,
+        "delta": 42
+      },
+      {
+        "commit": "a727794",
+        "feature": "unconditional balanced paren option",
+        "construct": "flat single class constraint",
+        "before": 14173,
+        "after": 14216,
+        "delta": 43
+      }
+    ]
+  },
+  "runtime_edits": [
+    {
+      "feature": "source-multiline predicate",
+      "case": "The source gap before a leading record comma must become a break after the trailing comma; cursor-local source-break opcodes cannot both move the comma and recover that break."
+    },
+    {
+      "feature": "optional boolean on paren",
+      "case": "Ormolu inserts parentheses around a flat single class constraint; the prior paren policy inserted only on a group break."
+    }
+  ],
+  "harness_edits": [],
+  "divergences": [
+    {
+      "case": "comments.hs@80",
+      "id": "haskell/comments.hs@80",
+      "hash": "6ce494483a979397b57d56c8305ae8197da895413e9ddb5d68391387a72d5a7c",
+      "verdict": "design limit",
+      "reason": "Adjacent declarations cannot be compared by selected name, and the record comment is attached to the following field before package evaluation so its enclosing separator column is unavailable."
+    },
+    {
+      "case": "functions.hs@80",
+      "id": "haskell/functions.hs@80",
+      "hash": "b04bc003347926d9d907e0d4c5e5b5bd0926fdccd26be8899117391e57dbf05c",
+      "verdict": "design limit",
+      "reason": "The blank-line floor can dispatch on sibling kind but cannot compare adjacent function-name leaves to keep equations for one binding together."
+    },
+    {
+      "case": "signatures.hs@80",
+      "id": "haskell/signatures.hs@80",
+      "hash": "ece11d5b38739740c11f44e2d4ba73d22c792f9dfc70ac71db8a41dd7f010167",
+      "verdict": "design limit",
+      "reason": "The package cannot compare a signature's selected name with the following declaration's name, so a general top-level blank floor cannot preserve ormolu's signature-definition grouping."
+    }
+  ],
+  "excluded_files": [
+    {
+      "file": "import_merging.hs",
+      "reason": "ormolu collapses repeated imports of one module (duplicate dropped, lists unioned); gate 3 rejects with 4 named children became 2"
+    },
+    {
+      "file": "imports.hs",
+      "reason": "ormolu sorts import declarations; gate 3 rejects with leaf text 'Data' became 'Control'"
+    }
+  ]
+}
