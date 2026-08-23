@@ -107,8 +107,15 @@ fn content_end(src: &[u8], node: &Node) -> usize {
     at
 }
 
+/// Clamp `to` rather than answering 0 for a range that runs past the source.
+/// JS's loop clamps, so returning 0 here made the two runtimes disagree on any
+/// tree whose node ranges exceed the source -- the fifth instance of the
+/// `slice::get` returns `None` / `subarray` clamps asymmetry, and the same
+/// choice `Pred::SourceMultiline` already made. Generated corpus trees never
+/// exceed the source, so no gate could see it.
 fn newlines(src: &[u8], from: usize, to: usize) -> usize {
-    if from >= to || to > src.len() {
+    let to = to.min(src.len());
+    if from >= to {
         return 0;
     }
     src[from..to].iter().filter(|&&b| b == b'\n').count()

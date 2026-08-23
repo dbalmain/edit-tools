@@ -1608,3 +1608,39 @@ test("a fill separator breaks while a suffix is pending", () => {
   // The two comments stay two comments: nothing follows `# one` on its line.
   assert.ok(!/# one .*# two/.test(out), `comments merged onto one line: ${out}`);
 });
+
+test("a swallowed terminator is peeled once and only once", () => {
+  // FINDINGS 30, the JS mirror of eval.rs's
+  // a_swallowed_terminator_is_peeled_once_and_only_once. Same source, same
+  // rules; the two trees differ only in where the first node ends, which is all
+  // that separates markdown's atx_heading (swallows its line ending) from
+  // toml's table_array_element (swallows that AND the blank run its own rule
+  // already accounts for).
+  const pkg = {
+    format: "et-doc-rules/1",
+    indent: 2,
+    tokens: [],
+    rules: {
+      file: ["each", "named", ["seq", ["hard"], ["blank", 1]]],
+      item: ["child", "t:name"],
+      name: ["verbatim"],
+    },
+  };
+  const source = "a\n\nb";
+  const tree = (firstEnd, fileEnd = 4) => ({
+    type: "file", start: 0, end: fileEnd,
+    children: [
+      { type: "item", start: 0, end: firstEnd,
+        children: [{ type: "name", start: 0, end: 1, text: "a" }] },
+      { type: "item", start: 3, end: 4,
+        children: [{ type: "name", start: 3, end: 4, text: "b" }] },
+    ],
+  });
+  assert.equal(runOn(pkg, source, tree(2), 80), "a\n\nb\n");
+  assert.equal(runOn(pkg, source, tree(3), 80), "a\nb\n");
+  // A range past the end of source clamps rather than answering zero. Rust's
+  // `newlines` used to return 0 here while this loop clamped -- the fifth
+  // instance of the slice::get/subarray asymmetry, and invisible to every gate
+  // because generated corpus trees never exceed their source.
+  assert.equal(runOn(pkg, source, tree(2, 50), 80), "a\n\nb\n");
+});

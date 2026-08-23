@@ -2628,6 +2628,51 @@ try {{
     }
 
     #[test]
+    fn a_swallowed_terminator_is_peeled_once_and_only_once() {
+        // FINDINGS 30. Same source, same rules; the two items differ only in
+        // where the first node *ends*, which is the whole of what separates the
+        // two grammar shapes:
+        //   markdown `atx_heading`      swallows its line ending
+        //   toml `table_array_element`  swallows that ending AND the blank run,
+        //                               which its own rule already accounts for
+        // Peeling one terminator recovers the blank for the first and leaves
+        // the second alone. Peeling every trailing byte would double-count the
+        // second, which is what FINDINGS 30's proposed repair did.
+        let raw = json!({
+            "format": "et-doc-rules/1",
+            "indent": 2,
+            "tokens": [],
+            "rules": {
+                "file": ["each", "named", ["seq", ["hard"], ["blank", 1]]],
+                "item": ["child", "t:name"],
+                "name": ["verbatim"]
+            }
+        });
+        let pkg = || -> Package {
+            serde_json::from_value(raw.clone()).expect("swallow package parses")
+        };
+        let source = "a\n\nb";
+        let tree = |first_end: usize| {
+            json!({
+                "type": "file", "start": 0, "end": 4,
+                "children": [
+                    { "type": "item", "start": 0, "end": first_end, "children": [
+                        { "type": "name", "start": 0, "end": 1, "text": "a" }
+                    ]},
+                    { "type": "item", "start": 3, "end": 4, "children": [
+                        { "type": "name", "start": 3, "end": 4, "text": "b" }
+                    ]}
+                ]
+            })
+        };
+        // Swallows only its line ending: the source blank is real and recovered.
+        assert_eq!(run_on(&one(pkg()), source, tree(2), 80).expect("ok"), "a\n\nb\n");
+        // Swallows the line ending and the blank: the blank belongs to the node,
+        // and the gap must not claim it a second time.
+        assert_eq!(run_on(&one(pkg()), source, tree(3), 80).expect("ok"), "a\nb\n");
+    }
+
+    #[test]
     fn trailing_trivia_does_not_make_an_own_line_comment_a_suffix() {
         // tree-sitter-go's statement_list range includes the newline after
         // the last statement, so an own-line comment before `}` looks
