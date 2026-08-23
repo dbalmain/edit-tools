@@ -158,7 +158,7 @@ Two things to carry, both from stage D rather than from building:
 | XML        | T3   | 4     | grok+Claude   | D      | tree_sitter_xml        | prettier (`@prettier/plugin-xml`) |
 | HTML       | T3   | 4     | grok+codex    | merged | tree_sitter_html       | prettier                          |
 | Ruby       | T4   | 5     | grok+Claude   | merged | tree_sitter_ruby       | syntax_tree 6.3.0                 |
-| Scheme     | T4   | 5     | grok+Claude   | D      | tree_sitter_scheme     | emacs `scheme-mode`               |
+| Scheme     | T4   | 5     | grok+Claude   | merged | tree_sitter_scheme     | emacs `scheme-mode`               |
 | Haskell    | T4   | 5     | grok+Claude   | C      | tree_sitter_haskell    | ormolu 0.8.0.2                    |
 | Aven       | T4   | 6     | tbd           | -      | **none — see below**   | `aven fmt`                        |
 
