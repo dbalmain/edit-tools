@@ -1246,10 +1246,36 @@
       ]
     ],
     "record": [
-      "seq",
+      "when",
       [
-        "opt",
+        "count",
         "f:expression",
+        1
+      ],
+      [
+        "when",
+        [
+          "source-multiline"
+        ],
+        [
+          "seq",
+          [
+            "child",
+            "f:expression"
+          ],
+          [
+            "indent",
+            [
+              "hard"
+            ],
+            [
+              "use",
+              "bracketed",
+              "{",
+              "}"
+            ]
+          ]
+        ],
         [
           "seq",
           [
@@ -1258,12 +1284,22 @@
           ],
           [
             "sp"
+          ],
+          [
+            "use",
+            "bracketed",
+            "{",
+            "}"
           ]
         ]
       ],
       [
-        "opt",
-        "f:name",
+        "when",
+        [
+          "count",
+          "f:name",
+          1
+        ],
         [
           "seq",
           [
@@ -1280,11 +1316,7 @@
               "f:fields"
             ]
           ]
-        ]
-      ],
-      [
-        "opt",
-        "t:{",
+        ],
         [
           "use",
           "bracketed",
@@ -1338,11 +1370,14 @@
         "="
       ],
       [
-        "sp"
-      ],
-      [
-        "child",
-        "f:expression"
+        "indent",
+        [
+          "srcline"
+        ],
+        [
+          "child",
+          "f:expression"
+        ]
       ]
     ],
     "deriving": [
@@ -1469,12 +1504,8 @@
         "when",
         [
           "count",
-          "t:parens",
+          "t:apply",
           1
-        ],
-        [
-          "child",
-          "f:context"
         ],
         [
           "paren",
@@ -1483,6 +1514,10 @@
             "child",
             "f:context"
           ]
+        ],
+        [
+          "child",
+          "f:context"
         ]
       ],
       [
