@@ -277,6 +277,13 @@ whether the package is right. Budget your effort here:
      `Number.isInteger` admits values Rust's integer deserialisation rejects. A
      package that loads in one runtime and refuses in the other is a parity
      break, and it is invisible to every gate.
+     **And prove byte-identity directly rather than inferring it from the
+     scorecard.** Agreement counts can hold steady while output moves, because a
+     file that diverged before and diverges differently now still counts as one
+     divergence. Format every corpus tree at every width with the *parent*
+     bundle and with the new one and diff the two sets: FINDINGS 30's review
+     reported "442 identical, 26 diffs, all markdown", which is the claim
+     itself rather than a proxy for it.
 
    - **Is its _shape_ right?** A warranted capability can still be implemented
      too broadly, and gates cannot see that: every gate passes either way. Read

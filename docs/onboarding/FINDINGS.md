@@ -974,6 +974,29 @@ one is contextual and the other global.
 **Decide when:** a second language hits it. TOML's comment divergences are entry
 1, not this.
 
+### A leaf that swallows its own newline takes the next comment as a suffix
+
+Found by FINDINGS 30's stage D, 2026-08-23. Suffix-versus-own-line is decided by
+`share_line` in `attach.rs`, which measures from the previous item's **last
+child's** `end` — a repair made for tree-sitter-go's `statement_list`. A *leaf*
+has no last child, so it falls back to `node.end`, and a leaf whose range
+includes its own line ending therefore looks adjacent to whatever follows:
+
+```
+source   a
+         # c
+output   a # c        the comment became a suffix
+```
+
+The fix is to measure from `content_end`, the same function FINDINGS 30 built,
+which peels at most one terminator. It can only ever flip a *false* suffix to an
+own-line comment — it moves the counted range left and cannot invent a
+zero-newline span — so the direction is safe. It is still a behaviour change for
+any language whose last item is such a leaf followed by a comment, so it wants a
+Go and Rust rescore rather than being folded into an unrelated merge. Recorded
+here rather than under 30 because it is comment *placement*, which is this
+entry's subject.
+
 ## 10. A rule cannot vary by where its node appears
 
 **Status:** open · **Cost:** contextual · **Languages:** CSS, Go, YAML
@@ -3008,8 +3031,69 @@ the two halves of Lisp indentation and building either alone leaves Scheme short
 
 ## 30. A node that includes its terminating newline makes the gap measure short
 
-**Status:** open, from an **unfinished** slice · **Cost:** local · **Languages:**
-Markdown (blocks the blank-line policy outright), Ruby (survivable, worked around)
+**Status:** runtime half **built** (2026-08-23, **+389 B gzip**), package half
+**open** · **Cost:** local · **Languages:** Markdown (package still in flight),
+Ruby (survivable, worked around)
+
+### Built — and the repair this entry proposed was the wrong one
+
+The entry proposed walking back to the last non-whitespace byte of the previous
+item, and said so with the words "looks obviously right". Measured, it is wrong:
+it costs TOML **8 of its 23 agreements** and takes Markdown from 4 to 0. Two
+grammars swallow different amounts.
+
+```
+markdown  atx_heading         49..81   '…Alpha\n'        the line ending
+toml      table_array_element 69..169  '…"orange"]\n\n'  the ending AND the blank run
+```
+
+TOML's swallowed blank is already visible to its own rule as trailing blanks, so
+peeling it counts the same blank twice and every table grew a spurious one. What
+shipped strips **at most one** line terminator, plus the horizontal whitespace
+either side of it. One is the unique amount that separates "the node ate its line
+ending" from "the node also ate a blank something else owns" — zero leaves
+Markdown short, unbounded double-counts TOML.
+
+Re-measured with the bound: **every language except Markdown is byte-identical**
+to before. Stage D proved that directly rather than inferring it from agreement
+counts — parent bundle against new bundle over every corpus tree at both widths,
+442 identical, 26 diffs, all Markdown.
+
+Stage D also found a **fifth** instance of the `slice::get` returns `None` /
+`subarray` clamps asymmetry, pre-existing rather than introduced here: `newlines`
+answered 0 in Rust for a range past the source while the JS loop clamped. No gate
+could see it, because generated corpus trees never exceed their own source. Rust
+now clamps, matching `Pred::SourceMultiline`'s existing choice.
+
+### The half this entry did not have
+
+**A correct measurement is not a blank-line policy.** Markdown's `verbatim`
+blocks *emit* the swallowed terminator as content, so the separator's `hard` had
+already manufactured a line break by accident — which is why `links.md` and
+`strings.md` agreed *before* the blank policy and stopped agreeing after it.
+Correct measurement adds a second break on top. Reconstructed nodes such as
+`atx_heading` want the recovered newline; `verbatim` nodes do not, until the
+package stops emitting the terminator.
+
+The package answer is three separator shapes rather than one, because Markdown
+blocks end in three different places — a `verbatim` block past its own newline, a
+`section` wrapper past the blank that separates it from the next section, and a
+paragraph inside a block quote *at* its trailing `>` continuation. With those,
+Markdown reaches 10 of 24 and both gate 0 and gate 1 are perfect. That is a
+package fact, not a second runtime bound, and it is why this entry's remaining
+half is open rather than blocked.
+
+**`share_line` is entry 9, not this entry.** It still decides suffix-versus-own-line
+from the last child's `end`, a second spelling of "where does this item's content
+actually end". Unifying it onto `content_end` is the right spelling and can only
+ever flip a *false* suffix to an own-line comment, but it is a comment-attachment
+change and was deliberately left out so the "every language but Markdown is
+identical" measurement above stays true. Stage D found the leaf that heuristic
+misses: a leaf whose `end` includes its newline, followed by an own-line comment,
+prints `a # c` where the source had `a` and `# c` on separate lines. That is a
+live bug wanting its own slice and a Go/Rust rescore.
+
+### The entry as written before it was built
 
 `blank` measures the source gap between two items by counting newlines between
 the previous item's end and the next item's start. That is correct only if a
