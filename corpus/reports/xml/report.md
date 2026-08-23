@@ -3,19 +3,19 @@
 **Builder:** Claude (Opus 5), orchestrator session.
 
 ```
-gate 1 idempotence      pass    (28/28 xml pairs; 310/310 corpus-wide)
-gate 2 width            pass    16 overflow lines, against the reference's own 16
+gate 1 idempotence      pass    (30/30 xml pairs; 327/327 corpus-wide)
+gate 2 width            pass    19 overflow lines, against the reference's own 19
 gate 3 non-destruction  pass    (method: default, plus comment_kinds = ["Comment"])
-gate 4 agreement        13/13 @80,  13/13 @40   =  26/26
+gate 4 agreement        14/14 @80,  14/14 @40   =  28/28
 rust/js parity          identical on every file at every width
 refusals                none
-size                    package 847 B gzip; runtime 13610 B gzip; delta vs main 0 B
+size                    package 843 B gzip; runtime 14131 B gzip; delta vs main 0 B
 ```
 
 `./test.sh` green end to end. The slice is `packages/xml.json` plus this report
 and `score.json`. No runtime edit, no harness edit, no shared file touched.
 
-## The number is 26 of 26, and the interesting part is why that was possible
+## The number is 28 of 28, and stage D is why it is 28 and not 26
 
 Every comparable pair at both widths, zero divergences to classify, zero
 refusals, and an overflow count identical to the reference's. This is the first
@@ -101,6 +101,46 @@ has to be a fill **item**, not a fixed prefix, because at width 40 the first
 break falls after it and at 80 it does not. `FINDINGS` 8 was built for CSS and
 measured on JSON; this is a third language, on a construct neither of those
 resembles, and the whole rule is nine tokens.
+
+## What stage D found, and why the number moved
+
+codex-Sol returned **`escalate`**, and it was right to. The 26/26 was genuine
+for the corpus as it stood, and the corpus did not probe the XML declaration's
+own variants. Two focused probes against the pinned reference found that **both
+runtimes refused input prettier formats**:
+
+```
+<?xml version="1.0" standalone="no"?>          both runtimes refuse
+<?xml version='1.0' encoding='UTF-8'?>          both runtimes refuse
+```
+
+The cause was two hard-coded selectors in `XMLDecl`: `["tok", "\""]` for every
+quote, and `["child", "t:yes"]` for the standalone value. Neither is a design
+limit — the rule can consume whichever quote and whichever spelling the source
+used with the wildcard selector it should have used in the first place. **These
+were package bugs, and a refusal on valid input is worse than a divergence**: a
+divergence is visible in the score, and a refusal only shows up when someone
+formats a real file.
+
+Fixed, and `declaration.xml` now probes all three variants — single-quoted
+pseudo-attribute values, `standalone='no'`, and mixed quoting on one element.
+It matches byte-for-byte at both widths, which is why the number is 28/28 rather
+than 26/26: the corpus got two pairs bigger, not the package luckier.
+
+The reviewer also upheld the three claims this report makes, and tested them
+harder than the report did: content preservation reproduced against the pinned
+reference, the `element` indent placement verified at **width 12 and nesting
+depth six** — deeper and narrower than anything in the corpus — and `fill "*"`
+checked against an internal-subset probe to confirm it swallows nothing it
+should not.
+
+**The lesson is the one the reviewer put in its template delta, and it is
+sharper than mine.** My template delta said a builder reporting full agreement
+should have to say what the reference left alone. The reviewer's version is the
+one that would have caught this: a 100% report should also say **which
+alternatives to every hard-coded token or type selector are absent from the
+corpus, and what out-of-corpus probe tested them**. A perfect score is evidence
+about the corpus at least as much as about the package.
 
 ## The excluded file
 
