@@ -95,6 +95,14 @@
       [
         "use",
         "tight"
+      ],
+      [
+        "opt",
+        "t:block_continuation",
+        [
+          "child",
+          "t:block_continuation"
+        ]
       ]
     ],
     "fenced_code_block": [
@@ -139,6 +147,14 @@
       [
         "child",
         "t:fenced_code_block_delimiter"
+      ],
+      [
+        "opt",
+        "t:block_continuation",
+        [
+          "child",
+          "t:block_continuation"
+        ]
       ],
       [
         "hard"
