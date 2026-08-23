@@ -25,7 +25,7 @@
   "rules": {
     "document": [
       "use",
-      "blocks"
+      "hard_blocks"
     ],
     "section": [
       "use",
@@ -52,6 +52,9 @@
       [
         "child",
         "f:heading_content"
+      ],
+      [
+        "hard"
       ]
     ],
     "setext_heading": [
@@ -61,11 +64,11 @@
         "f:heading_content"
       ],
       [
-        "hard"
-      ],
-      [
         "child",
         "*"
+      ],
+      [
+        "hard"
       ]
     ],
     "block_quote": [
@@ -76,7 +79,7 @@
       ],
       [
         "use",
-        "blocks"
+        "hard_blocks"
       ]
     ],
     "list": [
@@ -136,6 +139,9 @@
       [
         "child",
         "t:fenced_code_block_delimiter"
+      ],
+      [
+        "hard"
       ]
     ],
     "info_string": [
@@ -175,6 +181,9 @@
             "t:link_title"
           ]
         ]
+      ],
+      [
+        "hard"
       ]
     ],
     "link_label": [
@@ -187,8 +196,14 @@
       "verbatim"
     ],
     "pipe_table": [
-      "each",
-      "named",
+      "seq",
+      [
+        "each",
+        "named",
+        [
+          "hard"
+        ]
+      ],
       [
         "hard"
       ]
@@ -225,9 +240,6 @@
       [
         "seq",
         [
-          "hard"
-        ],
-        [
           "blank",
           1
         ],
@@ -247,11 +259,26 @@
       [
         "seq",
         [
-          "hard"
-        ],
-        [
           "blank",
           1
+        ],
+        [
+          "opt",
+          "t:block_continuation",
+          [
+            "child",
+            "t:block_continuation"
+          ]
+        ]
+      ]
+    ],
+    "hard_blocks": [
+      "each",
+      "named",
+      [
+        "seq",
+        [
+          "hard"
         ],
         [
           "opt",
