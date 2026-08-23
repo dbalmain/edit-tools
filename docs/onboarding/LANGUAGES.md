@@ -117,6 +117,29 @@ version of the fix carried a five-line comment in `runtime-js/bundle.js` that
 cost **140 B gzip**, three times the fix, in a budget the builder had measured
 edit by edit. A reviewer editing a scored file is spending the same budget.
 
+## 2026-08-23 — where the Claude builder lane got to
+
+Ruby **merged** (codex stage D, `merge after fixes`). HTML **merged** (Claude
+stage D, since codex-Sol built it). Scheme built and **with codex now**. XML
+built at **26/26** and waiting for stage D. Haskell is a **WIP draft that
+refuses** — `wt/lang-haskell` `405873a` says so in its own commit message, and
+that branch must not be merged or scored until it is finished or reverted.
+Markdown is untouched.
+
+Two things to carry, both from stage D rather than from building:
+
+- **Parity is only measured over bytes the corpus contains.** HTML's `srcgap`
+  refuses a non-whitespace gap, and Rust and JS disagreed about vertical tab, so
+  one U+000B split the runtimes with every gate green. When a slice adds a
+  runtime capability with a **refusal condition**, diff the two conditions by
+  hand and build an input for each branch.
+- **A grammar's fidelity, not the IR, has been the binding constraint three
+  times running.** XML needs no runtime change and reaches full agreement
+  because its grammar keeps whitespace and distinguishes every construct; HTML
+  needed three additions because its grammar omits rendering-significant
+  whitespace; Scheme reaches 2/15 because its grammar deliberately erases the
+  distinctions its layout depends on.
+
 ## Board
 
 | Language   | Tier | Round | Builder       | Status | Grammar                | Reference                         |
@@ -135,8 +158,8 @@ edit by edit. A reviewer editing a scored file is spending the same budget.
 | XML        | T3   | 4     | grok+Claude   | D      | tree_sitter_xml        | prettier (`@prettier/plugin-xml`) |
 | HTML       | T3   | 4     | grok+codex    | merged | tree_sitter_html       | prettier                          |
 | Ruby       | T4   | 5     | grok+Claude   | merged | tree_sitter_ruby       | syntax_tree 6.3.0                 |
-| Scheme     | T4   | 5     | grok+Claude   | D      | tree_sitter_scheme     | emacs `scheme-mode`               |
-| Haskell    | T4   | 5     | grok-4.6      | B+     | tree_sitter_haskell    | ormolu 0.8.0.2                    |
+| Scheme     | T4   | 5     | grok+Claude   | merged | tree_sitter_scheme     | emacs `scheme-mode`               |
+| Haskell    | T4   | 5     | grok+Claude   | C      | tree_sitter_haskell    | ormolu 0.8.0.2                    |
 | Aven       | T4   | 6     | tbd           | -      | **none — see below**   | `aven fmt`                        |
 
 Grammar package names are the orchestrator's guess from PyPI naming convention.

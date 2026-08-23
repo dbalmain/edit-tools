@@ -1,0 +1,155 @@
+{
+  "format": "et-doc-rules/1",
+  "indent": 1,
+  "tokens": [
+    "(",
+    ")",
+    "#(",
+    "'",
+    "`",
+    ",",
+    ",@",
+    "\"",
+    "#;",
+    "#|",
+    "|#"
+  ],
+  "comments": [
+    "comment",
+    "block_comment"
+  ],
+  "descend": [],
+  "defs": {
+    "listform": [
+      "seq",
+      [
+        "tok",
+        [
+          "$",
+          0
+        ]
+      ],
+      [
+        "indent",
+        [
+          "indent",
+          [
+            "opt",
+            "named",
+            [
+              "seq",
+              [
+                "child",
+                "named"
+              ],
+              [
+                "opt",
+                "named",
+                [
+                  "seq",
+                  [
+                    "srcline"
+                  ],
+                  [
+                    "each",
+                    "named",
+                    [
+                      "srcline"
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ],
+          [
+            "srcsoft"
+          ],
+          [
+            "tok",
+            ")"
+          ]
+        ]
+      ]
+    ]
+  },
+  "rules": {
+    "program": [
+      "each",
+      "named",
+      [
+        "seq",
+        [
+          "srcline"
+        ],
+        [
+          "blank",
+          2
+        ]
+      ]
+    ],
+    "list": [
+      "use",
+      "listform",
+      "("
+    ],
+    "vector": [
+      "use",
+      "listform",
+      "#("
+    ],
+    "quote": [
+      "seq",
+      [
+        "tok",
+        "'"
+      ],
+      [
+        "child",
+        "*"
+      ]
+    ],
+    "quasiquote": [
+      "seq",
+      [
+        "tok",
+        "`"
+      ],
+      [
+        "child",
+        "*"
+      ]
+    ],
+    "unquote": [
+      "seq",
+      [
+        "tok",
+        ","
+      ],
+      [
+        "child",
+        "*"
+      ]
+    ],
+    "unquote_splicing": [
+      "seq",
+      [
+        "tok",
+        ",@"
+      ],
+      [
+        "child",
+        "*"
+      ]
+    ],
+    "string": [
+      "verbatim"
+    ],
+    "comment": [
+      "verbatim"
+    ],
+    "block_comment": [
+      "verbatim"
+    ]
+  },
+  "blank_cap": 0
+}
