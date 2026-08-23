@@ -906,6 +906,14 @@ retired.
 
 ## 9. Comment placement cannot see the surrounding syntax
 
+**Haskell is the second language, 2026-08-23**, which is this entry's own stated
+trigger. The record-comment hunk in `comments.hs` is exactly it: an own-line
+comment inside a record is bound to the following field by runtime attachment
+before any rule runs, so no package expression can place it. Unlike TOML's
+instance — which this entry correctly reassigns to entry 1 — Haskell's has
+nothing to do with rendered widths, so it is this entry and not that one.
+
+
 **Status:** open, **promoted** · **Cost:** contextual · **Languages:** CSS,
 YAML, Go — and TOML retrospectively
 
@@ -2074,8 +2082,33 @@ Two lessons worth keeping:
 
 ## 20. `paren` waits for a break; prettier adds parens that never wait
 
-**Status:** open · **Cost:** **local** · **Languages:** JavaScript (2 corpus
-files), TypeScript (unonboarded, same reference)
+**Status:** **built** (2026-08-23, by Haskell's stage C) · **Cost:** **+43 B
+gzip**, as predicted · **Languages:** JavaScript (2 corpus files, unclaimed),
+Haskell (built it), TypeScript (unonboarded, same reference)
+
+### Built, by the second reference to demand it
+
+`["paren", true, e…]` takes an optional leading boolean; the unflagged form is
+unchanged, so no existing package moved. ormolu is the second reference: it
+writes `class (Eq a) => Sized a` on a line that never breaks, and Haskell's stage
+D confirmed by test that the unflagged policy emits nothing in flat layout at any
+width, and that forcing the break to make `IfBreak` fire produces `(\n  a\n)` —
+the wrong bytes. So this entry's "no opcode can express that today" was exact.
+
+Stage D also verdicted the **shape**: the flag narrows rather than widens.
+`always` is ignored when `adopt` fires, both refusal branches are unchanged, and
+an unconditional wrap is easier to audit than a conditional one — which is what
+this entry argued when it asked for it.
+
+**JavaScript has not picked it up.** The pickup this entry priced (7/14 → 9/14
+at width 80) is still available, and it is not quite free: JavaScript's two
+affected divergences carry accepted ledger reviews, and changing the package
+makes those records **stale**, which is a hard scorer failure until a reviewer
+re-approves or retires them. The work is a package edit plus a re-review, not a
+package edit alone. `autoparen` also has no `always` form yet — only `paren`
+does — so check which of the two JavaScript actually needs before starting.
+
+### The original entry, as written before it was built
 
 `paren` and `autoparen` are the two sanctioned token-addition policies, and both
 are **break-driven**: they emit `(` `)` through `IfBreak`, so a group that fits
@@ -2876,3 +2909,76 @@ standing between that package and a blank-line policy, and the package cannot be
 finished around it. Recorded now, from `wt/lang-markdown`, which **refuses on two
 files and is not merged** — so this is a measured claim about the IR from a
 package that does not yet work, and should be re-confirmed when it does.
+
+## 31. A separator cannot compare a leaf across adjacent siblings
+
+**Status:** open · **Cost:** local · **Languages:** Haskell (all three of its
+accepted divergences reduce to this)
+
+`blank`'s operands are a list of node **kinds** and a list of literal
+**spellings**. Neither can express "these two siblings share a name".
+
+ormolu's top-level blank-line rule is the case, and stage D established it by
+experiment rather than by reading the report's assertion. **ormolu inserts a
+blank between every top-level pair except a same-name group:**
+
+```
+add a b = …                    -- function, name `add`
+                               -- blank inserted
+scale x = …                    -- function, name `scale`
+
+sigDiff :: Int                 -- signature, name `sigDiff`
+                               -- blank inserted
+other x = 1                    -- function,  name `other`
+
+same :: Int                    -- signature, name `same`
+same = 3                       -- function,  name `same`   -- NO blank
+```
+
+The discriminator is the **binding name**, not the node kind and not the source
+gap. A kind-based floor gets the first two right and the third wrong; preserving
+the source gap gets the third right and the first two wrong. The only package
+expression left is enumerating this corpus's identifiers in the spellings list,
+which is a rule that fires on one corpus and no other.
+
+What it wants is small and it is worth saying precisely, because it is easy to
+mistake for something expensive: a **separator predicate that compares a selected
+leaf across the two siblings it sits between**. No rendered widths, so it is not
+entry 1. No ancestor state and no dispatch change, so it is not entry 10. No
+second pass. It is one comparison, available at the point the separator is
+already being evaluated.
+
+**Decide when:** a second language hits it. Haskell's builder asked for it
+independently of the reviewer, which is worth one line of corroboration but not
+two languages.
+
+## 32. Layout selected by the source's span, not by width or by one break
+
+**Status:** **built** (2026-08-23, `source-multiline`, **+42 B gzip**) ·
+**Languages:** Haskell (built it), JavaScript (prettier's `objectWrap`, named but
+not yet claimed)
+
+A reference class no entry named: **the layout of a container is decided by
+whether its source spanned more than one line**, as a whole, rather than by
+whether it fits a width or by where a single break sat.
+
+The `src*` family mirrors **one break position** — did the source break *here*,
+before the child under the cursor. That is the wrong question for ormolu, which
+asks whether the author broke the container *anywhere* inside it. A `group` is
+the other candidate and is wrong by construction rather than by degree: it is
+width-driven and ormolu is width-inert.
+
+Stage D checked the shape by building the inputs that separate "the author broke
+this container" from "there is a newline somewhere in the span" — a nested broken
+list inside a flat outer list, a block comment carrying an embedded newline, a
+Haskell string gap, and a newline inside the tested node but outside its braces.
+**ormolu goes multiline on all four**, so the implemented predicate and the
+reference's rule are the same rule, and the span-based spelling is faithful
+rather than approximate.
+
+**This is prettier's `objectWrap: preserve` too**, which JavaScript's stage B
+named as a trap: an object literal whose source has a newline after `{` stays
+expanded even when it fits flat, and a plain width-driven `group` is exactly the
+`collapse` setting a naive package implements. JavaScript can pass its corpus
+with a group and diverge on real input. Now that the capability exists, that is a
+package edit and a re-review away.
