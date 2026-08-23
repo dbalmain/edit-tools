@@ -2826,3 +2826,53 @@ changing a single rule**.
 change to how one string is built, and it converts a measured near-miss into a
 pass. (a) with entry 10, since a head table and a column anchor are the two
 halves of Lisp indentation and building either alone leaves Scheme short.
+
+## 30. A node that includes its terminating newline makes the gap measure short
+
+**Status:** open, from an **unfinished** slice · **Cost:** local · **Languages:**
+Markdown (blocks the blank-line policy outright), Ruby (survivable, worked around)
+
+`blank` measures the source gap between two items by counting newlines between
+the previous item's end and the next item's start. That is correct only if a
+node's range stops at its content. When a grammar lets a block node **swallow
+the newline that ends its own line**, every gap after such a node measures one
+newline short, and `blank` cannot tell "the source had a blank line here" from
+"the source had none".
+
+Markdown is where it bites hardest. In `headings.md` the `atx_heading` for
+`# Alpha` spans 49–81 while its `inline` ends at 80, so the node covers the `\n`
+that ends the line; the blank line before `## Bravo` is then measured as zero.
+Both available policies are wrong, in opposite directions:
+
+- `["blank", 1]` under-inserts wherever a block ate its own newline — most of
+  `headings.md`.
+- `["blank", 1, [block types]]` makes the cap a floor and fixes those, then
+  over-inserts in `links.md` and `strings.md`, where adjacent blocks genuinely
+  have no blank and prettier keeps none. **Both files matched before the floor
+  and stopped matching after it**, which is the cleanest demonstration available
+  that this is not a policy choice.
+
+No package expression distinguishes the two cases: both present to `blank` as a
+zero-newline gap.
+
+**Ruby hit the same shape and survived it.** A heredoc body is a program-level
+sibling that begins with its own newline, so a statement separator emitting
+`hard` manufactured a blank line. There the fix was in reach — `srcsoft` mirrors
+the source's own break instead of forcing one, and the `;` branch supplies its
+own `hard` — because Ruby needed to *suppress* a break rather than *discover* a
+missing one. Markdown needs the missing one, and mirroring cannot invent it.
+
+**What it would take.** Either a gap measurement that walks to the last
+non-whitespace byte of the previous item rather than trusting `node.end`, or an
+opcode that reads the source gap the way `srcgap` does and exposes its newline
+count to `blank`. The first is a runtime correction with no package surface and
+would change nothing for any language whose grammar does not do this; the second
+is a new opcode. The first looks obviously right and that is exactly why it
+wants measuring before it is built — `srcgap` already reads the same bytes, so
+the two are closer than they look.
+
+**Decide when:** whenever Markdown is picked up again. It is the one thing
+standing between that package and a blank-line policy, and the package cannot be
+finished around it. Recorded now, from `wt/lang-markdown`, which **refuses on two
+files and is not merged** — so this is a measured claim about the IR from a
+package that does not yet work, and should be re-confirmed when it does.
