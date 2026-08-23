@@ -135,8 +135,15 @@
         "opt",
         "t:block_continuation",
         [
-          "child",
-          "t:block_continuation"
+          "seq",
+          [
+            "blank",
+            1
+          ],
+          [
+            "child",
+            "t:block_continuation"
+          ]
         ]
       ]
     ],
@@ -155,34 +162,6 @@
         ]
       ],
       [
-        "opt",
-        "t:block_continuation",
-        [
-          "seq",
-          [
-            "hard"
-          ],
-          [
-            "child",
-            "t:block_continuation"
-          ]
-        ]
-      ],
-      [
-        "opt",
-        "named",
-        [
-          "seq",
-          [
-            "srcgap"
-          ],
-          [
-            "child",
-            "named"
-          ]
-        ]
-      ],
-      [
         "when",
         [
           "count",
@@ -190,15 +169,65 @@
           1
         ],
         [
-          "srcgap"
+          "seq",
+          [
+            "opt",
+            "t:block_continuation",
+            [
+              "seq",
+              [
+                "hard"
+              ],
+              [
+                "child",
+                "t:block_continuation"
+              ]
+            ]
+          ],
+          [
+            "opt",
+            "named",
+            [
+              "seq",
+              [
+                "srcgap"
+              ],
+              [
+                "child",
+                "named"
+              ]
+            ]
+          ],
+          [
+            "srcgap"
+          ],
+          [
+            "child",
+            "t:fenced_code_block_delimiter"
+          ]
         ],
         [
-          "hard"
+          "prefix",
+          "t:block_continuation",
+          [
+            "hard"
+          ],
+          [
+            "opt",
+            "named",
+            [
+              "child",
+              "named"
+            ]
+          ],
+          [
+            "hard"
+          ],
+          [
+            "child",
+            "t:fenced_code_block_delimiter"
+          ]
         ]
-      ],
-      [
-        "child",
-        "t:fenced_code_block_delimiter"
       ],
       [
         "opt",
