@@ -627,9 +627,12 @@ impl<'a> Ctx<'a> {
             Pred::All(sel, kinds) => self.all_kinds(sel, kinds, f.pkg),
             Pred::Text(path, spellings) => path_has_text(self.node, path, spellings, f.pkg),
             Pred::Multiline(path) => path_has_multiline(self.node, path, f.pkg),
+            // Clamp the end rather than failing the lookup: `Uint8Array::subarray`
+            // clamps, so a tree whose node range runs past the source would
+            // otherwise answer `false` here and `true` in JavaScript.
             Pred::SourceMultiline => f
                 .src
-                .get(self.node.start..self.node.end)
+                .get(self.node.start..self.node.end.min(f.src.len()))
                 .is_some_and(|source| source.contains(&b'\n') || source.contains(&b'\r')),
         }
     }
@@ -2107,6 +2110,16 @@ try {{
         });
         assert_eq!(run_on(&pkg, "a\nb", root.clone(), 80).expect("broken"), "a\nb\n");
         assert_eq!(run_on(&pkg, "a b", root, 80).expect("flat"), "a b\n");
+
+        // A range running past the source clamps, matching `subarray` in JS.
+        let past = json!({
+            "type": "file", "start": 0, "end": 99,
+            "children": [
+                { "type": "name", "start": 0, "end": 1, "text": "a" },
+                { "type": "name", "start": 2, "end": 3, "text": "b" }
+            ]
+        });
+        assert_eq!(run_on(&pkg, "a\nb", past, 80).expect("clamped"), "a\nb\n");
     }
 
     #[test]

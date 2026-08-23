@@ -160,6 +160,13 @@ test("source-multiline predicate inspects the node range", () => {
   };
   assert.equal(runOn(pkg, "a\nb", root, 80), "a\nb\n");
   assert.equal(runOn(pkg, "a b", root, 80), "a b\n");
+
+  // A range running past the source clamps; Rust clamps its slice to match.
+  const past = {
+    type: "file", start: 0, end: 99,
+    children: [span("name", 0, 1, "a"), span("name", 2, 3, "b")],
+  };
+  assert.equal(runOn(pkg, "a\nb", past, 80), "a\nb\n");
 });
 
 test("srcgap preserves horizontal space and safely breaks it", () => {
