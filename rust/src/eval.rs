@@ -412,10 +412,7 @@ impl<'a> Ctx<'a> {
         }
         let flat = std::str::from_utf8(bytes)
             .map_err(|_| self.refuse("UTF-8 whitespace in a `srcgap`"))?;
-        Ok(Doc::IfBreak(
-            Box::new(Doc::Hard),
-            Box::new(Doc::text(flat)),
-        ))
+        Ok(Doc::IfBreak(Box::new(Doc::Hard), Box::new(Doc::text(flat))))
     }
 
     /// The trailing-separator policy for a source-driven list: adopt a
@@ -702,7 +699,8 @@ impl<'a> Ctx<'a> {
         let mut inner: Vec<Ctx<'a>> = spine.iter().map(|n| Ctx::new(n, f)).collect();
 
         let mut parts = Vec::new();
-        let mut skipped_comments = Vec::new();
+        let mut outer_skipped = None;
+        let mut skipped_comments: Vec<Option<Doc>> = (0..inner.len()).map(|_| None).collect();
         match inner.last_mut() {
             None => parts.push(self.child(&left, f)?),
             Some(deepest) => {
@@ -713,17 +711,22 @@ impl<'a> Ctx<'a> {
                 // unions park a mid-union comment on the nested left after the
                 // first format; emitting it here would put it on the first
                 // member.
-                skipped_comments.push(self.skip(&left, f)?);
+                outer_skipped = Some(self.skip(&left, f)?);
                 for i in 0..inner.len().saturating_sub(1) {
-                    skipped_comments.push(inner[i].skip(&left, f)?);
+                    skipped_comments[i] = Some(inner[i].skip(&left, f)?);
                 }
             }
         }
         for i in (0..inner.len()).rev() {
+            if let Some(comments) = skipped_comments[i].take() {
+                parts.push(comments);
+            }
             parts.push(inner[i].eval(sep, f)?);
             parts.push(inner[i].child(&right, f)?);
         }
-        parts.extend(skipped_comments);
+        if let Some(comments) = outer_skipped {
+            parts.push(comments);
+        }
         parts.push(self.eval(sep, f)?);
         parts.push(self.child(&right, f)?);
 
@@ -742,7 +745,7 @@ impl<'a> Ctx<'a> {
     /// Step over a child the chain emits elsewhere. Leading comments still
     /// refuse — those belong on the inner context — but a suffix or after
     /// comment on the skipped node is returned so the caller can emit it
-    /// after the nested chain (FINDINGS 13's union-comment round-trip).
+    /// after the nested chain (the fieldless spine from FINDINGS 23).
     fn skip(&mut self, sel: &Sel, f: &Fmt<'a>) -> Result<Doc, Refusal> {
         let at = self.take(sel, f)?;
         if !self.items[at].lead.is_empty() {
@@ -811,16 +814,15 @@ fn node_matches(node: &Node, sel: &Sel, pkg: &Package) -> bool {
 }
 
 fn tightness(pkg: &Package, node: &Node) -> i64 {
-    node.child_with_field(&pkg.flatten_fields.operator)
-        .and_then(|op| op.text.as_deref())
-        .or_else(|| {
-            node.children.iter().find_map(|child| {
-                if pkg.is_token(&child.kind) {
-                    child.text.as_deref()
-                } else {
-                    None
-                }
-            })
+    if let Some(op) = node.child_with_field(&pkg.flatten_fields.operator) {
+        return op.text.as_deref().map_or(0, |text| pkg.tightness(text));
+    }
+    node.children
+        .iter()
+        .find_map(|child| {
+            pkg.is_token(&child.kind)
+                .then_some(child.text.as_deref())
+                .flatten()
         })
         .map_or(0, |op| pkg.tightness(op))
 }
@@ -1668,11 +1670,144 @@ try {{
             ],
         });
         let got = run_on(&one(pkg), source, tree, 80).expect("ok");
-        assert!(
-            got.contains("/* c */"),
-            "comment was dropped: {got:?}"
-        );
+        assert!(got.contains("/* c */"), "comment was dropped: {got:?}");
         assert!(got.contains("ccc"), "{got:?}");
+    }
+
+    #[test]
+    fn flatten_emits_skipped_suffix_comments_at_their_own_spine_levels() {
+        let pkg: Package = serde_json::from_value(json!({
+            "format": "et-doc-rules/1",
+            "indent": 2,
+            "tokens": ["|"],
+            "comments": ["comment"],
+            "rules": {
+                "sum": ["group", ["flatten", "sum",
+                    ["seq", ["line"], ["tok", "|"], ["sp"]]]]
+            },
+        }))
+        .expect("package");
+        let source = "aaa | bbb /* one */ | ccc /* two */ | ddd";
+        let first = json!({
+            "type": "sum", "start": 0, "end": 9,
+            "children": [
+                span("name", 0, 3, "aaa"),
+                span("|", 4, 5, "|"),
+                span("name", 6, 9, "bbb"),
+            ],
+        });
+        let second = json!({
+            "type": "sum", "start": 0, "end": 25,
+            "children": [
+                first,
+                span("comment", 10, 19, "/* one */"),
+                span("|", 20, 21, "|"),
+                span("name", 22, 25, "ccc"),
+            ],
+        });
+        let root = json!({
+            "type": "sum", "start": 0, "end": source.len(),
+            "children": [
+                second,
+                span("comment", 26, 35, "/* two */"),
+                span("|", 36, 37, "|"),
+                span("name", 38, 41, "ddd"),
+            ],
+        });
+        assert_eq!(
+            run_on(&one(pkg), source, root, 80).expect("ok"),
+            "aaa\n| bbb /* one */\n| ccc /* two */\n| ddd\n"
+        );
+    }
+
+    #[test]
+    fn flatten_fieldless_fallback_keeps_the_leading_comment_refusal() {
+        let pkg: Package = serde_json::from_value(json!({
+            "format": "et-doc-rules/1",
+            "indent": 2,
+            "tokens": ["|"],
+            "comments": ["comment"],
+            "rules": {
+                "sum": ["group", ["flatten", "sum",
+                    ["seq", ["line"], ["tok", "|"], ["sp"]]]]
+            },
+        }))
+        .expect("package");
+        let left = fieldless_chain(&[("|", "bbb")], "aaa");
+        let root = json!({
+            "type": "sum", "start": 0, "end": 0,
+            "children": [leaf("comment", "/* lead */"), left, leaf("|", "|"), leaf("name", "ccc")],
+        });
+        let err = run(&one(pkg), root, 80).expect_err("must refuse");
+        assert!(
+            err.0.contains("no leading comment on an operand"),
+            "{}",
+            err.0
+        );
+    }
+
+    #[test]
+    fn flatten_emits_an_after_comment_from_a_skipped_fielded_operand() {
+        let pkg: Package = serde_json::from_value(json!({
+            "format": "et-doc-rules/1",
+            "indent": 2,
+            "tokens": ["|", "rhs"],
+            "comments": ["comment"],
+            "precedence": { "|": 1 },
+            "rules": {
+                "sum": ["group", ["flatten", "sum",
+                    ["seq", ["line"], ["child", "f:operator"], ["sp"]]]]
+            },
+        }))
+        .expect("package");
+        let source = "aaa | bbb\n/* after */\n| rhs";
+        let mut left = chain(&[("|", "bbb")], "aaa");
+        left["field"] = json!("left");
+        let root = json!({
+            "type": "sum", "start": 0, "end": source.len(),
+            "children": [
+                left,
+                span("comment", 10, 21, "/* after */"),
+                {"type": "|", "start": 22, "end": 23, "text": "|", "field": "operator"},
+                {"type": "rhs", "start": 24, "end": 27, "text": "rhs", "field": "right"},
+            ],
+        });
+        assert_eq!(
+            run_on(&one(pkg), source, root, 80).expect("ok"),
+            "aaa\n| bbb\n/* after */\n| rhs\n"
+        );
+    }
+
+    #[test]
+    fn flatten_does_not_infer_tightness_past_a_fielded_operator_without_text() {
+        let pkg: Package = serde_json::from_value(json!({
+            "format": "et-doc-rules/1",
+            "indent": 2,
+            "tokens": ["+", "*"],
+            "precedence": { "+": 5, "*": 4 },
+            "rules": {
+                "sum": ["group", ["flatten", "sum",
+                    ["seq", ["line"], ["child", "f:operator"], ["child", "*"], ["sp"]]]],
+                "marker": []
+            },
+        }))
+        .expect("package");
+        let marked = |mut left: serde_json::Value, op: &str, rhs: &str| {
+            left["field"] = json!("left");
+            let mut right = leaf("name", rhs);
+            right["field"] = json!("right");
+            json!({
+                "type": "sum", "start": 0, "end": 0,
+                "children": [
+                    left,
+                    {"type": "marker", "start": 0, "end": 0, "field": "operator", "children": []},
+                    leaf(op, op),
+                    right,
+                ],
+            })
+        };
+        let tree = marked(marked(leaf("name", "aaa"), "*", "bbb"), "+", "ccc");
+        assert_eq!(run(&one(pkg), tree, 9).expect("ok"), "aaa\n* bbb\n+ ccc\n");
     }
 
     #[test]
@@ -2172,7 +2307,10 @@ try {{
                 { "type": "word", "start": 0, "end": 0, "text": "x" }
             ]
         });
-        assert_eq!(run(&pkg, direct, 80).expect("direct path matches"), "block x\n");
+        assert_eq!(
+            run(&pkg, direct, 80).expect("direct path matches"),
+            "block x\n"
+        );
 
         let nested = json!({
             "type": "file", "start": 0, "end": 0,
@@ -2216,7 +2354,10 @@ try {{
                 { "type": "word", "start": 0, "end": 0, "text": "x" }
             ]
         });
-        assert_eq!(run(&pkg, root, 80).expect("multiline path matches"), "a\nb x\n");
+        assert_eq!(
+            run(&pkg, root, 80).expect("multiline path matches"),
+            "a\nb x\n"
+        );
     }
 
     #[test]
@@ -2235,7 +2376,10 @@ try {{
                 { "type": "name", "start": 2, "end": 3, "text": "b" }
             ]
         });
-        assert_eq!(run_on(&pkg, "a\nb", root.clone(), 80).expect("broken"), "a\nb\n");
+        assert_eq!(
+            run_on(&pkg, "a\nb", root.clone(), 80).expect("broken"),
+            "a\nb\n"
+        );
         assert_eq!(run_on(&pkg, "a b", root, 80).expect("flat"), "a b\n");
 
         // A range running past the source clamps, matching `subarray` in JS.
@@ -2261,7 +2405,10 @@ try {{
                 { "type": "name", "start": 3, "end": 4, "text": "b" }
             ]
         });
-        assert_eq!(run_on(&pkg, "a  b", root.clone(), 80).expect("flat"), "a  b\n");
+        assert_eq!(
+            run_on(&pkg, "a  b", root.clone(), 80).expect("flat"),
+            "a  b\n"
+        );
         assert_eq!(run_on(&pkg, "a  b", root, 1).expect("broken"), "a\nb\n");
 
         let omitted = json!({

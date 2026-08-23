@@ -1380,18 +1380,20 @@ class Ctx {
     const inner = spine.map((n) => new Ctx(this.fmt, n));
 
     const parts = [];
-    const skippedComments = [];
+    let outerSkipped;
+    const skippedComments = Array(inner.length).fill(undefined);
     if (inner.length === 0) {
       parts.push(this.child(left));
     } else {
       parts.push(inner[inner.length - 1].child(left));
-      skippedComments.push(this.skip(left));
-      for (let i = 0; i < inner.length - 1; i++) skippedComments.push(inner[i].skip(left));
+      outerSkipped = this.skip(left);
+      for (let i = 0; i < inner.length - 1; i++) skippedComments[i] = inner[i].skip(left);
     }
     for (let i = inner.length - 1; i >= 0; i--) {
+      if (skippedComments[i] !== undefined) parts.push(skippedComments[i]);
       parts.push(inner[i].eval(sep), inner[i].child(right));
     }
-    parts.push(...skippedComments);
+    if (outerSkipped !== undefined) parts.push(outerSkipped);
     parts.push(this.eval(sep), this.child(right));
 
     for (const ctx of inner) {

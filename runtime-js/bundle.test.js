@@ -778,6 +778,103 @@ test("flatten keeps a suffix comment on a skipped left", () => {
   assert.match(got, /ccc/);
 });
 
+test("flatten emits skipped suffix comments at their own spine levels", () => {
+  const pkg = {
+    format: "et-doc-rules/1",
+    indent: 2,
+    tokens: ["|"],
+    comments: ["comment"],
+    rules: {
+      sum: ["group", ["flatten", "sum", ["seq", ["line"], ["tok", "|"], ["sp"]]]],
+    },
+  };
+  const source = "aaa | bbb /* one */ | ccc /* two */ | ddd";
+  const first = {
+    type: "sum", start: 0, end: 9,
+    children: [span("name", 0, 3, "aaa"), span("|", 4, 5, "|"), span("name", 6, 9, "bbb")],
+  };
+  const second = {
+    type: "sum", start: 0, end: 25,
+    children: [first, span("comment", 10, 19, "/* one */"), span("|", 20, 21, "|"), span("name", 22, 25, "ccc")],
+  };
+  const root = {
+    type: "sum", start: 0, end: source.length,
+    children: [second, span("comment", 26, 35, "/* two */"), span("|", 36, 37, "|"), span("name", 38, 41, "ddd")],
+  };
+  assert.equal(runOn(pkg, source, root, 80), "aaa\n| bbb /* one */\n| ccc /* two */\n| ddd\n");
+});
+
+test("flatten fieldless fallback keeps the leading-comment refusal", () => {
+  const pkg = {
+    format: "et-doc-rules/1",
+    indent: 2,
+    tokens: ["|"],
+    comments: ["comment"],
+    rules: {
+      sum: ["group", ["flatten", "sum", ["seq", ["line"], ["tok", "|"], ["sp"]]]],
+    },
+  };
+  const left = fieldlessChain([["|", "bbb"]], "aaa");
+  const root = {
+    type: "sum", start: 0, end: 0,
+    children: [leaf("comment", "/* lead */"), left, leaf("|", "|"), leaf("name", "ccc")],
+  };
+  assert.throws(
+    () => run(pkg, root, 80),
+    (err) => err instanceof Refusal && /no leading comment on an operand/.test(err.message),
+  );
+});
+
+test("flatten emits an after-comment from a skipped fielded operand", () => {
+  const pkg = {
+    format: "et-doc-rules/1",
+    indent: 2,
+    tokens: ["|", "rhs"],
+    comments: ["comment"],
+    precedence: { "|": 1 },
+    rules: {
+      sum: ["group", ["flatten", "sum", ["seq", ["line"], ["child", "f:operator"], ["sp"]]]],
+    },
+  };
+  const source = "aaa | bbb\n/* after */\n| rhs";
+  const left = chain([["|", "bbb"]], "aaa");
+  left.field = "left";
+  const root = {
+    type: "sum", start: 0, end: source.length,
+    children: [
+      left,
+      span("comment", 10, 21, "/* after */"),
+      { ...span("|", 22, 23, "|"), field: "operator" },
+      { ...span("rhs", 24, 27, "rhs"), field: "right" },
+    ],
+  };
+  assert.equal(runOn(pkg, source, root, 80), "aaa\n| bbb\n/* after */\n| rhs\n");
+});
+
+test("flatten does not infer tightness past a fielded operator without text", () => {
+  const pkg = {
+    format: "et-doc-rules/1",
+    indent: 2,
+    tokens: ["+", "*"],
+    precedence: { "+": 5, "*": 4 },
+    rules: {
+      sum: ["group", ["flatten", "sum", ["seq", ["line"], ["child", "f:operator"], ["child", "*"], ["sp"]]]],
+      marker: [],
+    },
+  };
+  const marked = (left, op, rhs) => ({
+    type: "sum", start: 0, end: 0,
+    children: [
+      { ...left, field: "left" },
+      { type: "marker", start: 0, end: 0, field: "operator", children: [] },
+      leaf(op, op),
+      { ...leaf("name", rhs), field: "right" },
+    ],
+  });
+  const tree = marked(marked(leaf("name", "aaa"), "*", "bbb"), "+", "ccc");
+  assert.equal(run(pkg, tree, 9), "aaa\n* bbb\n+ ccc\n");
+});
+
 test("flatten_fields refuses a bad header", () => {
   for (const [value, message] of [
     [["left", "operator", "right"], /`flatten_fields` must be an object, got \["left","operator","right"\]/],
