@@ -193,6 +193,12 @@ function validateExpr(value) {
     case "cellblock":
       rest.forEach(validateExpr);
       return;
+    case "prefix": {
+      if (rest.length < 1) throw new Refusal("`prefix` takes a selector and a body");
+      parseSelector(rest[0]);
+      rest.slice(1).forEach(validateExpr);
+      return;
+    }
     case "paren": {
       const body = typeof rest[0] === "boolean" ? rest.slice(1) : rest;
       body.forEach(validateExpr);
@@ -1097,6 +1103,8 @@ class Ctx {
           this.fmt.indentUnit,
           concat([...rest.map((e) => this.eval(e)), this.flushAfter()]),
         );
+      case "prefix":
+        return this.prefix(parseSelector(rest[0]), rest.slice(1));
       case "line":
         return line;
       case "soft":
@@ -1291,6 +1299,30 @@ class Ctx {
    *  token must be declared punctuation -- dropping a named node would delete
    *  meaning, not spelling -- and it must carry no comment, since a dropped
    *  token takes its trivia with it. */
+  /** Indent the body by the selected child's source text, consuming it, so a
+   *  host continuation marker survives onto lines an injected guest invents
+   *  (FINDINGS 24). Zero matches is an empty prefix consuming nothing. */
+  prefix(sel, body) {
+    let unit = "";
+    if (this.matches(this.cursor, sel)) {
+      const item = this.items[this.cursor];
+      if (decorated(item)) throw this.refuse("no comment on the marker a `prefix` consumes");
+      const node = item.node;
+      if (node.children !== undefined && node.children.length > 0) {
+        throw this.refuse("a leaf as the marker a `prefix` consumes");
+      }
+      if (node.end > this.fmt.bytes.length) {
+        throw new Refusal(`\`${node.type}\` runs past the source`);
+      }
+      unit = this.fmt.decoder.decode(this.fmt.bytes.subarray(node.start, node.end));
+      if (unit.includes("\n") || unit.includes("\r")) {
+        throw this.refuse("a single-line marker for `prefix`");
+      }
+      this.cursor++;
+    }
+    return indent(unit, concat([...body.map((e) => this.eval(e)), this.flushAfter()]));
+  }
+
   drop(want) {
     const item = this.items[this.cursor];
     if (!item || item.node.text !== want) return nil;

@@ -590,6 +590,14 @@ pub enum Expr {
     /// Wrap a grouped declaration so the align pass full-tabwrites it.
     /// Standalone specs of the same node type stay comment-column only.
     CellBlock(Vec<Expr>),
+    /// Indent the body by the *source text* of the selected child rather than
+    /// by the package's own indent unit, and consume that child. A host
+    /// construct that carries a per-line continuation marker -- markdown's
+    /// `block_continuation` -- can put it back on every line the body emits,
+    /// including lines invented by an injected guest that has never heard of
+    /// the host (FINDINGS 24). Zero matches is an empty prefix and consumes
+    /// nothing, so one rule serves nested and top-level occurrences alike.
+    Prefix(Sel, Vec<Expr>),
 }
 
 impl TryFrom<Value> for Expr {
@@ -628,6 +636,13 @@ impl TryFrom<Value> for Expr {
                 Ok(Expr::Group(max, rest(parts)?))
             }
             "indent" => Ok(Expr::Indent(rest(parts)?)),
+            "prefix" => {
+                if parts.is_empty() {
+                    return Err("`prefix` takes a selector and a body".to_owned());
+                }
+                let sel = selector(&parts.remove(0))?;
+                Ok(Expr::Prefix(sel, rest(parts)?))
+            }
             "paren" => {
                 let always = match parts.first() {
                     Some(Value::Bool(always)) => {

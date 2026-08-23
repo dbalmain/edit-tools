@@ -329,6 +329,92 @@ test("an unknown node type refuses rather than guessing", () => {
   assert.throws(() => run(toy({}), list(["a"], false), 80), /no rule for node type `list`/);
 });
 
+const prefixPkg = (rules) => ({
+  format: "et-doc-rules/1",
+  indent: 2,
+  tokens: [],
+  rules,
+});
+
+// The whole point of entry 24: a marker the host owns lands on every line the
+// body emits, not just the first one the source already had.
+test("prefix puts the marker's text on every line the body emits", () => {
+  const pkg = prefixPkg({
+    block: ["seq", ["child", "t:word"], ["prefix", "t:marker", ["hard"], ["each", "t:word", ["hard"]]]],
+  });
+  const root = {
+    type: "block",
+    start: 0,
+    end: 2,
+    children: [leaf("word", "head"), { type: "marker", start: 0, end: 2 }, leaf("word", "a"), leaf("word", "b")],
+  };
+  assert.strictEqual(runOn(pkg, "> x", root, 80), "head\n> a\n> b\n");
+});
+
+// Zero matches is an empty prefix that consumes nothing, so one rule serves a
+// fence at the top of a document and one four lists deep.
+test("prefix without its marker is an empty prefix and consumes nothing", () => {
+  const pkg = prefixPkg({ block: ["prefix", "t:marker", ["each", "t:word", ["hard"]]] });
+  const root = { type: "block", start: 0, end: 0, children: [leaf("word", "a"), leaf("word", "b")] };
+  assert.strictEqual(runOn(pkg, "> x", root, 80), "a\nb\n");
+});
+
+// Prefixes concatenate the way indent levels do, so a fence inside a quoted
+// list carries both markers.
+test("prefixes nest and concatenate", () => {
+  const pkg = prefixPkg({
+    block: ["prefix", "t:outer", ["prefix", "t:inner", ["each", "t:word", ["hard"]]]],
+  });
+  const root = {
+    type: "block",
+    start: 0,
+    end: 0,
+    children: [
+      { type: "outer", start: 0, end: 2 },
+      { type: "inner", start: 2, end: 4 },
+      leaf("word", "a"),
+      leaf("word", "b"),
+    ],
+  };
+  assert.strictEqual(runOn(pkg, "> ..", root, 80), "a\n> ..b\n");
+});
+
+// A marker spanning a line ending would write a newline the printer never
+// accounted for, so it is refused rather than silently mis-measured.
+test("prefix refuses a multiline marker", () => {
+  const pkg = prefixPkg({ block: ["prefix", "t:marker", ["each", "t:word", ["hard"]]] });
+  const root = {
+    type: "block",
+    start: 0,
+    end: 2,
+    children: [{ type: "marker", start: 0, end: 2 }, leaf("word", "a")],
+  };
+  assert.throws(() => runOn(pkg, "\n ", root, 80), /a single-line marker for `prefix`/);
+});
+
+// The marker is consumed without being emitted, so a comment riding on it
+// would be lost -- the same guard `drop` carries.
+test("prefix refuses a marker carrying a comment", () => {
+  const pkg = {
+    format: "et-doc-rules/1",
+    indent: 2,
+    comments: ["comment"],
+    tokens: [],
+    rules: { block: ["prefix", "t:marker", ["each", "t:word", ["hard"]]] },
+  };
+  const root = {
+    type: "block",
+    start: 0,
+    end: 3,
+    children: [
+      { type: "comment", start: 0, end: 1, text: "#" },
+      { type: "marker", start: 1, end: 3 },
+      leaf("word", "a"),
+    ],
+  };
+  assert.throws(() => runOn(pkg, "#> ", root, 80), /no comment on the marker a `prefix` consumes/);
+});
+
 test("language regions use their rules and indent then restore the enclosing package", () => {
   const outerBlock = [
     "seq",

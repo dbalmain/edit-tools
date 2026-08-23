@@ -269,6 +269,7 @@ impl<'a> Ctx<'a> {
             Expr::SrcBreak => Ok(self.src_break(Doc::Line)),
             Expr::SrcTrail(sep) => self.srctrail(sep, f),
             Expr::Drop(want) => self.drop_token(want, f),
+            Expr::Prefix(sel, es) => self.prefix(sel, es, f),
             Expr::Cell => Ok(Doc::Cell),
             Expr::CellBlock(es) => {
                 let mut parts = vec![Doc::CellBreak];
@@ -459,6 +460,44 @@ impl<'a> Ctx<'a> {
         }
         self.cursor += 1;
         Ok(Doc::nil())
+    }
+
+    /// Indent the body by the selected child's own source text, consuming it.
+    /// The prefix is a string rather than a column count, which is what lets a
+    /// host continuation marker (`> `, or a list's spaces) survive onto lines
+    /// the body invents -- including lines an injected guest reflows into
+    /// existence after the host has stopped looking (FINDINGS 24).
+    ///
+    /// Zero matches is an empty prefix consuming nothing, so a fence at the top
+    /// of a document and a fence four levels into a list take the same rule.
+    fn prefix(&mut self, sel: &Sel, es: &[Expr], f: &Fmt<'a>) -> Result<Doc, Refusal> {
+        let unit = if self.matches(self.cursor, sel, f.pkg) {
+            let at = self.cursor;
+            if self.items[at].decorated() {
+                return Err(self.refuse("no comment on the marker a `prefix` consumes"));
+            }
+            let node = self.items[at].node;
+            if !node.children.is_empty() {
+                return Err(self.refuse("a leaf as the marker a `prefix` consumes"));
+            }
+            let bytes = f
+                .src
+                .get(node.start..node.end)
+                .ok_or_else(|| Refusal(format!("`{}` runs past the source", node.kind)))?;
+            let unit = std::str::from_utf8(bytes)
+                .map_err(|e| Refusal(format!("`{}` is not valid UTF-8: {e}", node.kind)))?
+                .to_owned();
+            if unit.contains('\n') || unit.contains('\r') {
+                return Err(self.refuse("a single-line marker for `prefix`"));
+            }
+            self.cursor += 1;
+            unit
+        } else {
+            String::new()
+        };
+        let mut parts = self.eval_all(es, f)?;
+        parts.push(self.flush_after(f));
+        Ok(Doc::indent_unit(&unit, Doc::Concat(parts)))
     }
 
     fn child(&mut self, sel: &Sel, f: &Fmt<'a>) -> Result<Doc, Refusal> {
@@ -1043,6 +1082,135 @@ mod tests {
         let pkg = toy(json!({}));
         let err = run(&pkg, list(&["a"], false), 80).expect_err("must refuse");
         assert!(err.0.contains("no rule for node type `list`"), "{}", err.0);
+    }
+
+    fn prefix_pkg(rules: serde_json::Value) -> PackageMap {
+        one(serde_json::from_value(json!({
+            "format": "et-doc-rules/1",
+            "indent": 2,
+            "tokens": [],
+            "rules": rules,
+        }))
+        .expect("prefix package parses"))
+    }
+
+    /// The whole point of entry 24: a marker the host owns lands on every line
+    /// the body emits, not just the first one the source already had.
+    #[test]
+    fn prefix_puts_the_markers_text_on_every_line_the_body_emits() {
+        let packages = prefix_pkg(json!({
+            "block": [
+                "seq",
+                ["child", "t:word"],
+                ["prefix", "t:marker", ["hard"], ["each", "t:word", ["hard"]]]
+            ]
+        }));
+        let root = json!({
+            "type": "block", "start": 0, "end": 2,
+            "children": [
+                leaf("word", "head"),
+                { "type": "marker", "start": 0, "end": 2 },
+                leaf("word", "a"),
+                leaf("word", "b"),
+            ]
+        });
+        assert_eq!(
+            run_on(&packages, "> x", root, 80).expect("formats"),
+            "head\n> a\n> b\n"
+        );
+    }
+
+    /// Zero matches is an empty prefix that consumes nothing, so one rule
+    /// serves a fence at the top of a document and one four lists deep.
+    #[test]
+    fn prefix_without_its_marker_is_an_empty_prefix_and_consumes_nothing() {
+        let packages = prefix_pkg(json!({
+            "block": ["prefix", "t:marker", ["each", "t:word", ["hard"]]]
+        }));
+        let root = json!({
+            "type": "block", "start": 0, "end": 0,
+            "children": [leaf("word", "a"), leaf("word", "b")]
+        });
+        assert_eq!(
+            run_on(&packages, "> x", root, 80).expect("formats"),
+            "a\nb\n"
+        );
+    }
+
+    /// Prefixes concatenate the way indent levels do, so a fence inside a
+    /// quoted list carries both markers.
+    #[test]
+    fn prefixes_nest_and_concatenate() {
+        let packages = prefix_pkg(json!({
+            "block": [
+                "prefix", "t:outer",
+                ["prefix", "t:inner", ["each", "t:word", ["hard"]]]
+            ]
+        }));
+        let root = json!({
+            "type": "block", "start": 0, "end": 0,
+            "children": [
+                { "type": "outer", "start": 0, "end": 2 },
+                { "type": "inner", "start": 2, "end": 4 },
+                leaf("word", "a"),
+                leaf("word", "b"),
+            ]
+        });
+        assert_eq!(
+            run_on(&packages, "> ..", root, 80).expect("formats"),
+            "a\n> ..b\n"
+        );
+    }
+
+    /// A marker spanning a line ending would write a newline the printer never
+    /// accounted for, so it is refused rather than silently mis-measured.
+    #[test]
+    fn prefix_refuses_a_multiline_marker() {
+        let packages = prefix_pkg(json!({
+            "block": ["prefix", "t:marker", ["each", "t:word", ["hard"]]]
+        }));
+        let root = json!({
+            "type": "block", "start": 0, "end": 2,
+            "children": [
+                { "type": "marker", "start": 0, "end": 2 },
+                leaf("word", "a"),
+            ]
+        });
+        let error = run_on(&packages, "\n ", root, 80).expect_err("refuses");
+        assert!(
+            error.0.contains("a single-line marker for `prefix`"),
+            "{}",
+            error.0
+        );
+    }
+
+    /// The marker is consumed without being emitted, so a comment riding on it
+    /// would be lost -- the same guard `drop` carries.
+    #[test]
+    fn prefix_refuses_a_marker_carrying_a_comment() {
+        let mut raw = json!({
+            "format": "et-doc-rules/1",
+            "indent": 2,
+            "comments": ["comment"],
+            "tokens": [],
+            "rules": { "block": ["prefix", "t:marker", ["each", "t:word", ["hard"]]] },
+        });
+        raw["rules"]["block"] = json!(["prefix", "t:marker", ["each", "t:word", ["hard"]]]);
+        let packages = one(serde_json::from_value(raw).expect("package parses"));
+        let root = json!({
+            "type": "block", "start": 0, "end": 3,
+            "children": [
+                { "type": "comment", "start": 0, "end": 1, "text": "#" },
+                { "type": "marker", "start": 1, "end": 3 },
+                leaf("word", "a"),
+            ]
+        });
+        let error = run_on(&packages, "#> ", root, 80).expect_err("refuses");
+        assert!(
+            error.0.contains("no comment on the marker a `prefix` consumes"),
+            "{}",
+            error.0
+        );
     }
 
     #[test]
