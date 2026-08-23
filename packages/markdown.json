@@ -158,8 +158,14 @@
         "opt",
         "t:block_continuation",
         [
-          "child",
-          "t:block_continuation"
+          "seq",
+          [
+            "hard"
+          ],
+          [
+            "child",
+            "t:block_continuation"
+          ]
         ]
       ],
       [
@@ -168,7 +174,7 @@
         [
           "seq",
           [
-            "hard"
+            "srcgap"
           ],
           [
             "child",
