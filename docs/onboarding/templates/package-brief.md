@@ -39,6 +39,16 @@ If you find a **second** such constant — a piece of the runtime's output that 
 your reference's house style rather than a safety property — that is a finding
 worth more than a rule. Say so; do not work around it in the package.
 
+**A `["blank", n, [types]]` floor is a list of nodes that swallow the blank line
+after them — not a list of block-level nodes.** The two look alike and the
+type-list is easy to fill by copying every block type you can name, which
+over-inserts wherever a node ends at its own terminator and swallows nothing.
+Markdown put `html_block` in its floor that way, and two consecutive HTML
+comments came out with a blank between them the reference does not want. The
+probe is cheap and worth writing for each type you add: **two of that node
+adjacent in the source, with no blank between them.** If the reference keeps
+them adjacent, the type does not belong in the floor.
+
 The same package file drives **both** runtimes. There is no per-runtime package.
 If Rust and JS disagree on any corpus file at any width, that is a bug in one of
 the runtimes and it is a hard failure — report it rather than working around it

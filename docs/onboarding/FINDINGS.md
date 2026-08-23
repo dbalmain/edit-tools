@@ -1300,7 +1300,8 @@ forecloses nothing.
 ## 14. A third sanctioned token policy, for respelling
 
 **Status:** **decided — build it** (Dave, 2026-08-17) · **Cost:** contextual,
-plus a narrow gate change · **Languages:** JavaScript, YAML, CSS, Python, TOML
+plus a narrow gate change · **Languages:** JavaScript, YAML, CSS, Python, TOML,
+Markdown
 
 Dave: _"I do want to rewrite quotes."_ This entry exists because the register
 had that filed under "relax linearity — not seriously proposed", and **that
@@ -1350,6 +1351,22 @@ Two useful consequences fall out of that table:
 
 Number canonicalisation is the same machinery pointed at a different token, and
 should be built with it rather than as a second entry later.
+
+**Markdown is the sixth caller, and it is a gate-3-accepts row.** `list_markers.md`
+is excluded from Markdown's denominator for exactly this opcode. Verified against
+live prettier 3.9.6:
+
+```
+* star item        →     - star item
++ plus item        →     * plus item
+```
+
+Note the second mapping: `+` becomes `*`, **not** `-`. Prettier alternates the
+marker so that two adjacent bullet lists stay two lists — give both `-` and
+CommonMark merges them into one. So the respelling is not a fixed token→token
+table even here; it depends on the preceding sibling list's chosen marker. The
+exclusion is right, but the reason recorded in `harness/languages/markdown.toml`
+said "both become `-`" until 2026-08-24 and was wrong.
 
 ### The gate change, and why it must not be a loader
 
@@ -2648,6 +2665,32 @@ is otherwise complete around it: gates 0 and 1 are 405/405, and this is one of
 only two gate failures left. **Markdown cannot merge until this is built**, since
 gates 2 and 3 are hard.
 
+**Verified on the spliced tree in stage D, not inferred.** `nesting.md`'s first
+fence is spliced like this:
+
+```
+fenced_code_block 137..224
+  delimiter          137..140   ```
+  info_string        140..144   json
+  block_continuation 145..149   '    '   ← host prefix, emitted once
+  document           149..220   lang=json
+    '[{"id": 1}, …]\n    '                ← the closer's indent is inside the guest slice
+  delimiter          220..223   ```
+```
+
+The guest parses at all only by luck: the list prefix is spaces, and JSON treats
+them as whitespace. The host emits its one `block_continuation` *before* the
+guest; every `hard` the guest invents then starts at column 0, and the closer's
+indent dies with the reflow because it was inside the guest's range.
+
+**So the defect is not block-quote-only.** It is the same splice with a different
+prefix — `    ` instead of `> ` — which means the fix cannot be a block-quote
+special case. And **the package cannot reach it**: there is no per-line prefix
+opcode, `indent` is a fixed column count from the package header rather than the
+list depth (4, 6, 8, …), and the fence rule has no ancestor predicate to ask
+whether it is inside a list at all. Entry 24's two proposed shapes — a printer
+prefix or a host post-pass — remain the whole menu.
+
 A guest region is extracted as a **byte slice** of the host document, parsed by
 the guest grammar, and spliced back by adding one number to every guest offset.
 That works for as long as the guest's bytes are a contiguous, unmodified run of
@@ -3041,8 +3084,8 @@ the two halves of Lisp indentation and building either alone leaves Scheme short
 ## 30. A node that includes its terminating newline makes the gap measure short
 
 **Status:** runtime half **built** (2026-08-23, **+389 B gzip**), package half
-**open** · **Cost:** local · **Languages:** Markdown (package still in flight),
-Ruby (survivable, worked around)
+**open and measured closed** · **Cost:** local · **Languages:** Markdown
+(package built, blocked on this entry), Ruby (survivable, worked around)
 
 ### Built — and the repair this entry proposed was the wrong one
 
@@ -3100,9 +3143,44 @@ has already swallowed the newline the blank count needs.
 
 So Markdown's loose-versus-tight list distinction — the blank line between items
 of a loose list — is **not reachable** with a runtime bound or a package rule
-today, and `lists.md` fails gate 3 because a loose list rendered tight makes
-tree-sitter parse two lists as one. That is this entry's remaining half, stated
-precisely rather than as "the package needs work".
+today. That is this entry's remaining half, stated precisely rather than as "the
+package needs work".
+
+**The gate-3 failure is not two lists merging.** That was this entry's own
+guess, and stage D disproved it by reading the reparse rather than reasoning
+about CommonMark. `lists.md` fails because rendering a loose list tight drops a
+**zero-width `block_continuation`** from the last nested item:
+
+```
+list_item[2]/list[1]/list_item[1]/paragraph:
+  2 named children became 1  (['inline', 'block_continuation'] vs ['inline'])
+```
+
+The blank that produced that continuation sits *inside* the preceding
+`list_item`, one level deeper than one terminator reaches. Prettier keeps the
+blank, so `check_gate3.py` accepts the reference — the gate is right and must
+not be relaxed.
+
+**Every package-side route was measured in stage D, and all of them lose.**
+Baseline is gate 3 26/30, agreement 12/24.
+
+| expression | gate 3 | agreement | what happened |
+| --- | --- | --- | --- |
+| `["blank", 1]` at the end of `list_item` | 20/30 | 10/24 | the 395/405 result above; still fails `lists.md`, and breaks comments/kitchen/list_markers |
+| the same, plus dropping `list`'s trailing blank | 20/30 | 10/24 | identical |
+| `["blank", 1, ["list_item"]]` as the list separator | **18**/30 | 8/24 | always-loose; nested and quoted items **escape** their list |
+| `["hard"]` then `["blank", 1]` | 16/30 | 8/24 | same escape, worse |
+| `["srcline"]` as the separator | 16/30 | 8/24 | always-loose |
+| `["srcgap"]` as the separator | 26/30 | 12/24 | inert — adjacent items share a boundary, so the gap is empty |
+| `list_item: ["verbatim"]` | 22/30 | 12/24 | a dodge that does not even dodge; section blanks still fire |
+
+**The prefix is why "just insert a blank" cannot work.** A nested or quoted list
+item carries the *next* line's indent or `> ` as a `block_continuation` inside
+the **previous** item's verbatim. Any extra `Hard` between items lands the next
+marker at column 0, and the item leaves its list or its quote. A floor fires
+exactly there, which is exactly where the prefix lives — so the floor form is not
+a patchable version of the trailing-blank form, it is the same defect one step
+earlier.
 
 ### The half this entry did not have
 
@@ -3120,7 +3198,10 @@ blocks end in three different places — a `verbatim` block past its own newline
 paragraph inside a block quote *at* its trailing `>` continuation. With those,
 Markdown reaches 10 of 24 and both gate 0 and gate 1 are perfect. That is a
 package fact, not a second runtime bound, and it is why this entry's remaining
-half is open rather than blocked.
+half is open rather than blocked. (Markdown now reaches **12** of 24; the 10 was
+measured before `html_block` was dropped from the `blocks` floor, an unrelated
+package bug stage D found. The bounds table above is a controlled comparison
+taken against the package as it stood then, so its cells are left as measured.)
 
 **`share_line` is entry 9, not this entry.** It still decides suffix-versus-own-line
 from the last child's `end`, a second spelling of "where does this item's content

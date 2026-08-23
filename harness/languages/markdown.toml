@@ -79,7 +79,7 @@ comment_kinds = ["html_block"]
 # canonical form.
 [incomparable]
 "emphasis.md" = "prettier rewrites *emphasis* to _emphasis_ (delimiter token)"
-"list_markers.md" = "prettier rewrites * and + unordered-list markers to -"
+"list_markers.md" = "prettier respells unordered-list markers: * becomes -, and + becomes * so the second list stays a second list"
 "thematic.md" = "prettier rewrites ***, ___ and * * * thematic breaks to ---"
 
 # Host shape. Keep array tables after every root key: TOML keys below
