@@ -19,7 +19,7 @@ and `score.json`. No runtime edit, no harness edit, no shared file touched.
 
 Every comparable pair at both widths, zero divergences to classify, zero
 refusals, and an overflow count identical to the reference's. This is the first
-language in the project to reach full agreement, and it did it in **847 bytes**
+language in the project to reach full agreement, and it did it in **843 bytes**
 — the smallest package after JSON.
 
 That deserves suspicion rather than celebration, so here is the reason, and it
