@@ -140,6 +140,22 @@ test("text and multiline predicates follow exact child paths", () => {
   assert.equal(run(multilinePkg, root("a\nb"), 80), "a\nb x\n");
 });
 
+test("source-multiline predicate inspects the node range", () => {
+  const pkg = toy({
+    file: [
+      "when", ["source-multiline"],
+      ["seq", ["child", "named"], ["hard"], ["child", "named"]],
+      ["each", "named", ["sp"]],
+    ],
+  });
+  const root = {
+    type: "file", start: 0, end: 3,
+    children: [span("name", 0, 1, "a"), span("name", 2, 3, "b")],
+  };
+  assert.equal(runOn(pkg, "a\nb", root, 80), "a\nb\n");
+  assert.equal(runOn(pkg, "a b", root, 80), "a b\n");
+});
+
 test("srcgap preserves horizontal space and safely breaks it", () => {
   const pkg = toy({
     file: ["group", ["child", "named"], ["srcgap"], ["child", "named"]],

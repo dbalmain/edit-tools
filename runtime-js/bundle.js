@@ -171,6 +171,7 @@ function validatePredicate(value) {
     value[1].forEach(parseSelector);
     return;
   }
+  if (value[0] === "source-multiline" && value.length === 1) return;
   throw new Refusal(`unknown predicate ${JSON.stringify(value)}`);
 }
 
@@ -1137,6 +1138,10 @@ class Ctx {
     }
     if (op === "multiline") {
       return pathHasMultiline(this.fmt, this.node, raw.map(parseSelector));
+    }
+    if (op === "source-multiline") {
+      const source = this.fmt.bytes.subarray(this.node.start, this.node.end);
+      return source.includes(0x0a) || source.includes(0x0d);
     }
     throw new Refusal(`unknown predicate \`${op}\``);
   }

@@ -4,26 +4,16 @@
   "comment_gap": 1,
   "blank_cap": 1,
   "tokens": [
-    "module",
     "where",
-    "import",
     "data",
-    "newtype",
     "type",
-    "class",
-    "instance",
-    "deriving",
-    "do",
-    "let",
     "in",
     "if",
     "then",
     "else",
-    "case",
     "of",
     "infixl",
     "infixr",
-    "infix",
     "(",
     ")",
     "[",
@@ -51,15 +41,23 @@
     "haddock",
     "pragma"
   ],
-  "descend": [
-    "declarations",
-    "local_binds",
-    "instance_declarations",
-    "class_declarations",
-    "alternatives"
-  ],
+  "descend": [],
   "defs": {
     "decls": [
+      "each",
+      "named",
+      [
+        "seq",
+        [
+          "hard"
+        ],
+        [
+          "blank",
+          1
+        ]
+      ]
+    ],
+    "top_decls": [
       "each",
       "named",
       [
@@ -79,25 +77,64 @@
             "type_synomym",
             "class",
             "instance",
-            "fixity",
-            "comment"
+            "fixity"
           ]
         ]
       ]
     ],
     "bracketed": [
-      "group",
+      "when",
       [
-        "tok",
+        "source-multiline"
+      ],
+      [
+        "seq",
         [
-          "$",
-          0
+          "tok",
+          [
+            "$",
+            0
+          ]
+        ],
+        [
+          "indent",
+          [
+            "sp"
+          ],
+          [
+            "each",
+            "named",
+            [
+              "seq",
+              [
+                "tok",
+                ","
+              ],
+              [
+                "hard"
+              ]
+            ]
+          ]
+        ],
+        [
+          "hard"
+        ],
+        [
+          "tok",
+          [
+            "$",
+            1
+          ]
         ]
       ],
       [
-        "indent",
+        "seq",
         [
-          "soft"
+          "tok",
+          [
+            "$",
+            0
+          ]
         ],
         [
           "each",
@@ -109,31 +146,31 @@
               ","
             ],
             [
-              "line"
+              "sp"
             ]
           ]
-        ]
-      ],
-      [
-        "soft"
-      ],
-      [
-        "tok",
+        ],
         [
-          "$",
-          1
+          "tok",
+          [
+            "$",
+            1
+          ]
         ]
       ]
     ]
   },
   "rules": {
     "haskell": [
-      "use",
-      "decls"
+      "each",
+      "named",
+      [
+        "hard"
+      ]
     ],
     "declarations": [
       "use",
-      "decls"
+      "top_decls"
     ],
     "imports": [
       "use",
@@ -180,6 +217,9 @@
       [
         "tok",
         "where"
+      ],
+      [
+        "hard"
       ]
     ],
     "module": [
@@ -285,13 +325,6 @@
           "opt",
           "t:where",
           [
-            "seq"
-          ]
-        ],
-        [
-          "opt",
-          "f:binds",
-          [
             "indent",
             [
               "hard"
@@ -380,13 +413,6 @@
           "opt",
           "t:where",
           [
-            "seq"
-          ]
-        ],
-        [
-          "opt",
-          "f:binds",
-          [
             "indent",
             [
               "hard"
@@ -410,41 +436,83 @@
       ]
     ],
     "match": [
-      "seq",
+      "when",
       [
-        "opt",
-        "f:guards",
+        "count",
+        "t:|",
+        1
+      ],
+      [
+        "indent",
         [
-          "seq",
-          [
-            "sp"
-          ],
-          [
-            "tok",
-            "|"
-          ],
-          [
-            "sp"
-          ],
-          [
-            "child",
-            "f:guards"
-          ]
+          "hard"
+        ],
+        [
+          "tok",
+          "|"
+        ],
+        [
+          "sp"
+        ],
+        [
+          "child",
+          "f:guards"
+        ],
+        [
+          "sp"
+        ],
+        [
+          "tok",
+          "="
+        ],
+        [
+          "sp"
+        ],
+        [
+          "child",
+          "f:expression"
         ]
       ],
       [
-        "sp"
-      ],
-      [
-        "tok",
-        "="
-      ],
-      [
-        "sp"
-      ],
-      [
-        "child",
-        "f:expression"
+        "seq",
+        [
+          "opt",
+          "t:=",
+          [
+            "seq",
+            [
+              "sp"
+            ],
+            [
+              "tok",
+              "="
+            ]
+          ]
+        ],
+        [
+          "opt",
+          "t:->",
+          [
+            "seq",
+            [
+              "sp"
+            ],
+            [
+              "tok",
+              "->"
+            ]
+          ]
+        ],
+        [
+          "indent",
+          [
+            "srcline"
+          ],
+          [
+            "child",
+            "f:expression"
+          ]
+        ]
       ]
     ],
     "guards": [
@@ -491,11 +559,11 @@
         ]
       ],
       [
-        "each",
-        "f:argument",
-        [
-          "sp"
-        ]
+        "sp"
+      ],
+      [
+        "child",
+        "f:argument"
       ]
     ],
     "infix": [
@@ -505,11 +573,14 @@
         "f:left_operand"
       ],
       [
-        "sp"
-      ],
-      [
-        "child",
-        "f:operator"
+        "indent",
+        [
+          "srcline"
+        ],
+        [
+          "child",
+          "f:operator"
+        ]
       ],
       [
         "sp"
@@ -537,7 +608,7 @@
       ],
       [
         "child",
-        "named"
+        "*"
       ],
       [
         "tok",
@@ -600,6 +671,10 @@
       ]
     ],
     "boolean": [
+      "child",
+      "*"
+    ],
+    "wildcard": [
       "child",
       "*"
     ],
@@ -822,14 +897,11 @@
         "of"
       ],
       [
-        "indent",
-        [
-          "hard"
-        ],
-        [
-          "child",
-          "f:alternatives"
-        ]
+        "hard"
+      ],
+      [
+        "child",
+        "f:alternatives"
       ]
     ],
     "alternatives": [
@@ -841,16 +913,6 @@
       [
         "child",
         "f:pattern"
-      ],
-      [
-        "sp"
-      ],
-      [
-        "tok",
-        "->"
-      ],
-      [
-        "sp"
       ],
       [
         "child",
@@ -867,30 +929,28 @@
         "opt",
         "t:{",
         [
-          "seq",
-          [
-            "sp"
-          ],
-          [
-            "drop",
-            "{"
-          ]
+          "drop",
+          "{"
         ]
       ],
       [
-        "indent",
+        "srcline"
+      ],
+      [
+        "each",
+        "named",
         [
-          "each",
-          "named",
+          "seq",
           [
-            "seq",
+            "opt",
+            "t:;",
             [
-              "srcline"
-            ],
-            [
-              "drop",
+              "tok",
               ";"
             ]
+          ],
+          [
+            "srcline"
           ]
         ]
       ],
@@ -913,8 +973,14 @@
         "sp"
       ],
       [
-        "child",
-        "f:binds"
+        "indent",
+        [
+          "indent",
+          [
+            "child",
+            "f:binds"
+          ]
+        ]
       ]
     ],
     "let_in": [
@@ -927,15 +993,27 @@
         "sp"
       ],
       [
-        "child",
-        "f:binds"
+        "indent",
+        [
+          "indent",
+          [
+            "child",
+            "f:binds"
+          ]
+        ]
       ],
       [
-        "sp"
-      ],
-      [
-        "tok",
-        "in"
+        "seq",
+        [
+          "hard"
+        ],
+        [
+          "sp"
+        ],
+        [
+          "tok",
+          "in"
+        ]
       ],
       [
         "sp"
@@ -973,11 +1051,14 @@
         ]
       ],
       [
-        "sp"
-      ],
-      [
-        "tok",
-        "="
+        "indent",
+        [
+          "srcline"
+        ],
+        [
+          "tok",
+          "="
+        ]
       ],
       [
         "sp"
@@ -992,11 +1073,14 @@
         [
           "seq",
           [
-            "sp"
-          ],
-          [
-            "child",
-            "f:deriving"
+            "indent",
+            [
+              "srcline"
+            ],
+            [
+              "child",
+              "f:deriving"
+            ]
           ]
         ]
       ]
@@ -1119,11 +1203,14 @@
       [
         "seq",
         [
-          "sp"
-        ],
-        [
-          "tok",
-          "|"
+          "indent",
+          [
+            "srcline"
+          ],
+          [
+            "tok",
+            "|"
+          ]
         ],
         [
           "sp"
@@ -1141,10 +1228,20 @@
         "f:name"
       ],
       [
-        "each",
+        "opt",
         "f:field",
         [
-          "sp"
+          "seq",
+          [
+            "sp"
+          ],
+          [
+            "each",
+            "f:field",
+            [
+              "sp"
+            ]
+          ]
         ]
       ]
     ],
@@ -1174,16 +1271,15 @@
             "f:name"
           ],
           [
-            "sp"
+            "indent",
+            [
+              "srcline"
+            ],
+            [
+              "child",
+              "f:fields"
+            ]
           ]
-        ]
-      ],
-      [
-        "opt",
-        "f:fields",
-        [
-          "child",
-          "f:fields"
         ]
       ],
       [

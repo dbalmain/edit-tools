@@ -505,6 +505,8 @@ pub enum Pred {
     Text(Vec<Sel>, Vec<String>),
     /// At least one exact direct-child path ends at a multiline leaf.
     Multiline(Vec<Sel>),
+    /// The node's own source range contains a line ending.
+    SourceMultiline,
 }
 
 /// One expression of the package language. Twenty opcodes; see DESIGN.md.
@@ -770,6 +772,7 @@ fn predicate(value: &Value) -> Result<Pred, String> {
                 path.iter().map(selector).collect::<Result<_, _>>()?,
             ))
         }
+        Some("source-multiline") if parts.len() == 1 => Ok(Pred::SourceMultiline),
         _ => Err(format!("unknown predicate {value}")),
     }
 }

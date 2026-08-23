@@ -292,7 +292,7 @@ impl<'a> Ctx<'a> {
             Expr::Paren(es) => self.paren(es, f),
             Expr::AutoParen(sel) => self.autoparen(sel, f),
             Expr::When(pred, then, alt) => {
-                let hit = self.test(pred, f.pkg);
+                let hit = self.test(pred, f);
                 self.eval(if hit { then } else { alt }, f)
             }
             Expr::Flatten(kind, sep) => self.flatten(kind, sep, f),
@@ -616,13 +616,17 @@ impl<'a> Ctx<'a> {
         Ok(Doc::fill(parts))
     }
 
-    fn test(&self, pred: &Pred, pkg: &Package) -> bool {
+    fn test(&self, pred: &Pred, f: &Fmt<'a>) -> bool {
         match pred {
-            Pred::Count(sel, n) => self.tally(sel, pkg) == *n,
-            Pred::ChildCount(parent, child, n) => self.child_tally(parent, child, pkg) == *n,
-            Pred::All(sel, kinds) => self.all_kinds(sel, kinds, pkg),
-            Pred::Text(path, spellings) => path_has_text(self.node, path, spellings, pkg),
-            Pred::Multiline(path) => path_has_multiline(self.node, path, pkg),
+            Pred::Count(sel, n) => self.tally(sel, f.pkg) == *n,
+            Pred::ChildCount(parent, child, n) => self.child_tally(parent, child, f.pkg) == *n,
+            Pred::All(sel, kinds) => self.all_kinds(sel, kinds, f.pkg),
+            Pred::Text(path, spellings) => path_has_text(self.node, path, spellings, f.pkg),
+            Pred::Multiline(path) => path_has_multiline(self.node, path, f.pkg),
+            Pred::SourceMultiline => f
+                .src
+                .get(self.node.start..self.node.end)
+                .is_some_and(|source| source.contains(&b'\n') || source.contains(&b'\r')),
         }
     }
 
@@ -2069,6 +2073,26 @@ try {{
             ]
         });
         assert_eq!(run(&pkg, root, 80).expect("multiline path matches"), "a\nb x\n");
+    }
+
+    #[test]
+    fn source_multiline_predicate_inspects_the_node_range() {
+        let pkg = toy(json!({
+            "file": [
+                "when", ["source-multiline"],
+                ["seq", ["child", "named"], ["hard"], ["child", "named"]],
+                ["each", "named", ["sp"]]
+            ]
+        }));
+        let root = json!({
+            "type": "file", "start": 0, "end": 3,
+            "children": [
+                { "type": "name", "start": 0, "end": 1, "text": "a" },
+                { "type": "name", "start": 2, "end": 3, "text": "b" }
+            ]
+        });
+        assert_eq!(run_on(&pkg, "a\nb", root.clone(), 80).expect("broken"), "a\nb\n");
+        assert_eq!(run_on(&pkg, "a b", root, 80).expect("flat"), "a b\n");
     }
 
     #[test]
