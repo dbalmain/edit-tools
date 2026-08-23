@@ -505,6 +505,8 @@ pub enum Pred {
     Text(Vec<Sel>, Vec<String>),
     /// At least one exact direct-child path ends at a multiline leaf.
     Multiline(Vec<Sel>),
+    /// The node's own source range contains a line ending.
+    SourceMultiline,
 }
 
 /// One expression of the package language. Twenty-seven opcodes; see DESIGN.md.
@@ -527,7 +529,7 @@ pub enum Expr {
     Verbatim,
     Opt(Sel, Box<Expr>),
     Trail(String, Sel),
-    Paren(Vec<Expr>),
+    Paren(bool, Vec<Expr>),
     AutoParen(Sel),
     When(Pred, Box<Expr>, Box<Expr>),
     Flatten(String, Box<Expr>),
@@ -596,7 +598,17 @@ impl TryFrom<Value> for Expr {
                 Ok(Expr::Group(max, rest(parts)?))
             }
             "indent" => Ok(Expr::Indent(rest(parts)?)),
-            "paren" => Ok(Expr::Paren(rest(parts)?)),
+            "paren" => {
+                let always = match parts.first() {
+                    Some(Value::Bool(always)) => {
+                        let always = *always;
+                        parts.remove(0);
+                        always
+                    }
+                    _ => false,
+                };
+                Ok(Expr::Paren(always, rest(parts)?))
+            }
             "line" => arity(0).map(|()| Expr::Line),
             "soft" => arity(0).map(|()| Expr::Soft),
             "hard" => arity(0).map(|()| Expr::Hard),
@@ -770,6 +782,7 @@ fn predicate(value: &Value) -> Result<Pred, String> {
                 path.iter().map(selector).collect::<Result<_, _>>()?,
             ))
         }
+        Some("source-multiline") if parts.len() == 1 => Ok(Pred::SourceMultiline),
         _ => Err(format!("unknown predicate {value}")),
     }
 }
