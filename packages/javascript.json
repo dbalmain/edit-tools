@@ -127,6 +127,12 @@
       ["tok", ["$", 0]],
       ["sp"],
       ["child", "named"]
+    ],
+    "bitop": [
+      "when",
+      ["text", [["$", 0], "f:operator"], ["|", "^", "&", "<<", ">>", ">>>"]],
+      ["paren", true, ["child", ["$", 0]]],
+      ["child", ["$", 0]]
     ]
   },
 
@@ -141,6 +147,17 @@
       ["opt", "t:;", ["tok", ";"]]
     ],
     "variable_declarator": [
+      "when",
+      ["count", "t:augmented_assignment_expression", 1],
+      [
+        "seq",
+        ["child", "f:name"],
+        ["sp"],
+        ["tok", "="],
+        ["sp"],
+        ["paren", true, ["child", "f:value"]]
+      ],
+      [
       "when",
       ["count", "t:binary_expression", 1],
       ["use", "assign", "f:name", "f:value"],
@@ -161,6 +178,7 @@
             ["child", "f:value"]
           ]
         ]
+      ]
       ]
     ],
 
@@ -367,11 +385,23 @@
     ],
 
     "binary_expression": [
-      "group",
+      "when",
+      ["text", ["f:operator"], ["|", "^", "&", "<<", ">>", ">>>"]],
       [
-        "flatten",
-        "binary_expression",
-        ["seq", ["sp"], ["child", "f:operator"], ["line"]]
+        "group",
+        ["use", "bitop", "f:left"],
+        ["sp"],
+        ["child", "f:operator"],
+        ["line"],
+        ["use", "bitop", "f:right"]
+      ],
+      [
+        "group",
+        [
+          "flatten",
+          "binary_expression",
+          ["seq", ["sp"], ["child", "f:operator"], ["line"]]
+        ]
       ]
     ],
     "unary_expression": [
