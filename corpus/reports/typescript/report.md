@@ -1,17 +1,18 @@
-# TypeScript package report (stage C)
+# TypeScript package report (stages C and D)
 
 ```
 gate 1 idempotence      pass   (30/30)
-gate 2 width            pass   (overflow 9; prettier 8)
+gate 2 width            pass   (overflow 10; prettier 8)
 gate 3 non-destruction  pass   (30/30, method default)
-gate 4 agreement        8/15 @80,  3/15 @40   (11/30 overall)
+gate 4 agreement        10/15 @80,  5/15 @40   (15/30 overall)
 rust/js parity          identical (30/30)
 refusals                none
-size                    package 4640 B gzip; runtime 13803 B gzip;
-                        delta vs main +193 B JS runtime
+size                    package 4726 B gzip; runtime 14453 B gzip;
+                        delta vs current main +237 B JS runtime
 ```
 
-Measured with `./test.sh` (exit 0) and `./harness/score.py . --language typescript`.
+Stage C was measured with `./test.sh` (exit 0). Stage D independently re-scored
+with `./harness/score.py . --language typescript` after the fixes below.
 Stage B passed with no corrections; there was no correction commit.
 
 `comment_gap` 1 and `blank_cap` 1, matching prettier (the runtime default).
@@ -34,7 +35,7 @@ Diverged only where TypeScript is actually different:
   arguments on calls, `import type`, decorators, return types)
 - `as_expression` / `satisfies_expression` / `type_assertion`
 
-## Divergences
+## Divergences (stage C proposal; superseded by the Stage D review below)
 
 Classifications for the stage-D reviewer. None `--approve`d.
 
@@ -120,3 +121,121 @@ The brief's "apply corrections first, then start the package" was noise given
 stage B `pass` with nothing to correct — one sentence would have been enough.
 The FINDINGS 13 mirror and "do not fake an unconditional `|`" were the load-
 bearing parts and were right.
+
+## Stage D review
+
+**Reviewer:** codex-Sol. **Verdict: merge after fixes — fixes applied and
+re-verified.**
+
+Final score: all four hard gates **30/30**; Rust/JS parity **30/30**; reference
+agreement **15/30**; accepted divergence **15/30**; stale **0**; unreviewed
+**0**; defect **0**. Review coverage is **100%** at each width: @80 is 10
+agreement + 5 accepted, and @40 is 5 agreement + 10 accepted. Current size is
+**14,453 B** runtime + **4,726 B** TypeScript package = **19,179 B gzip**.
+
+### Stale classifications recovered
+
+- **`assertions.ts@80` and `@40` now agree.** FINDINGS 20 was built after this
+  report: the `as_expression` rule selects its direct `binary_expression` and
+  uses `['paren', true, ...]`. The optional flag is exactly the unconditional
+  clarifying-paren capability the stage-C reason said did not exist.
+- **`sequences.ts@80` now agrees.** The existing `all named [number]` guard now
+  selects a `fill` list. The JavaScript-era comment coupling in the report is
+  stale: current `fill` carries `BreakParent`, and this array contains no
+  comments. @40 remains divergent for a different, measured reason: `fill`
+  packs through `170`, then break-only `trail` adds a comma and makes the line
+  41 columns. A tail-aware fill/trailing-separator measurement is still absent.
+- **`annotations.ts@40` now agrees.** This was not a reference quirk. A trailing
+  comma after a rest parameter is invalid TypeScript/ECMAScript syntax. The
+  existing `child-count` predicate selects a no-trailing-comma list whenever a
+  formal parameter wraps `rest_pattern`. Verified with TypeScript 5.9.3:
+  `tsc --noEmit` reports TS1013 on the old output.
+
+`normalisation.ts` was re-tested with `drop`. Both refusal guards pass: `(` and
+`)` are declared punctuation and neither is decorated. The redundant pair is
+deleted, but so are required control-flow parens (`if (x)` becomes `if x`). A
+rule cannot select the deletion by parent position, so this is now recorded as
+FINDINGS 10 plus missing unconditional semicolon insertion, not as an unbuilt
+FINDINGS 13 opcode. The report's claimed extra generic-call hunk at @40 is also
+stale; the current exact diff has only paren deletion and semicolon insertion.
+
+### The contested decorator
+
+**`decorators.ts@40`: `house-rule`, not `package-bug`.** Python's two-group
+list proves the shape is expressible, so an inability verdict is wrong.
+TypeScript and JavaScript use byte-identical `list` and `arguments` rules. The
+JavaScript corpus has no multi-argument call whose last argument is an object;
+its only trailing-object call has one argument, so it never probed Prettier's
+hugging rule. This is a shared rule that deliberately puts every item in a
+broken list on its own line. Keeping that cross-language layout avoids a
+TypeScript-only last-object special case and is the house-style choice.
+
+### `source-multiline` versus `srcbreak`
+
+Keep **`srcbreak`** in `preserve_object`. A pinned Prettier 3.9.6 probe separated
+the predicates: an object with its first property on the opener line collapses
+even when a later property starts on a new line, while an object with a break
+immediately after `{` stays expanded. Prettier keys `objectWrap: preserve` to
+that exact opening break; `source-multiline` would also match the first,
+broader case and is therefore the wrong spelling here. FINDINGS 32 names the
+same source-driven family, but the older exact-position opcode already
+expresses this option more faithfully.
+
+### Runtime edits
+
+- **Fieldless `flatten` fallback — warranted.** This is exactly FINDINGS 23's
+  requested option 1: a homogeneous spine with no fields takes its positional
+  left operand and declared operator token; any child field keeps the existing
+  `flatten_fields` path, and the renamed-field probe still refuses a nonexistent
+  `left`. Builder-baseline JS gzip was +61 B for the fallback plus +5 B for the
+  fieldless-only guard (**+66 B**). Hand-built branches cover fielded and
+  fieldless nodes, a non-spine left child, a same-kind continuation, a
+  tightness stop, and a fielded operator with missing text. That last input
+  exposed a parity defect: Rust scanned a later token while JS returned
+  precedence 0. Rust now stops at the fielded operator, matching JS.
+- **Skipped-operand suffix/after comments — warranted after correction.** The
+  edit is necessary for `comments.ts` idempotence; a package cannot change the
+  runtime-owned attachment on the skipped nested left. Builder-baseline JS gzip
+  was **+127 B**. The review correction adds **+37 B** to the current runtime.
+  Leading comments still refuse; empty suffix/after paths are inert; suffix and
+  after paths emit once. A two-level suffix input exposed a shape defect in
+  both runtimes: comments were batched at the end in outer-to-inner order. They
+  now emit at their own spine boundary. Current combined TypeScript runtime
+  delta is **+237 B** over current main (14,216 -> 14,453); gzip increments are
+  not additive across the three merged runtime slices.
+
+The hand branch matrix is mirrored in Rust and JS tests. A parity cross-check on
+the unhighlighted `mapped.ts@40` file was byte-identical, and the focused scorer
+confirmed the full 30/30 corpus parity afterward.
+
+### Design findings
+
+- **Existing FINDINGS 9:** comment attachment is runtime-owned and cannot see
+  the surrounding TypeScript syntax (`comments` at both widths).
+- **Existing FINDINGS 11:** method calls and member accesses form an alternating
+  spine that homogeneous `flatten` cannot collect (`kitchen` at both widths).
+- **Existing FINDINGS 15, with FINDINGS 2 context:** Prettier ranks candidate
+  layouts where one fixed Wadler group cannot (`mapped`, `overloads`, and parts
+  of `kitchen` / `unions`).
+- **Existing FINDINGS 10:** `drop` needs parent-position-sensitive selection to
+  remove only redundant expression parens (`normalisation`).
+- **Existing FINDINGS 23, now built and called by TypeScript:** the fieldless
+  homogeneous flatten fallback is the entry's requested capability.
+- **Genuinely new / not yet its own entry:** emit a declared punctuation token
+  at the leading edge only when a group breaks (`|` in unions). It is the insert
+  mirror of FINDINGS 13, but neither `drop` nor paren-specific FINDINGS 20
+  expresses it.
+- **Extension at the FINDINGS 8/21 boundary:** `fill` does not reserve a
+  break-only trailing separator when packing the last item (`sequences@40`).
+
+### Template delta
+
+Add two checks to `templates/package-brief.md`:
+
+1. A classification reason must account for **every hunk** in the file/width,
+   not only the headline hunk. The stage-C reasons omitted the constructor in
+   `kitchen@80`, secondary mapped/kitchen hunks, and the union semicolon shape.
+2. Before writing `reference-quirk` for omitted punctuation, verify whether the
+   reference is enforcing the language grammar. The rest-parameter comma was
+   invalid syntax that tree-sitter accepted, so all formatter gates were green
+   while the package emitted code the TypeScript compiler rejects.
