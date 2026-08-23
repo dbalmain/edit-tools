@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no' ?>
+<!-- The XML declaration's own variants: single-quoted pseudo-attribute
+     values, and standalone="no". Stage D found the package hard-coded the
+     double quote and the `yes` spelling and refused both of these. -->
+<root a='single' b="double">
+  <child c='mixed quoting on one element' d="is legal" />
+</root>

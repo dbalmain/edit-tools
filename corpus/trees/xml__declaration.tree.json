@@ -1,0 +1,401 @@
+{
+ "language": "xml",
+ "source_file": "corpus/src/xml/declaration.xml",
+ "source": "<?xml version='1.0' encoding='UTF-8' standalone='no'?>\n<!-- The XML declaration's own variants: single-quoted pseudo-attribute\n     values, and standalone=\"no\". Stage D found the package hard-coded the\n     double quote and the `yes` spelling and refused both of these. -->\n<root a='single' b=\"double\">\n  <child c='mixed quoting on one element' d=\"is legal\"/>\n</root>\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 368,
+  "children": [
+   {
+    "type": "prolog",
+    "start": 0,
+    "end": 274,
+    "children": [
+     {
+      "type": "XMLDecl",
+      "start": 0,
+      "end": 54,
+      "children": [
+       {
+        "type": "<?",
+        "start": 0,
+        "end": 2,
+        "text": "<?"
+       },
+       {
+        "type": "xml",
+        "start": 2,
+        "end": 5,
+        "text": "xml"
+       },
+       {
+        "type": "version",
+        "start": 6,
+        "end": 13,
+        "text": "version"
+       },
+       {
+        "type": "=",
+        "start": 13,
+        "end": 14,
+        "text": "="
+       },
+       {
+        "type": "'",
+        "start": 14,
+        "end": 15,
+        "text": "'"
+       },
+       {
+        "type": "VersionNum",
+        "start": 15,
+        "end": 18,
+        "text": "1.0"
+       },
+       {
+        "type": "'",
+        "start": 18,
+        "end": 19,
+        "text": "'"
+       },
+       {
+        "type": "encoding",
+        "start": 20,
+        "end": 28,
+        "text": "encoding"
+       },
+       {
+        "type": "=",
+        "start": 28,
+        "end": 29,
+        "text": "="
+       },
+       {
+        "type": "'",
+        "start": 29,
+        "end": 30,
+        "text": "'"
+       },
+       {
+        "type": "EncName",
+        "start": 30,
+        "end": 35,
+        "text": "UTF-8"
+       },
+       {
+        "type": "'",
+        "start": 35,
+        "end": 36,
+        "text": "'"
+       },
+       {
+        "type": "standalone",
+        "start": 37,
+        "end": 47,
+        "text": "standalone"
+       },
+       {
+        "type": "=",
+        "start": 47,
+        "end": 48,
+        "text": "="
+       },
+       {
+        "type": "'",
+        "start": 48,
+        "end": 49,
+        "text": "'"
+       },
+       {
+        "type": "no",
+        "start": 49,
+        "end": 51,
+        "text": "no"
+       },
+       {
+        "type": "'",
+        "start": 51,
+        "end": 52,
+        "text": "'"
+       },
+       {
+        "type": "?>",
+        "start": 52,
+        "end": 54,
+        "text": "?>"
+       }
+      ]
+     },
+     {
+      "type": "Comment",
+      "start": 55,
+      "end": 273,
+      "text": "<!-- The XML declaration's own variants: single-quoted pseudo-attribute\n     values, and standalone=\"no\". Stage D found the package hard-coded the\n     double quote and the `yes` spelling and refused both of these. -->"
+     }
+    ]
+   },
+   {
+    "type": "element",
+    "start": 274,
+    "end": 367,
+    "field": "root",
+    "children": [
+     {
+      "type": "STag",
+      "start": 274,
+      "end": 302,
+      "children": [
+       {
+        "type": "<",
+        "start": 274,
+        "end": 275,
+        "text": "<"
+       },
+       {
+        "type": "Name",
+        "start": 275,
+        "end": 279,
+        "text": "root"
+       },
+       {
+        "type": "Attribute",
+        "start": 280,
+        "end": 290,
+        "children": [
+         {
+          "type": "Name",
+          "start": 280,
+          "end": 281,
+          "text": "a"
+         },
+         {
+          "type": "=",
+          "start": 281,
+          "end": 282,
+          "text": "="
+         },
+         {
+          "type": "AttValue",
+          "start": 282,
+          "end": 290,
+          "children": [
+           {
+            "type": "'",
+            "start": 282,
+            "end": 283,
+            "text": "'"
+           },
+           {
+            "type": "'",
+            "start": 289,
+            "end": 290,
+            "text": "'"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "Attribute",
+        "start": 291,
+        "end": 301,
+        "children": [
+         {
+          "type": "Name",
+          "start": 291,
+          "end": 292,
+          "text": "b"
+         },
+         {
+          "type": "=",
+          "start": 292,
+          "end": 293,
+          "text": "="
+         },
+         {
+          "type": "AttValue",
+          "start": 293,
+          "end": 301,
+          "children": [
+           {
+            "type": "\"",
+            "start": 293,
+            "end": 294,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 300,
+            "end": 301,
+            "text": "\""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": ">",
+        "start": 301,
+        "end": 302,
+        "text": ">"
+       }
+      ]
+     },
+     {
+      "type": "content",
+      "start": 302,
+      "end": 360,
+      "children": [
+       {
+        "type": "CharData",
+        "start": 302,
+        "end": 305,
+        "text": "\n  "
+       },
+       {
+        "type": "element",
+        "start": 305,
+        "end": 359,
+        "children": [
+         {
+          "type": "EmptyElemTag",
+          "start": 305,
+          "end": 359,
+          "children": [
+           {
+            "type": "<",
+            "start": 305,
+            "end": 306,
+            "text": "<"
+           },
+           {
+            "type": "Name",
+            "start": 306,
+            "end": 311,
+            "text": "child"
+           },
+           {
+            "type": "Attribute",
+            "start": 312,
+            "end": 344,
+            "children": [
+             {
+              "type": "Name",
+              "start": 312,
+              "end": 313,
+              "text": "c"
+             },
+             {
+              "type": "=",
+              "start": 313,
+              "end": 314,
+              "text": "="
+             },
+             {
+              "type": "AttValue",
+              "start": 314,
+              "end": 344,
+              "children": [
+               {
+                "type": "'",
+                "start": 314,
+                "end": 315,
+                "text": "'"
+               },
+               {
+                "type": "'",
+                "start": 343,
+                "end": 344,
+                "text": "'"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "Attribute",
+            "start": 345,
+            "end": 357,
+            "children": [
+             {
+              "type": "Name",
+              "start": 345,
+              "end": 346,
+              "text": "d"
+             },
+             {
+              "type": "=",
+              "start": 346,
+              "end": 347,
+              "text": "="
+             },
+             {
+              "type": "AttValue",
+              "start": 347,
+              "end": 357,
+              "children": [
+               {
+                "type": "\"",
+                "start": 347,
+                "end": 348,
+                "text": "\""
+               },
+               {
+                "type": "\"",
+                "start": 356,
+                "end": 357,
+                "text": "\""
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "/>",
+            "start": 357,
+            "end": 359,
+            "text": "/>"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "CharData",
+        "start": 359,
+        "end": 360,
+        "text": "\n"
+       }
+      ]
+     },
+     {
+      "type": "ETag",
+      "start": 360,
+      "end": 367,
+      "children": [
+       {
+        "type": "</",
+        "start": 360,
+        "end": 362,
+        "text": "</"
+       },
+       {
+        "type": "Name",
+        "start": 362,
+        "end": 366,
+        "text": "root"
+       },
+       {
+        "type": ">",
+        "start": 366,
+        "end": 367,
+        "text": ">"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}
