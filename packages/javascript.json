@@ -127,12 +127,6 @@
       ["tok", ["$", 0]],
       ["sp"],
       ["child", "named"]
-    ],
-    "bitop": [
-      "when",
-      ["text", [["$", 0], "f:operator"], ["|", "^", "&", "<<", ">>", ">>>"]],
-      ["paren", true, ["child", ["$", 0]]],
-      ["child", ["$", 0]]
     ]
   },
 
@@ -385,23 +379,11 @@
     ],
 
     "binary_expression": [
-      "when",
-      ["text", ["f:operator"], ["|", "^", "&", "<<", ">>", ">>>"]],
+      "group",
       [
-        "group",
-        ["use", "bitop", "f:left"],
-        ["sp"],
-        ["child", "f:operator"],
-        ["line"],
-        ["use", "bitop", "f:right"]
-      ],
-      [
-        "group",
-        [
-          "flatten",
-          "binary_expression",
-          ["seq", ["sp"], ["child", "f:operator"], ["line"]]
-        ]
+        "flatten",
+        "binary_expression",
+        ["seq", ["sp"], ["child", "f:operator"], ["line"]]
       ]
     ],
     "unary_expression": [
