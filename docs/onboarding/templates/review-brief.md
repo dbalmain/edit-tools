@@ -230,6 +230,28 @@ whether the package is right. Budget your effort here:
      scored one — a `group`-based composition can match a fixed-width reference
      perfectly at width 80 and still be wrong, because it is width-sensitive
      where the reference is not.
+
+     For a `reference_width = "fixed"` language there is no second width, and
+     the equivalent axis is an adversarial **source line structure**. Stage B's
+     item 7 already knows fixed references need a different probe and says so;
+     this section did not, until Haskell. For a source-driven predicate the
+     sharpest test is **idempotence on off-corpus line structures** — a
+     source-sensitive rule is exactly the shape that can oscillate where the
+     corpus never shows it.
+   - **Do the two runtimes mean the same thing by it?** Parity is a hard
+     requirement measured **by the scorer over the corpus**, and the corpus can
+     only check the bytes it contains. A new capability has branches no corpus
+     file reaches — every refusal, every empty input, every out-of-range or
+     malformed path — and those are exactly where two independently written
+     implementations drift. **Diff the Rust and JS implementations by hand and
+     construct an input for each branch of each condition.** This has now found
+     two defects in two consecutive slices, both invisible to every gate: HTML's
+     `srcgap` disagreed about whether vertical tab is whitespace, and Haskell's
+     `source-multiline` disagreed about a node range running past the source,
+     because **Rust's `slice::get` returns `None` where JS's `subarray` clamps**.
+     That asymmetry is worth checking for by name; a third instance of it sits on
+     `main` today in `Formatter.slice`, on a path no package currently takes.
+
    - **Is its _shape_ right?** A warranted capability can still be implemented
      too broadly, and gates cannot see that: every gate passes either way. Read
      the predicate. YAML's semantic-gap bypass was warranted and searched the
