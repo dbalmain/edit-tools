@@ -3275,6 +3275,94 @@ gates 2 and 3 stand at 28/30 for markdown and 403/405 corpus-wide, and every
 remaining failure is `lists.md` at both widths. Zero stale, zero unreviewed, zero
 `package-bug`, review coverage 100%.
 
+### Capability 1, specified — and it is not the capability that was approved
+
+Dave approved "a package-visible source-gap newline predicate". Spiked and
+measured on 2026-08-24, in both runtimes so parity could not mask the result:
+**that is not the shape, and neither is any variant of it.**
+
+**The spike.** `content_end` recurses into the last non-empty child instead of
+stripping one terminator, bounded at depth *d*. Both runtimes, gate 1 green at
+every setting, so these are real gate numbers rather than parity noise.
+
+| gap bound | markdown gate 3 | markdown agree | TOML gate 3 | TOML agree | YAML gate 3 | YAML agree |
+| --- | --- | --- | --- | --- | --- | --- |
+| **1 — one terminator (shipped)** | **28/30** | **13/24** | 30/30 | 23/30 | 32/32 | 12/32 |
+| 2 | 22/30 | 11/24 | 30/30 | 15/30 | 32/32 | 12/32 |
+| 3 | 22/30 | 11/24 | 30/30 | 13/30 | 32/32 | 12/32 |
+| unbounded | 22/30 | 11/24 | 30/30 | 13/30 | 30/32 | 10/32 |
+
+**Every depth greater than one is worse than the shipped bound, for markdown
+itself.** Not "worse for TOML, better for markdown" — worse for markdown. A
+package-selected depth, a header integer, a per-rule depth: all of them are
+choices along an axis that has no good value.
+
+**Why, and it is visible in the failure text.** The two bounds fail in *opposite*
+directions:
+
+```
+depth 1   list_item/paragraph: 2 named children became 1   ← a continuation LOST
+depth 2+  list_item:           2 named children became 3   ← a continuation GAINED
+```
+
+Under-measure and the blank is never emitted. Over-measure and it is emitted
+**more than once**, because a single source blank is simultaneously visible to
+`list_item`'s trailing `blank`, to the enclosing `list`'s separator, and to
+`section`'s `blocks` floor. Three rules, one gap, three renderings of it.
+
+**So the axis is not depth. It is ownership: which rule is allowed to spend a
+source gap, given that several can see it.** That is a different capability from
+the one approved, and a larger one.
+
+**What it also is not.** The other half of the earlier diagnosis — that a break
+between list items escapes the list, because the next line's indent lives inside
+the previous item's verbatim — was re-measured after FINDINGS 24 shipped and is
+**not** a blocker. The tree really does put it there:
+
+```
+list_item 117..134
+  list_marker_minus 117..119  '- '
+  paragraph 119..134                      ← verbatim, emits 'nested tight\n  '
+    inline             119..131  'nested tight'
+    block_continuation 132..134  '  '     ← the NEXT line's indent, inside THIS item
+```
+
+but the escape only ever happened because the floor forced a blank at *every*
+boundary including nested ones. Under a correct measurement the nested boundary
+correctly takes no blank, and the outer boundary's trailing continuation is
+**zero-width**, so the break lands at column 0 where it belongs. Confirmed in the
+spike: the nested list stays tight, and the only remaining defect is the extra
+blank from double-counting. Wrapping the separator in the new `prefix` opcode was
+also tried and changes nothing (18/30 either way), which is the right answer —
+`prefix` puts a marker on lines we invent, and this marker is one the source
+already had.
+
+**The three shapes worth pricing, none of them costed yet:**
+
+1. **Claim-once on the source gap.** A gap a `blank` renders is marked spent, so
+   an enclosing rule measures zero. Needs a tie-break rule — evaluation runs
+   outside-in, so first-writer-wins hands the gap to `section`, which is the
+   wrong owner. Innermost-wins is what markdown wants and is the harder one to
+   implement, since the outer rule must emit before it knows.
+2. **A package-declared gap owner.** The header names which node types may spend
+   a gap between which children — markdown would say `list` owns the gaps between
+   `list_item`s. Package data rather than runtime policy, which is this project's
+   usual preference, and no tie-break is needed because the package states one.
+   Costs a header field and a new kind of cross-rule coupling.
+3. **Accept it.** Markdown ships blocked, or `lists.md` leaves the corpus. The
+   second is corpus-fitting and should not be on the table; the first means the
+   sixteenth language never merges.
+
+**Recommendation: shape 2.** It states the answer as data, needs no tie-break,
+and keeps the runtime bound at the value that is already right for every other
+language. The one fact that would change it: if a second language turns out to
+want gap ownership too and wants it *dynamically* — a rule that owns the gap only
+sometimes — then a header list cannot say that and shape 1's protocol is the real
+requirement.
+
+**Not started.** This entry now holds the measurement that says what to build; it
+does not hold a build.
+
 **`share_line` is entry 9, not this entry.** It still decides suffix-versus-own-line
 from the last child's `end`, a second spelling of "where does this item's content
 actually end". Unifying it onto `content_end` is the right spelling and can only
