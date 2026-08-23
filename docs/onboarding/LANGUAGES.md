@@ -270,6 +270,57 @@ instruction that finds them is now in the review brief rather than in a prompt.
 `main` stands at **373/373 on all four gates, 0 package bugs, and 100% review
 coverage** — every divergence in every merged language has a recorded verdict.
 
+## 2026-08-23 — three register pickups, and the one that agreed and was wrong
+
+No new language: the first round spent entirely on the open register, at
+`wt/pickups-r6`, built by Claude and reviewed by codex-Sol at **medium** effort
+rather than high. Three items were taken. **One landed, one landed after being
+overturned in review, and one turned out not to exist.**
+
+**FINDINGS 29(b) is built** — `tab_stop`, +352 B runtime and +11 B in
+`scheme.json`. The entry predicted `nesting.scm` would go byte-identical without
+changing a single rule and it did, exactly. Scheme is 2/15 → 3/15.
+
+**FINDINGS 23's Rust pickup does not exist.** The entry was marked built and
+said Rust could pick up `or_patterns.rs@60`; measured, `flatten` stops refusing
+and then breaks every separator where rustfmt packs. The entry had both halves
+of this already and read the spine walk as the repair for the layout when it was
+the repair for the refusal. **"The opcode stopped refusing" is not "the opcode
+emits the reference's bytes"**, and a refusal hides the second claim until it is
+lifted.
+
+**FINDINGS 20's JavaScript pickup was half right, and the wrong half passed
+every gate.** The augmented-assignment branch stands and stage D strengthened it
+against prettier. The bitwise branch made `operators.js` byte-identical at
+**both** widths, with all four gates green — and mis-parenthesised `a | b | c`,
+because prettier's boundary is operator-pair sensitive and the rule keyed on a
+static bitwise set. The corpus has no same-operator bitwise chain. JavaScript
+lands at 8/14 @80, not the 9/14 the entry priced from two corpus hunks.
+
+That is the third consecutive slice in which **a rule was clean only because
+nothing probed it** — `decorators.ts`, FINDINGS 33, and this — and the first
+where the builder's own file *agreed with the reference* and was still wrong.
+Corpus agreement is evidence about the corpus. The stage-D brief now carries the
+check: for a rule keyed on a set, write the inputs the set is meant to separate
+and run them against the reference.
+
+**A fourth pickup was refused by gate 3, and became FINDINGS 33.** TypeScript's
+review had called JavaScript's `fill`/comment coupling stale and named the
+pickup. Applied, it **destroys code**: `Doc::Suffix` flushes only at a breaking
+line, a flat fill separator is not one, so a trailing comment outlives its item
+and lands inside the next item's `//` comment. Confirmed in both runtimes on
+off-corpus TypeScript input, so `typescript.json` is latent-unsafe today.
+
+**A fourth parity defect, of a shape the first three did not have.** The three
+before it were conditionals; this one was the accepted numeric *domain* —
+`tab_stop`'s two validators had identical conditions and different ranges,
+because JS `Number.isInteger` admits values Rust's integer deserialisation
+rejects. A branch-by-branch hand-diff walks straight past that, so the brief now
+says to compare domains as well as branches.
+
+`main` after this round: **373/373 on all four gates, 235/358 agreement, 0 stale,
+0 unreviewed, 0 package bugs, 100% review coverage.**
+
 ## Board
 
 | Language   | Tier | Round | Builder       | Status | Grammar                | Reference                         |
