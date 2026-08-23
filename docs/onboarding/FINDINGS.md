@@ -2654,7 +2654,73 @@ and `strings.rs@100`, while still not fixing `strings.rs@60`.
 
 ## 24. An injected region is spliced by offset, and a reflow invents lines the host never saw
 
-**Status:** open · **Cost:** **contextual** · **Languages:** Markdown (HTML next)
+**Status:** **built** (2026-08-24, **+300 B gzip**) · **Cost:** local, not
+contextual — the entry mispriced it · **Languages:** Markdown (HTML next)
+
+### Built, and the entry's own framing was the expensive part
+
+The entry offered two shapes and asked for a choice between them: a per-line
+prefix carried through the printer, or prefix re-application as a host post-pass
+after `print()`. It leaned toward the post-pass, on the precedent that
+`alignCells` is a whole-text pass. **Neither was needed.**
+
+`Doc::Indent` has always carried a **string** unit rather than a column count —
+that is how a gofmt region nests a tab-indented body inside a space-indented one,
+and it was written down in `doc.rs` the whole time. A host's per-line marker is
+that same mechanism with different bytes. The entry's own sentence, "the
+printer's `indent` carries a column count, not a string", was simply **wrong**,
+and it is what made this look contextual for two days.
+
+So the built shape is a twenty-eighth opcode, `["prefix", sel, e…]`: consume the
+`sel` child, indent the body by *that child's own source text*. The host marker
+is already in the tree as a `block_continuation` leaf; the opcode reads it rather
+than inventing it, so no token-policy question arises. Zero matches is an empty
+prefix consuming nothing, which is what lets one fence rule serve a fence at the
+top of a document and a fence four lists deep. Three refusals, all because the
+child is consumed unemitted: a comment on the marker, an interior node, and a
+marker spanning a line ending.
+
+`verbatim` bodies cannot double-prefix, which was the risk worth checking before
+building: `verbatim` emits one `Doc::Text` holding its own newlines, and the
+printer only writes an indent at a break it issued itself.
+
+**Measured.** `nesting.md` gates 2 and 3 go 26/30 → 28/30 for markdown, 401/405 →
+403/405 corpus-wide; `nesting.md@40` now agrees with prettier outright. Rust and
+JS byte-identical at 405/405.
+
+### Fixing it exposed a second defect the gate had been masking
+
+Gate 3 reports one failure per file, and "parsed content became verbatim content"
+came first. Behind it: the blank line after a fence *inside a list item* was also
+being dropped. `block_continuation` is declared a token, so `each named` skips
+it, and `list_item`'s trailing `["opt", "t:block_continuation", …]` emitted it
+with no gap in front. A `["blank", 1]` there restores it — the FINDINGS 30
+runtime bound already measures *that* gap correctly, since it sits one nesting
+level shallower than the one `lists.md` needs.
+
+Worth stating as a general lesson: **a hard gate that stops at the first failure
+per file hides the second one, and a fix that "should" close a file may only
+uncover what was behind it.** Re-measure the file, do not assume the count moves
+by one.
+
+### The remaining `nesting.md@80` hunk is not markdown's
+
+One hunk survives, and it belongs to `packages/json.json`: our `array` rule
+hard-breaks any array of two or more objects, while prettier breaks only when
+**every** element is an object or array with **more than one** child. Verified
+live against prettier 3.9.6 — four 1-key objects stay flat, two 2-key objects
+break, and a mixed pair stays flat.
+
+No predicate expresses a per-child minimum arity. `child_count` is a **total**
+across siblings, so `[{a,b,c},{a}]` and `[{a,b},{a,b}]` are indistinguishable to
+it. The only expressible alternative — dropping the hard branch for the
+width-based one — was measured and takes JSON's own corpus from **6/6 to 4/6**,
+so the shipped rule is the better of the two policies the IR can state. Recorded
+as a design limit, and it is a clean instance of entry 16: JSON's own corpus
+contains no array of single-key objects, so nothing saw this until a markdown
+fence put one there.
+
+### The entry as written before it was built
 
 **Measured, 2026-08-23.** `nesting.md` is the concrete case and it fails gate 3:
 `embedded region 1: parsed content became verbatim content`. A ```` ```json ````
@@ -3085,7 +3151,8 @@ the two halves of Lisp indentation and building either alone leaves Scheme short
 
 **Status:** runtime half **built** (2026-08-23, **+389 B gzip**), package half
 **open and measured closed** · **Cost:** local · **Languages:** Markdown
-(package built, blocked on this entry), Ruby (survivable, worked around)
+(package built; this is now the **only** thing blocking its merge), Ruby
+(survivable, worked around)
 
 ### Built — and the repair this entry proposed was the wrong one
 
@@ -3198,10 +3265,15 @@ blocks end in three different places — a `verbatim` block past its own newline
 paragraph inside a block quote *at* its trailing `>` continuation. With those,
 Markdown reaches 10 of 24 and both gate 0 and gate 1 are perfect. That is a
 package fact, not a second runtime bound, and it is why this entry's remaining
-half is open rather than blocked. (Markdown now reaches **12** of 24; the 10 was
-measured before `html_block` was dropped from the `blocks` floor, an unrelated
-package bug stage D found. The bounds table above is a controlled comparison
-taken against the package as it stood then, so its cells are left as measured.)
+half is open rather than blocked. (Markdown now reaches **13** of 24: the 10 was
+measured before `html_block` was dropped from the `blocks` floor, and before
+FINDINGS 24 was built. The bounds table above is a controlled comparison taken
+against the package as it stood then, so its cells are left as measured.)
+
+**This is now the only thing between Markdown and a merge.** With entry 24 built,
+gates 2 and 3 stand at 28/30 for markdown and 403/405 corpus-wide, and every
+remaining failure is `lists.md` at both widths. Zero stale, zero unreviewed, zero
+`package-bug`, review coverage 100%.
 
 **`share_line` is entry 9, not this entry.** It still decides suffix-versus-own-line
 from the last child's `end`, a second spelling of "where does this item's content

@@ -27,7 +27,7 @@ here are the evidence: their rules use the same small Doc language.
 ## The rule language
 
 An expression is a JSON array whose first element is the opcode. The set is
-small and closed — **twenty-seven opcodes**, listed in the tables below — and an
+small and closed — **twenty-eight opcodes**, listed in the tables below — and an
 unknown opcode is a load-time refusal in both runtimes. `rust/src/pkg.rs`'s
 `Expr` loader and `runtime-js/bundle.js`'s `validateExpr` are the contract;
 this document explains it and has drifted behind it before.
@@ -64,6 +64,7 @@ unknown names, bad argument counts and holes outside a definition body.
 | `["seq", e…]`    | concatenation                                            |
 | `["group", e…]`  | one layout decision: all-flat if it fits, else broken    |
 | `["indent", e…]` | one indent level deeper (`indent` in the package header) |
+| `["prefix", sel, e…]` | consume the `sel` child and indent `e…` by *its* source text |
 | `["line"]`       | a space when flat, a newline when broken                 |
 | `["soft"]`       | nothing when flat, a newline when broken                 |
 | `["hard"]`       | always a newline; forces every enclosing group open      |
@@ -235,6 +236,31 @@ in the rendered line and a tab is one character spanning several columns. Both
 runtimes accept only a non-negative **JSON-safe** integer: `Number.isInteger`
 admits values Rust's integer deserialisation rejects, and a package that loads
 in one runtime and refuses in the other is a parity break no corpus can see.
+
+`prefix` is the one place a package chooses an indent unit from the *source*
+rather than from the header, and it exists because a host construct can own a
+per-line marker that the guest inside it has never heard of. A fenced code block
+inside a markdown list or block quote carries `    ` or `> ` on every line;
+tree-sitter puts that marker in the tree as a `block_continuation` leaf, the host
+emits it once, and then an injected guest reflows the body into lines the host
+document never contained. `["prefix", sel, e…]` consumes the `sel` child and
+indents `e…` by that child's own text, so every line the body emits — including
+lines the guest invents after the host has stopped looking — carries the marker.
+
+This is not a new mechanism: `Doc::Indent` has always carried a **string** unit
+rather than a column count, which is how a gofmt region nests a tab-indented body
+inside a space-indented one. `prefix` picks the string out of the tree instead of
+the header. Prefixes concatenate exactly as indent levels do, so a fence inside a
+quoted list carries both markers.
+
+Zero matches is an empty prefix that consumes nothing, so one rule serves a fence
+at the top of a document and a fence four lists deep without a `when`. Three
+things refuse, all because the child is consumed without being emitted: a marker
+carrying a comment (the comment would be lost — the same guard `drop` carries),
+an interior node rather than a leaf, and a marker spanning a line ending, which
+would write a newline the printer never measured. A `verbatim` body cannot be
+double-prefixed, because `verbatim` emits one text node holding its own newlines
+and the printer only writes an indent at a break it issued itself.
 
 `srcgap` is the safe source-aware exception to fixed whitespace. It reads the
 gap between the children on either side of the cursor. An empty gap emits

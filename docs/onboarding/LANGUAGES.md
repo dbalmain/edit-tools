@@ -142,10 +142,10 @@ Two things to carry, both from stage D rather than from building:
 
 ## 2026-08-23, later — the register caught up with the round
 
-`DESIGN.md` now documents all **twenty-seven** opcodes the loaders accept, after
+`DESIGN.md` now documents all **twenty-eight** opcodes the loaders accept, after
 three consecutive slices reported the drift. The count is worth a line of its
 own: codex's review said twenty-six and I was one command from copying it into
-the document — counting the loader's arms gives twenty-seven. That is two agents
+the document — counting the loader's arms gives twenty-eight. That is two agents
 in a row getting a number wrong by not deriving it, in the same week the Ruby and
 Scheme reviews caught the builder doing exactly that twice. The document now
 names `rust/src/pkg.rs` and `runtime-js/bundle.js` as the contract and says

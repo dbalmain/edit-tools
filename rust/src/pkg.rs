@@ -539,7 +539,7 @@ pub enum Pred {
     SourceMultiline,
 }
 
-/// One expression of the package language. Twenty-seven opcodes; see DESIGN.md.
+/// One expression of the package language. Twenty-eight opcodes; see DESIGN.md.
 #[derive(Debug, Deserialize)]
 #[serde(try_from = "Value")]
 pub enum Expr {
