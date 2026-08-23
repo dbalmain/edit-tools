@@ -109,7 +109,12 @@ fit it keeps the separator flat; if only the current content fits it breaks the
 separator; if the current content itself cannot stay flat it prints that
 content broken too. A `Hard` or `BreakParent` still propagates through a fill to
 force its enclosing group open; that does not turn the fill back into an
-all-or-nothing list.
+all-or-nothing list. One separator is not free to stay flat, though: **a
+separator with a trailing comment queued in front of it breaks.** Every suffix
+is emitted with a `BreakParent`, so everywhere else a queued suffix already
+means a broken group; the fill separator is the only one that picks its mode
+without consulting that, and letting it stay flat flushes the comment after the
+next item — inside it, when that item leads with a line comment.
 
 The four `src*` opcodes mirror the **source's own line structure** rather than a
 group's fit, and they are what a source-preserving reference needs. `srcline`,

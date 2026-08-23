@@ -3133,9 +3133,39 @@ package edit and a re-review away.
 
 ## 33. A flat `fill` separator does not flush a suffix, and a line comment then eats the next one
 
-**Status:** open — **destroys, and only gate 3 sees it** · **Cost:** local ·
-**Languages:** JavaScript (`comments.js`, both widths), TypeScript (latent — its
-corpus cannot reach it)
+**Status:** **built** (2026-08-23, **+123 B gzip runtime**) · **Cost:** local ·
+**Languages:** JavaScript (built it, and took the pickup it had been blocking),
+TypeScript (was latent-unsafe; now has the corpus file)
+
+### Built — the invariant restored at the Line, not a change to `fill`
+
+Every `Doc::Suffix` is emitted with a `Doc::BreakParent`, so a queued suffix
+means the enclosing group is already open and a break is due before the next
+content. A `fill` separator is the one place in the printer that picks its own
+mode without consulting forced breaks, so it alone can reach a `Line` flat with
+a suffix still queued. The repair is to say so at the `Line`: **if suffixes are
+pending, this separator breaks.** Four lines in each runtime.
+
+**The regression experiment came back empty, which is the reasoning confirming
+itself.** `fill` is used by CSS, JSON and TypeScript, so forcing this break could
+have moved packing anywhere. With the runtime change and no package change,
+every language scored identically — 235/358, all four gates green, not one byte
+of corpus output moved. Outside a fill, a pending suffix already implied a
+broken group, so there was nothing else for the rule to change.
+
+**JavaScript then took the pickup gate 3 had refused.** `javascript.json` gains
+the `fill_list` def TypeScript already had, and `sequences.js@80` becomes
+agreement. `comments.js` keeps its two runtime-attachment hunks (entry 9) and
+all six of its comments.
+
+`corpus/src/typescript/comment_fill.ts` is the file neither existing corpus
+could be. Verified it earns its place rather than assumed: with the fix reverted
+it fails gate 3 with two comments lost **and** gate 2 as non-idempotent, and
+passes with it. Also verified valid under `tsc 5.9.3 --strict`, because the
+previous TypeScript slice classified a divergence against a file the compiler
+rejects.
+
+### The entry as written when it was open
 
 TypeScript's stage D found the old JavaScript note "`fill` mishandles suffix
 comments" to be stale, and it was right about TypeScript: `fill` preserves
@@ -3206,4 +3236,5 @@ not a JavaScript-only hazard.
 **TypeScript should not be called safe until three things exist**: the runtime
 either breaks a fill separator when a suffix is pending or refuses that fill;
 mirrored Rust and JS unit tests; and a commented-number-array file in the
-TypeScript corpus, so gate 3 owns the regression instead of this entry.
+TypeScript corpus, so gate 3 owns the regression instead of this entry. *All
+three now exist; the first was the option taken.*
