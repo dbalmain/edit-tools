@@ -201,6 +201,100 @@
         ]
       ]
     ],
+    "fill_list": [
+      "group",
+      [
+        "tok",
+        [
+          "$",
+          0
+        ]
+      ],
+      [
+        "indent",
+        [
+          "soft"
+        ],
+        [
+          "fill",
+          "named",
+          [
+            "seq",
+            [
+              "tok",
+              [
+                "$",
+                1
+              ]
+            ],
+            [
+              "line"
+            ]
+          ]
+        ],
+        [
+          "trail",
+          [
+            "$",
+            1
+          ],
+          "named"
+        ]
+      ],
+      [
+        "soft"
+      ],
+      [
+        "tok",
+        [
+          "$",
+          2
+        ]
+      ]
+    ],
+    "list_no_trail": [
+      "group",
+      [
+        "tok",
+        [
+          "$",
+          0
+        ]
+      ],
+      [
+        "indent",
+        [
+          "soft"
+        ],
+        [
+          "each",
+          "named",
+          [
+            "seq",
+            [
+              "tok",
+              [
+                "$",
+                1
+              ]
+            ],
+            [
+              "line"
+            ]
+          ]
+        ]
+      ],
+      [
+        "soft"
+      ],
+      [
+        "tok",
+        [
+          "$",
+          2
+        ]
+      ]
+    ],
     "padded_list": [
       "group",
       [
@@ -909,7 +1003,7 @@
           ],
           [
             "use",
-            "list",
+            "fill_list",
             "[",
             ",",
             "]"
@@ -1409,23 +1503,39 @@
       [
         "when",
         [
-          "count",
+          "child-count",
           "named",
+          "t:rest_pattern",
           1
         ],
         [
           "use",
-          "one_list",
+          "list_no_trail",
           "(",
           ",",
           ")"
         ],
         [
-          "use",
-          "list",
-          "(",
-          ",",
-          ")"
+          "when",
+          [
+            "count",
+            "named",
+            1
+          ],
+          [
+            "use",
+            "one_list",
+            "(",
+            ",",
+            ")"
+          ],
+          [
+            "use",
+            "list",
+            "(",
+            ",",
+            ")"
+          ]
         ]
       ]
     ],
@@ -4550,8 +4660,24 @@
     "as_expression": [
       "seq",
       [
-        "autoparen",
-        "named"
+        "when",
+        [
+          "count",
+          "t:binary_expression",
+          1
+        ],
+        [
+          "paren",
+          true,
+          [
+            "child",
+            "named"
+          ]
+        ],
+        [
+          "autoparen",
+          "named"
+        ]
       ],
       [
         "sp"
