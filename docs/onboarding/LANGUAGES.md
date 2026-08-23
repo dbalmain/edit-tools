@@ -250,7 +250,7 @@ other mutates tokens.
 | HTML       | T3   | 4     | grok+codex    | merged | tree_sitter_html       | prettier                          |
 | Ruby       | T4   | 5     | grok+Claude   | merged | tree_sitter_ruby       | syntax_tree 6.3.0                 |
 | Scheme     | T4   | 5     | grok+Claude   | merged | tree_sitter_scheme     | emacs `scheme-mode`               |
-| Haskell    | T4   | 5     | grok+codex    | D      | tree_sitter_haskell    | ormolu 0.8.0.2                    |
+| Haskell    | T4   | 5     | grok+codex    | merged | tree_sitter_haskell    | ormolu 0.8.0.2                    |
 | Aven       | T4   | 6     | tbd           | -      | **none — see below**   | `aven fmt`                        |
 
 Grammar package names are the orchestrator's guess from PyPI naming convention.
