@@ -176,6 +176,32 @@ gap between two blocks measures one newline short and both obvious blank-line
 policies fail in opposite directions. No package expression distinguishes "the
 source had a blank that the node ate" from "the source had none".
 
+## 2026-08-23 — XML's stage D returned `escalate`, and it was right
+
+The 26/26 was genuine for the corpus as it stood, and **the corpus was the
+problem**. `XMLDecl` hard-coded `["tok","\""]` for every quote and
+`["child","t:yes"]` for the standalone value, so both runtimes **refused**
+`standalone="no"` and single-quoted declaration values — input prettier formats
+without complaint. codex-Sol found it with two probes of its own, called them
+package bugs rather than design limits, and declined to fix them itself, which is
+what the stage-D brief asks for.
+
+**A refusal on valid input is worse than a divergence, and only one of the two
+is visible in the score.** A divergence is counted, classified and argued; a
+refusal on a construct the corpus happens not to contain shows up the first time
+someone formats a real file. Nothing in the gate suite can see it, because gate 0
+only formats the corpus.
+
+Fixed by the builder, `declaration.xml` added to probe all three variants, and
+XML is now 28/28 — two pairs bigger corpus, not a luckier package. Back with the
+reviewer for the re-review an escalation requires.
+
+The reviewer's template delta is the one to adopt, and it is sharper than the
+builder's. A report claiming full agreement should have to answer: **which
+alternatives to every hard-coded token or type selector are absent from the
+corpus, and what out-of-corpus probe tested them?** A perfect score is evidence
+about the corpus at least as much as about the package.
+
 ## Board
 
 | Language   | Tier | Round | Builder       | Status | Grammar                | Reference                         |
