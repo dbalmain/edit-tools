@@ -2841,6 +2841,124 @@ try {{
     }
 
     #[test]
+    fn a_declared_gap_owner_measures_past_the_childs_own_subtree() {
+        // FINDINGS 30's remaining half. The source blank sits *inside* the
+        // first item, one level below where peeling one terminator reaches --
+        // markdown's loose list, where the blank that makes the list loose
+        // lives in the preceding `list_item`. Only the parent the package names
+        // measures past the subtree; every other consumer keeps the shallow
+        // bound, because one blank is visible to several rules at once and each
+        // of them would render it.
+        let raw = |owner: serde_json::Value| {
+            json!({
+                "format": "et-doc-rules/1",
+                "indent": 2,
+                "tokens": [],
+                "gap_owner": owner,
+                "rules": {
+                    "file": ["each", "named", ["seq", ["hard"], ["blank", 1]]],
+                    "item": ["child", "t:name"],
+                    "name": ["verbatim"]
+                }
+            })
+        };
+        let pkg = |owner: serde_json::Value| -> PackageMap {
+            one(serde_json::from_value(raw(owner)).expect("gap_owner package parses"))
+        };
+        let source = "a\n\nb";
+        let root = || {
+            json!({
+                "type": "file", "start": 0, "end": 4,
+                "children": [
+                    { "type": "item", "start": 0, "end": 3, "children": [
+                        { "type": "name", "start": 0, "end": 1, "text": "a" }
+                    ]},
+                    { "type": "item", "start": 3, "end": 4, "children": [
+                        { "type": "name", "start": 3, "end": 4, "text": "b" }
+                    ]}
+                ]
+            })
+        };
+        // Undeclared: one terminator comes off `a\n\n`, the gap reads a single
+        // newline, and the blank is invisible.
+        assert_eq!(
+            run_on(&pkg(json!({})), source, root(), 80).expect("ok"),
+            "a\nb\n"
+        );
+        // Declared: the gap is measured from the deepest non-empty descendant,
+        // so the blank the grammar buried is reachable.
+        assert_eq!(
+            run_on(&pkg(json!({ "file": ["item"] })), source, root(), 80).expect("ok"),
+            "a\n\nb\n"
+        );
+        // A different child type is not the declared pair.
+        assert_eq!(
+            run_on(&pkg(json!({ "file": ["other"] })), source, root(), 80).expect("ok"),
+            "a\nb\n"
+        );
+    }
+
+    #[test]
+    fn a_gap_owner_does_not_move_the_trailing_blank() {
+        // The double-count that made every global depth worse than no depth at
+        // all: the enclosing separator and the node's own trailing `blank` both
+        // see one source blank. Ownership settles the sibling gap only -- the
+        // trailing measure keeps the shallow bound, so the two never claim the
+        // same newline.
+        let pkg: PackageMap = one(
+            serde_json::from_value(json!({
+                "format": "et-doc-rules/1",
+                "indent": 2,
+                "tokens": [],
+                "gap_owner": { "file": ["item"] },
+                "rules": {
+                    "file": ["seq", ["each", "named", ["seq", ["hard"], ["blank", 1]]], ["blank", 1]],
+                    "item": ["child", "t:name"],
+                    "name": ["verbatim"]
+                }
+            }))
+            .expect("package parses"),
+        );
+        // `b\n\n` swallows its ending and the blank after it. Shallow peels one
+        // terminator and stops; deep would reach `b` and count the blank twice.
+        let root = json!({
+            "type": "file", "start": 0, "end": 6,
+            "children": [
+                { "type": "item", "start": 0, "end": 3, "children": [
+                    { "type": "name", "start": 0, "end": 1, "text": "a" }
+                ]},
+                { "type": "item", "start": 3, "end": 6, "children": [
+                    { "type": "name", "start": 3, "end": 4, "text": "b" }
+                ]}
+            ]
+        });
+        assert_eq!(
+            run_on(&pkg, "a\n\nb\n\n", root, 80).expect("ok"),
+            "a\n\nb\n"
+        );
+    }
+
+    #[test]
+    fn gap_owner_accepts_the_same_shapes_as_the_js_loader() {
+        // Acceptance domains must match: a package that loads in one runtime
+        // and refuses in the other is a parity break no corpus can see, which
+        // is the lesson `tab_stop` left behind (FINDINGS 29b).
+        let with_owner = |owner: serde_json::Value| {
+            serde_json::from_value::<Package>(json!({
+                "format": "et-doc-rules/1",
+                "indent": 2,
+                "gap_owner": owner,
+                "rules": { "file": ["each", "named", ["hard"]] }
+            }))
+        };
+        assert!(with_owner(json!({ "list": ["list_item"] })).is_ok());
+        assert!(with_owner(json!({})).is_ok());
+        assert!(with_owner(json!(["list"])).is_err());
+        assert!(with_owner(json!({ "list": "list_item" })).is_err());
+        assert!(with_owner(json!({ "list": [7] })).is_err());
+    }
+
+    #[test]
     fn trailing_trivia_does_not_make_an_own_line_comment_a_suffix() {
         // tree-sitter-go's statement_list range includes the newline after
         // the last statement, so an own-line comment before `}` looks

@@ -114,6 +114,16 @@ pub struct Package {
     /// before -- a comment before a suite belongs inside it.
     #[serde(default)]
     pub descend: HashSet<String>,
+    /// Parent type -> child types whose *following* gap this parent owns.
+    ///
+    /// A source blank line can sit inside the previous sibling's subtree, one
+    /// or more nesting levels below where the one-terminator bound reaches, so
+    /// several rules can see the same gap and each would render it. This names
+    /// the one that may: for a listed (parent, child) pair the gap after that
+    /// child is measured to its deepest non-empty descendant, and every other
+    /// consumer keeps the shallow bound. FINDINGS 30.
+    #[serde(default)]
+    pub gap_owner: HashMap<String, HashSet<String>>,
     /// Node types that get a balanced paren pair when their layout breaks.
     #[serde(default)]
     pub optional_parens: HashSet<String>,
@@ -154,6 +164,8 @@ struct RawPackage {
     comments: HashSet<String>,
     #[serde(default)]
     descend: HashSet<String>,
+    #[serde(default)]
+    gap_owner: HashMap<String, HashSet<String>>,
     #[serde(default)]
     optional_parens: HashSet<String>,
     #[serde(default)]
@@ -215,6 +227,7 @@ impl TryFrom<RawPackage> for Package {
             tokens: raw.tokens,
             comments: raw.comments,
             descend: raw.descend,
+            gap_owner: raw.gap_owner,
             optional_parens: raw.optional_parens,
             precedence: raw.precedence,
             flatten_fields,
@@ -508,6 +521,14 @@ impl Package {
         } else {
             " ".repeat(self.indent)
         }
+    }
+
+    /// Whether this parent owns the gap after a `child` of this type, and so
+    /// measures it past the child's own subtree. See `gap_owner`.
+    pub fn owns_gap_after(&self, parent: &str, child: &str) -> bool {
+        self.gap_owner
+            .get(parent)
+            .is_some_and(|kinds| kinds.contains(child))
     }
 
     pub fn tightness(&self, op: &str) -> i64 {

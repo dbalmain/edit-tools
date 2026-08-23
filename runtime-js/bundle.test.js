@@ -1695,6 +1695,76 @@ test("a fill separator breaks while a suffix is pending", () => {
   assert.ok(!/# one .*# two/.test(out), `comments merged onto one line: ${out}`);
 });
 
+// FINDINGS 30's remaining half, the JS mirror of eval.rs's
+// a_declared_gap_owner_measures_past_the_childs_own_subtree. The source blank
+// sits INSIDE the first item, one level below where peeling one terminator
+// reaches -- markdown's loose list, where the blank that makes the list loose
+// lives in the preceding list_item.
+test("a declared gap owner measures past the child's own subtree", () => {
+  const pkg = (gap_owner) => ({
+    format: "et-doc-rules/1",
+    indent: 2,
+    tokens: [],
+    gap_owner,
+    rules: {
+      file: ["each", "named", ["seq", ["hard"], ["blank", 1]]],
+      item: ["child", "t:name"],
+      name: ["verbatim"],
+    },
+  });
+  const source = "a\n\nb";
+  const root = () => ({
+    type: "file", start: 0, end: 4,
+    children: [
+      { type: "item", start: 0, end: 3, children: [{ type: "name", start: 0, end: 1, text: "a" }] },
+      { type: "item", start: 3, end: 4, children: [{ type: "name", start: 3, end: 4, text: "b" }] },
+    ],
+  });
+  assert.equal(runOn(pkg({}), source, root(), 80), "a\nb\n");
+  assert.equal(runOn(pkg({ file: ["item"] }), source, root(), 80), "a\n\nb\n");
+  assert.equal(runOn(pkg({ file: ["other"] }), source, root(), 80), "a\nb\n");
+});
+
+// The double-count that made every global depth worse than no depth at all:
+// the enclosing separator and the node's own trailing `blank` both see one
+// source blank. Ownership settles the sibling gap only.
+test("a gap owner does not move the trailing blank", () => {
+  const pkg = {
+    format: "et-doc-rules/1",
+    indent: 2,
+    tokens: [],
+    gap_owner: { file: ["item"] },
+    rules: {
+      file: ["seq", ["each", "named", ["seq", ["hard"], ["blank", 1]]], ["blank", 1]],
+      item: ["child", "t:name"],
+      name: ["verbatim"],
+    },
+  };
+  const root = {
+    type: "file", start: 0, end: 6,
+    children: [
+      { type: "item", start: 0, end: 3, children: [{ type: "name", start: 0, end: 1, text: "a" }] },
+      { type: "item", start: 3, end: 6, children: [{ type: "name", start: 3, end: 4, text: "b" }] },
+    ],
+  };
+  // Deep here would reach `b` and count the trailing blank a second time.
+  assert.equal(runOn(pkg, "a\n\nb\n\n", root, 80), "a\n\nb\n");
+});
+
+// Rust deserialises gap_owner as a map of node type to a set of node types; a
+// package that loads in one runtime and refuses in the other is a parity break
+// no corpus can see (FINDINGS 29b).
+test("gap_owner refuses a shape Rust would reject", () => {
+  const pkg = (gap_owner) => ({
+    format: "et-doc-rules/1", indent: 2, tokens: [], gap_owner,
+    rules: { file: ["each", "named", ["hard"]] },
+  });
+  const root = { type: "file", start: 0, end: 0, children: [] };
+  assert.throws(() => runOn(pkg(["list"]), "", root, 80), /`gap_owner` must be an object/);
+  assert.throws(() => runOn(pkg({ list: "list_item" }), "", root, 80), /must be an array of node types/);
+  assert.throws(() => runOn(pkg({ list: [7] }), "", root, 80), /must be an array of node types/);
+});
+
 test("a swallowed terminator is peeled once and only once", () => {
   // FINDINGS 30, the JS mirror of eval.rs's
   // a_swallowed_terminator_is_peeled_once_and_only_once. Same source, same

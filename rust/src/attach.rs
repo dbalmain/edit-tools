@@ -88,6 +88,19 @@ fn comment_content_end(node: &Node, src: &[u8]) -> usize {
 /// spaces are not content for this purpose. The set is tab, LF, FF, CR and
 /// space -- `u8::is_ascii_whitespace`, and deliberately not vertical tab,
 /// matching `srcgap` in both runtimes.
+/// `content_end` past the node's own subtree: the deepest non-empty descendant's
+/// content end. Used only where the package declares this parent the owner of
+/// the gap, because measuring every gap this way double-counts -- one source
+/// blank is visible to a rule, to its parent's separator, and to the floor
+/// above that, and each of them renders it. Measured at every depth: any global
+/// bound greater than one is worse than one, for markdown itself. FINDINGS 30.
+fn deep_end(src: &[u8], node: &Node) -> usize {
+    match node.children.iter().rev().find(|c| c.end > c.start) {
+        Some(last) => deep_end(src, last),
+        None => content_end(src, node),
+    }
+}
+
 fn content_end(src: &[u8], node: &Node) -> usize {
     let end = node.end.min(src.len());
     let start = node.start.min(end);
@@ -139,10 +152,16 @@ pub fn split<'a>(node: &'a Node, src: &[u8], pkg: &Package) -> Split<'a> {
     let mut items: Vec<Item<'a>> = Vec::new();
     let mut lead: Vec<Comment> = Vec::new();
     let mut prev_end = node.start;
+    let mut shallow_end = node.start;
 
     for child in &node.children {
         let gap = newlines(src, prev_end, child.start);
-        prev_end = content_end(src, child);
+        shallow_end = content_end(src, child);
+        prev_end = if pkg.owns_gap_after(&node.kind, &child.kind) {
+            deep_end(src, child)
+        } else {
+            shallow_end
+        };
 
         if pkg.comments.contains(&child.kind) {
             let text = comment_text(child, src);
@@ -166,6 +185,7 @@ pub fn split<'a>(node: &'a Node, src: &[u8], pkg: &Package) -> Split<'a> {
             // newline belongs to the following gap, not to the comment
             // body (already stripped from `text`).
             prev_end = comment_content_end(child, src);
+            shallow_end = prev_end;
             continue;
         }
         let blanks = gap.saturating_sub(1);
@@ -208,7 +228,7 @@ pub fn split<'a>(node: &'a Node, src: &[u8], pkg: &Package) -> Split<'a> {
             dangling = lead;
         }
     }
-    let trailing_blanks = newlines(src, prev_end, node.end).saturating_sub(1);
+    let trailing_blanks = newlines(src, shallow_end, node.end).saturating_sub(1);
     Split {
         items,
         dangling,

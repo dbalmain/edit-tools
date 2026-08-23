@@ -364,6 +364,19 @@ function tabStopField(pkg, comment_cells) {
   return stop;
 }
 
+/** Same shape Rust deserialises: a package that loads in one runtime and
+ *  refuses in the other is a parity break no corpus can see. */
+function gapOwnerField(pkg) {
+  const raw = pkg.gap_owner;
+  if (raw === undefined) return;
+  if (!isObject(raw)) throw new Refusal("`gap_owner` must be an object");
+  Object.entries(raw).forEach(([parent, kinds]) => {
+    if (!Array.isArray(kinds) || kinds.some((kind) => typeof kind !== "string")) {
+      throw new Refusal(`\`gap_owner.${parent}\` must be an array of node types`);
+    }
+  });
+}
+
 function buildPackage(pkg) {
   validatePackageFormat(pkg);
   const comment_cells = commentCellsField(pkg);
@@ -371,6 +384,7 @@ function buildPackage(pkg) {
   const comment_gap = gapField(pkg, "comment_gap");
   const blank_cap = gapField(pkg, "blank_cap");
   const flatten_fields = flattenFields(pkg);
+  gapOwnerField(pkg);
   const defs = pkg.defs === undefined ? {} : pkg.defs;
   if (!isObject(defs)) throw new Refusal("`defs` must be an object");
   if (!isObject(pkg.rules)) throw new Refusal("`rules` must be an object");
@@ -832,6 +846,22 @@ function commentText(fmt, node) {
 // swallows the newline and the blank run after it, and removing all trailing
 // whitespace cannot tell them apart. Tab, LF, FF, CR, space; not vertical tab,
 // matching srcGap.
+function ownsGapAfter(fmt, parent, child) {
+  const kinds = fmt.gapOwner.get(parent);
+  return kinds !== undefined && kinds.has(child);
+}
+
+/** `contentEnd` past the subtree: the deepest non-empty descendant's content
+ *  end. Only where the package declares the owner -- measuring every gap this
+ *  way double-counts (FINDINGS 30). */
+function deepEnd(bytes, node) {
+  const kids = node.children ?? [];
+  for (let i = kids.length - 1; i >= 0; i--) {
+    if (kids[i].end > kids[i].start) return deepEnd(bytes, kids[i]);
+  }
+  return contentEnd(bytes, node);
+}
+
 function contentEnd(bytes, node) {
   const end = Math.min(node.end, bytes.length);
   const start = Math.min(node.start, end);
@@ -858,10 +888,14 @@ function splitChildren(fmt, node) {
   const items = [];
   let lead = [];
   let prevEnd = node.start;
+  let shallowEnd = node.start;
 
   for (const child of node.children ?? []) {
     const gap = newlinesBetween(fmt.bytes, prevEnd, child.start);
-    prevEnd = contentEnd(fmt.bytes, child);
+    shallowEnd = contentEnd(fmt.bytes, child);
+    prevEnd = ownsGapAfter(fmt, node.type, child.type)
+      ? deepEnd(fmt.bytes, child)
+      : shallowEnd;
 
     if (fmt.comments.has(child.type)) {
       const last = items[items.length - 1];
@@ -881,6 +915,7 @@ function splitChildren(fmt, node) {
       // A rust doc comment's range includes its line ending. That
       // newline belongs to the following gap, not to the comment body.
       prevEnd = commentContentEnd(fmt, child);
+      shallowEnd = prevEnd;
       continue;
     }
     // Punctuation cannot carry a leading comment: emitting it there would put
@@ -914,7 +949,7 @@ function splitChildren(fmt, node) {
     lead = [];
   }
   // A file that is nothing but comments is still a file.
-  const trailingBlanks = Math.max(newlinesBetween(fmt.bytes, prevEnd, node.end) - 1, 0);
+  const trailingBlanks = Math.max(newlinesBetween(fmt.bytes, shallowEnd, node.end) - 1, 0);
   return {
     items,
     dangling: lead.length > 0 && !host ? lead : [],
@@ -1559,6 +1594,9 @@ class Formatter {
     this.tokens = new Set(this.pkg.tokens ?? []);
     this.comments = new Set(this.pkg.comments ?? []);
     this.descend = new Set(this.pkg.descend ?? []);
+    this.gapOwner = new Map(
+      Object.entries(this.pkg.gap_owner ?? {}).map(([parent, kinds]) => [parent, new Set(kinds)]),
+    );
     this.optionalParens = new Set(this.pkg.optional_parens ?? []);
     this.precedence = this.pkg.precedence ?? {};
     this.commentGap = this.pkg.comment_gap;
