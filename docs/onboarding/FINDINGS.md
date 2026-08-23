@@ -2134,7 +2134,38 @@ as agreement for a one-word package edit, which is exactly what this entry
 predicted for exactly the reason it gave. That is the second reference and the
 first measured pickup.
 
-**JavaScript still has not picked it up.** The pickup this entry priced (7/14 → 9/14
+**JavaScript's pickup is half of what this entry priced, and the other half was
+a wrong rule that passed every gate.** The augmented-assignment branch is valid
+and closes `modern.js@80` — prettier 3.x keeps the parens for **all fifteen**
+compound assignment operators, not only the three logical ones the corpus
+contains, so the rule is right off-corpus as well as on it.
+
+The bitwise branch is reverted. It made `operators.js` byte-identical at **both**
+widths and was still wrong, because prettier's boundary is **operator-pair**
+sensitive rather than bitwise-membership sensitive. Measured against prettier
+directly:
+
+```js
+const same       = a | b | c | d;      // unparenthesised -- flattened
+const mixLogical = a && b | c;         // unparenthesised
+const mixMod     = (a % b) * c;        // parenthesised, and not bitwise at all
+const mixShift   = (a << b) | c;
+```
+
+A static bitwise set gets the first two wrong — it wraps every same-operator
+chain, turning one flattened group into a nested staircase — and cannot reach
+the third at all. JavaScript therefore reaches **8/14 at width 80, not the 9/14
+this entry predicted**; the prediction was made from two corpus hunks and the
+corpus contains no same-operator bitwise chain.
+
+**The gates cannot see this and neither can the reference.** Byte-identical
+output at both measured widths, all four gates green, and the rule is still
+wrong on ordinary JavaScript. That is the third time in three slices that a
+shared rule was clean only because no corpus file probed it — `decorators.ts`,
+FINDINGS 33, and now this — and the first where the *builder's own* file agreed
+with the reference. Corpus agreement is evidence about the corpus.
+
+**The original state of this line, for the record:** The pickup this entry priced (7/14 → 9/14
 at width 80) is still available, and it is not quite free: JavaScript's two
 affected divergences carry accepted ledger reviews, and changing the package
 makes those records **stale**, which is a hard scorer failure until a reviewer
@@ -2936,7 +2967,7 @@ only to source line structure), while correcting the report's claim that it is
 table.
 
 **(b) The column has to be rendered as tabs, then spaces.** **Built**
-(2026-08-23, `tab_stop`, **+346 B gzip runtime, +11 B scheme.json**).
+(2026-08-23, `tab_stop`, **+352 B gzip runtime, +11 B scheme.json**).
 `indent-tabs-mode` is `t` in scheme-mode, so column 8 is one tab and column 9 is
 a tab plus a space. `tab_indent` means one tab **per level**, which is right for
 gofmt and cannot produce this. `nesting.scm` was the clean demonstration and was
@@ -2957,7 +2988,16 @@ character several columns wide). The second refuses a combination nothing uses
 today, which is the point — it would have been a silent column bug the first
 time something did.
 
-At **+346 B** this is the most expensive of the three capabilities built this
+Stage D found and fixed a **validator-domain** parity defect, the fourth in as
+many slices and the first that was not in the layout code: JavaScript's
+`Number.isInteger` accepts values Rust's integer deserialisation rejects, so a
+package could load in one runtime and refuse in the other. Both now require a
+non-negative **JSON-safe** integer, and Rust stores `tab_stop` as `u64`. Worth
+naming as its own shape — the three before it were all conditionals, and this
+one was the accepted numeric *domain*, which a branch-by-branch hand-diff walks
+straight past.
+
+At **+352 B** this is the most expensive of the three capabilities built this
 week — `paren true` was +43, the fieldless `flatten` fallback +66 — and about a
 third of it is refusal message text. Worth recording as the price of a header
 flag that has to be validated in two runtimes rather than the price of the
@@ -3158,4 +3198,12 @@ is a hypothesis about X's corpus, not a measurement of it.**
 
 And TypeScript is **latent, not safe**: the same `fill_list` sits in
 `typescript.json` today, and the first commented number array a user writes hits
-it. Gate 3 catches it on our corpus. Nothing catches it on theirs.
+it. Gate 3 catches it on our corpus. Nothing catches it on theirs. Stage D
+reproduced the destruction in **both** runtimes on an off-corpus TypeScript
+commented number array, so this is the shipped behaviour of a merged package and
+not a JavaScript-only hazard.
+
+**TypeScript should not be called safe until three things exist**: the runtime
+either breaks a fill separator when a suffix is pending or refuses that fill;
+mirrored Rust and JS unit tests; and a commented-number-array file in the
+TypeScript corpus, so gate 3 owns the regression instead of this entry.

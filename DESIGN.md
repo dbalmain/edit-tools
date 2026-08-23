@@ -214,7 +214,10 @@ whole column is spaces: a nested language region may have concatenated a tab
 unit of its own, and that column is not ours to guess. The measured column never
 moves, so nothing the printer already decided changes. `tab_stop` is also
 refused alongside `comment_cells`, because the alignment pass counts characters
-in the rendered line and a tab is one character spanning several columns.
+in the rendered line and a tab is one character spanning several columns. Both
+runtimes accept only a non-negative **JSON-safe** integer: `Number.isInteger`
+admits values Rust's integer deserialisation rejects, and a package that loads
+in one runtime and refuses in the other is a parity break no corpus can see.
 
 `srcgap` is the safe source-aware exception to fixed whitespace. It reads the
 gap between the children on either side of the cursor. An empty gap emits

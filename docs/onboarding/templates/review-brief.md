@@ -271,6 +271,12 @@ whether the package is right. Budget your effort here:
      because **Rust's `slice::get` returns `None` where JS's `subarray` clamps**.
      That asymmetry is worth checking for by name; a third instance of it sits on
      `main` today in `Formatter.slice`, on a path no package currently takes.
+     **Compare accepted numeric domains, not only branches.** A header validator
+     is the case a branch-by-branch diff walks past: `tab_stop`'s two validators
+     had identical conditions and different accepted ranges, because JS
+     `Number.isInteger` admits values Rust's integer deserialisation rejects. A
+     package that loads in one runtime and refuses in the other is a parity
+     break, and it is invisible to every gate.
 
    - **Is its _shape_ right?** A warranted capability can still be implemented
      too broadly, and gates cannot see that: every gate passes either way. Read
@@ -292,6 +298,14 @@ whether the package is right. Budget your effort here:
    stopped refusing" is not "the opcode emits the reference's bytes" — a
    refusal hides the output until it is lifted, and Rust's `or_patterns.rs`
    pickup evaporated on exactly that (FINDINGS 23).
+
+   **And a rule that reproduces the reference byte-for-byte can still be
+   wrong.** JavaScript's bitwise-paren rule made `operators.js` identical at
+   both measured widths with every gate green, and mis-parenthesised
+   `a | b | c` — a construct no corpus file contains. For any rule that keys on
+   a *set* (of operators, of node kinds), write the inputs the set is supposed
+   to separate and run them against the reference directly. Corpus agreement is
+   evidence about the corpus.
 6. **Package edits must be surgical text edits.** The size metric gzips
    `packages/*.json` **as written on disk**, so loading a package and dumping it
    back reformats the whole file and charges the change for it. Measured:
