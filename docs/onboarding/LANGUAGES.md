@@ -140,6 +140,42 @@ Two things to carry, both from stage D rather than from building:
   whitespace; Scheme reaches 2/15 because its grammar deliberately erases the
   distinctions its layout depends on.
 
+## 2026-08-23, later — the register caught up with the round
+
+`DESIGN.md` now documents all **twenty-seven** opcodes the loaders accept, after
+three consecutive slices reported the drift. The count is worth a line of its
+own: codex's review said twenty-six and I was one command from copying it into
+the document — counting the loader's arms gives twenty-seven. That is two agents
+in a row getting a number wrong by not deriving it, in the same week the Ruby and
+Scheme reviews caught the builder doing exactly that twice. The document now
+names `rust/src/pkg.rs` and `runtime-js/bundle.js` as the contract and says
+plainly that it has drifted behind them before.
+
+Three new `FINDINGS` entries, all from round 4/5 stage-D work:
+
+- **27** — the reference changes which named node the tree contains. Ruby's
+  brace conversion, HTML's void slash and XML's empty-to-self-closing are one
+  limit in three spellings, one excluded file each, and `equivalent_kinds` is
+  the field that looks like the answer and is not.
+- **28** — a rule cannot see that a comment is about to be flushed. Scheme's
+  `srcsoft` double-breaks against the runtime's own comment flush. Stage D ruled
+  this is *not* entry 7's second language.
+- **29** — indentation is a repeated unit; some references indent to a column.
+  Part (b) is the cheapest open item in the register: re-rendering the final
+  indent column as tabs-then-spaces makes `nesting.scm` byte-identical without
+  changing a rule.
+
+Four existing entries moved: **2** (Ruby is the second language *and* disproves
+the cheap version), **6** (third language, eight pairs), **8** (XML uses `fill`
+with a token as a fill item), **13** (`drop` finally has a caller).
+
+**Markdown is a WIP that refuses** — `wt/lang-markdown`, and like Haskell it says
+so in its own commits. Its blocker is worth knowing before anyone picks it up:
+tree-sitter-markdown's block nodes **include their terminating newline**, so the
+gap between two blocks measures one newline short and both obvious blank-line
+policies fail in opposite directions. No package expression distinguishes "the
+source had a blank that the node ate" from "the source had none".
+
 ## Board
 
 | Language   | Tier | Round | Builder       | Status | Grammar                | Reference                         |
@@ -153,7 +189,7 @@ Two things to carry, both from stage D rather than from building:
 | Rust       | T2   | 3     | unrecorded    | merged | tree_sitter_rust       | rustfmt                           |
 | Kotlin     | T2   | 3     | unrecorded    | merged | tree_sitter_kotlin     | ktfmt                             |
 | JavaScript | T2   | 3     | unrecorded    | merged | tree_sitter_javascript | prettier                          |
-| Markdown   | T2   | 4     | grok-4.6      | B+     | tree_sitter_markdown   | prettier                          |
+| Markdown   | T2   | 4     | grok+Claude   | C      | tree_sitter_markdown   | prettier                          |
 | TypeScript | T2   | 4     | grok-4.6      | D      | tree_sitter_typescript | prettier                          |
 | XML        | T3   | 4     | grok+Claude   | D      | tree_sitter_xml        | prettier (`@prettier/plugin-xml`) |
 | HTML       | T3   | 4     | grok+codex    | merged | tree_sitter_html       | prettier                          |
