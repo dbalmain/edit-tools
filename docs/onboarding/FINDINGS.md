@@ -454,6 +454,34 @@ it for exactly that reason.
 **Decide when:** a second language hits it. One divergence in one language does
 not buy an IR feature.
 
+### Ruby is the second language, and it disproves the cheap version
+
+**2026-08-23.** syntax_tree cascades a broken hash into a hash **value** — and
+into nothing else. Five constructions run against the reference at width 80,
+reproduced independently at stage D:
+
+| Construction | Parent breaks | Inner |
+| --- | --- | --- |
+| hash of hashes | yes | **breaks** |
+| hash of arrays | yes | stays flat |
+| hash of calls | yes | stays flat |
+| array of hashes | yes | stays flat |
+| array of arrays | yes | stays flat |
+
+So the "decide when" condition is met — **and the entry should be re-read before
+it is built.** A generic *expanded parent forces expanded children* would break
+the arrays and calls that syntax_tree leaves flat, trading `nesting.rb` for
+`collections.rb` rather than fixing anything. Stage D tested the package-level
+version of the same idea (a group-less `hash`) and measured exactly that: it
+fixed `nesting@40` and regressed `collections@80`.
+
+What Ruby needs is inheritance **the parent asks for, per child kind**. The
+`pair` rule can already see that its value is a hash — `["all","f:value",["hash"]]`
+is an existing predicate on an existing node — and needs a way to format that
+child without its own group. That is one child-emitting opcode, decidable before
+layout, which puts it on entry 10's side of the line stage D drew for CSS rather
+than in the layout-time context this entry describes.
+
 ## 3. A break-only separator pins its group
 
 **Status:** open · **Cost:** local · **Languages:** TOML (2), CSS (2), YAML (4),
@@ -698,10 +726,19 @@ the pair `group` fixes those scalar lines and regresses every broken flow
 collection, so the package has a choice between two wrong answers and no way to
 ask for the right one.
 
+**Ruby is the third language, and the second in prettier's direction.**
+syntax_tree never counts a trailing comment: `configure(…)` is exactly 80
+characters, its comment takes the line to 108, and the formatter still refuses to
+wrap it. Stage D attributed **eight of Ruby's fourteen divergent pairs** to this
+entry — `collections@40`, `comments@40`, `normalisation@40`, `long_sequences@80`
+and four more where it compounds with another cause. Ruby's report notes that
+syntax_tree therefore *manufactures* overflow, which is reference behaviour and
+not a package defect.
+
 **Decide when: now — this is the cheapest open entry with real evidence behind
-it.** A local opcode, both modes proven necessary by two references pulling in
-opposite directions, and five divergences in one language waiting on it. It is
-the second thing to build after `fill` (entry 8), and arguably before.
+it.** A local opcode, both modes proven necessary by three references, and
+thirteen divergences across two languages waiting on it. It is the second thing
+to build after `fill` (entry 8), and arguably before.
 
 ## 7. A rule cannot tell a comment-forced break from a width-forced break
 
@@ -732,6 +769,14 @@ finding reported from _corpus_ observation is a hypothesis about the reference,
 and only a package makes it a claim about the IR. That is exactly why "needs
 stage-C confirmation" exists, and it earned its place on the first use.
 
+**Scheme was considered for it and ruled out, 2026-08-23.** Its package hits
+something adjacent — `srcsoft` double-breaking against the runtime's own comment
+flush — and stage D ruled that this is earlier and narrower than break
+provenance: not *why* the group broke, but whether a break is about to be
+emitted for me. That is **entry 28**, not this one. Recorded here because the
+temptation to bank it as the second language was real and the entry has already
+been overcounted once.
+
 **Decide when:** a second language genuinely hits it. One divergence in one
 language does not buy an IR feature, and this entry has already been overcounted
 once.
@@ -747,6 +792,15 @@ package on top of the earlier **+44 B** · **Languages:** CSS (measured), JSON
 The IR breaks a group all-or-nothing: every separator breaks, or none does.
 Neither reference does that. prettier packs short items onto a line and wraps to
 the next, and it decides per line rather than per group.
+
+**XML is a third language and it uses `fill` without asking for anything.**
+`@prettier/plugin-xml` packs the doctype's external ID — both literals on the
+`PUBLIC` line at width 80, all three lines at 40 — and a `group` gets one of the
+two widths wrong whichever way it is written. The whole rule is
+`["indent", ["fill", "*", ["line"]]]`, and the `*` is the interesting part: the
+`PUBLIC` keyword has to be a fill **item** rather than a fixed prefix, because
+the first break falls after it at 40 and not at 80. Third language, third
+construct shape, no extension needed.
 
 **This is the best-evidenced request in the register, and the cheapest.** It was
 asked for by CSS's stage-C builder, corroborated independently against JSON
@@ -1114,7 +1168,18 @@ preferred handling, and a sharper signal than a divergence would have been,
 because the language had to give up measuring the construct at all. Two
 languages now want `drop`, which is the condition this entry set for deciding.
 
-### Built. It works, and it earns nothing yet.
+### Built. It works, and Ruby is the caller it was waiting for.
+
+**2026-08-23.** `drop` was built for rustfmt's leading `|`, which is parked, and
+this section said for three rounds that nothing used it. Ruby uses it:
+`x = 1; y = 2; z = 3` becomes three statements only because the package can drop
+the `;` its grammar leaves between them, and `normalisation.rb` matches the
+reference at both widths on that basis. The parking argument was "no caller
+worth the bytes"; there is now a caller, in a merged language, and entry 26
+proposes a second from the opposite direction.
+
+### The original note, for the record
+
 
 `["drop", "|"]` consumes a token without emitting it. Absent is fine — a package
 says "drop this if it is here". Two refusals guard it, because this entry said
@@ -2652,3 +2717,112 @@ now paid for twice.
 stays parked with a built, tested, unused opcode. Nothing is silently wrong —
 every affected pair is classified `design-limit` in TypeScript's report with the
 reason named.
+
+## 27. The reference changes which named node the tree contains
+
+**Status:** open (recorded, not yet argued) · **Cost:** structural · **Languages:**
+Ruby (1 excluded file), HTML (1), XML (1) — three references, three spellings,
+one limit
+
+Three round-4/5 languages each had exactly one corpus file declared
+`[incomparable]`, and after three independent stage-C slices the three reasons
+turn out to be the same reason:
+
+| Language | Reference does | Named-node change |
+| --- | --- | --- |
+| Ruby | `{ … }` → `do … end` when the body stops fitting | `block` → `do_block` |
+| HTML | `<br>` → `<br />` | `start_tag` → `self_closing_tag` |
+| XML | `<a></a>` → `<a />` | `STag` + `ETag` → `EmptyElemTag` |
+
+None of these is a token rewrite that linearity forbids by itself — the runtime
+could emit the bytes. What stops all three is **gate 3**: the reparsed output
+holds a different named node than the source did, which is precisely what the
+ordered structural comparison exists to catch, and it cannot distinguish "the
+formatter chose an equivalent spelling" from "the formatter lost something".
+
+`equivalent_kinds` is the manifest field that looks like the answer and is not.
+Ruby's stage A considered it and rejected it in writing: brace blocks and
+`do`/`end` blocks "are not the same construct under a different name — the
+reference converts one to the other, but that is a token rewrite, not a
+transparent wrapper". Declaring them equivalent would make gate 3 blind to a
+real class of destruction in order to buy one file.
+
+**Why record it now rather than argue it.** Each language on its own looks like
+a curiosity worth one excluded file. Three of them, on three unrelated
+references, is a pattern: **references normalise between spellings that the
+grammar distinguishes**, and this design has decided — correctly, so far — that
+non-destruction outranks agreement every time. The open question is whether a
+fourth instance should still cost a file, or whether there is a sound way to
+declare a *directional*, gate-3-checked spelling equivalence that is narrower
+than `equivalent_kinds`.
+
+**Decide when:** a fourth language hits it, or someone proposes a directional
+equivalence with a story for how gate 3 stays honest. Not urgent: the cost is
+one file per language and every one is declared, classified and visible.
+
+## 28. A rule cannot see that a comment is about to be flushed
+
+**Status:** open · **Cost:** local · **Languages:** Scheme (1 file, plus a
+package-wide `blank_cap` workaround)
+
+Scheme's package needs `srcsoft` before a closing paren, so a `)` the source put
+on its own line stays there. When the last thing before that closer is an
+own-line comment, **two breaks are emitted for one line ending**: the package's
+`srcsoft`, and the runtime's own flush of the pending comment, which prepends
+its own `Hard`. The result is a blank line that was not in the source — and on
+the next pass that blank *is* in the source, so it grows by one line per pass
+and fails idempotence.
+
+The package ships `blank_cap: 0` to pin it at exactly one blank, which is
+stable. Stage D confirmed the cause and also confirmed the cost: `blank_cap` is
+package-wide, so it additionally deletes an intentional blank after any other
+attached leading comment. It is a real trade, not a corpus-local setting.
+
+**This is not entry 7**, and stage D ruled on that explicitly. Entry 7 is a
+print-time choice based on *why* a group broke — width or a comment. This is
+earlier and narrower: a rule cannot ask whether a comment is pending at the
+cursor, so it cannot suppress its own break in favour of the one the runtime is
+about to emit. A `srcsoft` that coalesced with a pending comment break would fix
+it with no new predicate and no new context.
+
+**Decide when:** a second language hits it, or Scheme's `blank_cap` workaround
+blocks something. It is cheap enough that it may be worth doing on one language.
+
+## 29. Indentation is a repeated unit; some references indent to a column
+
+**Status:** open · **Cost:** local · **Languages:** Scheme (2 files, from
+opposite directions)
+
+Two distinct gaps, both about the same assumption — that one indent level is a
+fixed unit repeated N times.
+
+**(a) The column is relative to a delimiter, not to the nesting level.** emacs
+`scheme-mode` indents a form's continuation lines to **one column past its open
+paren**, wherever that paren actually sits. The IR's `indent` is relative to the
+enclosing indent level; the two coincide only when the form starts at the
+current indent, and any shift — a quote mark before the paren, a form beginning
+mid-line — moves them apart. `quote.scm` is the one-character case: a leading
+`` ` `` puts every continuation line one column out. `long_sequences.scm` is the
+large one.
+
+The runtime already exposes the source's line structure to *breaks* — that is
+the whole `src*` family — and exposes nothing equivalent to indent. **There is
+no `srcindent`.** Stage D confirmed the gap is real and distinct from entry 10
+(`calls.scm` proves it: the same `list` head needs different anchors according
+only to source line structure), while correcting the report's claim that it is
+*larger* than head dispatch — some of those lines could also be bought by a head
+table.
+
+**(b) The column has to be rendered as tabs, then spaces.** `indent-tabs-mode`
+is `t` in scheme-mode, so column 8 is one tab and column 9 is a tab plus a
+space. `tab_indent` means one tab **per level**, which is right for gofmt and
+cannot produce this. `nesting.scm` is the clean demonstration and it is worth
+more than a passing file: **every column in it is correct** and it fails on
+nothing but the spelling. Stage D verified that re-rendering the final indent
+column as tabs-to-8 plus residual spaces makes the file byte-identical **without
+changing a single rule**.
+
+**Decide when:** (b) now — it is the cheapest open item in the register, it is a
+change to how one string is built, and it converts a measured near-miss into a
+pass. (a) with entry 10, since a head table and a column anchor are the two
+halves of Lisp indentation and building either alone leaves Scheme short.
