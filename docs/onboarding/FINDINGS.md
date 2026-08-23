@@ -2639,6 +2639,15 @@ and `strings.rs@100`, while still not fixing `strings.rs@60`.
 
 **Status:** open · **Cost:** **contextual** · **Languages:** Markdown (HTML next)
 
+**Measured, 2026-08-23.** `nesting.md` is the concrete case and it fails gate 3:
+`embedded region 1: parsed content became verbatim content`. A ```` ```json ````
+fence inside a nested list carries the list's indent on every line, so the guest
+is spliced back without it — the first line keeps the host prefix and every
+later line loses it, and the region stops parsing as JSON. The Markdown package
+is otherwise complete around it: gates 0 and 1 are 405/405, and this is one of
+only two gate failures left. **Markdown cannot merge until this is built**, since
+gates 2 and 3 are hard.
+
 A guest region is extracted as a **byte slice** of the host document, parsed by
 the guest grammar, and spliced back by adding one number to every guest offset.
 That works for as long as the guest's bytes are a contiguous, unmodified run of
@@ -3064,6 +3073,36 @@ Stage D also found a **fifth** instance of the `slice::get` returns `None` /
 answered 0 in Rust for a range past the source while the JS loop clamped. No gate
 could see it, because generated corpus trees never exceed their own source. Rust
 now clamps, matching `Pred::SourceMultiline`'s existing choice.
+
+### Three bounds measured, and why the third is the one Markdown still needs
+
+| bound | TOML | YAML | Markdown | verdict |
+| --- | --- | --- | --- | --- |
+| `node.end` (before) | 23/30 | 12/32 | 4/24 | Markdown's blanks unreachable |
+| walk all trailing whitespace | **15**/30 | 12/32 | **0**/24 | this entry's proposal; rejected |
+| **strip one terminator** (built) | 23/30 | 12/32 | 10/24 | shipped |
+| recurse to deepest non-empty child | **13**/30 | **10**/32 | 10/24 | rejected |
+
+**The reason no single bound finishes Markdown is nesting.** tree-sitter-markdown
+lets *each level* swallow one more newline: a `list_item` takes its terminator
+and the blank that separates it from the next item, the enclosing `list` takes
+one more, and the `section` above that takes another. One terminator reaches one
+level. Recursing reaches the innermost, which is why it fixes Markdown's lists —
+and it also strips TOML's and YAML's blank runs, which their own rules already
+render, costing them 10 and 2. **The two languages want the walk to stop at
+different depths, and the depth that is right depends on what the rule emits,
+which the runtime cannot see.**
+
+Measured the package-side alternative too: `["blank", 1]` at the end of
+`list_item`, reading the item's own trailing blanks the way TOML's table rule
+does. It takes the gates from 401/405 to 395/405, because the item's last child
+has already swallowed the newline the blank count needs.
+
+So Markdown's loose-versus-tight list distinction — the blank line between items
+of a loose list — is **not reachable** with a runtime bound or a package rule
+today, and `lists.md` fails gate 3 because a loose list rendered tight makes
+tree-sitter parse two lists as one. That is this entry's remaining half, stated
+precisely rather than as "the package needs work".
 
 ### The half this entry did not have
 
