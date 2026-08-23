@@ -312,10 +312,18 @@ whether the package is right. Budget your effort here:
    `javascript.json` went 16764 -> 34887 bytes on disk and the metric read +513
    B gzip for an edit that actually cost +114. If a diff touches lines the
    change did not, the number in the report is wrong.
-7. **Read the package for what gates cannot see**: design fit, whether it reuses
+7. **A corpus file added for a safety regression still needs its ledger reason
+   to name every cause.** A hard-gate probe earns its place by failing the gate
+   when the fix is reverted — check that by reverting, not by assuming. But it
+   will usually diverge from the reference for reasons unrelated to the bug, and
+   the reason recorded for it must account for those too. Before asking for a
+   more isolated probe, check whether isolation is even available: for
+   `comment_fill.ts` the smallest case that exercises the construct still trips
+   FINDINGS 34, so no split would have produced a clean file.
+8. **Read the package for what gates cannot see**: design fit, whether it reuses
    the existing concepts or invents parallel ones, whether the rule table reads
    like `packages/python.json` or like something bolted on.
-8. **Is refusal being used to dodge?** Refusing a construct the package could
+9. **Is refusal being used to dodge?** Refusing a construct the package could
    have handled inflates gate 1–3 at the cost of usefulness.
 
 ### Merge bar

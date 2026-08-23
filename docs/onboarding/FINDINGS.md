@@ -3238,3 +3238,52 @@ either breaks a fill separator when a suffix is pending or refuses that fill;
 mirrored Rust and JS unit tests; and a commented-number-array file in the
 TypeScript corpus, so gate 3 owns the regression instead of this entry. *All
 three now exist; the first was the option taken.*
+
+---
+
+## 34. A comment anywhere in a list turns off packing for the whole list
+
+**Status:** open · **Cost:** contextual — a rule cannot see comment decoration ·
+**Languages:** JavaScript (`comments.js`, both widths), TypeScript
+(`comment_fill.ts`, both widths)
+
+Found by FINDINGS 33's stage D, as the *other* thing wrong with a commented
+`fill` once the destruction was fixed. Distinct from entry 9 (where a comment
+attaches) and from entry 8 (how `fill` packs an ordinary run).
+
+prettier packs a numeric array — and abandons packing entirely the moment any
+comment appears in it:
+
+```js
+const b = [1, 2, 3, …, 23];        // packs: "1, 2, 3, … 22," / "23,"
+const a = [1, 2, 3, // note
+           4, …, 23];              // every item on its own line
+```
+
+**It is retroactive, and that is the part worth recording.** The stage-D report
+described it as prettier stopping "packing the remainder"; measured, it un-packs
+the items *before* the comment too. `1`, `2` and `3` each get their own line
+although nothing about them changed. So it is not a barrier the fill runs into
+part-way — it is a property of the whole container, decided once by *whether the
+container contains a comment at all*. The smallest case shows it: a six-element
+array that fits flat becomes six lines because one item carries a trailing `//`.
+
+Ours resumes the general fill after each comment-forced break, so it packs both
+sides. The mandatory break itself is correct and is FINDINGS 33; what remains is
+the policy either side of it.
+
+**A package cannot reach this.** Comment attachment is runtime-owned and runs
+before any rule, so no predicate in the `count` / `child-count` / `all` / `text`
+/ `multiline` family can ask "does this node contain a comment" and route to
+`each` instead of `fill`. That is the missing capability, and it is one
+predicate rather than a new opcode — `fill` already does both behaviours.
+
+### Why the probe cannot be made to agree, which answers the obvious objection
+
+Stage D noted that `comment_fill.ts` bundles this with entry 9's attachment and
+suggested a future split into a minimal destructive case. Measured, **no
+commented-fill probe can agree with prettier**: the smallest one that exercises
+the construct at all — one trailing comment on a short array — already trips
+this entry. A split would produce a second file carrying the same two ledger
+records, not a clean one. The bundling is a property of the construct, not a
+defect in the probe, and entry 16's usual complaint does not apply here.

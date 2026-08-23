@@ -321,6 +321,54 @@ says to compare domains as well as branches.
 `main` after this round: **373/373 on all four gates, 235/358 agreement, 0 stale,
 0 unreviewed, 0 package bugs, 100% review coverage.**
 
+## 2026-08-23, later — the destroying defect is fixed, and the fill was hiding two
+
+`wt/fill-suffix`, built by Claude and reviewed by codex-Sol at medium. This was
+the one open item about **correctness** rather than a percentage:
+`typescript.json` shipped a path that deleted code.
+
+**The fix is an invariant, not a change to `fill`.** Every `Doc::Suffix` is
+emitted with a `Doc::BreakParent`, so a queued suffix already means the
+enclosing group is open. The fill separator is the only site in the printer that
+picks its mode without consulting forced breaks, so it alone could reach a
+`Line` flat with a comment queued. Four lines per runtime: **if suffixes are
+pending, break.** Stage D verified the invariant independently in both runtimes
+and confirmed there are exactly two suffix emission paths in each.
+
+**The regression experiment came back empty, which is the reasoning confirming
+itself.** `fill` serves CSS, JSON and TypeScript, so this could have moved
+packing anywhere. Runtime change alone, no package change: every language scored
+identically, **zero bytes of corpus output moved**. Outside a fill a pending
+suffix already implied a broken group, so there was nothing else to change.
+
+JavaScript then took the pickup gate 3 had refused a round earlier —
+`sequences.js@80` is agreement and the corpus is **236/360**.
+
+**First slice in five with no parity defect.** HTML, Haskell, TypeScript and
+`tab_stop` each hid one in new runtime code; the hand-diff here found nothing,
+and stage D's own branch-by-branch check agreed. Worth noting the streak broke
+on the slice where the change was four lines rather than a new opcode.
+
+**A new register entry, and the review sharpened it.** Fixing the destruction
+exposed FINDINGS 34: prettier turns packing off for a whole list the moment any
+comment appears in it. The report described this as prettier stopping "packing
+the remainder"; measured against prettier, it is **retroactive** — the items
+*before* the comment are un-packed too, so it is a property of the container
+rather than a barrier the fill runs into. A package cannot reach it, because
+comment attachment is runtime-owned and no predicate can ask whether a node
+contains a comment.
+
+**And the probe criticism has a measured answer.** Stage D judged
+`comment_fill.ts` imperfectly isolated and suggested a future split. No split
+helps: the smallest commented array that exercises the construct at all already
+trips entry 34, so every possible probe carries the same two ledger records. The
+bundling is a property of the construct, and entry 16's usual complaint does not
+apply.
+
+`main` after this round: **375/375 on all four gates, 236/360 agreement, 0 stale,
+0 unreviewed, 0 package bugs, 100% review coverage**, and no known
+data-destroying path in any shipped package.
+
 ## Board
 
 | Language   | Tier | Round | Builder       | Status | Grammar                | Reference                         |
