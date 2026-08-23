@@ -802,6 +802,14 @@ two widths wrong whichever way it is written. The whole rule is
 the first break falls after it at 40 and not at 80. Third language, third
 construct shape, no extension needed.
 
+**`fill` does not reserve the separator `trail` adds afterwards.** Found by
+TypeScript's stage D on `sequences.ts@40`: `fill` decides whether the next item
+fits using the item's own width, and `trail` then appends a comma that `fill`
+never budgeted for, so the last item on a line can overrun by exactly one
+character. It is a small, precise interaction between two built opcodes rather
+than a limit of either, and it is why that file stayed divergent after the `@80`
+case was recovered.
+
 **This is the best-evidenced request in the register, and the cheapest.** It was
 asked for by CSS's stage-C builder, corroborated independently against JSON
 before any reviewer saw it, and then costed at CSS's stage D.
@@ -1007,6 +1015,26 @@ the head of a form at arbitrary depth.
 **Decide when: before round 3 launches.** This was previously "before Scheme
 (round 5)". Three languages, eight accepted divergences and one shipped
 workaround have moved it up.
+
+## 10b. `drop` deletes the right token and the wrong one, for want of a parent
+
+**Recorded 2026-08-23 under entry 10**, because it is entry 10's shape rather
+than a limit of `drop`.
+
+TypeScript's `normalisation.ts` wants prettier's deletion of a redundant
+`((1 + 2))`. `drop` reaches it: the parens are declared punctuation, they carry
+no comment, so both of `drop`'s guards pass and the token is deleted. **It also
+deletes the parentheses around an `if` condition**, which are required, because
+`parenthesized_expression` has one rule and that rule cannot see whether its
+parent is an expression or an `if`.
+
+So the capability is right and the dispatch is wrong, which is entry 10 exactly:
+*a rule cannot vary by where its node appears*. It is worth recording here rather
+than against `drop`, because the tempting fix — a narrower `drop` — would be
+solving the wrong problem, and because it is the first case where entry 10's
+absence would cause **destruction** rather than a layout miss. `drop` is the one
+opcode that deletes, and a package that cannot tell a redundant paren from a
+required one must not delete either.
 
 ## 11. Two smaller CSS findings, recorded but not yet argued
 
@@ -2100,7 +2128,13 @@ Stage D also verdicted the **shape**: the flag narrows rather than widens.
 an unconditional wrap is easier to audit than a conditional one — which is what
 this entry argued when it asked for it.
 
-**JavaScript has not picked it up.** The pickup this entry priced (7/14 → 9/14
+**TypeScript picked it up the same day, and it worked.** `assertions.ts` at both
+widths — prettier wraps `(a + b) as number` while the line still fits — came back
+as agreement for a one-word package edit, which is exactly what this entry
+predicted for exactly the reason it gave. That is the second reference and the
+first measured pickup.
+
+**JavaScript still has not picked it up.** The pickup this entry priced (7/14 → 9/14
 at width 80) is still available, and it is not quite free: JavaScript's two
 affected divergences carry accepted ledger reviews, and changing the package
 makes those records **stale**, which is a hard scorer failure until a reviewer
@@ -2350,8 +2384,28 @@ reusable lesson, not the algorithm.
 
 ## 23. `flatten` walks a spine by field name, and not every spine has fields
 
-**Status:** open · **Cost:** **local** · **Languages:** Rust
-(`or_patterns.rs@60`)
+**Status:** **built** (2026-08-23, by TypeScript's stage C) · **Cost:** **+66 B
+gzip** · **Languages:** Rust (`or_patterns.rs@60`, the case that opened it),
+TypeScript (built it)
+
+### Built — a positional fallback, narrowly gated
+
+`flatten` now falls back to a positional `[operand, token, operand]` spine walk
+**only when no child of the node carries a field at all**. Stage D verdicted it
+`warranted` and confirmed the gate is the narrow one: the rename probe still
+refuses `Field("left")`, so a grammar that names its spine fields differently is
+still a refusal rather than a silent positional guess — which is what this entry
+asked for and what makes the fallback safe.
+
+Hand-diffing the two runtimes during that review found a parity defect in the new
+code — Rust's missing-operator-text branch disagreed with JS — which was fixed
+before the merge. Third such defect in three consecutive slices, all in newly
+added runtime capability, none visible to any gate.
+
+**Rust has not picked it up.** `or_patterns.rs@60` is what opened this entry and
+it is still accepted as a divergence; the capability now exists for it.
+
+### The original entry, as written before it was built
 
 rustfmt wraps a long or-pattern by packing alternatives per line and putting the
 `|` at the **start** of each continuation line:
