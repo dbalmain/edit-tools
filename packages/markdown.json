@@ -1,0 +1,267 @@
+{
+  "format": "et-doc-rules/1",
+  "indent": 2,
+  "comment_gap": 1,
+  "blank_cap": 1,
+  "tokens": [
+    "block_continuation",
+    "fenced_code_block_delimiter",
+    "atx_h1_marker",
+    "atx_h2_marker",
+    "atx_h3_marker",
+    "atx_h4_marker",
+    "atx_h5_marker",
+    "atx_h6_marker",
+    "block_quote_marker",
+    "list_marker_minus",
+    "list_marker_plus",
+    "list_marker_star",
+    "list_marker_dot",
+    ":",
+    "|"
+  ],
+  "comments": [],
+  "descend": [],
+  "rules": {
+    "document": [
+      "use",
+      "blocks"
+    ],
+    "section": [
+      "use",
+      "blocks"
+    ],
+    "paragraph": [
+      "verbatim"
+    ],
+    "inline": [
+      "verbatim"
+    ],
+    "html_block": [
+      "verbatim"
+    ],
+    "atx_heading": [
+      "seq",
+      [
+        "child",
+        "*"
+      ],
+      [
+        "sp"
+      ],
+      [
+        "child",
+        "f:heading_content"
+      ]
+    ],
+    "setext_heading": [
+      "seq",
+      [
+        "child",
+        "f:heading_content"
+      ],
+      [
+        "hard"
+      ],
+      [
+        "child",
+        "*"
+      ]
+    ],
+    "block_quote": [
+      "seq",
+      [
+        "child",
+        "t:block_quote_marker"
+      ],
+      [
+        "use",
+        "blocks"
+      ]
+    ],
+    "list": [
+      "use",
+      "tight"
+    ],
+    "list_item": [
+      "seq",
+      [
+        "child",
+        "*"
+      ],
+      [
+        "use",
+        "tight"
+      ]
+    ],
+    "fenced_code_block": [
+      "seq",
+      [
+        "child",
+        "t:fenced_code_block_delimiter"
+      ],
+      [
+        "opt",
+        "t:info_string",
+        [
+          "child",
+          "t:info_string"
+        ]
+      ],
+      [
+        "opt",
+        "t:block_continuation",
+        [
+          "child",
+          "t:block_continuation"
+        ]
+      ],
+      [
+        "opt",
+        "named",
+        [
+          "seq",
+          [
+            "hard"
+          ],
+          [
+            "child",
+            "named"
+          ]
+        ]
+      ],
+      [
+        "hard"
+      ],
+      [
+        "child",
+        "t:fenced_code_block_delimiter"
+      ]
+    ],
+    "info_string": [
+      "child",
+      "*"
+    ],
+    "code_fence_content": [
+      "verbatim"
+    ],
+    "link_reference_definition": [
+      "seq",
+      [
+        "child",
+        "t:link_label"
+      ],
+      [
+        "tok",
+        ":"
+      ],
+      [
+        "sp"
+      ],
+      [
+        "child",
+        "t:link_destination"
+      ],
+      [
+        "opt",
+        "t:link_title",
+        [
+          "seq",
+          [
+            "sp"
+          ],
+          [
+            "child",
+            "t:link_title"
+          ]
+        ]
+      ]
+    ],
+    "link_label": [
+      "verbatim"
+    ],
+    "link_destination": [
+      "verbatim"
+    ],
+    "link_title": [
+      "verbatim"
+    ],
+    "pipe_table": [
+      "each",
+      "named",
+      [
+        "hard"
+      ]
+    ],
+    "pipe_table_header": [
+      "each",
+      "*",
+      [
+        "seq"
+      ]
+    ],
+    "pipe_table_delimiter_row": [
+      "each",
+      "*",
+      [
+        "seq"
+      ]
+    ],
+    "pipe_table_delimiter_cell": [
+      "verbatim"
+    ],
+    "pipe_table_row": [
+      "each",
+      "*",
+      [
+        "seq"
+      ]
+    ]
+  },
+  "defs": {
+    "blocks": [
+      "each",
+      "named",
+      [
+        "seq",
+        [
+          "hard"
+        ],
+        [
+          "blank",
+          1
+        ],
+        [
+          "opt",
+          "t:block_continuation",
+          [
+            "child",
+            "t:block_continuation"
+          ]
+        ]
+      ]
+    ],
+    "tight": [
+      "each",
+      "named",
+      [
+        "seq",
+        [
+          "hard"
+        ],
+        [
+          "blank",
+          1
+        ],
+        [
+          "opt",
+          "t:block_continuation",
+          [
+            "child",
+            "t:block_continuation"
+          ]
+        ]
+      ]
+    ]
+  }
+}
