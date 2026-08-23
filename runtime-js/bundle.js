@@ -342,9 +342,26 @@ function commentCellsField(pkg) {
   throw new Refusal('`comment_cells` must be a boolean or "block"');
 }
 
+function tabStopField(pkg, comment_cells) {
+  const stop = pkg.tab_stop === undefined ? 0 : pkg.tab_stop;
+  if (!Number.isInteger(stop) || stop < 0) {
+    throw new Refusal("`tab_stop` must be a non-negative integer");
+  }
+  if (stop > 0) {
+    if (pkg.tab_indent) {
+      throw new Refusal("`tab_stop` and `tab_indent` both spell the indent; pick one");
+    }
+    if (comment_cells !== CELLS_OFF) {
+      throw new Refusal("`tab_stop` and `comment_cells` disagree about columns");
+    }
+  }
+  return stop;
+}
+
 function buildPackage(pkg) {
   validatePackageFormat(pkg);
   const comment_cells = commentCellsField(pkg);
+  const tab_stop = tabStopField(pkg, comment_cells);
   const comment_gap = gapField(pkg, "comment_gap");
   const blank_cap = gapField(pkg, "blank_cap");
   const flatten_fields = flattenFields(pkg);
@@ -370,7 +387,7 @@ function buildPackage(pkg) {
       return [name, expanded];
     }),
   );
-  return { ...pkg, comment_cells, comment_gap, blank_cap, flatten_fields, rules };
+  return { ...pkg, comment_cells, tab_stop, comment_gap, blank_cap, flatten_fields, rules };
 }
 
 // ---------------------------------------------------------------- the Doc IR
@@ -482,7 +499,15 @@ function fits(next, rest, rem, mustBeFlat = false) {
 }
 
 /** Indentation is written lazily, so a blank line is genuinely empty. */
-function print(doc, cols) {
+// Respell a finished indent column as tabs to `stop`, then spaces. All-space
+// indents only: a nested region's own tab unit is not ours to guess. The
+// column count does not move, so nothing already measured does either.
+function respell(ind, stop) {
+  if (stop === 0 || ind.length === 0 || /[^ ]/.test(ind)) return ind;
+  return "\t".repeat(Math.floor(ind.length / stop)) + " ".repeat(ind.length % stop);
+}
+
+function print(doc, cols, tabStop = 0) {
   const out = [];
   let pos = 0;
   let pending = "";
@@ -558,7 +583,7 @@ function print(doc, cols) {
           }
           if (breaking) {
             out.push("\n");
-            pending = ind;
+            pending = respell(ind, tabStop);
             pos = width(ind);
           } else if (d.k === "line") {
             write(" ");
@@ -1530,7 +1555,7 @@ class Formatter {
 function format(tree, packages, cols) {
   const bytes = new TextEncoder().encode(tree.source ?? "");
   const fmt = new Formatter(packages, tree.language, bytes, new TextDecoder());
-  let out = print(fmt.node(tree.root), cols);
+  let out = print(fmt.node(tree.root), cols, fmt.pkg.tab_stop);
   out = alignCells(out, fmt.pkg.comment_cells === CELLS_BLOCK, " ".repeat(fmt.commentGap), cols);
   if (fmt.semanticEof) {
     const suffix = (tree.source ?? "").match(/(?:\r\n|\r|\n)+$/)?.[0] ?? "";

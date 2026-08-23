@@ -232,7 +232,21 @@ fn fits<'a>(
     }
 }
 
-pub fn print(doc: &Doc, width: usize) -> String {
+/// Respell a finished indent column as tabs to `stop`, then residual spaces.
+/// Only an all-space indent is respelled: a nested language region may have
+/// concatenated a tab unit of its own, and its column is not ours to guess.
+/// The column count is unchanged, so nothing the printer already measured
+/// moves.
+fn respell(ind: String, stop: usize) -> String {
+    if stop == 0 || ind.is_empty() || !ind.bytes().all(|b| b == b' ') {
+        return ind;
+    }
+    let mut out = "\t".repeat(ind.len() / stop);
+    out.push_str(&" ".repeat(ind.len() % stop));
+    out
+}
+
+pub fn print(doc: &Doc, width: usize, tab_stop: usize) -> String {
     let mut forced = Forced::new();
     collect_forced(doc, &mut forced);
     let mut out = String::new();
@@ -344,7 +358,7 @@ pub fn print(doc: &Doc, width: usize) -> String {
                     if breaking {
                         out.push('\n');
                         pos = scalars(&ind) as usize;
-                        pending = ind;
+                        pending = respell(ind, tab_stop);
                     } else if matches!(doc, Doc::Line) {
                         if !pending.is_empty() {
                             out.push_str(&pending);
@@ -417,8 +431,8 @@ mod tests {
                 Doc::text("]"),
             ]))
         };
-        assert_eq!(print(&doc(), 80), "[a, b]");
-        assert_eq!(print(&doc(), 4), "[\n  a,\n  b\n]");
+        assert_eq!(print(&doc(), 80, 0), "[a, b]");
+        assert_eq!(print(&doc(), 4, 0), "[\n  a,\n  b\n]");
     }
 
     #[test]
@@ -426,8 +440,8 @@ mod tests {
         // Three astral characters are three columns. Counting UTF-16 units
         // would make them six and break agreement with the other runtime.
         let doc = Doc::group(seq(vec![Doc::text("🙂🙂🙂"), Doc::Line, Doc::text("x")]));
-        assert_eq!(print(&doc, 5), "🙂🙂🙂 x");
-        assert_eq!(print(&doc, 4), "🙂🙂🙂\nx");
+        assert_eq!(print(&doc, 5, 0), "🙂🙂🙂 x");
+        assert_eq!(print(&doc, 4, 0), "🙂🙂🙂\nx");
     }
 
     #[test]
@@ -436,7 +450,7 @@ mod tests {
             4,
             seq(vec![Doc::text("a"), Doc::Hard, Doc::Hard, Doc::text("b")]),
         );
-        assert_eq!(print(&doc, 80), "a\n\n    b");
+        assert_eq!(print(&doc, 80, 0), "a\n\n    b");
     }
 
     #[test]
@@ -448,7 +462,7 @@ mod tests {
             Doc::Hard,
             Doc::text("y"),
         ]);
-        assert_eq!(print(&doc, 80), "x,  # note\ny");
+        assert_eq!(print(&doc, 80, 0), "x,  # note\ny");
     }
 
     #[test]
@@ -459,7 +473,7 @@ mod tests {
             Doc::text("b"),
             Doc::Hard,
         ]));
-        assert_eq!(print(&doc, 80), "a\nb\n");
+        assert_eq!(print(&doc, 80, 0), "a\nb\n");
     }
 
     #[test]
@@ -471,7 +485,7 @@ mod tests {
             Doc::BreakParent,
         ]));
         let doc = Doc::IfBreak(Box::new(inner), Box::new(Doc::nil()));
-        assert_eq!(print(&doc, 80), "a\nb");
+        assert_eq!(print(&doc, 80, 0), "a\nb");
     }
 
     #[test]
@@ -482,8 +496,8 @@ mod tests {
             Doc::group(seq(vec![Doc::text("a"), Doc::Line, Doc::text("b")])),
             Doc::text(")))"),
         ]);
-        assert_eq!(print(&doc, 6), "a b)))");
-        assert_eq!(print(&doc, 5), "a\nb)))");
+        assert_eq!(print(&doc, 6, 0), "a b)))");
+        assert_eq!(print(&doc, 5, 0), "a\nb)))");
     }
 
     #[test]
@@ -498,7 +512,24 @@ mod tests {
                 Doc::indent(2, seq(vec![Doc::Hard, Doc::text("b")])),
             ]),
         );
-        assert_eq!(print(&doc, 80), "a\n      b");
+        assert_eq!(print(&doc, 80, 0), "a\n      b");
+    }
+
+    #[test]
+    fn tab_stop_respells_a_finished_indent_column() {
+        let doc = Doc::Concat(vec![
+            Doc::text("a"),
+            Doc::indent(9, Doc::Concat(vec![Doc::Hard, Doc::text("b")])),
+        ]);
+        assert_eq!(print(&doc, 80, 0), "a\n         b");
+        assert_eq!(print(&doc, 80, 8), "a\n\t b");
+        // A tab unit somewhere in the column means the column is not ours to
+        // respell: a nested region put it there.
+        let mixed = Doc::Concat(vec![
+            Doc::text("a"),
+            Doc::indent_unit("\t", Doc::indent(2, Doc::Concat(vec![Doc::Hard, Doc::text("b")]))),
+        ]);
+        assert_eq!(print(&mixed, 80, 8), "a\n\t  b");
     }
 
     #[test]
@@ -515,7 +546,7 @@ mod tests {
                 Doc::text("400"),
             ]),
         );
-        assert_eq!(print(&doc, 10), "100 200\n  300 400");
+        assert_eq!(print(&doc, 10, 0), "100 200\n  300 400");
     }
 
     #[test]
@@ -527,7 +558,7 @@ mod tests {
             Doc::Line,
             Doc::text("y"),
         ]);
-        assert_eq!(print(&doc, 4), "🙂🙂 x\ny");
+        assert_eq!(print(&doc, 4, 0), "🙂🙂 x\ny");
     }
 
     #[test]
@@ -540,7 +571,7 @@ mod tests {
             Doc::Line,
             Doc::text("c"),
         ]));
-        assert_eq!(print(&doc, 3), "a b\nc");
+        assert_eq!(print(&doc, 3, 0), "a b\nc");
     }
 
     fn capped_pair(left: &str, right: &str, max: f64) -> Doc {
@@ -552,7 +583,7 @@ mod tests {
         // Flat form is "leaves: [1, 2, 3, 4]" (20 columns). At width 80 the
         // line has room, but 0.18 * 80 = 14, so the cap opens the group.
         let doc = || capped_pair("leaves:", "[1, 2, 3, 4]", 0.18);
-        assert_eq!(print(&doc(), 80), "leaves:\n[1, 2, 3, 4]");
+        assert_eq!(print(&doc(), 80, 0), "leaves:\n[1, 2, 3, 4]");
         assert_eq!(
             print(
                 &Doc::group(seq(vec![
@@ -560,7 +591,8 @@ mod tests {
                     Doc::Line,
                     Doc::text("[1, 2, 3, 4]"),
                 ])),
-                80
+                80,
+                0
             ),
             "leaves: [1, 2, 3, 4]"
         );
@@ -569,7 +601,7 @@ mod tests {
     #[test]
     fn a_capped_group_stays_flat_when_its_span_is_under_the_fraction() {
         // "id: 1" is 5 columns; 0.18 * 80 = 14.
-        assert_eq!(print(&capped_pair("id:", "1", 0.18), 80), "id: 1");
+        assert_eq!(print(&capped_pair("id:", "1", 0.18), 80, 0), "id: 1");
     }
 
     #[test]
@@ -580,7 +612,7 @@ mod tests {
             capped_pair("id:", "1", 0.18),
             Doc::text("X".repeat(70)),
         ]);
-        assert_eq!(print(&doc, 80), format!("id: 1{}", "X".repeat(70)));
+        assert_eq!(print(&doc, 80, 0), format!("id: 1{}", "X".repeat(70)));
     }
 
     #[test]
@@ -592,7 +624,7 @@ mod tests {
             Doc::text("X".repeat(78)),
             capped_pair("id:", "1", 0.18),
         ]);
-        assert_eq!(print(&doc, 80), format!("{}id:\n1", "X".repeat(78)));
+        assert_eq!(print(&doc, 80, 0), format!("{}id:\n1", "X".repeat(78)));
     }
 
     #[test]
@@ -603,8 +635,8 @@ mod tests {
             Doc::Line,
             Doc::text("c"),
         ]));
-        assert_eq!(print(&doc, 4), "ab\u{000B} c");
-        assert_eq!(print(&doc, 3), "ab\u{000B}\nc");
+        assert_eq!(print(&doc, 4, 0), "ab\u{000B} c");
+        assert_eq!(print(&doc, 3, 0), "ab\u{000B}\nc");
     }
 
     #[test]
@@ -614,6 +646,6 @@ mod tests {
             Doc::Suffix(Box::new(seq(vec![Doc::Cell, Doc::text("// c")]))),
             Doc::CellBreak,
         ]);
-        assert_eq!(print(&doc, 80), "x\u{000B}// c\u{000C}");
+        assert_eq!(print(&doc, 80, 0), "x\u{000B}// c\u{000C}");
     }
 }

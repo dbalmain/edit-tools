@@ -96,6 +96,13 @@ pub struct Package {
     /// is the first reference whose house style is tab-indented.
     #[serde(default)]
     pub tab_indent: bool,
+    /// Tab stop for re-spelling a finished indent column, or 0 for off. Not
+    /// `tab_indent`: that writes one tab *per level*, this leaves the levels
+    /// alone and respells the column they add up to as tabs-to-the-stop plus
+    /// residual spaces. emacs `scheme-mode` with `indent-tabs-mode` t is the
+    /// first reference that needs it (FINDINGS 29b).
+    #[serde(default)]
+    pub tab_stop: usize,
     /// Node types that are punctuation or keywords; `named` skips them.
     #[serde(default)]
     pub tokens: HashSet<String>,
@@ -139,6 +146,8 @@ struct RawPackage {
     #[serde(default)]
     tab_indent: bool,
     #[serde(default)]
+    tab_stop: usize,
+    #[serde(default)]
     tokens: HashSet<String>,
     #[serde(default)]
     comments: HashSet<String>,
@@ -173,6 +182,22 @@ impl TryFrom<RawPackage> for Package {
                 ));
             }
         }
+        let comment_cells = CommentCells::try_from(raw.comment_cells)?;
+        if raw.tab_stop > 0 {
+            if raw.tab_indent {
+                return Err(
+                    "`tab_stop` and `tab_indent` both spell the indent; pick one".to_owned(),
+                );
+            }
+            if comment_cells != CommentCells::Off {
+                return Err(
+                    "`tab_stop` and `comment_cells` disagree about columns: the alignment \
+                     pass counts characters in the rendered line, and a tab is one character \
+                     spanning several columns"
+                        .to_owned(),
+                );
+            }
+        }
         let flatten_fields = flatten_fields(raw.flatten_fields)?;
         let rules = expand_rules(&raw.defs, raw.rules)?
             .into_iter()
@@ -180,8 +205,9 @@ impl TryFrom<RawPackage> for Package {
             .collect::<Result<_, String>>()?;
         Ok(Self {
             indent: raw.indent,
-            comment_cells: CommentCells::try_from(raw.comment_cells)?,
+            comment_cells,
             tab_indent: raw.tab_indent,
+            tab_stop: raw.tab_stop,
             tokens: raw.tokens,
             comments: raw.comments,
             descend: raw.descend,
@@ -978,6 +1004,35 @@ mod tests {
         for (value, want) in cases {
             let mut raw = package(FORMAT);
             raw["flatten_fields"] = value;
+            let err = serde_json::from_value::<Package>(raw)
+                .err()
+                .expect("must refuse")
+                .to_string();
+            assert!(err.contains(want), "wanted {want:?} in {err}");
+        }
+    }
+
+    #[test]
+    fn tab_stop_refuses_the_two_headers_it_contradicts() {
+        // `tab_indent` writes a tab per level; `tab_stop` respells the column
+        // those levels add up to. A package that asks for both has not said
+        // which spelling it wants. `comment_cells` counts characters in the
+        // rendered line, and a tab is one character several columns wide.
+        let cases = [
+            (
+                json!({"tab_stop": 8, "tab_indent": true}),
+                "`tab_stop` and `tab_indent` both spell the indent; pick one",
+            ),
+            (
+                json!({"tab_stop": 8, "comment_cells": true}),
+                "`tab_stop` and `comment_cells` disagree about columns",
+            ),
+        ];
+        for (fields, want) in cases {
+            let mut raw = package(FORMAT);
+            for (key, value) in fields.as_object().expect("object") {
+                raw[key] = value.clone();
+            }
             let err = serde_json::from_value::<Package>(raw)
                 .err()
                 .expect("must refuse")

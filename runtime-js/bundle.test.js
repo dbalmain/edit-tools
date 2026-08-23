@@ -1529,3 +1529,29 @@ test("two packages with the same shape do not share an expansion", () => {
   assert.equal(runOn(pkgWith("[", "]"), "[]", root("[", "]"), 80), "[]\n");
   assert.equal(runOn(pkgWith("{", "}"), "{}", root("{", "}"), 80), "{}\n");
 });
+
+test("tab_stop respells a finished indent column, and refuses the two clashes", () => {
+  // indent 9 under a stop of 8: one tab, then the residual space.
+  const pkg = (fields) => ({
+    format: "et-doc-rules/1",
+    indent: 9,
+    tokens: ["("],
+    rules: { list: ["seq", ["tok", "("], ["indent", ["hard"], ["child", "named"]]] },
+    ...fields,
+  });
+  const root = { type: "list", start: 0, end: 0, children: [leaf("(", "("), leaf("name", "b")] };
+  assert.equal(run(pkg({}), root, 80), "(\n         b\n");
+  assert.equal(run(pkg({ tab_stop: 8 }), root, 80), "(\n\t b\n");
+  assert.throws(
+    () => run(pkg({ tab_stop: 8, tab_indent: true }), root, 80),
+    (err) => err instanceof Refusal && /both spell the indent/.test(err.message),
+  );
+  assert.throws(
+    () => run(pkg({ tab_stop: 8, comment_cells: true }), root, 80),
+    (err) => err instanceof Refusal && /disagree about columns/.test(err.message),
+  );
+  assert.throws(
+    () => run(pkg({ tab_stop: -1 }), root, 80),
+    (err) => err instanceof Refusal && /non-negative integer/.test(err.message),
+  );
+});

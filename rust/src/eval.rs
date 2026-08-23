@@ -19,7 +19,7 @@ pub type PackageMap = HashMap<String, Package>;
 pub fn format(tree: &TreeDoc, packages: &PackageMap, width: usize) -> Result<String, Refusal> {
     let fmt = Fmt::for_language(&tree.language, packages, tree.source.as_bytes())?;
     let doc = fmt.node(&tree.root)?;
-    let mut out = crate::doc::print(&doc, width);
+    let mut out = crate::doc::print(&doc, width, fmt.pkg.tab_stop);
     out = crate::align::cells(
         &out,
         fmt.pkg.comment_cells == crate::pkg::CommentCells::Block,
