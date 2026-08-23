@@ -83,7 +83,15 @@ so, which is the right answer; the deliberation it displaced was the waste.
    because 88 "matches the other languages". 88 is black's, inherited through
    the python manifest. Agreement measured at a width no user of that reference
    ever sees is not agreement. Check the number, do not read it.
-5. **Do the corpus files parse cleanly** — no `ERROR`, no `MISSING`?
+5. **Do the corpus files parse cleanly** — no `ERROR`, no `MISSING`? **And are
+   they valid in the language?** These are different questions and the second one
+   has now been missed. TypeScript's `annotations.ts` carried a rest parameter
+   followed by a comma; tree-sitter parsed it happily, stage B passed it, and
+   stage D found the compiler rejects it (TS1013, checked against 5.9.3) — after
+   a stage-C builder had classified a divergence against it. **A divergence
+   measured against invalid input measures nothing.** Where the language has a
+   compiler or validator that the harness does not run, run it once over the
+   corpus yourself; where it does not, say so.
 6. **Is `gate3` right for this language?** If the builder took the default when
    a real semantic checker was available, say so. If it declared an override, is
    the override actually stronger?
@@ -214,6 +222,18 @@ whether the package is right. Budget your effort here:
    accepted classification with the viewer's `--approve`, `--verdict`,
    `--reason`, and `--reviewed-by` flags; the resulting JSONL diff is part of
    the review.
+
+   **A reason must account for every hunk in the diff, not the first one.** A
+   divergence is one record and often several distinct causes; a reason that
+   explains the hunk the builder noticed and is silent on the rest reads as
+   settled and is not. Check the whole diff against the whole reason.
+
+   **A classification can go stale with the package untouched.** A
+   `design limit` naming a capability the runtime has since gained is no longer
+   a limit, and a held branch accumulates these silently — TypeScript, unreviewed
+   for one round, had three, and two of them came back for a one-word edit.
+   Before accepting a `design limit` that names a missing opcode or policy, check
+   `rust/src/pkg.rs` for whether it is still missing.
 
 4. **Verdict each runtime edit**: `warranted` | `unnecessary` |
    `needs-redesign`. A verdict of `unnecessary` is a **retroactive freeze for
