@@ -4,14 +4,29 @@ Orchestrator's source of truth for what is in flight. Update on every stage
 transition.
 
 Status: `-` not started · `A` corpus building · `B` corpus review · `B+` corpus
-reviewed and merged, package not started · `C` package building · `D` package
-review · `E`/`F` escalated · **merged** · **blocked**
+reviewed and merged, package not started · `C` package building · `C+` package
+built and merged, review not started · `D` package review · `E`/`F` escalated ·
+**merged** · **blocked**
 
 `B+` was added 2026-08-22. The board had carried four languages as `C` for a day
 while nothing was building a package, which is the same lie it complains about
 twice below in the other direction. There was no token for "stage B passed and
 nobody has started stage C", so the board reached for the nearest one and
 overstated. A status with no token gets rounded to a wrong token.
+
+`C+` was added 2026-08-26, for the same reason one stage later, and it is the
+more dangerous of the two omissions. Markdown's package was built, gated, and
+**merged to `main`** while its stage D had never been re-run — the only markdown
+review predates two runtime capabilities and one ledger record signed by the
+builder. Both available tokens lie: `C` says the package is unbuilt, and
+**merged** says it has been through review. The board reached for `C`, so the
+row that most needed a reviewer was also the row that looked furthest from
+needing one.
+
+The lesson is not "add a token" but **which direction the rounding goes**. `B+`
+rounded *up* and overstated progress. `C+` rounded *down* and hid an unreviewed
+runtime change on `main`, which is the failure that actually costs something. A
+merge is not a review, and the board must never let one imply the other.
 
 ## Picking this up — paused 2026-08-22, resuming Friday
 
@@ -382,7 +397,7 @@ data-destroying path in any shipped package.
 | Rust       | T2   | 3     | unrecorded    | merged | tree_sitter_rust       | rustfmt                           |
 | Kotlin     | T2   | 3     | unrecorded    | merged | tree_sitter_kotlin     | ktfmt                             |
 | JavaScript | T2   | 3     | unrecorded    | merged | tree_sitter_javascript | prettier                          |
-| Markdown   | T2   | 4     | grok+Claude   | C      | tree_sitter_markdown   | prettier                          |
+| Markdown   | T2   | 4     | grok+Claude   | C+     | tree_sitter_markdown   | prettier                          |
 | TypeScript | T2   | 4     | grok-4.6      | merged | tree_sitter_typescript | prettier                          |
 | XML        | T3   | 4     | grok+Claude   | merged | tree_sitter_xml        | prettier (`@prettier/plugin-xml`) |
 | HTML       | T3   | 4     | grok+codex    | merged | tree_sitter_html       | prettier                          |
