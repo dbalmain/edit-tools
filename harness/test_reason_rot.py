@@ -181,40 +181,90 @@ class ClaimExtractionTests(unittest.TestCase):
             self.assertNotIn(record_id, source)
 
 
-class LiveLedgerTests(unittest.TestCase):
-    """The three audited WRONG-CAUSE records must appear in a full scan."""
+CLEAN_REASONS = {
+    'ruby/collections.rb@40': (
+        'After Stage D fixed the expressible empty-bracket hunk, the '
+        'remaining mixed array differs only because its trailing comment '
+        'is counted in group fit. The IR has no group-fit mode that '
+        'excludes suffix trivia (FINDINGS 6).'
+    ),
+    'rust/widths.rs@60': (
+        'Entry 11, alone now. Both comment columns match rustfmt at this '
+        'width, including the long arm that drops out of the column and '
+        'the two shorter ones that re-form a narrower one. What remains is '
+        'the heterogeneous method chain, which has no group to break.'
+    ),
+    'typescript/sequences.ts@40': (
+        'The old JavaScript fill/comment coupling is stale: current `fill` '
+        'preserves BreakParent comments, and this number array has no '
+        'comments. `fill` was applied and fixes @80. At 40 it packs '
+        'through `170` because each fill choice does not reserve the '
+        'break-only comma that `trail` adds afterward, producing a '
+        '41-column second line; omitting `trail` loses Prettier trailing '
+        'commas and reverting to `each` loses @80. The missing capability '
+        'is tail-aware fill/trailing-separator measurement (the FINDINGS '
+        '8/21 boundary).'
+    ),
+}
+
+
+class KnownReasonTests(unittest.TestCase):
+    """The audited WRONG-CAUSE reasons, against this repo's live inventory.
+
+    The reason *text* is frozen here rather than read from the ledger. The
+    ledger is expected to change -- these very records were re-reasoned on
+    2026-08-29 -- and a test that asserts the live ledger still contains rot
+    fails exactly when the tool has done its job. What stays live is the
+    inventory: whether `fill` and `drop` are opcodes in this tree, and what
+    status FINDINGS gives them. That is the part the detector is about.
+    """
 
     @classmethod
     def setUpClass(cls):
-        cls.hits = reason_rot.scan("formatter")
-        cls.by_id: dict[str, list[reason_rot.Hit]] = {}
-        for hit in cls.hits:
-            cls.by_id.setdefault(hit.id, []).append(hit)
+        cls.inv = reason_rot.load_inventory()
 
-    def test_flags_all_three_known_records(self):
+    def test_flags_every_known_rotted_reason(self):
         for record_id, reason in KNOWN_REASONS.items():
             with self.subTest(record_id=record_id):
-                self.assertIn(record_id, self.by_id, f"missed {record_id}: {reason[:80]}")
+                hits = reason_rot.scan_reason(reason, self.inv, record_id)
+                self.assertTrue(hits, f"missed {record_id}: {reason[:80]}")
 
-    def test_each_known_hit_names_a_phrase_capability_and_evidence(self):
-        for record_id in KNOWN_REASONS:
-            for hit in self.by_id[record_id]:
+    def test_each_hit_names_a_phrase_capability_and_evidence(self):
+        for record_id, reason in KNOWN_REASONS.items():
+            for hit in reason_rot.scan_reason(reason, self.inv, record_id):
                 self.assertTrue(hit.phrase, hit)
                 self.assertTrue(hit.capability, hit)
                 self.assertTrue(hit.evidence, hit)
-                self.assertIn(hit.phrase, KNOWN_REASONS[record_id])
+                self.assertIn(hit.phrase, reason)
 
     def test_custom_properties_is_fill_not_a_findings_number_it_never_cited(self):
-        caps = {hit.capability for hit in self.by_id["css/custom_properties.css@80"]}
+        reason = KNOWN_REASONS["css/custom_properties.css@80"]
+        caps = {
+            hit.capability
+            for hit in reason_rot.scan_reason(reason, self.inv, "css/x@80")
+        }
         self.assertIn("fill", caps)
 
-    def test_ordinary_english_is_not_a_live_hit(self):
-        for record_id in (
-            "ruby/collections.rb@40",
-            "rust/widths.rs@60",
-            "typescript/sequences.ts@40",
-        ):
-            self.assertNotIn(record_id, self.by_id)
+    def test_ordinary_english_is_not_a_hit(self):
+        for record_id, reason in CLEAN_REASONS.items():
+            with self.subTest(record_id=record_id):
+                self.assertEqual(
+                    [], reason_rot.scan_reason(reason, self.inv, record_id)
+                )
+
+
+class LiveLedgerTests(unittest.TestCase):
+    """The live scan must run and stay well-formed -- not find anything named.
+
+    Asserting *which* records are flagged belongs above, on frozen text.
+    """
+
+    def test_scan_runs_and_every_hit_is_well_formed(self):
+        for hit in reason_rot.scan("formatter"):
+            self.assertTrue(hit.id, hit)
+            self.assertTrue(hit.phrase, hit)
+            self.assertTrue(hit.capability, hit)
+            self.assertTrue(hit.evidence, hit)
 
 
 class CliAndRenderTests(unittest.TestCase):
