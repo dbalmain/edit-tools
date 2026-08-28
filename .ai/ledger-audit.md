@@ -7,8 +7,8 @@ Every ledger hash matches the current `(ours, reference)` pair. `stale: 0`.
 This audit is not a hash check. It asks whether the `reason` still accounts
 for the diff it is stored against.
 
-**Result.** The 142 reasons are in good shape. Four records fail the bar
-applied below; none of the four is a mislabelled `package-bug`, so none of
+**Result.** The 142 reasons are in good shape. Seven records fail the bar
+applied below; none of the seven is a mislabelled `package-bug`, so none of
 them moves a merge decision. The rest are COVERED.
 
 ## The bar actually applied
@@ -29,8 +29,11 @@ whose cause is not the named mechanism. "One root cause, several hunks" is
 not this.
 
 **WRONG-CAUSE** is a named mechanism that is factually false, or that does
-not produce this diff. Stale wording that still describes the right limit in
-the right file is COVERED; a cause that the current IR contradicts is not.
+not produce this diff. If the reason's *only* mechanism is now false
+(the IR grew, the leftover bytes did not), that is WRONG-CAUSE even when
+the leftover is still a real design-limit. If it names a false lead *and*
+the true leftover, it is COVERED with a stale lead — see
+`rust/comments.rs`.
 
 **WRONG-VERDICT** is reserved for a label that does not follow, and in
 particular for a settled label (`design-limit` / `house-rule` /
@@ -56,9 +59,9 @@ The failures that exist are not of that shape.
 
 | class | n |
 | --- | ---: |
-| COVERED | 138 |
-| UNDERCOUNTS | 3 |
-| WRONG-CAUSE | 1 |
+| COVERED | 135 |
+| UNDERCOUNTS | 4 |
+| WRONG-CAUSE | 3 |
 | WRONG-VERDICT | 0 |
 | UNVERIFIABLE | 0 |
 | **ledger records** | **142** |
@@ -76,8 +79,8 @@ Per language, non-COVERED only:
 | markdown | 9 | 9 | |
 | python | 4 | 4 | |
 | ruby | 15 | 15 | |
-| rust | 16 | 16 | |
-| scheme | 12 | 12 | |
+| rust | 16 | 14 | 2 WRONG-CAUSE |
+| scheme | 12 | 11 | 1 UNDERCOUNTS |
 | toml | 7 | 7 | |
 | typescript | 17 | 17 | |
 | yaml | 20 | 18 | 2 UNDERCOUNTS |
@@ -143,6 +146,46 @@ No WRONG-VERDICT. Then WRONG-CAUSE, then UNDERCOUNTS.
   fill either stays unused (`each` on this arm) or packs the last `rgba()`
   open; kitchen.css@80 is the same leftover. The IR has fill; this is a
   fill-item granularity limit, not a missing opcode."
+
+### WRONG-CAUSE `rust/leading_pipes.rs@100` and `@60`
+
+- **On file:** `design limit`, opus-orchestrator (excluded from the
+  scorecard; still in the 142)
+- **Claims:** "Entry 13: rustfmt deletes the redundant leading pipe in a
+  match pattern and no opcode can express deleting a token -- a rule either
+  emits it or refuses at the cursor. … Gate 3 permits the deletion."
+- **Diff** (width-insensitive, both records):
+
+```diff
+     match value {
+-        1 => "one",
+-        2 | 3 => "two or three",
+-        _ => "other",
++        | 1 => "one",
++        | 2 | 3 => "two or three",
++        | _ => "other",
+     }
+```
+
+- **Why WRONG-CAUSE.** Both named facts are false in this repo. `drop`
+  exists (`rust/src/pkg.rs`, FINDINGS 13 "Built"), and
+  `harness/languages/rust.toml` already records the move: "the `drop`
+  opcode now makes the deletion sayable, and with it this file is
+  byte-identical to rustfmt at both widths -- but gate 3 rejects the
+  `| _` arm, because an `or_pattern` holding only anonymous tokens
+  cannot be declared transparent." The leftover bytes are the same; the
+  mechanism is now a gate-skeleton hole, not a missing opcode. Not a
+  package-bug: applying `drop` here fails gate 3, so the file stays
+  incomparable. The incomparable *comment* was updated; the ledger
+  reason was not, because the hash did not move.
+
+- **Proposed verdict:** `design-limit` (unchanged; the file remains
+  excluded)
+- **Proposed reason:** "`drop` deletes the leading `|` and the formatted
+  bytes then match rustfmt. Gate 3 still rejects `| _`: an `or_pattern`
+  of only anonymous tokens cannot be declared transparent, and eliding
+  it changes the parent `match_pattern` skeleton. Incomparable for that
+  gate hole, not because deletion is unsayable."
 
 ### UNDERCOUNTS `javascript/kitchen.js@40`
 
@@ -235,6 +278,38 @@ No WRONG-VERDICT. Then WRONG-CAUSE, then UNDERCOUNTS.
   attach inside the preceding subtree, so a package cannot outdent them.
   Trailing colon comments in this file already match."
 
+### UNDERCOUNTS `scheme/normalisation.scm@80`
+
+- **On file:** `design limit`, codex-Sol (stage D)
+- **Claims:** "Emacs preserves intra-line whitespace and pre-comment
+  padding, while the IR canonically emits separators and `comment_gap`
+  and exposes no source-whitespace predicate or preservation opcode.
+  Verbatim list rendering would also preserve the wrong leading
+  indentation."
+- **That covers packed spacing, `( )` vs `()`, and the comment-gap run.**
+  The second hunk also moves the continuation `c` from emacs's
+  first-argument column (a tab) to our uniform +2:
+
+```diff
+ (define (mixed-padding a b c)
+-  (list  a   b
+-	 c))
++  (list a b
++    c))
+```
+
+  The file's own comment says leading indent is *rewritten*, not
+  preserved. That rewrite is FINDINGS 29a (indent to the actual first
+  argument), already proven on `calls.scm`. Canonical separators explain
+  collapsing `  a   b`; they do not explain the column of `c`.
+
+- **Proposed verdict:** `design-limit` (unchanged)
+- **Proposed reason:** "Intra-line padding, empty-list interior space,
+  and pre-comment runs have no source-whitespace opcode, and verbatim
+  lists would freeze the over/under-indented controls that currently
+  match. Separately, `(list a b / c)` wants first-argument alignment
+  (FINDINGS 29a), which a fixed +2 cannot produce."
+
 ## Labelling notes that are not WRONG-VERDICT
 
 These do not change a merge decision. They are calibration, not defects.
@@ -255,11 +330,23 @@ These do not change a merge decision. They are calibration, not defects.
   coverage. The 2026-08-16 mixed-pair rule was written for a leftover
   *defect* (`url()` on `strings.css`), not for a leftover house choice.
 
+- **`rust/comments.rs@100` and `@60` lead with FINDINGS 22**
+  ("`comment_cells` is package-wide and unscoped") after the package
+  opted into `"comment_cells": "block"`. That lead is stale — the same
+  reason-rot as `custom_properties`. I am not counting them WRONG-CAUSE,
+  because the same sentences also name FINDINGS 9 and 7, and those are
+  exactly the remaining hunks (mid-expression `/* */` moved to a suffix;
+  closer-comment indent; at 100, `first, second` packed on one line).
+  A reason that names a false mechanism *and* the true leftover is
+  COVERED with a stale lead, not WRONG-CAUSE. Replacement text would
+  drop the Entry 22 sentence, matching how `widths.rs` was rewritten to
+  "Entry 11, alone now."
+
 - **Nine excluded-file records in the ledger** (`html/prose`, `html/quotes`,
-  `html/void_slash`, `rust/leading_pipes`, and the ruby extra) are
-  well-reasoned design-limits that the scorer will never count. Harmless.
-  They make "142 accepted" and "133 accepted" two true numbers for two
-  populations.
+  `html/void_slash`, `rust/leading_pipes`, `ruby/block_conversion`) are
+  still in the 142. Two of them (`leading_pipes`) are the WRONG-CAUSE
+  above; the other seven are COVERED. They make "142 accepted" and
+  "133 accepted" two true numbers for two populations.
 
 ## Per-language notes (COVERED, in short)
 
@@ -315,22 +402,20 @@ raise-align, rescue-align, `sort_by.reverse` chain.
 `block_conversion.rb@40` (excluded) is the `block` → `do_block` rewrite
 gate 3 rejects; the reason matches the whole file.
 
-**rust (16/16).** Chains (FINDINGS 11); comments (entries 22/9/7); generics
-`trail` pin; kitchen chain + ancestor-break braces; leading-pipes token
-deletion (excluded file, still well-reasoned); opaque-leaf house-rule on
-`strings` and `macro_patterns` with a measured regression; FINDINGS 6
-array; or-patterns FINDINGS 23; one-item `trail` on patterns/structs;
-widths "comment columns are byte-identical, remaining is the chain" is
-true of the current hunk. The IDENTICAL keyword hit on widths.rs@100 was a
-scanner false positive: the byte-identity claim is about the comment
-columns, not the whole file.
+**rust (14/16).** Chains (FINDINGS 11); comments COVERED with a stale
+Entry 22 lead (see labelling notes); generics `trail` pin; kitchen chain
++ ancestor-break braces; opaque-leaf house-rule on `strings` and
+`macro_patterns` with a measured regression; FINDINGS 6 array;
+or-patterns FINDINGS 23; one-item `trail` on patterns/structs; widths
+"comment columns are byte-identical, remaining is the chain" is true of
+the current hunk. `leading_pipes` is the WRONG-CAUSE above.
 
-**scheme (12/12).** Head/cadr specform plus first-argument/opener column
+**scheme (11/12).** Head/cadr specform plus first-argument/opener column
 (FINDINGS 10 / 29a) covers bindings, calls, control, define, heads,
 kitchen, lambda, long_sequences, macros. comments names three distinctions
-and has three. normalisation is intra-line whitespace / `comment_gap`.
-`quote.scm@80` is the cleanest house-rule in the ledger: a child-count
-branch would make the file exact and they declined it.
+and has three. `quote.scm@80` is the cleanest house-rule in the ledger: a
+child-count branch would make the file exact and they declined it.
+`normalisation.scm@80` is the UNDERCOUNTS above.
 
 **toml (7/7).** `trail` pin on arrays (trailing comma *and* source-broken
 `already_broken`, same opcode); comment alignment (FINDINGS 1); nested
@@ -354,14 +439,17 @@ on "the only policy", not an only-hunk claim.
 ## Systemic patterns
 
 1. **Reason-rot on a stable hash is the real gap, and it is not theoretical.**
-   `css/custom_properties.css@80` is the exhibit. Fill landed; this file's
-   bytes did not move; the reason still says the opcode is missing. The
-   hash is doing its job (the *diff* is the same). Nothing re-asks whether
-   the *prose* is still true of the current IR. The 2026-08-28 incident the
-   prompt cites — a byte-identity claim measured against a runtime that
-   could not load the package — is this class, not the "only hunk is the
-   pipe table" class. Falsifiable hunk-count claims in this ledger are
-   almost all true. Stale *mechanism* claims are the ones that survive.
+   `css/custom_properties.css@80` (fill shipped) and
+   `rust/leading_pipes.rs` (`drop` shipped; `rust.toml` already says so)
+   are the exhibits. A capability landed; those files' bytes did not
+   move; the reasons still describe the pre-capability IR. `rust.toml`
+   was updated; the ledger was not. The hash is doing its job (the
+   *diff* is the same). Nothing re-asks whether the *prose* is still
+   true of the current IR. The 2026-08-28 incident the prompt cites — a
+   byte-identity claim measured against a runtime that could not load
+   the package — is this class, not the "only hunk is the pipe table"
+   class. Falsifiable hunk-count claims in this ledger are almost all
+   true. Stale *mechanism* claims are the ones that survive.
 
 2. **Re-review concentrates on hashes that moved.** TypeScript, JavaScript
    comment-fill, CSS kitchen/calc/nested, Rust widths/structs: all
@@ -387,11 +475,11 @@ on "the only policy", not an only-hunk claim.
    and a real cost.
 
 5. **"Only hunk" / "every hunk" / "sole remaining" did not concentrate
-   failures.** 29 records flagged by those phrases; 0 of the 4 non-COVERED
-   records are in that set (`custom_properties` does not say "only";
-   `kitchen.js@40` does not say "only"; `anchors` does not say "only").
-   The prompt's concentration hypothesis is wrong on this ledger. The
-   failures are omitted sibling causes and a stale opcode claim.
+   failures.** 29 records flagged by those phrases; 0 of the 7 non-COVERED
+   records are in that set. The prompt's concentration hypothesis is
+   wrong on this ledger. The failures are omitted sibling causes
+   (kitchen.js, yaml/anchors, scheme/normalisation) and stale opcode
+   claims (fill, `drop`).
 
 ## Pushback on the criterion, and on where the weakness actually is
 
