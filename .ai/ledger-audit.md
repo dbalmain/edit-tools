@@ -514,6 +514,22 @@ the experiment. The one place a mixed pair is still in the hash
 (TypeScript kitchen, JavaScript kitchen) treats the expressible part as
 a house choice, which is the opposite of sneaking a defect through.
 
+A second pass argued the opposite: `kitchen.ts@80/@40` and six YAML
+scalar-hang records (`strings` both widths, `keys@40`, and the scalar
+slices of `comments@40` / `kitchen@40` / `tags@40`) should be
+`package-bug` under the 2026-08-16 mixed-pair rule, because
+`child-count` already peeks through `flow_node` (YAML uses it for
+`block_scalar`) and a TypeScript `child-count` of
+`accessibility_modifier` would break parameter-property constructors.
+I did not take that. The YAML reviewer's experiment was "remove the
+group", which does regress flow mappings; the proposed *split* was not
+run. FINDINGS 10 already names growing that peephole as the failure
+mode. Filing `package-bug` on an unrun composition would be the thing
+this bar forbids: an imagined package edit. If someone runs the
+`child-count f:value t:flow_mapping` split and it matches without
+regression, that is a new fact and those records should be re-judged.
+It is not a fact this audit has.
+
 ## Scorecard
 
 Unchanged from `main`. After `./build.sh` and `./harness/score.py .`:

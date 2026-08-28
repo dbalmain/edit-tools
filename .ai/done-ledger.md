@@ -85,6 +85,13 @@ is `state()` working as specified. House-rule (10) is used honestly,
 with a labelling split on FINDINGS 1 (markdown tables `house-rule` vs
 TOML comments `design-limit`) that does not move the scorecard.
 
+A second pass wanted `package-bug` on `kitchen.ts` and six YAML
+scalar-hang records, on the grounds that `child-count` already peeks
+through `flow_node`. I did not take it: the YAML experiment that was
+actually run (drop the pair group) regresses flow mappings, and the
+proposed subtype split was not. Unrun compositions are not
+`package-bug` on this bar. Details in the report.
+
 ## Not done
 
 No ledger re-sign. Replacement text is in the report for a reviewer from
