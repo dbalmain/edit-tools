@@ -35,6 +35,40 @@ const commentedFile = (children, end) => ({ type: "file", start: 0, end, childre
 
 const span = (type, start, end, text) => ({ type, start, end, text });
 
+const rangePkg = () => toy({ marker: ["verbatim"] });
+
+function assertInvalidRange(source, root, details) {
+  assert.throws(
+    () => runOn(rangePkg(), source, root, 80),
+    (error) =>
+      error instanceof Refusal &&
+      /malformed tree: node `marker`/.test(error.message) &&
+      details.every((detail) => error.message.includes(detail)),
+  );
+}
+
+test("tree loader accepts a well-formed UTF-8 range", () => {
+  assert.equal(runOn(rangePkg(), "xéy", { type: "marker", start: 1, end: 3 }, 80), "é\n");
+});
+
+test("tree loader refuses invalid numeric ranges", () => {
+  // These are loader regressions: letting any one through restores the
+  // `get`/`subarray` coercion split at downstream source-byte sites.
+  assertInvalidRange("hello", { type: "marker", start: 4, end: 2 }, ["reversed range", "4..2"]);
+  assertInvalidRange("hello", { type: "marker", start: 0, end: 6 }, ["past the source", "0..6"]);
+  assertInvalidRange("hello", { type: "marker", start: -1, end: 2 }, ["invalid start offset", "-1"]);
+  assertInvalidRange("hello", { type: "marker", start: 1.5, end: 2 }, ["invalid start offset", "1.5"]);
+  assertInvalidRange("hello", { type: "marker", start: null, end: 2 }, ["invalid start offset", "null"]);
+  assertInvalidRange("hello", { type: "marker", start: true, end: 2 }, ["invalid start offset", "true"]);
+  assertInvalidRange("hello", { type: "marker", start: "0", end: 2 }, ["invalid start offset", "\"0\""]);
+  assertInvalidRange("hello", { type: "marker", end: 2 }, ["invalid start offset", "missing"]);
+});
+
+test("tree loader refuses UTF-8 splits at either edge", () => {
+  assertInvalidRange("xéy", { type: "marker", start: 2, end: 4 }, ["start offset 2", "UTF-8"]);
+  assertInvalidRange("xéy", { type: "marker", start: 0, end: 2 }, ["end offset 2", "UTF-8"]);
+});
+
 /** `"hi"` as a three-child `quote` node — the shape `verbatim` actually sees. */
 function quote(start, end, children) {
   return {
@@ -161,12 +195,16 @@ test("source-multiline predicate inspects the node range", () => {
   assert.equal(runOn(pkg, "a\nb", root, 80), "a\nb\n");
   assert.equal(runOn(pkg, "a b", root, 80), "a b\n");
 
-  // A range running past the source clamps; Rust clamps its slice to match.
+  // Range validity belongs to loading now; the predicate never sees a tree
+  // whose source slice would need cross-runtime clamp semantics.
   const past = {
     type: "file", start: 0, end: 99,
     children: [span("name", 0, 1, "a"), span("name", 2, 3, "b")],
   };
-  assert.equal(runOn(pkg, "a\nb", past, 80), "a\nb\n");
+  assert.throws(
+    () => runOn(pkg, "a\nb", past, 80),
+    /malformed tree: node `file`.*past the source/,
+  );
 });
 
 test("srcgap preserves horizontal space and safely breaks it", () => {
@@ -197,6 +235,14 @@ test("srcgap preserves horizontal space and safely breaks it", () => {
     () => runOn(pkg, "a\u000bb", vertical, 80),
     /only whitespace in a `srcgap`/,
   );
+
+  // Node-local load checks cannot prove a range derived from two overlapping
+  // siblings. Refuse that relation where `srcgap` forms it.
+  const reversed = {
+    type: "file", start: 0, end: 4,
+    children: [span("name", 0, 3, "a"), span("name", 1, 4, "b")],
+  };
+  assert.throws(() => runOn(pkg, "a  b", reversed, 80), /a valid source gap/);
 });
 
 test("a group fraction breaks a construct that still fits the line", () => {
@@ -1002,11 +1048,12 @@ test("verbatim refuses when a leaf's text does not match the source", () => {
 });
 
 test("verbatim refuses when a descendant is outside its parent", () => {
-  const { source, root } = quote(0, 4, [
+  const { root } = quote(0, 4, [
     span("open", 0, 1, '"'),
-    span("body", 1, 10, "hi"),
+    span("body", 1, 5, "hi"),
     span("close", 3, 4, '"'),
   ]);
+  const source = '"hi"x';
   assert.throws(
     () => runOn(quotePkg(), source, root, 80),
     (e) =>
@@ -1032,7 +1079,7 @@ test("verbatim refuses when siblings overlap", () => {
   );
 });
 
-test("verbatim refuses when a range is inverted", () => {
+test("tree loader refuses before verbatim when a range is reversed", () => {
   const { source, root } = quoteOk();
   root.start = 4;
   root.end = 0;
@@ -1040,8 +1087,8 @@ test("verbatim refuses when a range is inverted", () => {
     () => runOn(quotePkg(), source, root, 80),
     (e) =>
       e instanceof Refusal &&
-      /verbatim `quote`/.test(e.message) &&
-      /inverted range/.test(e.message),
+      /malformed tree: node `quote`/.test(e.message) &&
+      /reversed range/.test(e.message),
   );
 });
 
@@ -1502,7 +1549,7 @@ test("trail comma precedes an own-line comment before the closer", () => {
   };
   const source = "(a\n# c\n)";
   const root = {
-    type: "list", start: 0, end: 9,
+    type: "list", start: 0, end: 8,
     children: [
       { type: "(", start: 0, end: 1, text: "(" },
       { type: "name", start: 1, end: 2, text: "a" },
@@ -1794,9 +1841,10 @@ test("a swallowed terminator is peeled once and only once", () => {
   });
   assert.equal(runOn(pkg, source, tree(2), 80), "a\n\nb\n");
   assert.equal(runOn(pkg, source, tree(3), 80), "a\nb\n");
-  // A range past the end of source clamps rather than answering zero. Rust's
-  // `newlines` used to return 0 here while this loop clamped -- the fifth
-  // instance of the slice::get/subarray asymmetry, and invisible to every gate
-  // because generated corpus trees never exceed their source.
-  assert.equal(runOn(pkg, source, tree(2, 50), 80), "a\n\nb\n");
+  // The loader now owns this invariant, so `newlines` cannot revive the old
+  // `get`/`subarray` clamp disagreement at its downstream byte loop.
+  assert.throws(
+    () => runOn(pkg, source, tree(2, 50), 80),
+    /malformed tree: node `file`.*past the source/,
+  );
 });

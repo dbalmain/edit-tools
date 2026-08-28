@@ -975,6 +975,8 @@ mod tests {
             "root": root,
         }))
         .expect("toy tree parses");
+        tree.validate()
+            .map_err(|error| Refusal(format!("malformed tree: {error}")))?;
         format(&tree, packages, width)
     }
 
@@ -2089,16 +2091,17 @@ try {{
 
     #[test]
     fn verbatim_refuses_when_a_descendant_is_outside_its_parent() {
-        let (source, root) = quote(
+        let (_, root) = quote(
             0,
             4,
             vec![
                 span("open", 0, 1, "\""),
-                span("body", 1, 10, "hi"),
+                span("body", 1, 5, "hi"),
                 span("close", 3, 4, "\""),
             ],
         );
-        let err = run_on(&quote_pkg(), &source, root, 80).expect_err("must refuse");
+        let source = "\"hi\"x";
+        let err = run_on(&quote_pkg(), source, root, 80).expect_err("must refuse");
         assert!(
             err.0.contains("verbatim `quote`") && err.0.contains("outside its parent"),
             "{}",
@@ -2127,14 +2130,14 @@ try {{
     }
 
     #[test]
-    fn verbatim_refuses_when_a_range_is_inverted() {
+    fn tree_loader_refuses_before_verbatim_when_a_range_is_reversed() {
         let (source, root) = quote_ok();
         let mut root = root;
         root["start"] = json!(4);
         root["end"] = json!(0);
         let err = run_on(&quote_pkg(), &source, root, 80).expect_err("must refuse");
         assert!(
-            err.0.contains("verbatim `quote`") && err.0.contains("inverted range"),
+            err.0.contains("malformed tree: node `quote`") && err.0.contains("reversed range"),
             "{}",
             err.0
         );
@@ -2550,7 +2553,8 @@ try {{
         );
         assert_eq!(run_on(&pkg, "a b", root, 80).expect("flat"), "a b\n");
 
-        // A range running past the source clamps, matching `subarray` in JS.
+        // Range validity belongs to loading now; the predicate never sees a
+        // tree whose source slice would need cross-runtime clamp semantics.
         let past = json!({
             "type": "file", "start": 0, "end": 99,
             "children": [
@@ -2558,7 +2562,8 @@ try {{
                 { "type": "name", "start": 2, "end": 3, "text": "b" }
             ]
         });
-        assert_eq!(run_on(&pkg, "a\nb", past, 80).expect("clamped"), "a\nb\n");
+        let error = run_on(&pkg, "a\nb", past, 80).expect_err("must refuse at load");
+        assert!(error.0.contains("node `file`") && error.0.contains("past the source"));
     }
 
     #[test]
@@ -2590,6 +2595,20 @@ try {{
             .expect_err("non-whitespace gap refuses")
             .0
             .contains("only whitespace in a `srcgap`"));
+
+        // Node-local load checks cannot prove a range derived from two
+        // overlapping siblings. Refuse that relation where `srcgap` forms it.
+        let reversed = json!({
+            "type": "file", "start": 0, "end": 4,
+            "children": [
+                { "type": "name", "start": 0, "end": 3, "text": "a" },
+                { "type": "name", "start": 1, "end": 4, "text": "b" }
+            ]
+        });
+        assert!(run_on(&pkg, "a  b", reversed, 80)
+            .expect_err("reversed derived gap refuses")
+            .0
+            .contains("a valid source gap"));
     }
 
     fn all_pkg() -> PackageMap {
@@ -2820,9 +2839,9 @@ try {{
             serde_json::from_value(raw.clone()).expect("swallow package parses")
         };
         let source = "a\n\nb";
-        let tree = |first_end: usize| {
+        let tree = |first_end: usize, file_end: usize| {
             json!({
-                "type": "file", "start": 0, "end": 4,
+                "type": "file", "start": 0, "end": file_end,
                 "children": [
                     { "type": "item", "start": 0, "end": first_end, "children": [
                         { "type": "name", "start": 0, "end": 1, "text": "a" }
@@ -2834,10 +2853,19 @@ try {{
             })
         };
         // Swallows only its line ending: the source blank is real and recovered.
-        assert_eq!(run_on(&one(pkg()), source, tree(2), 80).expect("ok"), "a\n\nb\n");
+        assert_eq!(
+            run_on(&one(pkg()), source, tree(2, 4), 80).expect("ok"),
+            "a\n\nb\n"
+        );
         // Swallows the line ending and the blank: the blank belongs to the node,
         // and the gap must not claim it a second time.
-        assert_eq!(run_on(&one(pkg()), source, tree(3), 80).expect("ok"), "a\nb\n");
+        assert_eq!(
+            run_on(&one(pkg()), source, tree(3, 4), 80).expect("ok"),
+            "a\nb\n"
+        );
+        let error = run_on(&one(pkg()), source, tree(2, 50), 80)
+            .expect_err("past-end root must refuse at load");
+        assert!(error.0.contains("node `file`") && error.0.contains("past the source"));
     }
 
     #[test]
@@ -3032,7 +3060,7 @@ try {{
         .expect("list-with-comments package parses"));
         let source = "(a\n# c\n)";
         let root = json!({
-            "type": "list", "start": 0, "end": 9,
+            "type": "list", "start": 0, "end": 8,
             "children": [
                 { "type": "(", "start": 0, "end": 1, "text": "(" },
                 { "type": "name", "start": 1, "end": 2, "text": "a" },

@@ -7,6 +7,42 @@
 
 class Refusal extends Error {}
 
+function validateTree(root, bytes) {
+  validateNode(root, bytes);
+}
+
+function invalidOffset(node, edge, offset) {
+  const got = offset === undefined ? "missing" : JSON.stringify(offset);
+  throw new Refusal(
+    `malformed tree: node \`${node?.type}\` has invalid ${edge} offset ${got}; ` +
+    "expected a non-negative integer",
+  );
+}
+
+function invalidRange(node, why) {
+  throw new Refusal(`malformed tree: node \`${node?.type}\` ${why}`);
+}
+
+function validateNode(node, bytes) {
+  const start = node?.start;
+  const end = node?.end;
+  if (!Number.isSafeInteger(start) || start < 0) invalidOffset(node, "start", start);
+  if (!Number.isSafeInteger(end) || end < 0) invalidOffset(node, "end", end);
+  if (start > end) invalidRange(node, `has reversed range ${start}..${end}`);
+  if (end > bytes.length) {
+    invalidRange(node, `range ${start}..${end} ends past the source length ${bytes.length}`);
+  }
+  // TextEncoder produced valid UTF-8, so an interior edge is invalid exactly
+  // when it points at a continuation byte. This avoids decoding every node.
+  if (start < bytes.length && (bytes[start] & 0xc0) === 0x80) {
+    invalidRange(node, `start offset ${start} splits a UTF-8 character`);
+  }
+  if (end < bytes.length && (bytes[end] & 0xc0) === 0x80) {
+    invalidRange(node, `end offset ${end} splits a UTF-8 character`);
+  }
+  for (const child of node.children ?? []) validateNode(child, bytes);
+}
+
 const PACKAGE_FORMAT = "et-doc-rules/1";
 const MAX_MACRO_DEPTH = 32;
 
@@ -1309,6 +1345,7 @@ class Ctx {
     const next = this.items[this.cursor];
     const from = previous?.node.end ?? this.node.start;
     const to = next?.node.start ?? this.node.end;
+    if (from > to) throw this.refuse("a valid source gap");
     const bytes = this.fmt.bytes.subarray(from, to);
     for (const byte of bytes) {
       // Tab, LF, FF, CR, space -- the HTML spec's ASCII whitespace, which is
@@ -1650,6 +1687,7 @@ class Formatter {
 /** Format a corpus tree. Throws `Refusal` rather than guessing. */
 function format(tree, packages, cols) {
   const bytes = new TextEncoder().encode(tree.source ?? "");
+  validateTree(tree.root, bytes);
   const fmt = new Formatter(packages, tree.language, bytes, new TextDecoder());
   let out = print(fmt.node(tree.root), cols, fmt.pkg.tab_stop);
   out = alignCells(out, fmt.pkg.comment_cells === CELLS_BLOCK, " ".repeat(fmt.commentGap), cols);

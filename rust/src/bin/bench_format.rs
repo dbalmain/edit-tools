@@ -59,8 +59,7 @@ fn run() -> Result<u128, Refusal> {
     let iterations = parse_number("iterations", &iterations)?;
     let raw =
         std::fs::read_to_string(&path).map_err(|error| Refusal(format!("{path}: {error}")))?;
-    let tree: TreeDoc =
-        serde_json::from_str(&raw).map_err(|error| Refusal(format!("malformed tree: {error}")))?;
+    let tree = TreeDoc::load(&raw).map_err(|error| Refusal(format!("malformed tree: {error}")))?;
     let directory = packages_dir();
     let packages = tree
         .languages()

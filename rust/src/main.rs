@@ -54,8 +54,7 @@ fn run() -> Result<String, Refusal> {
         .map_err(|_| Refusal(format!("width `{width}` is not a number")))?;
 
     let raw = std::fs::read_to_string(&path).map_err(|e| Refusal(format!("{path}: {e}")))?;
-    let tree: TreeDoc =
-        serde_json::from_str(&raw).map_err(|e| Refusal(format!("malformed tree: {e}")))?;
+    let tree = TreeDoc::load(&raw).map_err(|error| Refusal(format!("malformed tree: {error}")))?;
     let directory = packages_dir();
     let packages = tree
         .languages()
