@@ -202,8 +202,16 @@ accidentally become block merely because a deeper nested element is block.
 ```
 
 `format` is required. Both runtimes refuse any value other than
-`et-doc-rules/1`, naming the value they found and the one they expected, so a
-future package cannot be silently misread by an older runtime.
+`et-doc-rules/1`, naming the value they found and the one they expected.
+
+That protection covers the format string and the opcode set -- an unknown
+opcode refuses by name. It does **not** cover header fields. Neither loader
+sets `deny_unknown_fields`, so a header field an older runtime does not know
+is dropped and the package formats with that field's default, exiting 0.
+Measured 2026-08-28: `gap_owner` (markdown) and `tab_stop` (scheme) both
+silently mis-format against a runtime built the day before the field landed.
+A new layout-affecting header field therefore needs a format-string bump to
+be safe; the format check cannot do it on the field's behalf.
 
 `tokens` is the one language fact the runtime cannot guess: which node types are
 punctuation and keywords rather than content. `named` is defined as "not one of

@@ -1192,9 +1192,17 @@ had one is worth recording — it is what stops this entry becoming a vague fear
 
 ## 13. A package cannot delete a token the reference deletes
 
-**Status:** **decided — parked** (Dave, 2026-08-21). Opcode built 2026-08-20,
-correct, and used by no package; the gate-3 skeleton rework is **not** being
-done for it. · **Cost:** local (+317 B runtime) · **Languages:** Go, Rust
+**Status:** **decided — parked** (Dave, 2026-08-21). Opcode built 2026-08-20 and
+correct; the gate-3 skeleton rework is **not** being done for it. · **Cost:**
+local (+317 B runtime) · **Languages:** Go, Rust
+
+The "used by no package" half of that status was true when written and is not
+now: `drop` is used by `packages/haskell.json` and `packages/ruby.json`
+(corrected 2026-08-29). What stays parked is `leading_pipes.rs` — `drop` deletes
+the leading `|` and the bytes then match rustfmt, but gate 3 rejects the `| _`
+arm, because an `or_pattern` holding only anonymous tokens cannot be declared
+transparent. Ledger reasons still citing this entry as "no opcode can express
+the deletion" are stale on the cause; see `harness/reason_rot.py`.
 
 gofmt removes redundant parentheses and statement semicolons. Gate 3 permits it
 — the reparse is unchanged and the tokens are anonymous — but **no opcode can
