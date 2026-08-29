@@ -444,6 +444,12 @@ class LexParser:
             self.expect(";")
             if len(pairs) % 2:
                 raise Unrecognised("odd ADVANCE_MAP")
+            # `ADVANCE_MAP` expands to `static const uint16_t map[]`, so a key
+            # above 0xffff would be truncated by the C compiler. Nothing emits
+            # one today; find out rather than silently disagree with C.
+            for k in pairs[0::2]:
+                if not 0 <= k <= 0xFFFF:
+                    raise Unrecognised(f"ADVANCE_MAP key {k} does not fit uint16")
             return [1, pairs]
         act = self.parse_action()
         return [3, *act]
@@ -843,6 +849,34 @@ def transcode(path: Path) -> dict:
     top = max(entries) + 1 if entries else 0
     actions = [entries.get(i) for i in range(top + 1)]
     # lexers -----------------------------------------------------------------
+    # Cross-checks against `ts_wasm_store_load_language`'s sizing rules
+    # (parse-survey.md §1c). The corpus cannot exercise these: JSON has two
+    # fields and no aliases, so a mis-sized table would still produce
+    # byte-identical JSON trees.
+    need = 0
+    for pid in range(production_id_count):
+        need = max(need, field_slices[2 * pid] + field_slices[2 * pid + 1])
+    if fe_top < need:
+        raise Unrecognised(
+            f"field_map_entries has {fe_top} entries, slices reach {need}"
+        )
+    if max_alias_len > 0 and production_id_count > 0:
+        i = 0
+        while True:
+            if i >= len(alias_map):
+                raise Unrecognised("alias_map is not null-terminated")
+            if alias_map[i] == 0:
+                break
+            i += 2 + alias_map[i + 1]
+    if reserved:
+        sets = len(reserved) // max_reserved
+        if max(reserved_ids, default=0) >= sets:
+            raise Unrecognised(
+                f"reserved_word_set_id {max(reserved_ids)} >= {sets} sets"
+            )
+    elif any(reserved_ids):
+        raise Unrecognised("lex modes name reserved word sets but none were found")
+
     lex = parse_lex_fn(src, "ts_lex", syms, charsets)
     keyword_lex = parse_lex_fn(src, "ts_lex_keywords", syms, charsets)
     kw_m = re.search(r"\.keyword_capture_token\s*=\s*(\w+)", src)
