@@ -1,0 +1,271 @@
+{
+ "language": "yaml",
+ "source_file": "corpus/src/yaml/flow_mapping.yaml",
+ "source": "# Flow mappings: the {} spelling of a mapping, and when it has to break.\n\nshort: {host: localhost, port: 8080}\n\nmedium: {name: alice, city: amsterdam, country: netherlands, occupation: engineer}\n\nlong: {aaaaaaaaaa: 1, bbbbbbbbbb: 2, cccccccccc: 3, dddddddddd:\nseq_inside: {items: [1, 2, 3], other: value, third: thing}\n\nm eeeeeeeeee: 5, ffffffffff: 6}\n\nnested: {outer: {inner: {deep: value}}, sibling: 1}\n\nseq_inside: {items: [1, 2, 3], other: value, third: thing}\n\nmixed: {bool: true, num: 42, null: null, list: [a, b], nested: {x: 1}}\n",
+ "base_source": "# Flow mappings: the {} spelling of a mapping, and when it has to break.\n\nshort: {host: localhost, port: 8080}\n\nmedium: {name: alice, city: amsterdam, country: netherlands, occupation: engineer}\n\nlong: {aaaaaaaaaa: 1, bbbbbbbbbb: 2, cccccccccc: 3, dddddddddd: 4, eeeeeeeeee: 5, ffffffffff: 6}\n\nnested: {outer: {inner: {deep: value}}, sibling: 1}\n\nseq_inside: {items: [1, 2, 3], other: value, third: thing}\n\nmixed: {bool: true, num: 42, null: null, list: [a, b], nested: {x: 1}}\n",
+ "edit": {"kind": "replace", "label": "splice 346..408", "start": 259, "old_end": 262, "new_end": 321, "removed": " 4,", "inserted": "\nseq_inside: {items: [1, 2, 3], other: value, third: thing}\n\nm"},
+ "problems": {"error": 2, "missing": 0},
+ "grammar": "tree-sitter-yaml==0.7.2",
+ "seed": 0,
+ "root":
+ {"type": "ERROR", "start": 0, "end": 347, "children": [
+  {"type": "comment", "start": 0, "end": 72, "text": "# Flow mappings: the {} spelling of a mapping, and when it has to break."},
+  {"type": "block_mapping_pair", "start": 74, "end": 110, "children": [
+   {"type": "flow_node", "start": 74, "end": 79, "field": "key", "children": [
+    {"type": "plain_scalar", "start": 74, "end": 79, "children": [
+     {"type": "string_scalar", "start": 74, "end": 79, "text": "short"}
+    ]}
+   ]},
+   {"type": ":", "start": 79, "end": 80, "text": ":"},
+   {"type": "flow_node", "start": 81, "end": 110, "field": "value", "children": [
+    {"type": "flow_mapping", "start": 81, "end": 110, "children": [
+     {"type": "{", "start": 81, "end": 82, "text": "{"},
+     {"type": "flow_pair", "start": 82, "end": 97, "children": [
+      {"type": "flow_node", "start": 82, "end": 86, "field": "key", "children": [
+       {"type": "plain_scalar", "start": 82, "end": 86, "children": [
+        {"type": "string_scalar", "start": 82, "end": 86, "text": "host"}
+       ]}
+      ]},
+      {"type": ":", "start": 86, "end": 87, "text": ":"},
+      {"type": "flow_node", "start": 88, "end": 97, "field": "value", "children": [
+       {"type": "plain_scalar", "start": 88, "end": 97, "children": [
+        {"type": "string_scalar", "start": 88, "end": 97, "text": "localhost"}
+       ]}
+      ]}
+     ]},
+     {"type": ",", "start": 97, "end": 98, "text": ","},
+     {"type": "flow_pair", "start": 99, "end": 109, "children": [
+      {"type": "flow_node", "start": 99, "end": 103, "field": "key", "children": [
+       {"type": "plain_scalar", "start": 99, "end": 103, "children": [
+        {"type": "string_scalar", "start": 99, "end": 103, "text": "port"}
+       ]}
+      ]},
+      {"type": ":", "start": 103, "end": 104, "text": ":"},
+      {"type": "flow_node", "start": 105, "end": 109, "field": "value", "children": [
+       {"type": "plain_scalar", "start": 105, "end": 109, "children": [
+        {"type": "integer_scalar", "start": 105, "end": 109, "text": "8080"}
+       ]}
+      ]}
+     ]},
+     {"type": "}", "start": 109, "end": 110, "text": "}"}
+    ]}
+   ]}
+  ]},
+  {"type": "block_mapping_pair", "start": 112, "end": 194, "children": [
+   {"type": "flow_node", "start": 112, "end": 118, "field": "key", "children": [
+    {"type": "plain_scalar", "start": 112, "end": 118, "children": [
+     {"type": "string_scalar", "start": 112, "end": 118, "text": "medium"}
+    ]}
+   ]},
+   {"type": ":", "start": 118, "end": 119, "text": ":"},
+   {"type": "flow_node", "start": 120, "end": 194, "field": "value", "children": [
+    {"type": "flow_mapping", "start": 120, "end": 194, "children": [
+     {"type": "{", "start": 120, "end": 121, "text": "{"},
+     {"type": "flow_pair", "start": 121, "end": 132, "children": [
+      {"type": "flow_node", "start": 121, "end": 125, "field": "key", "children": [
+       {"type": "plain_scalar", "start": 121, "end": 125, "children": [
+        {"type": "string_scalar", "start": 121, "end": 125, "text": "name"}
+       ]}
+      ]},
+      {"type": ":", "start": 125, "end": 126, "text": ":"},
+      {"type": "flow_node", "start": 127, "end": 132, "field": "value", "children": [
+       {"type": "plain_scalar", "start": 127, "end": 132, "children": [
+        {"type": "string_scalar", "start": 127, "end": 132, "text": "alice"}
+       ]}
+      ]}
+     ]},
+     {"type": ",", "start": 132, "end": 133, "text": ","},
+     {"type": "flow_pair", "start": 134, "end": 149, "children": [
+      {"type": "flow_node", "start": 134, "end": 138, "field": "key", "children": [
+       {"type": "plain_scalar", "start": 134, "end": 138, "children": [
+        {"type": "string_scalar", "start": 134, "end": 138, "text": "city"}
+       ]}
+      ]},
+      {"type": ":", "start": 138, "end": 139, "text": ":"},
+      {"type": "flow_node", "start": 140, "end": 149, "field": "value", "children": [
+       {"type": "plain_scalar", "start": 140, "end": 149, "children": [
+        {"type": "string_scalar", "start": 140, "end": 149, "text": "amsterdam"}
+       ]}
+      ]}
+     ]},
+     {"type": ",", "start": 149, "end": 150, "text": ","},
+     {"type": "flow_pair", "start": 151, "end": 171, "children": [
+      {"type": "flow_node", "start": 151, "end": 158, "field": "key", "children": [
+       {"type": "plain_scalar", "start": 151, "end": 158, "children": [
+        {"type": "string_scalar", "start": 151, "end": 158, "text": "country"}
+       ]}
+      ]},
+      {"type": ":", "start": 158, "end": 159, "text": ":"},
+      {"type": "flow_node", "start": 160, "end": 171, "field": "value", "children": [
+       {"type": "plain_scalar", "start": 160, "end": 171, "children": [
+        {"type": "string_scalar", "start": 160, "end": 171, "text": "netherlands"}
+       ]}
+      ]}
+     ]},
+     {"type": ",", "start": 171, "end": 172, "text": ","},
+     {"type": "flow_pair", "start": 173, "end": 193, "children": [
+      {"type": "flow_node", "start": 173, "end": 183, "field": "key", "children": [
+       {"type": "plain_scalar", "start": 173, "end": 183, "children": [
+        {"type": "string_scalar", "start": 173, "end": 183, "text": "occupation"}
+       ]}
+      ]},
+      {"type": ":", "start": 183, "end": 184, "text": ":"},
+      {"type": "flow_node", "start": 185, "end": 193, "field": "value", "children": [
+       {"type": "plain_scalar", "start": 185, "end": 193, "children": [
+        {"type": "string_scalar", "start": 185, "end": 193, "text": "engineer"}
+       ]}
+      ]}
+     ]},
+     {"type": "}", "start": 193, "end": 194, "text": "}"}
+    ]}
+   ]}
+  ]},
+  {"type": "block_mapping_pair", "start": 196, "end": 201, "children": [
+   {"type": "flow_node", "start": 196, "end": 200, "field": "key", "children": [
+    {"type": "plain_scalar", "start": 196, "end": 200, "children": [
+     {"type": "string_scalar", "start": 196, "end": 200, "text": "long"}
+    ]}
+   ]},
+   {"type": ":", "start": 200, "end": 201, "text": ":"}
+  ]},
+  {"type": "ERROR", "start": 202, "end": 259, "children": [
+   {"type": "{", "start": 202, "end": 203, "text": "{"},
+   {"type": "flow_pair", "start": 203, "end": 216, "children": [
+    {"type": "flow_node", "start": 203, "end": 213, "field": "key", "children": [
+     {"type": "plain_scalar", "start": 203, "end": 213, "children": [
+      {"type": "string_scalar", "start": 203, "end": 213, "text": "aaaaaaaaaa"}
+     ]}
+    ]},
+    {"type": ":", "start": 213, "end": 214, "text": ":"},
+    {"type": "flow_node", "start": 215, "end": 216, "field": "value", "children": [
+     {"type": "plain_scalar", "start": 215, "end": 216, "children": [
+      {"type": "integer_scalar", "start": 215, "end": 216, "text": "1"}
+     ]}
+    ]}
+   ]},
+   {"type": ",", "start": 216, "end": 217, "text": ","},
+   {"type": "flow_pair", "start": 218, "end": 231, "children": [
+    {"type": "flow_node", "start": 218, "end": 228, "field": "key", "children": [
+     {"type": "plain_scalar", "start": 218, "end": 228, "children": [
+      {"type": "string_scalar", "start": 218, "end": 228, "text": "bbbbbbbbbb"}
+     ]}
+    ]},
+    {"type": ":", "start": 228, "end": 229, "text": ":"},
+    {"type": "flow_node", "start": 230, "end": 231, "field": "value", "children": [
+     {"type": "plain_scalar", "start": 230, "end": 231, "children": [
+      {"type": "integer_scalar", "start": 230, "end": 231, "text": "2"}
+     ]}
+    ]}
+   ]},
+   {"type": ",", "start": 231, "end": 232, "text": ","},
+   {"type": "flow_pair", "start": 233, "end": 246, "children": [
+    {"type": "flow_node", "start": 233, "end": 243, "field": "key", "children": [
+     {"type": "plain_scalar", "start": 233, "end": 243, "children": [
+      {"type": "string_scalar", "start": 233, "end": 243, "text": "cccccccccc"}
+     ]}
+    ]},
+    {"type": ":", "start": 243, "end": 244, "text": ":"},
+    {"type": "flow_node", "start": 245, "end": 246, "field": "value", "children": [
+     {"type": "plain_scalar", "start": 245, "end": 246, "children": [
+      {"type": "integer_scalar", "start": 245, "end": 246, "text": "3"}
+     ]}
+    ]}
+   ]},
+   {"type": ",", "start": 246, "end": 247, "text": ","},
+   {"type": "flow_pair", "start": 248, "end": 259, "children": [
+    {"type": "flow_node", "start": 248, "end": 258, "field": "key", "children": [
+     {"type": "plain_scalar", "start": 248, "end": 258, "children": [
+      {"type": "string_scalar", "start": 248, "end": 258, "text": "dddddddddd"}
+     ]}
+    ]},
+    {"type": ":", "start": 258, "end": 259, "text": ":"}
+   ]}
+  ]},
+  {"type": "block_mapping_pair", "start": 260, "end": 318, "children": [
+   {"type": "flow_node", "start": 260, "end": 270, "field": "key", "children": [
+    {"type": "plain_scalar", "start": 260, "end": 270, "children": [
+     {"type": "string_scalar", "start": 260, "end": 270, "text": "seq_inside"}
+    ]}
+   ]},
+   {"type": ":", "start": 270, "end": 271, "text": ":"},
+   {"type": "flow_node", "start": 272, "end": 318, "field": "value", "children": [
+    {"type": "flow_mapping", "start": 272, "end": 318, "children": [
+     {"type": "{", "start": 272, "end": 273, "text": "{"},
+     {"type": "flow_pair", "start": 273, "end": 289, "children": [
+      {"type": "flow_node", "start": 273, "end": 278, "field": "key", "children": [
+       {"type": "plain_scalar", "start": 273, "end": 278, "children": [
+        {"type": "string_scalar", "start": 273, "end": 278, "text": "items"}
+       ]}
+      ]},
+      {"type": ":", "start": 278, "end": 279, "text": ":"},
+      {"type": "flow_node", "start": 280, "end": 289, "field": "value", "children": [
+       {"type": "flow_sequence", "start": 280, "end": 289, "children": [
+        {"type": "[", "start": 280, "end": 281, "text": "["},
+        {"type": "flow_node", "start": 281, "end": 282, "children": [
+         {"type": "plain_scalar", "start": 281, "end": 282, "children": [
+          {"type": "integer_scalar", "start": 281, "end": 282, "text": "1"}
+         ]}
+        ]},
+        {"type": ",", "start": 282, "end": 283, "text": ","},
+        {"type": "flow_node", "start": 284, "end": 285, "children": [
+         {"type": "plain_scalar", "start": 284, "end": 285, "children": [
+          {"type": "integer_scalar", "start": 284, "end": 285, "text": "2"}
+         ]}
+        ]},
+        {"type": ",", "start": 285, "end": 286, "text": ","},
+        {"type": "flow_node", "start": 287, "end": 288, "children": [
+         {"type": "plain_scalar", "start": 287, "end": 288, "children": [
+          {"type": "integer_scalar", "start": 287, "end": 288, "text": "3"}
+         ]}
+        ]},
+        {"type": "]", "start": 288, "end": 289, "text": "]"}
+       ]}
+      ]}
+     ]},
+     {"type": ",", "start": 289, "end": 290, "text": ","},
+     {"type": "flow_pair", "start": 291, "end": 303, "children": [
+      {"type": "flow_node", "start": 291, "end": 296, "field": "key", "children": [
+       {"type": "plain_scalar", "start": 291, "end": 296, "children": [
+        {"type": "string_scalar", "start": 291, "end": 296, "text": "other"}
+       ]}
+      ]},
+      {"type": ":", "start": 296, "end": 297, "text": ":"},
+      {"type": "flow_node", "start": 298, "end": 303, "field": "value", "children": [
+       {"type": "plain_scalar", "start": 298, "end": 303, "children": [
+        {"type": "string_scalar", "start": 298, "end": 303, "text": "value"}
+       ]}
+      ]}
+     ]},
+     {"type": ",", "start": 303, "end": 304, "text": ","},
+     {"type": "flow_pair", "start": 305, "end": 317, "children": [
+      {"type": "flow_node", "start": 305, "end": 310, "field": "key", "children": [
+       {"type": "plain_scalar", "start": 305, "end": 310, "children": [
+        {"type": "string_scalar", "start": 305, "end": 310, "text": "third"}
+       ]}
+      ]},
+      {"type": ":", "start": 310, "end": 311, "text": ":"},
+      {"type": "flow_node", "start": 312, "end": 317, "field": "value", "children": [
+       {"type": "plain_scalar", "start": 312, "end": 317, "children": [
+        {"type": "string_scalar", "start": 312, "end": 317, "text": "thing"}
+       ]}
+      ]}
+     ]},
+     {"type": "}", "start": 317, "end": 318, "text": "}"}
+    ]}
+   ]}
+  ]},
+  {"type": "block_mapping_pair", "start": 320, "end": 347, "children": [
+   {"type": "flow_node", "start": 320, "end": 332, "field": "key", "children": [
+    {"type": "plain_scalar", "start": 320, "end": 332, "children": [
+     {"type": "string_scalar", "start": 320, "end": 332, "text": "m eeeeeeeeee"}
+    ]}
+   ]},
+   {"type": ":", "start": 332, "end": 333, "text": ":"},
+   {"type": "flow_node", "start": 334, "end": 347, "field": "value", "children": [
+    {"type": "plain_scalar", "start": 334, "end": 347, "children": [
+     {"type": "string_scalar", "start": 334, "end": 347, "text": "5, ffffffffff"}
+    ]}
+   ]}
+  ]}
+ ]}
+}

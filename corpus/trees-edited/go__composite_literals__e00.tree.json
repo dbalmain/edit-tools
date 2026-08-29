@@ -1,0 +1,356 @@
+{
+ "language": "go",
+ "source_file": "corpus/src/go/composite_literals.go",
+ "source": "package main\n\nvar flat = []int{1, 2, 3,} // flat slice\n\nvar flatMap = map[string]int{\"a\": 1, \"b\": 2,} // flat map\n\nvar broken = []int{\n1,\n2,\n3,\n}\n\nvar brokenMap = map[string]int{\n\"a\": 1,\n\"b\": 2,\n}\n\ntype Point struct {\n\tX int\n\tY int\n}\n\nvar points = []Point{{X:\n\nvar singleLineStruct = Point{ Y: 2}, {X: 3, Y: 4}} // a slice of structs\n\nvar matrix = [][]int{\n{1, 2},\n{3, 4},\n}\n\nvar singleLineStruct = Point{X: 5, Y: 6,} // single-line struct\n",
+ "base_source": "package main\n\nvar flat = []int{1, 2, 3,} // flat slice\n\nvar flatMap = map[string]int{\"a\": 1, \"b\": 2,} // flat map\n\nvar broken = []int{\n1,\n2,\n3,\n}\n\nvar brokenMap = map[string]int{\n\"a\": 1,\n\"b\": 2,\n}\n\ntype Point struct {\n\tX int\n\tY int\n}\n\nvar points = []Point{{X: 1, Y: 2}, {X: 3, Y: 4}} // a slice of structs\n\nvar matrix = [][]int{\n{1, 2},\n{3, 4},\n}\n\nvar singleLineStruct = Point{X: 5, Y: 6,} // single-line struct\n",
+ "edit": {"kind": "replace", "label": "splice 346..377", "start": 259, "old_end": 262, "new_end": 290, "removed": " 1,", "inserted": "\n\nvar singleLineStruct = Point{"},
+ "problems": {"error": 3, "missing": 0},
+ "grammar": "tree-sitter-go==0.25.0",
+ "seed": 0,
+ "root":
+ {"type": "source_file", "start": 0, "end": 440, "children": [
+  {"type": "package_clause", "start": 0, "end": 12, "children": [
+   {"type": "package", "start": 0, "end": 7, "text": "package"},
+   {"type": "package_identifier", "start": 8, "end": 12, "text": "main"}
+  ]},
+  {"type": "var_declaration", "start": 14, "end": 40, "children": [
+   {"type": "var", "start": 14, "end": 17, "text": "var"},
+   {"type": "var_spec", "start": 18, "end": 40, "children": [
+    {"type": "identifier", "start": 18, "end": 22, "field": "name", "text": "flat"},
+    {"type": "=", "start": 23, "end": 24, "text": "="},
+    {"type": "expression_list", "start": 25, "end": 40, "field": "value", "children": [
+     {"type": "composite_literal", "start": 25, "end": 40, "children": [
+      {"type": "slice_type", "start": 25, "end": 30, "field": "type", "children": [
+       {"type": "[", "start": 25, "end": 26, "text": "["},
+       {"type": "]", "start": 26, "end": 27, "text": "]"},
+       {"type": "type_identifier", "start": 27, "end": 30, "field": "element", "text": "int"}
+      ]},
+      {"type": "literal_value", "start": 30, "end": 40, "field": "body", "children": [
+       {"type": "{", "start": 30, "end": 31, "text": "{"},
+       {"type": "literal_element", "start": 31, "end": 32, "children": [
+        {"type": "int_literal", "start": 31, "end": 32, "text": "1"}
+       ]},
+       {"type": ",", "start": 32, "end": 33, "text": ","},
+       {"type": "literal_element", "start": 34, "end": 35, "children": [
+        {"type": "int_literal", "start": 34, "end": 35, "text": "2"}
+       ]},
+       {"type": ",", "start": 35, "end": 36, "text": ","},
+       {"type": "literal_element", "start": 37, "end": 38, "children": [
+        {"type": "int_literal", "start": 37, "end": 38, "text": "3"}
+       ]},
+       {"type": ",", "start": 38, "end": 39, "text": ","},
+       {"type": "}", "start": 39, "end": 40, "text": "}"}
+      ]}
+     ]}
+    ]}
+   ]}
+  ]},
+  {"type": "comment", "start": 41, "end": 54, "text": "// flat slice"},
+  {"type": "var_declaration", "start": 56, "end": 101, "children": [
+   {"type": "var", "start": 56, "end": 59, "text": "var"},
+   {"type": "var_spec", "start": 60, "end": 101, "children": [
+    {"type": "identifier", "start": 60, "end": 67, "field": "name", "text": "flatMap"},
+    {"type": "=", "start": 68, "end": 69, "text": "="},
+    {"type": "expression_list", "start": 70, "end": 101, "field": "value", "children": [
+     {"type": "composite_literal", "start": 70, "end": 101, "children": [
+      {"type": "map_type", "start": 70, "end": 84, "field": "type", "children": [
+       {"type": "map", "start": 70, "end": 73, "text": "map"},
+       {"type": "[", "start": 73, "end": 74, "text": "["},
+       {"type": "type_identifier", "start": 74, "end": 80, "field": "key", "text": "string"},
+       {"type": "]", "start": 80, "end": 81, "text": "]"},
+       {"type": "type_identifier", "start": 81, "end": 84, "field": "value", "text": "int"}
+      ]},
+      {"type": "literal_value", "start": 84, "end": 101, "field": "body", "children": [
+       {"type": "{", "start": 84, "end": 85, "text": "{"},
+       {"type": "keyed_element", "start": 85, "end": 91, "children": [
+        {"type": "literal_element", "start": 85, "end": 88, "field": "key", "children": [
+         {"type": "interpreted_string_literal", "start": 85, "end": 88, "children": [
+          {"type": "\"", "start": 85, "end": 86, "text": "\""},
+          {"type": "interpreted_string_literal_content", "start": 86, "end": 87, "text": "a"},
+          {"type": "\"", "start": 87, "end": 88, "text": "\""}
+         ]}
+        ]},
+        {"type": ":", "start": 88, "end": 89, "text": ":"},
+        {"type": "literal_element", "start": 90, "end": 91, "field": "value", "children": [
+         {"type": "int_literal", "start": 90, "end": 91, "text": "1"}
+        ]}
+       ]},
+       {"type": ",", "start": 91, "end": 92, "text": ","},
+       {"type": "keyed_element", "start": 93, "end": 99, "children": [
+        {"type": "literal_element", "start": 93, "end": 96, "field": "key", "children": [
+         {"type": "interpreted_string_literal", "start": 93, "end": 96, "children": [
+          {"type": "\"", "start": 93, "end": 94, "text": "\""},
+          {"type": "interpreted_string_literal_content", "start": 94, "end": 95, "text": "b"},
+          {"type": "\"", "start": 95, "end": 96, "text": "\""}
+         ]}
+        ]},
+        {"type": ":", "start": 96, "end": 97, "text": ":"},
+        {"type": "literal_element", "start": 98, "end": 99, "field": "value", "children": [
+         {"type": "int_literal", "start": 98, "end": 99, "text": "2"}
+        ]}
+       ]},
+       {"type": ",", "start": 99, "end": 100, "text": ","},
+       {"type": "}", "start": 100, "end": 101, "text": "}"}
+      ]}
+     ]}
+    ]}
+   ]}
+  ]},
+  {"type": "comment", "start": 102, "end": 113, "text": "// flat map"},
+  {"type": "var_declaration", "start": 115, "end": 145, "children": [
+   {"type": "var", "start": 115, "end": 118, "text": "var"},
+   {"type": "var_spec", "start": 119, "end": 145, "children": [
+    {"type": "identifier", "start": 119, "end": 125, "field": "name", "text": "broken"},
+    {"type": "=", "start": 126, "end": 127, "text": "="},
+    {"type": "expression_list", "start": 128, "end": 145, "field": "value", "children": [
+     {"type": "composite_literal", "start": 128, "end": 145, "children": [
+      {"type": "slice_type", "start": 128, "end": 133, "field": "type", "children": [
+       {"type": "[", "start": 128, "end": 129, "text": "["},
+       {"type": "]", "start": 129, "end": 130, "text": "]"},
+       {"type": "type_identifier", "start": 130, "end": 133, "field": "element", "text": "int"}
+      ]},
+      {"type": "literal_value", "start": 133, "end": 145, "field": "body", "children": [
+       {"type": "{", "start": 133, "end": 134, "text": "{"},
+       {"type": "literal_element", "start": 135, "end": 136, "children": [
+        {"type": "int_literal", "start": 135, "end": 136, "text": "1"}
+       ]},
+       {"type": ",", "start": 136, "end": 137, "text": ","},
+       {"type": "literal_element", "start": 138, "end": 139, "children": [
+        {"type": "int_literal", "start": 138, "end": 139, "text": "2"}
+       ]},
+       {"type": ",", "start": 139, "end": 140, "text": ","},
+       {"type": "literal_element", "start": 141, "end": 142, "children": [
+        {"type": "int_literal", "start": 141, "end": 142, "text": "3"}
+       ]},
+       {"type": ",", "start": 142, "end": 143, "text": ","},
+       {"type": "}", "start": 144, "end": 145, "text": "}"}
+      ]}
+     ]}
+    ]}
+   ]}
+  ]},
+  {"type": "var_declaration", "start": 147, "end": 196, "children": [
+   {"type": "var", "start": 147, "end": 150, "text": "var"},
+   {"type": "var_spec", "start": 151, "end": 196, "children": [
+    {"type": "identifier", "start": 151, "end": 160, "field": "name", "text": "brokenMap"},
+    {"type": "=", "start": 161, "end": 162, "text": "="},
+    {"type": "expression_list", "start": 163, "end": 196, "field": "value", "children": [
+     {"type": "composite_literal", "start": 163, "end": 196, "children": [
+      {"type": "map_type", "start": 163, "end": 177, "field": "type", "children": [
+       {"type": "map", "start": 163, "end": 166, "text": "map"},
+       {"type": "[", "start": 166, "end": 167, "text": "["},
+       {"type": "type_identifier", "start": 167, "end": 173, "field": "key", "text": "string"},
+       {"type": "]", "start": 173, "end": 174, "text": "]"},
+       {"type": "type_identifier", "start": 174, "end": 177, "field": "value", "text": "int"}
+      ]},
+      {"type": "literal_value", "start": 177, "end": 196, "field": "body", "children": [
+       {"type": "{", "start": 177, "end": 178, "text": "{"},
+       {"type": "keyed_element", "start": 179, "end": 185, "children": [
+        {"type": "literal_element", "start": 179, "end": 182, "field": "key", "children": [
+         {"type": "interpreted_string_literal", "start": 179, "end": 182, "children": [
+          {"type": "\"", "start": 179, "end": 180, "text": "\""},
+          {"type": "interpreted_string_literal_content", "start": 180, "end": 181, "text": "a"},
+          {"type": "\"", "start": 181, "end": 182, "text": "\""}
+         ]}
+        ]},
+        {"type": ":", "start": 182, "end": 183, "text": ":"},
+        {"type": "literal_element", "start": 184, "end": 185, "field": "value", "children": [
+         {"type": "int_literal", "start": 184, "end": 185, "text": "1"}
+        ]}
+       ]},
+       {"type": ",", "start": 185, "end": 186, "text": ","},
+       {"type": "keyed_element", "start": 187, "end": 193, "children": [
+        {"type": "literal_element", "start": 187, "end": 190, "field": "key", "children": [
+         {"type": "interpreted_string_literal", "start": 187, "end": 190, "children": [
+          {"type": "\"", "start": 187, "end": 188, "text": "\""},
+          {"type": "interpreted_string_literal_content", "start": 188, "end": 189, "text": "b"},
+          {"type": "\"", "start": 189, "end": 190, "text": "\""}
+         ]}
+        ]},
+        {"type": ":", "start": 190, "end": 191, "text": ":"},
+        {"type": "literal_element", "start": 192, "end": 193, "field": "value", "children": [
+         {"type": "int_literal", "start": 192, "end": 193, "text": "2"}
+        ]}
+       ]},
+       {"type": ",", "start": 193, "end": 194, "text": ","},
+       {"type": "}", "start": 195, "end": 196, "text": "}"}
+      ]}
+     ]}
+    ]}
+   ]}
+  ]},
+  {"type": "type_declaration", "start": 198, "end": 233, "children": [
+   {"type": "type", "start": 198, "end": 202, "text": "type"},
+   {"type": "type_spec", "start": 203, "end": 233, "children": [
+    {"type": "type_identifier", "start": 203, "end": 208, "field": "name", "text": "Point"},
+    {"type": "struct_type", "start": 209, "end": 233, "field": "type", "children": [
+     {"type": "struct", "start": 209, "end": 215, "text": "struct"},
+     {"type": "field_declaration_list", "start": 216, "end": 233, "children": [
+      {"type": "{", "start": 216, "end": 217, "text": "{"},
+      {"type": "field_declaration", "start": 219, "end": 224, "children": [
+       {"type": "field_identifier", "start": 219, "end": 220, "field": "name", "text": "X"},
+       {"type": "type_identifier", "start": 221, "end": 224, "field": "type", "text": "int"}
+      ]},
+      {"type": "field_declaration", "start": 226, "end": 231, "children": [
+       {"type": "field_identifier", "start": 226, "end": 227, "field": "name", "text": "Y"},
+       {"type": "type_identifier", "start": 228, "end": 231, "field": "type", "text": "int"}
+      ]},
+      {"type": "}", "start": 232, "end": 233, "text": "}"}
+     ]}
+    ]}
+   ]}
+  ]},
+  {"type": "ERROR", "start": 235, "end": 417, "children": [
+   {"type": "var", "start": 235, "end": 238, "text": "var"},
+   {"type": "identifier", "start": 239, "end": 245, "text": "points"},
+   {"type": "=", "start": 246, "end": 247, "text": "="},
+   {"type": "slice_type", "start": 248, "end": 255, "children": [
+    {"type": "[", "start": 248, "end": 249, "text": "["},
+    {"type": "]", "start": 249, "end": 250, "text": "]"},
+    {"type": "type_identifier", "start": 250, "end": 255, "field": "element", "text": "Point"}
+   ]},
+   {"type": "{", "start": 255, "end": 256, "text": "{"},
+   {"type": "ERROR", "start": 256, "end": 398, "children": [
+    {"type": "literal_element", "start": 256, "end": 311, "children": [
+     {"type": "literal_value", "start": 256, "end": 311, "children": [
+      {"type": "{", "start": 256, "end": 257, "text": "{"},
+      {"type": "keyed_element", "start": 257, "end": 296, "children": [
+       {"type": "literal_element", "start": 257, "end": 258, "field": "key", "children": [
+        {"type": "identifier", "start": 257, "end": 258, "text": "X"}
+       ]},
+       {"type": ":", "start": 258, "end": 259, "text": ":"},
+       {"type": "ERROR", "start": 261, "end": 283, "children": [
+        {"type": "var", "start": 261, "end": 264, "text": "var"},
+        {"type": "identifier", "start": 265, "end": 281, "text": "singleLineStruct"},
+        {"type": "=", "start": 282, "end": 283, "text": "="}
+       ]},
+       {"type": "literal_element", "start": 284, "end": 296, "field": "value", "children": [
+        {"type": "composite_literal", "start": 284, "end": 296, "children": [
+         {"type": "type_identifier", "start": 284, "end": 289, "field": "type", "text": "Point"},
+         {"type": "literal_value", "start": 289, "end": 296, "field": "body", "children": [
+          {"type": "{", "start": 289, "end": 290, "text": "{"},
+          {"type": "keyed_element", "start": 291, "end": 295, "children": [
+           {"type": "literal_element", "start": 291, "end": 292, "field": "key", "children": [
+            {"type": "identifier", "start": 291, "end": 292, "text": "Y"}
+           ]},
+           {"type": ":", "start": 292, "end": 293, "text": ":"},
+           {"type": "literal_element", "start": 294, "end": 295, "field": "value", "children": [
+            {"type": "int_literal", "start": 294, "end": 295, "text": "2"}
+           ]}
+          ]},
+          {"type": "}", "start": 295, "end": 296, "text": "}"}
+         ]}
+        ]}
+       ]}
+      ]},
+      {"type": ",", "start": 296, "end": 297, "text": ","},
+      {"type": "literal_element", "start": 298, "end": 310, "children": [
+       {"type": "literal_value", "start": 298, "end": 310, "children": [
+        {"type": "{", "start": 298, "end": 299, "text": "{"},
+        {"type": "keyed_element", "start": 299, "end": 303, "children": [
+         {"type": "literal_element", "start": 299, "end": 300, "field": "key", "children": [
+          {"type": "identifier", "start": 299, "end": 300, "text": "X"}
+         ]},
+         {"type": ":", "start": 300, "end": 301, "text": ":"},
+         {"type": "literal_element", "start": 302, "end": 303, "field": "value", "children": [
+          {"type": "int_literal", "start": 302, "end": 303, "text": "3"}
+         ]}
+        ]},
+        {"type": ",", "start": 303, "end": 304, "text": ","},
+        {"type": "keyed_element", "start": 305, "end": 309, "children": [
+         {"type": "literal_element", "start": 305, "end": 306, "field": "key", "children": [
+          {"type": "identifier", "start": 305, "end": 306, "text": "Y"}
+         ]},
+         {"type": ":", "start": 306, "end": 307, "text": ":"},
+         {"type": "literal_element", "start": 308, "end": 309, "field": "value", "children": [
+          {"type": "int_literal", "start": 308, "end": 309, "text": "4"}
+         ]}
+        ]},
+        {"type": "}", "start": 309, "end": 310, "text": "}"}
+       ]}
+      ]},
+      {"type": "}", "start": 310, "end": 311, "text": "}"}
+     ]}
+    ]},
+    {"type": "comment", "start": 312, "end": 333, "text": "// a slice of structs"},
+    {"type": "identifier", "start": 335, "end": 338, "text": "var"},
+    {"type": "identifier", "start": 339, "end": 345, "text": "matrix"},
+    {"type": "=", "start": 346, "end": 347, "text": "="},
+    {"type": "composite_literal", "start": 348, "end": 374, "children": [
+     {"type": "slice_type", "start": 348, "end": 355, "field": "type", "children": [
+      {"type": "[", "start": 348, "end": 349, "text": "["},
+      {"type": "]", "start": 349, "end": 350, "text": "]"},
+      {"type": "slice_type", "start": 350, "end": 355, "field": "element", "children": [
+       {"type": "[", "start": 350, "end": 351, "text": "["},
+       {"type": "]", "start": 351, "end": 352, "text": "]"},
+       {"type": "type_identifier", "start": 352, "end": 355, "field": "element", "text": "int"}
+      ]}
+     ]},
+     {"type": "literal_value", "start": 355, "end": 374, "field": "body", "children": [
+      {"type": "{", "start": 355, "end": 356, "text": "{"},
+      {"type": "literal_element", "start": 357, "end": 363, "children": [
+       {"type": "literal_value", "start": 357, "end": 363, "children": [
+        {"type": "{", "start": 357, "end": 358, "text": "{"},
+        {"type": "literal_element", "start": 358, "end": 359, "children": [
+         {"type": "int_literal", "start": 358, "end": 359, "text": "1"}
+        ]},
+        {"type": ",", "start": 359, "end": 360, "text": ","},
+        {"type": "literal_element", "start": 361, "end": 362, "children": [
+         {"type": "int_literal", "start": 361, "end": 362, "text": "2"}
+        ]},
+        {"type": "}", "start": 362, "end": 363, "text": "}"}
+       ]}
+      ]},
+      {"type": ",", "start": 363, "end": 364, "text": ","},
+      {"type": "literal_element", "start": 365, "end": 371, "children": [
+       {"type": "literal_value", "start": 365, "end": 371, "children": [
+        {"type": "{", "start": 365, "end": 366, "text": "{"},
+        {"type": "literal_element", "start": 366, "end": 367, "children": [
+         {"type": "int_literal", "start": 366, "end": 367, "text": "3"}
+        ]},
+        {"type": ",", "start": 367, "end": 368, "text": ","},
+        {"type": "literal_element", "start": 369, "end": 370, "children": [
+         {"type": "int_literal", "start": 369, "end": 370, "text": "4"}
+        ]},
+        {"type": "}", "start": 370, "end": 371, "text": "}"}
+       ]}
+      ]},
+      {"type": ",", "start": 371, "end": 372, "text": ","},
+      {"type": "}", "start": 373, "end": 374, "text": "}"}
+     ]}
+    ]},
+    {"type": "identifier", "start": 376, "end": 379, "text": "var"},
+    {"type": "identifier", "start": 380, "end": 396, "text": "singleLineStruct"},
+    {"type": "=", "start": 397, "end": 398, "text": "="}
+   ]},
+   {"type": "composite_literal", "start": 399, "end": 417, "children": [
+    {"type": "type_identifier", "start": 399, "end": 404, "field": "type", "text": "Point"},
+    {"type": "literal_value", "start": 404, "end": 417, "field": "body", "children": [
+     {"type": "{", "start": 404, "end": 405, "text": "{"},
+     {"type": "keyed_element", "start": 405, "end": 409, "children": [
+      {"type": "literal_element", "start": 405, "end": 406, "field": "key", "children": [
+       {"type": "identifier", "start": 405, "end": 406, "text": "X"}
+      ]},
+      {"type": ":", "start": 406, "end": 407, "text": ":"},
+      {"type": "literal_element", "start": 408, "end": 409, "field": "value", "children": [
+       {"type": "int_literal", "start": 408, "end": 409, "text": "5"}
+      ]}
+     ]},
+     {"type": ",", "start": 409, "end": 410, "text": ","},
+     {"type": "keyed_element", "start": 411, "end": 415, "children": [
+      {"type": "literal_element", "start": 411, "end": 412, "field": "key", "children": [
+       {"type": "identifier", "start": 411, "end": 412, "text": "Y"}
+      ]},
+      {"type": ":", "start": 412, "end": 413, "text": ":"},
+      {"type": "literal_element", "start": 414, "end": 415, "field": "value", "children": [
+       {"type": "int_literal", "start": 414, "end": 415, "text": "6"}
+      ]}
+     ]},
+     {"type": ",", "start": 415, "end": 416, "text": ","},
+     {"type": "}", "start": 416, "end": 417, "text": "}"}
+    ]}
+   ]}
+  ]},
+  {"type": "comment", "start": 418, "end": 439, "text": "// single-line struct"}
+ ]}
+}

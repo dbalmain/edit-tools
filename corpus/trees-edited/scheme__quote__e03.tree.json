@@ -1,0 +1,110 @@
+{
+ "language": "scheme",
+ "source_file": "corpus/src/scheme/quote.scm",
+ "source": ";; , quasiquote, unquote, unquote-splicing. Each is its own node\n;; wrapping a datum, not a list headed by the word quote.\n(define quoted '(a b c)) ; quote\n\n(define nested-quote '(a (b (c d)) e))\n\n(define (fill-template x ys)\n`(+ ,x ,@ys))\n\n(define (build xs)\n`(begin\n,@xs\nx))\n",
+ "base_source": ";; quote, quasiquote, unquote, unquote-splicing. Each is its own node\n;; wrapping a datum, not a list headed by the word quote.\n(define quoted '(a b c)) ; quote\n\n(define nested-quote '(a (b (c d)) e))\n\n(define (fill-template x ys)\n`(+ ,x ,@ys))\n\n(define (build xs)\n`(begin\n,@xs\nx))\n",
+ "edit": {"kind": "delete", "label": "delete 5B", "start": 3, "old_end": 8, "new_end": 3, "removed": "quote", "inserted": ""},
+ "problems": {"error": 0, "missing": 0},
+ "grammar": "tree-sitter-scheme @ git+https://github.com/6cdh/tree-sitter-scheme@v0.24.7-1",
+ "seed": 0,
+ "root":
+ {"type": "program", "start": 0, "end": 277, "children": [
+  {"type": "comment", "start": 0, "end": 64, "text": ";; , quasiquote, unquote, unquote-splicing. Each is its own node"},
+  {"type": "comment", "start": 65, "end": 122, "text": ";; wrapping a datum, not a list headed by the word quote."},
+  {"type": "list", "start": 123, "end": 147, "children": [
+   {"type": "(", "start": 123, "end": 124, "text": "("},
+   {"type": "symbol", "start": 124, "end": 130, "text": "define"},
+   {"type": "symbol", "start": 131, "end": 137, "text": "quoted"},
+   {"type": "quote", "start": 138, "end": 146, "children": [
+    {"type": "'", "start": 138, "end": 139, "text": "'"},
+    {"type": "list", "start": 139, "end": 146, "children": [
+     {"type": "(", "start": 139, "end": 140, "text": "("},
+     {"type": "symbol", "start": 140, "end": 141, "text": "a"},
+     {"type": "symbol", "start": 142, "end": 143, "text": "b"},
+     {"type": "symbol", "start": 144, "end": 145, "text": "c"},
+     {"type": ")", "start": 145, "end": 146, "text": ")"}
+    ]}
+   ]},
+   {"type": ")", "start": 146, "end": 147, "text": ")"}
+  ]},
+  {"type": "comment", "start": 148, "end": 155, "text": "; quote"},
+  {"type": "list", "start": 157, "end": 195, "children": [
+   {"type": "(", "start": 157, "end": 158, "text": "("},
+   {"type": "symbol", "start": 158, "end": 164, "text": "define"},
+   {"type": "symbol", "start": 165, "end": 177, "text": "nested-quote"},
+   {"type": "quote", "start": 178, "end": 194, "children": [
+    {"type": "'", "start": 178, "end": 179, "text": "'"},
+    {"type": "list", "start": 179, "end": 194, "children": [
+     {"type": "(", "start": 179, "end": 180, "text": "("},
+     {"type": "symbol", "start": 180, "end": 181, "text": "a"},
+     {"type": "list", "start": 182, "end": 191, "children": [
+      {"type": "(", "start": 182, "end": 183, "text": "("},
+      {"type": "symbol", "start": 183, "end": 184, "text": "b"},
+      {"type": "list", "start": 185, "end": 190, "children": [
+       {"type": "(", "start": 185, "end": 186, "text": "("},
+       {"type": "symbol", "start": 186, "end": 187, "text": "c"},
+       {"type": "symbol", "start": 188, "end": 189, "text": "d"},
+       {"type": ")", "start": 189, "end": 190, "text": ")"}
+      ]},
+      {"type": ")", "start": 190, "end": 191, "text": ")"}
+     ]},
+     {"type": "symbol", "start": 192, "end": 193, "text": "e"},
+     {"type": ")", "start": 193, "end": 194, "text": ")"}
+    ]}
+   ]},
+   {"type": ")", "start": 194, "end": 195, "text": ")"}
+  ]},
+  {"type": "list", "start": 197, "end": 239, "children": [
+   {"type": "(", "start": 197, "end": 198, "text": "("},
+   {"type": "symbol", "start": 198, "end": 204, "text": "define"},
+   {"type": "list", "start": 205, "end": 225, "children": [
+    {"type": "(", "start": 205, "end": 206, "text": "("},
+    {"type": "symbol", "start": 206, "end": 219, "text": "fill-template"},
+    {"type": "symbol", "start": 220, "end": 221, "text": "x"},
+    {"type": "symbol", "start": 222, "end": 224, "text": "ys"},
+    {"type": ")", "start": 224, "end": 225, "text": ")"}
+   ]},
+   {"type": "quasiquote", "start": 226, "end": 238, "children": [
+    {"type": "`", "start": 226, "end": 227, "text": "`"},
+    {"type": "list", "start": 227, "end": 238, "children": [
+     {"type": "(", "start": 227, "end": 228, "text": "("},
+     {"type": "symbol", "start": 228, "end": 229, "text": "+"},
+     {"type": "unquote", "start": 230, "end": 232, "children": [
+      {"type": ",", "start": 230, "end": 231, "text": ","},
+      {"type": "symbol", "start": 231, "end": 232, "text": "x"}
+     ]},
+     {"type": "unquote_splicing", "start": 233, "end": 237, "children": [
+      {"type": ",@", "start": 233, "end": 235, "text": ",@"},
+      {"type": "symbol", "start": 235, "end": 237, "text": "ys"}
+     ]},
+     {"type": ")", "start": 237, "end": 238, "text": ")"}
+    ]}
+   ]},
+   {"type": ")", "start": 238, "end": 239, "text": ")"}
+  ]},
+  {"type": "list", "start": 241, "end": 276, "children": [
+   {"type": "(", "start": 241, "end": 242, "text": "("},
+   {"type": "symbol", "start": 242, "end": 248, "text": "define"},
+   {"type": "list", "start": 249, "end": 259, "children": [
+    {"type": "(", "start": 249, "end": 250, "text": "("},
+    {"type": "symbol", "start": 250, "end": 255, "text": "build"},
+    {"type": "symbol", "start": 256, "end": 258, "text": "xs"},
+    {"type": ")", "start": 258, "end": 259, "text": ")"}
+   ]},
+   {"type": "quasiquote", "start": 260, "end": 275, "children": [
+    {"type": "`", "start": 260, "end": 261, "text": "`"},
+    {"type": "list", "start": 261, "end": 275, "children": [
+     {"type": "(", "start": 261, "end": 262, "text": "("},
+     {"type": "symbol", "start": 262, "end": 267, "text": "begin"},
+     {"type": "unquote_splicing", "start": 268, "end": 272, "children": [
+      {"type": ",@", "start": 268, "end": 270, "text": ",@"},
+      {"type": "symbol", "start": 270, "end": 272, "text": "xs"}
+     ]},
+     {"type": "symbol", "start": 273, "end": 274, "text": "x"},
+     {"type": ")", "start": 274, "end": 275, "text": ")"}
+    ]}
+   ]},
+   {"type": ")", "start": 275, "end": 276, "text": ")"}
+  ]}
+ ]}
+}

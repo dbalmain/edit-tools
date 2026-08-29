@@ -1,0 +1,140 @@
+{
+ "language": "python",
+ "source_file": "corpus/src/python/comments.py",
+ "source": "# Module level comment at the very top of the file.\n\nimport os  # trailing comment on an import\n\n\n# Own-line comment before a definitionst\": \"localhost\",\n    \"port\": 80separated by a blank line.\ndef documented(a, b):\n    # Leading comment inside the body.\n    result = a + b  # trailing comment on a statement\n    # Comment before return.\n    return result\n\n\nvalues = [\n    1,  # first\n    2,  # second\n    # own-line comment inside a bracketed list\n    3,\n]\n\nconfig = {\n    # comment before the first key\n    \"host\": \"localhost\",\n    \"port\": 8080,  # trailing on a pair\n}\n\n\ndef between():\n    pass\n    # trailing comment at the end of a block\n\n\n# Comment at the end of the file.\n",
+ "base_source": "# Module level comment at the very top of the file.\n\nimport os  # trailing comment on an import\n\n\n# Own-line comment before a definition, separated by a blank line.\ndef documented(a, b):\n    # Leading comment inside the body.\n    result = a + b  # trailing comment on a statement\n    # Comment before return.\n    return result\n\n\nvalues = [\n    1,  # first\n    2,  # second\n    # own-line comment inside a bracketed list\n    3,\n]\n\nconfig = {\n    # comment before the first key\n    \"host\": \"localhost\",\n    \"port\": 8080,  # trailing on a pair\n}\n\n\ndef between():\n    pass\n    # trailing comment at the end of a block\n\n\n# Comment at the end of the file.\n",
+ "edit": {"kind": "replace", "label": "splice 483..515", "start": 136, "old_end": 138, "new_end": 168, "removed": ", ", "inserted": "st\": \"localhost\",\n    \"port\": 80"},
+ "problems": {"error": 1, "missing": 0},
+ "grammar": "tree-sitter-python==0.25.0",
+ "seed": 0,
+ "root":
+ {"type": "module", "start": 0, "end": 680, "children": [
+  {"type": "comment", "start": 0, "end": 51, "text": "# Module level comment at the very top of the file."},
+  {"type": "import_statement", "start": 53, "end": 62, "children": [
+   {"type": "import", "start": 53, "end": 59, "text": "import"},
+   {"type": "dotted_name", "start": 60, "end": 62, "field": "name", "children": [
+    {"type": "identifier", "start": 60, "end": 62, "text": "os"}
+   ]}
+  ]},
+  {"type": "comment", "start": 64, "end": 95, "text": "# trailing comment on an import"},
+  {"type": "comment", "start": 98, "end": 153, "text": "# Own-line comment before a definitionst\": \"localhost\","},
+  {"type": "ERROR", "start": 158, "end": 194, "children": [
+   {"type": "string", "start": 158, "end": 164, "children": [
+    {"type": "string_start", "start": 158, "end": 159, "text": "\""},
+    {"type": "string_content", "start": 159, "end": 163, "text": "port"},
+    {"type": "string_end", "start": 163, "end": 164, "text": "\""}
+   ]},
+   {"type": ":", "start": 164, "end": 165, "text": ":"},
+   {"type": "integer", "start": 166, "end": 168, "text": "80"},
+   {"type": "identifier", "start": 168, "end": 177, "text": "separated"},
+   {"type": "identifier", "start": 178, "end": 180, "text": "by"},
+   {"type": "identifier", "start": 181, "end": 182, "text": "a"},
+   {"type": "identifier", "start": 183, "end": 188, "text": "blank"},
+   {"type": "identifier", "start": 189, "end": 193, "text": "line"},
+   {"type": ".", "start": 193, "end": 194, "text": "."}
+  ]},
+  {"type": "function_definition", "start": 195, "end": 356, "children": [
+   {"type": "def", "start": 195, "end": 198, "text": "def"},
+   {"type": "identifier", "start": 199, "end": 209, "field": "name", "text": "documented"},
+   {"type": "parameters", "start": 209, "end": 215, "field": "parameters", "children": [
+    {"type": "(", "start": 209, "end": 210, "text": "("},
+    {"type": "identifier", "start": 210, "end": 211, "text": "a"},
+    {"type": ",", "start": 211, "end": 212, "text": ","},
+    {"type": "identifier", "start": 213, "end": 214, "text": "b"},
+    {"type": ")", "start": 214, "end": 215, "text": ")"}
+   ]},
+   {"type": ":", "start": 215, "end": 216, "text": ":"},
+   {"type": "comment", "start": 221, "end": 255, "text": "# Leading comment inside the body."},
+   {"type": "block", "start": 260, "end": 356, "field": "body", "children": [
+    {"type": "expression_statement", "start": 260, "end": 274, "children": [
+     {"type": "assignment", "start": 260, "end": 274, "children": [
+      {"type": "identifier", "start": 260, "end": 266, "field": "left", "text": "result"},
+      {"type": "=", "start": 267, "end": 268, "text": "="},
+      {"type": "binary_operator", "start": 269, "end": 274, "field": "right", "children": [
+       {"type": "identifier", "start": 269, "end": 270, "field": "left", "text": "a"},
+       {"type": "+", "start": 271, "end": 272, "field": "operator", "text": "+"},
+       {"type": "identifier", "start": 273, "end": 274, "field": "right", "text": "b"}
+      ]}
+     ]}
+    ]},
+    {"type": "comment", "start": 276, "end": 309, "text": "# trailing comment on a statement"},
+    {"type": "comment", "start": 314, "end": 338, "text": "# Comment before return."},
+    {"type": "return_statement", "start": 343, "end": 356, "children": [
+     {"type": "return", "start": 343, "end": 349, "text": "return"},
+     {"type": "identifier", "start": 350, "end": 356, "text": "result"}
+    ]}
+   ]}
+  ]},
+  {"type": "expression_statement", "start": 359, "end": 458, "children": [
+   {"type": "assignment", "start": 359, "end": 458, "children": [
+    {"type": "identifier", "start": 359, "end": 365, "field": "left", "text": "values"},
+    {"type": "=", "start": 366, "end": 367, "text": "="},
+    {"type": "list", "start": 368, "end": 458, "field": "right", "children": [
+     {"type": "[", "start": 368, "end": 369, "text": "["},
+     {"type": "integer", "start": 374, "end": 375, "text": "1"},
+     {"type": ",", "start": 375, "end": 376, "text": ","},
+     {"type": "comment", "start": 378, "end": 385, "text": "# first"},
+     {"type": "integer", "start": 390, "end": 391, "text": "2"},
+     {"type": ",", "start": 391, "end": 392, "text": ","},
+     {"type": "comment", "start": 394, "end": 402, "text": "# second"},
+     {"type": "comment", "start": 407, "end": 449, "text": "# own-line comment inside a bracketed list"},
+     {"type": "integer", "start": 454, "end": 455, "text": "3"},
+     {"type": ",", "start": 455, "end": 456, "text": ","},
+     {"type": "]", "start": 457, "end": 458, "text": "]"}
+    ]}
+   ]}
+  ]},
+  {"type": "expression_statement", "start": 460, "end": 572, "children": [
+   {"type": "assignment", "start": 460, "end": 572, "children": [
+    {"type": "identifier", "start": 460, "end": 466, "field": "left", "text": "config"},
+    {"type": "=", "start": 467, "end": 468, "text": "="},
+    {"type": "dictionary", "start": 469, "end": 572, "field": "right", "children": [
+     {"type": "{", "start": 469, "end": 470, "text": "{"},
+     {"type": "comment", "start": 475, "end": 505, "text": "# comment before the first key"},
+     {"type": "pair", "start": 510, "end": 529, "children": [
+      {"type": "string", "start": 510, "end": 516, "field": "key", "children": [
+       {"type": "string_start", "start": 510, "end": 511, "text": "\""},
+       {"type": "string_content", "start": 511, "end": 515, "text": "host"},
+       {"type": "string_end", "start": 515, "end": 516, "text": "\""}
+      ]},
+      {"type": ":", "start": 516, "end": 517, "text": ":"},
+      {"type": "string", "start": 518, "end": 529, "field": "value", "children": [
+       {"type": "string_start", "start": 518, "end": 519, "text": "\""},
+       {"type": "string_content", "start": 519, "end": 528, "text": "localhost"},
+       {"type": "string_end", "start": 528, "end": 529, "text": "\""}
+      ]}
+     ]},
+     {"type": ",", "start": 529, "end": 530, "text": ","},
+     {"type": "pair", "start": 535, "end": 547, "children": [
+      {"type": "string", "start": 535, "end": 541, "field": "key", "children": [
+       {"type": "string_start", "start": 535, "end": 536, "text": "\""},
+       {"type": "string_content", "start": 536, "end": 540, "text": "port"},
+       {"type": "string_end", "start": 540, "end": 541, "text": "\""}
+      ]},
+      {"type": ":", "start": 541, "end": 542, "text": ":"},
+      {"type": "integer", "start": 543, "end": 547, "field": "value", "text": "8080"}
+     ]},
+     {"type": ",", "start": 547, "end": 548, "text": ","},
+     {"type": "comment", "start": 550, "end": 570, "text": "# trailing on a pair"},
+     {"type": "}", "start": 571, "end": 572, "text": "}"}
+    ]}
+   ]}
+  ]},
+  {"type": "function_definition", "start": 575, "end": 643, "children": [
+   {"type": "def", "start": 575, "end": 578, "text": "def"},
+   {"type": "identifier", "start": 579, "end": 586, "field": "name", "text": "between"},
+   {"type": "parameters", "start": 586, "end": 588, "field": "parameters", "children": [
+    {"type": "(", "start": 586, "end": 587, "text": "("},
+    {"type": ")", "start": 587, "end": 588, "text": ")"}
+   ]},
+   {"type": ":", "start": 588, "end": 589, "text": ":"},
+   {"type": "block", "start": 594, "end": 643, "field": "body", "children": [
+    {"type": "pass_statement", "start": 594, "end": 598, "children": [
+     {"type": "pass", "start": 594, "end": 598, "text": "pass"}
+    ]},
+    {"type": "comment", "start": 603, "end": 643, "text": "# trailing comment at the end of a block"}
+   ]}
+  ]},
+  {"type": "comment", "start": 646, "end": 679, "text": "# Comment at the end of the file."}
+ ]}
+}

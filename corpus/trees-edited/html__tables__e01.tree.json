@@ -1,0 +1,175 @@
+{
+ "language": "html",
+ "source_file": "corpus/src/html/tables.html",
+ "source": "<!-- Tables. Packed input; prettier indents each row and cell. -->\n<table><thead><tr><th>Name</th><th>Count</th></tr></thead><tboa short cell</t<tr><td>alpha</td><td>1</td></tr><tr><td>a short cell</td><td>2</td></tr></tbody></table>\n",
+ "base_source": "<!-- Tables. Packed input; prettier indents each row and cell. -->\n<table><thead><tr><th>Name</th><th>Count</th></tr></thead><tbody><tr><td>alpha</td><td>1</td></tr><tr><td>a short cell</td><td>2</td></tr></tbody></table>\n",
+ "edit": {"kind": "replace", "label": "splice 173..188", "start": 129, "old_end": 132, "new_end": 144, "removed": "dy>", "inserted": "a short cell</t"},
+ "problems": {"error": 0, "missing": 2},
+ "grammar": "tree-sitter-html==0.23.2",
+ "seed": 0,
+ "root":
+ {"type": "document", "start": 0, "end": 234, "children": [
+  {"type": "comment", "start": 0, "end": 66, "text": "<!-- Tables. Packed input; prettier indents each row and cell. -->"},
+  {"type": "element", "start": 67, "end": 233, "children": [
+   {"type": "start_tag", "start": 67, "end": 74, "children": [
+    {"type": "<", "start": 67, "end": 68, "text": "<"},
+    {"type": "tag_name", "start": 68, "end": 73, "text": "table"},
+    {"type": ">", "start": 73, "end": 74, "text": ">"}
+   ]},
+   {"type": "element", "start": 74, "end": 125, "children": [
+    {"type": "start_tag", "start": 74, "end": 81, "children": [
+     {"type": "<", "start": 74, "end": 75, "text": "<"},
+     {"type": "tag_name", "start": 75, "end": 80, "text": "thead"},
+     {"type": ">", "start": 80, "end": 81, "text": ">"}
+    ]},
+    {"type": "element", "start": 81, "end": 117, "children": [
+     {"type": "start_tag", "start": 81, "end": 85, "children": [
+      {"type": "<", "start": 81, "end": 82, "text": "<"},
+      {"type": "tag_name", "start": 82, "end": 84, "text": "tr"},
+      {"type": ">", "start": 84, "end": 85, "text": ">"}
+     ]},
+     {"type": "element", "start": 85, "end": 98, "children": [
+      {"type": "start_tag", "start": 85, "end": 89, "children": [
+       {"type": "<", "start": 85, "end": 86, "text": "<"},
+       {"type": "tag_name", "start": 86, "end": 88, "text": "th"},
+       {"type": ">", "start": 88, "end": 89, "text": ">"}
+      ]},
+      {"type": "text", "start": 89, "end": 93, "text": "Name"},
+      {"type": "end_tag", "start": 93, "end": 98, "children": [
+       {"type": "</", "start": 93, "end": 95, "text": "</"},
+       {"type": "tag_name", "start": 95, "end": 97, "text": "th"},
+       {"type": ">", "start": 97, "end": 98, "text": ">"}
+      ]}
+     ]},
+     {"type": "element", "start": 98, "end": 112, "children": [
+      {"type": "start_tag", "start": 98, "end": 102, "children": [
+       {"type": "<", "start": 98, "end": 99, "text": "<"},
+       {"type": "tag_name", "start": 99, "end": 101, "text": "th"},
+       {"type": ">", "start": 101, "end": 102, "text": ">"}
+      ]},
+      {"type": "text", "start": 102, "end": 107, "text": "Count"},
+      {"type": "end_tag", "start": 107, "end": 112, "children": [
+       {"type": "</", "start": 107, "end": 109, "text": "</"},
+       {"type": "tag_name", "start": 109, "end": 111, "text": "th"},
+       {"type": ">", "start": 111, "end": 112, "text": ">"}
+      ]}
+     ]},
+     {"type": "end_tag", "start": 112, "end": 117, "children": [
+      {"type": "</", "start": 112, "end": 114, "text": "</"},
+      {"type": "tag_name", "start": 114, "end": 116, "text": "tr"},
+      {"type": ">", "start": 116, "end": 117, "text": ">"}
+     ]}
+    ]},
+    {"type": "end_tag", "start": 117, "end": 125, "children": [
+     {"type": "</", "start": 117, "end": 119, "text": "</"},
+     {"type": "tag_name", "start": 119, "end": 124, "text": "thead"},
+     {"type": ">", "start": 124, "end": 125, "text": ">"}
+    ]}
+   ]},
+   {"type": "element", "start": 125, "end": 141, "children": [
+    {"type": "start_tag", "start": 125, "end": 141, "children": [
+     {"type": "<", "start": 125, "end": 126, "text": "<"},
+     {"type": "tag_name", "start": 126, "end": 130, "text": "tboa"},
+     {"type": "attribute", "start": 131, "end": 136, "children": [
+      {"type": "attribute_name", "start": 131, "end": 136, "text": "short"}
+     ]},
+     {"type": "attribute", "start": 137, "end": 141, "children": [
+      {"type": "attribute_name", "start": 137, "end": 141, "text": "cell"}
+     ]},
+     {"type": ">", "start": 141, "end": 141, "text": "", "missing": true}
+    ]}
+   ]},
+   {"type": "erroneous_end_tag", "start": 141, "end": 144, "children": [
+    {"type": "</", "start": 141, "end": 143, "text": "</"},
+    {"type": "erroneous_end_tag_name", "start": 143, "end": 144, "text": "t"},
+    {"type": ">", "start": 144, "end": 144, "text": "", "missing": true}
+   ]},
+   {"type": "element", "start": 144, "end": 177, "children": [
+    {"type": "start_tag", "start": 144, "end": 148, "children": [
+     {"type": "<", "start": 144, "end": 145, "text": "<"},
+     {"type": "tag_name", "start": 145, "end": 147, "text": "tr"},
+     {"type": ">", "start": 147, "end": 148, "text": ">"}
+    ]},
+    {"type": "element", "start": 148, "end": 162, "children": [
+     {"type": "start_tag", "start": 148, "end": 152, "children": [
+      {"type": "<", "start": 148, "end": 149, "text": "<"},
+      {"type": "tag_name", "start": 149, "end": 151, "text": "td"},
+      {"type": ">", "start": 151, "end": 152, "text": ">"}
+     ]},
+     {"type": "text", "start": 152, "end": 157, "text": "alpha"},
+     {"type": "end_tag", "start": 157, "end": 162, "children": [
+      {"type": "</", "start": 157, "end": 159, "text": "</"},
+      {"type": "tag_name", "start": 159, "end": 161, "text": "td"},
+      {"type": ">", "start": 161, "end": 162, "text": ">"}
+     ]}
+    ]},
+    {"type": "element", "start": 162, "end": 172, "children": [
+     {"type": "start_tag", "start": 162, "end": 166, "children": [
+      {"type": "<", "start": 162, "end": 163, "text": "<"},
+      {"type": "tag_name", "start": 163, "end": 165, "text": "td"},
+      {"type": ">", "start": 165, "end": 166, "text": ">"}
+     ]},
+     {"type": "text", "start": 166, "end": 167, "text": "1"},
+     {"type": "end_tag", "start": 167, "end": 172, "children": [
+      {"type": "</", "start": 167, "end": 169, "text": "</"},
+      {"type": "tag_name", "start": 169, "end": 171, "text": "td"},
+      {"type": ">", "start": 171, "end": 172, "text": ">"}
+     ]}
+    ]},
+    {"type": "end_tag", "start": 172, "end": 177, "children": [
+     {"type": "</", "start": 172, "end": 174, "text": "</"},
+     {"type": "tag_name", "start": 174, "end": 176, "text": "tr"},
+     {"type": ">", "start": 176, "end": 177, "text": ">"}
+    ]}
+   ]},
+   {"type": "element", "start": 177, "end": 217, "children": [
+    {"type": "start_tag", "start": 177, "end": 181, "children": [
+     {"type": "<", "start": 177, "end": 178, "text": "<"},
+     {"type": "tag_name", "start": 178, "end": 180, "text": "tr"},
+     {"type": ">", "start": 180, "end": 181, "text": ">"}
+    ]},
+    {"type": "element", "start": 181, "end": 202, "children": [
+     {"type": "start_tag", "start": 181, "end": 185, "children": [
+      {"type": "<", "start": 181, "end": 182, "text": "<"},
+      {"type": "tag_name", "start": 182, "end": 184, "text": "td"},
+      {"type": ">", "start": 184, "end": 185, "text": ">"}
+     ]},
+     {"type": "text", "start": 185, "end": 197, "text": "a short cell"},
+     {"type": "end_tag", "start": 197, "end": 202, "children": [
+      {"type": "</", "start": 197, "end": 199, "text": "</"},
+      {"type": "tag_name", "start": 199, "end": 201, "text": "td"},
+      {"type": ">", "start": 201, "end": 202, "text": ">"}
+     ]}
+    ]},
+    {"type": "element", "start": 202, "end": 212, "children": [
+     {"type": "start_tag", "start": 202, "end": 206, "children": [
+      {"type": "<", "start": 202, "end": 203, "text": "<"},
+      {"type": "tag_name", "start": 203, "end": 205, "text": "td"},
+      {"type": ">", "start": 205, "end": 206, "text": ">"}
+     ]},
+     {"type": "text", "start": 206, "end": 207, "text": "2"},
+     {"type": "end_tag", "start": 207, "end": 212, "children": [
+      {"type": "</", "start": 207, "end": 209, "text": "</"},
+      {"type": "tag_name", "start": 209, "end": 211, "text": "td"},
+      {"type": ">", "start": 211, "end": 212, "text": ">"}
+     ]}
+    ]},
+    {"type": "end_tag", "start": 212, "end": 217, "children": [
+     {"type": "</", "start": 212, "end": 214, "text": "</"},
+     {"type": "tag_name", "start": 214, "end": 216, "text": "tr"},
+     {"type": ">", "start": 216, "end": 217, "text": ">"}
+    ]}
+   ]},
+   {"type": "erroneous_end_tag", "start": 217, "end": 225, "children": [
+    {"type": "</", "start": 217, "end": 219, "text": "</"},
+    {"type": "erroneous_end_tag_name", "start": 219, "end": 224, "text": "tbody"},
+    {"type": ">", "start": 224, "end": 225, "text": ">"}
+   ]},
+   {"type": "end_tag", "start": 225, "end": 233, "children": [
+    {"type": "</", "start": 225, "end": 227, "text": "</"},
+    {"type": "tag_name", "start": 227, "end": 232, "text": "table"},
+    {"type": ">", "start": 232, "end": 233, "text": ">"}
+   ]}
+  ]}
+ ]}
+}

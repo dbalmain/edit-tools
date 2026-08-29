@@ -1,0 +1,229 @@
+{
+ "language": "ruby",
+ "source_file": "corpus/src/ruby/normalisation.rb",
+ "source": "# Dirtcing: what syntax_tree rewrites, not what it breaks.\n\ndef  normalise( a ,b )\nresult=a + b*  2\nreturn(result)\nend\n\ndef empty( ) # empty parameter list written with a space\nxs = [ ] # empty array with a space\nys = { } # empty hash with a space\nzs = foo( ) # empty call with a space\nend\n\ndef padded( )\nx = [ 1,2,3 ]\nh = { a:1,b:2 }\nif ( x != nil )\nputs(x)\nx\nelse\nputs(0)\n0\nend\nend\n\ntrailing_spaces = 1       # lots of spaces before this comment\n\ndef indented\n        n = 0\n        if n==0\n                n = 1\n                n\n        end\nend\n\nx = 1; y = 2; z = 3\n\n\n\nover_blanked = true\n",
+ "base_source": "# Dirty spacing: what syntax_tree rewrites, not what it breaks.\n\ndef  normalise( a ,b )\nresult=a + b*  2\nreturn(result)\nend\n\ndef empty( ) # empty parameter list written with a space\nxs = [ ] # empty array with a space\nys = { } # empty hash with a space\nzs = foo( ) # empty call with a space\nend\n\ndef padded( )\nx = [ 1,2,3 ]\nh = { a:1,b:2 }\nif ( x != nil )\nputs(x)\nx\nelse\nputs(0)\n0\nend\nend\n\ntrailing_spaces = 1       # lots of spaces before this comment\n\ndef indented\n        n = 0\n        if n==0\n                n = 1\n                n\n        end\nend\n\nx = 1; y = 2; z = 3\n\n\n\nover_blanked = true\n",
+ "edit": {"kind": "delete", "label": "delete 5B", "start": 6, "old_end": 11, "new_end": 6, "removed": "y spa", "inserted": ""},
+ "problems": {"error": 0, "missing": 0},
+ "grammar": "tree-sitter-ruby==0.23.1",
+ "seed": 0,
+ "root":
+ {"type": "program", "start": 0, "end": 592, "children": [
+  {"type": "comment", "start": 0, "end": 58, "text": "# Dirtcing: what syntax_tree rewrites, not what it breaks."},
+  {"type": "method", "start": 60, "end": 118, "children": [
+   {"type": "def", "start": 60, "end": 63, "text": "def"},
+   {"type": "identifier", "start": 65, "end": 74, "field": "name", "text": "normalise"},
+   {"type": "method_parameters", "start": 74, "end": 82, "field": "parameters", "children": [
+    {"type": "(", "start": 74, "end": 75, "text": "("},
+    {"type": "identifier", "start": 76, "end": 77, "text": "a"},
+    {"type": ",", "start": 78, "end": 79, "text": ","},
+    {"type": "identifier", "start": 79, "end": 80, "text": "b"},
+    {"type": ")", "start": 81, "end": 82, "text": ")"}
+   ]},
+   {"type": "body_statement", "start": 83, "end": 114, "field": "body", "children": [
+    {"type": "assignment", "start": 83, "end": 99, "children": [
+     {"type": "identifier", "start": 83, "end": 89, "field": "left", "text": "result"},
+     {"type": "=", "start": 89, "end": 90, "text": "="},
+     {"type": "binary", "start": 90, "end": 99, "field": "right", "children": [
+      {"type": "identifier", "start": 90, "end": 91, "field": "left", "text": "a"},
+      {"type": "+", "start": 92, "end": 93, "field": "operator", "text": "+"},
+      {"type": "binary", "start": 94, "end": 99, "field": "right", "children": [
+       {"type": "identifier", "start": 94, "end": 95, "field": "left", "text": "b"},
+       {"type": "*", "start": 95, "end": 96, "field": "operator", "text": "*"},
+       {"type": "integer", "start": 98, "end": 99, "field": "right", "text": "2"}
+      ]}
+     ]}
+    ]},
+    {"type": "return", "start": 100, "end": 114, "children": [
+     {"type": "return", "start": 100, "end": 106, "text": "return"},
+     {"type": "argument_list", "start": 106, "end": 114, "children": [
+      {"type": "(", "start": 106, "end": 107, "text": "("},
+      {"type": "identifier", "start": 107, "end": 113, "text": "result"},
+      {"type": ")", "start": 113, "end": 114, "text": ")"}
+     ]}
+    ]}
+   ]},
+   {"type": "end", "start": 115, "end": 118, "text": "end"}
+  ]},
+  {"type": "method", "start": 120, "end": 289, "children": [
+   {"type": "def", "start": 120, "end": 123, "text": "def"},
+   {"type": "identifier", "start": 124, "end": 129, "field": "name", "text": "empty"},
+   {"type": "method_parameters", "start": 129, "end": 132, "field": "parameters", "children": [
+    {"type": "(", "start": 129, "end": 130, "text": "("},
+    {"type": ")", "start": 131, "end": 132, "text": ")"}
+   ]},
+   {"type": "comment", "start": 133, "end": 176, "text": "# empty parameter list written with a space"},
+   {"type": "body_statement", "start": 177, "end": 285, "field": "body", "children": [
+    {"type": "assignment", "start": 177, "end": 185, "children": [
+     {"type": "identifier", "start": 177, "end": 179, "field": "left", "text": "xs"},
+     {"type": "=", "start": 180, "end": 181, "text": "="},
+     {"type": "array", "start": 182, "end": 185, "field": "right", "children": [
+      {"type": "[", "start": 182, "end": 183, "text": "["},
+      {"type": "]", "start": 184, "end": 185, "text": "]"}
+     ]}
+    ]},
+    {"type": "comment", "start": 186, "end": 212, "text": "# empty array with a space"},
+    {"type": "assignment", "start": 213, "end": 221, "children": [
+     {"type": "identifier", "start": 213, "end": 215, "field": "left", "text": "ys"},
+     {"type": "=", "start": 216, "end": 217, "text": "="},
+     {"type": "hash", "start": 218, "end": 221, "field": "right", "children": [
+      {"type": "{", "start": 218, "end": 219, "text": "{"},
+      {"type": "}", "start": 220, "end": 221, "text": "}"}
+     ]}
+    ]},
+    {"type": "comment", "start": 222, "end": 247, "text": "# empty hash with a space"},
+    {"type": "assignment", "start": 248, "end": 259, "children": [
+     {"type": "identifier", "start": 248, "end": 250, "field": "left", "text": "zs"},
+     {"type": "=", "start": 251, "end": 252, "text": "="},
+     {"type": "call", "start": 253, "end": 259, "field": "right", "children": [
+      {"type": "identifier", "start": 253, "end": 256, "field": "method", "text": "foo"},
+      {"type": "argument_list", "start": 256, "end": 259, "field": "arguments", "children": [
+       {"type": "(", "start": 256, "end": 257, "text": "("},
+       {"type": ")", "start": 258, "end": 259, "text": ")"}
+      ]}
+     ]}
+    ]},
+    {"type": "comment", "start": 260, "end": 285, "text": "# empty call with a space"}
+   ]},
+   {"type": "end", "start": 286, "end": 289, "text": "end"}
+  ]},
+  {"type": "method", "start": 291, "end": 383, "children": [
+   {"type": "def", "start": 291, "end": 294, "text": "def"},
+   {"type": "identifier", "start": 295, "end": 301, "field": "name", "text": "padded"},
+   {"type": "method_parameters", "start": 301, "end": 304, "field": "parameters", "children": [
+    {"type": "(", "start": 301, "end": 302, "text": "("},
+    {"type": ")", "start": 303, "end": 304, "text": ")"}
+   ]},
+   {"type": "body_statement", "start": 305, "end": 379, "field": "body", "children": [
+    {"type": "assignment", "start": 305, "end": 318, "children": [
+     {"type": "identifier", "start": 305, "end": 306, "field": "left", "text": "x"},
+     {"type": "=", "start": 307, "end": 308, "text": "="},
+     {"type": "array", "start": 309, "end": 318, "field": "right", "children": [
+      {"type": "[", "start": 309, "end": 310, "text": "["},
+      {"type": "integer", "start": 311, "end": 312, "text": "1"},
+      {"type": ",", "start": 312, "end": 313, "text": ","},
+      {"type": "integer", "start": 313, "end": 314, "text": "2"},
+      {"type": ",", "start": 314, "end": 315, "text": ","},
+      {"type": "integer", "start": 315, "end": 316, "text": "3"},
+      {"type": "]", "start": 317, "end": 318, "text": "]"}
+     ]}
+    ]},
+    {"type": "assignment", "start": 319, "end": 334, "children": [
+     {"type": "identifier", "start": 319, "end": 320, "field": "left", "text": "h"},
+     {"type": "=", "start": 321, "end": 322, "text": "="},
+     {"type": "hash", "start": 323, "end": 334, "field": "right", "children": [
+      {"type": "{", "start": 323, "end": 324, "text": "{"},
+      {"type": "pair", "start": 325, "end": 328, "children": [
+       {"type": "hash_key_symbol", "start": 325, "end": 326, "field": "key", "text": "a"},
+       {"type": ":", "start": 326, "end": 327, "text": ":"},
+       {"type": "integer", "start": 327, "end": 328, "field": "value", "text": "1"}
+      ]},
+      {"type": ",", "start": 328, "end": 329, "text": ","},
+      {"type": "pair", "start": 329, "end": 332, "children": [
+       {"type": "hash_key_symbol", "start": 329, "end": 330, "field": "key", "text": "b"},
+       {"type": ":", "start": 330, "end": 331, "text": ":"},
+       {"type": "integer", "start": 331, "end": 332, "field": "value", "text": "2"}
+      ]},
+      {"type": "}", "start": 333, "end": 334, "text": "}"}
+     ]}
+    ]},
+    {"type": "if", "start": 335, "end": 379, "children": [
+     {"type": "if", "start": 335, "end": 337, "text": "if"},
+     {"type": "parenthesized_statements", "start": 338, "end": 350, "field": "condition", "children": [
+      {"type": "(", "start": 338, "end": 339, "text": "("},
+      {"type": "binary", "start": 340, "end": 348, "children": [
+       {"type": "identifier", "start": 340, "end": 341, "field": "left", "text": "x"},
+       {"type": "!=", "start": 342, "end": 344, "field": "operator", "text": "!="},
+       {"type": "nil", "start": 345, "end": 348, "field": "right", "children": [
+        {"type": "nil", "start": 345, "end": 348, "text": "nil"}
+       ]}
+      ]},
+      {"type": ")", "start": 349, "end": 350, "text": ")"}
+     ]},
+     {"type": "then", "start": 350, "end": 360, "field": "consequence", "children": [
+      {"type": "call", "start": 351, "end": 358, "children": [
+       {"type": "identifier", "start": 351, "end": 355, "field": "method", "text": "puts"},
+       {"type": "argument_list", "start": 355, "end": 358, "field": "arguments", "children": [
+        {"type": "(", "start": 355, "end": 356, "text": "("},
+        {"type": "identifier", "start": 356, "end": 357, "text": "x"},
+        {"type": ")", "start": 357, "end": 358, "text": ")"}
+       ]}
+      ]},
+      {"type": "identifier", "start": 359, "end": 360, "text": "x"}
+     ]},
+     {"type": "else", "start": 361, "end": 375, "field": "alternative", "children": [
+      {"type": "else", "start": 361, "end": 365, "text": "else"},
+      {"type": "call", "start": 366, "end": 373, "children": [
+       {"type": "identifier", "start": 366, "end": 370, "field": "method", "text": "puts"},
+       {"type": "argument_list", "start": 370, "end": 373, "field": "arguments", "children": [
+        {"type": "(", "start": 370, "end": 371, "text": "("},
+        {"type": "integer", "start": 371, "end": 372, "text": "0"},
+        {"type": ")", "start": 372, "end": 373, "text": ")"}
+       ]}
+      ]},
+      {"type": "integer", "start": 374, "end": 375, "text": "0"}
+     ]},
+     {"type": "end", "start": 376, "end": 379, "text": "end"}
+    ]}
+   ]},
+   {"type": "end", "start": 380, "end": 383, "text": "end"}
+  ]},
+  {"type": "assignment", "start": 385, "end": 404, "children": [
+   {"type": "identifier", "start": 385, "end": 400, "field": "left", "text": "trailing_spaces"},
+   {"type": "=", "start": 401, "end": 402, "text": "="},
+   {"type": "integer", "start": 403, "end": 404, "field": "right", "text": "1"}
+  ]},
+  {"type": "comment", "start": 411, "end": 447, "text": "# lots of spaces before this comment"},
+  {"type": "method", "start": 449, "end": 547, "children": [
+   {"type": "def", "start": 449, "end": 452, "text": "def"},
+   {"type": "identifier", "start": 453, "end": 461, "field": "name", "text": "indented"},
+   {"type": "body_statement", "start": 470, "end": 543, "field": "body", "children": [
+    {"type": "assignment", "start": 470, "end": 475, "children": [
+     {"type": "identifier", "start": 470, "end": 471, "field": "left", "text": "n"},
+     {"type": "=", "start": 472, "end": 473, "text": "="},
+     {"type": "integer", "start": 474, "end": 475, "field": "right", "text": "0"}
+    ]},
+    {"type": "if", "start": 484, "end": 543, "children": [
+     {"type": "if", "start": 484, "end": 486, "text": "if"},
+     {"type": "binary", "start": 487, "end": 491, "field": "condition", "children": [
+      {"type": "identifier", "start": 487, "end": 488, "field": "left", "text": "n"},
+      {"type": "==", "start": 488, "end": 490, "field": "operator", "text": "=="},
+      {"type": "integer", "start": 490, "end": 491, "field": "right", "text": "0"}
+     ]},
+     {"type": "then", "start": 491, "end": 531, "field": "consequence", "children": [
+      {"type": "assignment", "start": 508, "end": 513, "children": [
+       {"type": "identifier", "start": 508, "end": 509, "field": "left", "text": "n"},
+       {"type": "=", "start": 510, "end": 511, "text": "="},
+       {"type": "integer", "start": 512, "end": 513, "field": "right", "text": "1"}
+      ]},
+      {"type": "identifier", "start": 530, "end": 531, "text": "n"}
+     ]},
+     {"type": "end", "start": 540, "end": 543, "text": "end"}
+    ]}
+   ]},
+   {"type": "end", "start": 544, "end": 547, "text": "end"}
+  ]},
+  {"type": "assignment", "start": 549, "end": 554, "children": [
+   {"type": "identifier", "start": 549, "end": 550, "field": "left", "text": "x"},
+   {"type": "=", "start": 551, "end": 552, "text": "="},
+   {"type": "integer", "start": 553, "end": 554, "field": "right", "text": "1"}
+  ]},
+  {"type": ";", "start": 554, "end": 555, "text": ";"},
+  {"type": "assignment", "start": 556, "end": 561, "children": [
+   {"type": "identifier", "start": 556, "end": 557, "field": "left", "text": "y"},
+   {"type": "=", "start": 558, "end": 559, "text": "="},
+   {"type": "integer", "start": 560, "end": 561, "field": "right", "text": "2"}
+  ]},
+  {"type": ";", "start": 561, "end": 562, "text": ";"},
+  {"type": "assignment", "start": 563, "end": 568, "children": [
+   {"type": "identifier", "start": 563, "end": 564, "field": "left", "text": "z"},
+   {"type": "=", "start": 565, "end": 566, "text": "="},
+   {"type": "integer", "start": 567, "end": 568, "field": "right", "text": "3"}
+  ]},
+  {"type": "assignment", "start": 572, "end": 591, "children": [
+   {"type": "identifier", "start": 572, "end": 584, "field": "left", "text": "over_blanked"},
+   {"type": "=", "start": 585, "end": 586, "text": "="},
+   {"type": "true", "start": 587, "end": 591, "field": "right", "text": "true"}
+  ]}
+ ]}
+}

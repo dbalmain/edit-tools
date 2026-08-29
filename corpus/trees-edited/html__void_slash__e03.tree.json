@@ -1,0 +1,115 @@
+{
+ "language": "html",
+ "source_file": "corpus/src/html/void_slash.html",
+ "source": "<rettier emits XHTML-style self-closing slashes on void elements. -->\n<br>\n<img src=\"x.png\" alt=\"pic\">\n<hr>\n<input type=\"text\">\n<meta charset=\"utf-8\">\n",
+ "base_source": "<!-- prettier emits XHTML-style self-closing slashes on void elements. -->\n<br>\n<img src=\"x.png\" alt=\"pic\">\n<hr>\n<input type=\"text\">\n<meta charset=\"utf-8\">\n",
+ "edit": {"kind": "delete", "label": "delete 5B", "start": 1, "old_end": 6, "new_end": 1, "removed": "!-- p", "inserted": ""},
+ "problems": {"error": 0, "missing": 0},
+ "grammar": "tree-sitter-html==0.23.2",
+ "seed": 0,
+ "root":
+ {"type": "document", "start": 0, "end": 151, "children": [
+  {"type": "element", "start": 0, "end": 151, "children": [
+   {"type": "start_tag", "start": 0, "end": 69, "children": [
+    {"type": "<", "start": 0, "end": 1, "text": "<"},
+    {"type": "tag_name", "start": 1, "end": 8, "text": "rettier"},
+    {"type": "attribute", "start": 9, "end": 14, "children": [
+     {"type": "attribute_name", "start": 9, "end": 14, "text": "emits"}
+    ]},
+    {"type": "attribute", "start": 15, "end": 26, "children": [
+     {"type": "attribute_name", "start": 15, "end": 26, "text": "XHTML-style"}
+    ]},
+    {"type": "attribute", "start": 27, "end": 39, "children": [
+     {"type": "attribute_name", "start": 27, "end": 39, "text": "self-closing"}
+    ]},
+    {"type": "attribute", "start": 40, "end": 47, "children": [
+     {"type": "attribute_name", "start": 40, "end": 47, "text": "slashes"}
+    ]},
+    {"type": "attribute", "start": 48, "end": 50, "children": [
+     {"type": "attribute_name", "start": 48, "end": 50, "text": "on"}
+    ]},
+    {"type": "attribute", "start": 51, "end": 55, "children": [
+     {"type": "attribute_name", "start": 51, "end": 55, "text": "void"}
+    ]},
+    {"type": "attribute", "start": 56, "end": 65, "children": [
+     {"type": "attribute_name", "start": 56, "end": 65, "text": "elements."}
+    ]},
+    {"type": "attribute", "start": 66, "end": 68, "children": [
+     {"type": "attribute_name", "start": 66, "end": 68, "text": "--"}
+    ]},
+    {"type": ">", "start": 68, "end": 69, "text": ">"}
+   ]},
+   {"type": "element", "start": 70, "end": 75, "children": [
+    {"type": "start_tag", "start": 70, "end": 74, "children": [
+     {"type": "<", "start": 70, "end": 71, "text": "<"},
+     {"type": "tag_name", "start": 71, "end": 73, "text": "br"},
+     {"type": ">", "start": 73, "end": 74, "text": ">"}
+    ]}
+   ]},
+   {"type": "element", "start": 75, "end": 103, "children": [
+    {"type": "start_tag", "start": 75, "end": 102, "children": [
+     {"type": "<", "start": 75, "end": 76, "text": "<"},
+     {"type": "tag_name", "start": 76, "end": 79, "text": "img"},
+     {"type": "attribute", "start": 80, "end": 91, "children": [
+      {"type": "attribute_name", "start": 80, "end": 83, "text": "src"},
+      {"type": "=", "start": 83, "end": 84, "text": "="},
+      {"type": "quoted_attribute_value", "start": 84, "end": 91, "children": [
+       {"type": "\"", "start": 84, "end": 85, "text": "\""},
+       {"type": "attribute_value", "start": 85, "end": 90, "text": "x.png"},
+       {"type": "\"", "start": 90, "end": 91, "text": "\""}
+      ]}
+     ]},
+     {"type": "attribute", "start": 92, "end": 101, "children": [
+      {"type": "attribute_name", "start": 92, "end": 95, "text": "alt"},
+      {"type": "=", "start": 95, "end": 96, "text": "="},
+      {"type": "quoted_attribute_value", "start": 96, "end": 101, "children": [
+       {"type": "\"", "start": 96, "end": 97, "text": "\""},
+       {"type": "attribute_value", "start": 97, "end": 100, "text": "pic"},
+       {"type": "\"", "start": 100, "end": 101, "text": "\""}
+      ]}
+     ]},
+     {"type": ">", "start": 101, "end": 102, "text": ">"}
+    ]}
+   ]},
+   {"type": "element", "start": 103, "end": 108, "children": [
+    {"type": "start_tag", "start": 103, "end": 107, "children": [
+     {"type": "<", "start": 103, "end": 104, "text": "<"},
+     {"type": "tag_name", "start": 104, "end": 106, "text": "hr"},
+     {"type": ">", "start": 106, "end": 107, "text": ">"}
+    ]}
+   ]},
+   {"type": "element", "start": 108, "end": 128, "children": [
+    {"type": "start_tag", "start": 108, "end": 127, "children": [
+     {"type": "<", "start": 108, "end": 109, "text": "<"},
+     {"type": "tag_name", "start": 109, "end": 114, "text": "input"},
+     {"type": "attribute", "start": 115, "end": 126, "children": [
+      {"type": "attribute_name", "start": 115, "end": 119, "text": "type"},
+      {"type": "=", "start": 119, "end": 120, "text": "="},
+      {"type": "quoted_attribute_value", "start": 120, "end": 126, "children": [
+       {"type": "\"", "start": 120, "end": 121, "text": "\""},
+       {"type": "attribute_value", "start": 121, "end": 125, "text": "text"},
+       {"type": "\"", "start": 125, "end": 126, "text": "\""}
+      ]}
+     ]},
+     {"type": ">", "start": 126, "end": 127, "text": ">"}
+    ]}
+   ]},
+   {"type": "element", "start": 128, "end": 151, "children": [
+    {"type": "start_tag", "start": 128, "end": 150, "children": [
+     {"type": "<", "start": 128, "end": 129, "text": "<"},
+     {"type": "tag_name", "start": 129, "end": 133, "text": "meta"},
+     {"type": "attribute", "start": 134, "end": 149, "children": [
+      {"type": "attribute_name", "start": 134, "end": 141, "text": "charset"},
+      {"type": "=", "start": 141, "end": 142, "text": "="},
+      {"type": "quoted_attribute_value", "start": 142, "end": 149, "children": [
+       {"type": "\"", "start": 142, "end": 143, "text": "\""},
+       {"type": "attribute_value", "start": 143, "end": 148, "text": "utf-8"},
+       {"type": "\"", "start": 148, "end": 149, "text": "\""}
+      ]}
+     ]},
+     {"type": ">", "start": 149, "end": 150, "text": ">"}
+    ]}
+   ]}
+  ]}
+ ]}
+}

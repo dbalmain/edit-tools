@@ -1,0 +1,58 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/blank_lines.toml",
+ "source": "# Blank lines are the only grouping TOML has between pairs. taplo caps\n# consecutive blanks at 2 (allowed_blank_lines) and leaves 0 and 1 alone.\n\npacked = 1\nalso_packed = 2\n\none_blank = 3\n\ntwo_blanks = 4\n\n\nthree_should_become_two = 5\n\n/*\n\nafter_three = 6\n\n[next]\n\n\nstill_capped = 7\n",
+ "base_source": "# Blank lines are the only grouping TOML has between pairs. taplo caps\n# consecutive blanks at 2 (allowed_blank_lines) and leaves 0 and 1 alone.\n\npacked = 1\nalso_packed = 2\n\none_blank = 3\n\ntwo_blanks = 4\n\n\nthree_should_become_two = 5\n\n\n\nafter_three = 6\n\n[next]\n\n\nstill_capped = 7\n",
+ "edit": {"kind": "insert", "label": "insert '/*'", "start": 235, "old_end": 235, "new_end": 237, "removed": "", "inserted": "/*"},
+ "problems": {"error": 2, "missing": 0},
+ "grammar": "tree-sitter-toml==0.7.0",
+ "seed": 0,
+ "root":
+ {"type": "document", "start": 0, "end": 282, "children": [
+  {"type": "comment", "start": 0, "end": 70, "text": "# Blank lines are the only grouping TOML has between pairs. taplo caps"},
+  {"type": "comment", "start": 71, "end": 144, "text": "# consecutive blanks at 2 (allowed_blank_lines) and leaves 0 and 1 alone."},
+  {"type": "pair", "start": 146, "end": 156, "children": [
+   {"type": "bare_key", "start": 146, "end": 152, "text": "packed"},
+   {"type": "=", "start": 153, "end": 154, "text": "="},
+   {"type": "integer", "start": 155, "end": 156, "text": "1"}
+  ]},
+  {"type": "pair", "start": 157, "end": 172, "children": [
+   {"type": "bare_key", "start": 157, "end": 168, "text": "also_packed"},
+   {"type": "=", "start": 169, "end": 170, "text": "="},
+   {"type": "integer", "start": 171, "end": 172, "text": "2"}
+  ]},
+  {"type": "pair", "start": 174, "end": 187, "children": [
+   {"type": "bare_key", "start": 174, "end": 183, "text": "one_blank"},
+   {"type": "=", "start": 184, "end": 185, "text": "="},
+   {"type": "integer", "start": 186, "end": 187, "text": "3"}
+  ]},
+  {"type": "pair", "start": 189, "end": 203, "children": [
+   {"type": "bare_key", "start": 189, "end": 199, "text": "two_blanks"},
+   {"type": "=", "start": 200, "end": 201, "text": "="},
+   {"type": "integer", "start": 202, "end": 203, "text": "4"}
+  ]},
+  {"type": "pair", "start": 206, "end": 233, "children": [
+   {"type": "bare_key", "start": 206, "end": 229, "text": "three_should_become_two"},
+   {"type": "=", "start": 230, "end": 231, "text": "="},
+   {"type": "integer", "start": 232, "end": 233, "text": "5"}
+  ]},
+  {"type": "ERROR", "start": 235, "end": 239, "children": [
+   {"type": "ERROR", "start": 235, "end": 237, "text": "/*"}
+  ]},
+  {"type": "pair", "start": 239, "end": 254, "children": [
+   {"type": "bare_key", "start": 239, "end": 250, "text": "after_three"},
+   {"type": "=", "start": 251, "end": 252, "text": "="},
+   {"type": "integer", "start": 253, "end": 254, "text": "6"}
+  ]},
+  {"type": "table", "start": 256, "end": 282, "children": [
+   {"type": "[", "start": 256, "end": 257, "text": "["},
+   {"type": "bare_key", "start": 257, "end": 261, "text": "next"},
+   {"type": "]", "start": 261, "end": 262, "text": "]"},
+   {"type": "pair", "start": 265, "end": 281, "children": [
+    {"type": "bare_key", "start": 265, "end": 277, "text": "still_capped"},
+    {"type": "=", "start": 278, "end": 279, "text": "="},
+    {"type": "integer", "start": 280, "end": 281, "text": "7"}
+   ]}
+  ]}
+ ]}
+}

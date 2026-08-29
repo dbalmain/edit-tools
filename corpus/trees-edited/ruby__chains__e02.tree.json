@@ -1,0 +1,159 @@
+{
+ "language": "ruby",
+ "source_file": "corpus/src/ruby/chains.rb",
+ "source": "# Method chains. A short chain stays flat; a medium one breaks at the\n# call's brackets at 40; a long one breaks at the dots even at 80.\n\nshort = user.name.upcase # still one line at 40\n\nmedium = user.accounts.active.where(status: \"open\")\n\nlong =\n  user\n    .accounts\n    .active\n    .:where(status: \"open\")\n    .order(:created_at)\n    .limit(10)\n    .map(&:email)\n\n# Brace block stays braces; the chain wraps at 40.\nnames = items.select { |x| x.active? }.map(&:name)\n",
+ "base_source": "# Method chains. A short chain stays flat; a medium one breaks at the\n# call's brackets at 40; a long one breaks at the dots even at 80.\n\nshort = user.name.upcase # still one line at 40\n\nmedium = user.accounts.active.where(status: \"open\")\n\nlong =\n  user\n    .accounts\n    .active\n    .where(status: \"open\")\n    .order(:created_at)\n    .limit(10)\n    .map(&:email)\n\n# Brace block stays braces; the chain wraps at 40.\nnames = items.select { |x| x.active? }.map(&:name)\n",
+ "edit": {"kind": "insert", "label": "insert ':'", "start": 285, "old_end": 285, "new_end": 286, "removed": "", "inserted": ":"},
+ "problems": {"error": 1, "missing": 0},
+ "grammar": "tree-sitter-ruby==0.23.1",
+ "seed": 0,
+ "root":
+ {"type": "program", "start": 0, "end": 468, "children": [
+  {"type": "comment", "start": 0, "end": 69, "text": "# Method chains. A short chain stays flat; a medium one breaks at the"},
+  {"type": "comment", "start": 70, "end": 136, "text": "# call's brackets at 40; a long one breaks at the dots even at 80."},
+  {"type": "assignment", "start": 138, "end": 162, "children": [
+   {"type": "identifier", "start": 138, "end": 143, "field": "left", "text": "short"},
+   {"type": "=", "start": 144, "end": 145, "text": "="},
+   {"type": "call", "start": 146, "end": 162, "field": "right", "children": [
+    {"type": "call", "start": 146, "end": 155, "field": "receiver", "children": [
+     {"type": "identifier", "start": 146, "end": 150, "field": "receiver", "text": "user"},
+     {"type": ".", "start": 150, "end": 151, "field": "operator", "text": "."},
+     {"type": "identifier", "start": 151, "end": 155, "field": "method", "text": "name"}
+    ]},
+    {"type": ".", "start": 155, "end": 156, "field": "operator", "text": "."},
+    {"type": "identifier", "start": 156, "end": 162, "field": "method", "text": "upcase"}
+   ]}
+  ]},
+  {"type": "comment", "start": 163, "end": 185, "text": "# still one line at 40"},
+  {"type": "assignment", "start": 187, "end": 238, "children": [
+   {"type": "identifier", "start": 187, "end": 193, "field": "left", "text": "medium"},
+   {"type": "=", "start": 194, "end": 195, "text": "="},
+   {"type": "call", "start": 196, "end": 238, "field": "right", "children": [
+    {"type": "call", "start": 196, "end": 216, "field": "receiver", "children": [
+     {"type": "call", "start": 196, "end": 209, "field": "receiver", "children": [
+      {"type": "identifier", "start": 196, "end": 200, "field": "receiver", "text": "user"},
+      {"type": ".", "start": 200, "end": 201, "field": "operator", "text": "."},
+      {"type": "identifier", "start": 201, "end": 209, "field": "method", "text": "accounts"}
+     ]},
+     {"type": ".", "start": 209, "end": 210, "field": "operator", "text": "."},
+     {"type": "identifier", "start": 210, "end": 216, "field": "method", "text": "active"}
+    ]},
+    {"type": ".", "start": 216, "end": 217, "field": "operator", "text": "."},
+    {"type": "identifier", "start": 217, "end": 222, "field": "method", "text": "where"},
+    {"type": "argument_list", "start": 222, "end": 238, "field": "arguments", "children": [
+     {"type": "(", "start": 222, "end": 223, "text": "("},
+     {"type": "pair", "start": 223, "end": 237, "children": [
+      {"type": "hash_key_symbol", "start": 223, "end": 229, "field": "key", "text": "status"},
+      {"type": ":", "start": 229, "end": 230, "text": ":"},
+      {"type": "string", "start": 231, "end": 237, "field": "value", "children": [
+       {"type": "\"", "start": 231, "end": 232, "text": "\""},
+       {"type": "string_content", "start": 232, "end": 236, "text": "open"},
+       {"type": "\"", "start": 236, "end": 237, "text": "\""}
+      ]}
+     ]},
+     {"type": ")", "start": 237, "end": 238, "text": ")"}
+    ]}
+   ]}
+  ]},
+  {"type": "assignment", "start": 240, "end": 364, "children": [
+   {"type": "identifier", "start": 240, "end": 244, "field": "left", "text": "long"},
+   {"type": "=", "start": 245, "end": 246, "text": "="},
+   {"type": "call", "start": 249, "end": 364, "field": "right", "children": [
+    {"type": "call", "start": 249, "end": 346, "field": "receiver", "children": [
+     {"type": "call", "start": 249, "end": 331, "field": "receiver", "children": [
+      {"type": "call", "start": 249, "end": 307, "field": "receiver", "children": [
+       {"type": "call", "start": 249, "end": 279, "field": "receiver", "children": [
+        {"type": "call", "start": 249, "end": 267, "field": "receiver", "children": [
+         {"type": "identifier", "start": 249, "end": 253, "field": "receiver", "text": "user"},
+         {"type": ".", "start": 258, "end": 259, "field": "operator", "text": "."},
+         {"type": "identifier", "start": 259, "end": 267, "field": "method", "text": "accounts"}
+        ]},
+        {"type": ".", "start": 272, "end": 273, "field": "operator", "text": "."},
+        {"type": "identifier", "start": 273, "end": 279, "field": "method", "text": "active"}
+       ]},
+       {"type": ".", "start": 284, "end": 285, "field": "operator", "text": "."},
+       {"type": "ERROR", "start": 285, "end": 291, "children": [
+        {"type": "simple_symbol", "start": 285, "end": 291, "text": ":where"}
+       ]},
+       {"type": "argument_list", "start": 291, "end": 307, "field": "arguments", "children": [
+        {"type": "(", "start": 291, "end": 292, "text": "("},
+        {"type": "pair", "start": 292, "end": 306, "children": [
+         {"type": "hash_key_symbol", "start": 292, "end": 298, "field": "key", "text": "status"},
+         {"type": ":", "start": 298, "end": 299, "text": ":"},
+         {"type": "string", "start": 300, "end": 306, "field": "value", "children": [
+          {"type": "\"", "start": 300, "end": 301, "text": "\""},
+          {"type": "string_content", "start": 301, "end": 305, "text": "open"},
+          {"type": "\"", "start": 305, "end": 306, "text": "\""}
+         ]}
+        ]},
+        {"type": ")", "start": 306, "end": 307, "text": ")"}
+       ]}
+      ]},
+      {"type": ".", "start": 312, "end": 313, "field": "operator", "text": "."},
+      {"type": "identifier", "start": 313, "end": 318, "field": "method", "text": "order"},
+      {"type": "argument_list", "start": 318, "end": 331, "field": "arguments", "children": [
+       {"type": "(", "start": 318, "end": 319, "text": "("},
+       {"type": "simple_symbol", "start": 319, "end": 330, "text": ":created_at"},
+       {"type": ")", "start": 330, "end": 331, "text": ")"}
+      ]}
+     ]},
+     {"type": ".", "start": 336, "end": 337, "field": "operator", "text": "."},
+     {"type": "identifier", "start": 337, "end": 342, "field": "method", "text": "limit"},
+     {"type": "argument_list", "start": 342, "end": 346, "field": "arguments", "children": [
+      {"type": "(", "start": 342, "end": 343, "text": "("},
+      {"type": "integer", "start": 343, "end": 345, "text": "10"},
+      {"type": ")", "start": 345, "end": 346, "text": ")"}
+     ]}
+    ]},
+    {"type": ".", "start": 351, "end": 352, "field": "operator", "text": "."},
+    {"type": "identifier", "start": 352, "end": 355, "field": "method", "text": "map"},
+    {"type": "argument_list", "start": 355, "end": 364, "field": "arguments", "children": [
+     {"type": "(", "start": 355, "end": 356, "text": "("},
+     {"type": "block_argument", "start": 356, "end": 363, "children": [
+      {"type": "&", "start": 356, "end": 357, "text": "&"},
+      {"type": "simple_symbol", "start": 357, "end": 363, "text": ":email"}
+     ]},
+     {"type": ")", "start": 363, "end": 364, "text": ")"}
+    ]}
+   ]}
+  ]},
+  {"type": "comment", "start": 366, "end": 416, "text": "# Brace block stays braces; the chain wraps at 40."},
+  {"type": "assignment", "start": 417, "end": 467, "children": [
+   {"type": "identifier", "start": 417, "end": 422, "field": "left", "text": "names"},
+   {"type": "=", "start": 423, "end": 424, "text": "="},
+   {"type": "call", "start": 425, "end": 467, "field": "right", "children": [
+    {"type": "call", "start": 425, "end": 455, "field": "receiver", "children": [
+     {"type": "identifier", "start": 425, "end": 430, "field": "receiver", "text": "items"},
+     {"type": ".", "start": 430, "end": 431, "field": "operator", "text": "."},
+     {"type": "identifier", "start": 431, "end": 437, "field": "method", "text": "select"},
+     {"type": "block", "start": 438, "end": 455, "field": "block", "children": [
+      {"type": "{", "start": 438, "end": 439, "text": "{"},
+      {"type": "block_parameters", "start": 440, "end": 443, "field": "parameters", "children": [
+       {"type": "|", "start": 440, "end": 441, "text": "|"},
+       {"type": "identifier", "start": 441, "end": 442, "text": "x"},
+       {"type": "|", "start": 442, "end": 443, "text": "|"}
+      ]},
+      {"type": "block_body", "start": 444, "end": 453, "field": "body", "children": [
+       {"type": "call", "start": 444, "end": 453, "children": [
+        {"type": "identifier", "start": 444, "end": 445, "field": "receiver", "text": "x"},
+        {"type": ".", "start": 445, "end": 446, "field": "operator", "text": "."},
+        {"type": "identifier", "start": 446, "end": 453, "field": "method", "text": "active?"}
+       ]}
+      ]},
+      {"type": "}", "start": 454, "end": 455, "text": "}"}
+     ]}
+    ]},
+    {"type": ".", "start": 455, "end": 456, "field": "operator", "text": "."},
+    {"type": "identifier", "start": 456, "end": 459, "field": "method", "text": "map"},
+    {"type": "argument_list", "start": 459, "end": 467, "field": "arguments", "children": [
+     {"type": "(", "start": 459, "end": 460, "text": "("},
+     {"type": "block_argument", "start": 460, "end": 466, "children": [
+      {"type": "&", "start": 460, "end": 461, "text": "&"},
+      {"type": "simple_symbol", "start": 461, "end": 466, "text": ":name"}
+     ]},
+     {"type": ")", "start": 466, "end": 467, "text": ")"}
+    ]}
+   ]}
+  ]}
+ ]}
+}

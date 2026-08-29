@@ -1,0 +1,79 @@
+{
+ "language": "html",
+ "source_file": "corpus/src/html/quotes.html",
+ "source": "<!-- prettier re-quotes attributes to prefer double quotes, and to minimise escaping. -->\n<div class='hello' id='world'></div>\n<d\"she said &quotdata-x='she said \"hi\"'></div>\n<div title=\"she said &quot;hi&quot;\"></div>\n",
+ "base_source": "<!-- prettier re-quotes attributes to prefer double quotes, and to minimise escaping. -->\n<div class='hello' id='world'></div>\n<div data-x='she said \"hi\"'></div>\n<div title=\"she said &quot;hi&quot;\"></div>\n",
+ "edit": {"kind": "replace", "label": "splice 173..188", "start": 129, "old_end": 132, "new_end": 144, "removed": "iv ", "inserted": "\"she said &quot"},
+ "problems": {"error": 4, "missing": 0},
+ "grammar": "tree-sitter-html==0.23.2",
+ "seed": 0,
+ "root":
+ {"type": "document", "start": 0, "end": 218, "children": [
+  {"type": "comment", "start": 0, "end": 89, "text": "<!-- prettier re-quotes attributes to prefer double quotes, and to minimise escaping. -->"},
+  {"type": "element", "start": 90, "end": 126, "children": [
+   {"type": "start_tag", "start": 90, "end": 120, "children": [
+    {"type": "<", "start": 90, "end": 91, "text": "<"},
+    {"type": "tag_name", "start": 91, "end": 94, "text": "div"},
+    {"type": "attribute", "start": 95, "end": 108, "children": [
+     {"type": "attribute_name", "start": 95, "end": 100, "text": "class"},
+     {"type": "=", "start": 100, "end": 101, "text": "="},
+     {"type": "quoted_attribute_value", "start": 101, "end": 108, "children": [
+      {"type": "'", "start": 101, "end": 102, "text": "'"},
+      {"type": "attribute_value", "start": 102, "end": 107, "text": "hello"},
+      {"type": "'", "start": 107, "end": 108, "text": "'"}
+     ]}
+    ]},
+    {"type": "attribute", "start": 109, "end": 119, "children": [
+     {"type": "attribute_name", "start": 109, "end": 111, "text": "id"},
+     {"type": "=", "start": 111, "end": 112, "text": "="},
+     {"type": "quoted_attribute_value", "start": 112, "end": 119, "children": [
+      {"type": "'", "start": 112, "end": 113, "text": "'"},
+      {"type": "attribute_value", "start": 113, "end": 118, "text": "world"},
+      {"type": "'", "start": 118, "end": 119, "text": "'"}
+     ]}
+    ]},
+    {"type": ">", "start": 119, "end": 120, "text": ">"}
+   ]},
+   {"type": "end_tag", "start": 120, "end": 126, "children": [
+    {"type": "</", "start": 120, "end": 122, "text": "</"},
+    {"type": "tag_name", "start": 122, "end": 125, "text": "div"},
+    {"type": ">", "start": 125, "end": 126, "text": ">"}
+   ]}
+  ]},
+  {"type": "ERROR", "start": 127, "end": 138, "children": [
+   {"type": "<", "start": 127, "end": 128, "text": "<"},
+   {"type": "tag_name", "start": 128, "end": 129, "text": "d"},
+   {"type": "\"", "start": 129, "end": 130, "text": "\""},
+   {"type": "ERROR", "start": 130, "end": 138, "text": "she said"}
+  ]},
+  {"type": "entity", "start": 139, "end": 148, "text": "&quotdata"},
+  {"type": "text", "start": 148, "end": 166, "text": "-x='she said \"hi\"'"},
+  {"type": "ERROR", "start": 166, "end": 173, "children": [
+   {"type": ">", "start": 166, "end": 167, "text": ">"},
+   {"type": "</", "start": 167, "end": 169, "text": "</"},
+   {"type": "ERROR", "start": 169, "end": 172, "text": "div"},
+   {"type": ">", "start": 172, "end": 173, "text": ">"}
+  ]},
+  {"type": "element", "start": 174, "end": 217, "children": [
+   {"type": "start_tag", "start": 174, "end": 211, "children": [
+    {"type": "<", "start": 174, "end": 175, "text": "<"},
+    {"type": "tag_name", "start": 175, "end": 178, "text": "div"},
+    {"type": "attribute", "start": 179, "end": 210, "children": [
+     {"type": "attribute_name", "start": 179, "end": 184, "text": "title"},
+     {"type": "=", "start": 184, "end": 185, "text": "="},
+     {"type": "quoted_attribute_value", "start": 185, "end": 210, "children": [
+      {"type": "\"", "start": 185, "end": 186, "text": "\""},
+      {"type": "attribute_value", "start": 186, "end": 209, "text": "she said &quot;hi&quot;"},
+      {"type": "\"", "start": 209, "end": 210, "text": "\""}
+     ]}
+    ]},
+    {"type": ">", "start": 210, "end": 211, "text": ">"}
+   ]},
+   {"type": "end_tag", "start": 211, "end": 217, "children": [
+    {"type": "</", "start": 211, "end": 213, "text": "</"},
+    {"type": "tag_name", "start": 213, "end": 216, "text": "div"},
+    {"type": ">", "start": 216, "end": 217, "text": ">"}
+   ]}
+  ]}
+ ]}
+}

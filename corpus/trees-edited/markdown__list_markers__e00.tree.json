@@ -1,0 +1,55 @@
+{
+ "language": "markdown",
+ "source_file": "corpus/src/markdown/list_markers.md",
+ "source": "prettier rewrites * and + markers to -. -->\n\n* star item\n* star next\n\n+ plus item\n+ plus next\n",
+ "base_source": "<!-- prettier rewrites * and + markers to -. -->\n\n* star item\n* star next\n\n+ plus item\n+ plus next\n",
+ "edit": {"kind": "delete", "label": "delete 5B", "start": 0, "old_end": 5, "new_end": 0, "removed": "<!-- ", "inserted": ""},
+ "problems": {"error": 0, "missing": 0},
+ "grammar": "tree-sitter-markdown==0.5.1",
+ "seed": 0,
+ "root":
+ {"type": "document", "start": 0, "end": 94, "children": [
+  {"type": "section", "start": 0, "end": 94, "children": [
+   {"type": "paragraph", "start": 0, "end": 44, "children": [
+    {"type": "inline", "start": 0, "end": 43, "children": [
+     {"type": "*", "start": 18, "end": 19, "text": "*"},
+     {"type": "+", "start": 24, "end": 25, "text": "+"},
+     {"type": "-", "start": 37, "end": 38, "text": "-"},
+     {"type": ".", "start": 38, "end": 39, "text": "."},
+     {"type": "-", "start": 40, "end": 41, "text": "-"},
+     {"type": "-", "start": 41, "end": 42, "text": "-"},
+     {"type": ">", "start": 42, "end": 43, "text": ">"}
+    ]}
+   ]},
+   {"type": "list", "start": 45, "end": 70, "children": [
+    {"type": "list_item", "start": 45, "end": 57, "children": [
+     {"type": "list_marker_star", "start": 45, "end": 47, "text": "* "},
+     {"type": "paragraph", "start": 47, "end": 57, "children": [
+      {"type": "inline", "start": 47, "end": 56, "text": "star item"}
+     ]}
+    ]},
+    {"type": "list_item", "start": 57, "end": 70, "children": [
+     {"type": "list_marker_star", "start": 57, "end": 59, "text": "* "},
+     {"type": "paragraph", "start": 59, "end": 69, "children": [
+      {"type": "inline", "start": 59, "end": 68, "text": "star next"},
+      {"type": "block_continuation", "start": 69, "end": 69, "text": ""}
+     ]}
+    ]}
+   ]},
+   {"type": "list", "start": 70, "end": 94, "children": [
+    {"type": "list_item", "start": 70, "end": 82, "children": [
+     {"type": "list_marker_plus", "start": 70, "end": 72, "text": "+ "},
+     {"type": "paragraph", "start": 72, "end": 82, "children": [
+      {"type": "inline", "start": 72, "end": 81, "text": "plus item"}
+     ]}
+    ]},
+    {"type": "list_item", "start": 82, "end": 94, "children": [
+     {"type": "list_marker_plus", "start": 82, "end": 84, "text": "+ "},
+     {"type": "paragraph", "start": 84, "end": 94, "children": [
+      {"type": "inline", "start": 84, "end": 93, "text": "plus next"}
+     ]}
+    ]}
+   ]}
+  ]}
+ ]}
+}

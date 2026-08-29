@@ -22,9 +22,10 @@ Two products, and they test different halves:
   previous tree, and demands the two agree node for node -- ERROR and MISSING
   included. That is the only thing here that can see an incremental-reparse
   bug, and it needs a live parser, so it can never be frozen.
-* **`--freeze`** writes `corpus/trees-edited/`: one clean base per language plus
-  single-edit states, with tree-sitter's answer including ERROR and MISSING, in
-  the same JSON shape as `corpus/trees/*.tree.json`. A frozen fixture cannot
+* **`--freeze`** writes `corpus/trees-edited/`: four clean bases per language,
+  four single-edit states each, with tree-sitter's answer including ERROR and
+  MISSING, in the same JSON shape as `corpus/trees/*.tree.json` (whitespace
+  differs -- one node per line, see `dumps`). A frozen fixture cannot
   test incrementality (a candidate parser has no old tree to hand), so it tests
   the other half: **error recovery**, against a diffable oracle that survives a
   grammar bump because it was committed before the bump.
@@ -64,11 +65,14 @@ DEFAULT_SEED = 0
 DEFAULT_EDITS = 24
 DEFAULT_FILES = 3
 
-# Fixture budget. Deliberately small: the sweep is the coverage engine and it
-# runs on demand, so the committed half only has to be a regression gate that a
-# human can read. See the size note in docs/cst-contract.md.
-FREEZE_STATES = 8
-FREEZE_CLEAN_STATES = 2
+# Fixture budget, and the shape of it matters more than the total. Coverage
+# here is *breadth of syntactic neighbourhood*, not depth per file: a scanner
+# bug lives in one construct, and eight edits around a single import block all
+# probe the same construct. So spend the budget on more base files with fewer
+# states each. Four files x four states, smallest files first.
+FREEZE_FILES = 4
+FREEZE_STATES = 4
+FREEZE_CLEAN_STATES = 1
 FREEZE_SEED = 0
 FREEZE_CANDIDATES = 400
 
@@ -503,6 +507,46 @@ def pick_states(parser, source: bytes, seed: int) -> list[tuple[Edit, dict, dict
     return dirty + clean
 
 
+def _node_lines(node: dict, depth: int) -> list[str]:
+    pad = " " * depth
+    own = {k: v for k, v in node.items() if k != "children"}
+    head = json.dumps(own, ensure_ascii=False)
+    if "children" not in node:
+        return [pad + head]
+    lines = [f'{pad}{head[:-1]}, "children": [']
+    for child in node["children"]:
+        lines.extend(_node_lines(child, depth + 1))
+        lines[-1] += ","
+    lines[-1] = lines[-1][:-1]
+    lines.append(pad + "]}")
+    return lines
+
+
+def dumps(doc: dict) -> str:
+    """One node per line, indented by depth. Still ordinary JSON.
+
+    `gen_trees.py` uses `indent=1`, which spends five lines on every node and
+    makes a one-node change a five-line diff. These files are an oracle people
+    will read diffs of, and there are a lot of them, so they get a layout that
+    is both smaller and easier to review: each node is one compact object on
+    its own line, nesting shown by indentation. Only whitespace differs -- the
+    JSON *shape* is identical to `corpus/trees/*.tree.json`, which is what any
+    consumer actually parses.
+
+    Measured on this fixture set: 3.3 MiB at `indent=1`, 1.5 MiB compact,
+    1.6 MiB like this.
+    """
+    lines = ["{"]
+    for key, value in doc.items():
+        if key == "root":
+            continue
+        lines.append(f' {json.dumps(key)}: {json.dumps(value, ensure_ascii=False)},')
+    lines.append(' "root":')
+    lines.extend(_node_lines(doc["root"], 1))
+    lines.append("}")
+    return "\n".join(lines) + "\n"
+
+
 def freeze_language(parser, m: mf.Manifest, path: Path) -> list[Path]:
     source = path.read_bytes()
     written = []
@@ -522,22 +566,24 @@ def freeze_language(parser, m: mf.Manifest, path: Path) -> list[Path]:
             "root": root,
         }
         dest = EDITED / f"{m.name}__{path.stem}__e{index:02d}.tree.json"
-        dest.write_text(json.dumps(doc, indent=1, ensure_ascii=False) + "\n")
+        text = dumps(doc)
+        if json.loads(text) != doc:  # pragma: no cover -- serialiser guard
+            raise Divergence(f"{dest.name}: hand-rolled layout does not round-trip")
+        dest.write_text(text)
         written.append(dest)
     return written
 
 
-def base_file(m: mf.Manifest) -> Path | None:
-    """The smallest clean corpus source. Deterministic, and small on purpose.
+def base_files(m: mf.Manifest) -> list[Path]:
+    """The smallest clean corpus sources. Deterministic, and small on purpose.
 
-    Tree JSON runs ~40x its source, so the base choice *is* the size budget.
-    Smallest-first also tends to pick the file with the least incidental
-    structure, which makes the frozen ERROR trees readable.
+    Tree JSON runs ~40x its source, so this choice *is* the size budget.
+    Smallest-first also tends to pick files with the least incidental
+    structure, which is what makes a frozen ERROR tree reviewable.
     """
     found = gen_trees.sources(m)
-    if not found:
-        return None
-    return min(found, key=lambda p: (p.stat().st_size, p.name))
+    ordered = sorted(found, key=lambda p: (p.stat().st_size, p.name))
+    return ordered[:FREEZE_FILES]
 
 
 # --------------------------------------------------------------------------
@@ -549,15 +595,18 @@ def do_freeze(manifests: dict[str, mf.Manifest], parsers: dict) -> int:
     total_bytes = 0
     total_files = 0
     for name, m in sorted(manifests.items()):
-        path = base_file(m)
-        if path is None:
+        paths = base_files(m)
+        if not paths:
             print(f"  {name}: no corpus sources, skipped")
             continue
-        for dest in freeze_language(parsers[name], m, path):
-            size = dest.stat().st_size
-            total_bytes += size
-            total_files += 1
-        print(f"  {name}: {FREEZE_STATES} states from {path.name} ({path.stat().st_size}B)")
+        written = 0
+        for path in paths:
+            for dest in freeze_language(parsers[name], m, path):
+                total_bytes += dest.stat().st_size
+                total_files += 1
+                written += 1
+        names = ", ".join(p.name for p in paths)
+        print(f"  {name}: {written} states from {names}")
     print(f"\n{total_files} fixtures, {total_bytes / 1024:.1f} KiB in {EDITED.relative_to(ROOT)}")
     return 0
 
@@ -682,9 +731,11 @@ def do_sweep(
                 )
         if total:
             print(
-                f"NOTE: {', '.join(sorted(total))} never produced ERROR or MISSING. "
-                "For a total grammar (markdown) that is correct; for any other "
-                "language it means the edits were not adversarial enough."
+                f"NOTE: {', '.join(sorted(total))} never produced ERROR or MISSING "
+                "on the files swept. That is a fact about these files and these "
+                "edits, not about the grammar -- markdown reads as total here and "
+                "still emits ERROR under --freeze on a different file -- so treat "
+                "it as thin coverage to widen, not as a property to rely on."
             )
         if inert:
             print(

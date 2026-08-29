@@ -1,0 +1,182 @@
+{
+ "language": "python",
+ "source_file": "corpus/src/python/imports.py",
+ "source": "imps\n\nimport os.path\n\nimport collections.abc\n\nfrom typing import Any\n\nfrom collections.abc import Iterable, Mapping, Sequence, MutableMapping, Callable\n\nfrom package.module.submodule import first_name, second_name, third_name, fourth\n\nfrom package import (\n    alpha,\n    beta,\n)\n\nfrom . import sibling\n\nfrom .relative.module import something\n\nimport first_module, second_module\n\nfrom module import name as alias, other as other_alias, third as third_alias_name\n",
+ "base_source": "import os\n\nimport os.path\n\nimport collections.abc\n\nfrom typing import Any\n\nfrom collections.abc import Iterable, Mapping, Sequence, MutableMapping, Callable\n\nfrom package.module.submodule import first_name, second_name, third_name, fourth\n\nfrom package import (\n    alpha,\n    beta,\n)\n\nfrom . import sibling\n\nfrom .relative.module import something\n\nimport first_module, second_module\n\nfrom module import name as alias, other as other_alias, third as third_alias_name\n",
+ "edit": {"kind": "delete", "label": "delete 5B", "start": 3, "old_end": 8, "new_end": 3, "removed": "ort o", "inserted": ""},
+ "problems": {"error": 0, "missing": 0},
+ "grammar": "tree-sitter-python==0.25.0",
+ "seed": 0,
+ "root":
+ {"type": "module", "start": 0, "end": 462, "children": [
+  {"type": "expression_statement", "start": 0, "end": 4, "children": [
+   {"type": "identifier", "start": 0, "end": 4, "text": "imps"}
+  ]},
+  {"type": "import_statement", "start": 6, "end": 20, "children": [
+   {"type": "import", "start": 6, "end": 12, "text": "import"},
+   {"type": "dotted_name", "start": 13, "end": 20, "field": "name", "children": [
+    {"type": "identifier", "start": 13, "end": 15, "text": "os"},
+    {"type": ".", "start": 15, "end": 16, "text": "."},
+    {"type": "identifier", "start": 16, "end": 20, "text": "path"}
+   ]}
+  ]},
+  {"type": "import_statement", "start": 22, "end": 44, "children": [
+   {"type": "import", "start": 22, "end": 28, "text": "import"},
+   {"type": "dotted_name", "start": 29, "end": 44, "field": "name", "children": [
+    {"type": "identifier", "start": 29, "end": 40, "text": "collections"},
+    {"type": ".", "start": 40, "end": 41, "text": "."},
+    {"type": "identifier", "start": 41, "end": 44, "text": "abc"}
+   ]}
+  ]},
+  {"type": "import_from_statement", "start": 46, "end": 68, "children": [
+   {"type": "from", "start": 46, "end": 50, "text": "from"},
+   {"type": "dotted_name", "start": 51, "end": 57, "field": "module_name", "children": [
+    {"type": "identifier", "start": 51, "end": 57, "text": "typing"}
+   ]},
+   {"type": "import", "start": 58, "end": 64, "text": "import"},
+   {"type": "dotted_name", "start": 65, "end": 68, "field": "name", "children": [
+    {"type": "identifier", "start": 65, "end": 68, "text": "Any"}
+   ]}
+  ]},
+  {"type": "import_from_statement", "start": 70, "end": 151, "children": [
+   {"type": "from", "start": 70, "end": 74, "text": "from"},
+   {"type": "dotted_name", "start": 75, "end": 90, "field": "module_name", "children": [
+    {"type": "identifier", "start": 75, "end": 86, "text": "collections"},
+    {"type": ".", "start": 86, "end": 87, "text": "."},
+    {"type": "identifier", "start": 87, "end": 90, "text": "abc"}
+   ]},
+   {"type": "import", "start": 91, "end": 97, "text": "import"},
+   {"type": "dotted_name", "start": 98, "end": 106, "field": "name", "children": [
+    {"type": "identifier", "start": 98, "end": 106, "text": "Iterable"}
+   ]},
+   {"type": ",", "start": 106, "end": 107, "text": ","},
+   {"type": "dotted_name", "start": 108, "end": 115, "field": "name", "children": [
+    {"type": "identifier", "start": 108, "end": 115, "text": "Mapping"}
+   ]},
+   {"type": ",", "start": 115, "end": 116, "text": ","},
+   {"type": "dotted_name", "start": 117, "end": 125, "field": "name", "children": [
+    {"type": "identifier", "start": 117, "end": 125, "text": "Sequence"}
+   ]},
+   {"type": ",", "start": 125, "end": 126, "text": ","},
+   {"type": "dotted_name", "start": 127, "end": 141, "field": "name", "children": [
+    {"type": "identifier", "start": 127, "end": 141, "text": "MutableMapping"}
+   ]},
+   {"type": ",", "start": 141, "end": 142, "text": ","},
+   {"type": "dotted_name", "start": 143, "end": 151, "field": "name", "children": [
+    {"type": "identifier", "start": 143, "end": 151, "text": "Callable"}
+   ]}
+  ]},
+  {"type": "import_from_statement", "start": 153, "end": 233, "children": [
+   {"type": "from", "start": 153, "end": 157, "text": "from"},
+   {"type": "dotted_name", "start": 158, "end": 182, "field": "module_name", "children": [
+    {"type": "identifier", "start": 158, "end": 165, "text": "package"},
+    {"type": ".", "start": 165, "end": 166, "text": "."},
+    {"type": "identifier", "start": 166, "end": 172, "text": "module"},
+    {"type": ".", "start": 172, "end": 173, "text": "."},
+    {"type": "identifier", "start": 173, "end": 182, "text": "submodule"}
+   ]},
+   {"type": "import", "start": 183, "end": 189, "text": "import"},
+   {"type": "dotted_name", "start": 190, "end": 200, "field": "name", "children": [
+    {"type": "identifier", "start": 190, "end": 200, "text": "first_name"}
+   ]},
+   {"type": ",", "start": 200, "end": 201, "text": ","},
+   {"type": "dotted_name", "start": 202, "end": 213, "field": "name", "children": [
+    {"type": "identifier", "start": 202, "end": 213, "text": "second_name"}
+   ]},
+   {"type": ",", "start": 213, "end": 214, "text": ","},
+   {"type": "dotted_name", "start": 215, "end": 225, "field": "name", "children": [
+    {"type": "identifier", "start": 215, "end": 225, "text": "third_name"}
+   ]},
+   {"type": ",", "start": 225, "end": 226, "text": ","},
+   {"type": "dotted_name", "start": 227, "end": 233, "field": "name", "children": [
+    {"type": "identifier", "start": 227, "end": 233, "text": "fourth"}
+   ]}
+  ]},
+  {"type": "import_from_statement", "start": 235, "end": 279, "children": [
+   {"type": "from", "start": 235, "end": 239, "text": "from"},
+   {"type": "dotted_name", "start": 240, "end": 247, "field": "module_name", "children": [
+    {"type": "identifier", "start": 240, "end": 247, "text": "package"}
+   ]},
+   {"type": "import", "start": 248, "end": 254, "text": "import"},
+   {"type": "(", "start": 255, "end": 256, "text": "("},
+   {"type": "dotted_name", "start": 261, "end": 266, "field": "name", "children": [
+    {"type": "identifier", "start": 261, "end": 266, "text": "alpha"}
+   ]},
+   {"type": ",", "start": 266, "end": 267, "text": ","},
+   {"type": "dotted_name", "start": 272, "end": 276, "field": "name", "children": [
+    {"type": "identifier", "start": 272, "end": 276, "text": "beta"}
+   ]},
+   {"type": ",", "start": 276, "end": 277, "text": ","},
+   {"type": ")", "start": 278, "end": 279, "text": ")"}
+  ]},
+  {"type": "import_from_statement", "start": 281, "end": 302, "children": [
+   {"type": "from", "start": 281, "end": 285, "text": "from"},
+   {"type": "relative_import", "start": 286, "end": 287, "field": "module_name", "children": [
+    {"type": "import_prefix", "start": 286, "end": 287, "children": [
+     {"type": ".", "start": 286, "end": 287, "text": "."}
+    ]}
+   ]},
+   {"type": "import", "start": 288, "end": 294, "text": "import"},
+   {"type": "dotted_name", "start": 295, "end": 302, "field": "name", "children": [
+    {"type": "identifier", "start": 295, "end": 302, "text": "sibling"}
+   ]}
+  ]},
+  {"type": "import_from_statement", "start": 304, "end": 342, "children": [
+   {"type": "from", "start": 304, "end": 308, "text": "from"},
+   {"type": "relative_import", "start": 309, "end": 325, "field": "module_name", "children": [
+    {"type": "import_prefix", "start": 309, "end": 310, "children": [
+     {"type": ".", "start": 309, "end": 310, "text": "."}
+    ]},
+    {"type": "dotted_name", "start": 310, "end": 325, "children": [
+     {"type": "identifier", "start": 310, "end": 318, "text": "relative"},
+     {"type": ".", "start": 318, "end": 319, "text": "."},
+     {"type": "identifier", "start": 319, "end": 325, "text": "module"}
+    ]}
+   ]},
+   {"type": "import", "start": 326, "end": 332, "text": "import"},
+   {"type": "dotted_name", "start": 333, "end": 342, "field": "name", "children": [
+    {"type": "identifier", "start": 333, "end": 342, "text": "something"}
+   ]}
+  ]},
+  {"type": "import_statement", "start": 344, "end": 378, "children": [
+   {"type": "import", "start": 344, "end": 350, "text": "import"},
+   {"type": "dotted_name", "start": 351, "end": 363, "field": "name", "children": [
+    {"type": "identifier", "start": 351, "end": 363, "text": "first_module"}
+   ]},
+   {"type": ",", "start": 363, "end": 364, "text": ","},
+   {"type": "dotted_name", "start": 365, "end": 378, "field": "name", "children": [
+    {"type": "identifier", "start": 365, "end": 378, "text": "second_module"}
+   ]}
+  ]},
+  {"type": "import_from_statement", "start": 380, "end": 461, "children": [
+   {"type": "from", "start": 380, "end": 384, "text": "from"},
+   {"type": "dotted_name", "start": 385, "end": 391, "field": "module_name", "children": [
+    {"type": "identifier", "start": 385, "end": 391, "text": "module"}
+   ]},
+   {"type": "import", "start": 392, "end": 398, "text": "import"},
+   {"type": "aliased_import", "start": 399, "end": 412, "field": "name", "children": [
+    {"type": "dotted_name", "start": 399, "end": 403, "field": "name", "children": [
+     {"type": "identifier", "start": 399, "end": 403, "text": "name"}
+    ]},
+    {"type": "as", "start": 404, "end": 406, "text": "as"},
+    {"type": "identifier", "start": 407, "end": 412, "field": "alias", "text": "alias"}
+   ]},
+   {"type": ",", "start": 412, "end": 413, "text": ","},
+   {"type": "aliased_import", "start": 414, "end": 434, "field": "name", "children": [
+    {"type": "dotted_name", "start": 414, "end": 419, "field": "name", "children": [
+     {"type": "identifier", "start": 414, "end": 419, "text": "other"}
+    ]},
+    {"type": "as", "start": 420, "end": 422, "text": "as"},
+    {"type": "identifier", "start": 423, "end": 434, "field": "alias", "text": "other_alias"}
+   ]},
+   {"type": ",", "start": 434, "end": 435, "text": ","},
+   {"type": "aliased_import", "start": 436, "end": 461, "field": "name", "children": [
+    {"type": "dotted_name", "start": 436, "end": 441, "field": "name", "children": [
+     {"type": "identifier", "start": 436, "end": 441, "text": "third"}
+    ]},
+    {"type": "as", "start": 442, "end": 444, "text": "as"},
+    {"type": "identifier", "start": 445, "end": 461, "field": "alias", "text": "third_alias_name"}
+   ]}
+  ]}
+ ]}
+}

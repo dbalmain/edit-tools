@@ -1,0 +1,164 @@
+{
+ "language": "typescript",
+ "source_file": "corpus/src/typescript/enums.ts",
+ "source": "// Enums: numeric, string, const, and computed. prettier expands every enum,\n// even a one-member form that fits on a line.\nenum Color { Red, Green, Blue }\n\nenum Status { On = 1, // trailing on a member\n  Off = 0 }\n\nenum Direction { Up = \"up\", Down = \"down\", ead | Write }\n\nenum Computed { t = \"left\", Right = \"right\" }\n\nconst enum Flags { Read = 1, Write = 2, ReadWrite = Read | Write }\n\nenum Computed { Pair = 1 + 2 }\n\nenum Singleton { Only }\n",
+ "base_source": "// Enums: numeric, string, const, and computed. prettier expands every enum,\n// even a one-member form that fits on a line.\nenum Color { Red, Green, Blue }\n\nenum Status { On = 1, // trailing on a member\n  Off = 0 }\n\nenum Direction { Up = \"up\", Down = \"down\", Left = \"left\", Right = \"right\" }\n\nconst enum Flags { Read = 1, Write = 2, ReadWrite = Read | Write }\n\nenum Computed { Pair = 1 + 2 }\n\nenum Singleton { Only }\n",
+ "edit": {"kind": "replace", "label": "splice 346..377", "start": 259, "old_end": 262, "new_end": 290, "removed": "Lef", "inserted": "ead | Write }\n\nenum Computed { "},
+ "problems": {"error": 1, "missing": 0},
+ "grammar": "tree-sitter-typescript==0.23.2",
+ "seed": 0,
+ "root":
+ {"type": "program", "start": 0, "end": 445, "children": [
+  {"type": "comment", "start": 0, "end": 76, "text": "// Enums: numeric, string, const, and computed. prettier expands every enum,"},
+  {"type": "comment", "start": 77, "end": 123, "text": "// even a one-member form that fits on a line."},
+  {"type": "enum_declaration", "start": 124, "end": 155, "children": [
+   {"type": "enum", "start": 124, "end": 128, "text": "enum"},
+   {"type": "identifier", "start": 129, "end": 134, "field": "name", "text": "Color"},
+   {"type": "enum_body", "start": 135, "end": 155, "field": "body", "children": [
+    {"type": "{", "start": 135, "end": 136, "text": "{"},
+    {"type": "property_identifier", "start": 137, "end": 140, "field": "name", "text": "Red"},
+    {"type": ",", "start": 140, "end": 141, "text": ","},
+    {"type": "property_identifier", "start": 142, "end": 147, "field": "name", "text": "Green"},
+    {"type": ",", "start": 147, "end": 148, "text": ","},
+    {"type": "property_identifier", "start": 149, "end": 153, "field": "name", "text": "Blue"},
+    {"type": "}", "start": 154, "end": 155, "text": "}"}
+   ]}
+  ]},
+  {"type": "enum_declaration", "start": 157, "end": 214, "children": [
+   {"type": "enum", "start": 157, "end": 161, "text": "enum"},
+   {"type": "identifier", "start": 162, "end": 168, "field": "name", "text": "Status"},
+   {"type": "enum_body", "start": 169, "end": 214, "field": "body", "children": [
+    {"type": "{", "start": 169, "end": 170, "text": "{"},
+    {"type": "enum_assignment", "start": 171, "end": 177, "children": [
+     {"type": "property_identifier", "start": 171, "end": 173, "field": "name", "text": "On"},
+     {"type": "=", "start": 174, "end": 175, "text": "="},
+     {"type": "number", "start": 176, "end": 177, "field": "value", "text": "1"}
+    ]},
+    {"type": ",", "start": 177, "end": 178, "text": ","},
+    {"type": "comment", "start": 179, "end": 202, "text": "// trailing on a member"},
+    {"type": "enum_assignment", "start": 205, "end": 212, "children": [
+     {"type": "property_identifier", "start": 205, "end": 208, "field": "name", "text": "Off"},
+     {"type": "=", "start": 209, "end": 210, "text": "="},
+     {"type": "number", "start": 211, "end": 212, "field": "value", "text": "0"}
+    ]},
+    {"type": "}", "start": 213, "end": 214, "text": "}"}
+   ]}
+  ]},
+  {"type": "enum_declaration", "start": 216, "end": 272, "children": [
+   {"type": "enum", "start": 216, "end": 220, "text": "enum"},
+   {"type": "identifier", "start": 221, "end": 230, "field": "name", "text": "Direction"},
+   {"type": "enum_body", "start": 231, "end": 272, "field": "body", "children": [
+    {"type": "{", "start": 231, "end": 232, "text": "{"},
+    {"type": "enum_assignment", "start": 233, "end": 242, "children": [
+     {"type": "property_identifier", "start": 233, "end": 235, "field": "name", "text": "Up"},
+     {"type": "=", "start": 236, "end": 237, "text": "="},
+     {"type": "string", "start": 238, "end": 242, "field": "value", "children": [
+      {"type": "\"", "start": 238, "end": 239, "text": "\""},
+      {"type": "string_fragment", "start": 239, "end": 241, "text": "up"},
+      {"type": "\"", "start": 241, "end": 242, "text": "\""}
+     ]}
+    ]},
+    {"type": ",", "start": 242, "end": 243, "text": ","},
+    {"type": "enum_assignment", "start": 244, "end": 257, "children": [
+     {"type": "property_identifier", "start": 244, "end": 248, "field": "name", "text": "Down"},
+     {"type": "=", "start": 249, "end": 250, "text": "="},
+     {"type": "string", "start": 251, "end": 257, "field": "value", "children": [
+      {"type": "\"", "start": 251, "end": 252, "text": "\""},
+      {"type": "string_fragment", "start": 252, "end": 256, "text": "down"},
+      {"type": "\"", "start": 256, "end": 257, "text": "\""}
+     ]}
+    ]},
+    {"type": ",", "start": 257, "end": 258, "text": ","},
+    {"type": "ERROR", "start": 259, "end": 264, "children": [
+     {"type": "property_identifier", "start": 259, "end": 262, "text": "ead"},
+     {"type": "|", "start": 263, "end": 264, "text": "|"}
+    ]},
+    {"type": "property_identifier", "start": 265, "end": 270, "field": "name", "text": "Write"},
+    {"type": "}", "start": 271, "end": 272, "text": "}"}
+   ]}
+  ]},
+  {"type": "enum_declaration", "start": 274, "end": 319, "children": [
+   {"type": "enum", "start": 274, "end": 278, "text": "enum"},
+   {"type": "identifier", "start": 279, "end": 287, "field": "name", "text": "Computed"},
+   {"type": "enum_body", "start": 288, "end": 319, "field": "body", "children": [
+    {"type": "{", "start": 288, "end": 289, "text": "{"},
+    {"type": "enum_assignment", "start": 290, "end": 300, "children": [
+     {"type": "property_identifier", "start": 290, "end": 291, "field": "name", "text": "t"},
+     {"type": "=", "start": 292, "end": 293, "text": "="},
+     {"type": "string", "start": 294, "end": 300, "field": "value", "children": [
+      {"type": "\"", "start": 294, "end": 295, "text": "\""},
+      {"type": "string_fragment", "start": 295, "end": 299, "text": "left"},
+      {"type": "\"", "start": 299, "end": 300, "text": "\""}
+     ]}
+    ]},
+    {"type": ",", "start": 300, "end": 301, "text": ","},
+    {"type": "enum_assignment", "start": 302, "end": 317, "children": [
+     {"type": "property_identifier", "start": 302, "end": 307, "field": "name", "text": "Right"},
+     {"type": "=", "start": 308, "end": 309, "text": "="},
+     {"type": "string", "start": 310, "end": 317, "field": "value", "children": [
+      {"type": "\"", "start": 310, "end": 311, "text": "\""},
+      {"type": "string_fragment", "start": 311, "end": 316, "text": "right"},
+      {"type": "\"", "start": 316, "end": 317, "text": "\""}
+     ]}
+    ]},
+    {"type": "}", "start": 318, "end": 319, "text": "}"}
+   ]}
+  ]},
+  {"type": "enum_declaration", "start": 321, "end": 387, "children": [
+   {"type": "const", "start": 321, "end": 326, "text": "const"},
+   {"type": "enum", "start": 327, "end": 331, "text": "enum"},
+   {"type": "identifier", "start": 332, "end": 337, "field": "name", "text": "Flags"},
+   {"type": "enum_body", "start": 338, "end": 387, "field": "body", "children": [
+    {"type": "{", "start": 338, "end": 339, "text": "{"},
+    {"type": "enum_assignment", "start": 340, "end": 348, "children": [
+     {"type": "property_identifier", "start": 340, "end": 344, "field": "name", "text": "Read"},
+     {"type": "=", "start": 345, "end": 346, "text": "="},
+     {"type": "number", "start": 347, "end": 348, "field": "value", "text": "1"}
+    ]},
+    {"type": ",", "start": 348, "end": 349, "text": ","},
+    {"type": "enum_assignment", "start": 350, "end": 359, "children": [
+     {"type": "property_identifier", "start": 350, "end": 355, "field": "name", "text": "Write"},
+     {"type": "=", "start": 356, "end": 357, "text": "="},
+     {"type": "number", "start": 358, "end": 359, "field": "value", "text": "2"}
+    ]},
+    {"type": ",", "start": 359, "end": 360, "text": ","},
+    {"type": "enum_assignment", "start": 361, "end": 385, "children": [
+     {"type": "property_identifier", "start": 361, "end": 370, "field": "name", "text": "ReadWrite"},
+     {"type": "=", "start": 371, "end": 372, "text": "="},
+     {"type": "binary_expression", "start": 373, "end": 385, "field": "value", "children": [
+      {"type": "identifier", "start": 373, "end": 377, "field": "left", "text": "Read"},
+      {"type": "|", "start": 378, "end": 379, "field": "operator", "text": "|"},
+      {"type": "identifier", "start": 380, "end": 385, "field": "right", "text": "Write"}
+     ]}
+    ]},
+    {"type": "}", "start": 386, "end": 387, "text": "}"}
+   ]}
+  ]},
+  {"type": "enum_declaration", "start": 389, "end": 419, "children": [
+   {"type": "enum", "start": 389, "end": 393, "text": "enum"},
+   {"type": "identifier", "start": 394, "end": 402, "field": "name", "text": "Computed"},
+   {"type": "enum_body", "start": 403, "end": 419, "field": "body", "children": [
+    {"type": "{", "start": 403, "end": 404, "text": "{"},
+    {"type": "enum_assignment", "start": 405, "end": 417, "children": [
+     {"type": "property_identifier", "start": 405, "end": 409, "field": "name", "text": "Pair"},
+     {"type": "=", "start": 410, "end": 411, "text": "="},
+     {"type": "binary_expression", "start": 412, "end": 417, "field": "value", "children": [
+      {"type": "number", "start": 412, "end": 413, "field": "left", "text": "1"},
+      {"type": "+", "start": 414, "end": 415, "field": "operator", "text": "+"},
+      {"type": "number", "start": 416, "end": 417, "field": "right", "text": "2"}
+     ]}
+    ]},
+    {"type": "}", "start": 418, "end": 419, "text": "}"}
+   ]}
+  ]},
+  {"type": "enum_declaration", "start": 421, "end": 444, "children": [
+   {"type": "enum", "start": 421, "end": 425, "text": "enum"},
+   {"type": "identifier", "start": 426, "end": 435, "field": "name", "text": "Singleton"},
+   {"type": "enum_body", "start": 436, "end": 444, "field": "body", "children": [
+    {"type": "{", "start": 436, "end": 437, "text": "{"},
+    {"type": "property_identifier", "start": 438, "end": 442, "field": "name", "text": "Only"},
+    {"type": "}", "start": 443, "end": 444, "text": "}"}
+   ]}
+  ]}
+ ]}
+}

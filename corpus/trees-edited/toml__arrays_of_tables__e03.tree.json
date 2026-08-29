@@ -1,0 +1,144 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/arrays_of_tables.toml",
+ "source": "# Aof-tables headers. Distinct from an array of inline tables.\n\n[[products]]\nname = \"Hammer\"\nsku = 738594937\ncolors = [\"red\", \"green\", \"blue\", \"yellow\", \"orange\"]\n\n[products.extra]\nwarranty_years = 2\n\n[[products]]\nname = \"Nail\"\nsku = 284758393\n\n[[products.sizes]]\ninch = 1\n\n[[products.sizes]]\ninch = 2\n\n[[products]] # trailing on a later header\nname = \"Saw\"\n\n# An empty element is legal and stays empty.\n[[products]]\n",
+ "base_source": "# Array-of-tables headers. Distinct from an array of inline tables.\n\n[[products]]\nname = \"Hammer\"\nsku = 738594937\ncolors = [\"red\", \"green\", \"blue\", \"yellow\", \"orange\"]\n\n[products.extra]\nwarranty_years = 2\n\n[[products]]\nname = \"Nail\"\nsku = 284758393\n\n[[products.sizes]]\ninch = 1\n\n[[products.sizes]]\ninch = 2\n\n[[products]] # trailing on a later header\nname = \"Saw\"\n\n# An empty element is legal and stays empty.\n[[products]]\n",
+ "edit": {"kind": "delete", "label": "delete 5B", "start": 3, "old_end": 8, "new_end": 3, "removed": "rray-", "inserted": ""},
+ "problems": {"error": 0, "missing": 0},
+ "grammar": "tree-sitter-toml==0.7.0",
+ "seed": 0,
+ "root":
+ {"type": "document", "start": 0, "end": 417, "children": [
+  {"type": "comment", "start": 0, "end": 62, "text": "# Aof-tables headers. Distinct from an array of inline tables."},
+  {"type": "table_array_element", "start": 64, "end": 164, "children": [
+   {"type": "[[", "start": 64, "end": 66, "text": "[["},
+   {"type": "bare_key", "start": 66, "end": 74, "text": "products"},
+   {"type": "]]", "start": 74, "end": 76, "text": "]]"},
+   {"type": "pair", "start": 77, "end": 92, "children": [
+    {"type": "bare_key", "start": 77, "end": 81, "text": "name"},
+    {"type": "=", "start": 82, "end": 83, "text": "="},
+    {"type": "string", "start": 84, "end": 92, "children": [
+     {"type": "\"", "start": 84, "end": 85, "text": "\""},
+     {"type": "\"", "start": 91, "end": 92, "text": "\""}
+    ]}
+   ]},
+   {"type": "pair", "start": 93, "end": 108, "children": [
+    {"type": "bare_key", "start": 93, "end": 96, "text": "sku"},
+    {"type": "=", "start": 97, "end": 98, "text": "="},
+    {"type": "integer", "start": 99, "end": 108, "text": "738594937"}
+   ]},
+   {"type": "pair", "start": 109, "end": 162, "children": [
+    {"type": "bare_key", "start": 109, "end": 115, "text": "colors"},
+    {"type": "=", "start": 116, "end": 117, "text": "="},
+    {"type": "array", "start": 118, "end": 162, "children": [
+     {"type": "[", "start": 118, "end": 119, "text": "["},
+     {"type": "string", "start": 119, "end": 124, "children": [
+      {"type": "\"", "start": 119, "end": 120, "text": "\""},
+      {"type": "\"", "start": 123, "end": 124, "text": "\""}
+     ]},
+     {"type": ",", "start": 124, "end": 125, "text": ","},
+     {"type": "string", "start": 126, "end": 133, "children": [
+      {"type": "\"", "start": 126, "end": 127, "text": "\""},
+      {"type": "\"", "start": 132, "end": 133, "text": "\""}
+     ]},
+     {"type": ",", "start": 133, "end": 134, "text": ","},
+     {"type": "string", "start": 135, "end": 141, "children": [
+      {"type": "\"", "start": 135, "end": 136, "text": "\""},
+      {"type": "\"", "start": 140, "end": 141, "text": "\""}
+     ]},
+     {"type": ",", "start": 141, "end": 142, "text": ","},
+     {"type": "string", "start": 143, "end": 151, "children": [
+      {"type": "\"", "start": 143, "end": 144, "text": "\""},
+      {"type": "\"", "start": 150, "end": 151, "text": "\""}
+     ]},
+     {"type": ",", "start": 151, "end": 152, "text": ","},
+     {"type": "string", "start": 153, "end": 161, "children": [
+      {"type": "\"", "start": 153, "end": 154, "text": "\""},
+      {"type": "\"", "start": 160, "end": 161, "text": "\""}
+     ]},
+     {"type": "]", "start": 161, "end": 162, "text": "]"}
+    ]}
+   ]}
+  ]},
+  {"type": "table", "start": 164, "end": 201, "children": [
+   {"type": "[", "start": 164, "end": 165, "text": "["},
+   {"type": "dotted_key", "start": 165, "end": 179, "children": [
+    {"type": "bare_key", "start": 165, "end": 173, "text": "products"},
+    {"type": ".", "start": 173, "end": 174, "text": "."},
+    {"type": "bare_key", "start": 174, "end": 179, "text": "extra"}
+   ]},
+   {"type": "]", "start": 179, "end": 180, "text": "]"},
+   {"type": "pair", "start": 181, "end": 199, "children": [
+    {"type": "bare_key", "start": 181, "end": 195, "text": "warranty_years"},
+    {"type": "=", "start": 196, "end": 197, "text": "="},
+    {"type": "integer", "start": 198, "end": 199, "text": "2"}
+   ]}
+  ]},
+  {"type": "table_array_element", "start": 201, "end": 245, "children": [
+   {"type": "[[", "start": 201, "end": 203, "text": "[["},
+   {"type": "bare_key", "start": 203, "end": 211, "text": "products"},
+   {"type": "]]", "start": 211, "end": 213, "text": "]]"},
+   {"type": "pair", "start": 214, "end": 227, "children": [
+    {"type": "bare_key", "start": 214, "end": 218, "text": "name"},
+    {"type": "=", "start": 219, "end": 220, "text": "="},
+    {"type": "string", "start": 221, "end": 227, "children": [
+     {"type": "\"", "start": 221, "end": 222, "text": "\""},
+     {"type": "\"", "start": 226, "end": 227, "text": "\""}
+    ]}
+   ]},
+   {"type": "pair", "start": 228, "end": 243, "children": [
+    {"type": "bare_key", "start": 228, "end": 231, "text": "sku"},
+    {"type": "=", "start": 232, "end": 233, "text": "="},
+    {"type": "integer", "start": 234, "end": 243, "text": "284758393"}
+   ]}
+  ]},
+  {"type": "table_array_element", "start": 245, "end": 274, "children": [
+   {"type": "[[", "start": 245, "end": 247, "text": "[["},
+   {"type": "dotted_key", "start": 247, "end": 261, "children": [
+    {"type": "bare_key", "start": 247, "end": 255, "text": "products"},
+    {"type": ".", "start": 255, "end": 256, "text": "."},
+    {"type": "bare_key", "start": 256, "end": 261, "text": "sizes"}
+   ]},
+   {"type": "]]", "start": 261, "end": 263, "text": "]]"},
+   {"type": "pair", "start": 264, "end": 272, "children": [
+    {"type": "bare_key", "start": 264, "end": 268, "text": "inch"},
+    {"type": "=", "start": 269, "end": 270, "text": "="},
+    {"type": "integer", "start": 271, "end": 272, "text": "1"}
+   ]}
+  ]},
+  {"type": "table_array_element", "start": 274, "end": 303, "children": [
+   {"type": "[[", "start": 274, "end": 276, "text": "[["},
+   {"type": "dotted_key", "start": 276, "end": 290, "children": [
+    {"type": "bare_key", "start": 276, "end": 284, "text": "products"},
+    {"type": ".", "start": 284, "end": 285, "text": "."},
+    {"type": "bare_key", "start": 285, "end": 290, "text": "sizes"}
+   ]},
+   {"type": "]]", "start": 290, "end": 292, "text": "]]"},
+   {"type": "pair", "start": 293, "end": 301, "children": [
+    {"type": "bare_key", "start": 293, "end": 297, "text": "inch"},
+    {"type": "=", "start": 298, "end": 299, "text": "="},
+    {"type": "integer", "start": 300, "end": 301, "text": "2"}
+   ]}
+  ]},
+  {"type": "table_array_element", "start": 303, "end": 404, "children": [
+   {"type": "[[", "start": 303, "end": 305, "text": "[["},
+   {"type": "bare_key", "start": 305, "end": 313, "text": "products"},
+   {"type": "]]", "start": 313, "end": 315, "text": "]]"},
+   {"type": "comment", "start": 316, "end": 344, "text": "# trailing on a later header"},
+   {"type": "pair", "start": 345, "end": 357, "children": [
+    {"type": "bare_key", "start": 345, "end": 349, "text": "name"},
+    {"type": "=", "start": 350, "end": 351, "text": "="},
+    {"type": "string", "start": 352, "end": 357, "children": [
+     {"type": "\"", "start": 352, "end": 353, "text": "\""},
+     {"type": "\"", "start": 356, "end": 357, "text": "\""}
+    ]}
+   ]},
+   {"type": "comment", "start": 359, "end": 403, "text": "# An empty element is legal and stays empty."}
+  ]},
+  {"type": "table_array_element", "start": 404, "end": 417, "children": [
+   {"type": "[[", "start": 404, "end": 406, "text": "[["},
+   {"type": "bare_key", "start": 406, "end": 414, "text": "products"},
+   {"type": "]]", "start": 414, "end": 416, "text": "]]"}
+  ]}
+ ]}
+}

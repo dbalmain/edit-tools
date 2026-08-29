@@ -1,0 +1,140 @@
+{
+ "language": "yaml",
+ "source_file": "corpus/src/yaml/blank_lines.yaml",
+ "source": "# Blines are the only grouping YAML has between siblings. prettier\n# caps a run at one and leaves zero alone.\n\npacked: 1\nalso_packed: 2\n\n# one blank above\none_blank: 3\n\n\n# two blanks above -- prettier will leave one\ntwo_blanks: 4\n\n\n\n# three blanks above -- also one\nthree_blanks: 5\n\nnested:\n  a: 1\n\n  b: 2\n\n\n  c: 3\n",
+ "base_source": "# Blank lines are the only grouping YAML has between siblings. prettier\n# caps a run at one and leaves zero alone.\n\npacked: 1\nalso_packed: 2\n\n# one blank above\none_blank: 3\n\n\n# two blanks above -- prettier will leave one\ntwo_blanks: 4\n\n\n\n# three blanks above -- also one\nthree_blanks: 5\n\nnested:\n  a: 1\n\n  b: 2\n\n\n  c: 3\n",
+ "edit": {"kind": "delete", "label": "delete 5B", "start": 3, "old_end": 8, "new_end": 3, "removed": "lank ", "inserted": ""},
+ "problems": {"error": 0, "missing": 0},
+ "grammar": "tree-sitter-yaml==0.7.2",
+ "seed": 0,
+ "root":
+ {"type": "stream", "start": 0, "end": 315, "children": [
+  {"type": "comment", "start": 0, "end": 66, "text": "# Blines are the only grouping YAML has between siblings. prettier"},
+  {"type": "comment", "start": 67, "end": 109, "text": "# caps a run at one and leaves zero alone."},
+  {"type": "document", "start": 111, "end": 315, "children": [
+   {"type": "block_node", "start": 111, "end": 315, "children": [
+    {"type": "block_mapping", "start": 111, "end": 315, "children": [
+     {"type": "block_mapping_pair", "start": 111, "end": 120, "children": [
+      {"type": "flow_node", "start": 111, "end": 117, "field": "key", "children": [
+       {"type": "plain_scalar", "start": 111, "end": 117, "children": [
+        {"type": "string_scalar", "start": 111, "end": 117, "text": "packed"}
+       ]}
+      ]},
+      {"type": ":", "start": 117, "end": 118, "text": ":"},
+      {"type": "flow_node", "start": 119, "end": 120, "field": "value", "children": [
+       {"type": "plain_scalar", "start": 119, "end": 120, "children": [
+        {"type": "integer_scalar", "start": 119, "end": 120, "text": "1"}
+       ]}
+      ]}
+     ]},
+     {"type": "block_mapping_pair", "start": 121, "end": 135, "children": [
+      {"type": "flow_node", "start": 121, "end": 132, "field": "key", "children": [
+       {"type": "plain_scalar", "start": 121, "end": 132, "children": [
+        {"type": "string_scalar", "start": 121, "end": 132, "text": "also_packed"}
+       ]}
+      ]},
+      {"type": ":", "start": 132, "end": 133, "text": ":"},
+      {"type": "flow_node", "start": 134, "end": 135, "field": "value", "children": [
+       {"type": "plain_scalar", "start": 134, "end": 135, "children": [
+        {"type": "integer_scalar", "start": 134, "end": 135, "text": "2"}
+       ]}
+      ]}
+     ]},
+     {"type": "comment", "start": 137, "end": 154, "text": "# one blank above"},
+     {"type": "block_mapping_pair", "start": 155, "end": 167, "children": [
+      {"type": "flow_node", "start": 155, "end": 164, "field": "key", "children": [
+       {"type": "plain_scalar", "start": 155, "end": 164, "children": [
+        {"type": "string_scalar", "start": 155, "end": 164, "text": "one_blank"}
+       ]}
+      ]},
+      {"type": ":", "start": 164, "end": 165, "text": ":"},
+      {"type": "flow_node", "start": 166, "end": 167, "field": "value", "children": [
+       {"type": "plain_scalar", "start": 166, "end": 167, "children": [
+        {"type": "integer_scalar", "start": 166, "end": 167, "text": "3"}
+       ]}
+      ]}
+     ]},
+     {"type": "comment", "start": 170, "end": 215, "text": "# two blanks above -- prettier will leave one"},
+     {"type": "block_mapping_pair", "start": 216, "end": 229, "children": [
+      {"type": "flow_node", "start": 216, "end": 226, "field": "key", "children": [
+       {"type": "plain_scalar", "start": 216, "end": 226, "children": [
+        {"type": "string_scalar", "start": 216, "end": 226, "text": "two_blanks"}
+       ]}
+      ]},
+      {"type": ":", "start": 226, "end": 227, "text": ":"},
+      {"type": "flow_node", "start": 228, "end": 229, "field": "value", "children": [
+       {"type": "plain_scalar", "start": 228, "end": 229, "children": [
+        {"type": "integer_scalar", "start": 228, "end": 229, "text": "4"}
+       ]}
+      ]}
+     ]},
+     {"type": "comment", "start": 233, "end": 265, "text": "# three blanks above -- also one"},
+     {"type": "block_mapping_pair", "start": 266, "end": 281, "children": [
+      {"type": "flow_node", "start": 266, "end": 278, "field": "key", "children": [
+       {"type": "plain_scalar", "start": 266, "end": 278, "children": [
+        {"type": "string_scalar", "start": 266, "end": 278, "text": "three_blanks"}
+       ]}
+      ]},
+      {"type": ":", "start": 278, "end": 279, "text": ":"},
+      {"type": "flow_node", "start": 280, "end": 281, "field": "value", "children": [
+       {"type": "plain_scalar", "start": 280, "end": 281, "children": [
+        {"type": "integer_scalar", "start": 280, "end": 281, "text": "5"}
+       ]}
+      ]}
+     ]},
+     {"type": "block_mapping_pair", "start": 283, "end": 315, "children": [
+      {"type": "flow_node", "start": 283, "end": 289, "field": "key", "children": [
+       {"type": "plain_scalar", "start": 283, "end": 289, "children": [
+        {"type": "string_scalar", "start": 283, "end": 289, "text": "nested"}
+       ]}
+      ]},
+      {"type": ":", "start": 289, "end": 290, "text": ":"},
+      {"type": "block_node", "start": 293, "end": 315, "field": "value", "children": [
+       {"type": "block_mapping", "start": 293, "end": 315, "children": [
+        {"type": "block_mapping_pair", "start": 293, "end": 297, "children": [
+         {"type": "flow_node", "start": 293, "end": 294, "field": "key", "children": [
+          {"type": "plain_scalar", "start": 293, "end": 294, "children": [
+           {"type": "string_scalar", "start": 293, "end": 294, "text": "a"}
+          ]}
+         ]},
+         {"type": ":", "start": 294, "end": 295, "text": ":"},
+         {"type": "flow_node", "start": 296, "end": 297, "field": "value", "children": [
+          {"type": "plain_scalar", "start": 296, "end": 297, "children": [
+           {"type": "integer_scalar", "start": 296, "end": 297, "text": "1"}
+          ]}
+         ]}
+        ]},
+        {"type": "block_mapping_pair", "start": 301, "end": 305, "children": [
+         {"type": "flow_node", "start": 301, "end": 302, "field": "key", "children": [
+          {"type": "plain_scalar", "start": 301, "end": 302, "children": [
+           {"type": "string_scalar", "start": 301, "end": 302, "text": "b"}
+          ]}
+         ]},
+         {"type": ":", "start": 302, "end": 303, "text": ":"},
+         {"type": "flow_node", "start": 304, "end": 305, "field": "value", "children": [
+          {"type": "plain_scalar", "start": 304, "end": 305, "children": [
+           {"type": "integer_scalar", "start": 304, "end": 305, "text": "2"}
+          ]}
+         ]}
+        ]},
+        {"type": "block_mapping_pair", "start": 310, "end": 314, "children": [
+         {"type": "flow_node", "start": 310, "end": 311, "field": "key", "children": [
+          {"type": "plain_scalar", "start": 310, "end": 311, "children": [
+           {"type": "string_scalar", "start": 310, "end": 311, "text": "c"}
+          ]}
+         ]},
+         {"type": ":", "start": 311, "end": 312, "text": ":"},
+         {"type": "flow_node", "start": 313, "end": 314, "field": "value", "children": [
+          {"type": "plain_scalar", "start": 313, "end": 314, "children": [
+           {"type": "integer_scalar", "start": 313, "end": 314, "text": "3"}
+          ]}
+         ]}
+        ]}
+       ]}
+      ]}
+     ]}
+    ]}
+   ]}
+  ]}
+ ]}
+}

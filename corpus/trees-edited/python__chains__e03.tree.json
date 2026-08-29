@@ -1,0 +1,349 @@
+{
+ "language": "python",
+ "source_file": "corpus/src/python/chains.py",
+ "source": "short .attr\n\nattribute_chain = configuration.database.connection.settings.pool.maximum_size_limit\n\nmethod_chain = query.filter(active=True).order_by(\"name\").limit(100).offset(20).all()\n\nmixed_chain = client.session.request(\"GET\", url).json()[\"data\"][\"items\"][0][\"name\"]\n\ncall_then_attr = build_client(host, port).connection.metadata.version_identifier\n\nsubscript_chain = registry[\"handlers\"][\"default\"][\"callback\"](event, context, opts)\n\nslices = sequence[1:10]\n\nlong_slice = collection_of_items[start_index:end_index:step_size_between_elements]\n\nopen_slice = buffer[:]\n\nnegative = values[-1]\n\nnested_subscript = matrix[row_index][column_index][depth_index][final_axis_index]\n",
+ "base_source": "short = obj.attr\n\nattribute_chain = configuration.database.connection.settings.pool.maximum_size_limit\n\nmethod_chain = query.filter(active=True).order_by(\"name\").limit(100).offset(20).all()\n\nmixed_chain = client.session.request(\"GET\", url).json()[\"data\"][\"items\"][0][\"name\"]\n\ncall_then_attr = build_client(host, port).connection.metadata.version_identifier\n\nsubscript_chain = registry[\"handlers\"][\"default\"][\"callback\"](event, context, opts)\n\nslices = sequence[1:10]\n\nlong_slice = collection_of_items[start_index:end_index:step_size_between_elements]\n\nopen_slice = buffer[:]\n\nnegative = values[-1]\n\nnested_subscript = matrix[row_index][column_index][depth_index][final_axis_index]\n",
+ "edit": {"kind": "delete", "label": "delete 5B", "start": 6, "old_end": 11, "new_end": 6, "removed": "= obj", "inserted": ""},
+ "problems": {"error": 0, "missing": 0},
+ "grammar": "tree-sitter-python==0.25.0",
+ "seed": 0,
+ "root":
+ {"type": "module", "start": 0, "end": 676, "children": [
+  {"type": "expression_statement", "start": 0, "end": 11, "children": [
+   {"type": "attribute", "start": 0, "end": 11, "children": [
+    {"type": "identifier", "start": 0, "end": 5, "field": "object", "text": "short"},
+    {"type": ".", "start": 6, "end": 7, "text": "."},
+    {"type": "identifier", "start": 7, "end": 11, "field": "attribute", "text": "attr"}
+   ]}
+  ]},
+  {"type": "expression_statement", "start": 13, "end": 97, "children": [
+   {"type": "assignment", "start": 13, "end": 97, "children": [
+    {"type": "identifier", "start": 13, "end": 28, "field": "left", "text": "attribute_chain"},
+    {"type": "=", "start": 29, "end": 30, "text": "="},
+    {"type": "attribute", "start": 31, "end": 97, "field": "right", "children": [
+     {"type": "attribute", "start": 31, "end": 78, "field": "object", "children": [
+      {"type": "attribute", "start": 31, "end": 73, "field": "object", "children": [
+       {"type": "attribute", "start": 31, "end": 64, "field": "object", "children": [
+        {"type": "attribute", "start": 31, "end": 53, "field": "object", "children": [
+         {"type": "identifier", "start": 31, "end": 44, "field": "object", "text": "configuration"},
+         {"type": ".", "start": 44, "end": 45, "text": "."},
+         {"type": "identifier", "start": 45, "end": 53, "field": "attribute", "text": "database"}
+        ]},
+        {"type": ".", "start": 53, "end": 54, "text": "."},
+        {"type": "identifier", "start": 54, "end": 64, "field": "attribute", "text": "connection"}
+       ]},
+       {"type": ".", "start": 64, "end": 65, "text": "."},
+       {"type": "identifier", "start": 65, "end": 73, "field": "attribute", "text": "settings"}
+      ]},
+      {"type": ".", "start": 73, "end": 74, "text": "."},
+      {"type": "identifier", "start": 74, "end": 78, "field": "attribute", "text": "pool"}
+     ]},
+     {"type": ".", "start": 78, "end": 79, "text": "."},
+     {"type": "identifier", "start": 79, "end": 97, "field": "attribute", "text": "maximum_size_limit"}
+    ]}
+   ]}
+  ]},
+  {"type": "expression_statement", "start": 99, "end": 184, "children": [
+   {"type": "assignment", "start": 99, "end": 184, "children": [
+    {"type": "identifier", "start": 99, "end": 111, "field": "left", "text": "method_chain"},
+    {"type": "=", "start": 112, "end": 113, "text": "="},
+    {"type": "call", "start": 114, "end": 184, "field": "right", "children": [
+     {"type": "attribute", "start": 114, "end": 182, "field": "function", "children": [
+      {"type": "call", "start": 114, "end": 178, "field": "object", "children": [
+       {"type": "attribute", "start": 114, "end": 174, "field": "function", "children": [
+        {"type": "call", "start": 114, "end": 167, "field": "object", "children": [
+         {"type": "attribute", "start": 114, "end": 162, "field": "function", "children": [
+          {"type": "call", "start": 114, "end": 156, "field": "object", "children": [
+           {"type": "attribute", "start": 114, "end": 148, "field": "function", "children": [
+            {"type": "call", "start": 114, "end": 139, "field": "object", "children": [
+             {"type": "attribute", "start": 114, "end": 126, "field": "function", "children": [
+              {"type": "identifier", "start": 114, "end": 119, "field": "object", "text": "query"},
+              {"type": ".", "start": 119, "end": 120, "text": "."},
+              {"type": "identifier", "start": 120, "end": 126, "field": "attribute", "text": "filter"}
+             ]},
+             {"type": "argument_list", "start": 126, "end": 139, "field": "arguments", "children": [
+              {"type": "(", "start": 126, "end": 127, "text": "("},
+              {"type": "keyword_argument", "start": 127, "end": 138, "children": [
+               {"type": "identifier", "start": 127, "end": 133, "field": "name", "text": "active"},
+               {"type": "=", "start": 133, "end": 134, "text": "="},
+               {"type": "true", "start": 134, "end": 138, "field": "value", "text": "True"}
+              ]},
+              {"type": ")", "start": 138, "end": 139, "text": ")"}
+             ]}
+            ]},
+            {"type": ".", "start": 139, "end": 140, "text": "."},
+            {"type": "identifier", "start": 140, "end": 148, "field": "attribute", "text": "order_by"}
+           ]},
+           {"type": "argument_list", "start": 148, "end": 156, "field": "arguments", "children": [
+            {"type": "(", "start": 148, "end": 149, "text": "("},
+            {"type": "string", "start": 149, "end": 155, "children": [
+             {"type": "string_start", "start": 149, "end": 150, "text": "\""},
+             {"type": "string_content", "start": 150, "end": 154, "text": "name"},
+             {"type": "string_end", "start": 154, "end": 155, "text": "\""}
+            ]},
+            {"type": ")", "start": 155, "end": 156, "text": ")"}
+           ]}
+          ]},
+          {"type": ".", "start": 156, "end": 157, "text": "."},
+          {"type": "identifier", "start": 157, "end": 162, "field": "attribute", "text": "limit"}
+         ]},
+         {"type": "argument_list", "start": 162, "end": 167, "field": "arguments", "children": [
+          {"type": "(", "start": 162, "end": 163, "text": "("},
+          {"type": "integer", "start": 163, "end": 166, "text": "100"},
+          {"type": ")", "start": 166, "end": 167, "text": ")"}
+         ]}
+        ]},
+        {"type": ".", "start": 167, "end": 168, "text": "."},
+        {"type": "identifier", "start": 168, "end": 174, "field": "attribute", "text": "offset"}
+       ]},
+       {"type": "argument_list", "start": 174, "end": 178, "field": "arguments", "children": [
+        {"type": "(", "start": 174, "end": 175, "text": "("},
+        {"type": "integer", "start": 175, "end": 177, "text": "20"},
+        {"type": ")", "start": 177, "end": 178, "text": ")"}
+       ]}
+      ]},
+      {"type": ".", "start": 178, "end": 179, "text": "."},
+      {"type": "identifier", "start": 179, "end": 182, "field": "attribute", "text": "all"}
+     ]},
+     {"type": "argument_list", "start": 182, "end": 184, "field": "arguments", "children": [
+      {"type": "(", "start": 182, "end": 183, "text": "("},
+      {"type": ")", "start": 183, "end": 184, "text": ")"}
+     ]}
+    ]}
+   ]}
+  ]},
+  {"type": "expression_statement", "start": 186, "end": 269, "children": [
+   {"type": "assignment", "start": 186, "end": 269, "children": [
+    {"type": "identifier", "start": 186, "end": 197, "field": "left", "text": "mixed_chain"},
+    {"type": "=", "start": 198, "end": 199, "text": "="},
+    {"type": "subscript", "start": 200, "end": 269, "field": "right", "children": [
+     {"type": "subscript", "start": 200, "end": 261, "field": "value", "children": [
+      {"type": "subscript", "start": 200, "end": 258, "field": "value", "children": [
+       {"type": "subscript", "start": 200, "end": 249, "field": "value", "children": [
+        {"type": "call", "start": 200, "end": 241, "field": "value", "children": [
+         {"type": "attribute", "start": 200, "end": 239, "field": "function", "children": [
+          {"type": "call", "start": 200, "end": 234, "field": "object", "children": [
+           {"type": "attribute", "start": 200, "end": 222, "field": "function", "children": [
+            {"type": "attribute", "start": 200, "end": 214, "field": "object", "children": [
+             {"type": "identifier", "start": 200, "end": 206, "field": "object", "text": "client"},
+             {"type": ".", "start": 206, "end": 207, "text": "."},
+             {"type": "identifier", "start": 207, "end": 214, "field": "attribute", "text": "session"}
+            ]},
+            {"type": ".", "start": 214, "end": 215, "text": "."},
+            {"type": "identifier", "start": 215, "end": 222, "field": "attribute", "text": "request"}
+           ]},
+           {"type": "argument_list", "start": 222, "end": 234, "field": "arguments", "children": [
+            {"type": "(", "start": 222, "end": 223, "text": "("},
+            {"type": "string", "start": 223, "end": 228, "children": [
+             {"type": "string_start", "start": 223, "end": 224, "text": "\""},
+             {"type": "string_content", "start": 224, "end": 227, "text": "GET"},
+             {"type": "string_end", "start": 227, "end": 228, "text": "\""}
+            ]},
+            {"type": ",", "start": 228, "end": 229, "text": ","},
+            {"type": "identifier", "start": 230, "end": 233, "text": "url"},
+            {"type": ")", "start": 233, "end": 234, "text": ")"}
+           ]}
+          ]},
+          {"type": ".", "start": 234, "end": 235, "text": "."},
+          {"type": "identifier", "start": 235, "end": 239, "field": "attribute", "text": "json"}
+         ]},
+         {"type": "argument_list", "start": 239, "end": 241, "field": "arguments", "children": [
+          {"type": "(", "start": 239, "end": 240, "text": "("},
+          {"type": ")", "start": 240, "end": 241, "text": ")"}
+         ]}
+        ]},
+        {"type": "[", "start": 241, "end": 242, "text": "["},
+        {"type": "string", "start": 242, "end": 248, "field": "subscript", "children": [
+         {"type": "string_start", "start": 242, "end": 243, "text": "\""},
+         {"type": "string_content", "start": 243, "end": 247, "text": "data"},
+         {"type": "string_end", "start": 247, "end": 248, "text": "\""}
+        ]},
+        {"type": "]", "start": 248, "end": 249, "text": "]"}
+       ]},
+       {"type": "[", "start": 249, "end": 250, "text": "["},
+       {"type": "string", "start": 250, "end": 257, "field": "subscript", "children": [
+        {"type": "string_start", "start": 250, "end": 251, "text": "\""},
+        {"type": "string_content", "start": 251, "end": 256, "text": "items"},
+        {"type": "string_end", "start": 256, "end": 257, "text": "\""}
+       ]},
+       {"type": "]", "start": 257, "end": 258, "text": "]"}
+      ]},
+      {"type": "[", "start": 258, "end": 259, "text": "["},
+      {"type": "integer", "start": 259, "end": 260, "field": "subscript", "text": "0"},
+      {"type": "]", "start": 260, "end": 261, "text": "]"}
+     ]},
+     {"type": "[", "start": 261, "end": 262, "text": "["},
+     {"type": "string", "start": 262, "end": 268, "field": "subscript", "children": [
+      {"type": "string_start", "start": 262, "end": 263, "text": "\""},
+      {"type": "string_content", "start": 263, "end": 267, "text": "name"},
+      {"type": "string_end", "start": 267, "end": 268, "text": "\""}
+     ]},
+     {"type": "]", "start": 268, "end": 269, "text": "]"}
+    ]}
+   ]}
+  ]},
+  {"type": "expression_statement", "start": 271, "end": 351, "children": [
+   {"type": "assignment", "start": 271, "end": 351, "children": [
+    {"type": "identifier", "start": 271, "end": 285, "field": "left", "text": "call_then_attr"},
+    {"type": "=", "start": 286, "end": 287, "text": "="},
+    {"type": "attribute", "start": 288, "end": 351, "field": "right", "children": [
+     {"type": "attribute", "start": 288, "end": 332, "field": "object", "children": [
+      {"type": "attribute", "start": 288, "end": 323, "field": "object", "children": [
+       {"type": "call", "start": 288, "end": 312, "field": "object", "children": [
+        {"type": "identifier", "start": 288, "end": 300, "field": "function", "text": "build_client"},
+        {"type": "argument_list", "start": 300, "end": 312, "field": "arguments", "children": [
+         {"type": "(", "start": 300, "end": 301, "text": "("},
+         {"type": "identifier", "start": 301, "end": 305, "text": "host"},
+         {"type": ",", "start": 305, "end": 306, "text": ","},
+         {"type": "identifier", "start": 307, "end": 311, "text": "port"},
+         {"type": ")", "start": 311, "end": 312, "text": ")"}
+        ]}
+       ]},
+       {"type": ".", "start": 312, "end": 313, "text": "."},
+       {"type": "identifier", "start": 313, "end": 323, "field": "attribute", "text": "connection"}
+      ]},
+      {"type": ".", "start": 323, "end": 324, "text": "."},
+      {"type": "identifier", "start": 324, "end": 332, "field": "attribute", "text": "metadata"}
+     ]},
+     {"type": ".", "start": 332, "end": 333, "text": "."},
+     {"type": "identifier", "start": 333, "end": 351, "field": "attribute", "text": "version_identifier"}
+    ]}
+   ]}
+  ]},
+  {"type": "expression_statement", "start": 353, "end": 436, "children": [
+   {"type": "assignment", "start": 353, "end": 436, "children": [
+    {"type": "identifier", "start": 353, "end": 368, "field": "left", "text": "subscript_chain"},
+    {"type": "=", "start": 369, "end": 370, "text": "="},
+    {"type": "call", "start": 371, "end": 436, "field": "right", "children": [
+     {"type": "subscript", "start": 371, "end": 414, "field": "function", "children": [
+      {"type": "subscript", "start": 371, "end": 402, "field": "value", "children": [
+       {"type": "subscript", "start": 371, "end": 391, "field": "value", "children": [
+        {"type": "identifier", "start": 371, "end": 379, "field": "value", "text": "registry"},
+        {"type": "[", "start": 379, "end": 380, "text": "["},
+        {"type": "string", "start": 380, "end": 390, "field": "subscript", "children": [
+         {"type": "string_start", "start": 380, "end": 381, "text": "\""},
+         {"type": "string_content", "start": 381, "end": 389, "text": "handlers"},
+         {"type": "string_end", "start": 389, "end": 390, "text": "\""}
+        ]},
+        {"type": "]", "start": 390, "end": 391, "text": "]"}
+       ]},
+       {"type": "[", "start": 391, "end": 392, "text": "["},
+       {"type": "string", "start": 392, "end": 401, "field": "subscript", "children": [
+        {"type": "string_start", "start": 392, "end": 393, "text": "\""},
+        {"type": "string_content", "start": 393, "end": 400, "text": "default"},
+        {"type": "string_end", "start": 400, "end": 401, "text": "\""}
+       ]},
+       {"type": "]", "start": 401, "end": 402, "text": "]"}
+      ]},
+      {"type": "[", "start": 402, "end": 403, "text": "["},
+      {"type": "string", "start": 403, "end": 413, "field": "subscript", "children": [
+       {"type": "string_start", "start": 403, "end": 404, "text": "\""},
+       {"type": "string_content", "start": 404, "end": 412, "text": "callback"},
+       {"type": "string_end", "start": 412, "end": 413, "text": "\""}
+      ]},
+      {"type": "]", "start": 413, "end": 414, "text": "]"}
+     ]},
+     {"type": "argument_list", "start": 414, "end": 436, "field": "arguments", "children": [
+      {"type": "(", "start": 414, "end": 415, "text": "("},
+      {"type": "identifier", "start": 415, "end": 420, "text": "event"},
+      {"type": ",", "start": 420, "end": 421, "text": ","},
+      {"type": "identifier", "start": 422, "end": 429, "text": "context"},
+      {"type": ",", "start": 429, "end": 430, "text": ","},
+      {"type": "identifier", "start": 431, "end": 435, "text": "opts"},
+      {"type": ")", "start": 435, "end": 436, "text": ")"}
+     ]}
+    ]}
+   ]}
+  ]},
+  {"type": "expression_statement", "start": 438, "end": 461, "children": [
+   {"type": "assignment", "start": 438, "end": 461, "children": [
+    {"type": "identifier", "start": 438, "end": 444, "field": "left", "text": "slices"},
+    {"type": "=", "start": 445, "end": 446, "text": "="},
+    {"type": "subscript", "start": 447, "end": 461, "field": "right", "children": [
+     {"type": "identifier", "start": 447, "end": 455, "field": "value", "text": "sequence"},
+     {"type": "[", "start": 455, "end": 456, "text": "["},
+     {"type": "slice", "start": 456, "end": 460, "field": "subscript", "children": [
+      {"type": "integer", "start": 456, "end": 457, "text": "1"},
+      {"type": ":", "start": 457, "end": 458, "text": ":"},
+      {"type": "integer", "start": 458, "end": 460, "text": "10"}
+     ]},
+     {"type": "]", "start": 460, "end": 461, "text": "]"}
+    ]}
+   ]}
+  ]},
+  {"type": "expression_statement", "start": 463, "end": 545, "children": [
+   {"type": "assignment", "start": 463, "end": 545, "children": [
+    {"type": "identifier", "start": 463, "end": 473, "field": "left", "text": "long_slice"},
+    {"type": "=", "start": 474, "end": 475, "text": "="},
+    {"type": "subscript", "start": 476, "end": 545, "field": "right", "children": [
+     {"type": "identifier", "start": 476, "end": 495, "field": "value", "text": "collection_of_items"},
+     {"type": "[", "start": 495, "end": 496, "text": "["},
+     {"type": "slice", "start": 496, "end": 544, "field": "subscript", "children": [
+      {"type": "identifier", "start": 496, "end": 507, "text": "start_index"},
+      {"type": ":", "start": 507, "end": 508, "text": ":"},
+      {"type": "identifier", "start": 508, "end": 517, "text": "end_index"},
+      {"type": ":", "start": 517, "end": 518, "text": ":"},
+      {"type": "identifier", "start": 518, "end": 544, "text": "step_size_between_elements"}
+     ]},
+     {"type": "]", "start": 544, "end": 545, "text": "]"}
+    ]}
+   ]}
+  ]},
+  {"type": "expression_statement", "start": 547, "end": 569, "children": [
+   {"type": "assignment", "start": 547, "end": 569, "children": [
+    {"type": "identifier", "start": 547, "end": 557, "field": "left", "text": "open_slice"},
+    {"type": "=", "start": 558, "end": 559, "text": "="},
+    {"type": "subscript", "start": 560, "end": 569, "field": "right", "children": [
+     {"type": "identifier", "start": 560, "end": 566, "field": "value", "text": "buffer"},
+     {"type": "[", "start": 566, "end": 567, "text": "["},
+     {"type": "slice", "start": 567, "end": 568, "field": "subscript", "children": [
+      {"type": ":", "start": 567, "end": 568, "text": ":"}
+     ]},
+     {"type": "]", "start": 568, "end": 569, "text": "]"}
+    ]}
+   ]}
+  ]},
+  {"type": "expression_statement", "start": 571, "end": 592, "children": [
+   {"type": "assignment", "start": 571, "end": 592, "children": [
+    {"type": "identifier", "start": 571, "end": 579, "field": "left", "text": "negative"},
+    {"type": "=", "start": 580, "end": 581, "text": "="},
+    {"type": "subscript", "start": 582, "end": 592, "field": "right", "children": [
+     {"type": "identifier", "start": 582, "end": 588, "field": "value", "text": "values"},
+     {"type": "[", "start": 588, "end": 589, "text": "["},
+     {"type": "unary_operator", "start": 589, "end": 591, "field": "subscript", "children": [
+      {"type": "-", "start": 589, "end": 590, "field": "operator", "text": "-"},
+      {"type": "integer", "start": 590, "end": 591, "field": "argument", "text": "1"}
+     ]},
+     {"type": "]", "start": 591, "end": 592, "text": "]"}
+    ]}
+   ]}
+  ]},
+  {"type": "expression_statement", "start": 594, "end": 675, "children": [
+   {"type": "assignment", "start": 594, "end": 675, "children": [
+    {"type": "identifier", "start": 594, "end": 610, "field": "left", "text": "nested_subscript"},
+    {"type": "=", "start": 611, "end": 612, "text": "="},
+    {"type": "subscript", "start": 613, "end": 675, "field": "right", "children": [
+     {"type": "subscript", "start": 613, "end": 657, "field": "value", "children": [
+      {"type": "subscript", "start": 613, "end": 644, "field": "value", "children": [
+       {"type": "subscript", "start": 613, "end": 630, "field": "value", "children": [
+        {"type": "identifier", "start": 613, "end": 619, "field": "value", "text": "matrix"},
+        {"type": "[", "start": 619, "end": 620, "text": "["},
+        {"type": "identifier", "start": 620, "end": 629, "field": "subscript", "text": "row_index"},
+        {"type": "]", "start": 629, "end": 630, "text": "]"}
+       ]},
+       {"type": "[", "start": 630, "end": 631, "text": "["},
+       {"type": "identifier", "start": 631, "end": 643, "field": "subscript", "text": "column_index"},
+       {"type": "]", "start": 643, "end": 644, "text": "]"}
+      ]},
+      {"type": "[", "start": 644, "end": 645, "text": "["},
+      {"type": "identifier", "start": 645, "end": 656, "field": "subscript", "text": "depth_index"},
+      {"type": "]", "start": 656, "end": 657, "text": "]"}
+     ]},
+     {"type": "[", "start": 657, "end": 658, "text": "["},
+     {"type": "identifier", "start": 658, "end": 674, "field": "subscript", "text": "final_axis_index"},
+     {"type": "]", "start": 674, "end": 675, "text": "]"}
+    ]}
+   ]}
+  ]}
+ ]}
+}

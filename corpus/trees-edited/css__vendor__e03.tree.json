@@ -1,0 +1,124 @@
+{
+ "language": "css",
+ "source_file": "corpus/src/css/vendor.css",
+ "source": "/* r-prefixed properties and functions. */\n\n.slide {\n  -webkit-transform: translateX(10px);\n  -moz-transform: translateX(10px);\n  -ms-transform: translateX(10px);\n  transform: translateX(10px);\n  /* prefixed functions wrap at 40 like the rest */\n  background: -webkit-linear-gradient(left, red, blue);\n  background: linear-gradient(to right, red, blue);\n}\n",
+ "base_source": "/* Vendor-prefixed properties and functions. */\n\n.slide {\n  -webkit-transform: translateX(10px);\n  -moz-transform: translateX(10px);\n  -ms-transform: translateX(10px);\n  transform: translateX(10px);\n  /* prefixed functions wrap at 40 like the rest */\n  background: -webkit-linear-gradient(left, red, blue);\n  background: linear-gradient(to right, red, blue);\n}\n",
+ "edit": {"kind": "delete", "label": "delete 5B", "start": 3, "old_end": 8, "new_end": 3, "removed": "Vendo", "inserted": ""},
+ "problems": {"error": 0, "missing": 0},
+ "grammar": "tree-sitter-css==0.25.0",
+ "seed": 0,
+ "root":
+ {"type": "stylesheet", "start": 0, "end": 356, "children": [
+  {"type": "comment", "start": 0, "end": 42, "text": "/* r-prefixed properties and functions. */"},
+  {"type": "rule_set", "start": 44, "end": 355, "children": [
+   {"type": "selectors", "start": 44, "end": 50, "children": [
+    {"type": "class_selector", "start": 44, "end": 50, "children": [
+     {"type": ".", "start": 44, "end": 45, "text": "."},
+     {"type": "class_name", "start": 45, "end": 50, "children": [
+      {"type": "identifier", "start": 45, "end": 50, "text": "slide"}
+     ]}
+    ]}
+   ]},
+   {"type": "block", "start": 51, "end": 355, "children": [
+    {"type": "{", "start": 51, "end": 52, "text": "{"},
+    {"type": "declaration", "start": 55, "end": 91, "children": [
+     {"type": "property_name", "start": 55, "end": 72, "text": "-webkit-transform"},
+     {"type": ":", "start": 72, "end": 73, "text": ":"},
+     {"type": "call_expression", "start": 74, "end": 90, "children": [
+      {"type": "function_name", "start": 74, "end": 84, "text": "translateX"},
+      {"type": "arguments", "start": 84, "end": 90, "children": [
+       {"type": "(", "start": 84, "end": 85, "text": "("},
+       {"type": "integer_value", "start": 85, "end": 89, "children": [
+        {"type": "unit", "start": 87, "end": 89, "text": "px"}
+       ]},
+       {"type": ")", "start": 89, "end": 90, "text": ")"}
+      ]}
+     ]},
+     {"type": ";", "start": 90, "end": 91, "text": ";"}
+    ]},
+    {"type": "declaration", "start": 94, "end": 127, "children": [
+     {"type": "property_name", "start": 94, "end": 108, "text": "-moz-transform"},
+     {"type": ":", "start": 108, "end": 109, "text": ":"},
+     {"type": "call_expression", "start": 110, "end": 126, "children": [
+      {"type": "function_name", "start": 110, "end": 120, "text": "translateX"},
+      {"type": "arguments", "start": 120, "end": 126, "children": [
+       {"type": "(", "start": 120, "end": 121, "text": "("},
+       {"type": "integer_value", "start": 121, "end": 125, "children": [
+        {"type": "unit", "start": 123, "end": 125, "text": "px"}
+       ]},
+       {"type": ")", "start": 125, "end": 126, "text": ")"}
+      ]}
+     ]},
+     {"type": ";", "start": 126, "end": 127, "text": ";"}
+    ]},
+    {"type": "declaration", "start": 130, "end": 162, "children": [
+     {"type": "property_name", "start": 130, "end": 143, "text": "-ms-transform"},
+     {"type": ":", "start": 143, "end": 144, "text": ":"},
+     {"type": "call_expression", "start": 145, "end": 161, "children": [
+      {"type": "function_name", "start": 145, "end": 155, "text": "translateX"},
+      {"type": "arguments", "start": 155, "end": 161, "children": [
+       {"type": "(", "start": 155, "end": 156, "text": "("},
+       {"type": "integer_value", "start": 156, "end": 160, "children": [
+        {"type": "unit", "start": 158, "end": 160, "text": "px"}
+       ]},
+       {"type": ")", "start": 160, "end": 161, "text": ")"}
+      ]}
+     ]},
+     {"type": ";", "start": 161, "end": 162, "text": ";"}
+    ]},
+    {"type": "declaration", "start": 165, "end": 193, "children": [
+     {"type": "property_name", "start": 165, "end": 174, "text": "transform"},
+     {"type": ":", "start": 174, "end": 175, "text": ":"},
+     {"type": "call_expression", "start": 176, "end": 192, "children": [
+      {"type": "function_name", "start": 176, "end": 186, "text": "translateX"},
+      {"type": "arguments", "start": 186, "end": 192, "children": [
+       {"type": "(", "start": 186, "end": 187, "text": "("},
+       {"type": "integer_value", "start": 187, "end": 191, "children": [
+        {"type": "unit", "start": 189, "end": 191, "text": "px"}
+       ]},
+       {"type": ")", "start": 191, "end": 192, "text": ")"}
+      ]}
+     ]},
+     {"type": ";", "start": 192, "end": 193, "text": ";"}
+    ]},
+    {"type": "comment", "start": 196, "end": 245, "text": "/* prefixed functions wrap at 40 like the rest */"},
+    {"type": "declaration", "start": 248, "end": 301, "children": [
+     {"type": "property_name", "start": 248, "end": 258, "text": "background"},
+     {"type": ":", "start": 258, "end": 259, "text": ":"},
+     {"type": "call_expression", "start": 260, "end": 300, "children": [
+      {"type": "function_name", "start": 260, "end": 283, "text": "-webkit-linear-gradient"},
+      {"type": "arguments", "start": 283, "end": 300, "children": [
+       {"type": "(", "start": 283, "end": 284, "text": "("},
+       {"type": "plain_value", "start": 284, "end": 288, "text": "left"},
+       {"type": ",", "start": 288, "end": 289, "text": ","},
+       {"type": "plain_value", "start": 290, "end": 293, "text": "red"},
+       {"type": ",", "start": 293, "end": 294, "text": ","},
+       {"type": "plain_value", "start": 295, "end": 299, "text": "blue"},
+       {"type": ")", "start": 299, "end": 300, "text": ")"}
+      ]}
+     ]},
+     {"type": ";", "start": 300, "end": 301, "text": ";"}
+    ]},
+    {"type": "declaration", "start": 304, "end": 353, "children": [
+     {"type": "property_name", "start": 304, "end": 314, "text": "background"},
+     {"type": ":", "start": 314, "end": 315, "text": ":"},
+     {"type": "call_expression", "start": 316, "end": 352, "children": [
+      {"type": "function_name", "start": 316, "end": 331, "text": "linear-gradient"},
+      {"type": "arguments", "start": 331, "end": 352, "children": [
+       {"type": "(", "start": 331, "end": 332, "text": "("},
+       {"type": "plain_value", "start": 332, "end": 334, "text": "to"},
+       {"type": "plain_value", "start": 335, "end": 340, "text": "right"},
+       {"type": ",", "start": 340, "end": 341, "text": ","},
+       {"type": "plain_value", "start": 342, "end": 345, "text": "red"},
+       {"type": ",", "start": 345, "end": 346, "text": ","},
+       {"type": "plain_value", "start": 347, "end": 351, "text": "blue"},
+       {"type": ")", "start": 351, "end": 352, "text": ")"}
+      ]}
+     ]},
+     {"type": ";", "start": 352, "end": 353, "text": ";"}
+    ]},
+    {"type": "}", "start": 354, "end": 355, "text": "}"}
+   ]}
+  ]}
+ ]}
+}

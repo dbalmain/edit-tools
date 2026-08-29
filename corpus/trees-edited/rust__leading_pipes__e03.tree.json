@@ -1,0 +1,110 @@
+{
+ "language": "rust",
+ "source_file": "corpus/src/rust/leading_pipes.rs",
+ "source": "// mt deletes a leading `|` on a match arm, which\n// linearity forbids a package from reproducing. Every\n// arm carries a leading pipe; the file is declared\n// incomparable rather than omitting the construct.\nfn classify(value: i32) -> &'static str {\n    match value {\n        | 1 => \"one\",\n        | 2 | 3 => \"two or three\",\n        | _ => \"other\",\n    }\n}\n",
+ "base_source": "// rustfmt deletes a leading `|` on a match arm, which\n// linearity forbids a package from reproducing. Every\n// arm carries a leading pipe; the file is declared\n// incomparable rather than omitting the construct.\nfn classify(value: i32) -> &'static str {\n    match value {\n        | 1 => \"one\",\n        | 2 | 3 => \"two or three\",\n        | _ => \"other\",\n    }\n}\n",
+ "edit": {"kind": "delete", "label": "delete 5B", "start": 3, "old_end": 8, "new_end": 3, "removed": "rustf", "inserted": ""},
+ "problems": {"error": 0, "missing": 0},
+ "grammar": "tree-sitter-rust==0.24.0",
+ "seed": 0,
+ "root":
+ {"type": "source_file", "start": 0, "end": 358, "children": [
+  {"type": "line_comment", "start": 0, "end": 49, "children": [
+   {"type": "//", "start": 0, "end": 2, "text": "//"}
+  ]},
+  {"type": "line_comment", "start": 50, "end": 104, "children": [
+   {"type": "//", "start": 50, "end": 52, "text": "//"}
+  ]},
+  {"type": "line_comment", "start": 105, "end": 156, "children": [
+   {"type": "//", "start": 105, "end": 107, "text": "//"}
+  ]},
+  {"type": "line_comment", "start": 157, "end": 208, "children": [
+   {"type": "//", "start": 157, "end": 159, "text": "//"}
+  ]},
+  {"type": "function_item", "start": 209, "end": 357, "children": [
+   {"type": "fn", "start": 209, "end": 211, "text": "fn"},
+   {"type": "identifier", "start": 212, "end": 220, "field": "name", "text": "classify"},
+   {"type": "parameters", "start": 220, "end": 232, "field": "parameters", "children": [
+    {"type": "(", "start": 220, "end": 221, "text": "("},
+    {"type": "parameter", "start": 221, "end": 231, "children": [
+     {"type": "identifier", "start": 221, "end": 226, "field": "pattern", "text": "value"},
+     {"type": ":", "start": 226, "end": 227, "text": ":"},
+     {"type": "primitive_type", "start": 228, "end": 231, "field": "type", "text": "i32"}
+    ]},
+    {"type": ")", "start": 231, "end": 232, "text": ")"}
+   ]},
+   {"type": "->", "start": 233, "end": 235, "text": "->"},
+   {"type": "reference_type", "start": 236, "end": 248, "field": "return_type", "children": [
+    {"type": "&", "start": 236, "end": 237, "text": "&"},
+    {"type": "lifetime", "start": 237, "end": 244, "children": [
+     {"type": "'", "start": 237, "end": 238, "text": "'"},
+     {"type": "identifier", "start": 238, "end": 244, "text": "static"}
+    ]},
+    {"type": "primitive_type", "start": 245, "end": 248, "field": "type", "text": "str"}
+   ]},
+   {"type": "block", "start": 249, "end": 357, "field": "body", "children": [
+    {"type": "{", "start": 249, "end": 250, "text": "{"},
+    {"type": "expression_statement", "start": 255, "end": 355, "children": [
+     {"type": "match_expression", "start": 255, "end": 355, "children": [
+      {"type": "match", "start": 255, "end": 260, "text": "match"},
+      {"type": "identifier", "start": 261, "end": 266, "field": "value", "text": "value"},
+      {"type": "match_block", "start": 267, "end": 355, "field": "body", "children": [
+       {"type": "{", "start": 267, "end": 268, "text": "{"},
+       {"type": "match_arm", "start": 277, "end": 290, "children": [
+        {"type": "match_pattern", "start": 277, "end": 280, "field": "pattern", "children": [
+         {"type": "or_pattern", "start": 277, "end": 280, "children": [
+          {"type": "|", "start": 277, "end": 278, "text": "|"},
+          {"type": "integer_literal", "start": 279, "end": 280, "text": "1"}
+         ]}
+        ]},
+        {"type": "=>", "start": 281, "end": 283, "text": "=>"},
+        {"type": "string_literal", "start": 284, "end": 289, "field": "value", "children": [
+         {"type": "\"", "start": 284, "end": 285, "text": "\""},
+         {"type": "string_content", "start": 285, "end": 288, "text": "one"},
+         {"type": "\"", "start": 288, "end": 289, "text": "\""}
+        ]},
+        {"type": ",", "start": 289, "end": 290, "text": ","}
+       ]},
+       {"type": "match_arm", "start": 299, "end": 325, "children": [
+        {"type": "match_pattern", "start": 299, "end": 306, "field": "pattern", "children": [
+         {"type": "or_pattern", "start": 299, "end": 306, "children": [
+          {"type": "or_pattern", "start": 299, "end": 302, "children": [
+           {"type": "|", "start": 299, "end": 300, "text": "|"},
+           {"type": "integer_literal", "start": 301, "end": 302, "text": "2"}
+          ]},
+          {"type": "|", "start": 303, "end": 304, "text": "|"},
+          {"type": "integer_literal", "start": 305, "end": 306, "text": "3"}
+         ]}
+        ]},
+        {"type": "=>", "start": 307, "end": 309, "text": "=>"},
+        {"type": "string_literal", "start": 310, "end": 324, "field": "value", "children": [
+         {"type": "\"", "start": 310, "end": 311, "text": "\""},
+         {"type": "string_content", "start": 311, "end": 323, "text": "two or three"},
+         {"type": "\"", "start": 323, "end": 324, "text": "\""}
+        ]},
+        {"type": ",", "start": 324, "end": 325, "text": ","}
+       ]},
+       {"type": "match_arm", "start": 334, "end": 349, "children": [
+        {"type": "match_pattern", "start": 334, "end": 337, "field": "pattern", "children": [
+         {"type": "or_pattern", "start": 334, "end": 337, "children": [
+          {"type": "|", "start": 334, "end": 335, "text": "|"},
+          {"type": "_", "start": 336, "end": 337, "text": "_"}
+         ]}
+        ]},
+        {"type": "=>", "start": 338, "end": 340, "text": "=>"},
+        {"type": "string_literal", "start": 341, "end": 348, "field": "value", "children": [
+         {"type": "\"", "start": 341, "end": 342, "text": "\""},
+         {"type": "string_content", "start": 342, "end": 347, "text": "other"},
+         {"type": "\"", "start": 347, "end": 348, "text": "\""}
+        ]},
+        {"type": ",", "start": 348, "end": 349, "text": ","}
+       ]},
+       {"type": "}", "start": 354, "end": 355, "text": "}"}
+      ]}
+     ]}
+    ]},
+    {"type": "}", "start": 356, "end": 357, "text": "}"}
+   ]}
+  ]}
+ ]}
+}

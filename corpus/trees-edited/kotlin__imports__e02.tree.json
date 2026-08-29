@@ -1,0 +1,41 @@
+{
+ "language": "kotlin",
+ "source_file": "corpus/src/kotlin/imports.kt",
+ "source": "// Import order. ktfmt always sorts imports -- `sortedAndDistinctImports` has\n// no disable flag, unlike unused-import removal -- and a linear formatter\n// cannot reorder statements, so this file is declared `incomparable`.\n// Every import here is used, so it probes sorting alone.\n\nimport kotlin.math.max\nimportava.util.ArrayList\nimport kotlin.math.min\nimport java.io.File\n\nfun demo(file: File): Int {\n    val xs = ArrayList<Int>()\n    return max(min(xs.size, 1), file.name.length)\n}\n",
+ "base_source": "// Import order. ktfmt always sorts imports -- `sortedAndDistinctImports` has\n// no disable flag, unlike unused-import removal -- and a linear formatter\n// cannot reorder statements, so this file is declared `incomparable`.\n// Every import here is used, so it probes sorting alone.\n\nimport kotlin.math.max\nimport java.util.ArrayList\nimport kotlin.math.min\nimport java.io.File\n\nfun demo(file: File): Int {\n    val xs = ArrayList<Int>()\n    return max(min(xs.size, 1), file.name.length)\n}\n",
+ "edit": {"kind": "delete", "label": "delete 2B", "start": 312, "old_end": 314, "new_end": 312, "removed": " j", "inserted": ""},
+ "problems": {"error": 1, "missing": 0},
+ "grammar": "tree-sitter-kotlin==1.1.0",
+ "seed": 0,
+ "root":
+ {"type": "source_file", "start": 0, "end": 485, "children": [
+  {"type": "line_comment", "start": 0, "end": 77, "text": "// Import order. ktfmt always sorts imports -- `sortedAndDistinctImports` has"},
+  {"type": "line_comment", "start": 78, "end": 152, "text": "// no disable flag, unlike unused-import removal -- and a linear formatter"},
+  {"type": "line_comment", "start": 153, "end": 223, "text": "// cannot reorder statements, so this file is declared `incomparable`."},
+  {"type": "line_comment", "start": 224, "end": 281, "text": "// Every import here is used, so it probes sorting alone."},
+  {"type": "import", "start": 283, "end": 305, "children": [
+   {"type": "import", "start": 283, "end": 289, "text": "import"},
+   {"type": "qualified_identifier", "start": 290, "end": 305, "children": [
+    {"type": "identifier", "start": 290, "end": 296, "text": "kotlin"},
+    {"type": ".", "start": 296, "end": 297, "text": "."},
+    {"type": "identifier", "start": 297, "end": 301, "text": "math"},
+    {"type": ".", "start": 301, "end": 302, "text": "."},
+    {"type": "identifier", "start": 302, "end": 305, "text": "max"}
+   ]}
+  ]},
+  {"type": "navigation_expression", "start": 306, "end": 330, "children": [
+   {"type": "navigation_expression", "start": 306, "end": 320, "children": [
+    {"type": "identifier", "start": 306, "end": 315, "text": "importava"},
+    {"type": ".", "start": 315, "end": 316, "text": "."},
+    {"type": "identifier", "start": 316, "end": 320, "text": "util"}
+   ]},
+   {"type": ".", "start": 320, "end": 321, "text": "."},
+   {"type": "identifier", "start": 321, "end": 330, "text": "ArrayList"}
+  ]},
+  {"type": "ERROR", "start": 331, "end": 485, "children": [
+   {"type": "identifier", "start": 331, "end": 337, "text": "import"},
+   {"type": "identifier", "start": 338, "end": 344, "text": "kotlin"},
+   {"type": ".", "start": 344, "end": 345, "text": "."}
+  ]}
+ ]}
+}

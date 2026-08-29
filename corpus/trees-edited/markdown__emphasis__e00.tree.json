@@ -1,0 +1,36 @@
+{
+ "language": "markdown",
+ "source_file": "corpus/src/markdown/emphasis.md",
+ "source": "prettier rewrites *em* to _em_. -->\n\nA paragraph with *star emphasis* and another *word*.\n",
+ "base_source": "<!-- prettier rewrites *em* to _em_. -->\n\nA paragraph with *star emphasis* and another *word*.\n",
+ "edit": {"kind": "delete", "label": "delete 5B", "start": 0, "old_end": 5, "new_end": 0, "removed": "<!-- ", "inserted": ""},
+ "problems": {"error": 0, "missing": 0},
+ "grammar": "tree-sitter-markdown==0.5.1",
+ "seed": 0,
+ "root":
+ {"type": "document", "start": 0, "end": 90, "children": [
+  {"type": "section", "start": 0, "end": 90, "children": [
+   {"type": "paragraph", "start": 0, "end": 36, "children": [
+    {"type": "inline", "start": 0, "end": 35, "children": [
+     {"type": "*", "start": 18, "end": 19, "text": "*"},
+     {"type": "*", "start": 21, "end": 22, "text": "*"},
+     {"type": "_", "start": 26, "end": 27, "text": "_"},
+     {"type": "_", "start": 29, "end": 30, "text": "_"},
+     {"type": ".", "start": 30, "end": 31, "text": "."},
+     {"type": "-", "start": 32, "end": 33, "text": "-"},
+     {"type": "-", "start": 33, "end": 34, "text": "-"},
+     {"type": ">", "start": 34, "end": 35, "text": ">"}
+    ]}
+   ]},
+   {"type": "paragraph", "start": 37, "end": 90, "children": [
+    {"type": "inline", "start": 37, "end": 89, "children": [
+     {"type": "*", "start": 54, "end": 55, "text": "*"},
+     {"type": "*", "start": 68, "end": 69, "text": "*"},
+     {"type": "*", "start": 82, "end": 83, "text": "*"},
+     {"type": "*", "start": 87, "end": 88, "text": "*"},
+     {"type": ".", "start": 88, "end": 89, "text": "."}
+    ]}
+   ]}
+  ]}
+ ]}
+}

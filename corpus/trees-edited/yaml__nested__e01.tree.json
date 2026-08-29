@@ -1,0 +1,28 @@
+{
+ "language": "yaml",
+ "source_file": "corpus/src/yaml/nested.yaml",
+ "source": "# Containers inside containers. Inner flow collections that still fit stay\n# flat when the outer one breaks -- prettier does not force children open.\nroot:\n  matrix [[1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,16]]\n  servers:\n    [\n      {host: alpha.example.com,port: 8080,tags: [a,b]},\n      {host: beta.example.com,port: 8081,tags: [c,d]},\n    ]\n  deep:\n    region:\n      primary: {ok: 1} # tiny; must stay flat when ancestors break\n",
+ "base_source": "# Containers inside containers. Inner flow collections that still fit stay\n# flat when the outer one breaks -- prettier does not force children open.\nroot:\n  matrix: [[1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,16]]\n  servers:\n    [\n      {host: alpha.example.com,port: 8080,tags: [a,b]},\n      {host: beta.example.com,port: 8081,tags: [c,d]},\n    ]\n  deep:\n    region:\n      primary: {ok: 1} # tiny; must stay flat when ancestors break\n",
+ "edit": {"kind": "delete", "label": "delete 1B", "start": 164, "old_end": 165, "new_end": 164, "removed": ":", "inserted": ""},
+ "problems": {"error": 1, "missing": 0},
+ "grammar": "tree-sitter-yaml==0.7.2",
+ "seed": 0,
+ "root":
+ {"type": "ERROR", "start": 0, "end": 223, "children": [
+  {"type": "comment", "start": 0, "end": 74, "text": "# Containers inside containers. Inner flow collections that still fit stay"},
+  {"type": "comment", "start": 75, "end": 149, "text": "# flat when the outer one breaks -- prettier does not force children open."},
+  {"type": "block_mapping_pair", "start": 150, "end": 223, "children": [
+   {"type": "flow_node", "start": 150, "end": 154, "field": "key", "children": [
+    {"type": "plain_scalar", "start": 150, "end": 154, "children": [
+     {"type": "string_scalar", "start": 150, "end": 154, "text": "root"}
+    ]}
+   ]},
+   {"type": ":", "start": 154, "end": 155, "text": ":"},
+   {"type": "flow_node", "start": 158, "end": 223, "field": "value", "children": [
+    {"type": "plain_scalar", "start": 158, "end": 223, "children": [
+     {"type": "string_scalar", "start": 158, "end": 223, "text": "matrix [[1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,16]]\n  servers"}
+    ]}
+   ]}
+  ]}
+ ]}
+}

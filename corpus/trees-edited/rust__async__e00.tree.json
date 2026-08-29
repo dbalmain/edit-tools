@@ -1,0 +1,171 @@
+{
+ "language": "rust",
+ "source_file": "corpus/src/rust/async.rs",
+ "source": "asy load_documents(client: Client, paths: Vec<Path>) -> Result<Vec<Document>, Error> {\n    let mut documents = Vec::new();\n    for path in paths {\n        let response = client.fetch(&path).await?;\n        let document = response.decode().await?;\n        documents.push(document);\n    }\n    // Await points and the loop block are both layout boundaries.\n    Ok(documents)\n}\n",
+ "base_source": "async fn load_documents(client: Client, paths: Vec<Path>) -> Result<Vec<Document>, Error> {\n    let mut documents = Vec::new();\n    for path in paths {\n        let response = client.fetch(&path).await?;\n        let document = response.decode().await?;\n        documents.push(document);\n    }\n    // Await points and the loop block are both layout boundaries.\n    Ok(documents)\n}\n",
+ "edit": {"kind": "delete", "label": "delete 5B", "start": 3, "old_end": 8, "new_end": 3, "removed": "nc fn", "inserted": ""},
+ "problems": {"error": 5, "missing": 0},
+ "grammar": "tree-sitter-rust==0.24.0",
+ "seed": 0,
+ "root":
+ {"type": "source_file", "start": 0, "end": 374, "children": [
+  {"type": "ERROR", "start": 0, "end": 373, "children": [
+   {"type": "identifier", "start": 0, "end": 3, "text": "asy"},
+   {"type": "identifier", "start": 4, "end": 18, "text": "load_documents"},
+   {"type": "(", "start": 18, "end": 19, "text": "("},
+   {"type": "ERROR", "start": 19, "end": 26, "children": [
+    {"type": "identifier", "start": 19, "end": 25, "text": "client"},
+    {"type": ":", "start": 25, "end": 26, "text": ":"}
+   ]},
+   {"type": "identifier", "start": 27, "end": 33, "text": "Client"},
+   {"type": ",", "start": 33, "end": 34, "text": ","},
+   {"type": "ERROR", "start": 35, "end": 41, "children": [
+    {"type": "identifier", "start": 35, "end": 40, "text": "paths"},
+    {"type": ":", "start": 40, "end": 41, "text": ":"}
+   ]},
+   {"type": "binary_expression", "start": 42, "end": 373, "children": [
+    {"type": "binary_expression", "start": 42, "end": 83, "field": "left", "children": [
+     {"type": "binary_expression", "start": 42, "end": 75, "field": "left", "children": [
+      {"type": "binary_expression", "start": 42, "end": 66, "field": "left", "children": [
+       {"type": "binary_expression", "start": 42, "end": 62, "field": "left", "children": [
+        {"type": "binary_expression", "start": 42, "end": 50, "field": "left", "children": [
+         {"type": "identifier", "start": 42, "end": 45, "field": "left", "text": "Vec"},
+         {"type": "<", "start": 45, "end": 46, "field": "operator", "text": "<"},
+         {"type": "identifier", "start": 46, "end": 50, "field": "right", "text": "Path"}
+        ]},
+        {"type": ">", "start": 50, "end": 51, "field": "operator", "text": ">"},
+        {"type": "ERROR", "start": 51, "end": 55, "children": [
+         {"type": ")", "start": 51, "end": 52, "text": ")"},
+         {"type": "->", "start": 53, "end": 55, "text": "->"}
+        ]},
+        {"type": "identifier", "start": 56, "end": 62, "field": "right", "text": "Result"}
+       ]},
+       {"type": "<", "start": 62, "end": 63, "field": "operator", "text": "<"},
+       {"type": "identifier", "start": 63, "end": 66, "field": "right", "text": "Vec"}
+      ]},
+      {"type": "<", "start": 66, "end": 67, "field": "operator", "text": "<"},
+      {"type": "identifier", "start": 67, "end": 75, "field": "right", "text": "Document"}
+     ]},
+     {"type": ">", "start": 75, "end": 76, "field": "operator", "text": ">"},
+     {"type": "ERROR", "start": 76, "end": 77, "children": [
+      {"type": ",", "start": 76, "end": 77, "text": ","}
+     ]},
+     {"type": "identifier", "start": 78, "end": 83, "field": "right", "text": "Error"}
+    ]},
+    {"type": ">", "start": 83, "end": 84, "field": "operator", "text": ">"},
+    {"type": "block", "start": 85, "end": 373, "field": "right", "children": [
+     {"type": "{", "start": 85, "end": 86, "text": "{"},
+     {"type": "let_declaration", "start": 91, "end": 122, "children": [
+      {"type": "let", "start": 91, "end": 94, "text": "let"},
+      {"type": "mutable_specifier", "start": 95, "end": 98, "text": "mut"},
+      {"type": "identifier", "start": 99, "end": 108, "field": "pattern", "text": "documents"},
+      {"type": "=", "start": 109, "end": 110, "text": "="},
+      {"type": "call_expression", "start": 111, "end": 121, "field": "value", "children": [
+       {"type": "scoped_identifier", "start": 111, "end": 119, "field": "function", "children": [
+        {"type": "identifier", "start": 111, "end": 114, "field": "path", "text": "Vec"},
+        {"type": "::", "start": 114, "end": 116, "text": "::"},
+        {"type": "identifier", "start": 116, "end": 119, "field": "name", "text": "new"}
+       ]},
+       {"type": "arguments", "start": 119, "end": 121, "field": "arguments", "children": [
+        {"type": "(", "start": 119, "end": 120, "text": "("},
+        {"type": ")", "start": 120, "end": 121, "text": ")"}
+       ]}
+      ]},
+      {"type": ";", "start": 121, "end": 122, "text": ";"}
+     ]},
+     {"type": "expression_statement", "start": 127, "end": 286, "children": [
+      {"type": "for_expression", "start": 127, "end": 286, "children": [
+       {"type": "for", "start": 127, "end": 130, "text": "for"},
+       {"type": "identifier", "start": 131, "end": 135, "field": "pattern", "text": "path"},
+       {"type": "in", "start": 136, "end": 138, "text": "in"},
+       {"type": "identifier", "start": 139, "end": 144, "field": "value", "text": "paths"},
+       {"type": "block", "start": 145, "end": 286, "field": "body", "children": [
+        {"type": "{", "start": 145, "end": 146, "text": "{"},
+        {"type": "let_declaration", "start": 155, "end": 197, "children": [
+         {"type": "let", "start": 155, "end": 158, "text": "let"},
+         {"type": "identifier", "start": 159, "end": 167, "field": "pattern", "text": "response"},
+         {"type": "=", "start": 168, "end": 169, "text": "="},
+         {"type": "try_expression", "start": 170, "end": 196, "field": "value", "children": [
+          {"type": "await_expression", "start": 170, "end": 195, "children": [
+           {"type": "call_expression", "start": 170, "end": 189, "children": [
+            {"type": "field_expression", "start": 170, "end": 182, "field": "function", "children": [
+             {"type": "identifier", "start": 170, "end": 176, "field": "value", "text": "client"},
+             {"type": ".", "start": 176, "end": 177, "text": "."},
+             {"type": "field_identifier", "start": 177, "end": 182, "field": "field", "text": "fetch"}
+            ]},
+            {"type": "arguments", "start": 182, "end": 189, "field": "arguments", "children": [
+             {"type": "(", "start": 182, "end": 183, "text": "("},
+             {"type": "reference_expression", "start": 183, "end": 188, "children": [
+              {"type": "&", "start": 183, "end": 184, "text": "&"},
+              {"type": "identifier", "start": 184, "end": 188, "field": "value", "text": "path"}
+             ]},
+             {"type": ")", "start": 188, "end": 189, "text": ")"}
+            ]}
+           ]},
+           {"type": ".", "start": 189, "end": 190, "text": "."},
+           {"type": "await", "start": 190, "end": 195, "text": "await"}
+          ]},
+          {"type": "?", "start": 195, "end": 196, "text": "?"}
+         ]},
+         {"type": ";", "start": 196, "end": 197, "text": ";"}
+        ]},
+        {"type": "let_declaration", "start": 206, "end": 246, "children": [
+         {"type": "let", "start": 206, "end": 209, "text": "let"},
+         {"type": "identifier", "start": 210, "end": 218, "field": "pattern", "text": "document"},
+         {"type": "=", "start": 219, "end": 220, "text": "="},
+         {"type": "try_expression", "start": 221, "end": 245, "field": "value", "children": [
+          {"type": "await_expression", "start": 221, "end": 244, "children": [
+           {"type": "call_expression", "start": 221, "end": 238, "children": [
+            {"type": "field_expression", "start": 221, "end": 236, "field": "function", "children": [
+             {"type": "identifier", "start": 221, "end": 229, "field": "value", "text": "response"},
+             {"type": ".", "start": 229, "end": 230, "text": "."},
+             {"type": "field_identifier", "start": 230, "end": 236, "field": "field", "text": "decode"}
+            ]},
+            {"type": "arguments", "start": 236, "end": 238, "field": "arguments", "children": [
+             {"type": "(", "start": 236, "end": 237, "text": "("},
+             {"type": ")", "start": 237, "end": 238, "text": ")"}
+            ]}
+           ]},
+           {"type": ".", "start": 238, "end": 239, "text": "."},
+           {"type": "await", "start": 239, "end": 244, "text": "await"}
+          ]},
+          {"type": "?", "start": 244, "end": 245, "text": "?"}
+         ]},
+         {"type": ";", "start": 245, "end": 246, "text": ";"}
+        ]},
+        {"type": "expression_statement", "start": 255, "end": 280, "children": [
+         {"type": "call_expression", "start": 255, "end": 279, "children": [
+          {"type": "field_expression", "start": 255, "end": 269, "field": "function", "children": [
+           {"type": "identifier", "start": 255, "end": 264, "field": "value", "text": "documents"},
+           {"type": ".", "start": 264, "end": 265, "text": "."},
+           {"type": "field_identifier", "start": 265, "end": 269, "field": "field", "text": "push"}
+          ]},
+          {"type": "arguments", "start": 269, "end": 279, "field": "arguments", "children": [
+           {"type": "(", "start": 269, "end": 270, "text": "("},
+           {"type": "identifier", "start": 270, "end": 278, "text": "document"},
+           {"type": ")", "start": 278, "end": 279, "text": ")"}
+          ]}
+         ]},
+         {"type": ";", "start": 279, "end": 280, "text": ";"}
+        ]},
+        {"type": "}", "start": 285, "end": 286, "text": "}"}
+       ]}
+      ]}
+     ]},
+     {"type": "line_comment", "start": 291, "end": 353, "children": [
+      {"type": "//", "start": 291, "end": 293, "text": "//"}
+     ]},
+     {"type": "call_expression", "start": 358, "end": 371, "children": [
+      {"type": "identifier", "start": 358, "end": 360, "field": "function", "text": "Ok"},
+      {"type": "arguments", "start": 360, "end": 371, "field": "arguments", "children": [
+       {"type": "(", "start": 360, "end": 361, "text": "("},
+       {"type": "identifier", "start": 361, "end": 370, "text": "documents"},
+       {"type": ")", "start": 370, "end": 371, "text": ")"}
+      ]}
+     ]},
+     {"type": "}", "start": 372, "end": 373, "text": "}"}
+    ]}
+   ]}
+  ]}
+ ]}
+}

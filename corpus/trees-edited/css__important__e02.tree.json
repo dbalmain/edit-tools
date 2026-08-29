@@ -1,0 +1,75 @@
+{
+ "language": "css",
+ "source_file": "corpus/src/css/important.css",
+ "source": "/* !important, including a missing space prettier will insert. */\n\n.override {\n  color: red !important;\n  margin: 1px 2px !import space */\n  z-i;\n  font-size: 1rem!important; /* missing space */\n  z-index: 1 !important;\n}\n",
+ "base_source": "/* !important, including a missing space prettier will insert. */\n\n.override {\n  color: red !important;\n  margin: 1px 2px !important;\n  font-size: 1rem!important; /* missing space */\n  z-index: 1 !important;\n}\n",
+ "edit": {"kind": "replace", "label": "splice 173..188", "start": 129, "old_end": 132, "new_end": 144, "removed": "ant", "inserted": " space */\n  z-i"},
+ "problems": {"error": 2, "missing": 1},
+ "grammar": "tree-sitter-css==0.25.0",
+ "seed": 0,
+ "root":
+ {"type": "stylesheet", "start": 0, "end": 222, "children": [
+  {"type": "comment", "start": 0, "end": 65, "text": "/* !important, including a missing space prettier will insert. */"},
+  {"type": "rule_set", "start": 67, "end": 221, "children": [
+   {"type": "selectors", "start": 67, "end": 76, "children": [
+    {"type": "class_selector", "start": 67, "end": 76, "children": [
+     {"type": ".", "start": 67, "end": 68, "text": "."},
+     {"type": "class_name", "start": 68, "end": 76, "children": [
+      {"type": "identifier", "start": 68, "end": 76, "text": "override"}
+     ]}
+    ]}
+   ]},
+   {"type": "block", "start": 77, "end": 221, "children": [
+    {"type": "{", "start": 77, "end": 78, "text": "{"},
+    {"type": "declaration", "start": 81, "end": 103, "children": [
+     {"type": "property_name", "start": 81, "end": 86, "text": "color"},
+     {"type": ":", "start": 86, "end": 87, "text": ":"},
+     {"type": "plain_value", "start": 88, "end": 91, "text": "red"},
+     {"type": "important", "start": 92, "end": 102, "text": "!important"},
+     {"type": ";", "start": 102, "end": 103, "text": ";"}
+    ]},
+    {"type": "declaration", "start": 106, "end": 145, "children": [
+     {"type": "property_name", "start": 106, "end": 112, "text": "margin"},
+     {"type": ":", "start": 112, "end": 113, "text": ":"},
+     {"type": "integer_value", "start": 114, "end": 117, "children": [
+      {"type": "unit", "start": 115, "end": 117, "text": "px"}
+     ]},
+     {"type": "binary_expression", "start": 118, "end": 144, "children": [
+      {"type": "binary_expression", "start": 118, "end": 137, "children": [
+       {"type": "integer_value", "start": 118, "end": 121, "children": [
+        {"type": "unit", "start": 119, "end": 121, "text": "px"}
+       ]},
+       {"type": "ERROR", "start": 122, "end": 135, "children": [
+        {"type": "important_value", "start": 122, "end": 129, "text": "!import"},
+        {"type": "ERROR", "start": 130, "end": 132, "text": "sp"}
+       ]},
+       {"type": "*", "start": 136, "end": 137, "text": "*"},
+       {"type": "important", "start": 137, "end": 137, "text": "", "missing": true}
+      ]},
+      {"type": "/", "start": 137, "end": 138, "text": "/"},
+      {"type": "plain_value", "start": 141, "end": 144, "text": "z-i"}
+     ]},
+     {"type": ";", "start": 144, "end": 145, "text": ";"}
+    ]},
+    {"type": "declaration", "start": 148, "end": 174, "children": [
+     {"type": "property_name", "start": 148, "end": 157, "text": "font-size"},
+     {"type": ":", "start": 157, "end": 158, "text": ":"},
+     {"type": "integer_value", "start": 159, "end": 163, "children": [
+      {"type": "unit", "start": 160, "end": 163, "text": "rem"}
+     ]},
+     {"type": "important", "start": 163, "end": 173, "text": "!important"},
+     {"type": ";", "start": 173, "end": 174, "text": ";"}
+    ]},
+    {"type": "comment", "start": 175, "end": 194, "text": "/* missing space */"},
+    {"type": "declaration", "start": 197, "end": 219, "children": [
+     {"type": "property_name", "start": 197, "end": 204, "text": "z-index"},
+     {"type": ":", "start": 204, "end": 205, "text": ":"},
+     {"type": "integer_value", "start": 206, "end": 207, "text": "1"},
+     {"type": "important", "start": 208, "end": 218, "text": "!important"},
+     {"type": ";", "start": 218, "end": 219, "text": ";"}
+    ]},
+    {"type": "}", "start": 220, "end": 221, "text": "}"}
+   ]}
+  ]}
+ ]}
+}
