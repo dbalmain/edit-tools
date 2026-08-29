@@ -22,6 +22,30 @@ the C was.
 Unrecognised syntax raises. A silently dropped arm is a lexer that is subtly
 wrong on exactly the inputs the corpus does not contain, so there is no
 skip-and-continue path anywhere in this file.
+
+The construct set the generator can emit into `ts_lex` is closed and is
+enumerated in `docs/parse-survey.md` §3, read out of `render.rs`. Every one of
+those shapes is handled below, including the `(!eof && ...)` guard that does not
+occur in either grammar this spike parses.
+
+Recovered lexer states are ordered op lists, mirrored by `harness/ts_lr.mjs`:
+
+    [0, sym]                            ACCEPT_TOKEN(sym)
+    [1, [char, target, ...]]            ADVANCE_MAP(...)
+    [2, eofMode, ranges, act, target]   if (<cond>) <action>
+    [3, act, target]                    unconditional <action>
+
+`eofMode` is 0 (don't care) / 1 (require eof) / 2 (require !eof); `ranges` is a
+flat inclusive [lo, hi, ...] over int32 -- the domain of `lookahead`, which is 0
+at EOF and -1 on a UTF-8 decode error, so the full int32 line is the honest
+domain and complements are taken over it. `act` is 0 ADVANCE / 1 SKIP /
+2 END_STATE / 3 ACCEPT_TOKEN.
+
+Note the conditions are recovered as *branch predicates*, not as token character
+sets. That sidesteps the is-included flip described in `parse-survey.md` §3d: a
+positive character set containing char::MAX is emitted negated, and a recoverer
+that reads `&&`-joined `!=` atoms as exclusions inverts every such state.
+Evaluating the C expression symbolically cannot make that mistake.
 """
 
 from __future__ import annotations
@@ -397,9 +421,7 @@ class LexParser:
             cond = self.parse_or()
             self.expect(")")
             act = self.parse_action()
-            if cond == "EOF":
-                return [2, *act]
-            return [3, flatten(cond), *act]
+            return [2, cond.eof, flatten(cond.r), *act]
         return self.parse_action_stmt()
 
     def parse_action_stmt(self) -> list:
@@ -424,7 +446,7 @@ class LexParser:
                 raise Unrecognised("odd ADVANCE_MAP")
             return [1, pairs]
         act = self.parse_action()
-        return [4, *act]
+        return [3, *act]
 
     def parse_action(self) -> list:
         kind, name = self.next()
@@ -450,20 +472,21 @@ class LexParser:
         raise Unrecognised(f"action {name!r} near {self.context()}")
 
     # -- conditions ---------------------------------------------------------
+    # A condition is a `Cond`: an eof requirement plus a set of int32 intervals
+    # over `lookahead`. Every atom the generator can emit maps onto one of the
+    # two; nothing else is accepted.
     def parse_or(self):
         left = self.parse_and()
         while self.at("||"):
             self.next()
-            right = self.parse_and()
-            left = combine(left, right, union)
+            left = left.union(self.parse_and())
         return left
 
     def parse_and(self):
         left = self.parse_cmp()
         while self.at("&&"):
             self.next()
-            right = self.parse_cmp()
-            left = combine(left, right, intersect)
+            left = left.intersect(self.parse_cmp())
         return left
 
     def parse_cmp(self):
@@ -472,9 +495,17 @@ class LexParser:
             inner = self.parse_or()
             self.expect(")")
             return inner
+        if self.at("!"):
+            # Only `!eof` exists; negating a character condition would need a
+            # different representation and the generator never emits one.
+            self.next()
+            if not self.at("eof"):
+                raise Unrecognised(f"negation of non-eof near {self.context()}")
+            self.next()
+            return Cond(NOT_EOF, ALL)
         if self.at("eof"):
             self.next()
-            return "EOF"
+            return Cond(IS_EOF, ALL)
         if self.at("set_contains"):
             self.next()
             self.expect("(")
@@ -489,16 +520,16 @@ class LexParser:
             rs = self.charsets[name]
             if len(rs) != length:
                 raise Unrecognised(f"set_contains length {length} != {len(rs)}")
-            return norm(rs)
+            return Cond(ANY_EOF, norm(rs))
         if self.at("lookahead"):
             self.next()
             op = self.peek()[1]
             if op in ("==", "!=", "<", "<=", ">", ">="):
                 self.next()
                 v = self.syms.value(self.next()[1])
-                return cmp_ranges("lookahead", op, v)
+                return Cond(ANY_EOF, cmp_ranges("lookahead", op, v))
             # bare `lookahead` used as a truth value
-            return complement([(0, 0)])
+            return Cond(ANY_EOF, complement([(0, 0)]))
         kind, text = self.next()
         if kind not in ("num", "char"):
             raise Unrecognised(f"condition operand {text!r} near {self.context()}")
@@ -508,7 +539,40 @@ class LexParser:
             raise Unrecognised(f"expected comparison after {text!r}")
         self.next()
         self.expect("lookahead")
-        return cmp_ranges(v, op, "lookahead")
+        return Cond(ANY_EOF, cmp_ranges(v, op, "lookahead"))
+
+
+# eof requirement of a condition, mirrored by the JS interpreter.
+ANY_EOF, IS_EOF, NOT_EOF = 0, 1, 2
+
+
+class Cond:
+    """`eof` requirement plus an interval set over `lookahead`."""
+
+    __slots__ = ("eof", "r")
+
+    def __init__(self, eof: int, ranges):
+        self.eof = eof
+        self.r = ranges
+
+    def intersect(self, other: "Cond") -> "Cond":
+        if self.eof == other.eof or other.eof == ANY_EOF:
+            eof = self.eof
+        elif self.eof == ANY_EOF:
+            eof = other.eof
+        else:
+            # `eof && !eof` is unsatisfiable; the generator never emits it, so
+            # seeing it means this parser has misread the expression.
+            raise Unrecognised("contradictory eof requirements in one condition")
+        return Cond(eof, intersect(self.r, other.r))
+
+    def union(self, other: "Cond") -> "Cond":
+        if self.eof != other.eof:
+            # A disjunction spanning both eof states cannot be one interval set
+            # plus one flag. Nothing in the generator produces it; refuse rather
+            # than guess which half wins.
+            raise Unrecognised("`||` across differing eof requirements")
+        return Cond(self.eof, union(self.r, other.r))
 
 
 def cmp_ranges(left, op, right) -> list[tuple[int, int]]:
@@ -531,14 +595,6 @@ def cmp_ranges(left, op, right) -> list[tuple[int, int]]:
     if op == ">=":
         return [(v, INT32_MAX)]
     raise Unrecognised(f"comparison {op!r}")
-
-
-def combine(a, b, fn):
-    if a == "EOF" or b == "EOF":
-        # `eof` is a separate boolean; mixing it into a range expression would
-        # need a different representation. Nothing observed does this.
-        raise Unrecognised("`eof` combined with a lookahead comparison")
-    return fn(a, b)
 
 
 def flatten(ranges) -> list[int]:
