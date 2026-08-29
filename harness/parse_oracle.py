@@ -118,6 +118,44 @@ class Divergence(Exception):
 
 
 # --------------------------------------------------------------------------
+# recorded findings
+
+# Minimal reproducers for the scratch-vs-incremental divergence this script
+# found, shrunk by delta debugging from a seeded sweep. `--known` replays them.
+#
+# Recorded as literal bytes rather than as a seed, on purpose. A seed
+# reproduces only while the grammar pin *and* the tree-sitter runtime hold, and
+# the runtime is pinned nowhere in this repo -- `gen_trees.py` declares a bare
+# `tree-sitter`, so `uv` resolves whatever is current. These bytes outlive both.
+#
+# Measured 2026-08-30, tree-sitter 0.26.0, grammars at the manifest pins:
+# 145 divergences in 60,480 states over 12 seeds and 16 languages, and **8
+# languages reproduce it** (haskell, json, kotlin, javascript, rust,
+# typescript, css, scheme). That breadth is why this is filed against the
+# incremental machinery rather than against any one grammar.
+KNOWN_DIVERGENCES = (
+    {
+        "id": "json/insert-brace",
+        "language": "json",
+        "before": b'"":{"":{"":{"":{"":{}}t"}}}}},"":"]}}',
+        "edit": (0, 0, b"{"),
+        "expect": "root.type: incremental='ERROR' scratch='document'",
+    },
+    {
+        "id": "kotlin/insert-paren",
+        "language": "kotlin",
+        "before": (
+            b"k e: :{\n ,\n    GREEN,\n    BLUE, /ember\n}\n\nobject Registry {\n"
+            b"    const val version: Int = 1\n\n    companion object {\n <     */"
+            b"fun create(): Registry = Registry /#/ companion fa    }\n}\n\n}\n"
+        ),
+        "edit": (6, 6, b")"),
+        "expect": "root.type: incremental='ERROR' scratch='source_file'",
+    },
+)
+
+
+# --------------------------------------------------------------------------
 # tree -> our JSON shape, plus the one key tree-sitter has and the shape does not
 
 
@@ -524,6 +562,49 @@ def do_freeze(manifests: dict[str, mf.Manifest], parsers: dict) -> int:
     return 0
 
 
+def do_known(manifests: dict[str, mf.Manifest], parsers: dict) -> int:
+    """Replay the recorded minimal reproducers.
+
+    Exit 0 means every one still reproduces, which is the *expected* state and
+    not a pass in the usual sense -- these record a defect, so a case that
+    stops reproducing is news (upstream fixed it, or a pin moved) and is
+    reported as CHANGED rather than silently swallowed.
+    """
+    changed = []
+    for case in KNOWN_DIVERGENCES:
+        name = case["language"]
+        if name not in manifests:
+            continue
+        start, old_end, inserted = case["edit"]
+        edit = Edit(start, old_end, inserted, "recorded")
+        before = case["before"]
+        after = edit.apply(before)
+        parser = parsers[name]
+        tree = parser.parse(before)
+        apply_to_tree(tree, before, after, edit)
+        incremental = convert(parser.parse(after, tree).root_node, after)
+        scratch = convert(parser.parse(after).root_node, after)
+        try:
+            compare(incremental, scratch)
+        except Divergence as exc:
+            got = str(exc).split("\n")[0]
+            mark = "same" if got == case["expect"] else "DIFFERENT SHAPE"
+            print(f"  REPRODUCES {case['id']:24} {mark}\n    {got}")
+            if mark != "same":
+                print(f"    recorded: {case['expect']}")
+            continue
+        changed.append(case["id"])
+        print(f"  CHANGED    {case['id']:24} no longer diverges")
+    if changed:
+        print(
+            f"\n{len(changed)} recorded divergence(s) no longer reproduce: "
+            f"{', '.join(changed)}. Check the tree-sitter runtime version and "
+            f"the grammar pins before deleting the case -- this is the good "
+            f"kind of news, but only if upstream is what changed."
+        )
+    return 0
+
+
 def do_sweep(
     manifests: dict[str, mf.Manifest],
     parsers: dict,
@@ -626,6 +707,8 @@ def main() -> int:
                     help="replay a run; a failure is reported with its seed")
     ap.add_argument("--freeze", action="store_true",
                     help="write corpus/trees-edited/ instead of sweeping")
+    ap.add_argument("--known", action="store_true",
+                    help="replay the recorded minimal divergence reproducers")
     ap.add_argument("--json", action="store_true", help="machine-readable summary")
     ap.add_argument("--verbose", action="store_true", help="print every state")
     args = ap.parse_args()
@@ -634,6 +717,8 @@ def main() -> int:
     manifests = mf.selected(known, args.language)
     parsers = mf.parsers(known)
 
+    if args.known:
+        return do_known(manifests, parsers)
     if args.freeze:
         return do_freeze(manifests, parsers)
     return do_sweep(manifests, parsers, args)
