@@ -42,13 +42,15 @@ const { createRequire } = require('module');
 
 const WASM_DIR = __dirname;
 const ROOT = path.resolve(WASM_DIR, '..', '..');
-const rigRequire = createRequire(path.join(WASM_DIR, 'package.json'));
-const { Parser, Language } = rigRequire('web-tree-sitter');
-const { byteOffsets } = rigRequire(path.join(ROOT, 'harness', 'parse_wasm.js'));
+const { Parser, Language, version: wtsVersion, byteOffsets } = require(path.join(WASM_DIR, 'runtime.js'));
 
 function dump(node, bytes) {
   const out = {
+    // See divergence_native.py: `sym` is what tells a parse divergence apart
+    // from a naming divergence.
+    sym: node.grammarId,
     type: node.type,
+    grammar_type: node.grammarType,
     start: bytes[node.startIndex],
     end: bytes[node.endIndex],
     named: node.isNamed,
@@ -82,34 +84,76 @@ function counts(node) {
   return { nodes: total, errors: err, missing };
 }
 
-/** First structural difference between two dumped trees, as a readable path. */
+// Three classes of difference, ranked by how much they cost this project.
+// Merging them would lose the finding:
+//
+//   SHAPE    the two runtimes parsed differently -- a different grammar
+//            symbol, span, child count, field or flag. A real parse
+//            divergence, and the only class that means "route A cannot
+//            guarantee the same tree".
+//   TYPE     the same node -- same grammar symbol id, same span, same
+//            children -- reported under a different `type` string. This is a
+//            naming divergence and it costs exactly as much as a shape
+//            divergence in this codebase, because dispatch is `node.type`
+//            with no fallback (docs/parse-layer.md, "What the tree-interface
+//            probe did and did not establish"). A package keyed on a name one
+//            runtime spells differently is simply broken on that runtime.
+//   GRAMMAR  only `grammarType`/`grammar_name` differs -- the grammar's
+//            internal name for a hidden rule. No package reads it and neither
+//            runtime exposes it to one. Counted, and then set aside.
+//
+// `sym`, the grammar's own symbol id, is what separates shape from the other
+// two: it is the grammar's identity for a node, and it is stable across
+// runtimes in a way the public name is not.
+
+const SHAPE_KEYS = ['sym', 'start', 'end', 'named', 'missing', 'extra', 'field'];
+const KIND_RANK = { shape: 3, type: 2, grammar: 1 };
+
+/** First difference between two dumped trees: {kind, at} or null. */
 function firstDifference(a, b, trail = 'root') {
   if (a === undefined || b === undefined || a === null || b === null) {
-    return a === b ? null : `${trail}: ${JSON.stringify(a)} vs ${JSON.stringify(b)}`;
+    return a === b ? null : { kind: 'shape', at: `${trail}: ${JSON.stringify(a)} vs ${JSON.stringify(b)}` };
   }
-  if (typeof a !== 'object') {
-    return a === b ? null : `${trail}: ${JSON.stringify(a)} vs ${JSON.stringify(b)}`;
-  }
-  const scalarKeys = ['type', 'start', 'end', 'named', 'missing', 'extra', 'error', 'field'];
-  for (const k of scalarKeys) {
+  for (const k of SHAPE_KEYS) {
     if (JSON.stringify(a[k]) !== JSON.stringify(b[k])) {
-      return `${trail}.${k}: ${JSON.stringify(a[k])} vs ${JSON.stringify(b[k])}`;
+      return {
+        kind: 'shape',
+        at: `${trail}.${k}: ${JSON.stringify(a[k])} vs ${JSON.stringify(b[k])}`,
+      };
     }
   }
   const ka = a.children || [];
   const kb = b.children || [];
   if (ka.length !== kb.length) {
-    return (
-      `${trail} <${a.type}>: ${ka.length} children vs ${kb.length}\n` +
-      `      wasm:   ${ka.map((c) => c.type).join(' ')}\n` +
-      `      native: ${kb.map((c) => c.type).join(' ')}`
-    );
+    return {
+      kind: 'shape',
+      at:
+        `${trail} <${a.type}>: ${ka.length} children vs ${kb.length}\n` +
+        `      wasm:   ${ka.map((c) => c.type).join(' ')}\n` +
+        `      native: ${kb.map((c) => c.type).join(' ')}`,
+    };
   }
+  // Names are compared only once shape agrees at this node, so a shape
+  // difference is never reported as a naming one.
+  let best = null;
+  const note = (kind, k) => {
+    const cand = {
+      kind,
+      at: `${trail}.${k} (sym ${a.sym}, [${a.start},${a.end}]): ${JSON.stringify(a[k])} vs ${JSON.stringify(b[k])}`,
+    };
+    if (!best || KIND_RANK[kind] > KIND_RANK[best.kind]) best = cand;
+  };
+  if (JSON.stringify(a.type) !== JSON.stringify(b.type)) note('type', 'type');
+  else if (JSON.stringify(a.grammar_type) !== JSON.stringify(b.grammar_type)) {
+    note('grammar', 'grammar_type');
+  }
+
   for (let i = 0; i < ka.length; i++) {
     const d = firstDifference(ka[i], kb[i], `${trail}/${i}<${ka[i].type}>`);
-    if (d) return d;
+    if (d && d.kind === 'shape') return d; // outranks everything, report now
+    if (d && (!best || KIND_RANK[d.kind] > KIND_RANK[best.kind])) best = d;
   }
-  return null;
+  return best;
 }
 
 const languages = new Map();
@@ -149,7 +193,7 @@ async function main(argv) {
   for (const c of spec.cases) {
     if (controlLang && c.language !== controlLang) continue;
     const key = `${c.language}/${c.mutation}`;
-    if (!stats.has(key)) stats.set(key, { total: 0, same: 0 });
+    if (!stats.has(key)) stats.set(key, { total: 0, same: 0, shape: 0, type: 0, grammar: 0 });
     const s = stats.get(key);
     s.total++;
 
@@ -166,7 +210,10 @@ async function main(argv) {
 
     const d = firstDifference(mine, theirs.root);
     if (d === null) s.same++;
-    else diffs.push({ id: c.id, language: c.language, mutation: c.mutation, diff: d });
+    else {
+      s[d.kind]++;
+      diffs.push({ id: c.id, language: c.language, mutation: c.mutation, kind: d.kind, diff: d.at });
+    }
   }
 
   // Incremental arm. Three comparisons per file, because two of them can catch
@@ -202,48 +249,49 @@ async function main(argv) {
 
     const cross = firstDifference(wasmIncremental, nat.incremental);
     if (cross === null) incr.crossSame++;
-    else incrDiffs.push({ id: e.id, kind: 'wasm-incr vs native-incr', diff: cross });
+    else incrDiffs.push({ id: e.id, kind: `wasm-incr vs native-incr (${cross.kind})`, diff: cross.at });
 
     const selfWasm = firstDifference(wasmIncremental, wasmFresh);
     if (selfWasm === null) incr.wasmFreshSame++;
-    else incrDiffs.push({ id: e.id, kind: 'wasm-incr vs wasm-fresh', diff: selfWasm });
+    else incrDiffs.push({ id: e.id, kind: `wasm-incr vs wasm-fresh (${selfWasm.kind})`, diff: selfWasm.at });
 
     const selfNative = firstDifference(nat.incremental, nat.fresh);
     if (selfNative === null) incr.nativeFreshSame++;
-    else incrDiffs.push({ id: e.id, kind: 'native-incr vs native-fresh', diff: selfNative });
+    else incrDiffs.push({ id: e.id, kind: `native-incr vs native-fresh (${selfNative.kind})`, diff: selfNative.at });
   }
 
   // ---- report
   const label = controlDir ? `POSITIVE CONTROL (wasm from ${controlDir})` : 'native vs wasm';
   console.log(`== ${label}`);
   console.log(`   native runtime: ${native.runtime}`);
-  // web-tree-sitter's package.json is not in its `exports` map, so read it.
-  const wtsVersion = JSON.parse(
-    fs.readFileSync(path.join(WASM_DIR, 'node_modules', 'web-tree-sitter', 'package.json'), 'utf8')
-  ).version;
   console.log(`   wasm runtime:   web-tree-sitter ${wtsVersion}`);
 
   const byMutation = new Map();
   for (const [key, s] of stats) {
     const mutation = key.split('/')[1];
-    if (!byMutation.has(mutation)) byMutation.set(mutation, { total: 0, same: 0 });
+    if (!byMutation.has(mutation)) byMutation.set(mutation, { total: 0, same: 0, shape: 0, type: 0, grammar: 0 });
     const m = byMutation.get(mutation);
     m.total += s.total;
     m.same += s.same;
+    m.shape += s.shape;
+    m.type += s.type;
+    m.grammar += s.grammar;
   }
-  console.log('\nmutation            cases  identical  differing');
-  let gt = 0;
-  let gs = 0;
+  console.log('\nmutation            cases  identical  shape-diff  type-diff  grammar-only');
+  const g = { total: 0, same: 0, shape: 0, type: 0, grammar: 0 };
   for (const [mutation, m] of byMutation) {
-    gt += m.total;
-    gs += m.same;
+    for (const k of Object.keys(g)) g[k] += m[k];
     console.log(
-      `${mutation.padEnd(18)} ${String(m.total).padStart(6)}  ${String(m.same).padStart(9)}  ${String(m.total - m.same).padStart(9)}`
+      `${mutation.padEnd(18)} ${String(m.total).padStart(6)}  ${String(m.same).padStart(9)}  ` +
+        `${String(m.shape).padStart(10)}  ${String(m.type).padStart(9)}  ${String(m.grammar).padStart(12)}`
     );
   }
   console.log(
-    `${'TOTAL'.padEnd(18)} ${String(gt).padStart(6)}  ${String(gs).padStart(9)}  ${String(gt - gs).padStart(9)}`
+    `${'TOTAL'.padEnd(18)} ${String(g.total).padStart(6)}  ${String(g.same).padStart(9)}  ` +
+      `${String(g.shape).padStart(10)}  ${String(g.type).padStart(9)}  ${String(g.grammar).padStart(12)}`
   );
+  const gt = g.total;
+  const gs = g.same;
   console.log(
     `\n${brokenCases}/${gt} cases actually contain ERROR or MISSING nodes ` +
       `(${totalErrorNodes} such nodes in total) -- the arm the frozen corpus cannot reach`
@@ -256,19 +304,23 @@ async function main(argv) {
       `  native-incremental == native-fresh       : ${incr.nativeFreshSame}/${incr.total}`
   );
 
-  if (diffs.length) {
-    console.log(`\n${diffs.length} differing case(s):`);
-    for (const d of diffs.slice(0, 25)) {
-      console.log(`\n  ${d.id} [${d.mutation}]\n    ${d.diff}`);
+  // A grammar-name-only difference is noted, not failed on: nothing reads it.
+  const material = diffs.filter((d) => d.kind !== 'grammar');
+  const materialIncr = incrDiffs.filter((d) => !d.kind.includes('grammar)'));
+
+  if (material.length) {
+    console.log(`\n${material.length} materially differing case(s) (shape or type):`);
+    for (const d of material.slice(0, 25)) {
+      console.log(`\n  ${d.id} [${d.mutation}] ${d.kind.toUpperCase()}\n    ${d.diff}`);
     }
-    if (diffs.length > 25) console.log(`\n  ... and ${diffs.length - 25} more`);
+    if (material.length > 25) console.log(`\n  ... and ${material.length - 25} more`);
   }
   if (incrDiffs.length) {
-    console.log(`\n${incrDiffs.length} incremental difference(s):`);
+    console.log(`\n${incrDiffs.length} incremental difference(s) (${materialIncr.length} material):`);
     for (const d of incrDiffs.slice(0, 15)) console.log(`\n  ${d.id} [${d.kind}]\n    ${d.diff}`);
   }
 
-  const clean = diffs.length === 0 && incrDiffs.length === 0;
+  const clean = material.length === 0 && materialIncr.length === 0;
   if (controlDir) {
     console.log(
       clean

@@ -31,8 +31,8 @@ const LANG_DIR = path.join(ROOT, 'harness', 'languages');
 
 // harness/ has no node_modules of its own; the rig's deps live in harness/wasm.
 const rigRequire = createRequire(path.join(WASM_DIR, 'package.json'));
-const { Parser, Language } = rigRequire('web-tree-sitter');
 const TOML = rigRequire('smol-toml');
+const { Parser, Language, byteOffsets } = require(path.join(WASM_DIR, 'runtime.js'));
 
 // --------------------------------------------------------------------------
 // manifests -- the same harness/languages/*.toml that gen_trees.py reads,
@@ -73,41 +73,9 @@ function injectionMap(manifests) {
 //
 // gen_trees.py works in BYTE offsets: py-tree-sitter's start_byte/end_byte, and
 // leaf text is `outer_source[start:end].decode("utf-8")` over a bytes object.
-//
-// web-tree-sitter's startIndex/endIndex are UTF-16 code-unit indices into the
-// JS string, NOT byte offsets -- verified rather than assumed: parsing
-// `{"kéy": "vàl", "b": [1,2]}` (26 UTF-16 units, 28 UTF-8 bytes) yields a
-// document node of [0,26], and the `kéy` string_content of [2,5] where the
-// byte range is [2,6]. The .d.ts comment calling the argument "UTF8-encoded
-// text" describes what the runtime does internally, not what it returns.
-//
-// So every index crosses this table on the way out.
-
-/** UTF-16 index -> UTF-8 byte offset, for every index in `src` plus the end. */
-function byteOffsets(src) {
-  const table = new Int32Array(src.length + 1);
-  let bytes = 0;
-  for (let i = 0; i < src.length; ) {
-    table[i] = bytes;
-    const code = src.codePointAt(i);
-    if (code < 0x80) bytes += 1;
-    else if (code < 0x800) bytes += 2;
-    else if (code < 0x10000) bytes += 3;
-    else bytes += 4;
-    // A surrogate pair is one code point across two UTF-16 units. Stamp the
-    // low surrogate with the same byte offset as the high one; no tree-sitter
-    // node boundary can fall between them, so the value is never read, but a
-    // hole in the table would be a silent zero.
-    if (code >= 0x10000) {
-      table[i + 1] = bytes;
-      i += 2;
-    } else {
-      i += 1;
-    }
-  }
-  table[src.length] = bytes;
-  return table;
-}
+// web-tree-sitter reports UTF-16 code-unit indices instead, so every index
+// crosses byteOffsets() on the way out. The why, and the measurement behind it,
+// are in harness/wasm/runtime.js.
 
 // --------------------------------------------------------------------------
 // grammar loading

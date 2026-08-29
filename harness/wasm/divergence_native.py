@@ -32,7 +32,13 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 
 def dump(node) -> dict:
     out = {
+        # `sym` is the grammar's own symbol id, and it is the field that
+        # separates "the two runtimes parsed differently" from "the two
+        # runtimes NAME the same node differently". Both happen; only the
+        # first is a parse divergence. See the header of divergence_wasm.js.
+        "sym": node.grammar_id,
         "type": node.type,
+        "grammar_type": node.grammar_name,
         "start": node.start_byte,
         "end": node.end_byte,
         "named": node.is_named,
