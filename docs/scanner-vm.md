@@ -240,3 +240,226 @@ The fuzz corpus fixes it — all five tokens, and 11,209 calls returning false,
 which is error-recovery behaviour the frozen corpus **cannot** contain, because
 `gen_trees.py` refuses to emit a tree containing `ERROR` or `MISSING`. This is
 the oracle gap `docs/parse-layer.md` names, met for one scanner.
+
+## 4. markdown-block, priced on paper
+
+The worst case: 1,602 raw lines, 1,376 code lines. Split by what the VM
+actually has to carry:
+
+| Region                                  | Code lines | Becomes                        |
+| --------------------------------------- | ---------: | ------------------------------ |
+| enums, constants, tag tables, struct    |        175 | package **data** (classes, string table, valid-sets) |
+| `serialize` / `deserialize`             |         46 | **free** — VM-defined          |
+| `create` / `destroy` / ABI wrappers     |         33 | **free**                       |
+| `push_block` / `pop_block` / `roundup_32` |       ~20 | **free** — VM stacks           |
+| executable body                         |    **1,299** | bytecode                     |
+
+### Does it fit?
+
+Yes, after two ISA changes, both already made and retested: 32 registers
+instead of 16, and `GETIDX`. Everything else maps directly:
+
+- the `simulate` flag is a register, and the `if (!s->simulate)` guards are
+  branches;
+- `advance()`'s tab-stop arithmetic is `ALUI mod` by 4 — the reason `MOD` exists
+  and the reason its divisor is restricted to a positive immediate;
+- the 20-arm `switch (block)` collapses to three range tests, because the arms
+  are contiguous enum runs;
+- `is_punctuation` is a class;
+- the 65 HTML tag names are a string table plus `IF_BUF_EQ`, with `towlower`
+  written out as an explicit ASCII range test rather than a fold;
+- `scan(s, lexer, paragraph_interrupt_symbols)` — the self-call with a literal
+  valid-symbol vector — is `RECURSE`, which exists for exactly this;
+- `parse_fenced_code_block(s, delimiter, ...)`'s char parameter is a register.
+
+**Nothing is missing.** That is the honest answer to the brief's question, and
+the reason is in §1: markdown-block is long because it repeats itself
+(`parse_star`, `parse_plus`, `parse_minus` are near-identical), not because it
+does anything the other eight do not.
+
+### How many bytes?
+
+Calibrated by hand-compiling two real markdown-block functions —
+`advance()` and `match()`, 78 code lines, **193 bytes measured**, in
+`spike/scanner-vm/mdblock.sample.js`, with tests so the figure cannot rot. That
+is **2.47 bytes per body line**, on the hard scanner, not on TOML.
+
+Two independent estimates:
+
+- **Line rate**: 1,299 × 2.47 = **3,209 B**.
+- **Construct count** (142 lookahead tests, 188 `if`s, 48 loops, 63
+  valid-symbol tests, 106 advances, 43 case arms, …, costed per opcode):
+  **3,151 B**.
+
+They agree within 2%. And the rate, derived only from markdown-block, predicts
+TOML at 136 bytes against an actual **137** — a 1% error on a scanner it was not
+fitted to.
+
+So: **~3.2 KB of bytecode, plus ~0.5 KB of tables** (65 strings / 336 bytes of
+content, the interrupt valid-set, four classes) ≈ **3.7 KB raw** for the worst
+scanner in the roster.
+
+**Error bar: ±40%**, i.e. 2.2–5.2 KB. The agreement between the two methods
+measures self-consistency, not accuracy — both are calibrated on code I compiled
+myself in one style, and neither sample exercised the two constructs I expect to
+be dearest (string-table matching and the valid-symbol dispatch that dominates
+`scan`). A different porter, or a compiler rather than a person, would land
+elsewhere in that band.
+
+### All nine
+
+Same rate applied to each scanner's body lines:
+
+| Scanner         | Raw lines | Body lines | Est. bytecode |
+| --------------- | --------: | ---------: | ------------: |
+| toml            |        82 |         55 |  136 (**137 actual**) |
+| css             |       100 |         71 |           175 |
+| javascript      |       364 |        264 |           652 |
+| rust            |       393 |        290 |           716 |
+| markdown-inline |       397 |        276 |           682 |
+| python          |       437 |        340 |           840 |
+| kotlin          |       459 |        389 |           961 |
+| yaml            |     1,415 |      1,163 |         2,873 |
+| markdown-block  |     1,602 |      1,299 |         3,209 |
+| **total**       | **5,249** |  **4,147** |    **~10 KB** |
+
+**~10 KB of bytecode for the entire roster, raw**, spread across nine packages
+that download independently. The marginal language costs 0.1–3.2 KB. Against
+`docs/parse-layer.md`'s figure of 30–200 KB of grammar per language under route
+A, the scanner half of an own-the-parser route is not where the bytes are — the
+LR tables are, and that is the tables track's problem, not this one.
+
+### What one port costs, and the number that matters
+
+TOML took roughly half a day including building the trace recorder and the
+replay harness — but the harness is a one-time cost, so the marginal port is
+much less. The two markdown-block functions took about twenty minutes for 78
+lines. Extrapolating at that rate, markdown-block's 1,299 lines is **2–4 days**
+of careful work, and the nine together perhaps **3–4 weeks**, with the same ±40%
+and a strong caveat: I ported the smallest scanner and 6% of the largest.
+
+That number only means something against the alternative, and there is now a
+real one to compare against.
+
+**GoTreeSitter** (`github.com/odvcencio/gotreesitter`, MIT, pure-Go tree-sitter
+runtime, 206 grammars) ships **119 hand-written Go external scanners**. Somebody
+paid the port cost 119 times, in one language, and shipped it. So "hand-port the
+scanners" is not impractical, and any argument for the VM that rests on the port
+being too hard is wrong.
+
+The argument that survives is about **which way the errors point**, and it is
+the asymmetry the brief identified:
+
+- **Hand-porting**: 9 scanners × 2 runtimes = **18 ports**. Each pair can
+  disagree *with each other* on inputs neither the corpus nor the goldens
+  contain. That is a silent, input-dependent divergence between runtimes — this
+  project's established failure mode, and the one thing its whole test strategy
+  is built to catch and would not catch here.
+- **Compiling to bytecode**: 9 programs, **1 compilation each**. A bug is still
+  possible, but both runtimes execute the same bytes, so a bug makes both
+  runtimes wrong *in the same way*. The tree then differs from tree-sitter's and
+  the corpus catches it on the next run.
+
+GoTreeSitter is the right calibration for the first row and it does not have the
+second problem, because it has **one** runtime. It is evidence that 9 ports is
+affordable; it is not evidence that 18 ports agree. That distinction is the
+entire case for this route, and it is worth being precise that the VM does not
+buy less work — it buys work whose errors are *visible*.
+
+## 5. What it costs to ship
+
+All gzipped, `esbuild --minify` for JS, measured today in this worktree.
+
+| Component                                  | Raw     | gz         |
+| ------------------------------------------ | ------: | ---------: |
+| `runtime-js/bundle.js` as shipped          | 59,842  | 16,501     |
+| `runtime-js/bundle.js` minified            | 27,489  |  9,048     |
+| **scanner VM, JS, minified**               |  7,876  |  **2,533** |
+| both concatenated                          | 35,365  | 11,444     |
+| **VM's marginal cost when bundled**        |         |  **2,396** |
+
+| Rust                                | Machine code |
+| ----------------------------------- | -----------: |
+| scanner VM, `-O`                    |      8,581 B |
+| scanner VM, `-C opt-level=s`        |      6,643 B |
+
+So the VM is **~2.4 KB gz on the JS side** and **~8.6 KB of machine code on the
+Rust side**, one time, for all languages. Against the brief's threshold — "a VM
+that costs 15 KB per runtime changes what this project is" — it costs about a
+sixth of that on the side where bytes are visible.
+
+Per language, the scanner section is 0.1–3.2 KB raw against 30–200 KB of grammar
+under route A. Gzipped, TOML's whole scanner section is **131 bytes**.
+
+The Rust figure is machine code in a native binary, not a download, so gzip is
+the wrong unit for it and I have not quoted one.
+
+## 6. `ts_lex`: table or bytecode?
+
+**Table for the DFA, VM for the scanners.** The split is stable, and the
+evidence is now concrete rather than hypothetical: the tables track has a
+working table-driven LR parser in JS that is byte-identical on the JSON corpus
+(`ed8206e`), with the DFA represented as sorted intervals (`inRanges`);
+GoTreeSitter independently reached the same representation
+(`LexTransition{Lo, Hi rune; Next int; Skip bool}`); and the survey track
+established that the construct set `ts_lex` can emit is **closed** across all 29
+lexer bodies in the 18 pinned grammar variants.
+
+Three reasons, in decreasing order of how much they'd have to change my mind.
+
+**1. The DFA is the hot path; the scanner is not.** `ts_lex` runs on every
+character of the file. The external scanner runs only at the handful of
+positions where the parser asks for an external token — for TOML, 230 calls
+across the entire corpus. Putting the per-character path through a general
+bytecode interpreter means paying an interpretive dispatch per *branch* rather
+than per *transition*: css has 437 lex states and emits long inline
+range-comparison chains, so a single character could cost dozens of dispatches.
+A transition table is one binary search. Spending the interpreter's overhead on
+the cold path is free; spending it on the hot path is the whole cost.
+
+**2. As bytecode, the DFA gets bigger, and it compresses worse.** A transition
+is `(lo, hi, next, skip)` — four small fields, in a sorted, highly repetitive
+array. As bytecode the same transition is a class-or-char test plus a 2-byte
+absolute target, which is at least as many bytes and has far less exploitable
+redundancy. The survey measured this effect directly in the C artifacts:
+**code compresses about 4× worse than tables** (json 59% vs 25% of raw; go 40%
+vs 15%), so `ts_lex` is 11.8% of go's gzipped payload against 4.6% raw. Turning
+a table into instructions moves bytes the wrong way across exactly that line.
+
+**3. One engine would be the complex engine.** `ts_lex` needs three lexer
+operations and *no state at all* — no registers, no stacks, no valid-symbols, no
+serialization. The scanner VM has all of those plus a trap surface. Unifying
+means running the simple thing on the complex engine and importing its whole
+failure surface into the hot path, for no reduction in what has to be verified.
+The DFA interpreter is small enough (`inRanges` plus a state loop) that it is
+*less* divergence risk standing alone than folded in.
+
+**Why the split is stable rather than a temporary convenience.** The two halves
+differ in kind, not degree, and the difference is structural:
+
+| | `ts_lex` | external scanner |
+| --- | --- | --- |
+| state across tokens | none | up to two stacks + scalars |
+| sees `valid_symbols` | no | yes, centrally |
+| control flow | a DFA — closed construct set | arbitrary, open-ended |
+| frequency | every character | a few positions per file |
+| recoverable mechanically | yes, demonstrated twice | no — it is hand-written C |
+
+Nothing about a future grammar moves a construct from one column to the other,
+because the boundary is drawn by tree-sitter's own generator: what it can
+express as a DFA goes in `ts_lex`, and what it cannot is precisely why
+`scanner.c` exists.
+
+**The one measurement that would change this**: if a table-driven DFA turned out
+to be slower than bytecode in practice — say because the interval binary search
+thrashes cache on css's 437 states while a bytecode chain stays in a hot loop —
+then the ranking on point 1 flips and points 2 and 3 are not enough on their
+own. I did not benchmark either engine, and that gap is real.
+
+**One genuine caveat against my own recommendation**: yaml 0.7.2's `ts_lex` has
+**exactly two states** — every YAML token comes from the external scanner. For
+YAML specifically, recovering the DFA as a table buys essentially nothing and
+the scanner VM buys everything. If the roster were mostly YAML-shaped, one
+engine would be the right answer. It isn't — css is 437 states and 57% of its
+artifact is lexer code — but it shows the split is a property of this roster,
+not a law.
