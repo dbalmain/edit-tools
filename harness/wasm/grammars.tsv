@@ -1,0 +1,21 @@
+# Grammar wasm provenance. One row per manifest language, plus markdown_inline
+# (built for completeness; gen_trees.py does not use it -- see markdown.toml).
+#
+# lang	repo	tag	subdir	commit	pin (harness/languages/*.toml)
+css	https://github.com/tree-sitter/tree-sitter-css	v0.25.0	.	dda5cfc5722c429eaba1c910ca32c2c0c5bb1a3f	tree-sitter-css==0.25.0
+go	https://github.com/tree-sitter/tree-sitter-go	v0.25.0	.	1547678a9da59885853f5f5cc8a99cc203fa2e2c	tree-sitter-go==0.25.0
+haskell	https://github.com/tree-sitter/tree-sitter-haskell	v0.23.1	.	c30d812bc90827f1a54106a25bc9a6307f5cdcec	tree-sitter-haskell==0.23.1
+html	https://github.com/tree-sitter/tree-sitter-html	v0.23.2	.	5a5ca8551a179998360b4a4ca2c0f366a35acc03	tree-sitter-html==0.23.2
+javascript	https://github.com/tree-sitter/tree-sitter-javascript	v0.25.0	.	44c892e0be055ac465d5eeddae6d3e194424e7de	tree-sitter-javascript==0.25.0
+json	https://github.com/tree-sitter/tree-sitter-json	v0.24.8	.	ee35a6ebefcef0c5c416c0d1ccec7370cfca5a24	tree-sitter-json==0.24.8
+kotlin	https://github.com/tree-sitter-grammars/tree-sitter-kotlin	v1.1.0	.	77dd60ea0a9003ce062c9728a513ffe1aaff8c82	tree-sitter-kotlin==1.1.0
+markdown	https://github.com/tree-sitter-grammars/tree-sitter-markdown	v0.5.1	tree-sitter-markdown	2dfd57f547f06ca5631a80f601e129d73fc8e9f0	tree-sitter-markdown==0.5.1
+markdown_inline	https://github.com/tree-sitter-grammars/tree-sitter-markdown	v0.5.1	tree-sitter-markdown-inline	2dfd57f547f06ca5631a80f601e129d73fc8e9f0	tree-sitter-markdown==0.5.1
+python	https://github.com/tree-sitter/tree-sitter-python	v0.25.0	.	293fdc02038ee2bf0e2e206711b69c90ac0d413f	tree-sitter-python==0.25.0
+ruby	https://github.com/tree-sitter/tree-sitter-ruby	v0.23.1	.	71bd32fb7607035768799732addba884a37a6210	tree-sitter-ruby==0.23.1
+rust	https://github.com/tree-sitter/tree-sitter-rust	v0.24.0	.	18b0515fca567f5a10aee9978c6d2640e878671a	tree-sitter-rust==0.24.0
+scheme	https://github.com/6cdh/tree-sitter-scheme	v0.24.7-1	.	933883742f909cf79bd8aa6fde05ef51d79c9263	tree-sitter-scheme @ git+...@v0.24.7-1
+toml	https://github.com/tree-sitter-grammars/tree-sitter-toml	v0.7.0	.	64b56832c2cffe41758f28e05c756a3a98d16f41	tree-sitter-toml==0.7.0
+typescript	https://github.com/tree-sitter/tree-sitter-typescript	v0.23.2	typescript	f975a621f4e7f532fe322e13c4f79495e0a7b2e7	tree-sitter-typescript==0.23.2
+xml	https://github.com/tree-sitter-grammars/tree-sitter-xml	v0.7.0	xml	4b64dd3a03ec002258d6268d712fd93716d6ab57	tree-sitter-xml==0.7.0
+yaml	https://github.com/tree-sitter-grammars/tree-sitter-yaml	v0.7.2	.	7708026449bed86239b1cd5bce6e3c34dbca6415	tree-sitter-yaml==0.7.2
