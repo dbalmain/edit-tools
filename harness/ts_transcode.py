@@ -30,16 +30,23 @@ occur in either grammar this spike parses.
 
 Recovered lexer states are ordered op lists, mirrored by `harness/ts_lr.mjs`:
 
-    [0, sym]                            ACCEPT_TOKEN(sym)
-    [1, [char, target, ...]]            ADVANCE_MAP(...)
-    [2, eofMode, ranges, act, target]   if (<cond>) <action>
-    [3, act, target]                    unconditional <action>
+    [0, sym]                             ACCEPT_TOKEN(sym)
+    [1, [char, target, ...]]             ADVANCE_MAP(...)
+    [2, eofMode, ranges, act, target]    if (<cond>) <action>
+    [3, act, target]                     unconditional <action>
+    [4, ranges, eofRanges, act, target]  if (<cond>) <action>, eof-split
 
-`eofMode` is 0 (don't care) / 1 (require eof) / 2 (require !eof); `ranges` is a
-flat inclusive [lo, hi, ...] over int32 -- the domain of `lookahead`, which is 0
-at EOF and -1 on a UTF-8 decode error, so the full int32 line is the honest
-domain and complements are taken over it. `act` is 0 ADVANCE / 1 SKIP /
-2 END_STATE / 3 ACCEPT_TOKEN.
+`ranges` is a flat inclusive [lo, hi, ...] over int32 -- the domain of
+`lookahead`, which is 0 at EOF and -1 on a UTF-8 decode error, so the full int32
+line is the honest domain and complements are taken over it. `act` is 0 ADVANCE
+/ 1 SKIP / 2 END_STATE / 3 ACCEPT_TOKEN.
+
+A guard is a predicate over (`eof`, `lookahead`), and `eof` is a boolean the
+lexer recomputes at every transition, so the general form is *two* interval
+sets: one that applies at EOF and one that does not. Op 4 carries both. Op 2 is
+the collapsed form for the three cases that cover all but two lex states in the
+sixteen pinned grammars, with `eofMode` 0 (both sets equal) / 1 (require eof) /
+2 (require !eof).
 
 Note the conditions are recovered as *branch predicates*, not as token character
 sets. That sidesteps the is-included flip described in `parse-survey.md` §3d: a
@@ -421,7 +428,7 @@ class LexParser:
             cond = self.parse_or()
             self.expect(")")
             act = self.parse_action()
-            return [2, cond.eof, flatten(cond.r), *act]
+            return cond.emit(act[0], act[1])
         return self.parse_action_stmt()
 
     def parse_action_stmt(self) -> list:
@@ -508,10 +515,10 @@ class LexParser:
             if not self.at("eof"):
                 raise Unrecognised(f"negation of non-eof near {self.context()}")
             self.next()
-            return Cond(NOT_EOF, ALL)
+            return Cond([], ALL)
         if self.at("eof"):
             self.next()
-            return Cond(IS_EOF, ALL)
+            return Cond(ALL, [])
         if self.at("set_contains"):
             self.next()
             self.expect("(")
@@ -526,16 +533,16 @@ class LexParser:
             rs = self.charsets[name]
             if len(rs) != length:
                 raise Unrecognised(f"set_contains length {length} != {len(rs)}")
-            return Cond(ANY_EOF, norm(rs))
+            return ranges_cond(rs)
         if self.at("lookahead"):
             self.next()
             op = self.peek()[1]
             if op in ("==", "!=", "<", "<=", ">", ">="):
                 self.next()
                 v = self.syms.value(self.next()[1])
-                return Cond(ANY_EOF, cmp_ranges("lookahead", op, v))
+                return ranges_cond(cmp_ranges("lookahead", op, v))
             # bare `lookahead` used as a truth value
-            return Cond(ANY_EOF, complement([(0, 0)]))
+            return ranges_cond(complement([(0, 0)]))
         kind, text = self.next()
         if kind not in ("num", "char"):
             raise Unrecognised(f"condition operand {text!r} near {self.context()}")
@@ -545,40 +552,50 @@ class LexParser:
             raise Unrecognised(f"expected comparison after {text!r}")
         self.next()
         self.expect("lookahead")
-        return Cond(ANY_EOF, cmp_ranges(v, op, "lookahead"))
+        return ranges_cond(cmp_ranges(v, op, "lookahead"))
 
 
-# eof requirement of a condition, mirrored by the JS interpreter.
+# Emitted eof modes for the collapsible cases, mirrored by the JS interpreter.
 ANY_EOF, IS_EOF, NOT_EOF = 0, 1, 2
 
 
 class Cond:
-    """`eof` requirement plus an interval set over `lookahead`."""
+    """A branch predicate over (`eof`, `lookahead`), as two interval sets.
 
-    __slots__ = ("eof", "r")
+    `eof` is a plain boolean the lexer recomputes at every state transition, so
+    any boolean combination of it with `lookahead` comparisons is exactly a pair
+    of interval sets: which lookaheads pass when eof holds, and which pass when
+    it does not. Modelling it as one set plus a flag cannot represent
+    `(!eof && lookahead == 0) || lookahead == '\n'`, which is what
+    tree-sitter-python 0.25.0 emits in two of its lex states.
+    """
 
-    def __init__(self, eof: int, ranges):
-        self.eof = eof
-        self.r = ranges
+    __slots__ = ("e", "n")
 
-    def intersect(self, other: "Cond") -> "Cond":
-        if self.eof == other.eof or other.eof == ANY_EOF:
-            eof = self.eof
-        elif self.eof == ANY_EOF:
-            eof = other.eof
-        else:
-            # `eof && !eof` is unsatisfiable; the generator never emits it, so
-            # seeing it means this parser has misread the expression.
-            raise Unrecognised("contradictory eof requirements in one condition")
-        return Cond(eof, intersect(self.r, other.r))
+    def __init__(self, at_eof, not_at_eof):
+        self.e = at_eof
+        self.n = not_at_eof
 
-    def union(self, other: "Cond") -> "Cond":
-        if self.eof != other.eof:
-            # A disjunction spanning both eof states cannot be one interval set
-            # plus one flag. Nothing in the generator produces it; refuse rather
-            # than guess which half wins.
-            raise Unrecognised("`||` across differing eof requirements")
-        return Cond(self.eof, union(self.r, other.r))
+    def intersect(self, other):
+        return Cond(intersect(self.e, other.e), intersect(self.n, other.n))
+
+    def union(self, other):
+        return Cond(union(self.e, other.e), union(self.n, other.n))
+
+    def emit(self, act, target):
+        """Collapse to `[2, mode, ranges, ...]` when possible, else `[4, ...]`."""
+        if self.e == self.n:
+            return [2, ANY_EOF, flatten(self.n), act, target]
+        if not self.e:
+            return [2, NOT_EOF, flatten(self.n), act, target]
+        if not self.n:
+            return [2, IS_EOF, flatten(self.e), act, target]
+        return [4, flatten(self.n), flatten(self.e), act, target]
+
+
+def ranges_cond(ranges) -> Cond:
+    rs = norm(ranges)
+    return Cond(rs, rs)
 
 
 def cmp_ranges(left, op, right) -> list[tuple[int, int]]:
@@ -613,7 +630,9 @@ def flatten(ranges) -> list[int]:
 
 def parse_charsets(src: str) -> dict[str, list[tuple[int, int]]]:
     sets = {}
-    for m in re.finditer(r"static const TSCharacterRange (\w+)\[\]\s*=\s*\{", src):
+    # tree-sitter 0.25 emits `static const TSCharacterRange`; 0.23/0.24 emit it
+    # without `const` (haskell, kotlin, typescript, xml among the pins).
+    for m in re.finditer(r"static (?:const )?TSCharacterRange (\w+)\[\]\s*=\s*\{", src):
         body, _ = brace_body(src, m.end() - 1)
         rs = []
         for item in split_items(body):
@@ -684,6 +703,21 @@ def struct_fields(text: str) -> dict[str, str]:
         else:
             out[f"@{i}"] = item
     return out
+
+
+def lex_only(path: Path) -> dict:
+    """Recover just the two lexers, ignoring the external-scanner refusal.
+
+    This is the construct-coverage tool: it answers "does this parser.c contain
+    a ts_lex construct the recoverer does not model?" for grammars whose tables
+    are otherwise out of scope because they have a scanner.
+    """
+    src = strip_comments(Path(path).read_text())
+    syms = Symbols(src)
+    charsets = parse_charsets(src)
+    lex = parse_lex_fn(src, "ts_lex", syms, charsets)
+    keyword_lex = parse_lex_fn(src, "ts_lex_keywords", syms, charsets)
+    return {"lex": lex, "keywordLex": keyword_lex}
 
 
 def transcode(path: Path) -> dict:
@@ -946,8 +980,25 @@ def parse_action_macro(text: str, syms: Symbols) -> list[int]:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("parser_c", type=Path)
-    ap.add_argument("-o", "--out", type=Path, required=True)
+    ap.add_argument("-o", "--out", type=Path)
+    ap.add_argument(
+        "--lex-only",
+        action="store_true",
+        help="recover only ts_lex/ts_lex_keywords, ignoring external scanners",
+    )
     args = ap.parse_args()
+    if args.lex_only:
+        blob = lex_only(args.parser_c)
+        states = len(blob["lex"] or [])
+        kw = len(blob["keywordLex"] or [])
+        ops = sum(len(st["o"]) for st in (blob["lex"] or []))
+        ops += sum(len(st["o"]) for st in (blob["keywordLex"] or []))
+        print(f"{args.parser_c}: {states} lex states, {kw} keyword lex states, {ops} ops")
+        if args.out:
+            args.out.write_text(json.dumps(blob, separators=(",", ":")) + "\n")
+        return 0
+    if args.out is None:
+        ap.error("-o/--out is required unless --lex-only")
     blob = transcode(args.parser_c)
     args.out.write_text(json.dumps(blob, separators=(",", ":")) + "\n")
     print(

@@ -321,6 +321,12 @@ class Lexer {
         } else if (kind === 3) {
           act = op[1];
           target = op[2];
+        } else if (kind === 4) {
+          // Guard whose truth differs at EOF: one interval set for each.
+          const ranges = eof ? op[2] : op[1];
+          if (!inRanges(ranges, lookahead)) continue;
+          act = op[3];
+          target = op[4];
         } else {
           throw new Unsupported(`lex op kind ${kind}`);
         }
