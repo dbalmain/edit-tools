@@ -715,3 +715,317 @@ Two Lezer facts worth having:
 | Lezer (tree-shaken) | **14,953** | ~2,904 | ~17,448 | ~4,400 | ~26,117 | ~31,325 | ~9,486 | ~12,503 |
 | tree-sitter-wasms 0.1.13 (stale, unloadable) | — | 2,350 | 69,142 | absent | 98,306 | 77,587 | 16,934 | 50,481 |
 
+
+---
+
+## 4. Prior art
+
+### 4a. GoTreeSitter — route C3, already built, and it works
+
+`https://github.com/odvcencio/gotreesitter` (fetched 2026-08-30). MIT, Go,
+560 stars, created 2026-02-20, **last pushed 2026-08-29** — active, not
+abandoned. This is the most important item in this survey.
+
+It is a **pure-Go tree-sitter runtime, no cgo, no C toolchain**, and it is
+precisely `parse-layer.md`'s route C3: transcode tree-sitter's own generated
+tables and interpret them. From its README (primary source):
+
+> `ts2go` extracts parse tables, lex tables, field maps, symbol metadata, and
+> external token lists from upstream `parser.c` files. These are serialized to
+> compressed binary blobs under `grammars/grammar_blobs/` and lazy-loaded …
+
+**It answers `parse-layer.md`'s single open question.** That document says of
+C3: *"The unverified step is the lexer: tree-sitter emits `ts_lex` as generated
+C code — a switch-based DFA — not as a table, so it must either be recovered
+from that code or regenerated from `grammar.json`'s token rules."*
+
+`cmd/ts2go/lex_dfa.go` — **1,607 lines** — recovers it from the code. It
+contains a small hand-rolled C tokenizer (`cTokenKind`, `cTokenIdent`, …), an
+error `ErrNoLexFunction = errors.New("ts_lex function not found")`, and emits:
+
+```go
+type LexState struct {
+    Transitions []LexTransition
+    Accept      SymbolID
+    HasAccept   bool
+    IsKeyword   bool
+    EOF         int
+}
+type LexTransition struct { Lo, Hi rune; Next int; Skip bool }
+type LexDFA struct {
+    States, KeywordStates []LexState
+    KeywordCapture SymbolID; HasKeywordCapture bool
+}
+```
+
+**So the answer to "can the `ts_lex` DFA be recovered as data?" is yes,
+demonstrated, in about 1,600 lines.** And the constructs `lex_dfa.go`
+references are exactly the set enumerated in §3 — `ADVANCE_MAP`,
+`set_contains` / `TSCharacterRange` character sets, `ACCEPT_TOKEN`,
+`END_STATE`, `ADVANCE`, `SKIP`, `eof`, `lookahead`, `ts_lex_keywords` — and
+nothing else. That is independent confirmation that §3's list is closed.
+
+What it reports about the rest of the problem, from the README:
+
+- **206 grammars** ship; all 206 produce error-free trees on smoke samples.
+- **119 have hand-written Go external scanners.** Someone actually paid the
+  scanner-port cost, 119 times. This is the empirical price of
+  `parse-layer.md`'s "5,249 lines of C" question.
+- **7 grammars needed hand-written Go *token sources* instead of the recovered
+  DFA**: `authzed, c, cpp, go, java, json, lua`. Stated reason: *"For grammars
+  where the DFA is not enough (for example, Go's automatic semicolons, or
+  YAML's indentation-sensitive structure), hand-written Go token sources
+  implement the `TokenSource` interface directly."*
+
+  **This is the finding that should change a plan.** `parse-layer.md` proposes
+  staging any own-the-parser route on **"JSON and Go first — the two
+  scanner-free grammars"**. Both **json** and **go** are on GoTreeSitter's
+  hand-written list. The README gives a reason for `go` (automatic semicolons)
+  and none for `json`. Treat this as a **flag, not a proof**: the list may
+  reflect performance hand-optimisation rather than capability, and the README
+  does not say which. But the two grammars chosen precisely because they looked
+  cheapest are the two the one existing implementation did not do the cheap way,
+  and that is worth resolving before committing to that staging order.
+- **Parity story**: "exact deep parity against one oracle", upstream
+  tree-sitter **v0.25.1**; golden S-expression snapshots, incremental reparse,
+  error recovery, GLR fork/merge tests.
+- **Performance**: "full-parse throughput ≈ **4.85× slower than C**".
+- **Quality tiers** are explicit: `full` / `partial` (missing external scanner —
+  external tokens are simply skipped) / `none`. And `full` "does not guarantee
+  error-free trees on all inputs" because of GLR safety caps (iteration cap,
+  stack depth cap).
+
+Caveat on this source: the repository's file naming and CHANGELOG (349 KB) look
+heavily machine-generated, and a secondary article about it
+(`conzit.com/post/porting-tree-sitter-to-go-a-major-leap-forward`) has been
+**retracted** — "The previous article body has been removed during editorial
+review. Conzit will restore it only if it can be retested, rewritten from
+primary evidence" (fetched 2026-08-30). Every claim above is taken from the
+repository's own README or source, not from that article. **Nobody here has run
+its test suite.** Its existence and its approach are established; its parity
+claims are its own.
+
+### 4b. Lezer's official tree-sitter importer — archived
+
+`https://github.com/lezer-parser/import-tree-sitter` — Marijn Haverbeke's own
+tool, `grammar.json` → Lezer grammar. **Archived, 29 stars, created 2020-09-02,
+last pushed 2026-04-15** (fetched 2026-08-30).
+
+Its stated limitations are the most useful abandoned-attempt reasons available,
+and they are the maintainer's:
+
+- *"Because tree-sitter's concepts don't all map to Lezer concepts, you'll only
+  get a working, finished grammar for very trivial grammars."*
+- *"Precedences are specified in a more fine-grained way in Lezer, so the tool
+  only emits a comment indicating that a precedence was specified, and leaves
+  it to you to put the proper conflict markers in."*
+- *"Tree-sitter's alias expressions are a bit like inline rules, but make the
+  inner rule's name disappear. That's not something you can do in Lezer, so
+  you'll get additional noise in your tree in some cases."*
+
+**That is route B's generator, tried by the person best placed to write it, and
+archived.** `parse-layer.md` says of route B that "a generator from tree-sitter
+`grammar.json` to a Lezer grammar could at least fix node names by
+construction". The tool's own docs say it cannot: aliases make node names
+diverge, by design, and precedences need hand finishing.
+
+### 4c. The scanner-transpiler attempt — stale
+
+`https://github.com/milahu/lezer-parser-import-tree-sitter-scanner` — "A
+grammar transpiler, and a domain-specific C++ to JavaScript transpiler". 10
+stars, created 2022-12-13, **last pushed 2023-03-19** (fetched 2026-08-30) —
+over three years stale, not archived but not alive. This is the only attempt
+found at mechanically translating tree-sitter external scanners to JS.
+
+### 4d. What was not found
+
+No pure-JavaScript tree-sitter runtime (table-interpreting, no wasm) was found.
+Searches for one return only the official bindings, `web-tree-sitter` (wasm),
+and `node-tree-sitter` (native). **If one exists it is not discoverable by
+search**, which is itself a data point: the Go implementation is discoverable
+immediately.
+
+---
+
+## 6. Native-vs-wasm divergence — route A's central claim is false
+
+Flagged by the bytecode track as unsubstantiated. It is substantiated here, from
+primary sources, with a measurement.
+
+`parse-layer.md`, route A: *"It also **deletes** one of the two places
+`docs/design.md` says divergence risk concentrates: with the same grammar
+version behind native and wasm, the parse layer cannot diverge between
+runtimes."*
+
+**That is false. Three independent mechanisms, in increasing order of nastiness.**
+
+### 6a. The 24-symbol whitelist — a hard, load-time divergence
+
+An external scanner running under wasm may import **only** the symbols in
+`lib/src/wasm/stdlib-symbols.txt` (tree-sitter v0.26.8). The complete list, 24
+entries:
+
+```
+calloc, free, iswalnum, iswalpha, iswblank, iswdigit, iswlower, iswspace,
+iswupper, iswxdigit, malloc, memchr, memcmp, memcpy, memmove, memset,
+strcmp, strlen, strncat, strncmp, strncpy, towlower, towupper
+```
+
+`lib/src/wasm_store.c` rejects anything else at instantiation:
+
+```c
+if (!defined_in_stdlib) {
+  format(error_message, "invalid import '%.*s'\n", …);
+  goto error;
+}
+```
+
+So a grammar whose scanner calls `strstr`, `strchr`, `qsort`, `bsearch`,
+`snprintf`, `atoi`, `strtol`, `isalpha` (the *narrow* form is **not** on the
+list), or any C++ runtime symbol **links natively and fails to load under
+wasm**. Same grammar, same version, one runtime parses the language and the
+other cannot instantiate it. Corroborated independently by Pulsar's editor team,
+who ship a **custom `web-tree-sitter` build** for exactly this reason:
+*"External scanners can call any C stdlib functions, but web-tree-sitter has to
+guess which functions they'll pick"* — Pulsar "has got to keep track of all the
+external functions that are used by popular Tree-sitter parsers, and build a
+custom `web-tree-sitter`"
+(`blog.pulsar-edit.dev/posts/20240902-savetheclocktower-modern-tree-sitter-part-7/`,
+fetched 2026-08-30).
+
+### 6b. The 4 MB scanner heap — a resource divergence
+
+`crates/language/wasm/src/stdlib.c` implements the allocator that backs
+`malloc`/`calloc`/`realloc`/`free` for scanners inside wasm — a bump allocator
+with a free list and
+
+```c
+#define MAX_HEAP_SIZE (4 * 1024 * 1024)
+```
+
+Native scanners allocate from the process heap with no such ceiling. Separately,
+`wasm_store.c` caps the whole module at
+`#define MAX_MEMORY_SIZE (128 * 1024 * 1024 / MEMORY_PAGE_SIZE)`. Markdown's
+block scanner and markdown-inline both call `malloc`/`realloc`/`free`.
+
+### 6c. `iswalpha` — the silent, input-dependent one, and it is measured
+
+This is the mechanism that matches this project's established failure mode.
+
+The wide-character classifiers on the whitelist are **not the host libc's** when
+running under wasm — they are the ones compiled into tree-sitter's bundled wasm
+stdlib. Natively they are the platform libc's, and **glibc's are
+locale-dependent**. Measured on this machine (gcc 15.2.0, glibc):
+
+```c
+setlocale(LC_ALL, "C");        iswalpha(U+00E9)=0  U+03B1=0  U+05E9=0  U+4E00=0
+setlocale(LC_ALL, "C.UTF-8");  iswalpha(U+00E9)=1  U+03B1=1  U+05E9=1  U+4E00=1
+setlocale(LC_ALL, "en_US.UTF-8"); … =1  =1  =1  =1
+setlocale(LC_ALL, "");   /* got en_AU.UTF-8 */  … =1  =1  =1  =1
+```
+
+**In the `C` locale glibc reports every non-ASCII codepoint as not-a-letter.**
+That is the default locale of a process with no `LANG` set — a container, a CI
+job, a daemon.
+
+And this is not hypothetical for this roster. Grepping the pinned scanners for
+whitelisted libc calls:
+
+| Grammar (pin) | wide-char / libc calls in `scanner.c` |
+| --- | --- |
+| **javascript 0.25.0** | `iswalpha iswdigit iswspace` |
+| **rust 0.24.0** | `iswalpha iswdigit iswspace` |
+| **markdown 0.5.1 (block)** | `iswalnum iswalpha towlower` + `calloc free malloc realloc memcpy strcmp` |
+| **ruby 0.23.1** | `iswalnum iswalpha iswdigit iswlower iswspace iswupper memchr memcpy` |
+| **kotlin 1.1.0** | `iswalnum iswalpha iswdigit iswspace memset strncmp` |
+| **html 0.23.2** | `iswalnum iswspace towupper memcpy strlen strncpy` |
+| haskell 0.23.1 | `free memcpy memset strlen` |
+| markdown-inline 0.5.1 | `free malloc` |
+| xml 0.7.0 | `memcmp memcpy` |
+| toml 0.7.0, typescript 0.23.2 (both) | none |
+
+**Six of this project's pinned grammars — javascript, rust, markdown, ruby,
+kotlin, html — classify identifier characters through a function whose answer
+differs between wasm and native, and between two native runs under different
+locales.** Any non-ASCII identifier, string or heading is a candidate input.
+
+Command that produced the table:
+
+```sh
+grep -ohE "\b(iswalnum|iswalpha|iswblank|iswdigit|iswlower|iswspace|iswupper|iswxdigit|towlower|towupper|memchr|memcmp|memcpy|memmove|memset|strcmp|strlen|strncat|strncmp|strncpy|malloc|calloc|realloc|free)\b" src/scanner.c | sort -u
+```
+
+### 6d. What this does and does not mean
+
+It does **not** mean route A is unworkable — editors ship it. It means the
+specific sentence *"the parse layer cannot diverge between runtimes"* cannot be
+used as an argument **for** route A, because it is false, and because the
+divergence it hides is of exactly the kind this project has twice been bitten
+by: silent, input-dependent, invisible to a corpus of clean ASCII files.
+
+`parse-layer.md`'s own gate section applies unchanged to route A: the
+differential fuzzer it demands before any own-the-parser route is **also**
+needed to make route A's parse layer trustworthy across its two runtimes. Route
+A does not delete that work; it relocates it. The corpus cannot see this class
+of bug — `gen_trees.py` freezes trees from one native parse, so a wasm-side
+disagreement would never appear.
+
+---
+
+## 7. A seventh route
+
+`parse-layer.md`'s six routes are A (tree-sitter everywhere), B (tree-sitter +
+Lezer), C (own tables + scanner VM), D (scanner-free roster), E (hand-write
+parsers), F (tree from outside).
+
+**Route G: adopt an existing table-interpreting runtime rather than writing
+one.** §4a establishes that the hard half of C3 — extracting tree-sitter's
+tables *and* recovering the `ts_lex` DFA from the generated C — exists, is MIT
+licensed, is active, and covers 206 grammars including 119 ported external
+scanners. C3's cost as priced in `parse-layer.md` assumes all of that is
+greenfield.
+
+This is a genuinely different route from C3 because what it buys is the
+**transcoder and the scanner ports**, which are C3's bulk, and what it does not
+buy is a JS or Rust runtime — GoTreeSitter is Go. Concretely it could mean:
+reusing `ts2go`'s extraction to produce the data blobs and porting only the
+*interpreters*; or vendoring the recovered DFA and scanner logic as a
+specification to port from; or (if the product tolerates it) a Go/wasm
+build. Each of those is a different amount of work and none has been priced
+here — pricing them is a design question and this document does not do design.
+
+What is established, and is new since `parse-layer.md` was written:
+
+1. The `ts_lex` recovery question — named there as "the thing to settle before
+   [C3] is a plan" — **is settled affirmatively**, with a working
+   implementation at ~1,600 lines (§4a).
+2. The construct set that recovery must handle **is closed and enumerated**
+   (§3), confirmed against 10,227 lex states and against an independent
+   implementation.
+3. The external-scanner port cost has an **empirical data point**: 119 done.
+4. The performance cost of a table interpreter vs C has one too: **≈4.85×**.
+
+**No portable table format has appeared upstream.** The CLI still emits only C
+(§1a), the C API still has no serializer (§1b), and the only machine-readable
+artifacts remain `grammar.json` and `node-types.json`, both pre-table. The one
+upstream routine that reads tables as data is the wasm loader (§1c), and it is
+not exposed.
+
+---
+
+## Appendix: what could not be measured here
+
+- **Grammar wasm at this repo's pinned versions.** `tree-sitter build --wasm`
+  regenerates from `grammar.js` (it will not build a shipped `parser.c`), and on
+  this NixOS machine its toolchain does not run: json/css fail with *"NixOS
+  cannot run dynamically linked executables intended for generic linux
+  environments"* (the vendored `wasi-sdk clang`), go/python fail with *"Failed
+  to run wasi-sdk clang -- Argument list too long (os error 7)"*. So
+  `parse-layer.md`'s 0.55–0.75× native-to-wasm proxy **remains an unverified
+  estimate**, and §5b shows the obvious substitute (`tree-sitter-wasms`) is
+  both stale and unloadable. This is `parse-layer.md` deliverable 4 and it is
+  still open.
+- **GoTreeSitter's parity claims.** Its test suite was not run here.
+- **Whether `json` and `go` are on GoTreeSitter's hand-written-lexer list for
+  capability reasons or performance reasons.** The README does not say, and
+  this is the one open question most likely to change a staging decision (§4a).
