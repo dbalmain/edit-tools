@@ -541,6 +541,136 @@ vtable: `advance`, `mark_end`, `get_column`, `is_at_included_range_start`,
 are used **only by hand-written external scanners**, never by generated code. So
 a recovered `ts_lex` needs a runtime offering exactly three operations.
 
+
+---
+
+## 4. Prior art
+
+### 4a. GoTreeSitter — route C3, already built, and it works
+
+`https://github.com/odvcencio/gotreesitter` (fetched 2026-08-30). MIT, Go,
+560 stars, created 2026-02-20, **last pushed 2026-08-29** — active, not
+abandoned. This is the most important item in this survey.
+
+It is a **pure-Go tree-sitter runtime, no cgo, no C toolchain**, and it is
+precisely `parse-layer.md`'s route C3: transcode tree-sitter's own generated
+tables and interpret them. From its README (primary source):
+
+> `ts2go` extracts parse tables, lex tables, field maps, symbol metadata, and
+> external token lists from upstream `parser.c` files. These are serialized to
+> compressed binary blobs under `grammars/grammar_blobs/` and lazy-loaded …
+
+**It answers `parse-layer.md`'s single open question.** That document says of
+C3: *"The unverified step is the lexer: tree-sitter emits `ts_lex` as generated
+C code — a switch-based DFA — not as a table, so it must either be recovered
+from that code or regenerated from `grammar.json`'s token rules."*
+
+`cmd/ts2go/lex_dfa.go` — **1,607 lines** — recovers it from the code. It
+contains a small hand-rolled C tokenizer (`cTokenKind`, `cTokenIdent`, …), an
+error `ErrNoLexFunction = errors.New("ts_lex function not found")`, and emits:
+
+```go
+type LexState struct {
+    Transitions []LexTransition
+    Accept      SymbolID
+    HasAccept   bool
+    IsKeyword   bool
+    EOF         int
+}
+type LexTransition struct { Lo, Hi rune; Next int; Skip bool }
+type LexDFA struct {
+    States, KeywordStates []LexState
+    KeywordCapture SymbolID; HasKeywordCapture bool
+}
+```
+
+**So the answer to "can the `ts_lex` DFA be recovered as data?" is yes,
+demonstrated, in about 1,600 lines.** And the constructs `lex_dfa.go`
+references are exactly the set enumerated in §3 — `ADVANCE_MAP`,
+`set_contains` / `TSCharacterRange` character sets, `ACCEPT_TOKEN`,
+`END_STATE`, `ADVANCE`, `SKIP`, `eof`, `lookahead`, `ts_lex_keywords` — and
+nothing else. That is independent confirmation that §3's list is closed.
+
+What it reports about the rest of the problem, from the README:
+
+- **206 grammars** ship; all 206 produce error-free trees on smoke samples.
+- **119 have hand-written Go external scanners.** Someone actually paid the
+  scanner-port cost, 119 times. This is the empirical price of
+  `parse-layer.md`'s "5,249 lines of C" question.
+- **7 grammars needed hand-written Go *token sources* instead of the recovered
+  DFA**: `authzed, c, cpp, go, java, json, lua`. Stated reason: *"For grammars
+  where the DFA is not enough (for example, Go's automatic semicolons, or
+  YAML's indentation-sensitive structure), hand-written Go token sources
+  implement the `TokenSource` interface directly."*
+
+  **This is the finding that should change a plan.** `parse-layer.md` proposes
+  staging any own-the-parser route on **"JSON and Go first — the two
+  scanner-free grammars"**. Both **json** and **go** are on GoTreeSitter's
+  hand-written list. The README gives a reason for `go` (automatic semicolons)
+  and none for `json`. Treat this as a **flag, not a proof**: the list may
+  reflect performance hand-optimisation rather than capability, and the README
+  does not say which. But the two grammars chosen precisely because they looked
+  cheapest are the two the one existing implementation did not do the cheap way,
+  and that is worth resolving before committing to that staging order.
+- **Parity story**: "exact deep parity against one oracle", upstream
+  tree-sitter **v0.25.1**; golden S-expression snapshots, incremental reparse,
+  error recovery, GLR fork/merge tests.
+- **Performance**: "full-parse throughput ≈ **4.85× slower than C**".
+- **Quality tiers** are explicit: `full` / `partial` (missing external scanner —
+  external tokens are simply skipped) / `none`. And `full` "does not guarantee
+  error-free trees on all inputs" because of GLR safety caps (iteration cap,
+  stack depth cap).
+
+Caveat on this source: the repository's file naming and CHANGELOG (349 KB) look
+heavily machine-generated, and a secondary article about it
+(`conzit.com/post/porting-tree-sitter-to-go-a-major-leap-forward`) has been
+**retracted** — "The previous article body has been removed during editorial
+review. Conzit will restore it only if it can be retested, rewritten from
+primary evidence" (fetched 2026-08-30). Every claim above is taken from the
+repository's own README or source, not from that article. **Nobody here has run
+its test suite.** Its existence and its approach are established; its parity
+claims are its own.
+
+### 4b. Lezer's official tree-sitter importer — archived
+
+`https://github.com/lezer-parser/import-tree-sitter` — Marijn Haverbeke's own
+tool, `grammar.json` → Lezer grammar. **Archived, 29 stars, created 2020-09-02,
+last pushed 2026-04-15** (fetched 2026-08-30).
+
+Its stated limitations are the most useful abandoned-attempt reasons available,
+and they are the maintainer's:
+
+- *"Because tree-sitter's concepts don't all map to Lezer concepts, you'll only
+  get a working, finished grammar for very trivial grammars."*
+- *"Precedences are specified in a more fine-grained way in Lezer, so the tool
+  only emits a comment indicating that a precedence was specified, and leaves
+  it to you to put the proper conflict markers in."*
+- *"Tree-sitter's alias expressions are a bit like inline rules, but make the
+  inner rule's name disappear. That's not something you can do in Lezer, so
+  you'll get additional noise in your tree in some cases."*
+
+**That is route B's generator, tried by the person best placed to write it, and
+archived.** `parse-layer.md` says of route B that "a generator from tree-sitter
+`grammar.json` to a Lezer grammar could at least fix node names by
+construction". The tool's own docs say it cannot: aliases make node names
+diverge, by design, and precedences need hand finishing.
+
+### 4c. The scanner-transpiler attempt — stale
+
+`https://github.com/milahu/lezer-parser-import-tree-sitter-scanner` — "A
+grammar transpiler, and a domain-specific C++ to JavaScript transpiler". 10
+stars, created 2022-12-13, **last pushed 2023-03-19** (fetched 2026-08-30) —
+over three years stale, not archived but not alive. This is the only attempt
+found at mechanically translating tree-sitter external scanners to JS.
+
+### 4d. What was not found
+
+No pure-JavaScript tree-sitter runtime (table-interpreting, no wasm) was found.
+Searches for one return only the official bindings, `web-tree-sitter` (wasm),
+and `node-tree-sitter` (native). **If one exists it is not discoverable by
+search**, which is itself a data point: the Go implementation is discoverable
+immediately.
+
 ---
 
 ## 5. Today's real numbers, measured
@@ -714,136 +844,6 @@ Two Lezer facts worth having:
 | **web-tree-sitter 0.26.13** | **111,589** | *see 5b — no loadable artifact at pinned versions* ||||||| 
 | Lezer (tree-shaken) | **14,953** | ~2,904 | ~17,448 | ~4,400 | ~26,117 | ~31,325 | ~9,486 | ~12,503 |
 | tree-sitter-wasms 0.1.13 (stale, unloadable) | — | 2,350 | 69,142 | absent | 98,306 | 77,587 | 16,934 | 50,481 |
-
-
----
-
-## 4. Prior art
-
-### 4a. GoTreeSitter — route C3, already built, and it works
-
-`https://github.com/odvcencio/gotreesitter` (fetched 2026-08-30). MIT, Go,
-560 stars, created 2026-02-20, **last pushed 2026-08-29** — active, not
-abandoned. This is the most important item in this survey.
-
-It is a **pure-Go tree-sitter runtime, no cgo, no C toolchain**, and it is
-precisely `parse-layer.md`'s route C3: transcode tree-sitter's own generated
-tables and interpret them. From its README (primary source):
-
-> `ts2go` extracts parse tables, lex tables, field maps, symbol metadata, and
-> external token lists from upstream `parser.c` files. These are serialized to
-> compressed binary blobs under `grammars/grammar_blobs/` and lazy-loaded …
-
-**It answers `parse-layer.md`'s single open question.** That document says of
-C3: *"The unverified step is the lexer: tree-sitter emits `ts_lex` as generated
-C code — a switch-based DFA — not as a table, so it must either be recovered
-from that code or regenerated from `grammar.json`'s token rules."*
-
-`cmd/ts2go/lex_dfa.go` — **1,607 lines** — recovers it from the code. It
-contains a small hand-rolled C tokenizer (`cTokenKind`, `cTokenIdent`, …), an
-error `ErrNoLexFunction = errors.New("ts_lex function not found")`, and emits:
-
-```go
-type LexState struct {
-    Transitions []LexTransition
-    Accept      SymbolID
-    HasAccept   bool
-    IsKeyword   bool
-    EOF         int
-}
-type LexTransition struct { Lo, Hi rune; Next int; Skip bool }
-type LexDFA struct {
-    States, KeywordStates []LexState
-    KeywordCapture SymbolID; HasKeywordCapture bool
-}
-```
-
-**So the answer to "can the `ts_lex` DFA be recovered as data?" is yes,
-demonstrated, in about 1,600 lines.** And the constructs `lex_dfa.go`
-references are exactly the set enumerated in §3 — `ADVANCE_MAP`,
-`set_contains` / `TSCharacterRange` character sets, `ACCEPT_TOKEN`,
-`END_STATE`, `ADVANCE`, `SKIP`, `eof`, `lookahead`, `ts_lex_keywords` — and
-nothing else. That is independent confirmation that §3's list is closed.
-
-What it reports about the rest of the problem, from the README:
-
-- **206 grammars** ship; all 206 produce error-free trees on smoke samples.
-- **119 have hand-written Go external scanners.** Someone actually paid the
-  scanner-port cost, 119 times. This is the empirical price of
-  `parse-layer.md`'s "5,249 lines of C" question.
-- **7 grammars needed hand-written Go *token sources* instead of the recovered
-  DFA**: `authzed, c, cpp, go, java, json, lua`. Stated reason: *"For grammars
-  where the DFA is not enough (for example, Go's automatic semicolons, or
-  YAML's indentation-sensitive structure), hand-written Go token sources
-  implement the `TokenSource` interface directly."*
-
-  **This is the finding that should change a plan.** `parse-layer.md` proposes
-  staging any own-the-parser route on **"JSON and Go first — the two
-  scanner-free grammars"**. Both **json** and **go** are on GoTreeSitter's
-  hand-written list. The README gives a reason for `go` (automatic semicolons)
-  and none for `json`. Treat this as a **flag, not a proof**: the list may
-  reflect performance hand-optimisation rather than capability, and the README
-  does not say which. But the two grammars chosen precisely because they looked
-  cheapest are the two the one existing implementation did not do the cheap way,
-  and that is worth resolving before committing to that staging order.
-- **Parity story**: "exact deep parity against one oracle", upstream
-  tree-sitter **v0.25.1**; golden S-expression snapshots, incremental reparse,
-  error recovery, GLR fork/merge tests.
-- **Performance**: "full-parse throughput ≈ **4.85× slower than C**".
-- **Quality tiers** are explicit: `full` / `partial` (missing external scanner —
-  external tokens are simply skipped) / `none`. And `full` "does not guarantee
-  error-free trees on all inputs" because of GLR safety caps (iteration cap,
-  stack depth cap).
-
-Caveat on this source: the repository's file naming and CHANGELOG (349 KB) look
-heavily machine-generated, and a secondary article about it
-(`conzit.com/post/porting-tree-sitter-to-go-a-major-leap-forward`) has been
-**retracted** — "The previous article body has been removed during editorial
-review. Conzit will restore it only if it can be retested, rewritten from
-primary evidence" (fetched 2026-08-30). Every claim above is taken from the
-repository's own README or source, not from that article. **Nobody here has run
-its test suite.** Its existence and its approach are established; its parity
-claims are its own.
-
-### 4b. Lezer's official tree-sitter importer — archived
-
-`https://github.com/lezer-parser/import-tree-sitter` — Marijn Haverbeke's own
-tool, `grammar.json` → Lezer grammar. **Archived, 29 stars, created 2020-09-02,
-last pushed 2026-04-15** (fetched 2026-08-30).
-
-Its stated limitations are the most useful abandoned-attempt reasons available,
-and they are the maintainer's:
-
-- *"Because tree-sitter's concepts don't all map to Lezer concepts, you'll only
-  get a working, finished grammar for very trivial grammars."*
-- *"Precedences are specified in a more fine-grained way in Lezer, so the tool
-  only emits a comment indicating that a precedence was specified, and leaves
-  it to you to put the proper conflict markers in."*
-- *"Tree-sitter's alias expressions are a bit like inline rules, but make the
-  inner rule's name disappear. That's not something you can do in Lezer, so
-  you'll get additional noise in your tree in some cases."*
-
-**That is route B's generator, tried by the person best placed to write it, and
-archived.** `parse-layer.md` says of route B that "a generator from tree-sitter
-`grammar.json` to a Lezer grammar could at least fix node names by
-construction". The tool's own docs say it cannot: aliases make node names
-diverge, by design, and precedences need hand finishing.
-
-### 4c. The scanner-transpiler attempt — stale
-
-`https://github.com/milahu/lezer-parser-import-tree-sitter-scanner` — "A
-grammar transpiler, and a domain-specific C++ to JavaScript transpiler". 10
-stars, created 2022-12-13, **last pushed 2023-03-19** (fetched 2026-08-30) —
-over three years stale, not archived but not alive. This is the only attempt
-found at mechanically translating tree-sitter external scanners to JS.
-
-### 4d. What was not found
-
-No pure-JavaScript tree-sitter runtime (table-interpreting, no wasm) was found.
-Searches for one return only the official bindings, `web-tree-sitter` (wasm),
-and `node-tree-sitter` (native). **If one exists it is not discoverable by
-search**, which is itself a data point: the Go implementation is discoverable
-immediately.
 
 ---
 
