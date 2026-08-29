@@ -45,7 +45,7 @@ grep -v '^#' "$tsv" | while IFS="$(printf '\t')" read -r lang repo tag sub commi
   [ -n "${lang:-}" ] || continue
   dir=$work/grammars/$lang
   if [ ! -d "$dir" ]; then
-    git clone --quiet --depth 1 --branch "$tag" "$repo" "$dir"
+    git -c advice.detachedHead=false clone --quiet --depth 1 --branch "$tag" "$repo" "$dir"
   fi
   have=$(git -C "$dir" rev-parse HEAD)
   if [ "$have" != "$commit" ]; then
@@ -93,3 +93,7 @@ docker run --rm \
   editor-tools-wasm sh /build.sh
 
 echo "== done: $out"
+# The build is deterministic: a from-scratch run reproduces all 17 modules
+# byte-identically, which is what lets docs/parse-measurements.md's figures be
+# checked rather than taken on trust.
+

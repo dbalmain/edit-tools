@@ -91,6 +91,10 @@ is that the tag's _committed_ `parser.c` matches the pin, and separately that
 the regenerated tables produce the pinned tree — which is what the corpus result
 below actually proves.
 
+The build is **deterministic**: a from-scratch run of
+`harness/wasm/build_grammars.sh` reproduces all 17 modules byte-identically to
+the ones every figure below was measured against. Verified, not assumed.
+
 `tree-sitter-wasms@0.1.13` was not used. It is reported elsewhere to fail on
 `web-tree-sitter@0.26.13` outright (legacy `dylink` section where the loader
 asserts `dylink.0`), and it would not have carried the pinned versions anyway.
