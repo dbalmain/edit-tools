@@ -50,6 +50,7 @@ class Asm {
   pop(k, r) { return this.ins(OP.POP, ['b', k], ['r', r]); }
   peek(k, r, off) { return this.ins(OP.PEEK, ['b', k], ['r', r], ['u', off]); }
   settop(k, r) { return this.ins(OP.SETTOP, ['b', k], ['r', r]); }
+  getidx(k, r, ri) { return this.ins(OP.GETIDX, ['b', k], ['r', r], ['r', ri]); }
   len(k, r) { return this.ins(OP.LEN, ['b', k], ['r', r]); }
   clear(k) { return this.ins(OP.CLEAR, ['b', k]); }
   // -- buffer

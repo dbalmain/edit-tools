@@ -9,7 +9,10 @@
 // over/underflow, budget exhaustion -- halts the scan as `false`, identically
 // in both runtimes.  There is no undefined behaviour and nothing throws.
 
-const NREG = 16;
+// 32, not 16: markdown-block's parse_minus holds 11 locals live alongside the
+// six scalars its Scanner struct carries, and a register operand is a whole
+// byte either way, so the wider file costs nothing in encoded size.
+const NREG = 32;
 const NSTACK = 4;
 const STACK_MAX = 256;
 const BUF_MAX = 32;
@@ -29,6 +32,7 @@ const OP = {
   CONST: 0x20, MOV: 0x21, ALU: 0x22, ALUI: 0x23,
   IF_CMP: 0x28, IF_CMPI: 0x29,
   PUSH: 0x30, POP: 0x31, PEEK: 0x32, SETTOP: 0x33, LEN: 0x34, CLEAR: 0x35,
+  GETIDX: 0x36,
   BUF_CLR: 0x38, BUF_PUSH: 0x39, BUF_LEN: 0x3a, IF_BUF_EQ: 0x3b,
   JMP: 0x40, CALL: 0x41, RET: 0x42, CALL_R: 0x43, RECURSE: 0x44,
 };
@@ -267,6 +271,16 @@ class ScannerVM {
           const k = code[pc++], r = code[pc++]; const st = this.stack(k);
           if (st.length === 0) this.trap();
           st[st.length - 1] = this.getReg(r);
+          break;
+        }
+        // Index from the *bottom*, held in a register.  PEEK is not enough:
+        // markdown-block walks its open-block stack with `items[s->matched]`,
+        // an absolute index, at three sites.
+        case OP.GETIDX: {
+          const k = code[pc++], r = code[pc++], ri = code[pc++];
+          const st = this.stack(k); const i = this.getReg(ri);
+          if (i < 0 || i >= st.length) this.trap();
+          this.setReg(r, st[i]);
           break;
         }
         case OP.LEN: { const k = code[pc++], r = code[pc++]; this.setReg(r, this.stack(k).length); break; }

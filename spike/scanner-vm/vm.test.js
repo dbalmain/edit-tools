@@ -236,4 +236,25 @@ t('invalid UTF-8 decodes to -1 with a one-byte step, as tree-sitter does', () =>
   assert.strictEqual(lx.lookahead(), 0x61);
 });
 
+
+t('GETIDX reads from the bottom of a stack by register index', () => {
+  const p = prog({ stacks: [{}, {}, {}, {}] }, (a) => {
+    a.const_(0, 10).push(0, 0).const_(0, 11).push(0, 0).const_(0, 12).push(0, 0)
+      .const_(1, 1).getidx(0, 2, 1).emitR(2);
+  });
+  assert.strictEqual(new ScannerVM(p).scan(new ByteLexer(Buffer.from('')), [true]).symbol, 11);
+});
+
+t('GETIDX out of range traps', () => {
+  const p = prog({ stacks: [{}, {}, {}, {}] }, (a) => {
+    a.const_(0, 5).const_(1, 0).getidx(0, 2, 1).emit(0);
+  });
+  assert.strictEqual(new ScannerVM(p).scan(new ByteLexer(Buffer.from('')), [true]).ok, false);
+});
+
+t('registers above 16 are usable, which markdown-block needs', () => {
+  const p = prog({}, (a) => { a.const_(31, 7).emitR(31); });
+  assert.strictEqual(new ScannerVM(p).scan(new ByteLexer(Buffer.from('')), [true]).symbol, 7);
+});
+
 console.log(`vm.test.js: ${pass} passed${process.exitCode ? ', SOME FAILED' : ''}`);
