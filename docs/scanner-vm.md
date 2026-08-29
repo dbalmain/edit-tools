@@ -463,3 +463,113 @@ the scanner VM buys everything. If the roster were mostly YAML-shaped, one
 engine would be the right answer. It isn't — css is 437 states and 57% of its
 artifact is lexer code — but it shows the split is a property of this roster,
 not a law.
+
+## 7. What I did not verify
+
+The load-bearing gaps, worst first.
+
+**Scanner state across a resumption is untested against a real scanner.** This
+is the gap the brief named and it is still open. TOML's scanner is *stateless* —
+`serialize` returns 0 bytes — so all 45,678 calls say nothing about
+serialization. The VM's serializer is covered only by unit tests I wrote against
+my own format (`vm.test.js`): round-trip, sentinel restoration, top-drop
+truncation. **No stateful scanner has been ported, so no serialized state has
+ever been compared with tree-sitter's.** A port can be green on everything above
+and wrong on resumption, and python or rust — 1 byte of state, the cheapest
+stateful scanner in the roster — is the obvious next thing to build.
+
+**Cross-runtime agreement is demonstrated for one scanner, on one shape of
+program.** Rust and JS agree on 45,678 calls, but TOML exercises no stack, no
+buffer, no recursion, no indirect call and no trap. The unit tests cover those
+in JS only. The Rust VM's `PUSH`/`POP`/`RECURSE`/`CALL_R` paths have **never
+executed**. They are transcriptions and they compile; that is all.
+
+**Nothing but TOML was actually ported.** §4 is arithmetic on two hand-compiled
+functions — 78 lines out of markdown-block's 1,299, about 6%. The ±40% band is
+honest but it is a band around an extrapolation, not a measurement.
+
+**No speed measurement of anything.** Not the VM, not the table DFA, not the
+comparison in §6 that the recommendation partly rests on. §6's point 1 is an
+argument from where the work happens, not from a benchmark.
+
+**Error recovery is verified at the scanner-call level, not the tree level.**
+The fuzz corpus drives 11,209 false-returning calls, which is far better than
+the frozen corpus can do, but it compares scanner decisions rather than
+resulting trees. The oracle track has since frozen a dirty corpus containing
+`ERROR` and `MISSING` nodes; that is the right instrument for closing this and
+it did not exist when this work started.
+
+**My incremental oracle inherits tree-sitter's own inconsistency.** The oracle
+track has found and minimised a **scratch-vs-incremental divergence inside
+tree-sitter**. My replay asserts the VM matches tree-sitter call-for-call, so
+where tree-sitter is inconsistent with itself, the VM faithfully reproduces
+whichever behaviour was recorded. That is correct for measuring *fidelity* and
+useless for measuring *correctness*, and the two should not be confused.
+
+**Sizing limits are asserted from the catalogue, not proven.** 32 registers, 4
+stacks, 256 deep, 32-byte buffer, recursion depth 4, the 4,096-instruction spin
+budget. Every one is read off the nine scanners at their current pins. A
+grammar bump can invalidate any of them, and the failure would be a trap — a
+silent `false` — not a crash.
+
+**The wasm rows in `docs/host-ctype-divergence.md` remain confounded** with
+grammar version, as recorded there. Building `tree-sitter-css` 0.25.0 to wasm
+would settle them.
+
+## 8. Recommendation
+
+**The bytecode VM is the right shape for the scanner problem, and the scanner
+problem is not the one that decides the route.**
+
+The brief asked whether packaging the scanners as bytecode works. It does, and
+the numbers are better than the design's own fear of them:
+
+- all nine scanners fit an ISA of 40 opcodes, with nothing missing;
+- ~10 KB of bytecode covers the entire roster, 0.1–3.2 KB per language;
+- the VM costs 2.4 KB gz in JS and 8.6 KB of machine code in Rust, once;
+- two runtimes execute one artifact identically across 45,678 scanner calls.
+
+So `docs/design.md`'s label for the scanner VM — "the bet worth making, and the
+**highest-risk** part of the project" — should be **retired**. It is now the
+best-understood part of an own-the-parser route and the cheapest to finish.
+`docs/parse-layer.md`'s staging advice ("require byte-identical trees before
+writing a line of scanner VM") was right when the scanner was the unknown and is
+now backwards: the scanner is the known half, and every remaining unknown is in
+the LR tables.
+
+**But that does not make route C cheap, and I want to be blunt about it.** The
+parse-layer document's own figure is that scanners are **0.4%** of what a grammar
+is. I have made the cheap half cheaper and measured it honestly. It changes the
+route's total cost by almost nothing. **The VM is worth building if and only if
+the table half is built** — it has no standalone value, and building it
+speculatively would be spending weeks on the 0.4%.
+
+**What actually moved the board is not the VM.** It is
+`docs/host-ctype-divergence.md`: route A was credited with *deleting* the
+parse-layer's divergence risk, and it does not. Its Rust host and its wasm host
+classify characters differently, by measurement, and the frozen corpus carries a
+third answer. The recommendation in `docs/parse-layer.md` leans on that credit,
+so route A should be repriced whether or not anyone writes another line of VM —
+and the cheapest item on the whole board is pinning `LC_ALL` in `gen_trees.py`,
+which costs one line and makes the corpus reproducible.
+
+That finding also happens to be the one place the VM wins on something other
+than bytes: character classes as sorted code-point ranges in the package have no
+libc, no locale and no host. The ambiguity is resolved once, offline, by whoever
+writes the class, and it is recorded in the artifact. No other route on the
+board can say that.
+
+**Recommended order**, if an own-the-parser route is pursued at all:
+
+1. Pin the locale in `gen_trees.py`. One line, independent of everything else.
+2. Finish the LR tables for a scanner-free grammar and require byte-identical
+   trees. That is still the load-bearing unknown; the tables track has JSON.
+3. Port **python or rust** to the VM next — not markdown-block. Both are cheap
+   and both have real serialized state, which is the one thing 45,678 green
+   calls did not test.
+4. Only then price the rest.
+
+**The one fact that would change this recommendation**: if the LR-table half
+cannot reproduce tree-sitter's trees byte-identically for a scanner-free grammar,
+the scanner VM is worthless regardless of how well it works, and this document
+describes a well-built component of a project that should not be started.
