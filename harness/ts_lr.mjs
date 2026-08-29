@@ -757,7 +757,9 @@ class Stack {
     let result = head.node.errorCost;
     if (
       head.status === StackStatus.Paused ||
-      (head.node.state === ERROR_STATE && !head.node.links[0].subtree)
+      (head.node.state === ERROR_STATE &&
+        head.node.links.length > 0 &&
+        !head.node.links[0].subtree)
     ) {
       result += 500; // ERROR_COST_PER_RECOVERY
     }
@@ -1232,10 +1234,16 @@ class Parser {
         }
       }
 
-      throw new Unsupported(
-        `no action for ${lang.symbolName(lookahead.symbol)} in state ${state} ` +
-        `at byte ${position}: error recovery is out of scope`
-      );
+      // ts_parser__breakdown_top_of_stack always fails here: it pops *pending*
+      // links, and links are only pending when a reused non-leaf subtree was
+      // shifted, which needs an old tree.
+      //
+      // So: this version cannot proceed. That is not an error -- under GLR it
+      // is the ordinary way a speculative version dies. Pause it and let the
+      // others run; condenseStack discards it once a better version exists,
+      // and only escalates to recovery if every version is paused.
+      stack.pause(version, lookahead);
+      return;
     }
   }
 
@@ -1319,9 +1327,23 @@ class Parser {
       stack.removeVersion(MAX_VERSION_COUNT);
     }
 
-    for (let i = 0; i < stack.versionCount; i++) {
+    // Paused versions: upstream resumes the best one into error recovery and
+    // drops the rest. Dropping the rest is ordinary GLR pruning and is
+    // implemented; resuming one means the whole parse is in error, which is out
+    // of scope, so say so instead of inventing a recovery.
+    let hasUnpausedVersion = false;
+    for (let i = 0, n = stack.versionCount; i < n; i++) {
       if (stack.isPaused(i)) {
-        throw new Unsupported("paused stack version: error recovery is out of scope");
+        if (!hasUnpausedVersion && this.acceptCount < MAX_VERSION_COUNT) {
+          throw new Unsupported(
+            "every stack version is paused: error recovery is out of scope"
+          );
+        }
+        stack.removeVersion(i);
+        i--;
+        n--;
+      } else {
+        hasUnpausedVersion = true;
       }
     }
     return minErrorCost;
