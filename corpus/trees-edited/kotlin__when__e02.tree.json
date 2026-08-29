@@ -5,6 +5,8 @@
  "base_source": "// when is Kotlin's exhaustiveness-shaped dispatch expression.\n\nfun classify(x: Any): String =\n    when (x) { // subject\n        is String -> x.uppercase()\n        is Int -> x + 1\n        0, 1, 2 -> \"small\" // comma-separated conditions\n        in 10..20 -> \"mid\"\n        !in 100..200 -> \"not-large\"\n        else -> \"other\"\n    }\n\nfun noSubject(flag: Boolean): Int {\n    return when {\n        flag -> 1\n        else -> 0 // no-subject when\n    }\n}\n",
  "edit": {"kind": "delete", "label": "delete 2B", "start": 312, "old_end": 314, "new_end": 312, "removed": " -", "inserted": ""},
  "problems": {"error": 1, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-kotlin==1.1.0",
  "seed": 0,
  "root":

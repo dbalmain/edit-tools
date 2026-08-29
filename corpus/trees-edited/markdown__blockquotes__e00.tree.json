@@ -5,6 +5,8 @@
  "base_source": "<!-- Nested quotes and quoted lists. -->\n\n> outer quote <!-- trailing on the first quoted line -->\n> still outer\n>\n> > inner quote\n> > still inner\n>\n> - quoted list\n> - quoted next\n>   - nested in the quote\n",
  "edit": {"kind": "delete", "label": "delete 5B", "start": 1, "old_end": 6, "new_end": 1, "removed": "!-- N", "inserted": ""},
  "problems": {"error": 0, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-markdown==0.5.1",
  "seed": 0,
  "root":

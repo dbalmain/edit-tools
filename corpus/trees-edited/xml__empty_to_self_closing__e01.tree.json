@@ -5,6 +5,8 @@
  "base_source": "<root><a></a><b></b><c d=\"1\"></c></root>\n",
  "edit": {"kind": "delete", "label": "delete 3B", "start": 10, "old_end": 13, "new_end": 10, "removed": "/a>", "inserted": ""},
  "problems": {"error": 2, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-xml==0.7.0",
  "seed": 0,
  "root":

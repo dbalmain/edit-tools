@@ -5,6 +5,8 @@
  "base_source": "# Dirty spacing: what syntax_tree rewrites, not what it breaks.\n\ndef  normalise( a ,b )\nresult=a + b*  2\nreturn(result)\nend\n\ndef empty( ) # empty parameter list written with a space\nxs = [ ] # empty array with a space\nys = { } # empty hash with a space\nzs = foo( ) # empty call with a space\nend\n\ndef padded( )\nx = [ 1,2,3 ]\nh = { a:1,b:2 }\nif ( x != nil )\nputs(x)\nx\nelse\nputs(0)\n0\nend\nend\n\ntrailing_spaces = 1       # lots of spaces before this comment\n\ndef indented\n        n = 0\n        if n==0\n                n = 1\n                n\n        end\nend\n\nx = 1; y = 2; z = 3\n\n\n\nover_blanked = true\n",
  "edit": {"kind": "replace", "label": "splice 483..572", "start": 136, "old_end": 138, "new_end": 225, "removed": ") ", "inserted": "      if n==0\n                n = 1\n                n\n        end\nend\n\nx = 1; y = 2; z = "},
  "problems": {"error": 0, "missing": 1},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-ruby==0.23.1",
  "seed": 0,
  "root":

@@ -5,6 +5,8 @@
  "base_source": "<!-- prettier emits XHTML-style self-closing slashes on void elements. -->\n<br>\n<img src=\"x.png\" alt=\"pic\">\n<hr>\n<input type=\"text\">\n<meta charset=\"utf-8\">\n",
  "edit": {"kind": "delete", "label": "delete 5B", "start": 1, "old_end": 6, "new_end": 1, "removed": "!-- p", "inserted": ""},
  "problems": {"error": 0, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-html==0.23.2",
  "seed": 0,
  "root":

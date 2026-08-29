@@ -5,6 +5,8 @@
  "base_source": "[\n  \"a single very long string element that on its own exceeds the narrow width budget\",\n  \"short\",\n  12345678901234567890,\n  0,\n  -0.5,\n  true,\n  null,\n  { \"single_key\": \"single value\" },\n  [\"one\"],\n  [[[[\"deeply\", \"nested\"]]]]\n]\n",
  "edit": {"kind": "delete", "label": "delete 5B", "start": 1, "old_end": 6, "new_end": 1, "removed": "\n  \"a", "inserted": ""},
  "problems": {"error": 3, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-json==0.24.8",
  "seed": 0,
  "root":

@@ -5,6 +5,8 @@
  "base_source": "package main\n\nfunc normalise( a int , b int ) int {\n\tresult:=a + b* 2\n\treturn(result)\n}\n\nfunc weird( ) {\n\tvar x = []int{ 1,2,3 }\n\tif ( x != nil ) { x[0]=42 } else { x=nil }\n\t_ = x\n}\n\nvar redundant = ((1))\n\nvar kept = (1 + 2)\n\nvar spaced = [ 3 ]int{ 1,2,3 }\n\nvar semis = 1; var two = 2; var three = 3\n\nvar trailingSpaces = 1       // lots of spaces before this comment\n\nfunc indented() {\n\t\tn := 0\n\t\tif n == 0 {\n\t\t\t\tn = 1\n\t\t}\n\t\t_ = n\n}\n",
  "edit": {"kind": "delete", "label": "delete 4B", "start": 295, "old_end": 299, "new_end": 295, "removed": " = 3", "inserted": ""},
  "problems": {"error": 1, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-go==0.25.0",
  "seed": 0,
  "root":

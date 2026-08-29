@@ -5,6 +5,8 @@
  "base_source": "# Blank lines are the only grouping TOML has between pairs. taplo caps\n# consecutive blanks at 2 (allowed_blank_lines) and leaves 0 and 1 alone.\n\npacked = 1\nalso_packed = 2\n\none_blank = 3\n\ntwo_blanks = 4\n\n\nthree_should_become_two = 5\n\n\n\nafter_three = 6\n\n[next]\n\n\nstill_capped = 7\n",
  "edit": {"kind": "delete", "label": "delete 1B", "start": 254, "old_end": 255, "new_end": 254, "removed": "[", "inserted": ""},
  "problems": {"error": 1, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-toml==0.7.0",
  "seed": 0,
  "root":

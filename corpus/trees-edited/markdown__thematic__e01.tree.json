@@ -5,6 +5,8 @@
  "base_source": "<!-- prettier rewrites every break to ---. -->\n\n***\n\n___\n\n* * *\n",
  "edit": {"kind": "delete", "label": "delete 2B", "start": 62, "old_end": 64, "new_end": 62, "removed": "*\n", "inserted": ""},
  "problems": {"error": 1, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-markdown==0.5.1",
  "seed": 0,
  "root":

@@ -5,6 +5,8 @@
  "base_source": "// Type assertions: `as`, `as const`, `satisfies`, angle-brackets (TypeScript\n// grammar only — TSX parses `<number>value` as an ERROR), and the clarifying\n// parens prettier inserts around `a + b as number`.\nconst asNumber = value as number;\n\nconst double = raw as unknown as Config;\n\nconst angle = <number>raw;\n\nconst tuple = [1, 2] as const;\n\nconst cfg = { host: \"localhost\", port: 8080, debug: true } satisfies Config;\n\nconst mixed = a + b as number;\n\nconst nonNull = maybe!;\n\nconst both = { a: 1 } as const satisfies Point;\n",
  "edit": {"kind": "delete", "label": "delete 5B", "start": 511, "old_end": 516, "new_end": 511, "removed": "st sa", "inserted": ""},
  "problems": {"error": 1, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-typescript==0.23.2",
  "seed": 0,
  "root":

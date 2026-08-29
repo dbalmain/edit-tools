@@ -5,6 +5,8 @@
  "base_source": "# Every key spelling TOML distinguishes. \"a.b\" and a.b are different keys.\n\nbare = 1\nbare-with-dash = 2\nbare_with_underscore = 3\nbare123 = 4\n1234 = 5\ntrue = false\nfalse = true\ninf = 1\n\"quoted key\" = 6\n\"a.b\" = 7\na.b = 8\n'literal-key' = 9\n\"café\" = 10\n\"key with space\" = 11\n\"quoted\\nescape\" = 12\nsite.\"example.com\".enabled = true\n",
  "edit": {"kind": "insert", "label": "insert '/*'", "start": 235, "old_end": 235, "new_end": 237, "removed": "", "inserted": "/*"},
  "problems": {"error": 3, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-toml==0.7.0",
  "seed": 0,
  "root":

@@ -5,6 +5,8 @@
  "base_source": "# The four datetime types, including the space-vs-T offset form.\n# taplo preserves each spelling, including the space separator.\n\noffset_z = 1979-05-27T07:32:00Z\noffset_tz = 1979-05-27T00:32:00-07:00\noffset_frac = 1979-05-27T00:32:00.999999-07:00\noffset_space = 1979-05-27 07:32:00Z\nlocal_dt = 1979-05-27T07:32:00\nlocal_dt_frac = 1979-05-27T00:32:00.999999\nlocal_date = 1979-05-27\nlocal_time = 07:32:00\nlocal_time_frac = 00:32:00.999999\n",
  "edit": {"kind": "replace", "label": "splice 346..377", "start": 259, "old_end": 262, "new_end": 290, "removed": " = ", "inserted": ":00.999999\nlocal_date = 1979-05"},
  "problems": {"error": 4, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-toml==0.7.0",
  "seed": 0,
  "root":

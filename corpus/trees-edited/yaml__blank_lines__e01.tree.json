@@ -5,6 +5,8 @@
  "base_source": "# Blank lines are the only grouping YAML has between siblings. prettier\n# caps a run at one and leaves zero alone.\n\npacked: 1\nalso_packed: 2\n\n# one blank above\none_blank: 3\n\n\n# two blanks above -- prettier will leave one\ntwo_blanks: 4\n\n\n\n# three blanks above -- also one\nthree_blanks: 5\n\nnested:\n  a: 1\n\n  b: 2\n\n\n  c: 3\n",
  "edit": {"kind": "insert", "label": "insert '\\r\\n'", "start": 317, "old_end": 317, "new_end": 319, "removed": "", "inserted": "\r\n"},
  "problems": {"error": 1, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-yaml==0.7.2",
  "seed": 0,
  "root":

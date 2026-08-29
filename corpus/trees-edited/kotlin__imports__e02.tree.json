@@ -5,6 +5,8 @@
  "base_source": "// Import order. ktfmt always sorts imports -- `sortedAndDistinctImports` has\n// no disable flag, unlike unused-import removal -- and a linear formatter\n// cannot reorder statements, so this file is declared `incomparable`.\n// Every import here is used, so it probes sorting alone.\n\nimport kotlin.math.max\nimport java.util.ArrayList\nimport kotlin.math.min\nimport java.io.File\n\nfun demo(file: File): Int {\n    val xs = ArrayList<Int>()\n    return max(min(xs.size, 1), file.name.length)\n}\n",
  "edit": {"kind": "delete", "label": "delete 2B", "start": 312, "old_end": 314, "new_end": 312, "removed": " j", "inserted": ""},
  "problems": {"error": 1, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-kotlin==1.1.0",
  "seed": 0,
  "root":

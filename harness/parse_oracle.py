@@ -547,6 +547,26 @@ def dumps(doc: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
+def oracle_provenance() -> dict:
+    """Which tree-sitter produced this answer, and under which locale.
+
+    `iswalpha`/`iswalnum` are locale-dependent in a native build and fixed in
+    wasm, and six pinned grammars classify identifier characters through them,
+    so the locale is part of the oracle rather than part of the environment.
+    """
+    import locale as _locale
+    import platform
+
+    import tree_sitter
+
+    return {
+        "runtime": "tree-sitter-python (native)",
+        "tree_sitter": getattr(tree_sitter, "__version__", "unknown"),
+        "lc_ctype": _locale.setlocale(_locale.LC_CTYPE),
+        "platform": platform.platform(),
+    }
+
+
 def freeze_language(parser, m: mf.Manifest, path: Path) -> list[Path]:
     source = path.read_bytes()
     written = []
@@ -561,6 +581,16 @@ def freeze_language(parser, m: mf.Manifest, path: Path) -> list[Path]:
             "base_source": source.decode("utf-8"),
             "edit": edit.as_json(source),
             "problems": problems,
+            # Provenance, and it is not decoration. Two independent findings
+            # say "tree-sitter's tree for this source" is not a single value:
+            # this script's own sweep shows scratch and incremental parses
+            # disagreeing on input that contains ERROR, and the wasm track
+            # found native and wasm disagreeing because `iswalpha`/`iswalnum`
+            # are locale-dependent natively. A frozen answer therefore has to
+            # say *which* answer it is, on which build, under which locale, or
+            # the next reader will assume there was only ever one.
+            "parse": "scratch",
+            "oracle": oracle_provenance(),
             "grammar": m.grammar,
             "seed": FREEZE_SEED,
             "root": root,

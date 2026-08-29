@@ -5,6 +5,8 @@
  "base_source": "# Flow mappings: the {} spelling of a mapping, and when it has to break.\n\nshort: {host: localhost, port: 8080}\n\nmedium: {name: alice, city: amsterdam, country: netherlands, occupation: engineer}\n\nlong: {aaaaaaaaaa: 1, bbbbbbbbbb: 2, cccccccccc: 3, dddddddddd: 4, eeeeeeeeee: 5, ffffffffff: 6}\n\nnested: {outer: {inner: {deep: value}}, sibling: 1}\n\nseq_inside: {items: [1, 2, 3], other: value, third: thing}\n\nmixed: {bool: true, num: 42, null: null, list: [a, b], nested: {x: 1}}\n",
  "edit": {"kind": "insert", "label": "insert '('", "start": 406, "old_end": 406, "new_end": 407, "removed": "", "inserted": "("},
  "problems": {"error": 1, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-yaml==0.7.2",
  "seed": 0,
  "root":

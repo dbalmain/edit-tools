@@ -5,6 +5,8 @@
  "base_source": "// Modern syntax: optional chaining, nullish coalescing, regex, bigint.\nconst safe = user?.profile?.address?.zip ?? \"unknown\";\n\nconst regex = /^[a-z]+-[0-9]{2,4}\\.js$/i;\n\nconst bigint = 123456789012345678901234567890n;\n\nconst coalesceAssign = config ??= defaults;\n\nconst andAssign = flags &&= required;\n\nconst orAssign = fallback ||= computed;\n\nconst optionalCall = handler?.onChange?.(value);\n\nconst optionalIndex = matrix?.[row]?.[column];\n\nconst power = base ** exponent;\n\nconst dynamicImport = await import(\"./lazy.js\");\n",
  "edit": {"kind": "delete", "label": "delete 4B", "start": 138, "old_end": 142, "new_end": 138, "removed": "x = ", "inserted": ""},
  "problems": {"error": 0, "missing": 1},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-javascript==0.25.0",
  "seed": 0,
  "root":

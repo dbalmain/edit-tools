@@ -5,6 +5,8 @@
  "base_source": "// Enums: numeric, string, const, and computed. prettier expands every enum,\n// even a one-member form that fits on a line.\nenum Color { Red, Green, Blue }\n\nenum Status { On = 1, // trailing on a member\n  Off = 0 }\n\nenum Direction { Up = \"up\", Down = \"down\", Left = \"left\", Right = \"right\" }\n\nconst enum Flags { Read = 1, Write = 2, ReadWrite = Read | Write }\n\nenum Computed { Pair = 1 + 2 }\n\nenum Singleton { Only }\n",
  "edit": {"kind": "delete", "label": "delete 4B", "start": 295, "old_end": 299, "new_end": 295, "removed": "nst ", "inserted": ""},
  "problems": {"error": 1, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-typescript==0.23.2",
  "seed": 0,
  "root":

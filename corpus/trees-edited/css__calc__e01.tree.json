@@ -5,6 +5,8 @@
  "base_source": "/* calc / clamp / minmax. minmax() splits at 40. */\n\n.measure {\n  width: calc(100% - 2rem);\n  width: calc(100vw - 20px - 2rem);\n  margin: clamp(1rem, 2vw + 1rem, 3rem); /* preferred size in the middle */\n  grid-template-columns: minmax(200px, 1fr) minmax(200px, 1fr) minmax(200px, 1fr);\n}\n",
  "edit": {"kind": "delete", "label": "delete 5B", "start": 254, "old_end": 259, "new_end": 254, "removed": "(200p", "inserted": ""},
  "problems": {"error": 4, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-css==0.25.0",
  "seed": 0,
  "root":

@@ -5,6 +5,8 @@
  "base_source": "/* grid-template-areas: author line breaks are the layout. */\n\n.page {\n  display: grid;\n  /* column alignment inside the strings is meaningful */\n  grid-template-areas:\n    \"header header header\"\n    \"nav    main   aside\"\n    \"nav    footer footer\";\n}\n\n.compact {\n  /* stays one line at both widths */\n  grid-template-areas: \"a b c\" \"d e f\";\n}\n",
  "edit": {"kind": "replace", "label": "splice 74..269", "start": 308, "old_end": 311, "new_end": 503, "removed": "-te", "inserted": "isplay: grid;\n  /* column alignment inside the strings is meaningful */\n  grid-template-areas:\n    \"header header header\"\n    \"nav    main   aside\"\n    \"nav    footer footer\";\n}\n\n.compact {\n  /* "},
  "problems": {"error": 2, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-css==0.25.0",
  "seed": 0,
  "root":

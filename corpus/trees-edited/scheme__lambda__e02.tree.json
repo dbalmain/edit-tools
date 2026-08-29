@@ -5,6 +5,8 @@
  "base_source": ";; lambda: rest args, nested lambda, and the specform-1 split when the\n;; formals sit on the next line versus on the head line.\n(define add\n(lambda (x y) ; formals on the head line\n(+ x y)))\n\n(define add-broken\n(lambda\n(x y)\n(+ x y)))\n\n(define (make-adder n)\n(lambda (x)\n(+ x n)))\n\n(define (sum-all . xs)\n(apply + xs))\n\n(define (split first . rest)\n(cons first rest))\n",
  "edit": {"kind": "replace", "label": "replace with '}'", "start": 192, "old_end": 197, "new_end": 193, "removed": "(defi", "inserted": "}"},
  "problems": {"error": 2, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-scheme @ git+https://github.com/6cdh/tree-sitter-scheme@v0.24.7-1",
  "seed": 0,
  "root":

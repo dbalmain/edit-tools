@@ -5,6 +5,8 @@
  "base_source": "# Array-of-tables headers. Distinct from an array of inline tables.\n\n[[products]]\nname = \"Hammer\"\nsku = 738594937\ncolors = [\"red\", \"green\", \"blue\", \"yellow\", \"orange\"]\n\n[products.extra]\nwarranty_years = 2\n\n[[products]]\nname = \"Nail\"\nsku = 284758393\n\n[[products.sizes]]\ninch = 1\n\n[[products.sizes]]\ninch = 2\n\n[[products]] # trailing on a later header\nname = \"Saw\"\n\n# An empty element is legal and stays empty.\n[[products]]\n",
  "edit": {"kind": "delete", "label": "delete 4B", "start": 295, "old_end": 299, "new_end": 295, "removed": "]]\ni", "inserted": ""},
  "problems": {"error": 1, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-toml==0.7.0",
  "seed": 0,
  "root":

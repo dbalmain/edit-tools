@@ -5,6 +5,8 @@
  "base_source": "async fn load_documents(client: Client, paths: Vec<Path>) -> Result<Vec<Document>, Error> {\n    let mut documents = Vec::new();\n    for path in paths {\n        let response = client.fetch(&path).await?;\n        let document = response.decode().await?;\n        documents.push(document);\n    }\n    // Await points and the loop block are both layout boundaries.\n    Ok(documents)\n}\n",
  "edit": {"kind": "delete", "label": "delete 3B", "start": 81, "old_end": 84, "new_end": 81, "removed": ", E", "inserted": ""},
  "problems": {"error": 1, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-rust==0.24.0",
  "seed": 0,
  "root":

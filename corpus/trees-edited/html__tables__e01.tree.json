@@ -5,6 +5,8 @@
  "base_source": "<!-- Tables. Packed input; prettier indents each row and cell. -->\n<table><thead><tr><th>Name</th><th>Count</th></tr></thead><tbody><tr><td>alpha</td><td>1</td></tr><tr><td>a short cell</td><td>2</td></tr></tbody></table>\n",
  "edit": {"kind": "replace", "label": "splice 173..188", "start": 129, "old_end": 132, "new_end": 144, "removed": "dy>", "inserted": "a short cell</t"},
  "problems": {"error": 0, "missing": 2},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-html==0.23.2",
  "seed": 0,
  "root":

@@ -5,6 +5,8 @@
  "base_source": "short = obj.attr\n\nattribute_chain = configuration.database.connection.settings.pool.maximum_size_limit\n\nmethod_chain = query.filter(active=True).order_by(\"name\").limit(100).offset(20).all()\n\nmixed_chain = client.session.request(\"GET\", url).json()[\"data\"][\"items\"][0][\"name\"]\n\ncall_then_attr = build_client(host, port).connection.metadata.version_identifier\n\nsubscript_chain = registry[\"handlers\"][\"default\"][\"callback\"](event, context, opts)\n\nslices = sequence[1:10]\n\nlong_slice = collection_of_items[start_index:end_index:step_size_between_elements]\n\nopen_slice = buffer[:]\n\nnegative = values[-1]\n\nnested_subscript = matrix[row_index][column_index][depth_index][final_axis_index]\n",
  "edit": {"kind": "replace", "label": "replace with ']'", "start": 680, "old_end": 681, "new_end": 681, "removed": "\n", "inserted": "]"},
  "problems": {"error": 1, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-python==0.25.0",
  "seed": 0,
  "root":

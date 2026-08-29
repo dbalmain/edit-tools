@@ -5,6 +5,8 @@
  "base_source": "module Imports where\n\n-- unsorted on purpose: ormolu reorders these alphabetically by module name\nimport Data.Maybe (fromMaybe, isJust)\nimport Control.Monad (guard, when)\nimport Data.List (foldl', sort)\nimport System.IO (hPutStrLn, stderr)\n\nused = (fromMaybe, isJust, guard, when, foldl', sort, hPutStrLn, stderr) -- keep them used\n",
  "edit": {"kind": "delete", "label": "delete 1B", "start": 312, "old_end": 313, "new_end": 312, "removed": ")", "inserted": ""},
  "problems": {"error": 1, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-haskell==0.23.1",
  "seed": 0,
  "root":

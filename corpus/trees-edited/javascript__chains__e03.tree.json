@@ -5,6 +5,8 @@
  "base_source": "// Method chains: prettier breaks at the dots, and that is a layout no\n// node-type table can express (see DESIGN.md).\nconst result = query.filter((x) => x.active).map((x) => x.name).sort().slice(0, 10).join(\", \");\n\nconst chain = client.request(\"GET\", \"/api/users\").then((r) => r.json()).then((data) => data.items).catch((err) => handle(err));\n\nconst fluent = factory.create().configure({ option: true }).build().initialize().start().run();\n\nconst nestedCall = first(second(third(a, b), c), fourth(d, e, f), fifth(g));\n\nconst mixed = arr.filter(isValid).map(transform).reduce(combine, initial);\n",
  "edit": {"kind": "delete", "label": "delete 5B", "start": 6, "old_end": 11, "new_end": 6, "removed": "hod c", "inserted": ""},
  "problems": {"error": 0, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-javascript==0.25.0",
  "seed": 0,
  "root":

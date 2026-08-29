@@ -5,6 +5,8 @@
  "base_source": "{\n  \"name\": \"editor-tools\",\n  \"version\": \"0.1.0\",\n  \"dependencies\": { \"alpha\": \"^1.0.0\", \"beta\": \"~2.3.4\", \"gamma\": \">=3.0.0 <4.0.0\" },\n  \"servers\": [\n    { \"host\": \"alpha.example.com\", \"port\": 8080, \"tags\": [\"primary\", \"us-east\"] },\n    { \"host\": \"beta.example.com\", \"port\": 8081, \"tags\": [\"replica\", \"eu-west\"] }\n  ],\n  \"matrix\": [[1, 2, 3], [4, 5, 6], [7, 8, 9]],\n  \"deep\": { \"a\": { \"b\": { \"c\": { \"d\": { \"e\": [\"leaf value one\", \"leaf value two\"] } } } } },\n  \"long_flat_array\": [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200]\n}\n",
  "edit": {"kind": "delete", "label": "delete 5B", "start": 6, "old_end": 11, "new_end": 6, "removed": "ame\":", "inserted": ""},
  "problems": {"error": 40, "missing": 1},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-json==0.24.8",
  "seed": 0,
  "root":

@@ -5,6 +5,8 @@
  "base_source": "module Sections where\n\n-- operator sections: the parens are structural, not decoration\naddOne = (+1) -- right section\n\naddTo = (1+) -- left section\n\nhalve = (`div`2) -- backticked right section\n\nticked = 10`div`3 -- infix identifier, not a section\n\nplus = (+) -- prefix form of an operator\n\nappend = (++) -- prefix form of a multi-character operator\n\ncomposed = map (+1) . filter (>0) -- sections as arguments\n",
  "edit": {"kind": "delete", "label": "delete 5B", "start": 3, "old_end": 8, "new_end": 3, "removed": "ule S", "inserted": ""},
  "problems": {"error": 2, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-haskell==0.23.1",
  "seed": 0,
  "root":

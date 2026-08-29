@@ -5,6 +5,8 @@
  "base_source": "# A single-statement block that fits braces at width 80 and becomes do/end\n# at width 40. syntax_tree picks the delimiters by whether the body fits,\n# not by the source form.\n\n# The conversion is the whole of this file.\nitems.each { |item| process_the_item_with_a_fairly_long_method_name(item) }\n",
  "edit": {"kind": "insert", "label": "insert '#'", "start": 289, "old_end": 289, "new_end": 290, "removed": "", "inserted": "#"},
  "problems": {"error": 1, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-ruby==0.23.1",
  "seed": 0,
  "root":

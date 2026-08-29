@@ -5,6 +5,8 @@
  "base_source": "module Functions where\n\n-- multiple equations, patterns, lambdas, infix declarations\nfact 0=1\nfact n=n*fact (n-1) -- two equations of the same function\n\nswap ( a,b )=( b,a ) -- tuple pattern\n\nfirst (x:_) =x\nfirst []=error \"empty\" -- list patterns\n\nconst' = \\x y -> x -- lambda\n\nbetween a b c=a<=b&&b<=c\n\ninfixl 5 `plus`\n\nplus a b = a + b -- infix function\n",
  "edit": {"kind": "replace", "label": "splice 285..309", "start": 197, "old_end": 200, "new_end": 221, "removed": " (x", "inserted": " a b c=a<=b&&b<=c\n\ninfix"},
  "problems": {"error": 1, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-haskell==0.23.1",
  "seed": 0,
  "root":

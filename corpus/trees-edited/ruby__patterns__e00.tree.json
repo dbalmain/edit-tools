@@ -5,6 +5,8 @@
  "base_source": "# Pattern matching: `case`/`in`, hash patterns, array patterns, find patterns.\n\ncase value\nin { name:, age: Integer => years } if years > 18\n  years\nin [first, *rest]\n  first\nin String => s\n  s\nelse\n  nil\nend\n\nxs in [*, Integer => n, *] # find pattern\n\ncase pair\nin [Integer => left, Integer => right]\n  left + right\nin Integer => n if n.even?\n  :even\nend\n",
  "edit": {"kind": "delete", "label": "delete 3B", "start": 81, "old_end": 84, "new_end": 81, "removed": "ase", "inserted": ""},
  "problems": {"error": 1, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-ruby==0.23.1",
  "seed": 0,
  "root":

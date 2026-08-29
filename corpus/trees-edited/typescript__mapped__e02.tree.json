@@ -5,6 +5,8 @@
  "base_source": "// Mapped and conditional types, `infer`, `keyof`, and template-literal types —\n// the type-level programs a person would notice if they were laid out wrongly.\ntype Optional<T> = { [K in keyof T]?: T[K] | null };\n\ntype ReadonlyPicked<T, K extends keyof T> = { readonly [P in K]: T[P] };\n\ntype Mutable<T> = { -readonly [K in keyof T]: T[K] };\n\ntype RequiredKeys<T> = { [K in keyof T]-?: T[K] };\n\ntype Unpacked<T> = T extends Promise<infer U> ? U : T extends Array<infer U> ? U : T;\n\ntype EventName<T extends string> = `on${Capitalize<T>}`;\n\ntype DeepPartial<T> = T extends object ? { [K in keyof T]?: DeepPartial<T[K]> } : T;\n\ntype Lookup = Person[\"name\" | \"age\"];\n",
  "edit": {"kind": "delete", "label": "delete 1B", "start": 239, "old_end": 240, "new_end": 239, "removed": "K", "inserted": ""},
  "problems": {"error": 1, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-typescript==0.23.2",
  "seed": 0,
  "root":

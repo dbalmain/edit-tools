@@ -5,6 +5,8 @@
  "base_source": "/* Vendor-prefixed properties and functions. */\n\n.slide {\n  -webkit-transform: translateX(10px);\n  -moz-transform: translateX(10px);\n  -ms-transform: translateX(10px);\n  transform: translateX(10px);\n  /* prefixed functions wrap at 40 like the rest */\n  background: -webkit-linear-gradient(left, red, blue);\n  background: linear-gradient(to right, red, blue);\n}\n",
  "edit": {"kind": "delete", "label": "delete 5B", "start": 3, "old_end": 8, "new_end": 3, "removed": "Vendo", "inserted": ""},
  "problems": {"error": 0, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-css==0.25.0",
  "seed": 0,
  "root":

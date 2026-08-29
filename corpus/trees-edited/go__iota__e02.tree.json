@@ -5,6 +5,8 @@
  "base_source": "package main\n\nconst (\n\tSunday = iota // day zero\n\tMonday\n\tTuesday\n\tWednesday\n\tThursday\n\tFriday\n\tSaturday\n)\n\nconst (\n\tRead = 1 << iota\n\tWrite\n\tExecute\n)\n\nconst (\n\t_ = iota\n\tKB = 1 << (10 * iota) // kibibyte\n\tMB\n\tGB\n)\n\nconst (\n\tStatusUnknown = iota + 1\n\tStatusActive\n\tStatusDisabled\n)\n",
  "edit": {"kind": "delete", "label": "delete 4B", "start": 186, "old_end": 190, "new_end": 186, "removed": "* io", "inserted": ""},
  "problems": {"error": 1, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-go==0.25.0",
  "seed": 0,
  "root":

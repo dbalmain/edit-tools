@@ -5,6 +5,8 @@
  "base_source": "import os\n\nimport os.path\n\nimport collections.abc\n\nfrom typing import Any\n\nfrom collections.abc import Iterable, Mapping, Sequence, MutableMapping, Callable\n\nfrom package.module.submodule import first_name, second_name, third_name, fourth\n\nfrom package import (\n    alpha,\n    beta,\n)\n\nfrom . import sibling\n\nfrom .relative.module import something\n\nimport first_module, second_module\n\nfrom module import name as alias, other as other_alias, third as third_alias_name\n",
  "edit": {"kind": "insert", "label": "insert '('", "start": 406, "old_end": 406, "new_end": 407, "removed": "", "inserted": "("},
  "problems": {"error": 2, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-python==0.25.0",
  "seed": 0,
  "root":

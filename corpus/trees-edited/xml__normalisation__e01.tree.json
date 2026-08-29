@@ -5,6 +5,8 @@
  "base_source": "<?xml version=\"1.0\"?>\n<!-- Dirty spacing: what prettier rewrites, not what it breaks. -->\n<root  a = \"x\"  b='y' >\n<child attr = \"z\"/>\n    <indented/>\n\t<tabbed a=\"1\"/>\n<self/>\n<padded  />\n<empty> </empty>\n<r\na=\"1\"\n     b=\"2\"/>\n<packed a=\"1\" b=\"2\" c=\"3\" d=\"4\"/>\n</root>\n",
  "edit": {"kind": "delete", "label": "delete 4B", "start": 158, "old_end": 162, "new_end": 158, "removed": " a=\"", "inserted": ""},
  "problems": {"error": 1, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-xml==0.7.0",
  "seed": 0,
  "root":

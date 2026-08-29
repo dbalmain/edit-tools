@@ -5,6 +5,8 @@
  "base_source": "package main\n\nimport \"fmt\"\n\nimport (\n  \"context\"\n  \"os\"\n  \"time\" // the standard clock\n\n  alias \"net/http\"\n  _ \"net/http/pprof\" // registers debug handlers\n  . \"strings\"\n)\n\nfunc main() {\n  _ = fmt.Sprintf\n  _ = context.Background\n  _ = os.Args\n  _ = time.Now\n  _ = alias.Get\n  _ = ToUpper\n}\n",
  "edit": {"kind": "delete", "label": "delete 2B", "start": 47, "old_end": 49, "new_end": 47, "removed": "\"\n", "inserted": ""},
  "problems": {"error": 2, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-go==0.25.0",
  "seed": 0,
  "root":

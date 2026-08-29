@@ -5,6 +5,8 @@
  "base_source": "{\n  \"string\": \"value\",\n  \"number\": 42,\n  \"float\": 3.14159,\n  \"negative\": -17,\n  \"exponent\": 1.5e10,\n  \"true\": true,\n  \"false\": false,\n  \"null\": null,\n  \"empty_object\": {},\n  \"empty_array\": [],\n  \"short_array\": [1, 2, 3],\n  \"escaped\": \"quote \\\" backslash \\\\ newline \\n unicode é\",\n  \"astral\": \"🙂🙂🙂🙂🙂🙂 counted as scalar values, not UTF-16 code units\"\n}\n",
  "edit": {"kind": "delete", "label": "delete 2B", "start": 47, "old_end": 49, "new_end": 47, "removed": "\":", "inserted": ""},
  "problems": {"error": 2, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-json==0.24.8",
  "seed": 0,
  "root":

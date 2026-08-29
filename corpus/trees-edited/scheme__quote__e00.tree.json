@@ -5,6 +5,8 @@
  "base_source": ";; quote, quasiquote, unquote, unquote-splicing. Each is its own node\n;; wrapping a datum, not a list headed by the word quote.\n(define quoted '(a b c)) ; quote\n\n(define nested-quote '(a (b (c d)) e))\n\n(define (fill-template x ys)\n`(+ ,x ,@ys))\n\n(define (build xs)\n`(begin\n,@xs\nx))\n",
  "edit": {"kind": "replace", "label": "splice 241..249", "start": 68, "old_end": 70, "new_end": 76, "removed": "e\n", "inserted": "s))\n\n(de"},
  "problems": {"error": 1, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-scheme @ git+https://github.com/6cdh/tree-sitter-scheme@v0.24.7-1",
  "seed": 0,
  "root":

@@ -5,6 +5,8 @@
  "base_source": ";; The constructs that most often overflow a line: a many-argument call\n;; and a long quoted list, already broken so indent applies per element.\n(define (sum-many a b c d e f g h i j) ; ten parameters\n(+ a\nb\nc\nd\ne\nf\ng\nh\ni\nj))\n\n(define alphabet\n(list 'a\n'b\n'c\n'd\n'e\n'f\n'g\n'h\n'i\n'j\n'k\n'l\n'm\n'n\n'o\n'p\n'q\n'r\n's\n't\n'u\n'v\n'w\n'x\n'y\n'z))\n",
  "edit": {"kind": "replace", "label": "splice 64..304", "start": 85, "old_end": 90, "new_end": 325, "removed": " quot", "inserted": "nt call\n;; and a long quoted list, already broken so indent applies per element.\n(define (sum-many a b c d e f g h i j) ; ten parameters\n(+ a\nb\nc\nd\ne\nf\ng\nh\ni\nj))\n\n(define alphabet\n(list 'a\n'b\n'c\n'd\n'e\n'f\n'g\n'h\n'i\n'j\n'k\n'l\n'm\n'n\n'o\n'p\n'q\n'r\n"},
  "problems": {"error": 1, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-scheme @ git+https://github.com/6cdh/tree-sitter-scheme@v0.24.7-1",
  "seed": 0,
  "root":

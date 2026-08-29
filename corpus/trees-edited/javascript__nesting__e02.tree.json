@@ -5,6 +5,8 @@
  "base_source": "// Containers inside containers, deep enough that the narrow width must break\n// some level but not every level.\nconst matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12], [13, 14, 15]];\n\nconst config = { outer: { inner: { deep: [1, 2, 3], other: { key: \"value\" } }, sibling: [4, 5] } };\n\nconst call = outer(inner(deeper(first, second), third), fourth(fifth, sixth, seventh));\n\nconst arrow = (a) => (b) => (c) => a + b + c;\n\nconst mixed = [{ list: [1, 2, 3] }, { list: [4, 5, 6] }, { list: [7, 8, 9] }];\n\nconst fits = [alpha, beta, [1, 2, 3, 4], gamma, delta, epsilon];\n",
  "edit": {"kind": "delete", "label": "delete 4B", "start": 316, "old_end": 320, "new_end": 316, "removed": "r(de", "inserted": ""},
  "problems": {"error": 1, "missing": 1},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-javascript==0.25.0",
  "seed": 0,
  "root":

@@ -5,6 +5,8 @@
  "base_source": "# Multi-document streams. `---` / `...` are anonymous tokens under each\n# `document`; `%YAML` is a `yaml_directive` with a `yaml_version` child.\n\n%YAML 1.2\n---\n# First document.\nname:  one\nvalue : 1\n---\n# Second document, no directive.\nname:  two\nvalue : 2\n...\n---\n# A third document after an explicit end marker.\nname:  three\nitems: [a,b,c]\n...\n",
  "edit": {"kind": "replace", "label": "replace with ']'", "start": 340, "old_end": 342, "new_end": 341, "removed": "]\n", "inserted": "]"},
  "problems": {"error": 1, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-yaml==0.7.2",
  "seed": 0,
  "root":

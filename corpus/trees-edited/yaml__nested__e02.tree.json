@@ -5,6 +5,8 @@
  "base_source": "# Containers inside containers. Inner flow collections that still fit stay\n# flat when the outer one breaks -- prettier does not force children open.\nroot:\n  matrix: [[1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,16]]\n  servers:\n    [\n      {host: alpha.example.com,port: 8080,tags: [a,b]},\n      {host: beta.example.com,port: 8081,tags: [c,d]},\n    ]\n  deep:\n    region:\n      primary: {ok: 1} # tiny; must stay flat when ancestors break\n",
  "edit": {"kind": "insert", "label": "insert ':'", "start": 285, "old_end": 285, "new_end": 286, "removed": "", "inserted": ":"},
  "problems": {"error": 1, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
  "grammar": "tree-sitter-yaml==0.7.2",
  "seed": 0,
  "root":
