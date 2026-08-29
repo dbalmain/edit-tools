@@ -47,12 +47,37 @@ function parseDoc(blob, language, sourcePath) {
   };
 }
 
+// --emit: parse the newline-separated paths on stdin and write one JSON
+// document per line. `harness/ts_differential.py` compares those against real
+// tree-sitter over a corpus far larger than the frozen one.
+function emit(blobPath, language) {
+  const blob = JSON.parse(readFileSync(blobPath, "utf8"));
+  const paths = readFileSync(0, "utf8").split("\n").filter(Boolean);
+  const out = [];
+  for (const path of paths) {
+    let record;
+    try {
+      record = { path, doc: parseDoc(blob, language, path) };
+    } catch (err) {
+      record = { path, error: err.message };
+    }
+    out.push(JSON.stringify(record));
+    if (out.length >= 64) {
+      process.stdout.write(out.join("\n") + "\n");
+      out.length = 0;
+    }
+  }
+  if (out.length) process.stdout.write(out.join("\n") + "\n");
+  return 0;
+}
+
 function main(argv) {
   const [blobPath, language, ...rest] = argv;
   if (!blobPath || !language) {
-    console.error("usage: ts_check_trees.mjs <blob.json> <language> [--write-dir DIR]");
+    console.error("usage: ts_check_trees.mjs <blob.json> <language> [--write-dir DIR|--emit]");
     return 2;
   }
+  if (rest.includes("--emit")) return emit(blobPath, language);
   const writeIndex = rest.indexOf("--write-dir");
   const writeDir = writeIndex >= 0 ? rest[writeIndex + 1] : null;
   if (writeDir) mkdirSync(writeDir, { recursive: true });
@@ -111,4 +136,7 @@ function firstDiff(expected, actual) {
   return `identical for ${n} chars, then lengths differ (${expected.length} vs ${actual.length})`;
 }
 
-process.exit(main(process.argv.slice(2)));
+// `process.exitCode`, not `process.exit()`: writes to a pipe are async, and
+// exiting drops whatever is still buffered -- which truncates --emit output at
+// the 64 KB pipe buffer.
+process.exitCode = main(process.argv.slice(2));

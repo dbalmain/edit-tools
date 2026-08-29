@@ -1420,29 +1420,49 @@ function* iterateChildren(lang, subtree, startByte) {
 
 // The visible children of a node, in order: exactly what py-tree-sitter's
 // `node.children` yields, paired with `node.field_name_for_child(i)`.
+//
+// Iterative on purpose. A `repeat` rule builds a left-nested chain of invisible
+// aux nodes one level per element, so descending into them recursively blows
+// the JS stack on real files -- found on Go's x86asm/tables.go, a single
+// ~10,000-element generated literal. tree-sitter's own ts_node__child is a
+// `while (did_descend)` loop for the same reason, and upstream additionally
+// rebalances those chains (ts_parser__balance_subtree), which this interpreter
+// skips because it cannot change the visible tree. Skipping it is still right;
+// it just means every traversal here has to carry its own stack.
 export function visibleChildren(lang, subtree, startByte) {
   const out = [];
-  const walk = (node, nodeStart, inheritedField) => {
-    for (const child of iterateChildren(lang, node, nodeStart)) {
-      if (isRelevant(child.subtree, child.alias)) {
-        let field = null;
-        if (!child.subtree.extra) {
-          field = lang.fieldNameFor(node.productionId, child.structuralChildIndex - 1);
-          if (field === null) field = inheritedField;
-        }
-        out.push({
-          subtree: child.subtree,
-          alias: child.alias,
-          start: child.position,
-          field,
-        });
-      } else if (relevantChildCount(child.subtree) > 0) {
-        let field = lang.fieldNameFor(node.productionId, child.structuralChildIndex - 1);
-        walk(child.subtree, child.position, field === null ? inheritedField : field);
-      }
+  const stack = [
+    { node: subtree, iter: iterateChildren(lang, subtree, startByte), inherited: null },
+  ];
+  while (stack.length > 0) {
+    const frame = stack[stack.length - 1];
+    const step = frame.iter.next();
+    if (step.done) {
+      stack.pop();
+      continue;
     }
-  };
-  walk(subtree, startByte, null);
+    const child = step.value;
+    if (isRelevant(child.subtree, child.alias)) {
+      let field = null;
+      if (!child.subtree.extra) {
+        field = lang.fieldNameFor(frame.node.productionId, child.structuralChildIndex - 1);
+        if (field === null) field = frame.inherited;
+      }
+      out.push({
+        subtree: child.subtree,
+        alias: child.alias,
+        start: child.position,
+        field,
+      });
+    } else if (relevantChildCount(child.subtree) > 0) {
+      const field = lang.fieldNameFor(frame.node.productionId, child.structuralChildIndex - 1);
+      stack.push({
+        node: child.subtree,
+        iter: iterateChildren(lang, child.subtree, child.position),
+        inherited: field === null ? frame.inherited : field,
+      });
+    }
+  }
   return out;
 }
 
