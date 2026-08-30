@@ -15,18 +15,22 @@
 //   * repeat rebalancing  -- ts_parser__balance_subtree, a rotation among
 //                            same-symbol invisible repeat nodes that preserves
 //                            leaf order and so cannot change the visible tree
-//   * row/column tracking -- only byte offsets reach the output. Recovery does
-//                            charge per skipped line, but it counts newlines in
-//                            the source (`rowsIn`) rather than tracking extents;
-//                            `get_column` remains a scanner-only path
+//
+// Row and column tracking **is** implemented, as of the scanner slice, even
+// though nothing in the emitted trees reads it: they carry byte offsets only.
+// It is here because upstream's `ts_lexer__do_advance` maintains the extent on
+// every advance, so a port that skipped it would have to diverge deliberately,
+// and because one of the two consumers that read extents -- `get_column`, for
+// external scanners -- is being built now. Recovery, upstream's other consumer,
+// charges per skipped line by counting newlines in the source (`rowsIn`) rather
+// than by reading an extent. The corpus cannot check any of the row/column
+// state; the evidence for it is `harness/ts_lr.test.mjs`.
 //
 // The guarantee is narrower than "reaching any of them throws", and the precise
 // claim matters: **unsupported behaviour that can affect this projection is
 // rejected.** External scanners throw, because reaching them would change the
-// tree. The other two do not, and are not silent bugs for different reasons:
-// repeat rebalancing is skipped at parser completion and cannot change the
-// visible tree by construction, and row/column state is never tracked because
-// only error costs read it and they read it exactly. Incremental reparse has no
+// tree. Repeat rebalancing does not: it is skipped at parser completion and
+// cannot change the visible tree by construction. Incremental reparse has no
 // entry point at all rather than a throwing one -- there is nowhere to pass an
 // old tree.
 //
@@ -207,6 +211,38 @@ export class Language {
 const EMPTY_ENTRY = { c: 0, r: 0, a: [] };
 
 // ---------------------------------------------------------------------------
+// Length arithmetic, mirroring lib/src/length.h and lib/src/point.h.
+//
+// A Length is `{bytes, row, column}` -- a byte count paired with the extent it
+// spans. **`column` counts bytes within the row, not codepoints**: upstream's
+// `ts_lexer__do_advance` does `extent.column += lookahead_size`. The other
+// column, the one `get_column` returns, counts *codepoints* and lives in the
+// lexer's `columnValue`. Two different numbers with the same name, and the
+// distinction is upstream's rather than this port's.
+// ---------------------------------------------------------------------------
+
+function len(bytes, row, column) {
+  return { bytes, row, column };
+}
+
+const LENGTH_ZERO = len(0, 0, 0);
+
+// point_add: a row carried by the right operand resets the column.
+function lengthAdd(a, b) {
+  return b.row > 0
+    ? len(a.bytes + b.bytes, a.row + b.row, b.column)
+    : len(a.bytes + b.bytes, a.row, a.column + b.column);
+}
+
+// point_sub, with the same saturation on both fields upstream has.
+function lengthSub(a, b) {
+  const bytes = a.bytes >= b.bytes ? a.bytes - b.bytes : 0;
+  return a.row > b.row
+    ? len(bytes, a.row - b.row, a.column)
+    : len(bytes, 0, a.column >= b.column ? a.column - b.column : 0);
+}
+
+// ---------------------------------------------------------------------------
 // Lexer, mirroring lib/src/lexer.c for a single default included range and a
 // whole-buffer string input (which is what ts_parser_parse_string gives it).
 // ---------------------------------------------------------------------------
@@ -216,6 +252,8 @@ class Lexer {
     this.buf = bytes;
     this.len = bytes.length;
     this.pos = 0;
+    this.row = 0;
+    this.column = 0;
     this.chunkStart = 0;
     this.chunkSize = 0;
     this.hasChunk = false;
@@ -223,8 +261,46 @@ class Lexer {
     this.lookahead = 0;
     this.lookaheadSize = 0;
     this.tokenStart = 0;
+    this.tokenStartRow = 0;
+    this.tokenStartColumn = 0;
     this.tokenEnd = -1;
+    this.tokenEndRow = 0;
+    this.tokenEndColumn = 0;
     this.resultSymbol = 0;
+    // ColumnData: the *codepoint* column, cached because recomputing it means
+    // re-reading the line from its start. `valid` is cleared by any seek,
+    // because a seek lands somewhere the running count knows nothing about.
+    this.columnValid = false;
+    this.columnValue = 0;
+    // Set by getColumn(), read once per external scan by ts_parser__lex, and
+    // stamped onto the resulting leaf as `dependsOnColumn`.
+    this.didGetColumn = false;
+  }
+
+  position() {
+    return len(this.pos, this.row, this.column);
+  }
+
+  tokenStartPosition() {
+    return len(this.tokenStart, this.tokenStartRow, this.tokenStartColumn);
+  }
+
+  tokenEndPosition() {
+    return len(this.tokenEnd, this.tokenEndRow, this.tokenEndColumn);
+  }
+
+  setColumnData(value) {
+    this.columnValid = true;
+    this.columnValue = value;
+  }
+
+  incrementColumnData() {
+    if (this.columnValid) this.columnValue++;
+  }
+
+  invalidateColumnData() {
+    this.columnValid = false;
+    this.columnValue = 0;
   }
 
   // ts_lexer__get_chunk: the input callback returns 0 bytes at or past the end,
@@ -252,9 +328,14 @@ class Lexer {
   }
 
   // ts_lexer_goto, specialised to the single default range: it always finds
-  // range 0, so it always clears EOF and invalidates the chunk.
+  // range 0, so it always clears EOF and invalidates the chunk. Takes a full
+  // Length, because a seek has to restore the extent as well as the offset --
+  // there is no way to recompute a row from a byte offset alone.
   gotoPos(position) {
-    this.pos = position;
+    if (position.bytes !== this.pos) this.invalidateColumnData();
+    this.pos = position.bytes;
+    this.row = position.row;
+    this.column = position.column;
     this.atEof = false;
     if (this.hasChunk && (this.pos < this.chunkStart || this.pos >= this.chunkStart + this.chunkSize)) {
       this.hasChunk = false;
@@ -266,41 +347,106 @@ class Lexer {
   }
 
   reset(position) {
-    if (position !== this.pos) this.gotoPos(position);
+    if (position.bytes !== this.pos) this.gotoPos(position);
   }
 
   start() {
     this.tokenStart = this.pos;
+    this.tokenStartRow = this.row;
+    this.tokenStartColumn = this.column;
     this.tokenEnd = -1;
     this.resultSymbol = 0;
+    this.didGetColumn = false;
     if (!this.atEof) {
       if (!this.chunkSize) this.getChunk();
       if (!this.lookaheadSize) this.getLookahead();
-      if (this.pos === 0 && this.lookahead === BYTE_ORDER_MARK) this.advance(true);
+      if (this.pos === 0) {
+        if (this.lookahead === BYTE_ORDER_MARK) this.advance(true);
+        // Unconditional upstream, not an else-branch: at byte 0 the codepoint
+        // column is known to be 0 whether or not a BOM was skipped.
+        this.setColumnData(0);
+      }
     }
   }
 
   finish() {
     if (this.tokenEnd < 0) this.markEnd();
-    if (this.tokenEnd < this.tokenStart) this.tokenStart = this.tokenEnd;
+    if (this.tokenEnd < this.tokenStart) {
+      this.tokenStart = this.tokenEnd;
+      this.tokenStartRow = this.tokenEndRow;
+      this.tokenStartColumn = this.tokenEndColumn;
+    }
   }
 
   // ts_lexer__mark_end, specialised: with one included range the boundary
   // special case cannot fire.
   markEnd() {
     this.tokenEnd = this.pos;
+    this.tokenEndRow = this.row;
+    this.tokenEndColumn = this.column;
   }
 
+  // ts_lexer__advance: the guarded entry point the DFA and scanners call.
   advance(skip) {
     if (!this.hasChunk) return;
-    if (this.lookaheadSize) this.pos += this.lookaheadSize;
+    this.doAdvance(skip);
+  }
+
+  // ts_lexer__do_advance, split out because get_column calls it directly and
+  // deliberately bypasses the `if (!chunk) return` guard above.
+  doAdvance(skip) {
+    if (this.lookaheadSize) {
+      if (this.lookahead === 0x0a) {
+        this.row++;
+        this.column = 0;
+        this.setColumnData(0);
+      } else {
+        // A leading BOM is not a character, so it does not advance the
+        // codepoint column -- but it does advance the byte column.
+        const isBom = this.pos === 0 && this.lookahead === BYTE_ORDER_MARK;
+        if (!isBom) this.incrementColumnData();
+        this.column += this.lookaheadSize;
+      }
+      this.pos += this.lookaheadSize;
+    }
     // The included-range walk in ts_lexer__do_advance cannot fire here: the
     // default range's end_byte is UINT32_MAX.
-    if (skip) this.tokenStart = this.pos;
+    if (skip) {
+      this.tokenStart = this.pos;
+      this.tokenStartRow = this.row;
+      this.tokenStartColumn = this.column;
+    }
     if (this.pos < this.chunkStart || this.pos >= this.chunkStart + this.chunkSize) {
       this.getChunk();
     }
     this.getLookahead();
+  }
+
+  // ts_lexer__get_column. The one lexer call with a non-trivial cost: when the
+  // cache is cold it seeks to the start of the line and re-walks it, counting
+  // codepoints. `column` is the *byte* offset within the row, which is exactly
+  // what has to be subtracted to find the line start.
+  //
+  // No scanner in the pinned roster calls this, and the scanner VM has no
+  // opcode for it (docs/scanner-vm.md reserves 0x06 and traps). It is here
+  // because upstream's lexer has it and because a scanner that did call it
+  // would otherwise diverge silently rather than loudly.
+  getColumn() {
+    this.didGetColumn = true;
+    if (!this.columnValid) {
+      const goalByte = this.pos;
+      this.gotoPos(len(this.pos - this.column, this.row, 0));
+      this.setColumnData(0);
+      this.getChunk();
+      if (!this.atEof) {
+        this.getLookahead();
+        while (this.pos < goalByte && !this.atEof && this.hasChunk) {
+          this.doAdvance(false);
+          if (this.atEof) break;
+        }
+      }
+    }
+    return this.columnValue;
   }
 
   // START_LEXER()'s loop, driven by the recovered DFA rather than by C control
@@ -462,8 +608,17 @@ class Subtree {
     this.symbol = 0;
     this.children = null;
     this.childCount = 0;
+    // `padding` and `size` stay byte counts, because that is all the emitted
+    // trees carry. The row/column halves of the same two Lengths ride
+    // alongside as scalars rather than replacing them, so every existing
+    // reader of `.padding` / `.size` is untouched.
     this.padding = 0;
+    this.paddingRow = 0;
+    this.paddingColumn = 0;
     this.size = 0;
+    this.sizeRow = 0;
+    this.sizeColumn = 0;
+    this.dependsOnColumn = false;
     this.lookaheadBytes = 0;
     this.visible = false;
     this.named = false;
@@ -489,6 +644,31 @@ class Subtree {
     return this.padding + this.size;
   }
 
+  get paddingLength() {
+    return len(this.padding, this.paddingRow, this.paddingColumn);
+  }
+
+  get sizeLength() {
+    return len(this.size, this.sizeRow, this.sizeColumn);
+  }
+
+  // ts_subtree_total_size
+  get totalSizeLength() {
+    return lengthAdd(this.paddingLength, this.sizeLength);
+  }
+
+  setPaddingLength(l) {
+    this.padding = l.bytes;
+    this.paddingRow = l.row;
+    this.paddingColumn = l.column;
+  }
+
+  setSizeLength(l) {
+    this.size = l.bytes;
+    this.sizeRow = l.row;
+    this.sizeColumn = l.column;
+  }
+
   get leafSymbol() {
     return this.childCount === 0 ? this.symbol : this.firstLeafSymbol;
   }
@@ -502,11 +682,12 @@ class Subtree {
   }
 }
 
-function newLeaf(lang, symbol, padding, size, lookaheadBytes, parseState, isKeyword) {
+function newLeaf(lang, symbol, padding, size, lookaheadBytes, parseState, isKeyword, dependsOnColumn) {
   const t = new Subtree();
   t.symbol = symbol;
-  t.padding = padding;
-  t.size = size;
+  t.setPaddingLength(padding);
+  t.setSizeLength(size);
+  t.dependsOnColumn = !!dependsOnColumn;
   t.lookaheadBytes = lookaheadBytes;
   t.parseState = parseState;
   t.visible = lang.visible(symbol);
@@ -534,7 +715,7 @@ function newError(lang, lookaheadChar, padding, size, lookaheadBytes, parseState
 // `"missing": true`, and it is the only thing separating this from a genuine
 // empty leaf.
 function newMissingLeaf(lang, symbol, padding, lookaheadBytes) {
-  const t = newLeaf(lang, symbol, padding, 0, lookaheadBytes, 0, false);
+  const t = newLeaf(lang, symbol, padding, LENGTH_ZERO, lookaheadBytes, 0, false);
   t.isMissing = true;
   return t;
 }
@@ -583,6 +764,7 @@ function summarizeChildren(self, lang, buf, startByte) {
   self.repeatDepth = 0;
   self.visibleDescendantCount = 0;
   self.dynamicPrecedence = 0;
+  self.dependsOnColumn = false;
 
   let structuralIndex = 0;
   const hasAliases = lang.hasAliasSequence(self.productionId);
@@ -591,11 +773,17 @@ function summarizeChildren(self, lang, buf, startByte) {
 
   for (let i = 0; i < self.childCount; i++) {
     const child = children[i];
+
+    // Read before this child is folded in, exactly as upstream does: a node
+    // only inherits a column dependency while it is still on its first row,
+    // because past a newline the column no longer depends on what preceded it.
+    if (self.sizeRow === 0 && child.dependsOnColumn) self.dependsOnColumn = true;
+
     if (i === 0) {
-      self.padding = child.padding;
-      self.size = child.size;
+      self.setPaddingLength(child.paddingLength);
+      self.setSizeLength(child.sizeLength);
     } else {
-      self.size += child.totalSize;
+      self.setSizeLength(lengthAdd(self.sizeLength, child.totalSizeLength));
     }
 
     const childLookaheadEnd = self.padding + self.size + child.lookaheadBytes;
@@ -743,18 +931,20 @@ class StackNode {
     this.dynamicPrecedence = 0;
     if (previous) {
       this.links.push({ node: previous, subtree, isPending });
+      // A Length, not a byte count: ts_lexer_reset needs the extent to seek to,
+      // and a row cannot be recovered from an offset alone.
       this.position = previous.position;
       this.errorCost = previous.errorCost;
       this.dynamicPrecedence = previous.dynamicPrecedence;
       this.nodeCount = previous.nodeCount;
       if (subtree) {
         this.errorCost += subtreeErrorCost(subtree);
-        this.position += subtree.totalSize;
+        this.position = lengthAdd(this.position, subtree.totalSizeLength);
         this.nodeCount += subtreeNodeCount(subtree);
         this.dynamicPrecedence += subtree.dynamicPrecedence;
       }
     } else {
-      this.position = 0;
+      this.position = LENGTH_ZERO;
     }
   }
 }
@@ -797,7 +987,7 @@ function stackNodeAddLink(self, link) {
       }
       if (
         existing.node.state === link.node.state &&
-        existing.node.position === link.node.position &&
+        existing.node.position.bytes === link.node.position.bytes &&
         existing.node.errorCost === link.node.errorCost
       ) {
         for (let j = 0; j < link.node.links.length; j++) {
@@ -850,7 +1040,13 @@ class Stack {
     return this.heads[v].node.state;
   }
 
+  // Bytes, which is what every caller but the lexer wants.
   position(v) {
+    return this.heads[v].node.position.bytes;
+  }
+
+  // The full Length, for ts_lexer_reset.
+  positionLength(v) {
     return this.heads[v].node.position;
   }
 
@@ -968,7 +1164,7 @@ class Stack {
           if (entry.depth < depth) break;
           if (entry.depth === depth && entry.state === state) return 0;
         }
-        summary.push({ position: it.node.position, depth, state });
+        summary.push({ position: it.node.position.bytes, depth, state });
         return 0;
       },
       false,
@@ -1098,7 +1294,7 @@ class Stack {
       h1.status === StackStatus.Active &&
       h2.status === StackStatus.Active &&
       h1.node.state === h2.node.state &&
-      h1.node.position === h2.node.position &&
+      h1.node.position.bytes === h2.node.position.bytes &&
       h1.node.errorCost === h2.node.errorCost
     );
   }
@@ -1174,7 +1370,7 @@ class Parser {
     }
     let reservedWordSetId = lang.reservedWordSetId(parseState);
 
-    const startPosition = this.stack.position(version);
+    const startPosition = this.stack.positionLength(version);
     let errorMode = parseState === ERROR_STATE;
     let lookaheadEndByte = 0;
     const lexer = this.lexer;
@@ -1189,6 +1385,10 @@ class Parser {
     let firstErrorCharacter = 0;
     let errorStart = 0;
     let errorEnd = 0;
+    // The Length twins of the two offsets above. `padding` and `size` are
+    // extents now, and neither can be recovered from a byte offset alone.
+    let errorStartLength = LENGTH_ZERO;
+    let errorEndLength = LENGTH_ZERO;
 
     for (;;) {
       lexer.start();
@@ -1208,6 +1408,8 @@ class Parser {
         skippedError = true;
         errorStart = lexer.tokenStart;
         errorEnd = lexer.tokenStart;
+        errorStartLength = lexer.tokenStartPosition();
+        errorEndLength = errorStartLength;
         firstErrorCharacter = lexer.lookahead;
       }
 
@@ -1216,14 +1418,15 @@ class Parser {
         lexer.advance(false);
       }
       errorEnd = lexer.pos;
+      errorEndLength = lexer.position();
     }
 
     if (skippedError) {
       return newError(
         lang,
         firstErrorCharacter,
-        errorStart - startPosition,
-        errorEnd - errorStart,
+        lengthSub(errorStartLength, startPosition),
+        lengthSub(errorEndLength, errorStartLength),
         lookaheadEndByte - errorEnd,
         parseState,
       );
@@ -1231,13 +1434,13 @@ class Parser {
 
     let isKeyword = false;
     let symbol = lexer.resultSymbol;
-    const padding = lexer.tokenStart - startPosition;
-    const size = lexer.tokenEnd - lexer.tokenStart;
+    const padding = lengthSub(lexer.tokenStartPosition(), startPosition);
+    const size = lengthSub(lexer.tokenEndPosition(), lexer.tokenStartPosition());
     const lookaheadBytes = lookaheadEndByte - lexer.tokenEnd;
 
     if (symbol === lang.keywordCaptureToken && symbol !== 0) {
       const endByte = lexer.tokenEnd;
-      lexer.reset(lexer.tokenStart);
+      lexer.reset(lexer.tokenStartPosition());
       lexer.start();
       isKeyword = lexer.run(lang.b.keywordLex, 0);
       lexer.finish();
@@ -1253,7 +1456,13 @@ class Parser {
       }
     }
 
-    return newLeaf(lang, symbol, padding, size, lookaheadBytes, parseState, isKeyword);
+    // `dependsOnColumn` is upstream's `called_get_column`: whether producing
+    // this token consulted the codepoint column, which is what makes it
+    // unsafe to reuse after an edit earlier on the same line.
+    return newLeaf(
+      lang, symbol, padding, size, lookaheadBytes, parseState, isKeyword,
+      lexer.didGetColumn,
+    );
   }
 
   // ts_parser__can_reuse_first_leaf
@@ -1809,6 +2018,7 @@ class Parser {
     this.doAllPotentialReductions(version, 0);
     const versionCount = stack.versionCount;
     const position = stack.position(version);
+    const positionLength = stack.positionLength(version);
 
     let didInsertMissingToken = false;
     for (let v = version; v < versionCount; ) {
@@ -1822,9 +2032,9 @@ class Parser {
           if (stateAfter === 0 || stateAfter === state) continue;
 
           if (lang.hasReduceAction(stateAfter, lookahead.leafSymbol)) {
-            this.lexer.reset(position);
+            this.lexer.reset(positionLength);
             this.lexer.markEnd();
-            const padding = this.lexer.tokenEnd - position;
+            const padding = lengthSub(this.lexer.tokenEndPosition(), positionLength);
             const lookaheadBytes = lookahead.totalSize + lookahead.lookaheadBytes;
 
             const versionWithMissingTree = stack.copyVersion(v);
@@ -2101,6 +2311,7 @@ export { Unsupported };
 // parse, so the corpus cannot stand in for testing them directly.
 export const forTests = {
   Stack,
+  len,
   newLeaf,
   newNode,
   newErrorNode,
