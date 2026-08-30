@@ -314,8 +314,13 @@ class Lexer {
           const eofMode = op[1];
           if (eofMode === 1 && !eof) continue;
           if (eofMode === 2 && eof) continue;
-          const ranges = op[2];
-          if (ranges.length && !inRanges(ranges, lookahead)) continue;
+          // Always test the set. An empty set means the guard is false, not
+          // that there is no guard -- a predicate false in both eof modes
+          // (`lookahead < 0 && lookahead >= 0`) collapses to one, and
+          // short-circuiting on length would invert it. Genuinely
+          // unconditional actions are op 3, and the full domain has an
+          // explicit non-empty representation.
+          if (!inRanges(op[2], lookahead)) continue;
           act = op[3];
           target = op[4];
         } else if (kind === 3) {
@@ -1482,6 +1487,12 @@ export function parse(blob, sourceBytes) {
   const parser = new Parser(lang, sourceBytes);
   const root = parser.parse();
   return { lang, root, startByte: root.padding };
+}
+
+// Exposed for `harness/ts_lr.test.mjs`: the lexer is where the recovered DFA
+// is interpreted, and it is the half the corpus covers least.
+export function makeLexer(bytes) {
+  return new Lexer(bytes);
 }
 
 export { Unsupported };
