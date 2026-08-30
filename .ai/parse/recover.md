@@ -6,8 +6,9 @@ analysis once.
 
 ## Status
 
-Reading complete, implementation not started. Everything below is established
-from upstream `lib/src` at the 0.26.0 pin plus measurement in this worktree.
+**Done: 44/44 byte-identical on `corpus/trees-edited/` for json, scheme and go,
+ERROR and MISSING included. 0 diverged, 0 refused.** The clean corpus is
+unchanged at 3/3, 15/15, 16/16.
 
 ## What the brief got wrong
 
@@ -157,22 +158,121 @@ against **tree-sitter** on arbitrary broken input is a bar upstream itself does
 not meet across its hosts. The frozen fixtures are a fixed oracle produced by
 one host, so they are a fair target; arbitrary fuzzed input is not.
 
-## What is unbounded, as of the end of reading
+## The three defects, and what found them
 
-- Stage 1's cost. `do_all_potential_reductions` is O(token_count x actions) per
-  recovery and runs twice per missing-token candidate. For go that is a
-  hundreds-wide loop inside a hundreds-wide loop. Correctness first, but this is
-  where a viewport-latency target would be spent.
-- Stage 2's symbol-order dependence is deterministic but untested by anything;
-  a fixture only pins the winner it happened to produce.
-- `ts_stack_pop_error` / `record_summary` / `resume` are stack machinery this
-  port does not have at all yet, and they are the pieces with no clean-parse
-  analogue to check against.
+All three were invisible to the clean corpus and all three were found by one
+instrument: **py-tree-sitter exposes `parser.logger`**, so tree-sitter will emit
+its own recovery decisions (`detect_error`, `skip_token`, `recover_to_previous`,
+`recover_with_missing`, `recover_eof`). Logging the same five events here and
+diffing the two sequences localises a defect to the exact decision that first
+differs, which is far sharper than diffing trees.
 
-## How much of the fortnight is real
+That instrument is not in the spike's plan and it is the single most useful
+thing this slice produces for whoever writes the Rust runtime.
 
-Not answerable yet — no line of recovery is written. The reading says the
-subsystem is smaller and less arbitrary than the spike doc feared (the four
-stages are mechanical, the cost arithmetic is closed-form integer, and the
-row dependency evaporates), and that the risk is concentrated in stage 2's
-symbol-order choice and in stack machinery that has never been exercised.
+1. **`ts_subtree_error_cost` is an accessor, not a field.** It special-cases
+   MISSING at `110 + 500`; this port read the raw field in seven places. An
+   invented missing token therefore looked free, always won
+   `better_version_exists`, and suppressed recovery strategy 1 everywhere one
+   had been inserted. 27 -> 36 fixtures.
+2. **`ts_stack_renumber_version` carries the summary across.** Three lines: if
+   the target head has a summary and the source does not, the summary moves to
+   the source. A version created by popping never has one, and recovery
+   renumbers exactly such a version over one that does -- so without the clause
+   the recovered version loses its record of where it may rewind to, strategy 1
+   stops firing for the rest of the parse, and ERROR nodes run far past where
+   upstream closed them. 36 -> 44 fixtures.
+3. **A latent one, fixed on the way in.** `summarizeChildren`'s fragile-parent
+   branch tested `child.symbol === ERROR || child.isMissing`; upstream tests
+   only `ts_subtree_is_error` (checked in 0.25.2, 0.26.0 and 0.26.8). Dead while
+   no missing leaf could exist, live the moment this slice created one.
+
+The shape they share is worth naming: **every one is a place where upstream
+hides a special case behind something that reads like a plain field or a plain
+utility.** Not one was an algorithm the port got wrong; all three were accessors
+and helpers whose bodies nobody thinks to read. That is the defect class the
+Rust runtime should be reviewed for, because it will hit exactly the same three.
+
+## Were the last 8 one mechanism or eight?
+
+**One.** All eight remaining failures -- across all three grammars -- were the
+single `renumber_version` summary clause. That is the good answer to the
+question the tail risk was about: the failures were not eight unrelated
+arbitrary choices, they were one three-line omission with a wide blast radius,
+and the fixtures were correlated because they all depend on strategy 1 still
+working later in the same parse.
+
+## The revised estimate
+
+| | Spike's estimate | Actual |
+| --- | ---: | ---: |
+| JS code lines for recovery | ~430 | **437** |
+| Total diff | -- | 623 +, 45 - |
+
+The line estimate was almost exactly right, which is worth recording because
+the spike itself called lines "the number I trust least".
+
+**The time estimate was too pessimistic for recovery specifically.** The spike
+priced ~1,100 lines and a fortnight for recovery *and* incremental reparse, with
+"the tail risk in recovery rather than in incrementality". Recovery took a few
+hours of focused work: read upstream, port four stages, then three defects each
+localised in one log-diff. It did not behave like an open-ended chase.
+
+Two reasons it came in under, and both are specific rather than luck:
+
+* **The arbitrariness is smaller than it looks.** Upstream's recovery reads as
+  though it is full of coin-flips -- which version to resume, how far to rewind,
+  what to charge. It is not. It is one integer cost function, evaluated in a
+  fixed order, with no floating point and no unordered iteration anywhere. Once
+  the cost function is right the decisions follow, and *every* defect above was
+  a wrong cost or a lost summary rather than a wrong choice.
+* **The oracle is a decision log, not a tree.** Diffing trees tells you that
+  something went wrong somewhere; diffing decision sequences tells you which
+  decision, and the first divergence is nearly always the cause.
+
+**What I would quote now**, for the second (Rust) runtime, given this one exists
+as a reference: **2-4 days for recovery**, not a week -- provided it is built
+against the same log-diff instrument. The 0.65 C-to-JS line ratio the spike
+derived held, so a Rust port should be sized off 437 JS lines rather than off
+657 C lines.
+
+**I would not revise the incremental-reparse half.** Nothing here touched it,
+and it is the larger of the two (670 estimated JS lines against recovery's 430).
+
+## What the 44/44 does *not* establish
+
+Stated plainly, because "44/44 byte-identical" is exactly the kind of number
+that gets quoted without its scope -- and this document's own predecessor was
+written to make that mistake hard.
+
+* **44 fixtures is a narrower oracle than the clean corpus was, and the clean
+  corpus was already too narrow.** The spike's own history is the argument: of
+  its four defects, two were invisible to the 34-file clean corpus and needed a
+  7,940-file differential and a review. There is no differential for *broken*
+  input, so recovery today has the weaker of the two oracles, not the stronger.
+* **Three grammars, all scanner-free.** Nothing here is evidence about recovery
+  in a grammar with an external scanner, where recovery and scanner state
+  interact (`ts_subtree_has_external_scanner_state_change` gates one of
+  `recover`'s early returns, and is stubbed false here).
+* **Upstream's own hosts disagree on recovery.** `docs/parse-layer.md` records
+  route A diverging between native and wasm on 8 of 922 broken-input cases, so
+  byte-identity against tree-sitter on *arbitrary* broken input is a bar
+  upstream does not itself meet. The frozen fixtures are a fixed oracle from one
+  host, which is why they are a fair target and arbitrary fuzzed input is not.
+* **Row extents are a newline count, not real extents.** Exact for every input
+  here, and it stays exact -- but it is a second implementation of a quantity the
+  concurrent row/column branch is about to provide properly.
+
+## What is unbounded, as of the end of the slice
+
+Not the line count and not the algorithm -- **the validation breadth**. The
+honest remaining risk is that 44 fixtures cannot carry error recovery any more
+than 34 files could carry a 372 KB table blob, and the instrument that would
+close it (a differential over broken input, in the shape of
+`harness/ts_differential.py` but without its skip-unclean filter) does not exist
+yet. That is the next thing worth building, and it is a day, not a fortnight.
+
+Stage 1's cost also stays unpriced: `do_all_potential_reductions` is
+O(token_count x actions) per recovery and runs once per missing-token candidate,
+which for go is a hundreds-wide loop inside a hundreds-wide loop. Correctness
+first, but a viewport-latency target would be spent here.
