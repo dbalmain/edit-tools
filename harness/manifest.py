@@ -210,7 +210,7 @@ def _incomparable(
 
 
 def parse(path: Path) -> Manifest:
-    raw = tomllib.loads(path.read_text())
+    raw = tomllib.loads(path.read_text(encoding="utf-8"))
 
     unknown = set(raw) - _KNOWN
     if unknown:
