@@ -820,6 +820,7 @@ class Stack {
         status: StackStatus.Active,
         nodeCountAtLastError: 0,
         lookaheadWhenPaused: null,
+        summary: null,
       },
     ];
   }
@@ -878,7 +879,7 @@ class Stack {
         head.node.links.length > 0 &&
         !head.node.links[0].subtree)
     ) {
-      result += 500; // ERROR_COST_PER_RECOVERY
+      result += ERROR_COST_PER_RECOVERY;
     }
     return result;
   }
@@ -904,8 +905,93 @@ class Stack {
       nodeCountAtLastError: this.heads[originalVersion].nodeCountAtLastError,
       status: StackStatus.Active,
       lookaheadWhenPaused: null,
+      summary: null,
     });
     return this.heads.length - 1;
+  }
+
+  // ts_stack_copy_version. The copy deliberately does not inherit the summary:
+  // upstream nulls it, because a summary describes one version's own history.
+  copyVersion(version) {
+    const head = this.heads[version];
+    this.heads.push({
+      node: head.node,
+      nodeCountAtLastError: head.nodeCountAtLastError,
+      status: head.status,
+      lookaheadWhenPaused: head.lookaheadWhenPaused,
+      summary: null,
+    });
+    return this.heads.length - 1;
+  }
+
+  // ts_stack_resume
+  resume(version) {
+    const head = this.heads[version];
+    const result = head.lookaheadWhenPaused;
+    head.status = StackStatus.Active;
+    head.lookaheadWhenPaused = null;
+    return result;
+  }
+
+  // ts_stack_record_summary, via summarize_stack_callback. The summary is the
+  // list of (state, depth, position) triples reachable by walking back down the
+  // stack, deduplicated by (depth, state) and cut off at `maxDepth`. It is what
+  // recovery strategy 1 searches for a state the lookahead is valid in, so its
+  // *order* is load-bearing: the first entry that works wins.
+  recordSummary(version, maxDepth) {
+    const summary = [];
+    this.iter(
+      version,
+      (it) => {
+        const state = it.node.state;
+        const depth = it.subtreeCount;
+        if (depth > maxDepth) return 1; // StackActionStop
+        for (let i = summary.length - 1; i >= 0; i--) {
+          const entry = summary[i];
+          if (entry.depth < depth) break;
+          if (entry.depth === depth && entry.state === state) return 0;
+        }
+        summary.push({ position: it.node.position, depth, state });
+        return 0;
+      },
+      false,
+    );
+    this.heads[version].summary = summary;
+  }
+
+  getSummary(version) {
+    return this.heads[version].summary;
+  }
+
+  // ts_stack_pop_error: pop the one ERROR subtree sitting at the top of this
+  // version, if there is one. Upstream asserts the result is a single slice.
+  popError(version) {
+    const node = this.heads[version].node;
+    for (const link of node.links) {
+      if (link.subtree && link.subtree.symbol === TS_BUILTIN_SYM_ERROR) {
+        let foundError = false;
+        const pop = this.iter(
+          version,
+          (it) => {
+            if (it.subtrees.length > 0) {
+              if (!foundError && it.subtrees[0].symbol === TS_BUILTIN_SYM_ERROR) {
+                foundError = true;
+                return 3; // Pop | Stop
+              }
+              return 1; // Stop
+            }
+            return 0;
+          },
+          true,
+        );
+        if (pop.length > 0) {
+          this.renumberVersion(pop[0].version, version);
+          return pop[0].subtrees;
+        }
+        break;
+      }
+    }
+    return [];
   }
 
   addSlice(originalVersion, node, subtrees) {
@@ -1033,6 +1119,16 @@ class Stack {
 
 const Cmp = { TakeLeft: 0, PreferLeft: 1, None: 2, PreferRight: 3, TakeRight: 4 };
 
+// ts_reduce_action_set_add: a set keyed on (symbol, count) only -- two
+// reductions that agree on those are the same reduction for this purpose, even
+// if their precedence or production differs, and the first one wins.
+function reduceActionSetAdd(set, symbol, count, dynamicPrecedence, productionId) {
+  for (const action of set) {
+    if (action.symbol === symbol && action.count === count) return;
+  }
+  set.push({ symbol, count, dynamicPrecedence, productionId });
+}
+
 class Parser {
   constructor(lang, bytes) {
     this.lang = lang;
@@ -1060,6 +1156,16 @@ class Parser {
     const lexer = this.lexer;
     lexer.reset(startPosition);
 
+    // The skipped-character path. When no token rule matches even in the error
+    // lex state, upstream consumes characters one at a time until one of them
+    // does, and emits a single ERROR *leaf* covering the run it swallowed. The
+    // loop keeps going after that, so the leaf covers only the bad characters
+    // and the following token is lexed normally on the next call.
+    let skippedError = false;
+    let firstErrorCharacter = 0;
+    let errorStart = 0;
+    let errorEnd = 0;
+
     for (;;) {
       lexer.start();
       const found = lexer.run(this.lang.b.lex, lexState);
@@ -1073,8 +1179,29 @@ class Parser {
         lexer.reset(startPosition);
         continue;
       }
-      throw new Unsupported(
-        `no token at byte ${lexer.pos}: error recovery is out of scope`
+
+      if (!skippedError) {
+        skippedError = true;
+        errorStart = lexer.tokenStart;
+        errorEnd = lexer.tokenStart;
+        firstErrorCharacter = lexer.lookahead;
+      }
+
+      if (lexer.pos === errorEnd) {
+        if (lexer.atEof) break;
+        lexer.advance(false);
+      }
+      errorEnd = lexer.pos;
+    }
+
+    if (skippedError) {
+      return newError(
+        lang,
+        firstErrorCharacter,
+        errorStart - startPosition,
+        errorEnd - errorStart,
+        lookaheadEndByte - errorEnd,
+        parseState,
       );
     }
 
@@ -1182,13 +1309,16 @@ class Parser {
 
       let children = slice.subtrees;
       let trailingExtras = removeTrailingExtras(children);
-      let parent = newNode(this.lang, symbol, children, productionId);
+      const sliceStart = stack.position(sliceVersion);
+      let parent = newNode(this.lang, symbol, children, productionId, this.lexer.buf, sliceStart);
 
       while (i + 1 < pop.length && pop[i + 1].version === slice.version) {
         i++;
         const nextChildren = pop[i].subtrees;
         const nextTrailingExtras = removeTrailingExtras(nextChildren);
-        const candidate = newNode(this.lang, symbol, nextChildren, productionId);
+        const candidate = newNode(
+          this.lang, symbol, nextChildren, productionId, this.lexer.buf, sliceStart,
+        );
         if (this.selectTree(parent, candidate)) {
           trailingExtras = nextTrailingExtras;
           parent = candidate;
@@ -1236,7 +1366,9 @@ class Parser {
           const spliced = trees
             .slice(0, j)
             .concat(tree.children || [], trees.slice(j + 1));
-          root = newNode(this.lang, tree.symbol, spliced, tree.productionId);
+          // The root begins at byte 0, which is what the error-cost branch of
+          // summarizeChildren needs if recovery made this root an ERROR.
+          root = newNode(this.lang, tree.symbol, spliced, tree.productionId, this.lexer.buf, 0);
           break;
         }
       }
@@ -1312,7 +1444,11 @@ class Parser {
             this.accept(version, lookahead);
             return;
           case 3:
-            throw new Unsupported("RECOVER action: error recovery is out of scope");
+            if (lookahead.childCount > 0) {
+              throw new Unsupported("breakdown of a non-leaf lookahead needs an old tree");
+            }
+            this.recover(version, lookahead);
+            return;
           default:
             throw new Unsupported(`parse action ${action[0]}`);
         }
@@ -1364,11 +1500,343 @@ class Parser {
     }
   }
 
+  // ts_parser__better_version_exists: would some other live version already be
+  // at least as good as this one would be at `cost`? Every recovery decision is
+  // guarded by this, which is what stops recovery exploring the whole space.
+  betterVersionExists(version, isInError, cost) {
+    if (this.finishedTree && this.finishedTree.errorCost <= cost) return true;
+
+    const stack = this.stack;
+    const position = stack.position(version);
+    const status = {
+      cost,
+      isInError,
+      dynamicPrecedence: stack.dynamicPrecedence(version),
+      nodeCount: stack.nodeCountSinceError(version),
+    };
+
+    for (let i = 0, n = stack.versionCount; i < n; i++) {
+      if (i === version || !stack.isActive(i) || stack.position(i) < position) continue;
+      switch (this.compareVersions(status, this.versionStatus(i))) {
+        case Cmp.TakeRight:
+          return true;
+        case Cmp.PreferRight:
+          if (stack.canMerge(i, version)) return true;
+          break;
+      }
+    }
+    return false;
+  }
+
+  // ts_parser__do_all_potential_reductions: perform every reduction reachable in
+  // this state under *any* lookahead, forking a version per reduction. After
+  // skipping bad tokens the parser may land on a token that would have allowed a
+  // reduction, so this closes over them all in advance.
+  //
+  // With `lookaheadSymbol` 0 it never removes versions and the return value is
+  // meaningless; with a symbol it prunes versions that cannot shift it and
+  // returns whether any can. Both callers matter: stage 1 uses the first form,
+  // the missing-token search uses the second as its accept test.
+  doAllPotentialReductions(startingVersion, lookaheadSymbol) {
+    const lang = this.lang;
+    const stack = this.stack;
+    const initialVersionCount = stack.versionCount;
+
+    let canShiftLookaheadSymbol = false;
+    let version = startingVersion;
+    for (let i = 0; ; i++) {
+      const versionCount = stack.versionCount;
+      if (version >= versionCount) break;
+
+      let merged = false;
+      for (let j = initialVersionCount; j < version; j++) {
+        if (stack.merge(j, version)) {
+          merged = true;
+          break;
+        }
+      }
+      if (merged) continue;
+
+      const state = stack.state(version);
+      let hasShiftAction = false;
+      const reduceActions = [];
+
+      const firstSymbol = lookaheadSymbol !== 0 ? lookaheadSymbol : 1;
+      const endSymbol = lookaheadSymbol !== 0 ? lookaheadSymbol + 1 : lang.tokenCount;
+      for (let symbol = firstSymbol; symbol < endSymbol; symbol++) {
+        const entry = lang.tableEntry(state, symbol);
+        for (let j = 0; j < entry.c; j++) {
+          const action = entry.a[j];
+          if (action[0] === 0 || action[0] === 3) {
+            // Shift is [0, state, extra, repetition]; RECOVER transcodes to the
+            // bare [3], matching C, where the macro zeroes the shift half of the
+            // union -- so neither flag is set for it either way.
+            if (!action[2] && !action[3]) hasShiftAction = true;
+          } else if (action[0] === 1 && action[2] > 0) {
+            // reduce: [1, symbol, childCount, dynamicPrecedence, productionId]
+            reduceActionSetAdd(reduceActions, action[1], action[2], action[3], action[4]);
+          }
+        }
+      }
+
+      let reductionVersion = -1;
+      for (const action of reduceActions) {
+        reductionVersion = this.reduce(
+          version, action.symbol, action.count,
+          action.dynamicPrecedence, action.productionId,
+          true, false,
+        );
+      }
+
+      if (hasShiftAction) {
+        canShiftLookaheadSymbol = true;
+      } else if (reductionVersion !== -1 && i < MAX_VERSION_COUNT) {
+        stack.renumberVersion(reductionVersion, version);
+        continue;
+      } else if (lookaheadSymbol !== 0) {
+        stack.removeVersion(version);
+      }
+
+      version = version === startingVersion ? versionCount : version + 1;
+    }
+
+    return canShiftLookaheadSymbol;
+  }
+
+  // ts_parser__recover_to_state: strategy 1's second half. Pop `depth` subtrees,
+  // wrap them in an ERROR node, and leave the version sitting in `goalState`.
+  recoverToState(version, depth, goalState) {
+    const stack = this.stack;
+    const pop = stack.popCount(version, depth);
+    let previousVersion = -1;
+
+    for (let i = 0; i < pop.length; i++) {
+      const slice = pop[i];
+
+      if (slice.version === previousVersion) {
+        pop.splice(i--, 1);
+        continue;
+      }
+
+      if (stack.state(slice.version) !== goalState) {
+        stack.halt(slice.version);
+        pop.splice(i--, 1);
+        continue;
+      }
+
+      // If an ERROR is already on the stack here, splice its children in rather
+      // than nesting a second ERROR inside the first.
+      const errorTrees = stack.popError(slice.version);
+      if (errorTrees.length > 0) {
+        const errorTree = errorTrees[0];
+        if (errorTree.childCount > 0) {
+          slice.subtrees.unshift(...errorTree.children);
+        }
+      }
+
+      const trailingExtras = removeTrailingExtras(slice.subtrees);
+
+      if (slice.subtrees.length > 0) {
+        const start = stack.position(slice.version);
+        const error = newErrorNode(this.lang, slice.subtrees, true, this.lexer.buf, start);
+        stack.push(slice.version, error, false, goalState);
+      }
+
+      for (const tree of trailingExtras) {
+        stack.push(slice.version, tree, false, goalState);
+      }
+
+      previousVersion = slice.version;
+    }
+
+    return previousVersion !== -1;
+  }
+
+  // ts_parser__recover: the two strategies, tried in order.
+  //
+  //   1. find a state further down the stack where this lookahead *would* be
+  //      valid, and rewind to it, wrapping everything popped in an ERROR;
+  //   2. give up on the token: wrap it in an ERROR and stay in the error state.
+  //
+  // Both are guarded by the same cost arithmetic, and strategy 1 is searched in
+  // summary order, so the first entry that both works and is not clearly worse
+  // than an existing version wins.
+  recover(version, lookahead) {
+    const lang = this.lang;
+    const stack = this.stack;
+    const buf = this.lexer.buf;
+    let didRecover = false;
+    const previousVersionCount = stack.versionCount;
+    const position = stack.position(version);
+    const summary = stack.getSummary(version);
+    const nodeCountSinceError = stack.nodeCountSinceError(version);
+    const currentErrorCost = stack.errorCost(version);
+
+    if (summary && lookahead.symbol !== TS_BUILTIN_SYM_ERROR) {
+      for (const entry of summary) {
+        if (entry.state === ERROR_STATE) continue;
+        if (entry.position === position) continue;
+        let depth = entry.depth;
+        if (nodeCountSinceError > 0) depth++;
+
+        // Do not recover in ways that create redundant stack versions.
+        let wouldMerge = false;
+        for (let j = 0; j < previousVersionCount; j++) {
+          if (stack.state(j) === entry.state && stack.position(j) === position) {
+            wouldMerge = true;
+            break;
+          }
+        }
+        if (wouldMerge) continue;
+
+        const newCost =
+          currentErrorCost +
+          entry.depth * ERROR_COST_PER_SKIPPED_TREE +
+          (position - entry.position) * ERROR_COST_PER_SKIPPED_CHAR +
+          rowsIn(buf, entry.position, position) * ERROR_COST_PER_SKIPPED_LINE;
+        // `break`, not `continue`: entries are ordered by increasing depth, so
+        // once one is too expensive every later one is too.
+        if (this.betterVersionExists(version, false, newCost)) break;
+
+        if (lang.hasActions(entry.state, lookahead.symbol)) {
+          if (this.recoverToState(version, depth, entry.state)) {
+            didRecover = true;
+            break;
+          }
+        }
+      }
+    }
+
+    // Recovery may have created versions that then halted. Drop them.
+    for (let i = previousVersionCount; i < stack.versionCount; i++) {
+      if (!stack.isActive(i)) {
+        stack.removeVersion(i--);
+      }
+    }
+
+    // At EOF there is no next token to skip to, so wrap the lot and finish.
+    if (lookahead.symbol === TS_BUILTIN_SYM_END) {
+      const parent = newErrorNode(this.lang, [], false, buf, position);
+      stack.push(version, parent, false, 1);
+      this.accept(version, lookahead);
+      return;
+    }
+
+    if (didRecover && stack.versionCount > MAX_VERSION_COUNT) {
+      stack.halt(version);
+      return;
+    }
+
+    const skipCost =
+      currentErrorCost + ERROR_COST_PER_SKIPPED_TREE +
+      lookahead.totalSize * ERROR_COST_PER_SKIPPED_CHAR +
+      rowsIn(buf, position, position + lookahead.totalSize) * ERROR_COST_PER_SKIPPED_LINE;
+    if (this.betterVersionExists(version, false, skipCost)) {
+      stack.halt(version);
+      return;
+    }
+
+    // An extra token skipped during recovery stays extra, so it is not counted
+    // against the error cost.
+    const actions = lang.tableEntry(1, lookahead.symbol);
+    if (actions.c > 0) {
+      const last = actions.a[actions.c - 1];
+      if (last[0] === 0 && last[2]) {
+        lookahead = lookahead.clone();
+        lookahead.extra = true;
+      }
+    }
+
+    let errorRepeat = newNode(
+      this.lang, TS_BUILTIN_SYM_ERROR_REPEAT, [lookahead], 0, buf, position,
+    );
+
+    // If tokens were already skipped there is an ERROR on top of the stack
+    // already; pop it and fold both into one.
+    if (nodeCountSinceError > 0) {
+      const pop = stack.popCount(version, 1);
+
+      if (pop.length > 1) {
+        while (stack.versionCount > pop[0].version + 1) {
+          stack.removeVersion(pop[0].version + 1);
+        }
+      }
+
+      stack.renumberVersion(pop[0].version, version);
+      pop[0].subtrees.push(errorRepeat);
+      errorRepeat = newNode(
+        this.lang, TS_BUILTIN_SYM_ERROR_REPEAT, pop[0].subtrees, 0,
+        buf, stack.position(version),
+      );
+    }
+
+    stack.push(version, errorRepeat, false, ERROR_STATE);
+  }
+
+  // ts_parser__handle_error: the entry point, reached when every version is
+  // paused. Closes over the reductions available here, tries to invent a single
+  // missing token that would unblock the lookahead, records the summary that
+  // strategy 1 searches, and then recovers.
+  handleError(version, lookahead) {
+    const lang = this.lang;
+    const stack = this.stack;
+    const previousVersionCount = stack.versionCount;
+
+    this.doAllPotentialReductions(version, 0);
+    const versionCount = stack.versionCount;
+    const position = stack.position(version);
+
+    let didInsertMissingToken = false;
+    for (let v = version; v < versionCount; ) {
+      if (!didInsertMissingToken) {
+        const state = stack.state(v);
+        // Symbol order is the tie-break, and it is the most arbitrary choice in
+        // the whole subsystem: the winner is whichever candidate the grammar
+        // numbered lowest, nothing more principled than that.
+        for (let missingSymbol = 1; missingSymbol < lang.tokenCount; missingSymbol++) {
+          const stateAfter = lang.nextState(state, missingSymbol);
+          if (stateAfter === 0 || stateAfter === state) continue;
+
+          if (lang.hasReduceAction(stateAfter, lookahead.leafSymbol)) {
+            this.lexer.reset(position);
+            this.lexer.markEnd();
+            const padding = this.lexer.tokenEnd - position;
+            const lookaheadBytes = lookahead.totalSize + lookahead.lookaheadBytes;
+
+            const versionWithMissingTree = stack.copyVersion(v);
+            const missingTree = newMissingLeaf(lang, missingSymbol, padding, lookaheadBytes);
+            stack.push(versionWithMissingTree, missingTree, false, stateAfter);
+
+            if (this.doAllPotentialReductions(versionWithMissingTree, lookahead.leafSymbol)) {
+              didInsertMissingToken = true;
+              break;
+            }
+          }
+        }
+      }
+
+      // A null subtree is the discontinuity that marks where the parse broke.
+      stack.push(v, null, false, ERROR_STATE);
+      v = v === version ? previousVersionCount : v + 1;
+    }
+
+    for (let i = previousVersionCount; i < versionCount; i++) {
+      stack.merge(version, previousVersionCount);
+    }
+
+    stack.recordSummary(version, MAX_SUMMARY_DEPTH);
+
+    if (lookahead.childCount > 0) {
+      throw new Unsupported("breakdown of a non-leaf lookahead needs an old tree");
+    }
+    this.recover(version, lookahead);
+  }
+
   versionStatus(version) {
     const stack = this.stack;
     let cost = stack.errorCost(version);
     const isPaused = stack.isPaused(version);
-    if (isPaused) cost += 100;
+    if (isPaused) cost += ERROR_COST_PER_SKIPPED_TREE;
     return {
       cost,
       nodeCount: stack.nodeCountSinceError(version),
@@ -1444,30 +1912,27 @@ class Parser {
       stack.removeVersion(MAX_VERSION_COUNT);
     }
 
-    // Paused versions: upstream resumes the best one into error recovery and
-    // drops the rest. Dropping the rest is ordinary GLR pruning and is
-    // implemented; resuming one means the whole parse is in error, which is out
-    // of scope, so say so instead of inventing a recovery.
-    let hasUnpausedVersion = false;
-    for (let i = 0, n = stack.versionCount; i < n; i++) {
-      if (stack.isPaused(i)) {
-        if (!hasUnpausedVersion && this.acceptCount < MAX_VERSION_COUNT) {
-          // Upstream resumes the *best-ranked* paused version into recovery.
-          // Versions are ordered best-first by this point, so reaching here
-          // with no unpaused predecessor is exactly upstream's resume trigger.
-          const head = stack.heads[i];
-          const tok = head.lookaheadWhenPaused;
-          throw new Unsupported(
-            `parse needs error recovery at byte ${head.node.position}` +
-            (tok ? `, lookahead ${this.lang.symbolName(tok.symbol)}` : "") +
-            `, state ${head.node.state}: out of scope`
-          );
+    // Paused versions. Versions are ordered best-first by this point, so a
+    // paused version with no unpaused predecessor is the best one there is:
+    // resume it and begin recovery. Every other paused version is ordinary GLR
+    // pruning and is simply dropped.
+    if (stack.versionCount > 0) {
+      let hasUnpausedVersion = false;
+      for (let i = 0, n = stack.versionCount; i < n; i++) {
+        if (stack.isPaused(i)) {
+          if (!hasUnpausedVersion && this.acceptCount < MAX_VERSION_COUNT) {
+            minErrorCost = stack.errorCost(i);
+            const lookahead = stack.resume(i);
+            this.handleError(i, lookahead);
+            hasUnpausedVersion = true;
+          } else {
+            stack.removeVersion(i);
+            i--;
+            n--;
+          }
+        } else {
+          hasUnpausedVersion = true;
         }
-        stack.removeVersion(i);
-        i--;
-        n--;
-      } else {
-        hasUnpausedVersion = true;
       }
     }
     return minErrorCost;
