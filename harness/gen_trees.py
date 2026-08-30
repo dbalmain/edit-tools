@@ -166,6 +166,21 @@ def convert(
 
 
 def check_clean(node, path: Path) -> list[str]:
+    """Every ERROR or MISSING in this subtree, as human-readable problems.
+
+    `node.children` is the *visible* children, so walking it alone misses a
+    MISSING node whose symbol is invisible -- and tree-sitter-go inserts exactly
+    that, a MISSING `aux_sym_source_file_token1`, for a file with no trailing
+    newline. Reproduced on `corpus/src/go/iota.go` with its newline stripped:
+    the walk below finds nothing while `root_node.has_error` is True.
+
+    So the walk is the diagnostic and `has_error` is the guarantee. Without the
+    second check this function's promise -- and `gen_trees.py`'s, which is
+    stated at the top of this file as refusing to emit a tree containing ERROR
+    or MISSING -- held only for the visible ones, which is narrower than either
+    reads. No committed corpus file trips it today; the point is that nothing
+    was stopping one.
+    """
     problems = []
     stack = [node]
     while stack:
@@ -174,6 +189,12 @@ def check_clean(node, path: Path) -> list[str]:
             line = n.start_point[0] + 1
             problems.append(f"{path.name}:{line}: {n.type}{' (missing)' * n.is_missing}")
         stack.extend(n.children)
+    if node.has_error and not problems:
+        problems.append(
+            f"{path.name}: has_error with no visible ERROR or MISSING node "
+            "(an invisible MISSING -- tree-sitter-go does this for a file with "
+            "no trailing newline)"
+        )
     return problems
 
 
