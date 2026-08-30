@@ -353,6 +353,43 @@ and no-server cases are out.
 
 ## Recommendation
 
+> **Superseded, 2026-08-30 — this is now a decision, not a recommendation.**
+> **Route C3 was chosen and is being built.** Everything below is the argument
+> as it stood before the five parse-layer tracks reported, kept because it is
+> the reasoning the decision was taken against, not because it is current.
+>
+> What changed, in the order it mattered:
+>
+> 1. **C3's one unverified step is verified.** `ts_lex` recovers from generated
+>    C mechanically and completely — all 18 pinned `parser.c` files, 8,082 lex
+>    states, zero unrecognised constructs — and a table-driven interpreter
+>    reproduces the frozen corpus byte for byte on json 3/3, scheme 15/15, go
+>    16/16, across ABI 14 and 15. See `docs/parse-tables-spike.md`. The
+>    interpreter is **6,316 B gz**, against web-tree-sitter's 111,589 and
+>    Lezer's 17.5 KB.
+> 2. **Both of route A's credits in this section are false or much weaker than
+>    written.** "Incremental reparse and error recovery for free" is free and
+>    correct, but incremental gives markdown **1.4×** (30.4 → 22.1 ms) against
+>    the ~1 ms/keystroke bar this document names, which 5 of 16 languages miss
+>    outright. And the credit asserted elsewhere that native and wasm cannot
+>    diverge is false — three distinct mechanisms, measured divergence in 8 of
+>    16 languages on broken input. See the superseding block in route A.
+> 3. **The scanner price is now measured, not feared.** 40-opcode ISA, all nine
+>    scanners fit, ~10 KB of bytecode total, +2,533 B gz of VM on the JS side;
+>    45,678 recorded scanner calls replayed across both runtimes with 0
+>    mismatches. `docs/scanner-vm.md`.
+> 4. **The last unknown is priced.** Error recovery: 33 of 44 dirty fixtures
+>    need it, ≈1,100 further JS lines, 6–8 KB gz, about a fortnight. That
+>    remains the one unbounded risk, because upstream's recovery is heuristic
+>    and has no table to transcode.
+>
+> Deliverables 1–4 below survive the change of route and are still the
+> deliverables — deliverable 4 is already done, and deliverable 2 (the grammar
+> stamp in the package header) fires under C3 exactly as it would have under A.
+>
+> The "trigger that reopens C2 or C3" at the end of this section is spent: the
+> trigger fired, and the answer was C3.
+
 **Ship A. Keep C2 as a named, triggered bet. Use F where the product allows it.
 E is Aven's route and only Aven's.**
 
