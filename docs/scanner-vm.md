@@ -450,6 +450,19 @@ because the boundary is drawn by tree-sitter's own generator: what it can
 express as a DFA goes in `ts_lex`, and what it cannot is precisely why
 `scanner.c` exists.
 
+**A qualification against my own point 3, added 2026-08-30.** I argued the DFA
+interpreter is safer standing alone because it is simpler. A codex review of the
+tables track's interpreter at `xhigh` found a real encoding defect that cuts
+against that: a guard which is false in **both** EOF modes encodes identically to
+one that is true everywhere, because an empty interval set short-circuits the
+interpreter's range test. It is latent — no pinned grammar triggers it — but it
+is a case where the table representation is not injective, so "the table is
+simple and therefore safe" is weaker than I wrote. It does not move the
+conclusion, because points 1 and 2 are about speed and size and are untouched,
+and because the same class of encoding bug is available to a bytecode encoder
+too. It does mean the split should not be defended on the DFA's simplicity
+alone.
+
 **The one measurement that would change this**: if a table-driven DFA turned out
 to be slower than bytecode in practice — say because the interval binary search
 thrashes cache on css's 437 states while a bytecode chain stays in a hot loop —
@@ -547,8 +560,10 @@ speculatively would be spending weeks on the 0.4%.
 **What actually moved the board is not the VM.** It is
 `docs/host-ctype-divergence.md`: route A was credited with *deleting* the
 parse-layer's divergence risk, and it does not. Its Rust host and its wasm host
-classify characters differently, by measurement, and the frozen corpus carries a
-third answer. The recommendation in `docs/parse-layer.md` leans on that credit,
+classify characters differently, by measurement. (My further claim that the
+frozen corpus carried a third answer was wrong and is corrected in that
+document; the corpus is locale-invariant, and the locale is now pinned on `main`
+regardless.) The recommendation in `docs/parse-layer.md` leans on that credit,
 so route A should be repriced whether or not anyone writes another line of VM —
 and the cheapest item on the whole board is pinning `LC_ALL` in `gen_trees.py`,
 which costs one line and makes the corpus reproducible.
@@ -561,7 +576,9 @@ board can say that.
 
 **Recommended order**, if an own-the-parser route is pursued at all:
 
-1. Pin the locale in `gen_trees.py`. One line, independent of everything else.
+1. ~~Pin the locale in `gen_trees.py`.~~ **Done** on `main` in `c110638`, which
+   also fixed two locale-dependent encoding defects in `manifest.py` and
+   `gen_trees.py` that were the more serious half of that finding.
 2. Finish the LR tables for a scanner-free grammar and require byte-identical
    trees. That is still the load-bearing unknown; the tables track has JSON.
 3. Port **python or rust** to the VM next — not markdown-block. Both are cheap

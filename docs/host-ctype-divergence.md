@@ -59,11 +59,32 @@ divergence is silent, input-dependent, and confined to non-ASCII — which is
 this project's named failure mode, in the layer that was supposed to be immune
 to it.
 
-**The frozen corpus is already implicated, independent of wasm.** The trees in
-`corpus/trees/` encode the locale of the machine that ran `gen_trees.py`. A Rust
-host reading those same grammars is in the C locale and would not always
-reproduce them. This is true *today*, under the current design, before any parse
-layer is chosen.
+**The frozen corpus turned out *not* to be implicated — corrected 2026-08-30.**
+The first draft of this page claimed the trees in `corpus/trees/` encode the
+locale of the machine that ran `gen_trees.py`, and that a Rust host in the C
+locale would not always reproduce them. **That was wrong, and it was an
+overreach rather than a measurement**: I inferred it from "the scanner is
+locale-sensitive" without checking whether any corpus input actually reaches an
+affected decision point — in the same document where I had already written that
+none was known to. It should have been marked as a guess or checked, and it was
+neither.
+
+Dave measured it while fixing the underlying bug (`main`, `c110638`): with two
+unrelated encoding defects repaired, **all 234 trees regenerate byte-identical
+under `LC_ALL=C`**. He also confirmed this was not a false negative — the `1.é`
+parse genuinely flips in this exact harness, and the pin makes the resulting
+`ERROR` disappear — so the corpus is locale-**invariant**, by luck rather than
+by design.
+
+Two real defects surfaced on the way, and they are the reason the fix exists:
+`manifest.py` read with `path.read_text()` and `gen_trees.py` wrote with
+`write_text(...)`, neither naming an encoding, so both took it from the locale —
+and the write side decides the **bytes of a committed artifact**. Both now name
+utf-8, and `gen_trees.py` pins `LC_CTYPE` to UTF-8 with a hard exit if no UTF-8
+locale exists. That converts the luck into a constant.
+
+The rest of this page stands unchanged: the divergence between hosts is real and
+measured, and it is what the fix was responding to.
 
 **It is an argument for a data-only scanner** — the one place the bytecode-VM
 route wins cleanly. A VM whose character classes are sorted code-point ranges
@@ -116,10 +137,10 @@ wasm with the tree-sitter CLI and rerun `wasm_ctype.cjs` against it.
 
 1. **Strike the "deletes divergence" credit from route A**, or reduce it to
    "deletes divergence in the LR tables, not in the scanners".
-2. **Record that the frozen corpus carries a locale.** Either pin `LC_ALL` in
-   `gen_trees.py` so the corpus is reproducible, or state the locale in the
-   corpus header. This is worth doing regardless of the route chosen, and it is
-   the cheapest item on this page.
+2. ~~**Record that the frozen corpus carries a locale.**~~ **Done** on `main` in
+   `c110638`, and the premise was weaker than stated — see the correction above.
+   The corpus was already locale-invariant; the pin and the two encoding fixes
+   make that a guarantee rather than an accident.
 3. Add host-ctype divergence to the gate in *"The gate in front of any
    own-the-parser route"*, which currently lists error recovery, incremental
    reparse and state serialization. It belongs there, and unlike the other
