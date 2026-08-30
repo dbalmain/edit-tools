@@ -42,9 +42,19 @@ const MAX_VERSION_COUNT = 6;
 const MAX_VERSION_COUNT_OVERFLOW = 4;
 const MAX_LINK_COUNT = 8;
 const MAX_ITERATOR_COUNT = 64;
-const MAX_COST_DIFFERENCE = 18 * 100; // 18 * ERROR_COST_PER_SKIPPED_TREE
+const MAX_SUMMARY_DEPTH = 16;
 const TS_DECODE_ERROR = -1;
 const BYTE_ORDER_MARK = 0xfeff;
+
+// lib/src/error_costs.h. Recovery is entirely a cost-minimisation, and these
+// five integers are the whole objective function -- so they are the numbers a
+// second runtime has to agree with exactly, not approximately.
+const ERROR_COST_PER_RECOVERY = 500;
+const ERROR_COST_PER_MISSING_TREE = 110;
+const ERROR_COST_PER_SKIPPED_TREE = 100;
+const ERROR_COST_PER_SKIPPED_LINE = 30;
+const ERROR_COST_PER_SKIPPED_CHAR = 1;
+const MAX_COST_DIFFERENCE = 18 * ERROR_COST_PER_SKIPPED_TREE;
 
 class Unsupported extends Error {}
 
@@ -94,6 +104,13 @@ export class Language {
 
   hasActions(state, symbol) {
     return this.lookup(state, symbol) !== 0;
+  }
+
+  // ts_language_has_reduce_action. Only the *first* action counts: a state that
+  // shifts before it reduces is not a state a missing token can unblock.
+  hasReduceAction(state, symbol) {
+    const entry = this.tableEntry(state, symbol);
+    return entry.c > 0 && entry.a[0][0] === 1;
   }
 
   // ts_language_next_state
@@ -458,6 +475,7 @@ class Subtree {
     this.repeatDepth = 0;
     this.firstLeafSymbol = 0;
     this.firstLeafParseState = 0;
+    this.lookaheadChar = 0;
   }
 
   get totalSize() {
@@ -491,8 +509,57 @@ function newLeaf(lang, symbol, padding, size, lookaheadBytes, parseState, isKeyw
   return t;
 }
 
+// ts_subtree_new_error: the leaf the lexer emits for characters no token rule
+// accepts. This is a *leaf* ERROR, and it is not the same thing as the ERROR
+// *node* that recovery wraps around already-parsed subtrees -- upstream tells
+// them apart by child count in exactly one place, the cost branch below, where
+// a childless ERROR child must not be charged twice.
+function newError(lang, lookaheadChar, padding, size, lookaheadBytes, parseState) {
+  const t = newLeaf(lang, TS_BUILTIN_SYM_ERROR, padding, size, lookaheadBytes, parseState, false);
+  t.fragileLeft = true;
+  t.fragileRight = true;
+  t.lookaheadChar = lookaheadChar;
+  return t;
+}
+
+// ts_subtree_new_missing_leaf: zero-width, carrying the symbol the parser
+// wanted and did not get. `isMissing` is what `corpus/trees-edited/` records as
+// `"missing": true`, and it is the only thing separating this from a genuine
+// empty leaf.
+function newMissingLeaf(lang, symbol, padding, lookaheadBytes) {
+  const t = newLeaf(lang, symbol, padding, 0, lookaheadBytes, 0, false);
+  t.isMissing = true;
+  return t;
+}
+
+// ts_subtree_new_error_node
+function newErrorNode(lang, children, extra, buf, startByte) {
+  const t = newNode(lang, TS_BUILTIN_SYM_ERROR, children, 0, buf, startByte);
+  t.extra = extra;
+  return t;
+}
+
+// `Length.extent.row` over a byte span. Upstream accumulates row and column
+// through the lexer; this port tracks byte offsets only, because the visible
+// tree never reads extents -- except here, where three error-cost terms charge
+// per skipped line.
+//
+// Counting newlines in the buffer is not an approximation of that number, it is
+// the same number by a different route: a subtree's span is contiguous over the
+// very bytes the lexer walked, and `\n` is the only thing upstream counts
+// (`lexer.c:202`). So this stays exact without the extent plumbing.
+//
+// TODO: row/column tracking is being added on another branch. When it lands,
+// the three callers should read real extents and this should go.
+function rowsIn(buf, from, to) {
+  if (!buf) return 0;
+  let rows = 0;
+  for (let i = from; i < to; i++) if (buf[i] === 0x0a) rows++;
+  return rows;
+}
+
 // ts_subtree_summarize_children
-function summarizeChildren(self, lang) {
+function summarizeChildren(self, lang, buf, startByte) {
   self.namedChildCount = 0;
   self.visibleChildCount = 0;
   self.errorCost = 0;
@@ -521,7 +588,17 @@ function summarizeChildren(self, lang) {
 
     const grandchildCount = child.childCount;
     if (self.symbol === TS_BUILTIN_SYM_ERROR || self.symbol === TS_BUILTIN_SYM_ERROR_REPEAT) {
-      throw new Unsupported("error node construction: error recovery is out of scope");
+      // What an ERROR wrapper charges for what it swallowed. A childless ERROR
+      // child is the lexer's skipped-character leaf, which already paid for
+      // itself below; charging it again here would double-count every
+      // unrecognised character.
+      if (!child.extra && !(child.symbol === TS_BUILTIN_SYM_ERROR && grandchildCount === 0)) {
+        if (child.visible) {
+          self.errorCost += ERROR_COST_PER_SKIPPED_TREE;
+        } else if (grandchildCount > 0) {
+          self.errorCost += ERROR_COST_PER_SKIPPED_TREE * child.visibleChildCount;
+        }
+      }
     }
 
     self.dynamicPrecedence += child.dynamicPrecedence;
@@ -543,7 +620,12 @@ function summarizeChildren(self, lang) {
       self.namedChildCount += child.namedChildCount;
     }
 
-    if (child.symbol === TS_BUILTIN_SYM_ERROR || child.isMissing) {
+    // ts_subtree_is_error, which is the symbol test and nothing else. This read
+    // `|| child.isMissing` until recovery was written, which was dead while no
+    // missing leaf could exist and would have quietly diverged the moment one
+    // could: upstream does not make a parent fragile for a MISSING child, in
+    // 0.25.2, 0.26.0 or 0.26.8.
+    if (child.symbol === TS_BUILTIN_SYM_ERROR) {
       self.fragileLeft = true;
       self.fragileRight = true;
       self.parseState = TS_TREE_STATE_NONE;
@@ -553,6 +635,17 @@ function summarizeChildren(self, lang) {
   }
 
   self.lookaheadBytes = lookaheadEndByte - self.size - self.padding;
+
+  // What the wrapper itself costs, charged once. `startByte` is the node's own
+  // offset including padding, so the size span is [start + padding, ... + size)
+  // -- the same bytes upstream's Length accumulated over.
+  if (self.symbol === TS_BUILTIN_SYM_ERROR || self.symbol === TS_BUILTIN_SYM_ERROR_REPEAT) {
+    const sizeStart = startByte + self.padding;
+    self.errorCost +=
+      ERROR_COST_PER_RECOVERY +
+      ERROR_COST_PER_SKIPPED_CHAR * self.size +
+      ERROR_COST_PER_SKIPPED_LINE * rowsIn(buf, sizeStart, sizeStart + self.size);
+  }
 
   if (self.childCount > 0) {
     const firstChild = children[0];
@@ -572,7 +665,10 @@ function summarizeChildren(self, lang) {
   }
 }
 
-function newNode(lang, symbol, children, productionId) {
+// `buf` and `startByte` are read only when `symbol` is ERROR or ERROR_REPEAT,
+// where the cost of the node depends on how many lines it spans. Callers that
+// cannot build an error node need not pass them.
+function newNode(lang, symbol, children, productionId, buf, startByte) {
   const t = new Subtree();
   t.symbol = symbol;
   t.children = children;
@@ -583,7 +679,7 @@ function newNode(lang, symbol, children, productionId) {
   const fragile = symbol === TS_BUILTIN_SYM_ERROR || symbol === TS_BUILTIN_SYM_ERROR_REPEAT;
   t.fragileLeft = fragile;
   t.fragileRight = fragile;
-  summarizeChildren(t, lang);
+  summarizeChildren(t, lang, buf, startByte === undefined ? 0 : startByte);
   return t;
 }
 
