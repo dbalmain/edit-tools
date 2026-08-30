@@ -547,8 +547,10 @@ speculatively would be spending weeks on the 0.4%.
 **What actually moved the board is not the VM.** It is
 `docs/host-ctype-divergence.md`: route A was credited with *deleting* the
 parse-layer's divergence risk, and it does not. Its Rust host and its wasm host
-classify characters differently, by measurement, and the frozen corpus carries a
-third answer. The recommendation in `docs/parse-layer.md` leans on that credit,
+classify characters differently, by measurement. (My further claim that the
+frozen corpus carried a third answer was wrong and is corrected in that
+document; the corpus is locale-invariant, and the locale is now pinned on `main`
+regardless.) The recommendation in `docs/parse-layer.md` leans on that credit,
 so route A should be repriced whether or not anyone writes another line of VM —
 and the cheapest item on the whole board is pinning `LC_ALL` in `gen_trees.py`,
 which costs one line and makes the corpus reproducible.
@@ -561,7 +563,9 @@ board can say that.
 
 **Recommended order**, if an own-the-parser route is pursued at all:
 
-1. Pin the locale in `gen_trees.py`. One line, independent of everything else.
+1. ~~Pin the locale in `gen_trees.py`.~~ **Done** on `main` in `c110638`, which
+   also fixed two locale-dependent encoding defects in `manifest.py` and
+   `gen_trees.py` that were the more serious half of that finding.
 2. Finish the LR tables for a scanner-free grammar and require byte-identical
    trees. That is still the load-bearing unknown; the tables track has JSON.
 3. Port **python or rust** to the VM next — not markdown-block. Both are cheap
