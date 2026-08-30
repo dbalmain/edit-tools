@@ -11,13 +11,28 @@ This is the offline half of route C3 in `docs/parse-layer.md`: take the tables
 tree-sitter's own generator emitted, convert them to data, and interpret that
 data in both runtimes. Nothing here ships; the blob is the artifact.
 
+Which tables are in, and which are out. In: parse table, small parse table and
+its map, parse actions, symbol names, symbol metadata, lex modes, alias
+sequences, the non-terminal alias map, field names, field map slices and
+entries, and reserved words. **Out, deliberately**: `primary_state_ids`,
+`supertype_symbols`, `supertype_map_slices`, `supertype_map_entries`, and the
+language `metadata` struct. Those four serve query analysis and the supertype
+API; parsing and `node.children` never read them. So this is not "every static
+table" -- it is every table the supported projection needs, and the omissions
+would matter to anyone growing this into query support.
+
+Two more are transcoded but never read by `harness/ts_lr.mjs`:
+`public_symbol_map` (used only by `ts_node_symbol`) and `alias_map` (used only
+by `ts_language_aliases_for_symbol`). They are kept because they are cheap and
+because dropping a table is easier to justify once something needs it.
+
 The interesting half is `ts_lex`. tree-sitter emits it as a switch-based DFA in
 C rather than as a table, so it has to be *recovered*. Each `case N:` is a lexer
 state and its body is an ordered sequence of guarded transitions. Every guard is
-a boolean expression over the single variable `lookahead` (an int32 codepoint,
-0 at EOF, -1 on a UTF-8 decode error), so it can be evaluated symbolically into
-a set of int32 intervals -- which is data, and which is exactly as expressive as
-the C was.
+a boolean expression over `eof` and `lookahead` (an int32 codepoint, 0 at EOF,
+-1 on a UTF-8 decode error), so it can be evaluated symbolically into a pair of
+int32 interval sets -- which is data, and which is exactly as expressive as the
+C was, since `eof` is one bit and a predicate over an int32 is a set.
 
 Unrecognised syntax raises. A silently dropped arm is a lexer that is subtly
 wrong on exactly the inputs the corpus does not contain, so there is no

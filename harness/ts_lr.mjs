@@ -6,8 +6,8 @@
 // the "same algorithm" half, ported from tree-sitter 0.26.0's `lib/src`
 // (`parser.c`, `stack.c`, `subtree.c`, `node.c`, `lexer.c`, `language.c`).
 //
-// Deliberately NOT implemented, because the spike does not need them and the
-// corpus cannot see them (see `docs/parse-tables-spike.md`):
+// What this supports is one projection: **byte offsets, and the visible tree of
+// a clean full parse**. Not implemented (see `docs/parse-tables-spike.md`):
 //
 //   * error recovery      -- ts_parser__handle_error / __recover / __breakdown
 //   * incremental reparse -- old-tree reuse, ReusableNode, __breakdown_top_of_stack
@@ -19,8 +19,18 @@
 //                            consumers of extents (get_column, error rows) are
 //                            scanner and error-recovery paths
 //
-// Every one of those is a place a reimplementation is green on clean full
-// parses and wrong in production. Reaching one throws rather than guessing.
+// The guarantee is narrower than "reaching any of them throws", and the precise
+// claim matters: **unsupported behaviour that can affect this projection is
+// rejected.** Error recovery and external scanners throw, because reaching them
+// would change the tree. The last two do not, and are not silent bugs for
+// different reasons: repeat rebalancing is skipped at parser completion and
+// cannot change the visible tree by construction, and row/column state is never
+// tracked because nothing in this projection reads it. Incremental reparse has
+// no entry point at all rather than a throwing one -- there is nowhere to pass
+// an old tree.
+//
+// Each is still a place a reimplementation is green on clean full parses and
+// wrong in production; that is a statement about scope, not about throwing.
 
 const ERROR_STATE = 0;
 const TS_TREE_STATE_NONE = 0xffff;

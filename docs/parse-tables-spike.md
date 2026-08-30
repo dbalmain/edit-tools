@@ -12,10 +12,18 @@ It is settled, in the direction the hypothesis predicted. `ts_lex` recovers from
 the generated C mechanically and completely, and a table-driven parser
 interpreting the recovered blob reproduces the frozen corpus **byte for byte**:
 
-| Language                | Corpus files | Result                   |
-| ----------------------- | -----------: | ------------------------ |
-| tree-sitter-json 0.24.8 |            3 | **3/3 byte-identical**   |
-| tree-sitter-go 0.25.0   |           16 | **16/16 byte-identical** |
+| Language                  | Corpus files | Result                   |
+| ------------------------- | -----------: | ------------------------ |
+| tree-sitter-json 0.24.8   |            3 | **3/3 byte-identical**   |
+| tree-sitter-scheme 0.24.7-1 |         15 | **15/15 byte-identical** |
+| tree-sitter-go 0.25.0     |           16 | **16/16 byte-identical** |
+
+Three grammars, 34 files, two ABI versions (json and scheme are ABI 14, go is
+ABI 15). Scheme was added after a review suggested it and is **a third
+scanner-free grammar**: `EXTERNAL_TOKEN_COUNT 0` and no `scanner.c` at the
+pinned commit `9338837`. `docs/parse-layer.md` says "Only JSON and Go do not"
+have a scanner; that table predates scheme's onboarding, and the count is at
+least three of sixteen.
 
 Byte-identical means the bytes of `corpus/trees/<lang>__<stem>.tree.json`, not a
 normalised comparison: `json.dumps(indent=1, ensure_ascii=False)` and
@@ -32,11 +40,11 @@ Reproduce:
 
 **This document's most important section is
 [What this does not verify](#what-this-does-not-verify).** A green corpus here
-is evidence about clean full parses of nineteen files and nothing else.
+is evidence about clean full parses of thirty-four files and nothing else.
 
 ## What was built
 
-Three pieces, all harness, none of it on any shipped path.
+All harness, none of it on any shipped path.
 
 | File                           | What it is                                                                           |
 | ------------------------------ | ------------------------------------------------------------------------------------ |
@@ -45,6 +53,13 @@ Three pieces, all harness, none of it on any shipped path.
 | `harness/ts_check_trees.mjs`   | the acceptance bar — parse the corpus sources, compare bytes                         |
 | `harness/ts_differential.py`   | the wider oracle — compare against real tree-sitter over arbitrary source            |
 | `harness/ts_mutation_sweep.py` | how much of the blob the corpus actually exercises                                   |
+| `harness/test_ts_transcode.py` | 24 unit tests over the recoverer and its interval algebra                            |
+| `harness/ts_lr.test.mjs`       | 6 unit tests over the lexer, shelled out to by the Python suite                      |
+
+The two test files reach `./test.sh` through
+`python3 -m unittest discover -s harness`, which it already runs — the Python
+suite shells out to `node --test`, so neither needed an edit to `test.sh`, a
+file four other tracks are also touching.
 
 `ts_lr.mjs` is a port of tree-sitter 0.26.0's `lib/src`, which is the version
 that produced the frozen corpus — confirmed by regenerating the corpus with the
@@ -131,6 +146,24 @@ survey traced it to a fall-through in `add_character_range_conditions`. It is
 harmless in C, where `00` is octal zero, and this transcoder reads it
 correctly.)
 
+A third defect in the same encoding came out of review rather than out of any
+corpus, and it is the one worth remembering. A guard that is **false in both EOF
+modes** — `lookahead < 0 && lookahead >= 0` — collapses to an empty interval
+set, and the interpreter was testing the set only when non-empty:
+
+```js
+if (ranges.length && !inRanges(ranges, lookahead)) continue;  // wrong
+```
+
+The short-circuit skipped the test and took the branch unconditionally, which
+inverts the predicate. No pinned grammar emits a contradictory guard, so nothing
+was ever wrong — but it falsified the encoding's own claim to be as expressive
+as the C, and the mutation sweep below says the corpus could not have caught it.
+Op 2 now always tests the set; a genuinely unconditional action is op 3, and the
+full domain has an explicit non-empty representation, so the fix cost nothing.
+It is the first case in `harness/ts_lr.test.mjs`, verified discriminating by
+reverting the fix and watching exactly one test fail.
+
 ## Sizes
 
 `gzip -9`, measured 2026-08-30.
@@ -138,24 +171,25 @@ correctly.)
 | Artifact                               |     raw |     gz |
 | -------------------------------------- | ------: | -----: |
 | json blob (tables + lex DFA)           |   6,465 |  1,465 |
-| go blob (tables + lex DFA)             | 372,512 | 35,853 |
-| `ts_lr.mjs`, one-off, esbuild --minify |  19,356 |  6,212 |
+| scheme blob (tables + lex DFA)         |  88,350 |  8,806 |
+| go blob (tables + lex DFA)             | 372,506 | 35,847 |
+| `ts_lr.mjs`, one-off, esbuild --minify |  19,664 |  6,316 |
 
 Laid beside the figures already in `docs/parse-layer.md`, all gz:
 
-| Route                  | runtime, one-off |           json |               go |
-| ---------------------- | ---------------: | -------------: | ---------------: |
-| **C3, measured here**  |       **6.2 KB** |     **1.5 KB** |      **35.0 KB** |
-| web-tree-sitter        |           111 KB | ~6–8 KB (est.) | ~31–43 KB (est.) |
-| native grammar (proxy) |                — |          11 KB |            57 KB |
-| Lezer                  |          17.5 KB |              — |                — |
+| Route                  | runtime, one-off |           json |         scheme |               go |
+| ---------------------- | ---------------: | -------------: | -------------: | ---------------: |
+| **C3, measured here**  |       **6.3 KB** |     **1.5 KB** |     **8.6 KB** |      **35.0 KB** |
+| web-tree-sitter        |           111 KB | ~6–8 KB (est.) |              — | ~31–43 KB (est.) |
+| native grammar (proxy) |                — |          11 KB |              — |            57 KB |
+| Lezer                  |          17.5 KB |              — |              — |                — |
 
 **The per-language number is a wash; the runtime is where C3 wins.** Go's data
 blob at 35.0 KB lands in the middle of the wasm estimate for the same grammar,
 which should not be surprising — it is the same tables. What C3 replaces is the
-111 KB wasm runtime, with 6.2 KB.
+111 KB wasm runtime, with 6.3 KB.
 
-Treat 6.2 KB as a floor, not a quote. It buys clean full parses only. Lezer's
+Treat 6.3 KB as a floor, not a quote. It buys clean full parses only. Lezer's
 17.5 KB includes error recovery and incremental reparse, and adding those here
 would move the number toward Lezer's, not away from it.
 
@@ -244,12 +278,12 @@ worry me if reserved words were load-bearing anywhere the packages look:
 tree-sitter-go has eight reserved-word sets, and sixteen files never make
 membership in one decisive.
 
-The honest summary: **nineteen files cannot carry a 372 KB table blob.** That is
-the argument for the differential below being worth more than either corpus.
+The honest summary: **thirty-four files cannot carry a 372 KB table blob.** That
+is the argument for the differential below being worth more than either corpus.
 
 ### Agreement with real tree-sitter over the Go standard library
 
-The frozen corpus is nineteen files. `harness/ts_differential.py` widens the
+The frozen corpus is thirty-four files. `harness/ts_differential.py` widens the
 oracle to any source lying around, comparing this interpreter's document against
 `gen_trees.convert()` over the real grammar:
 
@@ -259,24 +293,56 @@ find $(go env GOROOT)/src -name '*.go' |
     ./harness/ts_differential.py --language go --module tree_sitter_go --blob go.blob.json
 ```
 
-<!-- DIFFERENTIAL-RESULT -->
+Results, all against tree-sitter 0.26.0 with the pinned grammars:
 
-It earned itself on the first run by finding a real defect the corpus could not:
-`x86asm/tables.go`, a single ~10,000-element generated literal, **overflowed the
-JavaScript stack**. `visibleChildren` descended into invisible nodes
-recursively, and a `repeat` rule nests one aux level per element.
+| Corpus                                  |   Files | Agree | Skipped as unclean |
+| --------------------------------------- | ------: | ----: | -----------------: |
+| Go standard library, `go1.26.7`         |   7,710 | **7,654 / 7,654** |     56 |
+| JSON: this repo's 234 frozen trees, packages, highlight data, grammar `*.json` | 281 | **281 / 281** | 0 |
+| Scheme: the grammar's own `*.scm`       |       6 | **5 / 5** |                  1 |
 
-That bug is instructive about what skipping upstream machinery costs.
-`ts_parser__balance_subtree` rotates same-symbol invisible repeat nodes; this
-interpreter skips it, on the correct argument that rotation preserves leaf order
-and therefore cannot change the visible tree. What the argument missed is that
-balancing _also_ bounds depth. The reasoning still holds; the consequence did
-not. Traversals here now carry their own stack, as tree-sitter's own
-`ts_node__child` does.
+That is 7,940 files against 34 in the frozen corpus, and the JSON number matters
+most: JSON's acceptance bar is three files, and the frozen trees are large,
+deeply nested, and full of escapes and astral-plane text.
+
+It found **three** defects the corpus could not, which is the whole argument for
+having built it.
+
+**1. A stack overflow on the largest real file.** `x86asm/tables.go`, a single
+~10,000-element generated literal, blew the JavaScript stack. `visibleChildren`
+descended into invisible nodes recursively, and a `repeat` rule nests one aux
+level per element. That bug is instructive about what skipping upstream
+machinery costs: `ts_parser__balance_subtree` rotates same-symbol invisible
+repeat nodes, and this interpreter skips it on the correct argument that
+rotation preserves leaf order and so cannot change the visible tree. What the
+argument missed is that balancing _also_ bounds depth. The reasoning still
+holds; the consequence did not. Traversals now carry their own stack, as
+tree-sitter's own `ts_node__child` does.
+
+**2. `"\0"` is the empty string.** tree-sitter-go names its EOF terminator token
+`"\0"`. As a C string literal that is the _empty_ name — the NUL terminates it —
+so `ts_language_symbol_name` returns `""` and the node's type is `""`. The
+transcoder was decoding the literal faithfully and producing a one-character
+name, so the node came out typed `"\u0000"`. It surfaces only on a Go file with
+**no trailing newline**, which no corpus file is.
+
+**3. `gen_trees.check_clean` does not see invisible MISSING nodes.** This one is
+a defect in the repo's oracle, not in this spike. `check_clean` walks
+`node.children` — the _visible_ children — so a MISSING node whose symbol is
+invisible is invisible to it too. tree-sitter-go inserts exactly that, a MISSING
+`aux_sym_source_file_token1`, for a Go file with no trailing newline, and
+`check_clean` reports the tree as clean while `root_node.has_error` is `True`.
+Five stdlib files reached the comparison as error-recovery results that the
+corpus's own filter would have frozen. This interpreter was right to refuse
+them; `gen_trees.py`'s stated guarantee — "refuses to emit a tree containing
+ERROR or MISSING" — is narrower than it reads, and holds only for _visible_
+ones. Not fixed here: the frozen corpus is the oracle for four other tracks and
+is not this track's to change. `harness/ts_differential.py` consults
+`has_error`.
 
 Note the differential is still only evidence about **clean full parses** — files
 tree-sitter itself cannot parse without ERROR or MISSING are skipped, exactly as
-`gen_trees.py` refuses them.
+`gen_trees.py` intends to.
 
 ## Two facts about the route that were not known before
 
@@ -284,9 +350,9 @@ tree-sitter itself cannot parse without ERROR or MISSING are skipped, exactly as
 
 GoTreeSitter (`github.com/odvcencio/gotreesitter`, a pure-Go tree-sitter with
 206 grammars) lists seven grammars that needed hand-written token sources
-instead of the recovered DFA: `authzed, c, cpp, go, java, json, lua`. Both
-grammars in this spike are on that list, and its README gives a reason for go
-and **none for json**.
+instead of the recovered DFA: `authzed, c, cpp, go, java, json, lua`. Two of the
+three grammars in this spike are on that list, and its README gives a reason for
+go and **none for json**.
 
 For json, that flag does not hold. `tree-sitter-json 0.24.8`'s `ts_lex` recovers
 completely — 44 states, 84 ops, no unrecognised construct — and drives a
@@ -321,14 +387,122 @@ the first is routine.
 The practical consequence for anyone pricing C3: **a table interpreter for Go is
 not an LR interpreter.** It needs the graph-structured stack, version merging,
 dynamic precedence, and `ts_subtree_compare` as a tie-break. That is most of
-`stack.c` and a good half of `parser.c`, and it is why the interpreter is 6.2 KB
+`stack.c` and a good half of `parser.c`, and it is why the interpreter is 6.3 KB
 rather than 2 KB.
+
+## The price of the two things route A gets for free
+
+Route A is credited with error recovery and incremental reparse "for free", and
+they are the two things this spike does not have. This section prices them. It
+is a price with an error bar, not an implementation.
+
+### What the interpreter does today on broken input
+
+`corpus/trees-edited/` (the oracle track's frozen fixtures: four clean bases per
+language, four single-edit states each, with tree-sitter's answer including
+ERROR and MISSING) covers all three grammars here — 44 fixtures. Running this
+interpreter over their `source` fields:
+
+| Outcome                                        | Count |
+| ---------------------------------------------- | ----: |
+| refused — needs error recovery                 |    33 |
+| parsed, and **byte-identical to the oracle**   |    11 |
+| parsed, but diverged                           |     0 |
+
+So a single random edit needs recovery **three times in four**, and where it
+does not, this interpreter is already exactly right. The refusals split cleanly
+along the two upstream mechanisms:
+
+- **26× no parse action** for the lookahead in the current state, with every
+  stack version paused — upstream's `ts_parser__handle_error` → `__recover`.
+- **7× no token at all** from the lexer — upstream's `skipped_error` path in
+  `ts_parser__lex`, which emits an ERROR leaf holding the unrecognised
+  character.
+
+### The size of the missing code, measured
+
+Function-body line counts in tree-sitter 0.26.0's `lib/src`, against what this
+port already covers:
+
+| Subsystem                       | C lines | Status                     |
+| ------------------------------- | ------: | -------------------------- |
+| ported (parse, lex, stack, node) |   1,906 | done — 1,244 JS code lines |
+| **error recovery**              | **657** | not started                |
+| **incremental reparse**         | **1,032** | not started              |
+
+Error recovery is `ts_parser__handle_error`, `__recover`, `__recover_to_state`,
+`__do_all_potential_reductions`, the two `__breakdown` paths and
+`__better_version_exists` (535 in `parser.c`); the stack summary machinery
+`ts_stack_record_summary` / `resume` / `pop_pending` / `pop_error` (79); and the
+error and missing subtree constructors (43). Incremental is
+`get_changed_ranges.c` in full (558), `ts_subtree_edit` / `balance` / `compress`
+(199), `ts_parser__reuse_node` and friends (146), `reusable_node.h` (96), and
+`ts_tree_edit` (33).
+
+At the port ratio actually observed here — 1,244 JS code lines from 1,906 lines
+of C, or **0.65** — that is roughly **430 JS lines for recovery** and **670 for
+incremental**, so about **1,100 lines**, call it 6–8 KB gz on top of the current
+6.3 KB. Doubling the runtime still lands under Lezer's 17.5 KB.
+
+**Lines are the cheap half and the number I trust least.** The expensive half is
+being right, and this spike has a defect density to reason from: 1,244 JS code
+lines produced four real defects found after the first green run — the GLR pause
+conflation, the stack overflow, the `"\0"` name, and the empty-interval
+inversion. That is one per ~310 lines, and **two of the four were invisible to
+the corpus**; they needed the differential and a review.
+
+Recovery should be worse than that rate, not better, for a reason specific to
+it: correctness is not "produces a tree" but "produces *upstream's* tree", and
+recovery is where upstream makes the most arbitrary-looking choices — which
+version to resume, how far back to recover, what error cost to charge. Every one
+of those is a coin the port can flip the wrong way while staying plausible.
+
+So: **1,100 lines, and a fortnight of getting them to agree, with the tail risk
+in recovery rather than in incrementality.** I would not quote tighter than
+that, and the thing that would move it is running the oracle track's
+`harness/parse_oracle.py` sweep against a first cut — which is exactly the
+instrument that did not exist when `docs/parse-layer.md` called this gap
+unpriceable.
+
+### But the bar is lower than "match tree-sitter"
+
+Two measurements from the other tracks, which I did not make and am relaying
+rather than restating as my own:
+
+- The **wasm track** measured route A's own error recovery **diverging between
+  its native and wasm hosts on 8 of 922 broken-input cases.** So "byte-identical
+  recovery" is not a property route A itself has across its two runtimes, and
+  demanding it of C3 would hold this route to a standard the incumbent fails.
+- The **oracle track** measured route A's incremental reparse giving markdown a
+  **1.4× speedup (30.4 ms → 22.1 ms)** against the highlighter's stated ~1
+  ms/keystroke requirement, which route A misses outright on five of sixteen
+  languages.
+
+If both hold, the honest framing changes shape. Incrementality is not a
+free win route A hands over; it is a 1.4× constant factor on a target that is
+missed either way, and a from-scratch parse of a viewport-sized region may be
+the better engineering answer for both routes. And error recovery does not need
+to be byte-identical, because upstream's own two hosts are not — it needs to be
+*good*, against the frozen dirty corpus as a diffable oracle rather than as an
+equality assertion.
+
+That does not make the work small. It makes it a normal engineering project with
+a testable target, instead of an open-ended chase after an oracle that turns out
+to disagree with itself.
 
 ## What this does not verify
 
-Everything below is out of scope, unimplemented, and unpriced. Each is a place
-where a table-driven reimplementation is green on the corpus and wrong in
-production. `docs/parse-layer.md`'s section "The gate in front of any
+What this interpreter supports is one projection: **byte offsets, and the
+visible tree of a clean full parse.** The precise guarantee is narrower than
+"anything unsupported throws" — it is that **unsupported behaviour which can
+affect that projection is rejected**. Error recovery and external scanners
+throw, because reaching them would change the tree. Repeat rebalancing is
+skipped silently and cannot change the visible tree by construction. Row and
+column state is simply never tracked, because nothing in this projection reads
+it. Incremental reparse has no entry point at all rather than a throwing one.
+
+Everything below is out of scope. Each is a place where a table-driven
+reimplementation is green on the corpus and wrong in production. `docs/parse-layer.md`'s section "The gate in front of any
 own-the-parser route" said this before the spike started; the spike is evidence
 for its comfortable half only.
 
@@ -362,6 +536,15 @@ for its comfortable half only.
 - **Invalid UTF-8.** The decoder returns `TS_DECODE_ERROR` on malformed input
   and the interval domain models it, but no test feeds it any. Every corpus file
   and every stdlib file is valid UTF-8.
+- **Four static tables are not transcoded at all.** `primary_state_ids`,
+  `supertype_symbols`, `supertype_map_slices`, `supertype_map_entries` and the
+  language `metadata` struct are omitted, because parsing and `node.children`
+  never read them; they serve query analysis and the supertype API. So "every
+  static table" — which an earlier draft of this document and the transcoder's
+  own docstring both claimed — is wrong, and the omission would matter to
+  anyone growing this into query support. Two more, `public_symbol_map` and
+  `alias_map`, are transcoded but never read by the interpreter (the mutation
+  sweep scored both at 0%, which is how they were found).
 - **The 0.26.0 pin.** The interpreter is a port of one runtime version. ABI 13,
   ABI 15's supertype maps, and any future change to the parse algorithm are
   untested. The transcoder handles ABI 14 and 15 only.
