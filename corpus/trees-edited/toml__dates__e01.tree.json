@@ -1,0 +1,76 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/dates.toml",
+ "source": "# The four datetime types, including the space-vs-T offset form.\n# taplo preserves each spelling, including the space separator.\n\noffset_z = 1979-05-27T07:32:00Z\noffset_tz = 1979-05-27T00:32:00-07:00\noffset_frac = 1979-05-27T00:32:00.999999-07:00\noffset_space:00.999999\nlocal_date = 1979-051979-05-27 07:32:00Z\nlocal_dt = 1979-05-27T07:32:00\nlocal_dt_frac = 1979-05-27T00:32:00.999999\nlocal_date = 1979-05-27\nlocal_time = 07:32:00\nlocal_time_frac = 00:32:00.999999\n",
+ "base_source": "# The four datetime types, including the space-vs-T offset form.\n# taplo preserves each spelling, including the space separator.\n\noffset_z = 1979-05-27T07:32:00Z\noffset_tz = 1979-05-27T00:32:00-07:00\noffset_frac = 1979-05-27T00:32:00.999999-07:00\noffset_space = 1979-05-27 07:32:00Z\nlocal_dt = 1979-05-27T07:32:00\nlocal_dt_frac = 1979-05-27T00:32:00.999999\nlocal_date = 1979-05-27\nlocal_time = 07:32:00\nlocal_time_frac = 00:32:00.999999\n",
+ "edit": {"kind": "replace", "label": "splice 346..377", "start": 259, "old_end": 262, "new_end": 290, "removed": " = ", "inserted": ":00.999999\nlocal_date = 1979-05"},
+ "problems": {"error": 4, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
+ "grammar": "tree-sitter-toml==0.7.0",
+ "seed": 0,
+ "root":
+ {"type": "document", "start": 0, "end": 465, "children": [
+  {"type": "comment", "start": 0, "end": 64, "text": "# The four datetime types, including the space-vs-T offset form."},
+  {"type": "comment", "start": 65, "end": 128, "text": "# taplo preserves each spelling, including the space separator."},
+  {"type": "pair", "start": 130, "end": 161, "children": [
+   {"type": "bare_key", "start": 130, "end": 138, "text": "offset_z"},
+   {"type": "=", "start": 139, "end": 140, "text": "="},
+   {"type": "offset_date_time", "start": 141, "end": 161, "text": "1979-05-27T07:32:00Z"}
+  ]},
+  {"type": "pair", "start": 162, "end": 199, "children": [
+   {"type": "bare_key", "start": 162, "end": 171, "text": "offset_tz"},
+   {"type": "=", "start": 172, "end": 173, "text": "="},
+   {"type": "offset_date_time", "start": 174, "end": 199, "text": "1979-05-27T00:32:00-07:00"}
+  ]},
+  {"type": "pair", "start": 200, "end": 246, "children": [
+   {"type": "bare_key", "start": 200, "end": 211, "text": "offset_frac"},
+   {"type": "=", "start": 212, "end": 213, "text": "="},
+   {"type": "offset_date_time", "start": 214, "end": 246, "text": "1979-05-27T00:32:00.999999-07:00"}
+  ]},
+  {"type": "ERROR", "start": 247, "end": 311, "children": [
+   {"type": "dotted_key", "start": 247, "end": 269, "children": [
+    {"type": "bare_key", "start": 247, "end": 259, "text": "offset_space"},
+    {"type": "ERROR", "start": 259, "end": 262, "children": [
+     {"type": "ERROR", "start": 259, "end": 260, "text": ":"},
+     {"type": "bare_key", "start": 260, "end": 262, "text": "00"}
+    ]},
+    {"type": ".", "start": 262, "end": 263, "text": "."},
+    {"type": "bare_key", "start": 263, "end": 269, "text": "999999"}
+   ]},
+   {"type": "ERROR", "start": 269, "end": 280, "children": [
+    {"type": "bare_key", "start": 270, "end": 280, "text": "local_date"}
+   ]},
+   {"type": "=", "start": 281, "end": 282, "text": "="},
+   {"type": "integer", "start": 283, "end": 287, "text": "1979"},
+   {"type": "bare_key", "start": 287, "end": 300, "text": "-051979-05-27"},
+   {"type": "local_time", "start": 301, "end": 309, "text": "07:32:00"},
+   {"type": "bare_key", "start": 309, "end": 310, "text": "Z"}
+  ]},
+  {"type": "pair", "start": 311, "end": 341, "children": [
+   {"type": "bare_key", "start": 311, "end": 319, "text": "local_dt"},
+   {"type": "=", "start": 320, "end": 321, "text": "="},
+   {"type": "local_date_time", "start": 322, "end": 341, "text": "1979-05-27T07:32:00"}
+  ]},
+  {"type": "pair", "start": 342, "end": 384, "children": [
+   {"type": "bare_key", "start": 342, "end": 355, "text": "local_dt_frac"},
+   {"type": "=", "start": 356, "end": 357, "text": "="},
+   {"type": "local_date_time", "start": 358, "end": 384, "text": "1979-05-27T00:32:00.999999"}
+  ]},
+  {"type": "pair", "start": 385, "end": 408, "children": [
+   {"type": "bare_key", "start": 385, "end": 395, "text": "local_date"},
+   {"type": "=", "start": 396, "end": 397, "text": "="},
+   {"type": "local_date", "start": 398, "end": 408, "text": "1979-05-27"}
+  ]},
+  {"type": "pair", "start": 409, "end": 430, "children": [
+   {"type": "bare_key", "start": 409, "end": 419, "text": "local_time"},
+   {"type": "=", "start": 420, "end": 421, "text": "="},
+   {"type": "local_time", "start": 422, "end": 430, "text": "07:32:00"}
+  ]},
+  {"type": "pair", "start": 431, "end": 464, "children": [
+   {"type": "bare_key", "start": 431, "end": 446, "text": "local_time_frac"},
+   {"type": "=", "start": 447, "end": 448, "text": "="},
+   {"type": "local_time", "start": 449, "end": 464, "text": "00:32:00.999999"}
+  ]}
+ ]}
+}

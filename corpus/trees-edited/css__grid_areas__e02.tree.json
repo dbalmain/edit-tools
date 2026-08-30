@@ -1,0 +1,76 @@
+{
+ "language": "css",
+ "source_file": "corpus/src/css/grid_areas.css",
+ "source": "/* grid-template-areas: author line breaks are the layout. */\n\n.page {\n  display: grid;\n  /* column alignment inside the strings is meaningful */\n  gr \"nav    footer footer\";\n}\n\n.compact {\n  /* stays one line at both widtemplate-areas:\n    \"header header header\"\n    \"nav    main   aside\"\n    \"nav    footer footer\";\n}\n\n.compact {\n  /* stays one line at both widths */\n  grid-template-areas: \"a b c\" \"d e f\";\n}\n",
+ "base_source": "/* grid-template-areas: author line breaks are the layout. */\n\n.page {\n  display: grid;\n  /* column alignment inside the strings is meaningful */\n  grid-template-areas:\n    \"header header header\"\n    \"nav    main   aside\"\n    \"nav    footer footer\";\n}\n\n.compact {\n  /* stays one line at both widths */\n  grid-template-areas: \"a b c\" \"d e f\";\n}\n",
+ "edit": {"kind": "replace", "label": "splice 225..295", "start": 150, "old_end": 153, "new_end": 220, "removed": "id-", "inserted": " \"nav    footer footer\";\n}\n\n.compact {\n  /* stays one line at both wid"},
+ "problems": {"error": 1, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
+ "grammar": "tree-sitter-css==0.25.0",
+ "seed": 0,
+ "root":
+ {"type": "stylesheet", "start": 0, "end": 411, "children": [
+  {"type": "comment", "start": 0, "end": 61, "text": "/* grid-template-areas: author line breaks are the layout. */"},
+  {"type": "rule_set", "start": 63, "end": 176, "children": [
+   {"type": "selectors", "start": 63, "end": 68, "children": [
+    {"type": "class_selector", "start": 63, "end": 68, "children": [
+     {"type": ".", "start": 63, "end": 64, "text": "."},
+     {"type": "class_name", "start": 64, "end": 68, "children": [
+      {"type": "identifier", "start": 64, "end": 68, "text": "page"}
+     ]}
+    ]}
+   ]},
+   {"type": "block", "start": 69, "end": 176, "children": [
+    {"type": "{", "start": 69, "end": 70, "text": "{"},
+    {"type": "declaration", "start": 73, "end": 87, "children": [
+     {"type": "property_name", "start": 73, "end": 80, "text": "display"},
+     {"type": ":", "start": 80, "end": 81, "text": ":"},
+     {"type": "plain_value", "start": 82, "end": 86, "text": "grid"},
+     {"type": ";", "start": 86, "end": 87, "text": ";"}
+    ]},
+    {"type": "comment", "start": 90, "end": 145, "text": "/* column alignment inside the strings is meaningful */"},
+    {"type": "ERROR", "start": 148, "end": 174, "children": [
+     {"type": "identifier", "start": 148, "end": 150, "text": "gr"},
+     {"type": "string_value", "start": 151, "end": 173, "children": [
+      {"type": "\"", "start": 151, "end": 152, "text": "\""},
+      {"type": "string_content", "start": 152, "end": 172, "text": "nav    footer footer"},
+      {"type": "\"", "start": 172, "end": 173, "text": "\""}
+     ]},
+     {"type": ";", "start": 173, "end": 174, "text": ";"}
+    ]},
+    {"type": "}", "start": 175, "end": 176, "text": "}"}
+   ]}
+  ]},
+  {"type": "rule_set", "start": 178, "end": 410, "children": [
+   {"type": "selectors", "start": 178, "end": 186, "children": [
+    {"type": "class_selector", "start": 178, "end": 186, "children": [
+     {"type": ".", "start": 178, "end": 179, "text": "."},
+     {"type": "class_name", "start": 179, "end": 186, "children": [
+      {"type": "identifier", "start": 179, "end": 186, "text": "compact"}
+     ]}
+    ]}
+   ]},
+   {"type": "block", "start": 187, "end": 410, "children": [
+    {"type": "{", "start": 187, "end": 188, "text": "{"},
+    {"type": "comment", "start": 191, "end": 368, "text": "/* stays one line at both widtemplate-areas:\n    \"header header header\"\n    \"nav    main   aside\"\n    \"nav    footer footer\";\n}\n\n.compact {\n  /* stays one line at both widths */"},
+    {"type": "declaration", "start": 371, "end": 408, "children": [
+     {"type": "property_name", "start": 371, "end": 390, "text": "grid-template-areas"},
+     {"type": ":", "start": 390, "end": 391, "text": ":"},
+     {"type": "string_value", "start": 392, "end": 399, "children": [
+      {"type": "\"", "start": 392, "end": 393, "text": "\""},
+      {"type": "string_content", "start": 393, "end": 398, "text": "a b c"},
+      {"type": "\"", "start": 398, "end": 399, "text": "\""}
+     ]},
+     {"type": "string_value", "start": 400, "end": 407, "children": [
+      {"type": "\"", "start": 400, "end": 401, "text": "\""},
+      {"type": "string_content", "start": 401, "end": 406, "text": "d e f"},
+      {"type": "\"", "start": 406, "end": 407, "text": "\""}
+     ]},
+     {"type": ";", "start": 407, "end": 408, "text": ";"}
+    ]},
+    {"type": "}", "start": 409, "end": 410, "text": "}"}
+   ]}
+  ]}
+ ]}
+}

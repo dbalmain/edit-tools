@@ -1,0 +1,254 @@
+{
+ "language": "typescript",
+ "source_file": "corpus/src/typescript/decorators.ts",
+ "source": "// Decorators on classes, methods, properties, parameters, plus a factory whose\n// argument list reflows at the narrow width.\n@sealed\nclWorker {\n  run(): voids Service {\n  @optional\n  name: string = \"default\";\n\n  constructor(@inject private readonly db: Database) {}\n\n  @bound\n  method(): number {\n    return 1;\n  }\n\n  @logged(\"debug\", { verbose: true, timestamp: true, requestId: \"unset\" })\n  fetch(url: string): Promise<string> {\n    return load(url);\n  }\n}\n\n@logged(\"info\", { verbose: false })\nclass Worker {\n  run(): void {}\n}\n",
+ "base_source": "// Decorators on classes, methods, properties, parameters, plus a factory whose\n// argument list reflows at the narrow width.\n@sealed\nclass Service {\n  @optional\n  name: string = \"default\";\n\n  constructor(@inject private readonly db: Database) {}\n\n  @bound\n  method(): number {\n    return 1;\n  }\n\n  @logged(\"debug\", { verbose: true, timestamp: true, requestId: \"unset\" })\n  fetch(url: string): Promise<string> {\n    return load(url);\n  }\n}\n\n@logged(\"info\", { verbose: false })\nclass Worker {\n  run(): void {}\n}\n",
+ "edit": {"kind": "replace", "label": "splice 483..505", "start": 136, "old_end": 138, "new_end": 158, "removed": "as", "inserted": "Worker {\n  run(): void"},
+ "problems": {"error": 6, "missing": 1},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
+ "grammar": "tree-sitter-typescript==0.23.2",
+ "seed": 0,
+ "root":
+ {"type": "program", "start": 0, "end": 531, "children": [
+  {"type": "comment", "start": 0, "end": 79, "text": "// Decorators on classes, methods, properties, parameters, plus a factory whose"},
+  {"type": "comment", "start": 80, "end": 125, "text": "// argument list reflows at the narrow width."},
+  {"type": "ERROR", "start": 126, "end": 142, "children": [
+   {"type": "decorator", "start": 126, "end": 133, "field": "decorator", "children": [
+    {"type": "@", "start": 126, "end": 127, "text": "@"},
+    {"type": "identifier", "start": 127, "end": 133, "text": "sealed"}
+   ]},
+   {"type": "identifier", "start": 134, "end": 142, "text": "clWorker"}
+  ]},
+  {"type": "expression_statement", "start": 143, "end": 459, "children": [
+   {"type": "object", "start": 143, "end": 459, "children": [
+    {"type": "{", "start": 143, "end": 144, "text": "{"},
+    {"type": "method_definition", "start": 147, "end": 457, "children": [
+     {"type": "property_identifier", "start": 147, "end": 150, "field": "name", "text": "run"},
+     {"type": "formal_parameters", "start": 150, "end": 152, "field": "parameters", "children": [
+      {"type": "(", "start": 150, "end": 151, "text": "("},
+      {"type": ")", "start": 151, "end": 152, "text": ")"}
+     ]},
+     {"type": "type_annotation", "start": 152, "end": 167, "field": "return_type", "children": [
+      {"type": ":", "start": 152, "end": 153, "text": ":"},
+      {"type": "ERROR", "start": 154, "end": 159, "children": [
+       {"type": "identifier", "start": 154, "end": 159, "text": "voids"}
+      ]},
+      {"type": "type_identifier", "start": 160, "end": 167, "text": "Service"}
+     ]},
+     {"type": "statement_block", "start": 168, "end": 457, "field": "body", "children": [
+      {"type": "{", "start": 168, "end": 169, "text": "{"},
+      {"type": "ERROR", "start": 172, "end": 181, "children": [
+       {"type": "decorator", "start": 172, "end": 181, "field": "decorator", "children": [
+        {"type": "@", "start": 172, "end": 173, "text": "@"},
+        {"type": "identifier", "start": 173, "end": 181, "text": "optional"}
+       ]}
+      ]},
+      {"type": "labeled_statement", "start": 184, "end": 209, "children": [
+       {"type": "statement_identifier", "start": 184, "end": 188, "field": "label", "text": "name"},
+       {"type": ":", "start": 188, "end": 189, "text": ":"},
+       {"type": "expression_statement", "start": 190, "end": 209, "field": "body", "children": [
+        {"type": "assignment_expression", "start": 190, "end": 208, "children": [
+         {"type": "identifier", "start": 190, "end": 196, "field": "left", "text": "string"},
+         {"type": "=", "start": 197, "end": 198, "text": "="},
+         {"type": "string", "start": 199, "end": 208, "field": "right", "children": [
+          {"type": "\"", "start": 199, "end": 200, "text": "\""},
+          {"type": "string_fragment", "start": 200, "end": 207, "text": "default"},
+          {"type": "\"", "start": 207, "end": 208, "text": "\""}
+         ]}
+        ]},
+        {"type": ";", "start": 208, "end": 209, "text": ";"}
+       ]}
+      ]},
+      {"type": "expression_statement", "start": 213, "end": 263, "children": [
+       {"type": "call_expression", "start": 213, "end": 263, "children": [
+        {"type": "identifier", "start": 213, "end": 224, "field": "function", "text": "constructor"},
+        {"type": "arguments", "start": 224, "end": 263, "field": "arguments", "children": [
+         {"type": "(", "start": 224, "end": 225, "text": "("},
+         {"type": "ERROR", "start": 225, "end": 253, "children": [
+          {"type": "decorator", "start": 225, "end": 232, "field": "decorator", "children": [
+           {"type": "@", "start": 225, "end": 226, "text": "@"},
+           {"type": "identifier", "start": 226, "end": 232, "text": "inject"}
+          ]},
+          {"type": "private", "start": 233, "end": 240, "text": "private"},
+          {"type": "readonly", "start": 241, "end": 249, "text": "readonly"},
+          {"type": "identifier", "start": 250, "end": 252, "text": "db"},
+          {"type": ":", "start": 252, "end": 253, "text": ":"}
+         ]},
+         {"type": "identifier", "start": 254, "end": 262, "text": "Database"},
+         {"type": ")", "start": 262, "end": 263, "text": ")"}
+        ]}
+       ]},
+       {"type": ";", "start": 263, "end": 263, "text": "", "missing": true}
+      ]},
+      {"type": "statement_block", "start": 264, "end": 266, "children": [
+       {"type": "{", "start": 264, "end": 265, "text": "{"},
+       {"type": "}", "start": 265, "end": 266, "text": "}"}
+      ]},
+      {"type": "ERROR", "start": 270, "end": 295, "children": [
+       {"type": "decorator", "start": 270, "end": 276, "field": "decorator", "children": [
+        {"type": "@", "start": 270, "end": 271, "text": "@"},
+        {"type": "identifier", "start": 271, "end": 276, "text": "bound"}
+       ]},
+       {"type": "identifier", "start": 279, "end": 285, "text": "method"},
+       {"type": "formal_parameters", "start": 285, "end": 287, "field": "parameters", "children": [
+        {"type": "(", "start": 285, "end": 286, "text": "("},
+        {"type": ")", "start": 286, "end": 287, "text": ")"}
+       ]},
+       {"type": "type_annotation", "start": 287, "end": 295, "field": "return_type", "children": [
+        {"type": ":", "start": 287, "end": 288, "text": ":"},
+        {"type": "predefined_type", "start": 289, "end": 295, "children": [
+         {"type": "number", "start": 289, "end": 295, "text": "number"}
+        ]}
+       ]}
+      ]},
+      {"type": "statement_block", "start": 296, "end": 315, "children": [
+       {"type": "{", "start": 296, "end": 297, "text": "{"},
+       {"type": "return_statement", "start": 302, "end": 311, "children": [
+        {"type": "return", "start": 302, "end": 308, "text": "return"},
+        {"type": "number", "start": 309, "end": 310, "text": "1"},
+        {"type": ";", "start": 310, "end": 311, "text": ";"}
+       ]},
+       {"type": "}", "start": 314, "end": 315, "text": "}"}
+      ]},
+      {"type": "ERROR", "start": 319, "end": 431, "children": [
+       {"type": "decorator", "start": 319, "end": 391, "field": "decorator", "children": [
+        {"type": "@", "start": 319, "end": 320, "text": "@"},
+        {"type": "call_expression", "start": 320, "end": 391, "children": [
+         {"type": "identifier", "start": 320, "end": 326, "field": "function", "text": "logged"},
+         {"type": "arguments", "start": 326, "end": 391, "field": "arguments", "children": [
+          {"type": "(", "start": 326, "end": 327, "text": "("},
+          {"type": "string", "start": 327, "end": 334, "children": [
+           {"type": "\"", "start": 327, "end": 328, "text": "\""},
+           {"type": "string_fragment", "start": 328, "end": 333, "text": "debug"},
+           {"type": "\"", "start": 333, "end": 334, "text": "\""}
+          ]},
+          {"type": ",", "start": 334, "end": 335, "text": ","},
+          {"type": "object", "start": 336, "end": 390, "children": [
+           {"type": "{", "start": 336, "end": 337, "text": "{"},
+           {"type": "pair", "start": 338, "end": 351, "children": [
+            {"type": "property_identifier", "start": 338, "end": 345, "field": "key", "text": "verbose"},
+            {"type": ":", "start": 345, "end": 346, "text": ":"},
+            {"type": "true", "start": 347, "end": 351, "field": "value", "text": "true"}
+           ]},
+           {"type": ",", "start": 351, "end": 352, "text": ","},
+           {"type": "pair", "start": 353, "end": 368, "children": [
+            {"type": "property_identifier", "start": 353, "end": 362, "field": "key", "text": "timestamp"},
+            {"type": ":", "start": 362, "end": 363, "text": ":"},
+            {"type": "true", "start": 364, "end": 368, "field": "value", "text": "true"}
+           ]},
+           {"type": ",", "start": 368, "end": 369, "text": ","},
+           {"type": "pair", "start": 370, "end": 388, "children": [
+            {"type": "property_identifier", "start": 370, "end": 379, "field": "key", "text": "requestId"},
+            {"type": ":", "start": 379, "end": 380, "text": ":"},
+            {"type": "string", "start": 381, "end": 388, "field": "value", "children": [
+             {"type": "\"", "start": 381, "end": 382, "text": "\""},
+             {"type": "string_fragment", "start": 382, "end": 387, "text": "unset"},
+             {"type": "\"", "start": 387, "end": 388, "text": "\""}
+            ]}
+           ]},
+           {"type": "}", "start": 389, "end": 390, "text": "}"}
+          ]},
+          {"type": ")", "start": 390, "end": 391, "text": ")"}
+         ]}
+        ]}
+       ]},
+       {"type": "identifier", "start": 394, "end": 399, "text": "fetch"},
+       {"type": "formal_parameters", "start": 399, "end": 412, "field": "parameters", "children": [
+        {"type": "(", "start": 399, "end": 400, "text": "("},
+        {"type": "required_parameter", "start": 400, "end": 411, "children": [
+         {"type": "identifier", "start": 400, "end": 403, "field": "pattern", "text": "url"},
+         {"type": "type_annotation", "start": 403, "end": 411, "field": "type", "children": [
+          {"type": ":", "start": 403, "end": 404, "text": ":"},
+          {"type": "predefined_type", "start": 405, "end": 411, "children": [
+           {"type": "string", "start": 405, "end": 411, "text": "string"}
+          ]}
+         ]}
+        ]},
+        {"type": ")", "start": 411, "end": 412, "text": ")"}
+       ]},
+       {"type": "type_annotation", "start": 412, "end": 429, "field": "return_type", "children": [
+        {"type": ":", "start": 412, "end": 413, "text": ":"},
+        {"type": "generic_type", "start": 414, "end": 429, "children": [
+         {"type": "type_identifier", "start": 414, "end": 421, "field": "name", "text": "Promise"},
+         {"type": "type_arguments", "start": 421, "end": 429, "field": "type_arguments", "children": [
+          {"type": "<", "start": 421, "end": 422, "text": "<"},
+          {"type": "predefined_type", "start": 422, "end": 428, "children": [
+           {"type": "string", "start": 422, "end": 428, "text": "string"}
+          ]},
+          {"type": ">", "start": 428, "end": 429, "text": ">"}
+         ]}
+        ]}
+       ]},
+       {"type": "{", "start": 430, "end": 431, "text": "{"}
+      ]},
+      {"type": "return_statement", "start": 436, "end": 453, "children": [
+       {"type": "return", "start": 436, "end": 442, "text": "return"},
+       {"type": "call_expression", "start": 443, "end": 452, "children": [
+        {"type": "identifier", "start": 443, "end": 447, "field": "function", "text": "load"},
+        {"type": "arguments", "start": 447, "end": 452, "field": "arguments", "children": [
+         {"type": "(", "start": 447, "end": 448, "text": "("},
+         {"type": "identifier", "start": 448, "end": 451, "text": "url"},
+         {"type": ")", "start": 451, "end": 452, "text": ")"}
+        ]}
+       ]},
+       {"type": ";", "start": 452, "end": 453, "text": ";"}
+      ]},
+      {"type": "}", "start": 456, "end": 457, "text": "}"}
+     ]}
+    ]},
+    {"type": "}", "start": 458, "end": 459, "text": "}"}
+   ]}
+  ]},
+  {"type": "class_declaration", "start": 461, "end": 530, "children": [
+   {"type": "decorator", "start": 461, "end": 496, "field": "decorator", "children": [
+    {"type": "@", "start": 461, "end": 462, "text": "@"},
+    {"type": "call_expression", "start": 462, "end": 496, "children": [
+     {"type": "identifier", "start": 462, "end": 468, "field": "function", "text": "logged"},
+     {"type": "arguments", "start": 468, "end": 496, "field": "arguments", "children": [
+      {"type": "(", "start": 468, "end": 469, "text": "("},
+      {"type": "string", "start": 469, "end": 475, "children": [
+       {"type": "\"", "start": 469, "end": 470, "text": "\""},
+       {"type": "string_fragment", "start": 470, "end": 474, "text": "info"},
+       {"type": "\"", "start": 474, "end": 475, "text": "\""}
+      ]},
+      {"type": ",", "start": 475, "end": 476, "text": ","},
+      {"type": "object", "start": 477, "end": 495, "children": [
+       {"type": "{", "start": 477, "end": 478, "text": "{"},
+       {"type": "pair", "start": 479, "end": 493, "children": [
+        {"type": "property_identifier", "start": 479, "end": 486, "field": "key", "text": "verbose"},
+        {"type": ":", "start": 486, "end": 487, "text": ":"},
+        {"type": "false", "start": 488, "end": 493, "field": "value", "text": "false"}
+       ]},
+       {"type": "}", "start": 494, "end": 495, "text": "}"}
+      ]},
+      {"type": ")", "start": 495, "end": 496, "text": ")"}
+     ]}
+    ]}
+   ]},
+   {"type": "class", "start": 497, "end": 502, "text": "class"},
+   {"type": "type_identifier", "start": 503, "end": 509, "field": "name", "text": "Worker"},
+   {"type": "class_body", "start": 510, "end": 530, "field": "body", "children": [
+    {"type": "{", "start": 510, "end": 511, "text": "{"},
+    {"type": "method_definition", "start": 514, "end": 528, "children": [
+     {"type": "property_identifier", "start": 514, "end": 517, "field": "name", "text": "run"},
+     {"type": "formal_parameters", "start": 517, "end": 519, "field": "parameters", "children": [
+      {"type": "(", "start": 517, "end": 518, "text": "("},
+      {"type": ")", "start": 518, "end": 519, "text": ")"}
+     ]},
+     {"type": "type_annotation", "start": 519, "end": 525, "field": "return_type", "children": [
+      {"type": ":", "start": 519, "end": 520, "text": ":"},
+      {"type": "predefined_type", "start": 521, "end": 525, "children": [
+       {"type": "void", "start": 521, "end": 525, "text": "void"}
+      ]}
+     ]},
+     {"type": "statement_block", "start": 526, "end": 528, "field": "body", "children": [
+      {"type": "{", "start": 526, "end": 527, "text": "{"},
+      {"type": "}", "start": 527, "end": 528, "text": "}"}
+     ]}
+    ]},
+    {"type": "}", "start": 529, "end": 530, "text": "}"}
+   ]}
+  ]}
+ ]}
+}

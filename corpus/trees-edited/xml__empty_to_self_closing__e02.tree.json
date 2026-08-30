@@ -1,0 +1,61 @@
+{
+ "language": "xml",
+ "source_file": "corpus/src/xml/empty_to_self_closing.xml",
+ "source": "<roota></a><b></b><c d=\"1\"></c></root>\n",
+ "base_source": "<root><a></a><b></b><c d=\"1\"></c></root>\n",
+ "edit": {"kind": "delete", "label": "delete 2B", "start": 5, "old_end": 7, "new_end": 5, "removed": "><", "inserted": ""},
+ "problems": {"error": 2, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
+ "grammar": "tree-sitter-xml==0.7.0",
+ "seed": 0,
+ "root":
+ {"type": "ERROR", "start": 0, "end": 39, "children": [
+  {"type": "STag", "start": 0, "end": 7, "children": [
+   {"type": "<", "start": 0, "end": 1, "text": "<"},
+   {"type": "Name", "start": 1, "end": 6, "text": "roota"},
+   {"type": ">", "start": 6, "end": 7, "text": ">"}
+  ]},
+  {"type": "ERROR", "start": 7, "end": 11, "children": [
+   {"type": "</", "start": 7, "end": 9, "text": "</"},
+   {"type": ">", "start": 10, "end": 11, "text": ">"}
+  ]},
+  {"type": "content", "start": 11, "end": 31, "children": [
+   {"type": "element", "start": 11, "end": 18, "children": [
+    {"type": "STag", "start": 11, "end": 14, "children": [
+     {"type": "<", "start": 11, "end": 12, "text": "<"},
+     {"type": "Name", "start": 12, "end": 13, "text": "b"},
+     {"type": ">", "start": 13, "end": 14, "text": ">"}
+    ]},
+    {"type": "ETag", "start": 14, "end": 18, "children": [
+     {"type": "</", "start": 14, "end": 16, "text": "</"},
+     {"type": "Name", "start": 16, "end": 17, "text": "b"},
+     {"type": ">", "start": 17, "end": 18, "text": ">"}
+    ]}
+   ]},
+   {"type": "element", "start": 18, "end": 31, "children": [
+    {"type": "STag", "start": 18, "end": 27, "children": [
+     {"type": "<", "start": 18, "end": 19, "text": "<"},
+     {"type": "Name", "start": 19, "end": 20, "text": "c"},
+     {"type": "Attribute", "start": 21, "end": 26, "children": [
+      {"type": "Name", "start": 21, "end": 22, "text": "d"},
+      {"type": "=", "start": 22, "end": 23, "text": "="},
+      {"type": "AttValue", "start": 23, "end": 26, "children": [
+       {"type": "\"", "start": 23, "end": 24, "text": "\""},
+       {"type": "\"", "start": 25, "end": 26, "text": "\""}
+      ]}
+     ]},
+     {"type": ">", "start": 26, "end": 27, "text": ">"}
+    ]},
+    {"type": "ETag", "start": 27, "end": 31, "children": [
+     {"type": "</", "start": 27, "end": 29, "text": "</"},
+     {"type": "Name", "start": 29, "end": 30, "text": "c"},
+     {"type": ">", "start": 30, "end": 31, "text": ">"}
+    ]}
+   ]}
+  ]},
+  {"type": "</", "start": 31, "end": 33, "text": "</"},
+  {"type": "Name", "start": 33, "end": 37, "text": "root"},
+  {"type": ">", "start": 37, "end": 38, "text": ">"}
+ ]}
+}

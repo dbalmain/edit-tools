@@ -1,0 +1,31 @@
+{
+ "language": "markdown",
+ "source_file": "corpus/src/markdown/thematic.md",
+ "source": "prettier rewrites every break to ---. -->\n\n***\n\n___\n\n* * *\n",
+ "base_source": "<!-- prettier rewrites every break to ---. -->\n\n***\n\n___\n\n* * *\n",
+ "edit": {"kind": "delete", "label": "delete 5B", "start": 0, "old_end": 5, "new_end": 0, "removed": "<!-- ", "inserted": ""},
+ "problems": {"error": 0, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
+ "grammar": "tree-sitter-markdown==0.5.1",
+ "seed": 0,
+ "root":
+ {"type": "document", "start": 0, "end": 59, "children": [
+  {"type": "section", "start": 0, "end": 59, "children": [
+   {"type": "paragraph", "start": 0, "end": 42, "children": [
+    {"type": "inline", "start": 0, "end": 41, "children": [
+     {"type": "-", "start": 33, "end": 34, "text": "-"},
+     {"type": "-", "start": 34, "end": 35, "text": "-"},
+     {"type": "-", "start": 35, "end": 36, "text": "-"},
+     {"type": ".", "start": 36, "end": 37, "text": "."},
+     {"type": "-", "start": 38, "end": 39, "text": "-"},
+     {"type": "-", "start": 39, "end": 40, "text": "-"},
+     {"type": ">", "start": 40, "end": 41, "text": ">"}
+    ]}
+   ]},
+   {"type": "thematic_break", "start": 43, "end": 47, "text": "***\n"},
+   {"type": "thematic_break", "start": 48, "end": 52, "text": "___\n"},
+   {"type": "thematic_break", "start": 53, "end": 59, "text": "* * *\n"}
+  ]}
+ ]}
+}

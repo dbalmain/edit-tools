@@ -1,0 +1,120 @@
+{
+ "language": "xml",
+ "source_file": "corpus/src/xml/quotes.xml",
+ "source": "<!-- Attribute quote style is preserved; mixed quotes in one tag. -->\n<root>\n  <i a=\"double\" b='single' c=\"keep\"/>\n  <item a=\"he said 'hello'\" b='she said \"hi\"'/>\n  <!-- quotes around a URL-shaped value, still preserved -->\n  <item href=\"https://example.com/a?x=1&amp;y=2\" alt='A \"quoted\" label'/>\n</root>\n",
+ "base_source": "<!-- Attribute quote style is preserved; mixed quotes in one tag. -->\n<root>\n  <item a=\"double\" b='single' c=\"keep\"/>\n  <item a=\"he said 'hello'\" b='she said \"hi\"'/>\n  <!-- quotes around a URL-shaped value, still preserved -->\n  <item href=\"https://example.com/a?x=1&amp;y=2\" alt='A \"quoted\" label'/>\n</root>\n",
+ "edit": {"kind": "delete", "label": "delete 3B", "start": 81, "old_end": 84, "new_end": 81, "removed": "tem", "inserted": ""},
+ "problems": {"error": 0, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
+ "grammar": "tree-sitter-xml==0.7.0",
+ "seed": 0,
+ "root":
+ {"type": "document", "start": 0, "end": 306, "children": [
+  {"type": "prolog", "start": 0, "end": 70, "children": [
+   {"type": "Comment", "start": 0, "end": 69, "text": "<!-- Attribute quote style is preserved; mixed quotes in one tag. -->"}
+  ]},
+  {"type": "element", "start": 70, "end": 305, "field": "root", "children": [
+   {"type": "STag", "start": 70, "end": 76, "children": [
+    {"type": "<", "start": 70, "end": 71, "text": "<"},
+    {"type": "Name", "start": 71, "end": 75, "text": "root"},
+    {"type": ">", "start": 75, "end": 76, "text": ">"}
+   ]},
+   {"type": "content", "start": 76, "end": 298, "children": [
+    {"type": "CharData", "start": 76, "end": 79, "text": "\n  "},
+    {"type": "element", "start": 79, "end": 114, "children": [
+     {"type": "EmptyElemTag", "start": 79, "end": 114, "children": [
+      {"type": "<", "start": 79, "end": 80, "text": "<"},
+      {"type": "Name", "start": 80, "end": 81, "text": "i"},
+      {"type": "Attribute", "start": 82, "end": 92, "children": [
+       {"type": "Name", "start": 82, "end": 83, "text": "a"},
+       {"type": "=", "start": 83, "end": 84, "text": "="},
+       {"type": "AttValue", "start": 84, "end": 92, "children": [
+        {"type": "\"", "start": 84, "end": 85, "text": "\""},
+        {"type": "\"", "start": 91, "end": 92, "text": "\""}
+       ]}
+      ]},
+      {"type": "Attribute", "start": 93, "end": 103, "children": [
+       {"type": "Name", "start": 93, "end": 94, "text": "b"},
+       {"type": "=", "start": 94, "end": 95, "text": "="},
+       {"type": "AttValue", "start": 95, "end": 103, "children": [
+        {"type": "'", "start": 95, "end": 96, "text": "'"},
+        {"type": "'", "start": 102, "end": 103, "text": "'"}
+       ]}
+      ]},
+      {"type": "Attribute", "start": 104, "end": 112, "children": [
+       {"type": "Name", "start": 104, "end": 105, "text": "c"},
+       {"type": "=", "start": 105, "end": 106, "text": "="},
+       {"type": "AttValue", "start": 106, "end": 112, "children": [
+        {"type": "\"", "start": 106, "end": 107, "text": "\""},
+        {"type": "\"", "start": 111, "end": 112, "text": "\""}
+       ]}
+      ]},
+      {"type": "/>", "start": 112, "end": 114, "text": "/>"}
+     ]}
+    ]},
+    {"type": "CharData", "start": 114, "end": 117, "text": "\n  "},
+    {"type": "element", "start": 117, "end": 162, "children": [
+     {"type": "EmptyElemTag", "start": 117, "end": 162, "children": [
+      {"type": "<", "start": 117, "end": 118, "text": "<"},
+      {"type": "Name", "start": 118, "end": 122, "text": "item"},
+      {"type": "Attribute", "start": 123, "end": 142, "children": [
+       {"type": "Name", "start": 123, "end": 124, "text": "a"},
+       {"type": "=", "start": 124, "end": 125, "text": "="},
+       {"type": "AttValue", "start": 125, "end": 142, "children": [
+        {"type": "\"", "start": 125, "end": 126, "text": "\""},
+        {"type": "\"", "start": 141, "end": 142, "text": "\""}
+       ]}
+      ]},
+      {"type": "Attribute", "start": 143, "end": 160, "children": [
+       {"type": "Name", "start": 143, "end": 144, "text": "b"},
+       {"type": "=", "start": 144, "end": 145, "text": "="},
+       {"type": "AttValue", "start": 145, "end": 160, "children": [
+        {"type": "'", "start": 145, "end": 146, "text": "'"},
+        {"type": "'", "start": 159, "end": 160, "text": "'"}
+       ]}
+      ]},
+      {"type": "/>", "start": 160, "end": 162, "text": "/>"}
+     ]}
+    ]},
+    {"type": "CharData", "start": 162, "end": 165, "text": "\n  "},
+    {"type": "Comment", "start": 165, "end": 223, "text": "<!-- quotes around a URL-shaped value, still preserved -->"},
+    {"type": "CharData", "start": 223, "end": 226, "text": "\n  "},
+    {"type": "element", "start": 226, "end": 297, "children": [
+     {"type": "EmptyElemTag", "start": 226, "end": 297, "children": [
+      {"type": "<", "start": 226, "end": 227, "text": "<"},
+      {"type": "Name", "start": 227, "end": 231, "text": "item"},
+      {"type": "Attribute", "start": 232, "end": 272, "children": [
+       {"type": "Name", "start": 232, "end": 236, "text": "href"},
+       {"type": "=", "start": 236, "end": 237, "text": "="},
+       {"type": "AttValue", "start": 237, "end": 272, "children": [
+        {"type": "\"", "start": 237, "end": 238, "text": "\""},
+        {"type": "EntityRef", "start": 263, "end": 268, "field": "content", "children": [
+         {"type": "&", "start": 263, "end": 264, "text": "&"},
+         {"type": "Name", "start": 264, "end": 267, "text": "amp"},
+         {"type": ";", "start": 267, "end": 268, "text": ";"}
+        ]},
+        {"type": "\"", "start": 271, "end": 272, "text": "\""}
+       ]}
+      ]},
+      {"type": "Attribute", "start": 273, "end": 295, "children": [
+       {"type": "Name", "start": 273, "end": 276, "text": "alt"},
+       {"type": "=", "start": 276, "end": 277, "text": "="},
+       {"type": "AttValue", "start": 277, "end": 295, "children": [
+        {"type": "'", "start": 277, "end": 278, "text": "'"},
+        {"type": "'", "start": 294, "end": 295, "text": "'"}
+       ]}
+      ]},
+      {"type": "/>", "start": 295, "end": 297, "text": "/>"}
+     ]}
+    ]},
+    {"type": "CharData", "start": 297, "end": 298, "text": "\n"}
+   ]},
+   {"type": "ETag", "start": 298, "end": 305, "children": [
+    {"type": "</", "start": 298, "end": 300, "text": "</"},
+    {"type": "Name", "start": 300, "end": 304, "text": "root"},
+    {"type": ">", "start": 304, "end": 305, "text": ">"}
+   ]}
+  ]}
+ ]}
+}

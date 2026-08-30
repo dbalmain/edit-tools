@@ -1,0 +1,151 @@
+{
+ "language": "haskell",
+ "source_file": "corpus/src/haskell/sections.hs",
+ "source": "module Sections where\n\n-- operator sections: the parens are structural, not decoration\naddOne = (+1) -- right section\n\naddTo = (1+) -- left section\n\nhalve = (iv`2) -- backticked right section\n\nticked = 10`div`3 -- infix identifier, not a section\n\nplus = (+) -- prefix form of an operator\n\nappend = (++) -- prefix form of a multi-character operator\n\ncomposed = map (+1) . filter (>0) -- sections as arguments\n",
+ "base_source": "module Sections where\n\n-- operator sections: the parens are structural, not decoration\naddOne = (+1) -- right section\n\naddTo = (1+) -- left section\n\nhalve = (`div`2) -- backticked right section\n\nticked = 10`div`3 -- infix identifier, not a section\n\nplus = (+) -- prefix form of an operator\n\nappend = (++) -- prefix form of a multi-character operator\n\ncomposed = map (+1) . filter (>0) -- sections as arguments\n",
+ "edit": {"kind": "delete", "label": "delete 2B", "start": 158, "old_end": 160, "new_end": 158, "removed": "`d", "inserted": ""},
+ "problems": {"error": 1, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
+ "grammar": "tree-sitter-haskell==0.23.1",
+ "seed": 0,
+ "root":
+ {"type": "haskell", "start": 0, "end": 408, "children": [
+  {"type": "header", "start": 0, "end": 21, "children": [
+   {"type": "module", "start": 0, "end": 6, "text": "module"},
+   {"type": "module", "start": 7, "end": 15, "field": "module", "children": [
+    {"type": "module_id", "start": 7, "end": 15, "text": "Sections"}
+   ]},
+   {"type": "where", "start": 16, "end": 21, "text": "where"}
+  ]},
+  {"type": "comment", "start": 23, "end": 86, "text": "-- operator sections: the parens are structural, not decoration"},
+  {"type": "declarations", "start": 87, "end": 408, "field": "declarations", "children": [
+   {"type": "bind", "start": 87, "end": 100, "children": [
+    {"type": "variable", "start": 87, "end": 93, "field": "name", "text": "addOne"},
+    {"type": "match", "start": 94, "end": 100, "field": "match", "children": [
+     {"type": "=", "start": 94, "end": 95, "text": "="},
+     {"type": "right_section", "start": 96, "end": 100, "field": "expression", "children": [
+      {"type": "(", "start": 96, "end": 97, "text": "("},
+      {"type": "operator", "start": 97, "end": 98, "text": "+"},
+      {"type": "literal", "start": 98, "end": 99, "field": "right_operand", "children": [
+       {"type": "integer", "start": 98, "end": 99, "text": "1"}
+      ]},
+      {"type": ")", "start": 99, "end": 100, "text": ")"}
+     ]}
+    ]}
+   ]},
+   {"type": "comment", "start": 101, "end": 117, "text": "-- right section"},
+   {"type": "bind", "start": 119, "end": 131, "children": [
+    {"type": "variable", "start": 119, "end": 124, "field": "name", "text": "addTo"},
+    {"type": "match", "start": 125, "end": 131, "field": "match", "children": [
+     {"type": "=", "start": 125, "end": 126, "text": "="},
+     {"type": "left_section", "start": 127, "end": 131, "field": "expression", "children": [
+      {"type": "(", "start": 127, "end": 128, "text": "("},
+      {"type": "literal", "start": 128, "end": 129, "field": "left_operand", "children": [
+       {"type": "integer", "start": 128, "end": 129, "text": "1"}
+      ]},
+      {"type": "operator", "start": 129, "end": 130, "field": "operator", "text": "+"},
+      {"type": ")", "start": 130, "end": 131, "text": ")"}
+     ]}
+    ]}
+   ]},
+   {"type": "comment", "start": 132, "end": 147, "text": "-- left section"},
+   {"type": "bind", "start": 149, "end": 163, "children": [
+    {"type": "variable", "start": 149, "end": 154, "field": "name", "text": "halve"},
+    {"type": "match", "start": 155, "end": 163, "field": "match", "children": [
+     {"type": "=", "start": 155, "end": 156, "text": "="},
+     {"type": "parens", "start": 157, "end": 163, "field": "expression", "children": [
+      {"type": "(", "start": 157, "end": 158, "text": "("},
+      {"type": "apply", "start": 158, "end": 162, "field": "expression", "children": [
+       {"type": "variable", "start": 158, "end": 160, "field": "function", "text": "iv"},
+       {"type": "ERROR", "start": 160, "end": 161, "children": [
+        {"type": "`", "start": 160, "end": 161, "text": "`"}
+       ]},
+       {"type": "literal", "start": 161, "end": 162, "field": "argument", "children": [
+        {"type": "integer", "start": 161, "end": 162, "text": "2"}
+       ]}
+      ]},
+      {"type": ")", "start": 162, "end": 163, "text": ")"}
+     ]}
+    ]}
+   ]},
+   {"type": "comment", "start": 164, "end": 191, "text": "-- backticked right section"},
+   {"type": "bind", "start": 193, "end": 210, "children": [
+    {"type": "variable", "start": 193, "end": 199, "field": "name", "text": "ticked"},
+    {"type": "match", "start": 200, "end": 210, "field": "match", "children": [
+     {"type": "=", "start": 200, "end": 201, "text": "="},
+     {"type": "infix", "start": 202, "end": 210, "field": "expression", "children": [
+      {"type": "literal", "start": 202, "end": 204, "field": "left_operand", "children": [
+       {"type": "integer", "start": 202, "end": 204, "text": "10"}
+      ]},
+      {"type": "infix_id", "start": 204, "end": 209, "field": "operator", "children": [
+       {"type": "`", "start": 204, "end": 205, "text": "`"},
+       {"type": "variable", "start": 205, "end": 208, "text": "div"},
+       {"type": "`", "start": 208, "end": 209, "text": "`"}
+      ]},
+      {"type": "literal", "start": 209, "end": 210, "field": "right_operand", "children": [
+       {"type": "integer", "start": 209, "end": 210, "text": "3"}
+      ]}
+     ]}
+    ]}
+   ]},
+   {"type": "comment", "start": 211, "end": 245, "text": "-- infix identifier, not a section"},
+   {"type": "bind", "start": 247, "end": 257, "children": [
+    {"type": "variable", "start": 247, "end": 251, "field": "name", "text": "plus"},
+    {"type": "match", "start": 252, "end": 257, "field": "match", "children": [
+     {"type": "=", "start": 252, "end": 253, "text": "="},
+     {"type": "prefix_id", "start": 254, "end": 257, "field": "expression", "children": [
+      {"type": "(", "start": 254, "end": 255, "text": "("},
+      {"type": "operator", "start": 255, "end": 256, "text": "+"},
+      {"type": ")", "start": 256, "end": 257, "text": ")"}
+     ]}
+    ]}
+   ]},
+   {"type": "comment", "start": 258, "end": 287, "text": "-- prefix form of an operator"},
+   {"type": "bind", "start": 289, "end": 302, "children": [
+    {"type": "variable", "start": 289, "end": 295, "field": "name", "text": "append"},
+    {"type": "match", "start": 296, "end": 302, "field": "match", "children": [
+     {"type": "=", "start": 296, "end": 297, "text": "="},
+     {"type": "prefix_id", "start": 298, "end": 302, "field": "expression", "children": [
+      {"type": "(", "start": 298, "end": 299, "text": "("},
+      {"type": "operator", "start": 299, "end": 301, "text": "++"},
+      {"type": ")", "start": 301, "end": 302, "text": ")"}
+     ]}
+    ]}
+   ]},
+   {"type": "comment", "start": 303, "end": 347, "text": "-- prefix form of a multi-character operator"},
+   {"type": "bind", "start": 349, "end": 382, "children": [
+    {"type": "variable", "start": 349, "end": 357, "field": "name", "text": "composed"},
+    {"type": "match", "start": 358, "end": 382, "field": "match", "children": [
+     {"type": "=", "start": 358, "end": 359, "text": "="},
+     {"type": "infix", "start": 360, "end": 382, "field": "expression", "children": [
+      {"type": "apply", "start": 360, "end": 368, "field": "left_operand", "children": [
+       {"type": "variable", "start": 360, "end": 363, "field": "function", "text": "map"},
+       {"type": "right_section", "start": 364, "end": 368, "field": "argument", "children": [
+        {"type": "(", "start": 364, "end": 365, "text": "("},
+        {"type": "operator", "start": 365, "end": 366, "text": "+"},
+        {"type": "literal", "start": 366, "end": 367, "field": "right_operand", "children": [
+         {"type": "integer", "start": 366, "end": 367, "text": "1"}
+        ]},
+        {"type": ")", "start": 367, "end": 368, "text": ")"}
+       ]}
+      ]},
+      {"type": "operator", "start": 369, "end": 370, "field": "operator", "text": "."},
+      {"type": "apply", "start": 371, "end": 382, "field": "right_operand", "children": [
+       {"type": "variable", "start": 371, "end": 377, "field": "function", "text": "filter"},
+       {"type": "right_section", "start": 378, "end": 382, "field": "argument", "children": [
+        {"type": "(", "start": 378, "end": 379, "text": "("},
+        {"type": "operator", "start": 379, "end": 380, "text": ">"},
+        {"type": "literal", "start": 380, "end": 381, "field": "right_operand", "children": [
+         {"type": "integer", "start": 380, "end": 381, "text": "0"}
+        ]},
+        {"type": ")", "start": 381, "end": 382, "text": ")"}
+       ]}
+      ]}
+     ]}
+    ]}
+   ]},
+   {"type": "comment", "start": 383, "end": 407, "text": "-- sections as arguments"}
+  ]}
+ ]}
+}

@@ -1,0 +1,194 @@
+{
+ "language": "javascript",
+ "source_file": "corpus/src/javascript/modern.js",
+ "source": "// Modern syntax: optional chaining, nullish coalescing, regex, bigint.\nconst safe = user?.profile?.address?.zip ?? \"unknown\";\n\nconst regex = /^[a-z]+-[0-9]{2,4}\\.js$/i;\n\nconst bigint = 123456789012345678901234567890n;\n\nconst coalesceAssign = config ??= defaults;\n\nconst andAssign = flags &&= required;\n\nconst orAssign = fallback ||= computed;\n\nconst optionalCall = handler?.onChange?.(value);\n\nconst optionalIndex = matrix?é.[row]?.[column];\n\nconst power = base ** exponent;\n\nconst dynamicImport = await import(\"./lazy.js\");\n",
+ "base_source": "// Modern syntax: optional chaining, nullish coalescing, regex, bigint.\nconst safe = user?.profile?.address?.zip ?? \"unknown\";\n\nconst regex = /^[a-z]+-[0-9]{2,4}\\.js$/i;\n\nconst bigint = 123456789012345678901234567890n;\n\nconst coalesceAssign = config ??= defaults;\n\nconst andAssign = flags &&= required;\n\nconst orAssign = fallback ||= computed;\n\nconst optionalCall = handler?.onChange?.(value);\n\nconst optionalIndex = matrix?.[row]?.[column];\n\nconst power = base ** exponent;\n\nconst dynamicImport = await import(\"./lazy.js\");\n",
+ "edit": {"kind": "insert", "label": "insert 'é'", "start": 424, "old_end": 424, "new_end": 426, "removed": "", "inserted": "é"},
+ "problems": {"error": 1, "missing": 1},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
+ "grammar": "tree-sitter-javascript==0.25.0",
+ "seed": 0,
+ "root":
+ {"type": "program", "start": 0, "end": 527, "children": [
+  {"type": "comment", "start": 0, "end": 71, "text": "// Modern syntax: optional chaining, nullish coalescing, regex, bigint."},
+  {"type": "lexical_declaration", "start": 72, "end": 126, "children": [
+   {"type": "const", "start": 72, "end": 77, "field": "kind", "text": "const"},
+   {"type": "variable_declarator", "start": 78, "end": 125, "children": [
+    {"type": "identifier", "start": 78, "end": 82, "field": "name", "text": "safe"},
+    {"type": "=", "start": 83, "end": 84, "text": "="},
+    {"type": "binary_expression", "start": 85, "end": 125, "field": "value", "children": [
+     {"type": "member_expression", "start": 85, "end": 112, "field": "left", "children": [
+      {"type": "member_expression", "start": 85, "end": 107, "field": "object", "children": [
+       {"type": "member_expression", "start": 85, "end": 98, "field": "object", "children": [
+        {"type": "identifier", "start": 85, "end": 89, "field": "object", "text": "user"},
+        {"type": "optional_chain", "start": 89, "end": 91, "field": "optional_chain", "text": "?."},
+        {"type": "property_identifier", "start": 91, "end": 98, "field": "property", "text": "profile"}
+       ]},
+       {"type": "optional_chain", "start": 98, "end": 100, "field": "optional_chain", "text": "?."},
+       {"type": "property_identifier", "start": 100, "end": 107, "field": "property", "text": "address"}
+      ]},
+      {"type": "optional_chain", "start": 107, "end": 109, "field": "optional_chain", "text": "?."},
+      {"type": "property_identifier", "start": 109, "end": 112, "field": "property", "text": "zip"}
+     ]},
+     {"type": "??", "start": 113, "end": 115, "field": "operator", "text": "??"},
+     {"type": "string", "start": 116, "end": 125, "field": "right", "children": [
+      {"type": "\"", "start": 116, "end": 117, "text": "\""},
+      {"type": "string_fragment", "start": 117, "end": 124, "text": "unknown"},
+      {"type": "\"", "start": 124, "end": 125, "text": "\""}
+     ]}
+    ]}
+   ]},
+   {"type": ";", "start": 125, "end": 126, "text": ";"}
+  ]},
+  {"type": "lexical_declaration", "start": 128, "end": 169, "children": [
+   {"type": "const", "start": 128, "end": 133, "field": "kind", "text": "const"},
+   {"type": "variable_declarator", "start": 134, "end": 168, "children": [
+    {"type": "identifier", "start": 134, "end": 139, "field": "name", "text": "regex"},
+    {"type": "=", "start": 140, "end": 141, "text": "="},
+    {"type": "regex", "start": 142, "end": 168, "field": "value", "children": [
+     {"type": "/", "start": 142, "end": 143, "text": "/"},
+     {"type": "regex_pattern", "start": 143, "end": 166, "field": "pattern", "text": "^[a-z]+-[0-9]{2,4}\\.js$"},
+     {"type": "/", "start": 166, "end": 167, "text": "/"},
+     {"type": "regex_flags", "start": 167, "end": 168, "field": "flags", "text": "i"}
+    ]}
+   ]},
+   {"type": ";", "start": 168, "end": 169, "text": ";"}
+  ]},
+  {"type": "lexical_declaration", "start": 171, "end": 218, "children": [
+   {"type": "const", "start": 171, "end": 176, "field": "kind", "text": "const"},
+   {"type": "variable_declarator", "start": 177, "end": 217, "children": [
+    {"type": "identifier", "start": 177, "end": 183, "field": "name", "text": "bigint"},
+    {"type": "=", "start": 184, "end": 185, "text": "="},
+    {"type": "number", "start": 186, "end": 217, "field": "value", "text": "123456789012345678901234567890n"}
+   ]},
+   {"type": ";", "start": 217, "end": 218, "text": ";"}
+  ]},
+  {"type": "lexical_declaration", "start": 220, "end": 263, "children": [
+   {"type": "const", "start": 220, "end": 225, "field": "kind", "text": "const"},
+   {"type": "variable_declarator", "start": 226, "end": 262, "children": [
+    {"type": "identifier", "start": 226, "end": 240, "field": "name", "text": "coalesceAssign"},
+    {"type": "=", "start": 241, "end": 242, "text": "="},
+    {"type": "augmented_assignment_expression", "start": 243, "end": 262, "field": "value", "children": [
+     {"type": "identifier", "start": 243, "end": 249, "field": "left", "text": "config"},
+     {"type": "??=", "start": 250, "end": 253, "field": "operator", "text": "??="},
+     {"type": "identifier", "start": 254, "end": 262, "field": "right", "text": "defaults"}
+    ]}
+   ]},
+   {"type": ";", "start": 262, "end": 263, "text": ";"}
+  ]},
+  {"type": "lexical_declaration", "start": 265, "end": 302, "children": [
+   {"type": "const", "start": 265, "end": 270, "field": "kind", "text": "const"},
+   {"type": "variable_declarator", "start": 271, "end": 301, "children": [
+    {"type": "identifier", "start": 271, "end": 280, "field": "name", "text": "andAssign"},
+    {"type": "=", "start": 281, "end": 282, "text": "="},
+    {"type": "augmented_assignment_expression", "start": 283, "end": 301, "field": "value", "children": [
+     {"type": "identifier", "start": 283, "end": 288, "field": "left", "text": "flags"},
+     {"type": "&&=", "start": 289, "end": 292, "field": "operator", "text": "&&="},
+     {"type": "identifier", "start": 293, "end": 301, "field": "right", "text": "required"}
+    ]}
+   ]},
+   {"type": ";", "start": 301, "end": 302, "text": ";"}
+  ]},
+  {"type": "lexical_declaration", "start": 304, "end": 343, "children": [
+   {"type": "const", "start": 304, "end": 309, "field": "kind", "text": "const"},
+   {"type": "variable_declarator", "start": 310, "end": 342, "children": [
+    {"type": "identifier", "start": 310, "end": 318, "field": "name", "text": "orAssign"},
+    {"type": "=", "start": 319, "end": 320, "text": "="},
+    {"type": "augmented_assignment_expression", "start": 321, "end": 342, "field": "value", "children": [
+     {"type": "identifier", "start": 321, "end": 329, "field": "left", "text": "fallback"},
+     {"type": "||=", "start": 330, "end": 333, "field": "operator", "text": "||="},
+     {"type": "identifier", "start": 334, "end": 342, "field": "right", "text": "computed"}
+    ]}
+   ]},
+   {"type": ";", "start": 342, "end": 343, "text": ";"}
+  ]},
+  {"type": "lexical_declaration", "start": 345, "end": 393, "children": [
+   {"type": "const", "start": 345, "end": 350, "field": "kind", "text": "const"},
+   {"type": "variable_declarator", "start": 351, "end": 392, "children": [
+    {"type": "identifier", "start": 351, "end": 363, "field": "name", "text": "optionalCall"},
+    {"type": "=", "start": 364, "end": 365, "text": "="},
+    {"type": "call_expression", "start": 366, "end": 392, "field": "value", "children": [
+     {"type": "member_expression", "start": 366, "end": 383, "field": "function", "children": [
+      {"type": "identifier", "start": 366, "end": 373, "field": "object", "text": "handler"},
+      {"type": "optional_chain", "start": 373, "end": 375, "field": "optional_chain", "text": "?."},
+      {"type": "property_identifier", "start": 375, "end": 383, "field": "property", "text": "onChange"}
+     ]},
+     {"type": "optional_chain", "start": 383, "end": 385, "field": "optional_chain", "text": "?."},
+     {"type": "arguments", "start": 385, "end": 392, "field": "arguments", "children": [
+      {"type": "(", "start": 385, "end": 386, "text": "("},
+      {"type": "identifier", "start": 386, "end": 391, "text": "value"},
+      {"type": ")", "start": 391, "end": 392, "text": ")"}
+     ]}
+    ]}
+   ]},
+   {"type": ";", "start": 392, "end": 393, "text": ";"}
+  ]},
+  {"type": "lexical_declaration", "start": 395, "end": 443, "children": [
+   {"type": "const", "start": 395, "end": 400, "field": "kind", "text": "const"},
+   {"type": "variable_declarator", "start": 401, "end": 423, "children": [
+    {"type": "identifier", "start": 401, "end": 414, "field": "name", "text": "optionalIndex"},
+    {"type": "=", "start": 415, "end": 416, "text": "="},
+    {"type": "identifier", "start": 417, "end": 423, "field": "value", "text": "matrix"}
+   ]},
+   {"type": "ERROR", "start": 423, "end": 442, "children": [
+    {"type": "?", "start": 423, "end": 424, "text": "?"},
+    {"type": "subscript_expression", "start": 424, "end": 442, "children": [
+     {"type": "subscript_expression", "start": 424, "end": 432, "field": "object", "children": [
+      {"type": "member_expression", "start": 424, "end": 427, "field": "object", "children": [
+       {"type": "identifier", "start": 424, "end": 426, "field": "object", "text": "é"},
+       {"type": ".", "start": 426, "end": 427, "text": "."},
+       {"type": "property_identifier", "start": 427, "end": 427, "field": "property", "text": "", "missing": true}
+      ]},
+      {"type": "[", "start": 427, "end": 428, "text": "["},
+      {"type": "identifier", "start": 428, "end": 431, "field": "index", "text": "row"},
+      {"type": "]", "start": 431, "end": 432, "text": "]"}
+     ]},
+     {"type": "optional_chain", "start": 432, "end": 434, "field": "optional_chain", "text": "?."},
+     {"type": "[", "start": 434, "end": 435, "text": "["},
+     {"type": "identifier", "start": 435, "end": 441, "field": "index", "text": "column"},
+     {"type": "]", "start": 441, "end": 442, "text": "]"}
+    ]}
+   ]},
+   {"type": ";", "start": 442, "end": 443, "text": ";"}
+  ]},
+  {"type": "lexical_declaration", "start": 445, "end": 476, "children": [
+   {"type": "const", "start": 445, "end": 450, "field": "kind", "text": "const"},
+   {"type": "variable_declarator", "start": 451, "end": 475, "children": [
+    {"type": "identifier", "start": 451, "end": 456, "field": "name", "text": "power"},
+    {"type": "=", "start": 457, "end": 458, "text": "="},
+    {"type": "binary_expression", "start": 459, "end": 475, "field": "value", "children": [
+     {"type": "identifier", "start": 459, "end": 463, "field": "left", "text": "base"},
+     {"type": "**", "start": 464, "end": 466, "field": "operator", "text": "**"},
+     {"type": "identifier", "start": 467, "end": 475, "field": "right", "text": "exponent"}
+    ]}
+   ]},
+   {"type": ";", "start": 475, "end": 476, "text": ";"}
+  ]},
+  {"type": "lexical_declaration", "start": 478, "end": 526, "children": [
+   {"type": "const", "start": 478, "end": 483, "field": "kind", "text": "const"},
+   {"type": "variable_declarator", "start": 484, "end": 525, "children": [
+    {"type": "identifier", "start": 484, "end": 497, "field": "name", "text": "dynamicImport"},
+    {"type": "=", "start": 498, "end": 499, "text": "="},
+    {"type": "await_expression", "start": 500, "end": 525, "field": "value", "children": [
+     {"type": "await", "start": 500, "end": 505, "text": "await"},
+     {"type": "call_expression", "start": 506, "end": 525, "children": [
+      {"type": "import", "start": 506, "end": 512, "field": "function", "children": [
+       {"type": "import", "start": 506, "end": 512, "text": "import"}
+      ]},
+      {"type": "arguments", "start": 512, "end": 525, "field": "arguments", "children": [
+       {"type": "(", "start": 512, "end": 513, "text": "("},
+       {"type": "string", "start": 513, "end": 524, "children": [
+        {"type": "\"", "start": 513, "end": 514, "text": "\""},
+        {"type": "string_fragment", "start": 514, "end": 523, "text": "./lazy.js"},
+        {"type": "\"", "start": 523, "end": 524, "text": "\""}
+       ]},
+       {"type": ")", "start": 524, "end": 525, "text": ")"}
+      ]}
+     ]}
+    ]}
+   ]},
+   {"type": ";", "start": 525, "end": 526, "text": ";"}
+  ]}
+ ]}
+}

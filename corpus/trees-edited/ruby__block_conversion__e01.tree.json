@@ -1,0 +1,88 @@
+{
+ "language": "ruby",
+ "source_file": "corpus/src/ruby/block_conversion.rb",
+ "source": "# A single-statement block that fits braces at width 80 and becomes do/end\n# at width 40. syntax_tre the whole of this file.\nitems.each {picks the delimiters by whether the body fits,\n# not by the source form.\n\n# The conversion is the whole of this file.\nitems.each { |item| process_the_item_with_a_fairly_long_method_name(item) }\n",
+ "base_source": "# A single-statement block that fits braces at width 80 and becomes do/end\n# at width 40. syntax_tree picks the delimiters by whether the body fits,\n# not by the source form.\n\n# The conversion is the whole of this file.\nitems.each { |item| process_the_item_with_a_fairly_long_method_name(item) }\n",
+ "edit": {"kind": "replace", "label": "splice 195..232", "start": 100, "old_end": 102, "new_end": 137, "removed": "e ", "inserted": " the whole of this file.\nitems.each {"},
+ "problems": {"error": 1, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
+ "grammar": "tree-sitter-ruby==0.23.1",
+ "seed": 0,
+ "root":
+ {"type": "program", "start": 0, "end": 331, "children": [
+  {"type": "comment", "start": 0, "end": 74, "text": "# A single-statement block that fits braces at width 80 and becomes do/end"},
+  {"type": "comment", "start": 75, "end": 124, "text": "# at width 40. syntax_tre the whole of this file."},
+  {"type": "call", "start": 125, "end": 135, "children": [
+   {"type": "identifier", "start": 125, "end": 130, "field": "receiver", "text": "items"},
+   {"type": ".", "start": 130, "end": 131, "field": "operator", "text": "."},
+   {"type": "identifier", "start": 131, "end": 135, "field": "method", "text": "each"}
+  ]},
+  {"type": "ERROR", "start": 136, "end": 330, "children": [
+   {"type": "{", "start": 136, "end": 137, "text": "{"},
+   {"type": "call", "start": 137, "end": 330, "children": [
+    {"type": "identifier", "start": 137, "end": 142, "field": "method", "text": "picks"},
+    {"type": "argument_list", "start": 143, "end": 330, "field": "arguments", "children": [
+     {"type": "call", "start": 143, "end": 330, "children": [
+      {"type": "identifier", "start": 143, "end": 146, "field": "method", "text": "the"},
+      {"type": "argument_list", "start": 147, "end": 330, "field": "arguments", "children": [
+       {"type": "call", "start": 147, "end": 330, "children": [
+        {"type": "identifier", "start": 147, "end": 157, "field": "method", "text": "delimiters"},
+        {"type": "argument_list", "start": 158, "end": 330, "field": "arguments", "children": [
+         {"type": "call", "start": 158, "end": 330, "children": [
+          {"type": "identifier", "start": 158, "end": 160, "field": "method", "text": "by"},
+          {"type": "argument_list", "start": 161, "end": 330, "field": "arguments", "children": [
+           {"type": "call", "start": 161, "end": 330, "children": [
+            {"type": "identifier", "start": 161, "end": 168, "field": "method", "text": "whether"},
+            {"type": "argument_list", "start": 169, "end": 330, "field": "arguments", "children": [
+             {"type": "call", "start": 169, "end": 330, "children": [
+              {"type": "identifier", "start": 169, "end": 172, "field": "method", "text": "the"},
+              {"type": "argument_list", "start": 173, "end": 330, "field": "arguments", "children": [
+               {"type": "call", "start": 173, "end": 330, "children": [
+                {"type": "identifier", "start": 173, "end": 177, "field": "method", "text": "body"},
+                {"type": "argument_list", "start": 178, "end": 330, "field": "arguments", "children": [
+                 {"type": "identifier", "start": 178, "end": 182, "text": "fits"},
+                 {"type": ",", "start": 182, "end": 183, "text": ","},
+                 {"type": "comment", "start": 184, "end": 209, "text": "# not by the source form."},
+                 {"type": "comment", "start": 211, "end": 254, "text": "# The conversion is the whole of this file."},
+                 {"type": "call", "start": 255, "end": 330, "children": [
+                  {"type": "identifier", "start": 255, "end": 260, "field": "receiver", "text": "items"},
+                  {"type": ".", "start": 260, "end": 261, "field": "operator", "text": "."},
+                  {"type": "identifier", "start": 261, "end": 265, "field": "method", "text": "each"},
+                  {"type": "block", "start": 266, "end": 330, "field": "block", "children": [
+                   {"type": "{", "start": 266, "end": 267, "text": "{"},
+                   {"type": "block_parameters", "start": 268, "end": 274, "field": "parameters", "children": [
+                    {"type": "|", "start": 268, "end": 269, "text": "|"},
+                    {"type": "identifier", "start": 269, "end": 273, "text": "item"},
+                    {"type": "|", "start": 273, "end": 274, "text": "|"}
+                   ]},
+                   {"type": "block_body", "start": 275, "end": 328, "field": "body", "children": [
+                    {"type": "call", "start": 275, "end": 328, "children": [
+                     {"type": "identifier", "start": 275, "end": 322, "field": "method", "text": "process_the_item_with_a_fairly_long_method_name"},
+                     {"type": "argument_list", "start": 322, "end": 328, "field": "arguments", "children": [
+                      {"type": "(", "start": 322, "end": 323, "text": "("},
+                      {"type": "identifier", "start": 323, "end": 327, "text": "item"},
+                      {"type": ")", "start": 327, "end": 328, "text": ")"}
+                     ]}
+                    ]}
+                   ]},
+                   {"type": "}", "start": 329, "end": 330, "text": "}"}
+                  ]}
+                 ]}
+                ]}
+               ]}
+              ]}
+             ]}
+            ]}
+           ]}
+          ]}
+         ]}
+        ]}
+       ]}
+      ]}
+     ]}
+    ]}
+   ]}
+  ]}
+ ]}
+}

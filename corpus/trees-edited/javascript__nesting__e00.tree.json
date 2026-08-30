@@ -1,0 +1,339 @@
+{
+ "language": "javascript",
+ "source_file": "corpus/src/javascript/nesting.js",
+ "source": "// Containers inside containers, deep enough that the narrow width must break\n// some level but not every level.\nconst matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9], , 11, 12], [13, 14, 15]];\n\nconst config = { outer: { inner: { deep: [1, 2, 3], other: { key: \"value\" } }, sibling: [4, 5] } };\n\nconst call = outer(inner(deeper(first, second), third), fourth(fifth, sixth, seventh));\n\nconst arrow = (a) => (b) => (c) => a + b + c;\n\nconst mixed = [{ list: [1, 2, 3] }, { list: [4, 5, 6] }, { list: [7, 8, 9] }];\n\nconst fits = [alpha, beta, [1, 2, 3, 4], gamma, delta, epsilon];\n",
+ "base_source": "// Containers inside containers, deep enough that the narrow width must break\n// some level but not every level.\nconst matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12], [13, 14, 15]];\n\nconst config = { outer: { inner: { deep: [1, 2, 3], other: { key: \"value\" } }, sibling: [4, 5] } };\n\nconst call = outer(inner(deeper(first, second), third), fourth(fifth, sixth, seventh));\n\nconst arrow = (a) => (b) => (c) => a + b + c;\n\nconst mixed = [{ list: [1, 2, 3] }, { list: [4, 5, 6] }, { list: [7, 8, 9] }];\n\nconst fits = [alpha, beta, [1, 2, 3, 4], gamma, delta, epsilon];\n",
+ "edit": {"kind": "delete", "label": "delete 3B", "start": 162, "old_end": 165, "new_end": 162, "removed": "[10", "inserted": ""},
+ "problems": {"error": 3, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
+ "grammar": "tree-sitter-javascript==0.25.0",
+ "seed": 0,
+ "root":
+ {"type": "program", "start": 0, "end": 571, "children": [
+  {"type": "comment", "start": 0, "end": 77, "text": "// Containers inside containers, deep enough that the narrow width must break"},
+  {"type": "comment", "start": 78, "end": 112, "text": "// some level but not every level."},
+  {"type": "lexical_declaration", "start": 113, "end": 187, "children": [
+   {"type": "const", "start": 113, "end": 118, "field": "kind", "text": "const"},
+   {"type": "variable_declarator", "start": 119, "end": 171, "children": [
+    {"type": "identifier", "start": 119, "end": 125, "field": "name", "text": "matrix"},
+    {"type": "=", "start": 126, "end": 127, "text": "="},
+    {"type": "array", "start": 128, "end": 171, "field": "value", "children": [
+     {"type": "[", "start": 128, "end": 129, "text": "["},
+     {"type": "array", "start": 129, "end": 138, "children": [
+      {"type": "[", "start": 129, "end": 130, "text": "["},
+      {"type": "number", "start": 130, "end": 131, "text": "1"},
+      {"type": ",", "start": 131, "end": 132, "text": ","},
+      {"type": "number", "start": 133, "end": 134, "text": "2"},
+      {"type": ",", "start": 134, "end": 135, "text": ","},
+      {"type": "number", "start": 136, "end": 137, "text": "3"},
+      {"type": "]", "start": 137, "end": 138, "text": "]"}
+     ]},
+     {"type": ",", "start": 138, "end": 139, "text": ","},
+     {"type": "array", "start": 140, "end": 149, "children": [
+      {"type": "[", "start": 140, "end": 141, "text": "["},
+      {"type": "number", "start": 141, "end": 142, "text": "4"},
+      {"type": ",", "start": 142, "end": 143, "text": ","},
+      {"type": "number", "start": 144, "end": 145, "text": "5"},
+      {"type": ",", "start": 145, "end": 146, "text": ","},
+      {"type": "number", "start": 147, "end": 148, "text": "6"},
+      {"type": "]", "start": 148, "end": 149, "text": "]"}
+     ]},
+     {"type": ",", "start": 149, "end": 150, "text": ","},
+     {"type": "array", "start": 151, "end": 160, "children": [
+      {"type": "[", "start": 151, "end": 152, "text": "["},
+      {"type": "number", "start": 152, "end": 153, "text": "7"},
+      {"type": ",", "start": 153, "end": 154, "text": ","},
+      {"type": "number", "start": 155, "end": 156, "text": "8"},
+      {"type": ",", "start": 156, "end": 157, "text": ","},
+      {"type": "number", "start": 158, "end": 159, "text": "9"},
+      {"type": "]", "start": 159, "end": 160, "text": "]"}
+     ]},
+     {"type": ",", "start": 160, "end": 161, "text": ","},
+     {"type": ",", "start": 162, "end": 163, "text": ","},
+     {"type": "number", "start": 164, "end": 166, "text": "11"},
+     {"type": ",", "start": 166, "end": 167, "text": ","},
+     {"type": "number", "start": 168, "end": 170, "text": "12"},
+     {"type": "]", "start": 170, "end": 171, "text": "]"}
+    ]}
+   ]},
+   {"type": ",", "start": 171, "end": 172, "text": ","},
+   {"type": "variable_declarator", "start": 173, "end": 186, "children": [
+    {"type": "array_pattern", "start": 173, "end": 186, "field": "name", "children": [
+     {"type": "[", "start": 173, "end": 174, "text": "["},
+     {"type": "ERROR", "start": 174, "end": 176, "children": [
+      {"type": "number", "start": 174, "end": 176, "text": "13"}
+     ]},
+     {"type": ",", "start": 176, "end": 177, "text": ","},
+     {"type": "ERROR", "start": 178, "end": 180, "children": [
+      {"type": "number", "start": 178, "end": 180, "text": "14"}
+     ]},
+     {"type": ",", "start": 180, "end": 181, "text": ","},
+     {"type": "ERROR", "start": 182, "end": 185, "children": [
+      {"type": "number", "start": 182, "end": 184, "text": "15"},
+      {"type": "]", "start": 184, "end": 185, "text": "]"}
+     ]},
+     {"type": "]", "start": 185, "end": 186, "text": "]"}
+    ]}
+   ]},
+   {"type": ";", "start": 186, "end": 187, "text": ";"}
+  ]},
+  {"type": "lexical_declaration", "start": 189, "end": 288, "children": [
+   {"type": "const", "start": 189, "end": 194, "field": "kind", "text": "const"},
+   {"type": "variable_declarator", "start": 195, "end": 287, "children": [
+    {"type": "identifier", "start": 195, "end": 201, "field": "name", "text": "config"},
+    {"type": "=", "start": 202, "end": 203, "text": "="},
+    {"type": "object", "start": 204, "end": 287, "field": "value", "children": [
+     {"type": "{", "start": 204, "end": 205, "text": "{"},
+     {"type": "pair", "start": 206, "end": 285, "children": [
+      {"type": "property_identifier", "start": 206, "end": 211, "field": "key", "text": "outer"},
+      {"type": ":", "start": 211, "end": 212, "text": ":"},
+      {"type": "object", "start": 213, "end": 285, "field": "value", "children": [
+       {"type": "{", "start": 213, "end": 214, "text": "{"},
+       {"type": "pair", "start": 215, "end": 266, "children": [
+        {"type": "property_identifier", "start": 215, "end": 220, "field": "key", "text": "inner"},
+        {"type": ":", "start": 220, "end": 221, "text": ":"},
+        {"type": "object", "start": 222, "end": 266, "field": "value", "children": [
+         {"type": "{", "start": 222, "end": 223, "text": "{"},
+         {"type": "pair", "start": 224, "end": 239, "children": [
+          {"type": "property_identifier", "start": 224, "end": 228, "field": "key", "text": "deep"},
+          {"type": ":", "start": 228, "end": 229, "text": ":"},
+          {"type": "array", "start": 230, "end": 239, "field": "value", "children": [
+           {"type": "[", "start": 230, "end": 231, "text": "["},
+           {"type": "number", "start": 231, "end": 232, "text": "1"},
+           {"type": ",", "start": 232, "end": 233, "text": ","},
+           {"type": "number", "start": 234, "end": 235, "text": "2"},
+           {"type": ",", "start": 235, "end": 236, "text": ","},
+           {"type": "number", "start": 237, "end": 238, "text": "3"},
+           {"type": "]", "start": 238, "end": 239, "text": "]"}
+          ]}
+         ]},
+         {"type": ",", "start": 239, "end": 240, "text": ","},
+         {"type": "pair", "start": 241, "end": 264, "children": [
+          {"type": "property_identifier", "start": 241, "end": 246, "field": "key", "text": "other"},
+          {"type": ":", "start": 246, "end": 247, "text": ":"},
+          {"type": "object", "start": 248, "end": 264, "field": "value", "children": [
+           {"type": "{", "start": 248, "end": 249, "text": "{"},
+           {"type": "pair", "start": 250, "end": 262, "children": [
+            {"type": "property_identifier", "start": 250, "end": 253, "field": "key", "text": "key"},
+            {"type": ":", "start": 253, "end": 254, "text": ":"},
+            {"type": "string", "start": 255, "end": 262, "field": "value", "children": [
+             {"type": "\"", "start": 255, "end": 256, "text": "\""},
+             {"type": "string_fragment", "start": 256, "end": 261, "text": "value"},
+             {"type": "\"", "start": 261, "end": 262, "text": "\""}
+            ]}
+           ]},
+           {"type": "}", "start": 263, "end": 264, "text": "}"}
+          ]}
+         ]},
+         {"type": "}", "start": 265, "end": 266, "text": "}"}
+        ]}
+       ]},
+       {"type": ",", "start": 266, "end": 267, "text": ","},
+       {"type": "pair", "start": 268, "end": 283, "children": [
+        {"type": "property_identifier", "start": 268, "end": 275, "field": "key", "text": "sibling"},
+        {"type": ":", "start": 275, "end": 276, "text": ":"},
+        {"type": "array", "start": 277, "end": 283, "field": "value", "children": [
+         {"type": "[", "start": 277, "end": 278, "text": "["},
+         {"type": "number", "start": 278, "end": 279, "text": "4"},
+         {"type": ",", "start": 279, "end": 280, "text": ","},
+         {"type": "number", "start": 281, "end": 282, "text": "5"},
+         {"type": "]", "start": 282, "end": 283, "text": "]"}
+        ]}
+       ]},
+       {"type": "}", "start": 284, "end": 285, "text": "}"}
+      ]}
+     ]},
+     {"type": "}", "start": 286, "end": 287, "text": "}"}
+    ]}
+   ]},
+   {"type": ";", "start": 287, "end": 288, "text": ";"}
+  ]},
+  {"type": "lexical_declaration", "start": 290, "end": 377, "children": [
+   {"type": "const", "start": 290, "end": 295, "field": "kind", "text": "const"},
+   {"type": "variable_declarator", "start": 296, "end": 376, "children": [
+    {"type": "identifier", "start": 296, "end": 300, "field": "name", "text": "call"},
+    {"type": "=", "start": 301, "end": 302, "text": "="},
+    {"type": "call_expression", "start": 303, "end": 376, "field": "value", "children": [
+     {"type": "identifier", "start": 303, "end": 308, "field": "function", "text": "outer"},
+     {"type": "arguments", "start": 308, "end": 376, "field": "arguments", "children": [
+      {"type": "(", "start": 308, "end": 309, "text": "("},
+      {"type": "call_expression", "start": 309, "end": 344, "children": [
+       {"type": "identifier", "start": 309, "end": 314, "field": "function", "text": "inner"},
+       {"type": "arguments", "start": 314, "end": 344, "field": "arguments", "children": [
+        {"type": "(", "start": 314, "end": 315, "text": "("},
+        {"type": "call_expression", "start": 315, "end": 336, "children": [
+         {"type": "identifier", "start": 315, "end": 321, "field": "function", "text": "deeper"},
+         {"type": "arguments", "start": 321, "end": 336, "field": "arguments", "children": [
+          {"type": "(", "start": 321, "end": 322, "text": "("},
+          {"type": "identifier", "start": 322, "end": 327, "text": "first"},
+          {"type": ",", "start": 327, "end": 328, "text": ","},
+          {"type": "identifier", "start": 329, "end": 335, "text": "second"},
+          {"type": ")", "start": 335, "end": 336, "text": ")"}
+         ]}
+        ]},
+        {"type": ",", "start": 336, "end": 337, "text": ","},
+        {"type": "identifier", "start": 338, "end": 343, "text": "third"},
+        {"type": ")", "start": 343, "end": 344, "text": ")"}
+       ]}
+      ]},
+      {"type": ",", "start": 344, "end": 345, "text": ","},
+      {"type": "call_expression", "start": 346, "end": 375, "children": [
+       {"type": "identifier", "start": 346, "end": 352, "field": "function", "text": "fourth"},
+       {"type": "arguments", "start": 352, "end": 375, "field": "arguments", "children": [
+        {"type": "(", "start": 352, "end": 353, "text": "("},
+        {"type": "identifier", "start": 353, "end": 358, "text": "fifth"},
+        {"type": ",", "start": 358, "end": 359, "text": ","},
+        {"type": "identifier", "start": 360, "end": 365, "text": "sixth"},
+        {"type": ",", "start": 365, "end": 366, "text": ","},
+        {"type": "identifier", "start": 367, "end": 374, "text": "seventh"},
+        {"type": ")", "start": 374, "end": 375, "text": ")"}
+       ]}
+      ]},
+      {"type": ")", "start": 375, "end": 376, "text": ")"}
+     ]}
+    ]}
+   ]},
+   {"type": ";", "start": 376, "end": 377, "text": ";"}
+  ]},
+  {"type": "lexical_declaration", "start": 379, "end": 424, "children": [
+   {"type": "const", "start": 379, "end": 384, "field": "kind", "text": "const"},
+   {"type": "variable_declarator", "start": 385, "end": 423, "children": [
+    {"type": "identifier", "start": 385, "end": 390, "field": "name", "text": "arrow"},
+    {"type": "=", "start": 391, "end": 392, "text": "="},
+    {"type": "arrow_function", "start": 393, "end": 423, "field": "value", "children": [
+     {"type": "formal_parameters", "start": 393, "end": 396, "field": "parameters", "children": [
+      {"type": "(", "start": 393, "end": 394, "text": "("},
+      {"type": "identifier", "start": 394, "end": 395, "text": "a"},
+      {"type": ")", "start": 395, "end": 396, "text": ")"}
+     ]},
+     {"type": "=>", "start": 397, "end": 399, "text": "=>"},
+     {"type": "arrow_function", "start": 400, "end": 423, "field": "body", "children": [
+      {"type": "formal_parameters", "start": 400, "end": 403, "field": "parameters", "children": [
+       {"type": "(", "start": 400, "end": 401, "text": "("},
+       {"type": "identifier", "start": 401, "end": 402, "text": "b"},
+       {"type": ")", "start": 402, "end": 403, "text": ")"}
+      ]},
+      {"type": "=>", "start": 404, "end": 406, "text": "=>"},
+      {"type": "arrow_function", "start": 407, "end": 423, "field": "body", "children": [
+       {"type": "formal_parameters", "start": 407, "end": 410, "field": "parameters", "children": [
+        {"type": "(", "start": 407, "end": 408, "text": "("},
+        {"type": "identifier", "start": 408, "end": 409, "text": "c"},
+        {"type": ")", "start": 409, "end": 410, "text": ")"}
+       ]},
+       {"type": "=>", "start": 411, "end": 413, "text": "=>"},
+       {"type": "binary_expression", "start": 414, "end": 423, "field": "body", "children": [
+        {"type": "binary_expression", "start": 414, "end": 419, "field": "left", "children": [
+         {"type": "identifier", "start": 414, "end": 415, "field": "left", "text": "a"},
+         {"type": "+", "start": 416, "end": 417, "field": "operator", "text": "+"},
+         {"type": "identifier", "start": 418, "end": 419, "field": "right", "text": "b"}
+        ]},
+        {"type": "+", "start": 420, "end": 421, "field": "operator", "text": "+"},
+        {"type": "identifier", "start": 422, "end": 423, "field": "right", "text": "c"}
+       ]}
+      ]}
+     ]}
+    ]}
+   ]},
+   {"type": ";", "start": 423, "end": 424, "text": ";"}
+  ]},
+  {"type": "lexical_declaration", "start": 426, "end": 504, "children": [
+   {"type": "const", "start": 426, "end": 431, "field": "kind", "text": "const"},
+   {"type": "variable_declarator", "start": 432, "end": 503, "children": [
+    {"type": "identifier", "start": 432, "end": 437, "field": "name", "text": "mixed"},
+    {"type": "=", "start": 438, "end": 439, "text": "="},
+    {"type": "array", "start": 440, "end": 503, "field": "value", "children": [
+     {"type": "[", "start": 440, "end": 441, "text": "["},
+     {"type": "object", "start": 441, "end": 460, "children": [
+      {"type": "{", "start": 441, "end": 442, "text": "{"},
+      {"type": "pair", "start": 443, "end": 458, "children": [
+       {"type": "property_identifier", "start": 443, "end": 447, "field": "key", "text": "list"},
+       {"type": ":", "start": 447, "end": 448, "text": ":"},
+       {"type": "array", "start": 449, "end": 458, "field": "value", "children": [
+        {"type": "[", "start": 449, "end": 450, "text": "["},
+        {"type": "number", "start": 450, "end": 451, "text": "1"},
+        {"type": ",", "start": 451, "end": 452, "text": ","},
+        {"type": "number", "start": 453, "end": 454, "text": "2"},
+        {"type": ",", "start": 454, "end": 455, "text": ","},
+        {"type": "number", "start": 456, "end": 457, "text": "3"},
+        {"type": "]", "start": 457, "end": 458, "text": "]"}
+       ]}
+      ]},
+      {"type": "}", "start": 459, "end": 460, "text": "}"}
+     ]},
+     {"type": ",", "start": 460, "end": 461, "text": ","},
+     {"type": "object", "start": 462, "end": 481, "children": [
+      {"type": "{", "start": 462, "end": 463, "text": "{"},
+      {"type": "pair", "start": 464, "end": 479, "children": [
+       {"type": "property_identifier", "start": 464, "end": 468, "field": "key", "text": "list"},
+       {"type": ":", "start": 468, "end": 469, "text": ":"},
+       {"type": "array", "start": 470, "end": 479, "field": "value", "children": [
+        {"type": "[", "start": 470, "end": 471, "text": "["},
+        {"type": "number", "start": 471, "end": 472, "text": "4"},
+        {"type": ",", "start": 472, "end": 473, "text": ","},
+        {"type": "number", "start": 474, "end": 475, "text": "5"},
+        {"type": ",", "start": 475, "end": 476, "text": ","},
+        {"type": "number", "start": 477, "end": 478, "text": "6"},
+        {"type": "]", "start": 478, "end": 479, "text": "]"}
+       ]}
+      ]},
+      {"type": "}", "start": 480, "end": 481, "text": "}"}
+     ]},
+     {"type": ",", "start": 481, "end": 482, "text": ","},
+     {"type": "object", "start": 483, "end": 502, "children": [
+      {"type": "{", "start": 483, "end": 484, "text": "{"},
+      {"type": "pair", "start": 485, "end": 500, "children": [
+       {"type": "property_identifier", "start": 485, "end": 489, "field": "key", "text": "list"},
+       {"type": ":", "start": 489, "end": 490, "text": ":"},
+       {"type": "array", "start": 491, "end": 500, "field": "value", "children": [
+        {"type": "[", "start": 491, "end": 492, "text": "["},
+        {"type": "number", "start": 492, "end": 493, "text": "7"},
+        {"type": ",", "start": 493, "end": 494, "text": ","},
+        {"type": "number", "start": 495, "end": 496, "text": "8"},
+        {"type": ",", "start": 496, "end": 497, "text": ","},
+        {"type": "number", "start": 498, "end": 499, "text": "9"},
+        {"type": "]", "start": 499, "end": 500, "text": "]"}
+       ]}
+      ]},
+      {"type": "}", "start": 501, "end": 502, "text": "}"}
+     ]},
+     {"type": "]", "start": 502, "end": 503, "text": "]"}
+    ]}
+   ]},
+   {"type": ";", "start": 503, "end": 504, "text": ";"}
+  ]},
+  {"type": "lexical_declaration", "start": 506, "end": 570, "children": [
+   {"type": "const", "start": 506, "end": 511, "field": "kind", "text": "const"},
+   {"type": "variable_declarator", "start": 512, "end": 569, "children": [
+    {"type": "identifier", "start": 512, "end": 516, "field": "name", "text": "fits"},
+    {"type": "=", "start": 517, "end": 518, "text": "="},
+    {"type": "array", "start": 519, "end": 569, "field": "value", "children": [
+     {"type": "[", "start": 519, "end": 520, "text": "["},
+     {"type": "identifier", "start": 520, "end": 525, "text": "alpha"},
+     {"type": ",", "start": 525, "end": 526, "text": ","},
+     {"type": "identifier", "start": 527, "end": 531, "text": "beta"},
+     {"type": ",", "start": 531, "end": 532, "text": ","},
+     {"type": "array", "start": 533, "end": 545, "children": [
+      {"type": "[", "start": 533, "end": 534, "text": "["},
+      {"type": "number", "start": 534, "end": 535, "text": "1"},
+      {"type": ",", "start": 535, "end": 536, "text": ","},
+      {"type": "number", "start": 537, "end": 538, "text": "2"},
+      {"type": ",", "start": 538, "end": 539, "text": ","},
+      {"type": "number", "start": 540, "end": 541, "text": "3"},
+      {"type": ",", "start": 541, "end": 542, "text": ","},
+      {"type": "number", "start": 543, "end": 544, "text": "4"},
+      {"type": "]", "start": 544, "end": 545, "text": "]"}
+     ]},
+     {"type": ",", "start": 545, "end": 546, "text": ","},
+     {"type": "identifier", "start": 547, "end": 552, "text": "gamma"},
+     {"type": ",", "start": 552, "end": 553, "text": ","},
+     {"type": "identifier", "start": 554, "end": 559, "text": "delta"},
+     {"type": ",", "start": 559, "end": 560, "text": ","},
+     {"type": "identifier", "start": 561, "end": 568, "text": "epsilon"},
+     {"type": "]", "start": 568, "end": 569, "text": "]"}
+    ]}
+   ]},
+   {"type": ";", "start": 569, "end": 570, "text": ";"}
+  ]}
+ ]}
+}

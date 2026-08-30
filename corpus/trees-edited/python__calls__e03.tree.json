@@ -1,0 +1,292 @@
+{
+ "language": "python",
+ "source_file": "corpus/src/python/calls.py",
+ "source": "resultmpute(alpha, beta, gamma)\n\nvalue = compute_the_weighted_average(first_operand, second_operand, third_operand, fourth)\n\nnested = outer(inner(deeply_nested(a, b, c), other_argument), final_argument, last)\n\nkwargs_call = build_request(method=\"POST\", url=endpoint, headers=default_headers, timeout=30)\n\nmixed = transform(positional_one, positional_two, keyword_one=1, keyword_two=2, keyword_three=3)\n\nstarred = dispatch(*positional_arguments, **keyword_arguments)\n\nsingle_long_argument = wrap(this_is_one_very_long_identifier_that_will_not_fit_on_a_line)\n\ntrailing = configure(\n    host,\n    port,\n)\n\nno_args = reset()\n\nchained_call_args = merge(first(a, b), second(c, d), third(e, f), fourth(g, h), fifth(i))\n",
+ "base_source": "result = compute(alpha, beta, gamma)\n\nvalue = compute_the_weighted_average(first_operand, second_operand, third_operand, fourth)\n\nnested = outer(inner(deeply_nested(a, b, c), other_argument), final_argument, last)\n\nkwargs_call = build_request(method=\"POST\", url=endpoint, headers=default_headers, timeout=30)\n\nmixed = transform(positional_one, positional_two, keyword_one=1, keyword_two=2, keyword_three=3)\n\nstarred = dispatch(*positional_arguments, **keyword_arguments)\n\nsingle_long_argument = wrap(this_is_one_very_long_identifier_that_will_not_fit_on_a_line)\n\ntrailing = configure(\n    host,\n    port,\n)\n\nno_args = reset()\n\nchained_call_args = merge(first(a, b), second(c, d), third(e, f), fourth(g, h), fifth(i))\n",
+ "edit": {"kind": "delete", "label": "delete 5B", "start": 6, "old_end": 11, "new_end": 6, "removed": " = co", "inserted": ""},
+ "problems": {"error": 0, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
+ "grammar": "tree-sitter-python==0.25.0",
+ "seed": 0,
+ "root":
+ {"type": "module", "start": 0, "end": 712, "children": [
+  {"type": "expression_statement", "start": 0, "end": 31, "children": [
+   {"type": "call", "start": 0, "end": 31, "children": [
+    {"type": "identifier", "start": 0, "end": 11, "field": "function", "text": "resultmpute"},
+    {"type": "argument_list", "start": 11, "end": 31, "field": "arguments", "children": [
+     {"type": "(", "start": 11, "end": 12, "text": "("},
+     {"type": "identifier", "start": 12, "end": 17, "text": "alpha"},
+     {"type": ",", "start": 17, "end": 18, "text": ","},
+     {"type": "identifier", "start": 19, "end": 23, "text": "beta"},
+     {"type": ",", "start": 23, "end": 24, "text": ","},
+     {"type": "identifier", "start": 25, "end": 30, "text": "gamma"},
+     {"type": ")", "start": 30, "end": 31, "text": ")"}
+    ]}
+   ]}
+  ]},
+  {"type": "expression_statement", "start": 33, "end": 123, "children": [
+   {"type": "assignment", "start": 33, "end": 123, "children": [
+    {"type": "identifier", "start": 33, "end": 38, "field": "left", "text": "value"},
+    {"type": "=", "start": 39, "end": 40, "text": "="},
+    {"type": "call", "start": 41, "end": 123, "field": "right", "children": [
+     {"type": "identifier", "start": 41, "end": 69, "field": "function", "text": "compute_the_weighted_average"},
+     {"type": "argument_list", "start": 69, "end": 123, "field": "arguments", "children": [
+      {"type": "(", "start": 69, "end": 70, "text": "("},
+      {"type": "identifier", "start": 70, "end": 83, "text": "first_operand"},
+      {"type": ",", "start": 83, "end": 84, "text": ","},
+      {"type": "identifier", "start": 85, "end": 99, "text": "second_operand"},
+      {"type": ",", "start": 99, "end": 100, "text": ","},
+      {"type": "identifier", "start": 101, "end": 114, "text": "third_operand"},
+      {"type": ",", "start": 114, "end": 115, "text": ","},
+      {"type": "identifier", "start": 116, "end": 122, "text": "fourth"},
+      {"type": ")", "start": 122, "end": 123, "text": ")"}
+     ]}
+    ]}
+   ]}
+  ]},
+  {"type": "expression_statement", "start": 125, "end": 208, "children": [
+   {"type": "assignment", "start": 125, "end": 208, "children": [
+    {"type": "identifier", "start": 125, "end": 131, "field": "left", "text": "nested"},
+    {"type": "=", "start": 132, "end": 133, "text": "="},
+    {"type": "call", "start": 134, "end": 208, "field": "right", "children": [
+     {"type": "identifier", "start": 134, "end": 139, "field": "function", "text": "outer"},
+     {"type": "argument_list", "start": 139, "end": 208, "field": "arguments", "children": [
+      {"type": "(", "start": 139, "end": 140, "text": "("},
+      {"type": "call", "start": 140, "end": 185, "children": [
+       {"type": "identifier", "start": 140, "end": 145, "field": "function", "text": "inner"},
+       {"type": "argument_list", "start": 145, "end": 185, "field": "arguments", "children": [
+        {"type": "(", "start": 145, "end": 146, "text": "("},
+        {"type": "call", "start": 146, "end": 168, "children": [
+         {"type": "identifier", "start": 146, "end": 159, "field": "function", "text": "deeply_nested"},
+         {"type": "argument_list", "start": 159, "end": 168, "field": "arguments", "children": [
+          {"type": "(", "start": 159, "end": 160, "text": "("},
+          {"type": "identifier", "start": 160, "end": 161, "text": "a"},
+          {"type": ",", "start": 161, "end": 162, "text": ","},
+          {"type": "identifier", "start": 163, "end": 164, "text": "b"},
+          {"type": ",", "start": 164, "end": 165, "text": ","},
+          {"type": "identifier", "start": 166, "end": 167, "text": "c"},
+          {"type": ")", "start": 167, "end": 168, "text": ")"}
+         ]}
+        ]},
+        {"type": ",", "start": 168, "end": 169, "text": ","},
+        {"type": "identifier", "start": 170, "end": 184, "text": "other_argument"},
+        {"type": ")", "start": 184, "end": 185, "text": ")"}
+       ]}
+      ]},
+      {"type": ",", "start": 185, "end": 186, "text": ","},
+      {"type": "identifier", "start": 187, "end": 201, "text": "final_argument"},
+      {"type": ",", "start": 201, "end": 202, "text": ","},
+      {"type": "identifier", "start": 203, "end": 207, "text": "last"},
+      {"type": ")", "start": 207, "end": 208, "text": ")"}
+     ]}
+    ]}
+   ]}
+  ]},
+  {"type": "expression_statement", "start": 210, "end": 303, "children": [
+   {"type": "assignment", "start": 210, "end": 303, "children": [
+    {"type": "identifier", "start": 210, "end": 221, "field": "left", "text": "kwargs_call"},
+    {"type": "=", "start": 222, "end": 223, "text": "="},
+    {"type": "call", "start": 224, "end": 303, "field": "right", "children": [
+     {"type": "identifier", "start": 224, "end": 237, "field": "function", "text": "build_request"},
+     {"type": "argument_list", "start": 237, "end": 303, "field": "arguments", "children": [
+      {"type": "(", "start": 237, "end": 238, "text": "("},
+      {"type": "keyword_argument", "start": 238, "end": 251, "children": [
+       {"type": "identifier", "start": 238, "end": 244, "field": "name", "text": "method"},
+       {"type": "=", "start": 244, "end": 245, "text": "="},
+       {"type": "string", "start": 245, "end": 251, "field": "value", "children": [
+        {"type": "string_start", "start": 245, "end": 246, "text": "\""},
+        {"type": "string_content", "start": 246, "end": 250, "text": "POST"},
+        {"type": "string_end", "start": 250, "end": 251, "text": "\""}
+       ]}
+      ]},
+      {"type": ",", "start": 251, "end": 252, "text": ","},
+      {"type": "keyword_argument", "start": 253, "end": 265, "children": [
+       {"type": "identifier", "start": 253, "end": 256, "field": "name", "text": "url"},
+       {"type": "=", "start": 256, "end": 257, "text": "="},
+       {"type": "identifier", "start": 257, "end": 265, "field": "value", "text": "endpoint"}
+      ]},
+      {"type": ",", "start": 265, "end": 266, "text": ","},
+      {"type": "keyword_argument", "start": 267, "end": 290, "children": [
+       {"type": "identifier", "start": 267, "end": 274, "field": "name", "text": "headers"},
+       {"type": "=", "start": 274, "end": 275, "text": "="},
+       {"type": "identifier", "start": 275, "end": 290, "field": "value", "text": "default_headers"}
+      ]},
+      {"type": ",", "start": 290, "end": 291, "text": ","},
+      {"type": "keyword_argument", "start": 292, "end": 302, "children": [
+       {"type": "identifier", "start": 292, "end": 299, "field": "name", "text": "timeout"},
+       {"type": "=", "start": 299, "end": 300, "text": "="},
+       {"type": "integer", "start": 300, "end": 302, "field": "value", "text": "30"}
+      ]},
+      {"type": ")", "start": 302, "end": 303, "text": ")"}
+     ]}
+    ]}
+   ]}
+  ]},
+  {"type": "expression_statement", "start": 305, "end": 401, "children": [
+   {"type": "assignment", "start": 305, "end": 401, "children": [
+    {"type": "identifier", "start": 305, "end": 310, "field": "left", "text": "mixed"},
+    {"type": "=", "start": 311, "end": 312, "text": "="},
+    {"type": "call", "start": 313, "end": 401, "field": "right", "children": [
+     {"type": "identifier", "start": 313, "end": 322, "field": "function", "text": "transform"},
+     {"type": "argument_list", "start": 322, "end": 401, "field": "arguments", "children": [
+      {"type": "(", "start": 322, "end": 323, "text": "("},
+      {"type": "identifier", "start": 323, "end": 337, "text": "positional_one"},
+      {"type": ",", "start": 337, "end": 338, "text": ","},
+      {"type": "identifier", "start": 339, "end": 353, "text": "positional_two"},
+      {"type": ",", "start": 353, "end": 354, "text": ","},
+      {"type": "keyword_argument", "start": 355, "end": 368, "children": [
+       {"type": "identifier", "start": 355, "end": 366, "field": "name", "text": "keyword_one"},
+       {"type": "=", "start": 366, "end": 367, "text": "="},
+       {"type": "integer", "start": 367, "end": 368, "field": "value", "text": "1"}
+      ]},
+      {"type": ",", "start": 368, "end": 369, "text": ","},
+      {"type": "keyword_argument", "start": 370, "end": 383, "children": [
+       {"type": "identifier", "start": 370, "end": 381, "field": "name", "text": "keyword_two"},
+       {"type": "=", "start": 381, "end": 382, "text": "="},
+       {"type": "integer", "start": 382, "end": 383, "field": "value", "text": "2"}
+      ]},
+      {"type": ",", "start": 383, "end": 384, "text": ","},
+      {"type": "keyword_argument", "start": 385, "end": 400, "children": [
+       {"type": "identifier", "start": 385, "end": 398, "field": "name", "text": "keyword_three"},
+       {"type": "=", "start": 398, "end": 399, "text": "="},
+       {"type": "integer", "start": 399, "end": 400, "field": "value", "text": "3"}
+      ]},
+      {"type": ")", "start": 400, "end": 401, "text": ")"}
+     ]}
+    ]}
+   ]}
+  ]},
+  {"type": "expression_statement", "start": 403, "end": 465, "children": [
+   {"type": "assignment", "start": 403, "end": 465, "children": [
+    {"type": "identifier", "start": 403, "end": 410, "field": "left", "text": "starred"},
+    {"type": "=", "start": 411, "end": 412, "text": "="},
+    {"type": "call", "start": 413, "end": 465, "field": "right", "children": [
+     {"type": "identifier", "start": 413, "end": 421, "field": "function", "text": "dispatch"},
+     {"type": "argument_list", "start": 421, "end": 465, "field": "arguments", "children": [
+      {"type": "(", "start": 421, "end": 422, "text": "("},
+      {"type": "list_splat", "start": 422, "end": 443, "children": [
+       {"type": "*", "start": 422, "end": 423, "text": "*"},
+       {"type": "identifier", "start": 423, "end": 443, "text": "positional_arguments"}
+      ]},
+      {"type": ",", "start": 443, "end": 444, "text": ","},
+      {"type": "dictionary_splat", "start": 445, "end": 464, "children": [
+       {"type": "**", "start": 445, "end": 447, "text": "**"},
+       {"type": "identifier", "start": 447, "end": 464, "text": "keyword_arguments"}
+      ]},
+      {"type": ")", "start": 464, "end": 465, "text": ")"}
+     ]}
+    ]}
+   ]}
+  ]},
+  {"type": "expression_statement", "start": 467, "end": 556, "children": [
+   {"type": "assignment", "start": 467, "end": 556, "children": [
+    {"type": "identifier", "start": 467, "end": 487, "field": "left", "text": "single_long_argument"},
+    {"type": "=", "start": 488, "end": 489, "text": "="},
+    {"type": "call", "start": 490, "end": 556, "field": "right", "children": [
+     {"type": "identifier", "start": 490, "end": 494, "field": "function", "text": "wrap"},
+     {"type": "argument_list", "start": 494, "end": 556, "field": "arguments", "children": [
+      {"type": "(", "start": 494, "end": 495, "text": "("},
+      {"type": "identifier", "start": 495, "end": 555, "text": "this_is_one_very_long_identifier_that_will_not_fit_on_a_line"},
+      {"type": ")", "start": 555, "end": 556, "text": ")"}
+     ]}
+    ]}
+   ]}
+  ]},
+  {"type": "expression_statement", "start": 558, "end": 601, "children": [
+   {"type": "assignment", "start": 558, "end": 601, "children": [
+    {"type": "identifier", "start": 558, "end": 566, "field": "left", "text": "trailing"},
+    {"type": "=", "start": 567, "end": 568, "text": "="},
+    {"type": "call", "start": 569, "end": 601, "field": "right", "children": [
+     {"type": "identifier", "start": 569, "end": 578, "field": "function", "text": "configure"},
+     {"type": "argument_list", "start": 578, "end": 601, "field": "arguments", "children": [
+      {"type": "(", "start": 578, "end": 579, "text": "("},
+      {"type": "identifier", "start": 584, "end": 588, "text": "host"},
+      {"type": ",", "start": 588, "end": 589, "text": ","},
+      {"type": "identifier", "start": 594, "end": 598, "text": "port"},
+      {"type": ",", "start": 598, "end": 599, "text": ","},
+      {"type": ")", "start": 600, "end": 601, "text": ")"}
+     ]}
+    ]}
+   ]}
+  ]},
+  {"type": "expression_statement", "start": 603, "end": 620, "children": [
+   {"type": "assignment", "start": 603, "end": 620, "children": [
+    {"type": "identifier", "start": 603, "end": 610, "field": "left", "text": "no_args"},
+    {"type": "=", "start": 611, "end": 612, "text": "="},
+    {"type": "call", "start": 613, "end": 620, "field": "right", "children": [
+     {"type": "identifier", "start": 613, "end": 618, "field": "function", "text": "reset"},
+     {"type": "argument_list", "start": 618, "end": 620, "field": "arguments", "children": [
+      {"type": "(", "start": 618, "end": 619, "text": "("},
+      {"type": ")", "start": 619, "end": 620, "text": ")"}
+     ]}
+    ]}
+   ]}
+  ]},
+  {"type": "expression_statement", "start": 622, "end": 711, "children": [
+   {"type": "assignment", "start": 622, "end": 711, "children": [
+    {"type": "identifier", "start": 622, "end": 639, "field": "left", "text": "chained_call_args"},
+    {"type": "=", "start": 640, "end": 641, "text": "="},
+    {"type": "call", "start": 642, "end": 711, "field": "right", "children": [
+     {"type": "identifier", "start": 642, "end": 647, "field": "function", "text": "merge"},
+     {"type": "argument_list", "start": 647, "end": 711, "field": "arguments", "children": [
+      {"type": "(", "start": 647, "end": 648, "text": "("},
+      {"type": "call", "start": 648, "end": 659, "children": [
+       {"type": "identifier", "start": 648, "end": 653, "field": "function", "text": "first"},
+       {"type": "argument_list", "start": 653, "end": 659, "field": "arguments", "children": [
+        {"type": "(", "start": 653, "end": 654, "text": "("},
+        {"type": "identifier", "start": 654, "end": 655, "text": "a"},
+        {"type": ",", "start": 655, "end": 656, "text": ","},
+        {"type": "identifier", "start": 657, "end": 658, "text": "b"},
+        {"type": ")", "start": 658, "end": 659, "text": ")"}
+       ]}
+      ]},
+      {"type": ",", "start": 659, "end": 660, "text": ","},
+      {"type": "call", "start": 661, "end": 673, "children": [
+       {"type": "identifier", "start": 661, "end": 667, "field": "function", "text": "second"},
+       {"type": "argument_list", "start": 667, "end": 673, "field": "arguments", "children": [
+        {"type": "(", "start": 667, "end": 668, "text": "("},
+        {"type": "identifier", "start": 668, "end": 669, "text": "c"},
+        {"type": ",", "start": 669, "end": 670, "text": ","},
+        {"type": "identifier", "start": 671, "end": 672, "text": "d"},
+        {"type": ")", "start": 672, "end": 673, "text": ")"}
+       ]}
+      ]},
+      {"type": ",", "start": 673, "end": 674, "text": ","},
+      {"type": "call", "start": 675, "end": 686, "children": [
+       {"type": "identifier", "start": 675, "end": 680, "field": "function", "text": "third"},
+       {"type": "argument_list", "start": 680, "end": 686, "field": "arguments", "children": [
+        {"type": "(", "start": 680, "end": 681, "text": "("},
+        {"type": "identifier", "start": 681, "end": 682, "text": "e"},
+        {"type": ",", "start": 682, "end": 683, "text": ","},
+        {"type": "identifier", "start": 684, "end": 685, "text": "f"},
+        {"type": ")", "start": 685, "end": 686, "text": ")"}
+       ]}
+      ]},
+      {"type": ",", "start": 686, "end": 687, "text": ","},
+      {"type": "call", "start": 688, "end": 700, "children": [
+       {"type": "identifier", "start": 688, "end": 694, "field": "function", "text": "fourth"},
+       {"type": "argument_list", "start": 694, "end": 700, "field": "arguments", "children": [
+        {"type": "(", "start": 694, "end": 695, "text": "("},
+        {"type": "identifier", "start": 695, "end": 696, "text": "g"},
+        {"type": ",", "start": 696, "end": 697, "text": ","},
+        {"type": "identifier", "start": 698, "end": 699, "text": "h"},
+        {"type": ")", "start": 699, "end": 700, "text": ")"}
+       ]}
+      ]},
+      {"type": ",", "start": 700, "end": 701, "text": ","},
+      {"type": "call", "start": 702, "end": 710, "children": [
+       {"type": "identifier", "start": 702, "end": 707, "field": "function", "text": "fifth"},
+       {"type": "argument_list", "start": 707, "end": 710, "field": "arguments", "children": [
+        {"type": "(", "start": 707, "end": 708, "text": "("},
+        {"type": "identifier", "start": 708, "end": 709, "text": "i"},
+        {"type": ")", "start": 709, "end": 710, "text": ")"}
+       ]}
+      ]},
+      {"type": ")", "start": 710, "end": 711, "text": ")"}
+     ]}
+    ]}
+   ]}
+  ]}
+ ]}
+}

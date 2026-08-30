@@ -1,0 +1,60 @@
+{
+ "language": "kotlin",
+ "source_file": "corpus/src/kotlin/imports.kt",
+ "source": "// Import order. ktfmt always sorts imports -- `sortedAndDistinctImports` has\n// no disable flag, unlike unused-import removal -- and a linear formatter\n// cannot reorder statements, so this file is declared `incomparable`.\n// Every import here is used, so it.math.min\nimport java.io.File\n\nfun demo(file: File): Int {\n   obes sorting alone.\n\nimport kotlin.math.max\nimport java.util.ArrayList\nimport kotlin.math.min\nimport java.io.File\n\nfun demo(file: File): Int {\n    val xs = ArrayList<Int>()\n    return max(min(xs.size, 1), file.name.length)\n}\n",
+ "base_source": "// Import order. ktfmt always sorts imports -- `sortedAndDistinctImports` has\n// no disable flag, unlike unused-import removal -- and a linear formatter\n// cannot reorder statements, so this file is declared `incomparable`.\n// Every import here is used, so it probes sorting alone.\n\nimport kotlin.math.max\nimport java.util.ArrayList\nimport kotlin.math.min\nimport java.io.File\n\nfun demo(file: File): Int {\n    val xs = ArrayList<Int>()\n    return max(min(xs.size, 1), file.name.length)\n}\n",
+ "edit": {"kind": "replace", "label": "splice 346..408", "start": 259, "old_end": 262, "new_end": 321, "removed": " pr", "inserted": ".math.min\nimport java.io.File\n\nfun demo(file: File): Int {\n   "},
+ "problems": {"error": 1, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
+ "grammar": "tree-sitter-kotlin==1.1.0",
+ "seed": 0,
+ "root":
+ {"type": "source_file", "start": 0, "end": 546, "children": [
+  {"type": "line_comment", "start": 0, "end": 77, "text": "// Import order. ktfmt always sorts imports -- `sortedAndDistinctImports` has"},
+  {"type": "line_comment", "start": 78, "end": 152, "text": "// no disable flag, unlike unused-import removal -- and a linear formatter"},
+  {"type": "line_comment", "start": 153, "end": 223, "text": "// cannot reorder statements, so this file is declared `incomparable`."},
+  {"type": "line_comment", "start": 224, "end": 268, "text": "// Every import here is used, so it.math.min"},
+  {"type": "import", "start": 269, "end": 288, "children": [
+   {"type": "import", "start": 269, "end": 275, "text": "import"},
+   {"type": "qualified_identifier", "start": 276, "end": 288, "children": [
+    {"type": "identifier", "start": 276, "end": 280, "text": "java"},
+    {"type": ".", "start": 280, "end": 281, "text": "."},
+    {"type": "identifier", "start": 281, "end": 283, "text": "io"},
+    {"type": ".", "start": 283, "end": 284, "text": "."},
+    {"type": "identifier", "start": 284, "end": 288, "text": "File"}
+   ]}
+  ]},
+  {"type": "ERROR", "start": 290, "end": 546, "children": [
+   {"type": "fun", "start": 290, "end": 293, "text": "fun"},
+   {"type": "identifier", "start": 294, "end": 298, "text": "demo"},
+   {"type": "function_value_parameters", "start": 298, "end": 310, "children": [
+    {"type": "(", "start": 298, "end": 299, "text": "("},
+    {"type": "parameter", "start": 299, "end": 309, "children": [
+     {"type": "identifier", "start": 299, "end": 303, "text": "file"},
+     {"type": ":", "start": 303, "end": 304, "text": ":"},
+     {"type": "user_type", "start": 305, "end": 309, "children": [
+      {"type": "identifier", "start": 305, "end": 309, "text": "File"}
+     ]}
+    ]},
+    {"type": ")", "start": 309, "end": 310, "text": ")"}
+   ]},
+   {"type": ":", "start": 310, "end": 311, "text": ":"},
+   {"type": "user_type", "start": 312, "end": 315, "children": [
+    {"type": "identifier", "start": 312, "end": 315, "text": "Int"}
+   ]},
+   {"type": "{", "start": 316, "end": 317, "text": "{"},
+   {"type": "infix_expression", "start": 321, "end": 348, "children": [
+    {"type": "identifier", "start": 321, "end": 325, "text": "obes"},
+    {"type": "identifier", "start": 326, "end": 333, "text": "sorting"},
+    {"type": "navigation_expression", "start": 334, "end": 348, "children": [
+     {"type": "identifier", "start": 334, "end": 339, "text": "alone"},
+     {"type": ".", "start": 339, "end": 340, "text": "."},
+     {"type": "identifier", "start": 342, "end": 348, "text": "import"}
+    ]}
+   ]},
+   {"type": "identifier", "start": 349, "end": 355, "text": "kotlin"},
+   {"type": ".", "start": 355, "end": 356, "text": "."}
+  ]}
+ ]}
+}

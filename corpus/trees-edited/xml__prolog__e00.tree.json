@@ -1,0 +1,120 @@
+{
+ "language": "xml",
+ "source_file": "corpus/src/xml/prolog.xml",
+ "source": "<?xrsion=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<?xml-stylesheet type=\"text/xsl\" href=\"pretty-long-stylesheet-name.xsl\"?>\n<!DOCTYPE note SYSTEM \"note.dtd\">\n<!-- misc comment between the prolog and the document element -->\n<note>\n  <to>You</to>\n  <from>Me</from>\n</note>\n",
+ "base_source": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<?xml-stylesheet type=\"text/xsl\" href=\"pretty-long-stylesheet-name.xsl\"?>\n<!DOCTYPE note SYSTEM \"note.dtd\">\n<!-- misc comment between the prolog and the document element -->\n<note>\n  <to>You</to>\n  <from>Me</from>\n</note>\n",
+ "edit": {"kind": "delete", "label": "delete 5B", "start": 3, "old_end": 8, "new_end": 3, "removed": "ml ve", "inserted": ""},
+ "problems": {"error": 1, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
+ "grammar": "tree-sitter-xml==0.7.0",
+ "seed": 0,
+ "root":
+ {"type": "document", "start": 0, "end": 273, "children": [
+  {"type": "ERROR", "start": 0, "end": 51, "children": [
+   {"type": "<?", "start": 0, "end": 2, "text": "<?"},
+   {"type": "PITarget", "start": 2, "end": 8, "text": "xrsion"},
+   {"type": "=", "start": 8, "end": 9, "text": "="},
+   {"type": "\"", "start": 9, "end": 10, "text": "\""},
+   {"type": "Nmtoken", "start": 10, "end": 13, "text": "1.0"},
+   {"type": "\"", "start": 13, "end": 14, "text": "\""},
+   {"type": "encoding", "start": 15, "end": 23, "text": "encoding"},
+   {"type": "=", "start": 23, "end": 24, "text": "="},
+   {"type": "\"", "start": 24, "end": 25, "text": "\""},
+   {"type": "Name", "start": 25, "end": 30, "text": "UTF-8"},
+   {"type": "\"", "start": 30, "end": 31, "text": "\""},
+   {"type": "standalone", "start": 32, "end": 42, "text": "standalone"},
+   {"type": "=", "start": 42, "end": 43, "text": "="},
+   {"type": "\"", "start": 43, "end": 44, "text": "\""},
+   {"type": "yes", "start": 44, "end": 47, "text": "yes"},
+   {"type": "\"", "start": 47, "end": 48, "text": "\""},
+   {"type": "?", "start": 48, "end": 49, "text": "?"},
+   {"type": ">", "start": 49, "end": 50, "text": ">"}
+  ]},
+  {"type": "prolog", "start": 51, "end": 225, "children": [
+   {"type": "StyleSheetPI", "start": 51, "end": 124, "children": [
+    {"type": "<?", "start": 51, "end": 53, "text": "<?"},
+    {"type": "xml-stylesheet", "start": 53, "end": 67, "text": "xml-stylesheet"},
+    {"type": "PseudoAtt", "start": 68, "end": 83, "children": [
+     {"type": "Name", "start": 68, "end": 72, "text": "type"},
+     {"type": "=", "start": 72, "end": 73, "text": "="},
+     {"type": "PseudoAttValue", "start": 73, "end": 83, "children": [
+      {"type": "\"", "start": 73, "end": 74, "text": "\""},
+      {"type": "\"", "start": 82, "end": 83, "text": "\""}
+     ]}
+    ]},
+    {"type": "PseudoAtt", "start": 84, "end": 122, "children": [
+     {"type": "Name", "start": 84, "end": 88, "text": "href"},
+     {"type": "=", "start": 88, "end": 89, "text": "="},
+     {"type": "PseudoAttValue", "start": 89, "end": 122, "children": [
+      {"type": "\"", "start": 89, "end": 90, "text": "\""},
+      {"type": "\"", "start": 121, "end": 122, "text": "\""}
+     ]}
+    ]},
+    {"type": "?>", "start": 122, "end": 124, "text": "?>"}
+   ]},
+   {"type": "doctypedecl", "start": 125, "end": 158, "children": [
+    {"type": "<!", "start": 125, "end": 127, "text": "<!"},
+    {"type": "DOCTYPE", "start": 127, "end": 134, "text": "DOCTYPE"},
+    {"type": "Name", "start": 135, "end": 139, "text": "note"},
+    {"type": "ExternalID", "start": 140, "end": 157, "children": [
+     {"type": "SYSTEM", "start": 140, "end": 146, "text": "SYSTEM"},
+     {"type": "SystemLiteral", "start": 147, "end": 157, "children": [
+      {"type": "\"", "start": 147, "end": 148, "text": "\""},
+      {"type": "URI", "start": 148, "end": 156, "text": "note.dtd"},
+      {"type": "\"", "start": 156, "end": 157, "text": "\""}
+     ]}
+    ]},
+    {"type": ">", "start": 157, "end": 158, "text": ">"}
+   ]},
+   {"type": "Comment", "start": 159, "end": 224, "text": "<!-- misc comment between the prolog and the document element -->"}
+  ]},
+  {"type": "element", "start": 225, "end": 272, "field": "root", "children": [
+   {"type": "STag", "start": 225, "end": 231, "children": [
+    {"type": "<", "start": 225, "end": 226, "text": "<"},
+    {"type": "Name", "start": 226, "end": 230, "text": "note"},
+    {"type": ">", "start": 230, "end": 231, "text": ">"}
+   ]},
+   {"type": "content", "start": 231, "end": 265, "children": [
+    {"type": "CharData", "start": 231, "end": 234, "text": "\n  "},
+    {"type": "element", "start": 234, "end": 246, "children": [
+     {"type": "STag", "start": 234, "end": 238, "children": [
+      {"type": "<", "start": 234, "end": 235, "text": "<"},
+      {"type": "Name", "start": 235, "end": 237, "text": "to"},
+      {"type": ">", "start": 237, "end": 238, "text": ">"}
+     ]},
+     {"type": "content", "start": 238, "end": 241, "children": [
+      {"type": "CharData", "start": 238, "end": 241, "text": "You"}
+     ]},
+     {"type": "ETag", "start": 241, "end": 246, "children": [
+      {"type": "</", "start": 241, "end": 243, "text": "</"},
+      {"type": "Name", "start": 243, "end": 245, "text": "to"},
+      {"type": ">", "start": 245, "end": 246, "text": ">"}
+     ]}
+    ]},
+    {"type": "CharData", "start": 246, "end": 249, "text": "\n  "},
+    {"type": "element", "start": 249, "end": 264, "children": [
+     {"type": "STag", "start": 249, "end": 255, "children": [
+      {"type": "<", "start": 249, "end": 250, "text": "<"},
+      {"type": "Name", "start": 250, "end": 254, "text": "from"},
+      {"type": ">", "start": 254, "end": 255, "text": ">"}
+     ]},
+     {"type": "content", "start": 255, "end": 257, "children": [
+      {"type": "CharData", "start": 255, "end": 257, "text": "Me"}
+     ]},
+     {"type": "ETag", "start": 257, "end": 264, "children": [
+      {"type": "</", "start": 257, "end": 259, "text": "</"},
+      {"type": "Name", "start": 259, "end": 263, "text": "from"},
+      {"type": ">", "start": 263, "end": 264, "text": ">"}
+     ]}
+    ]},
+    {"type": "CharData", "start": 264, "end": 265, "text": "\n"}
+   ]},
+   {"type": "ETag", "start": 265, "end": 272, "children": [
+    {"type": "</", "start": 265, "end": 267, "text": "</"},
+    {"type": "Name", "start": 267, "end": 271, "text": "note"},
+    {"type": ">", "start": 271, "end": 272, "text": ">"}
+   ]}
+  ]}
+ ]}
+}

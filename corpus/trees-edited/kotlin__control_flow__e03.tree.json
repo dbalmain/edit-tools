@@ -1,0 +1,257 @@
+{
+ "language": "kotlin",
+ "source_file": "corpus/src/kotlin/control_flow.kt",
+ "source": "// r/while/try as expressions, plus a labeled loop.\n\nfun sign(x:Int):String=if (x>0) \"pos\" else if (x<0) \"neg\" else \"zero\"\n\nfun demo(items:List<Int>):Int {\n    var total=0\n    loop@ for (item in items) { // labeled\n        if(item<0) continue@loop\n        if(item==0) break@loop\n        total+=item\n    }\n    var n=items.size\n    while(n>0){\n        n-=1\n    }\n    val parsed=try{ items.first() } catch(e:NoSuchElementException){ -1 } finally { n=0 } // try is an expression\n    return parsed\n}\n",
+ "base_source": "// if/for/while/try as expressions, plus a labeled loop.\n\nfun sign(x:Int):String=if (x>0) \"pos\" else if (x<0) \"neg\" else \"zero\"\n\nfun demo(items:List<Int>):Int {\n    var total=0\n    loop@ for (item in items) { // labeled\n        if(item<0) continue@loop\n        if(item==0) break@loop\n        total+=item\n    }\n    var n=items.size\n    while(n>0){\n        n-=1\n    }\n    val parsed=try{ items.first() } catch(e:NoSuchElementException){ -1 } finally { n=0 } // try is an expression\n    return parsed\n}\n",
+ "edit": {"kind": "delete", "label": "delete 5B", "start": 3, "old_end": 8, "new_end": 3, "removed": "if/fo", "inserted": ""},
+ "problems": {"error": 0, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
+ "grammar": "tree-sitter-kotlin==1.1.0",
+ "seed": 0,
+ "root":
+ {"type": "source_file", "start": 0, "end": 495, "children": [
+  {"type": "line_comment", "start": 0, "end": 51, "text": "// r/while/try as expressions, plus a labeled loop."},
+  {"type": "function_declaration", "start": 53, "end": 122, "children": [
+   {"type": "fun", "start": 53, "end": 56, "text": "fun"},
+   {"type": "identifier", "start": 57, "end": 61, "field": "name", "text": "sign"},
+   {"type": "function_value_parameters", "start": 61, "end": 68, "children": [
+    {"type": "(", "start": 61, "end": 62, "text": "("},
+    {"type": "parameter", "start": 62, "end": 67, "children": [
+     {"type": "identifier", "start": 62, "end": 63, "text": "x"},
+     {"type": ":", "start": 63, "end": 64, "text": ":"},
+     {"type": "user_type", "start": 64, "end": 67, "children": [
+      {"type": "identifier", "start": 64, "end": 67, "text": "Int"}
+     ]}
+    ]},
+    {"type": ")", "start": 67, "end": 68, "text": ")"}
+   ]},
+   {"type": ":", "start": 68, "end": 69, "text": ":"},
+   {"type": "user_type", "start": 69, "end": 75, "children": [
+    {"type": "identifier", "start": 69, "end": 75, "text": "String"}
+   ]},
+   {"type": "function_body", "start": 75, "end": 122, "children": [
+    {"type": "=", "start": 75, "end": 76, "text": "="},
+    {"type": "if_expression", "start": 76, "end": 122, "children": [
+     {"type": "if", "start": 76, "end": 78, "text": "if"},
+     {"type": "(", "start": 79, "end": 80, "text": "("},
+     {"type": "binary_expression", "start": 80, "end": 83, "field": "condition", "children": [
+      {"type": "identifier", "start": 80, "end": 81, "field": "left", "text": "x"},
+      {"type": ">", "start": 81, "end": 82, "field": "operator", "text": ">"},
+      {"type": "number_literal", "start": 82, "end": 83, "field": "right", "text": "0"}
+     ]},
+     {"type": ")", "start": 83, "end": 84, "text": ")"},
+     {"type": "string_literal", "start": 85, "end": 90, "children": [
+      {"type": "\"", "start": 85, "end": 86, "text": "\""},
+      {"type": "string_content", "start": 86, "end": 89, "text": "pos"},
+      {"type": "\"", "start": 89, "end": 90, "text": "\""}
+     ]},
+     {"type": "else", "start": 91, "end": 95, "text": "else"},
+     {"type": "if_expression", "start": 96, "end": 122, "children": [
+      {"type": "if", "start": 96, "end": 98, "text": "if"},
+      {"type": "(", "start": 99, "end": 100, "text": "("},
+      {"type": "binary_expression", "start": 100, "end": 103, "field": "condition", "children": [
+       {"type": "identifier", "start": 100, "end": 101, "field": "left", "text": "x"},
+       {"type": "<", "start": 101, "end": 102, "field": "operator", "text": "<"},
+       {"type": "number_literal", "start": 102, "end": 103, "field": "right", "text": "0"}
+      ]},
+      {"type": ")", "start": 103, "end": 104, "text": ")"},
+      {"type": "string_literal", "start": 105, "end": 110, "children": [
+       {"type": "\"", "start": 105, "end": 106, "text": "\""},
+       {"type": "string_content", "start": 106, "end": 109, "text": "neg"},
+       {"type": "\"", "start": 109, "end": 110, "text": "\""}
+      ]},
+      {"type": "else", "start": 111, "end": 115, "text": "else"},
+      {"type": "string_literal", "start": 116, "end": 122, "children": [
+       {"type": "\"", "start": 116, "end": 117, "text": "\""},
+       {"type": "string_content", "start": 117, "end": 121, "text": "zero"},
+       {"type": "\"", "start": 121, "end": 122, "text": "\""}
+      ]}
+     ]}
+    ]}
+   ]}
+  ]},
+  {"type": "function_declaration", "start": 124, "end": 494, "children": [
+   {"type": "fun", "start": 124, "end": 127, "text": "fun"},
+   {"type": "identifier", "start": 128, "end": 132, "field": "name", "text": "demo"},
+   {"type": "function_value_parameters", "start": 132, "end": 149, "children": [
+    {"type": "(", "start": 132, "end": 133, "text": "("},
+    {"type": "parameter", "start": 133, "end": 148, "children": [
+     {"type": "identifier", "start": 133, "end": 138, "text": "items"},
+     {"type": ":", "start": 138, "end": 139, "text": ":"},
+     {"type": "user_type", "start": 139, "end": 148, "children": [
+      {"type": "identifier", "start": 139, "end": 143, "text": "List"},
+      {"type": "type_arguments", "start": 143, "end": 148, "children": [
+       {"type": "<", "start": 143, "end": 144, "text": "<"},
+       {"type": "type_projection", "start": 144, "end": 147, "children": [
+        {"type": "user_type", "start": 144, "end": 147, "children": [
+         {"type": "identifier", "start": 144, "end": 147, "text": "Int"}
+        ]}
+       ]},
+       {"type": ">", "start": 147, "end": 148, "text": ">"}
+      ]}
+     ]}
+    ]},
+    {"type": ")", "start": 148, "end": 149, "text": ")"}
+   ]},
+   {"type": ":", "start": 149, "end": 150, "text": ":"},
+   {"type": "user_type", "start": 150, "end": 153, "children": [
+    {"type": "identifier", "start": 150, "end": 153, "text": "Int"}
+   ]},
+   {"type": "function_body", "start": 154, "end": 494, "children": [
+    {"type": "block", "start": 154, "end": 494, "children": [
+     {"type": "{", "start": 154, "end": 155, "text": "{"},
+     {"type": "property_declaration", "start": 160, "end": 171, "children": [
+      {"type": "var", "start": 160, "end": 163, "text": "var"},
+      {"type": "variable_declaration", "start": 164, "end": 169, "children": [
+       {"type": "identifier", "start": 164, "end": 169, "text": "total"}
+      ]},
+      {"type": "=", "start": 169, "end": 170, "text": "="},
+      {"type": "number_literal", "start": 170, "end": 171, "text": "0"}
+     ]},
+     {"type": "for_statement", "start": 176, "end": 304, "children": [
+      {"type": "label", "start": 176, "end": 181, "text": "loop@"},
+      {"type": "for", "start": 182, "end": 185, "text": "for"},
+      {"type": "(", "start": 186, "end": 187, "text": "("},
+      {"type": "variable_declaration", "start": 187, "end": 191, "children": [
+       {"type": "identifier", "start": 187, "end": 191, "text": "item"}
+      ]},
+      {"type": "in", "start": 192, "end": 194, "text": "in"},
+      {"type": "identifier", "start": 195, "end": 200, "text": "items"},
+      {"type": ")", "start": 200, "end": 201, "text": ")"},
+      {"type": "block", "start": 202, "end": 304, "children": [
+       {"type": "{", "start": 202, "end": 203, "text": "{"},
+       {"type": "line_comment", "start": 204, "end": 214, "text": "// labeled"},
+       {"type": "if_expression", "start": 223, "end": 247, "children": [
+        {"type": "if", "start": 223, "end": 225, "text": "if"},
+        {"type": "(", "start": 225, "end": 226, "text": "("},
+        {"type": "binary_expression", "start": 226, "end": 232, "field": "condition", "children": [
+         {"type": "identifier", "start": 226, "end": 230, "field": "left", "text": "item"},
+         {"type": "<", "start": 230, "end": 231, "field": "operator", "text": "<"},
+         {"type": "number_literal", "start": 231, "end": 232, "field": "right", "text": "0"}
+        ]},
+        {"type": ")", "start": 232, "end": 233, "text": ")"},
+        {"type": "labeled_expression", "start": 234, "end": 247, "children": [
+         {"type": "label", "start": 234, "end": 243, "text": "continue@"},
+         {"type": "identifier", "start": 243, "end": 247, "text": "loop"}
+        ]}
+       ]},
+       {"type": "if_expression", "start": 256, "end": 278, "children": [
+        {"type": "if", "start": 256, "end": 258, "text": "if"},
+        {"type": "(", "start": 258, "end": 259, "text": "("},
+        {"type": "binary_expression", "start": 259, "end": 266, "field": "condition", "children": [
+         {"type": "identifier", "start": 259, "end": 263, "field": "left", "text": "item"},
+         {"type": "==", "start": 263, "end": 265, "field": "operator", "text": "=="},
+         {"type": "number_literal", "start": 265, "end": 266, "field": "right", "text": "0"}
+        ]},
+        {"type": ")", "start": 266, "end": 267, "text": ")"},
+        {"type": "labeled_expression", "start": 268, "end": 278, "children": [
+         {"type": "label", "start": 268, "end": 274, "text": "break@"},
+         {"type": "identifier", "start": 274, "end": 278, "text": "loop"}
+        ]}
+       ]},
+       {"type": "assignment", "start": 287, "end": 298, "children": [
+        {"type": "identifier", "start": 287, "end": 292, "field": "left", "text": "total"},
+        {"type": "+=", "start": 292, "end": 294, "field": "operator", "text": "+="},
+        {"type": "identifier", "start": 294, "end": 298, "field": "right", "text": "item"}
+       ]},
+       {"type": "}", "start": 303, "end": 304, "text": "}"}
+      ]}
+     ]},
+     {"type": "property_declaration", "start": 309, "end": 325, "children": [
+      {"type": "var", "start": 309, "end": 312, "text": "var"},
+      {"type": "variable_declaration", "start": 313, "end": 314, "children": [
+       {"type": "identifier", "start": 313, "end": 314, "text": "n"}
+      ]},
+      {"type": "=", "start": 314, "end": 315, "text": "="},
+      {"type": "navigation_expression", "start": 315, "end": 325, "children": [
+       {"type": "identifier", "start": 315, "end": 320, "text": "items"},
+       {"type": ".", "start": 320, "end": 321, "text": "."},
+       {"type": "identifier", "start": 321, "end": 325, "text": "size"}
+      ]}
+     ]},
+     {"type": "while_statement", "start": 330, "end": 360, "children": [
+      {"type": "while", "start": 330, "end": 335, "text": "while"},
+      {"type": "(", "start": 335, "end": 336, "text": "("},
+      {"type": "binary_expression", "start": 336, "end": 339, "field": "condition", "children": [
+       {"type": "identifier", "start": 336, "end": 337, "field": "left", "text": "n"},
+       {"type": ">", "start": 337, "end": 338, "field": "operator", "text": ">"},
+       {"type": "number_literal", "start": 338, "end": 339, "field": "right", "text": "0"}
+      ]},
+      {"type": ")", "start": 339, "end": 340, "text": ")"},
+      {"type": "block", "start": 340, "end": 360, "children": [
+       {"type": "{", "start": 340, "end": 341, "text": "{"},
+       {"type": "assignment", "start": 350, "end": 354, "children": [
+        {"type": "identifier", "start": 350, "end": 351, "field": "left", "text": "n"},
+        {"type": "-=", "start": 351, "end": 353, "field": "operator", "text": "-="},
+        {"type": "number_literal", "start": 353, "end": 354, "field": "right", "text": "1"}
+       ]},
+       {"type": "}", "start": 359, "end": 360, "text": "}"}
+      ]}
+     ]},
+     {"type": "property_declaration", "start": 365, "end": 450, "children": [
+      {"type": "val", "start": 365, "end": 368, "text": "val"},
+      {"type": "variable_declaration", "start": 369, "end": 375, "children": [
+       {"type": "identifier", "start": 369, "end": 375, "text": "parsed"}
+      ]},
+      {"type": "=", "start": 375, "end": 376, "text": "="},
+      {"type": "try_expression", "start": 376, "end": 450, "children": [
+       {"type": "try", "start": 376, "end": 379, "text": "try"},
+       {"type": "block", "start": 379, "end": 396, "children": [
+        {"type": "{", "start": 379, "end": 380, "text": "{"},
+        {"type": "call_expression", "start": 381, "end": 394, "children": [
+         {"type": "navigation_expression", "start": 381, "end": 392, "children": [
+          {"type": "identifier", "start": 381, "end": 386, "text": "items"},
+          {"type": ".", "start": 386, "end": 387, "text": "."},
+          {"type": "identifier", "start": 387, "end": 392, "text": "first"}
+         ]},
+         {"type": "value_arguments", "start": 392, "end": 394, "children": [
+          {"type": "(", "start": 392, "end": 393, "text": "("},
+          {"type": ")", "start": 393, "end": 394, "text": ")"}
+         ]}
+        ]},
+        {"type": "}", "start": 395, "end": 396, "text": "}"}
+       ]},
+       {"type": "catch_block", "start": 397, "end": 434, "children": [
+        {"type": "catch", "start": 397, "end": 402, "text": "catch"},
+        {"type": "(", "start": 402, "end": 403, "text": "("},
+        {"type": "identifier", "start": 403, "end": 404, "text": "e"},
+        {"type": ":", "start": 404, "end": 405, "text": ":"},
+        {"type": "user_type", "start": 405, "end": 427, "children": [
+         {"type": "identifier", "start": 405, "end": 427, "text": "NoSuchElementException"}
+        ]},
+        {"type": ")", "start": 427, "end": 428, "text": ")"},
+        {"type": "block", "start": 428, "end": 434, "children": [
+         {"type": "{", "start": 428, "end": 429, "text": "{"},
+         {"type": "unary_expression", "start": 430, "end": 432, "children": [
+          {"type": "-", "start": 430, "end": 431, "field": "operator", "text": "-"},
+          {"type": "number_literal", "start": 431, "end": 432, "field": "argument", "text": "1"}
+         ]},
+         {"type": "}", "start": 433, "end": 434, "text": "}"}
+        ]}
+       ]},
+       {"type": "finally_block", "start": 435, "end": 450, "children": [
+        {"type": "finally", "start": 435, "end": 442, "text": "finally"},
+        {"type": "block", "start": 443, "end": 450, "children": [
+         {"type": "{", "start": 443, "end": 444, "text": "{"},
+         {"type": "assignment", "start": 445, "end": 448, "children": [
+          {"type": "identifier", "start": 445, "end": 446, "field": "left", "text": "n"},
+          {"type": "=", "start": 446, "end": 447, "field": "operator", "text": "="},
+          {"type": "number_literal", "start": 447, "end": 448, "field": "right", "text": "0"}
+         ]},
+         {"type": "}", "start": 449, "end": 450, "text": "}"}
+        ]}
+       ]}
+      ]}
+     ]},
+     {"type": "line_comment", "start": 451, "end": 474, "text": "// try is an expression"},
+     {"type": "return_expression", "start": 479, "end": 492, "children": [
+      {"type": "return", "start": 479, "end": 485, "text": "return"},
+      {"type": "identifier", "start": 486, "end": 492, "text": "parsed"}
+     ]},
+     {"type": "}", "start": 493, "end": 494, "text": "}"}
+    ]}
+   ]}
+  ]}
+ ]}
+}

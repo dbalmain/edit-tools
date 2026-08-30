@@ -1,0 +1,172 @@
+{
+ "language": "go",
+ "source_file": "corpus/src/go/imports.go",
+ "source": "pacmain\n\nimport \"fmt\"\n\nimport (\n  \"context\"\n  \"os\"\n  \"time\" // the standard clock\n\n  alias \"net/http\"\n  _ \"net/http/pprof\" // registers debug handlers\n  . \"strings\"\n)\n\nfunc main() {\n  _ = fmt.Sprintf\n  _ = context.Background\n  _ = os.Args\n  _ = time.Now\n  _ = alias.Get\n  _ = ToUpper\n}\n",
+ "base_source": "package main\n\nimport \"fmt\"\n\nimport (\n  \"context\"\n  \"os\"\n  \"time\" // the standard clock\n\n  alias \"net/http\"\n  _ \"net/http/pprof\" // registers debug handlers\n  . \"strings\"\n)\n\nfunc main() {\n  _ = fmt.Sprintf\n  _ = context.Background\n  _ = os.Args\n  _ = time.Now\n  _ = alias.Get\n  _ = ToUpper\n}\n",
+ "edit": {"kind": "delete", "label": "delete 5B", "start": 3, "old_end": 8, "new_end": 3, "removed": "kage ", "inserted": ""},
+ "problems": {"error": 0, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
+ "grammar": "tree-sitter-go==0.25.0",
+ "seed": 0,
+ "root":
+ {"type": "source_file", "start": 0, "end": 286, "children": [
+  {"type": "expression_statement", "start": 0, "end": 7, "children": [
+   {"type": "identifier", "start": 0, "end": 7, "text": "pacmain"}
+  ]},
+  {"type": "import_declaration", "start": 9, "end": 21, "children": [
+   {"type": "import", "start": 9, "end": 15, "text": "import"},
+   {"type": "import_spec", "start": 16, "end": 21, "children": [
+    {"type": "interpreted_string_literal", "start": 16, "end": 21, "field": "path", "children": [
+     {"type": "\"", "start": 16, "end": 17, "text": "\""},
+     {"type": "interpreted_string_literal_content", "start": 17, "end": 20, "text": "fmt"},
+     {"type": "\"", "start": 20, "end": 21, "text": "\""}
+    ]}
+   ]}
+  ]},
+  {"type": "import_declaration", "start": 23, "end": 166, "children": [
+   {"type": "import", "start": 23, "end": 29, "text": "import"},
+   {"type": "import_spec_list", "start": 30, "end": 166, "children": [
+    {"type": "(", "start": 30, "end": 31, "text": "("},
+    {"type": "import_spec", "start": 34, "end": 43, "children": [
+     {"type": "interpreted_string_literal", "start": 34, "end": 43, "field": "path", "children": [
+      {"type": "\"", "start": 34, "end": 35, "text": "\""},
+      {"type": "interpreted_string_literal_content", "start": 35, "end": 42, "text": "context"},
+      {"type": "\"", "start": 42, "end": 43, "text": "\""}
+     ]}
+    ]},
+    {"type": "import_spec", "start": 46, "end": 50, "children": [
+     {"type": "interpreted_string_literal", "start": 46, "end": 50, "field": "path", "children": [
+      {"type": "\"", "start": 46, "end": 47, "text": "\""},
+      {"type": "interpreted_string_literal_content", "start": 47, "end": 49, "text": "os"},
+      {"type": "\"", "start": 49, "end": 50, "text": "\""}
+     ]}
+    ]},
+    {"type": "import_spec", "start": 53, "end": 59, "children": [
+     {"type": "interpreted_string_literal", "start": 53, "end": 59, "field": "path", "children": [
+      {"type": "\"", "start": 53, "end": 54, "text": "\""},
+      {"type": "interpreted_string_literal_content", "start": 54, "end": 58, "text": "time"},
+      {"type": "\"", "start": 58, "end": 59, "text": "\""}
+     ]}
+    ]},
+    {"type": "comment", "start": 60, "end": 81, "text": "// the standard clock"},
+    {"type": "import_spec", "start": 85, "end": 101, "children": [
+     {"type": "package_identifier", "start": 85, "end": 90, "field": "name", "text": "alias"},
+     {"type": "interpreted_string_literal", "start": 91, "end": 101, "field": "path", "children": [
+      {"type": "\"", "start": 91, "end": 92, "text": "\""},
+      {"type": "interpreted_string_literal_content", "start": 92, "end": 100, "text": "net/http"},
+      {"type": "\"", "start": 100, "end": 101, "text": "\""}
+     ]}
+    ]},
+    {"type": "import_spec", "start": 104, "end": 122, "children": [
+     {"type": "blank_identifier", "start": 104, "end": 105, "field": "name", "text": "_"},
+     {"type": "interpreted_string_literal", "start": 106, "end": 122, "field": "path", "children": [
+      {"type": "\"", "start": 106, "end": 107, "text": "\""},
+      {"type": "interpreted_string_literal_content", "start": 107, "end": 121, "text": "net/http/pprof"},
+      {"type": "\"", "start": 121, "end": 122, "text": "\""}
+     ]}
+    ]},
+    {"type": "comment", "start": 123, "end": 150, "text": "// registers debug handlers"},
+    {"type": "import_spec", "start": 153, "end": 164, "children": [
+     {"type": "dot", "start": 153, "end": 154, "field": "name", "children": [
+      {"type": ".", "start": 153, "end": 154, "text": "."}
+     ]},
+     {"type": "interpreted_string_literal", "start": 155, "end": 164, "field": "path", "children": [
+      {"type": "\"", "start": 155, "end": 156, "text": "\""},
+      {"type": "interpreted_string_literal_content", "start": 156, "end": 163, "text": "strings"},
+      {"type": "\"", "start": 163, "end": 164, "text": "\""}
+     ]}
+    ]},
+    {"type": ")", "start": 165, "end": 166, "text": ")"}
+   ]}
+  ]},
+  {"type": "function_declaration", "start": 168, "end": 285, "children": [
+   {"type": "func", "start": 168, "end": 172, "text": "func"},
+   {"type": "identifier", "start": 173, "end": 177, "field": "name", "text": "main"},
+   {"type": "parameter_list", "start": 177, "end": 179, "field": "parameters", "children": [
+    {"type": "(", "start": 177, "end": 178, "text": "("},
+    {"type": ")", "start": 178, "end": 179, "text": ")"}
+   ]},
+   {"type": "block", "start": 180, "end": 285, "field": "body", "children": [
+    {"type": "{", "start": 180, "end": 181, "text": "{"},
+    {"type": "statement_list", "start": 184, "end": 284, "children": [
+     {"type": "assignment_statement", "start": 184, "end": 199, "children": [
+      {"type": "expression_list", "start": 184, "end": 185, "field": "left", "children": [
+       {"type": "identifier", "start": 184, "end": 185, "text": "_"}
+      ]},
+      {"type": "=", "start": 186, "end": 187, "field": "operator", "text": "="},
+      {"type": "expression_list", "start": 188, "end": 199, "field": "right", "children": [
+       {"type": "selector_expression", "start": 188, "end": 199, "children": [
+        {"type": "identifier", "start": 188, "end": 191, "field": "operand", "text": "fmt"},
+        {"type": ".", "start": 191, "end": 192, "text": "."},
+        {"type": "field_identifier", "start": 192, "end": 199, "field": "field", "text": "Sprintf"}
+       ]}
+      ]}
+     ]},
+     {"type": "assignment_statement", "start": 202, "end": 224, "children": [
+      {"type": "expression_list", "start": 202, "end": 203, "field": "left", "children": [
+       {"type": "identifier", "start": 202, "end": 203, "text": "_"}
+      ]},
+      {"type": "=", "start": 204, "end": 205, "field": "operator", "text": "="},
+      {"type": "expression_list", "start": 206, "end": 224, "field": "right", "children": [
+       {"type": "selector_expression", "start": 206, "end": 224, "children": [
+        {"type": "identifier", "start": 206, "end": 213, "field": "operand", "text": "context"},
+        {"type": ".", "start": 213, "end": 214, "text": "."},
+        {"type": "field_identifier", "start": 214, "end": 224, "field": "field", "text": "Background"}
+       ]}
+      ]}
+     ]},
+     {"type": "assignment_statement", "start": 227, "end": 238, "children": [
+      {"type": "expression_list", "start": 227, "end": 228, "field": "left", "children": [
+       {"type": "identifier", "start": 227, "end": 228, "text": "_"}
+      ]},
+      {"type": "=", "start": 229, "end": 230, "field": "operator", "text": "="},
+      {"type": "expression_list", "start": 231, "end": 238, "field": "right", "children": [
+       {"type": "selector_expression", "start": 231, "end": 238, "children": [
+        {"type": "identifier", "start": 231, "end": 233, "field": "operand", "text": "os"},
+        {"type": ".", "start": 233, "end": 234, "text": "."},
+        {"type": "field_identifier", "start": 234, "end": 238, "field": "field", "text": "Args"}
+       ]}
+      ]}
+     ]},
+     {"type": "assignment_statement", "start": 241, "end": 253, "children": [
+      {"type": "expression_list", "start": 241, "end": 242, "field": "left", "children": [
+       {"type": "identifier", "start": 241, "end": 242, "text": "_"}
+      ]},
+      {"type": "=", "start": 243, "end": 244, "field": "operator", "text": "="},
+      {"type": "expression_list", "start": 245, "end": 253, "field": "right", "children": [
+       {"type": "selector_expression", "start": 245, "end": 253, "children": [
+        {"type": "identifier", "start": 245, "end": 249, "field": "operand", "text": "time"},
+        {"type": ".", "start": 249, "end": 250, "text": "."},
+        {"type": "field_identifier", "start": 250, "end": 253, "field": "field", "text": "Now"}
+       ]}
+      ]}
+     ]},
+     {"type": "assignment_statement", "start": 256, "end": 269, "children": [
+      {"type": "expression_list", "start": 256, "end": 257, "field": "left", "children": [
+       {"type": "identifier", "start": 256, "end": 257, "text": "_"}
+      ]},
+      {"type": "=", "start": 258, "end": 259, "field": "operator", "text": "="},
+      {"type": "expression_list", "start": 260, "end": 269, "field": "right", "children": [
+       {"type": "selector_expression", "start": 260, "end": 269, "children": [
+        {"type": "identifier", "start": 260, "end": 265, "field": "operand", "text": "alias"},
+        {"type": ".", "start": 265, "end": 266, "text": "."},
+        {"type": "field_identifier", "start": 266, "end": 269, "field": "field", "text": "Get"}
+       ]}
+      ]}
+     ]},
+     {"type": "assignment_statement", "start": 272, "end": 283, "children": [
+      {"type": "expression_list", "start": 272, "end": 273, "field": "left", "children": [
+       {"type": "identifier", "start": 272, "end": 273, "text": "_"}
+      ]},
+      {"type": "=", "start": 274, "end": 275, "field": "operator", "text": "="},
+      {"type": "expression_list", "start": 276, "end": 283, "field": "right", "children": [
+       {"type": "identifier", "start": 276, "end": 283, "text": "ToUpper"}
+      ]}
+     ]}
+    ]},
+    {"type": "}", "start": 284, "end": 285, "text": "}"}
+   ]}
+  ]}
+ ]}
+}

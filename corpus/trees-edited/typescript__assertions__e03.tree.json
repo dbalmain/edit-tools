@@ -1,0 +1,182 @@
+{
+ "language": "typescript",
+ "source_file": "corpus/src/typescript/assertions.ts",
+ "source": "// Typertions: `as`, `as const`, `satisfies`, angle-brackets (TypeScript\n// grammar only — TSX parses `<number>value` as an ERROR), and the clarifying\n// parens prettier inserts around `a + b as number`.\nconst asNumber = value as number;\n\nconst double = raw as unknown as Config;\n\nconst angle = <number>raw;\n\nconst tuple = [1, 2] as const;\n\nconst cfg = { host: \"localhost\", port: 8080, debug: true } satisfies Config;\n\nconst mixed = a + b as number;\n\nconst nonNull = maybe!;\n\nconst both = { a: 1 } as const satisfies Point;\n",
+ "base_source": "// Type assertions: `as`, `as const`, `satisfies`, angle-brackets (TypeScript\n// grammar only — TSX parses `<number>value` as an ERROR), and the clarifying\n// parens prettier inserts around `a + b as number`.\nconst asNumber = value as number;\n\nconst double = raw as unknown as Config;\n\nconst angle = <number>raw;\n\nconst tuple = [1, 2] as const;\n\nconst cfg = { host: \"localhost\", port: 8080, debug: true } satisfies Config;\n\nconst mixed = a + b as number;\n\nconst nonNull = maybe!;\n\nconst both = { a: 1 } as const satisfies Point;\n",
+ "edit": {"kind": "delete", "label": "delete 5B", "start": 6, "old_end": 11, "new_end": 6, "removed": "e ass", "inserted": ""},
+ "problems": {"error": 0, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
+ "grammar": "tree-sitter-typescript==0.23.2",
+ "seed": 0,
+ "root":
+ {"type": "program", "start": 0, "end": 526, "children": [
+  {"type": "comment", "start": 0, "end": 72, "text": "// Typertions: `as`, `as const`, `satisfies`, angle-brackets (TypeScript"},
+  {"type": "comment", "start": 73, "end": 152, "text": "// grammar only — TSX parses `<number>value` as an ERROR), and the clarifying"},
+  {"type": "comment", "start": 153, "end": 205, "text": "// parens prettier inserts around `a + b as number`."},
+  {"type": "lexical_declaration", "start": 206, "end": 239, "children": [
+   {"type": "const", "start": 206, "end": 211, "field": "kind", "text": "const"},
+   {"type": "variable_declarator", "start": 212, "end": 238, "children": [
+    {"type": "identifier", "start": 212, "end": 220, "field": "name", "text": "asNumber"},
+    {"type": "=", "start": 221, "end": 222, "text": "="},
+    {"type": "as_expression", "start": 223, "end": 238, "field": "value", "children": [
+     {"type": "identifier", "start": 223, "end": 228, "text": "value"},
+     {"type": "as", "start": 229, "end": 231, "text": "as"},
+     {"type": "predefined_type", "start": 232, "end": 238, "children": [
+      {"type": "number", "start": 232, "end": 238, "text": "number"}
+     ]}
+    ]}
+   ]},
+   {"type": ";", "start": 238, "end": 239, "text": ";"}
+  ]},
+  {"type": "lexical_declaration", "start": 241, "end": 281, "children": [
+   {"type": "const", "start": 241, "end": 246, "field": "kind", "text": "const"},
+   {"type": "variable_declarator", "start": 247, "end": 280, "children": [
+    {"type": "identifier", "start": 247, "end": 253, "field": "name", "text": "double"},
+    {"type": "=", "start": 254, "end": 255, "text": "="},
+    {"type": "as_expression", "start": 256, "end": 280, "field": "value", "children": [
+     {"type": "as_expression", "start": 256, "end": 270, "children": [
+      {"type": "identifier", "start": 256, "end": 259, "text": "raw"},
+      {"type": "as", "start": 260, "end": 262, "text": "as"},
+      {"type": "predefined_type", "start": 263, "end": 270, "children": [
+       {"type": "unknown", "start": 263, "end": 270, "text": "unknown"}
+      ]}
+     ]},
+     {"type": "as", "start": 271, "end": 273, "text": "as"},
+     {"type": "type_identifier", "start": 274, "end": 280, "text": "Config"}
+    ]}
+   ]},
+   {"type": ";", "start": 280, "end": 281, "text": ";"}
+  ]},
+  {"type": "lexical_declaration", "start": 283, "end": 309, "children": [
+   {"type": "const", "start": 283, "end": 288, "field": "kind", "text": "const"},
+   {"type": "variable_declarator", "start": 289, "end": 308, "children": [
+    {"type": "identifier", "start": 289, "end": 294, "field": "name", "text": "angle"},
+    {"type": "=", "start": 295, "end": 296, "text": "="},
+    {"type": "type_assertion", "start": 297, "end": 308, "field": "value", "children": [
+     {"type": "type_arguments", "start": 297, "end": 305, "children": [
+      {"type": "<", "start": 297, "end": 298, "text": "<"},
+      {"type": "predefined_type", "start": 298, "end": 304, "children": [
+       {"type": "number", "start": 298, "end": 304, "text": "number"}
+      ]},
+      {"type": ">", "start": 304, "end": 305, "text": ">"}
+     ]},
+     {"type": "identifier", "start": 305, "end": 308, "text": "raw"}
+    ]}
+   ]},
+   {"type": ";", "start": 308, "end": 309, "text": ";"}
+  ]},
+  {"type": "lexical_declaration", "start": 311, "end": 341, "children": [
+   {"type": "const", "start": 311, "end": 316, "field": "kind", "text": "const"},
+   {"type": "variable_declarator", "start": 317, "end": 340, "children": [
+    {"type": "identifier", "start": 317, "end": 322, "field": "name", "text": "tuple"},
+    {"type": "=", "start": 323, "end": 324, "text": "="},
+    {"type": "as_expression", "start": 325, "end": 340, "field": "value", "children": [
+     {"type": "array", "start": 325, "end": 331, "children": [
+      {"type": "[", "start": 325, "end": 326, "text": "["},
+      {"type": "number", "start": 326, "end": 327, "text": "1"},
+      {"type": ",", "start": 327, "end": 328, "text": ","},
+      {"type": "number", "start": 329, "end": 330, "text": "2"},
+      {"type": "]", "start": 330, "end": 331, "text": "]"}
+     ]},
+     {"type": "as", "start": 332, "end": 334, "text": "as"},
+     {"type": "const", "start": 335, "end": 340, "text": "const"}
+    ]}
+   ]},
+   {"type": ";", "start": 340, "end": 341, "text": ";"}
+  ]},
+  {"type": "lexical_declaration", "start": 343, "end": 419, "children": [
+   {"type": "const", "start": 343, "end": 348, "field": "kind", "text": "const"},
+   {"type": "variable_declarator", "start": 349, "end": 418, "children": [
+    {"type": "identifier", "start": 349, "end": 352, "field": "name", "text": "cfg"},
+    {"type": "=", "start": 353, "end": 354, "text": "="},
+    {"type": "satisfies_expression", "start": 355, "end": 418, "field": "value", "children": [
+     {"type": "object", "start": 355, "end": 401, "children": [
+      {"type": "{", "start": 355, "end": 356, "text": "{"},
+      {"type": "pair", "start": 357, "end": 374, "children": [
+       {"type": "property_identifier", "start": 357, "end": 361, "field": "key", "text": "host"},
+       {"type": ":", "start": 361, "end": 362, "text": ":"},
+       {"type": "string", "start": 363, "end": 374, "field": "value", "children": [
+        {"type": "\"", "start": 363, "end": 364, "text": "\""},
+        {"type": "string_fragment", "start": 364, "end": 373, "text": "localhost"},
+        {"type": "\"", "start": 373, "end": 374, "text": "\""}
+       ]}
+      ]},
+      {"type": ",", "start": 374, "end": 375, "text": ","},
+      {"type": "pair", "start": 376, "end": 386, "children": [
+       {"type": "property_identifier", "start": 376, "end": 380, "field": "key", "text": "port"},
+       {"type": ":", "start": 380, "end": 381, "text": ":"},
+       {"type": "number", "start": 382, "end": 386, "field": "value", "text": "8080"}
+      ]},
+      {"type": ",", "start": 386, "end": 387, "text": ","},
+      {"type": "pair", "start": 388, "end": 399, "children": [
+       {"type": "property_identifier", "start": 388, "end": 393, "field": "key", "text": "debug"},
+       {"type": ":", "start": 393, "end": 394, "text": ":"},
+       {"type": "true", "start": 395, "end": 399, "field": "value", "text": "true"}
+      ]},
+      {"type": "}", "start": 400, "end": 401, "text": "}"}
+     ]},
+     {"type": "satisfies", "start": 402, "end": 411, "text": "satisfies"},
+     {"type": "type_identifier", "start": 412, "end": 418, "text": "Config"}
+    ]}
+   ]},
+   {"type": ";", "start": 418, "end": 419, "text": ";"}
+  ]},
+  {"type": "lexical_declaration", "start": 421, "end": 451, "children": [
+   {"type": "const", "start": 421, "end": 426, "field": "kind", "text": "const"},
+   {"type": "variable_declarator", "start": 427, "end": 450, "children": [
+    {"type": "identifier", "start": 427, "end": 432, "field": "name", "text": "mixed"},
+    {"type": "=", "start": 433, "end": 434, "text": "="},
+    {"type": "as_expression", "start": 435, "end": 450, "field": "value", "children": [
+     {"type": "binary_expression", "start": 435, "end": 440, "children": [
+      {"type": "identifier", "start": 435, "end": 436, "field": "left", "text": "a"},
+      {"type": "+", "start": 437, "end": 438, "field": "operator", "text": "+"},
+      {"type": "identifier", "start": 439, "end": 440, "field": "right", "text": "b"}
+     ]},
+     {"type": "as", "start": 441, "end": 443, "text": "as"},
+     {"type": "predefined_type", "start": 444, "end": 450, "children": [
+      {"type": "number", "start": 444, "end": 450, "text": "number"}
+     ]}
+    ]}
+   ]},
+   {"type": ";", "start": 450, "end": 451, "text": ";"}
+  ]},
+  {"type": "lexical_declaration", "start": 453, "end": 476, "children": [
+   {"type": "const", "start": 453, "end": 458, "field": "kind", "text": "const"},
+   {"type": "variable_declarator", "start": 459, "end": 475, "children": [
+    {"type": "identifier", "start": 459, "end": 466, "field": "name", "text": "nonNull"},
+    {"type": "=", "start": 467, "end": 468, "text": "="},
+    {"type": "non_null_expression", "start": 469, "end": 475, "field": "value", "children": [
+     {"type": "identifier", "start": 469, "end": 474, "text": "maybe"},
+     {"type": "!", "start": 474, "end": 475, "text": "!"}
+    ]}
+   ]},
+   {"type": ";", "start": 475, "end": 476, "text": ";"}
+  ]},
+  {"type": "lexical_declaration", "start": 478, "end": 525, "children": [
+   {"type": "const", "start": 478, "end": 483, "field": "kind", "text": "const"},
+   {"type": "variable_declarator", "start": 484, "end": 524, "children": [
+    {"type": "identifier", "start": 484, "end": 488, "field": "name", "text": "both"},
+    {"type": "=", "start": 489, "end": 490, "text": "="},
+    {"type": "satisfies_expression", "start": 491, "end": 524, "field": "value", "children": [
+     {"type": "as_expression", "start": 491, "end": 508, "children": [
+      {"type": "object", "start": 491, "end": 499, "children": [
+       {"type": "{", "start": 491, "end": 492, "text": "{"},
+       {"type": "pair", "start": 493, "end": 497, "children": [
+        {"type": "property_identifier", "start": 493, "end": 494, "field": "key", "text": "a"},
+        {"type": ":", "start": 494, "end": 495, "text": ":"},
+        {"type": "number", "start": 496, "end": 497, "field": "value", "text": "1"}
+       ]},
+       {"type": "}", "start": 498, "end": 499, "text": "}"}
+      ]},
+      {"type": "as", "start": 500, "end": 502, "text": "as"},
+      {"type": "const", "start": 503, "end": 508, "text": "const"}
+     ]},
+     {"type": "satisfies", "start": 509, "end": 518, "text": "satisfies"},
+     {"type": "type_identifier", "start": 519, "end": 524, "text": "Point"}
+    ]}
+   ]},
+   {"type": ";", "start": 524, "end": 525, "text": ";"}
+  ]}
+ ]}
+}

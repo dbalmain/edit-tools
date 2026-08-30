@@ -1,0 +1,157 @@
+{
+ "language": "ruby",
+ "source_file": "corpus/src/ruby/patterns.rb",
+ "source": "# Pn matching: `case`/`in`, hash patterns, array patterns, find patterns.\n\ncase value\nin { name:, age: Integer => years } if years > 18\n  years\nin [first, *rest]\n  first\nin String => s\n  s\nelse\n  nil\nend\n\nxs in [*, Integer => n, *] # find pattern\n\ncase pair\nin [Integer => left, Integer => right]\n  left + right\nin Integer => n if n.even?\n  :even\nend\n",
+ "base_source": "# Pattern matching: `case`/`in`, hash patterns, array patterns, find patterns.\n\ncase value\nin { name:, age: Integer => years } if years > 18\n  years\nin [first, *rest]\n  first\nin String => s\n  s\nelse\n  nil\nend\n\nxs in [*, Integer => n, *] # find pattern\n\ncase pair\nin [Integer => left, Integer => right]\n  left + right\nin Integer => n if n.even?\n  :even\nend\n",
+ "edit": {"kind": "delete", "label": "delete 5B", "start": 3, "old_end": 8, "new_end": 3, "removed": "atter", "inserted": ""},
+ "problems": {"error": 0, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
+ "grammar": "tree-sitter-ruby==0.23.1",
+ "seed": 0,
+ "root":
+ {"type": "program", "start": 0, "end": 351, "children": [
+  {"type": "comment", "start": 0, "end": 73, "text": "# Pn matching: `case`/`in`, hash patterns, array patterns, find patterns."},
+  {"type": "case_match", "start": 75, "end": 203, "children": [
+   {"type": "case", "start": 75, "end": 79, "text": "case"},
+   {"type": "identifier", "start": 80, "end": 85, "field": "value", "text": "value"},
+   {"type": "in_clause", "start": 86, "end": 143, "field": "clauses", "children": [
+    {"type": "in", "start": 86, "end": 88, "text": "in"},
+    {"type": "hash_pattern", "start": 89, "end": 121, "field": "pattern", "children": [
+     {"type": "{", "start": 89, "end": 90, "text": "{"},
+     {"type": "keyword_pattern", "start": 91, "end": 96, "children": [
+      {"type": "hash_key_symbol", "start": 91, "end": 95, "field": "key", "text": "name"},
+      {"type": ":", "start": 95, "end": 96, "text": ":"}
+     ]},
+     {"type": ",", "start": 96, "end": 97, "text": ","},
+     {"type": "keyword_pattern", "start": 98, "end": 119, "children": [
+      {"type": "hash_key_symbol", "start": 98, "end": 101, "field": "key", "text": "age"},
+      {"type": ":", "start": 101, "end": 102, "text": ":"},
+      {"type": "as_pattern", "start": 103, "end": 119, "field": "value", "children": [
+       {"type": "constant", "start": 103, "end": 110, "field": "value", "text": "Integer"},
+       {"type": "=>", "start": 111, "end": 113, "text": "=>"},
+       {"type": "identifier", "start": 114, "end": 119, "field": "name", "text": "years"}
+      ]}
+     ]},
+     {"type": "}", "start": 120, "end": 121, "text": "}"}
+    ]},
+    {"type": "if_guard", "start": 122, "end": 135, "field": "guard", "children": [
+     {"type": "if", "start": 122, "end": 124, "text": "if"},
+     {"type": "binary", "start": 125, "end": 135, "field": "condition", "children": [
+      {"type": "identifier", "start": 125, "end": 130, "field": "left", "text": "years"},
+      {"type": ">", "start": 131, "end": 132, "field": "operator", "text": ">"},
+      {"type": "integer", "start": 133, "end": 135, "field": "right", "text": "18"}
+     ]}
+    ]},
+    {"type": "then", "start": 135, "end": 143, "field": "body", "children": [
+     {"type": "identifier", "start": 138, "end": 143, "text": "years"}
+    ]}
+   ]},
+   {"type": "in_clause", "start": 144, "end": 169, "field": "clauses", "children": [
+    {"type": "in", "start": 144, "end": 146, "text": "in"},
+    {"type": "array_pattern", "start": 147, "end": 161, "field": "pattern", "children": [
+     {"type": "[", "start": 147, "end": 148, "text": "["},
+     {"type": "identifier", "start": 148, "end": 153, "text": "first"},
+     {"type": ",", "start": 153, "end": 154, "text": ","},
+     {"type": "splat_parameter", "start": 155, "end": 160, "children": [
+      {"type": "*", "start": 155, "end": 156, "text": "*"},
+      {"type": "identifier", "start": 156, "end": 160, "field": "name", "text": "rest"}
+     ]},
+     {"type": "]", "start": 160, "end": 161, "text": "]"}
+    ]},
+    {"type": "then", "start": 161, "end": 169, "field": "body", "children": [
+     {"type": "identifier", "start": 164, "end": 169, "text": "first"}
+    ]}
+   ]},
+   {"type": "in_clause", "start": 170, "end": 188, "field": "clauses", "children": [
+    {"type": "in", "start": 170, "end": 172, "text": "in"},
+    {"type": "as_pattern", "start": 173, "end": 184, "field": "pattern", "children": [
+     {"type": "constant", "start": 173, "end": 179, "field": "value", "text": "String"},
+     {"type": "=>", "start": 180, "end": 182, "text": "=>"},
+     {"type": "identifier", "start": 183, "end": 184, "field": "name", "text": "s"}
+    ]},
+    {"type": "then", "start": 184, "end": 188, "field": "body", "children": [
+     {"type": "identifier", "start": 187, "end": 188, "text": "s"}
+    ]}
+   ]},
+   {"type": "else", "start": 189, "end": 199, "field": "else", "children": [
+    {"type": "else", "start": 189, "end": 193, "text": "else"},
+    {"type": "nil", "start": 196, "end": 199, "children": [
+     {"type": "nil", "start": 196, "end": 199, "text": "nil"}
+    ]}
+   ]},
+   {"type": "end", "start": 200, "end": 203, "text": "end"}
+  ]},
+  {"type": "test_pattern", "start": 205, "end": 231, "children": [
+   {"type": "identifier", "start": 205, "end": 207, "field": "value", "text": "xs"},
+   {"type": "in", "start": 208, "end": 210, "text": "in"},
+   {"type": "find_pattern", "start": 211, "end": 231, "field": "pattern", "children": [
+    {"type": "[", "start": 211, "end": 212, "text": "["},
+    {"type": "splat_parameter", "start": 212, "end": 213, "children": [
+     {"type": "*", "start": 212, "end": 213, "text": "*"}
+    ]},
+    {"type": ",", "start": 213, "end": 214, "text": ","},
+    {"type": "as_pattern", "start": 215, "end": 227, "children": [
+     {"type": "constant", "start": 215, "end": 222, "field": "value", "text": "Integer"},
+     {"type": "=>", "start": 223, "end": 225, "text": "=>"},
+     {"type": "identifier", "start": 226, "end": 227, "field": "name", "text": "n"}
+    ]},
+    {"type": ",", "start": 227, "end": 228, "text": ","},
+    {"type": "splat_parameter", "start": 229, "end": 230, "children": [
+     {"type": "*", "start": 229, "end": 230, "text": "*"}
+    ]},
+    {"type": "]", "start": 230, "end": 231, "text": "]"}
+   ]}
+  ]},
+  {"type": "comment", "start": 232, "end": 246, "text": "# find pattern"},
+  {"type": "case_match", "start": 248, "end": 350, "children": [
+   {"type": "case", "start": 248, "end": 252, "text": "case"},
+   {"type": "identifier", "start": 253, "end": 257, "field": "value", "text": "pair"},
+   {"type": "in_clause", "start": 258, "end": 311, "field": "clauses", "children": [
+    {"type": "in", "start": 258, "end": 260, "text": "in"},
+    {"type": "array_pattern", "start": 261, "end": 296, "field": "pattern", "children": [
+     {"type": "[", "start": 261, "end": 262, "text": "["},
+     {"type": "as_pattern", "start": 262, "end": 277, "children": [
+      {"type": "constant", "start": 262, "end": 269, "field": "value", "text": "Integer"},
+      {"type": "=>", "start": 270, "end": 272, "text": "=>"},
+      {"type": "identifier", "start": 273, "end": 277, "field": "name", "text": "left"}
+     ]},
+     {"type": ",", "start": 277, "end": 278, "text": ","},
+     {"type": "as_pattern", "start": 279, "end": 295, "children": [
+      {"type": "constant", "start": 279, "end": 286, "field": "value", "text": "Integer"},
+      {"type": "=>", "start": 287, "end": 289, "text": "=>"},
+      {"type": "identifier", "start": 290, "end": 295, "field": "name", "text": "right"}
+     ]},
+     {"type": "]", "start": 295, "end": 296, "text": "]"}
+    ]},
+    {"type": "then", "start": 296, "end": 311, "field": "body", "children": [
+     {"type": "binary", "start": 299, "end": 311, "children": [
+      {"type": "identifier", "start": 299, "end": 303, "field": "left", "text": "left"},
+      {"type": "+", "start": 304, "end": 305, "field": "operator", "text": "+"},
+      {"type": "identifier", "start": 306, "end": 311, "field": "right", "text": "right"}
+     ]}
+    ]}
+   ]},
+   {"type": "in_clause", "start": 312, "end": 346, "field": "clauses", "children": [
+    {"type": "in", "start": 312, "end": 314, "text": "in"},
+    {"type": "as_pattern", "start": 315, "end": 327, "field": "pattern", "children": [
+     {"type": "constant", "start": 315, "end": 322, "field": "value", "text": "Integer"},
+     {"type": "=>", "start": 323, "end": 325, "text": "=>"},
+     {"type": "identifier", "start": 326, "end": 327, "field": "name", "text": "n"}
+    ]},
+    {"type": "if_guard", "start": 328, "end": 338, "field": "guard", "children": [
+     {"type": "if", "start": 328, "end": 330, "text": "if"},
+     {"type": "call", "start": 331, "end": 338, "field": "condition", "children": [
+      {"type": "identifier", "start": 331, "end": 332, "field": "receiver", "text": "n"},
+      {"type": ".", "start": 332, "end": 333, "field": "operator", "text": "."},
+      {"type": "identifier", "start": 333, "end": 338, "field": "method", "text": "even?"}
+     ]}
+    ]},
+    {"type": "then", "start": 338, "end": 346, "field": "body", "children": [
+     {"type": "simple_symbol", "start": 341, "end": 346, "text": ":even"}
+    ]}
+   ]},
+   {"type": "end", "start": 347, "end": 350, "text": "end"}
+  ]}
+ ]}
+}

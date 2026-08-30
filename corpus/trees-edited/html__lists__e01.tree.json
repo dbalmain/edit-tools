@@ -1,0 +1,154 @@
+{
+ "language": "html",
+ "source_file": "corpus/src/html/lists.html",
+ "source": "<!-- Lists. Packed input; prettier puts each item on its own line. -->\n<ul><li>one</li><li>two</li><li>three</li></ul>\n<ol><li>fit><dd>a short d</li><li>second</li></ol>\n<dl><dt>term</dt><dd>a short definition</dd></dl>\n",
+ "base_source": "<!-- Lists. Packed input; prettier puts each item on its own line. -->\n<ul><li>one</li><li>two</li><li>three</li></ul>\n<ol><li>first</li><li>second</li></ol>\n<dl><dt>term</dt><dd>a short definition</dd></dl>\n",
+ "edit": {"kind": "replace", "label": "splice 173..188", "start": 129, "old_end": 132, "new_end": 144, "removed": "rst", "inserted": "t><dd>a short d"},
+ "problems": {"error": 1, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
+ "grammar": "tree-sitter-html==0.23.2",
+ "seed": 0,
+ "root":
+ {"type": "document", "start": 0, "end": 220, "children": [
+  {"type": "comment", "start": 0, "end": 70, "text": "<!-- Lists. Packed input; prettier puts each item on its own line. -->"},
+  {"type": "element", "start": 71, "end": 118, "children": [
+   {"type": "start_tag", "start": 71, "end": 75, "children": [
+    {"type": "<", "start": 71, "end": 72, "text": "<"},
+    {"type": "tag_name", "start": 72, "end": 74, "text": "ul"},
+    {"type": ">", "start": 74, "end": 75, "text": ">"}
+   ]},
+   {"type": "element", "start": 75, "end": 87, "children": [
+    {"type": "start_tag", "start": 75, "end": 79, "children": [
+     {"type": "<", "start": 75, "end": 76, "text": "<"},
+     {"type": "tag_name", "start": 76, "end": 78, "text": "li"},
+     {"type": ">", "start": 78, "end": 79, "text": ">"}
+    ]},
+    {"type": "text", "start": 79, "end": 82, "text": "one"},
+    {"type": "end_tag", "start": 82, "end": 87, "children": [
+     {"type": "</", "start": 82, "end": 84, "text": "</"},
+     {"type": "tag_name", "start": 84, "end": 86, "text": "li"},
+     {"type": ">", "start": 86, "end": 87, "text": ">"}
+    ]}
+   ]},
+   {"type": "element", "start": 87, "end": 99, "children": [
+    {"type": "start_tag", "start": 87, "end": 91, "children": [
+     {"type": "<", "start": 87, "end": 88, "text": "<"},
+     {"type": "tag_name", "start": 88, "end": 90, "text": "li"},
+     {"type": ">", "start": 90, "end": 91, "text": ">"}
+    ]},
+    {"type": "text", "start": 91, "end": 94, "text": "two"},
+    {"type": "end_tag", "start": 94, "end": 99, "children": [
+     {"type": "</", "start": 94, "end": 96, "text": "</"},
+     {"type": "tag_name", "start": 96, "end": 98, "text": "li"},
+     {"type": ">", "start": 98, "end": 99, "text": ">"}
+    ]}
+   ]},
+   {"type": "element", "start": 99, "end": 113, "children": [
+    {"type": "start_tag", "start": 99, "end": 103, "children": [
+     {"type": "<", "start": 99, "end": 100, "text": "<"},
+     {"type": "tag_name", "start": 100, "end": 102, "text": "li"},
+     {"type": ">", "start": 102, "end": 103, "text": ">"}
+    ]},
+    {"type": "text", "start": 103, "end": 108, "text": "three"},
+    {"type": "end_tag", "start": 108, "end": 113, "children": [
+     {"type": "</", "start": 108, "end": 110, "text": "</"},
+     {"type": "tag_name", "start": 110, "end": 112, "text": "li"},
+     {"type": ">", "start": 112, "end": 113, "text": ">"}
+    ]}
+   ]},
+   {"type": "end_tag", "start": 113, "end": 118, "children": [
+    {"type": "</", "start": 113, "end": 115, "text": "</"},
+    {"type": "tag_name", "start": 115, "end": 117, "text": "ul"},
+    {"type": ">", "start": 117, "end": 118, "text": ">"}
+   ]}
+  ]},
+  {"type": "element", "start": 119, "end": 169, "children": [
+   {"type": "start_tag", "start": 119, "end": 123, "children": [
+    {"type": "<", "start": 119, "end": 120, "text": "<"},
+    {"type": "tag_name", "start": 120, "end": 122, "text": "ol"},
+    {"type": ">", "start": 122, "end": 123, "text": ">"}
+   ]},
+   {"type": "element", "start": 123, "end": 149, "children": [
+    {"type": "start_tag", "start": 123, "end": 127, "children": [
+     {"type": "<", "start": 123, "end": 124, "text": "<"},
+     {"type": "tag_name", "start": 124, "end": 126, "text": "li"},
+     {"type": ">", "start": 126, "end": 127, "text": ">"}
+    ]},
+    {"type": "text", "start": 127, "end": 130, "text": "fit"},
+    {"type": "ERROR", "start": 130, "end": 131, "children": [
+     {"type": ">", "start": 130, "end": 131, "text": ">"}
+    ]},
+    {"type": "element", "start": 131, "end": 144, "children": [
+     {"type": "start_tag", "start": 131, "end": 135, "children": [
+      {"type": "<", "start": 131, "end": 132, "text": "<"},
+      {"type": "tag_name", "start": 132, "end": 134, "text": "dd"},
+      {"type": ">", "start": 134, "end": 135, "text": ">"}
+     ]},
+     {"type": "text", "start": 135, "end": 144, "text": "a short d"}
+    ]},
+    {"type": "end_tag", "start": 144, "end": 149, "children": [
+     {"type": "</", "start": 144, "end": 146, "text": "</"},
+     {"type": "tag_name", "start": 146, "end": 148, "text": "li"},
+     {"type": ">", "start": 148, "end": 149, "text": ">"}
+    ]}
+   ]},
+   {"type": "element", "start": 149, "end": 164, "children": [
+    {"type": "start_tag", "start": 149, "end": 153, "children": [
+     {"type": "<", "start": 149, "end": 150, "text": "<"},
+     {"type": "tag_name", "start": 150, "end": 152, "text": "li"},
+     {"type": ">", "start": 152, "end": 153, "text": ">"}
+    ]},
+    {"type": "text", "start": 153, "end": 159, "text": "second"},
+    {"type": "end_tag", "start": 159, "end": 164, "children": [
+     {"type": "</", "start": 159, "end": 161, "text": "</"},
+     {"type": "tag_name", "start": 161, "end": 163, "text": "li"},
+     {"type": ">", "start": 163, "end": 164, "text": ">"}
+    ]}
+   ]},
+   {"type": "end_tag", "start": 164, "end": 169, "children": [
+    {"type": "</", "start": 164, "end": 166, "text": "</"},
+    {"type": "tag_name", "start": 166, "end": 168, "text": "ol"},
+    {"type": ">", "start": 168, "end": 169, "text": ">"}
+   ]}
+  ]},
+  {"type": "element", "start": 170, "end": 219, "children": [
+   {"type": "start_tag", "start": 170, "end": 174, "children": [
+    {"type": "<", "start": 170, "end": 171, "text": "<"},
+    {"type": "tag_name", "start": 171, "end": 173, "text": "dl"},
+    {"type": ">", "start": 173, "end": 174, "text": ">"}
+   ]},
+   {"type": "element", "start": 174, "end": 187, "children": [
+    {"type": "start_tag", "start": 174, "end": 178, "children": [
+     {"type": "<", "start": 174, "end": 175, "text": "<"},
+     {"type": "tag_name", "start": 175, "end": 177, "text": "dt"},
+     {"type": ">", "start": 177, "end": 178, "text": ">"}
+    ]},
+    {"type": "text", "start": 178, "end": 182, "text": "term"},
+    {"type": "end_tag", "start": 182, "end": 187, "children": [
+     {"type": "</", "start": 182, "end": 184, "text": "</"},
+     {"type": "tag_name", "start": 184, "end": 186, "text": "dt"},
+     {"type": ">", "start": 186, "end": 187, "text": ">"}
+    ]}
+   ]},
+   {"type": "element", "start": 187, "end": 214, "children": [
+    {"type": "start_tag", "start": 187, "end": 191, "children": [
+     {"type": "<", "start": 187, "end": 188, "text": "<"},
+     {"type": "tag_name", "start": 188, "end": 190, "text": "dd"},
+     {"type": ">", "start": 190, "end": 191, "text": ">"}
+    ]},
+    {"type": "text", "start": 191, "end": 209, "text": "a short definition"},
+    {"type": "end_tag", "start": 209, "end": 214, "children": [
+     {"type": "</", "start": 209, "end": 211, "text": "</"},
+     {"type": "tag_name", "start": 211, "end": 213, "text": "dd"},
+     {"type": ">", "start": 213, "end": 214, "text": ">"}
+    ]}
+   ]},
+   {"type": "end_tag", "start": 214, "end": 219, "children": [
+    {"type": "</", "start": 214, "end": 216, "text": "</"},
+    {"type": "tag_name", "start": 216, "end": 218, "text": "dl"},
+    {"type": ">", "start": 218, "end": 219, "text": ">"}
+   ]}
+  ]}
+ ]}
+}

@@ -1,0 +1,98 @@
+{
+ "language": "scheme",
+ "source_file": "corpus/src/scheme/heads.scm",
+ "source": ";; Smallest case: three `list` nodes, three indents. Dispatch on nod))\n\n(deftype\n;; cannot tell these apart; emacs scheme-mode keys off the head symbol.\n(define (as-define x)\nx)\n\n(define (as-let x)\n(let ((a 1))\na))\n\n(define (as-cons a b)\n(cons a\nb))\n\n(define (as-call a b)\n(list a\nb))\n",
+ "base_source": ";; Smallest case: three `list` nodes, three indents. Dispatch on node.type\n;; cannot tell these apart; emacs scheme-mode keys off the head symbol.\n(define (as-define x)\nx)\n\n(define (as-let x)\n(let ((a 1))\na))\n\n(define (as-cons a b)\n(cons a\nb))\n\n(define (as-call a b)\n(list a\nb))\n",
+ "edit": {"kind": "replace", "label": "splice 241..249", "start": 68, "old_end": 70, "new_end": 76, "removed": "e.", "inserted": "))\n\n(def"},
+ "problems": {"error": 1, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
+ "grammar": "tree-sitter-scheme @ git+https://github.com/6cdh/tree-sitter-scheme@v0.24.7-1",
+ "seed": 0,
+ "root":
+ {"type": "program", "start": 0, "end": 285, "children": [
+  {"type": "comment", "start": 0, "end": 70, "text": ";; Smallest case: three `list` nodes, three indents. Dispatch on nod))"},
+  {"type": "ERROR", "start": 72, "end": 285, "children": [
+   {"type": "(", "start": 72, "end": 73, "text": "("},
+   {"type": "symbol", "start": 73, "end": 80, "text": "deftype"},
+   {"type": "comment", "start": 81, "end": 152, "text": ";; cannot tell these apart; emacs scheme-mode keys off the head symbol."},
+   {"type": "list", "start": 153, "end": 177, "children": [
+    {"type": "(", "start": 153, "end": 154, "text": "("},
+    {"type": "symbol", "start": 154, "end": 160, "text": "define"},
+    {"type": "list", "start": 161, "end": 174, "children": [
+     {"type": "(", "start": 161, "end": 162, "text": "("},
+     {"type": "symbol", "start": 162, "end": 171, "text": "as-define"},
+     {"type": "symbol", "start": 172, "end": 173, "text": "x"},
+     {"type": ")", "start": 173, "end": 174, "text": ")"}
+    ]},
+    {"type": "symbol", "start": 175, "end": 176, "text": "x"},
+    {"type": ")", "start": 176, "end": 177, "text": ")"}
+   ]},
+   {"type": "list", "start": 179, "end": 214, "children": [
+    {"type": "(", "start": 179, "end": 180, "text": "("},
+    {"type": "symbol", "start": 180, "end": 186, "text": "define"},
+    {"type": "list", "start": 187, "end": 197, "children": [
+     {"type": "(", "start": 187, "end": 188, "text": "("},
+     {"type": "symbol", "start": 188, "end": 194, "text": "as-let"},
+     {"type": "symbol", "start": 195, "end": 196, "text": "x"},
+     {"type": ")", "start": 196, "end": 197, "text": ")"}
+    ]},
+    {"type": "list", "start": 198, "end": 213, "children": [
+     {"type": "(", "start": 198, "end": 199, "text": "("},
+     {"type": "symbol", "start": 199, "end": 202, "text": "let"},
+     {"type": "list", "start": 203, "end": 210, "children": [
+      {"type": "(", "start": 203, "end": 204, "text": "("},
+      {"type": "list", "start": 204, "end": 209, "children": [
+       {"type": "(", "start": 204, "end": 205, "text": "("},
+       {"type": "symbol", "start": 205, "end": 206, "text": "a"},
+       {"type": "number", "start": 207, "end": 208, "text": "1"},
+       {"type": ")", "start": 208, "end": 209, "text": ")"}
+      ]},
+      {"type": ")", "start": 209, "end": 210, "text": ")"}
+     ]},
+     {"type": "symbol", "start": 211, "end": 212, "text": "a"},
+     {"type": ")", "start": 212, "end": 213, "text": ")"}
+    ]},
+    {"type": ")", "start": 213, "end": 214, "text": ")"}
+   ]},
+   {"type": "list", "start": 216, "end": 249, "children": [
+    {"type": "(", "start": 216, "end": 217, "text": "("},
+    {"type": "symbol", "start": 217, "end": 223, "text": "define"},
+    {"type": "list", "start": 224, "end": 237, "children": [
+     {"type": "(", "start": 224, "end": 225, "text": "("},
+     {"type": "symbol", "start": 225, "end": 232, "text": "as-cons"},
+     {"type": "symbol", "start": 233, "end": 234, "text": "a"},
+     {"type": "symbol", "start": 235, "end": 236, "text": "b"},
+     {"type": ")", "start": 236, "end": 237, "text": ")"}
+    ]},
+    {"type": "list", "start": 238, "end": 248, "children": [
+     {"type": "(", "start": 238, "end": 239, "text": "("},
+     {"type": "symbol", "start": 239, "end": 243, "text": "cons"},
+     {"type": "symbol", "start": 244, "end": 245, "text": "a"},
+     {"type": "symbol", "start": 246, "end": 247, "text": "b"},
+     {"type": ")", "start": 247, "end": 248, "text": ")"}
+    ]},
+    {"type": ")", "start": 248, "end": 249, "text": ")"}
+   ]},
+   {"type": "list", "start": 251, "end": 284, "children": [
+    {"type": "(", "start": 251, "end": 252, "text": "("},
+    {"type": "symbol", "start": 252, "end": 258, "text": "define"},
+    {"type": "list", "start": 259, "end": 272, "children": [
+     {"type": "(", "start": 259, "end": 260, "text": "("},
+     {"type": "symbol", "start": 260, "end": 267, "text": "as-call"},
+     {"type": "symbol", "start": 268, "end": 269, "text": "a"},
+     {"type": "symbol", "start": 270, "end": 271, "text": "b"},
+     {"type": ")", "start": 271, "end": 272, "text": ")"}
+    ]},
+    {"type": "list", "start": 273, "end": 283, "children": [
+     {"type": "(", "start": 273, "end": 274, "text": "("},
+     {"type": "symbol", "start": 274, "end": 278, "text": "list"},
+     {"type": "symbol", "start": 279, "end": 280, "text": "a"},
+     {"type": "symbol", "start": 281, "end": 282, "text": "b"},
+     {"type": ")", "start": 282, "end": 283, "text": ")"}
+    ]},
+    {"type": ")", "start": 283, "end": 284, "text": ")"}
+   ]}
+  ]}
+ ]}
+}

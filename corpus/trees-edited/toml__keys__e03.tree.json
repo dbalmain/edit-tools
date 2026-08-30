@@ -1,0 +1,130 @@
+{
+ "language": "toml",
+ "source_file": "corpus/src/toml/keys.toml",
+ "source": "# Ekey spelling TOML distinguishes. \"a.b\" and a.b are different keys.\n\nbare = 1\nbare-with-dash = 2\nbare_with_underscore = 3\nbare123 = 4\n1234 = 5\ntrue = false\nfalse = true\ninf = 1\n\"quoted key\" = 6\n\"a.b\" = 7\na.b = 8\n'literal-key' = 9\n\"café\" = 10\n\"key with space\" = 11\n\"quoted\\nescape\" = 12\nsite.\"example.com\".enabled = true\n",
+ "base_source": "# Every key spelling TOML distinguishes. \"a.b\" and a.b are different keys.\n\nbare = 1\nbare-with-dash = 2\nbare_with_underscore = 3\nbare123 = 4\n1234 = 5\ntrue = false\nfalse = true\ninf = 1\n\"quoted key\" = 6\n\"a.b\" = 7\na.b = 8\n'literal-key' = 9\n\"café\" = 10\n\"key with space\" = 11\n\"quoted\\nescape\" = 12\nsite.\"example.com\".enabled = true\n",
+ "edit": {"kind": "delete", "label": "delete 5B", "start": 3, "old_end": 8, "new_end": 3, "removed": "very ", "inserted": ""},
+ "problems": {"error": 0, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
+ "grammar": "tree-sitter-toml==0.7.0",
+ "seed": 0,
+ "root":
+ {"type": "document", "start": 0, "end": 323, "children": [
+  {"type": "comment", "start": 0, "end": 69, "text": "# Ekey spelling TOML distinguishes. \"a.b\" and a.b are different keys."},
+  {"type": "pair", "start": 71, "end": 79, "children": [
+   {"type": "bare_key", "start": 71, "end": 75, "text": "bare"},
+   {"type": "=", "start": 76, "end": 77, "text": "="},
+   {"type": "integer", "start": 78, "end": 79, "text": "1"}
+  ]},
+  {"type": "pair", "start": 80, "end": 98, "children": [
+   {"type": "bare_key", "start": 80, "end": 94, "text": "bare-with-dash"},
+   {"type": "=", "start": 95, "end": 96, "text": "="},
+   {"type": "integer", "start": 97, "end": 98, "text": "2"}
+  ]},
+  {"type": "pair", "start": 99, "end": 123, "children": [
+   {"type": "bare_key", "start": 99, "end": 119, "text": "bare_with_underscore"},
+   {"type": "=", "start": 120, "end": 121, "text": "="},
+   {"type": "integer", "start": 122, "end": 123, "text": "3"}
+  ]},
+  {"type": "pair", "start": 124, "end": 135, "children": [
+   {"type": "bare_key", "start": 124, "end": 131, "text": "bare123"},
+   {"type": "=", "start": 132, "end": 133, "text": "="},
+   {"type": "integer", "start": 134, "end": 135, "text": "4"}
+  ]},
+  {"type": "pair", "start": 136, "end": 144, "children": [
+   {"type": "bare_key", "start": 136, "end": 140, "text": "1234"},
+   {"type": "=", "start": 141, "end": 142, "text": "="},
+   {"type": "integer", "start": 143, "end": 144, "text": "5"}
+  ]},
+  {"type": "pair", "start": 145, "end": 157, "children": [
+   {"type": "bare_key", "start": 145, "end": 149, "text": "true"},
+   {"type": "=", "start": 150, "end": 151, "text": "="},
+   {"type": "boolean", "start": 152, "end": 157, "text": "false"}
+  ]},
+  {"type": "pair", "start": 158, "end": 170, "children": [
+   {"type": "bare_key", "start": 158, "end": 163, "text": "false"},
+   {"type": "=", "start": 164, "end": 165, "text": "="},
+   {"type": "boolean", "start": 166, "end": 170, "text": "true"}
+  ]},
+  {"type": "pair", "start": 171, "end": 178, "children": [
+   {"type": "bare_key", "start": 171, "end": 174, "text": "inf"},
+   {"type": "=", "start": 175, "end": 176, "text": "="},
+   {"type": "integer", "start": 177, "end": 178, "text": "1"}
+  ]},
+  {"type": "pair", "start": 179, "end": 195, "children": [
+   {"type": "quoted_key", "start": 179, "end": 191, "children": [
+    {"type": "\"", "start": 179, "end": 180, "text": "\""},
+    {"type": "\"", "start": 190, "end": 191, "text": "\""}
+   ]},
+   {"type": "=", "start": 192, "end": 193, "text": "="},
+   {"type": "integer", "start": 194, "end": 195, "text": "6"}
+  ]},
+  {"type": "pair", "start": 196, "end": 205, "children": [
+   {"type": "quoted_key", "start": 196, "end": 201, "children": [
+    {"type": "\"", "start": 196, "end": 197, "text": "\""},
+    {"type": "\"", "start": 200, "end": 201, "text": "\""}
+   ]},
+   {"type": "=", "start": 202, "end": 203, "text": "="},
+   {"type": "integer", "start": 204, "end": 205, "text": "7"}
+  ]},
+  {"type": "pair", "start": 206, "end": 213, "children": [
+   {"type": "dotted_key", "start": 206, "end": 209, "children": [
+    {"type": "bare_key", "start": 206, "end": 207, "text": "a"},
+    {"type": ".", "start": 207, "end": 208, "text": "."},
+    {"type": "bare_key", "start": 208, "end": 209, "text": "b"}
+   ]},
+   {"type": "=", "start": 210, "end": 211, "text": "="},
+   {"type": "integer", "start": 212, "end": 213, "text": "8"}
+  ]},
+  {"type": "pair", "start": 214, "end": 231, "children": [
+   {"type": "quoted_key", "start": 214, "end": 227, "children": [
+    {"type": "'", "start": 214, "end": 215, "text": "'"},
+    {"type": "'", "start": 226, "end": 227, "text": "'"}
+   ]},
+   {"type": "=", "start": 228, "end": 229, "text": "="},
+   {"type": "integer", "start": 230, "end": 231, "text": "9"}
+  ]},
+  {"type": "pair", "start": 232, "end": 244, "children": [
+   {"type": "quoted_key", "start": 232, "end": 239, "children": [
+    {"type": "\"", "start": 232, "end": 233, "text": "\""},
+    {"type": "\"", "start": 238, "end": 239, "text": "\""}
+   ]},
+   {"type": "=", "start": 240, "end": 241, "text": "="},
+   {"type": "integer", "start": 242, "end": 244, "text": "10"}
+  ]},
+  {"type": "pair", "start": 245, "end": 266, "children": [
+   {"type": "quoted_key", "start": 245, "end": 261, "children": [
+    {"type": "\"", "start": 245, "end": 246, "text": "\""},
+    {"type": "\"", "start": 260, "end": 261, "text": "\""}
+   ]},
+   {"type": "=", "start": 262, "end": 263, "text": "="},
+   {"type": "integer", "start": 264, "end": 266, "text": "11"}
+  ]},
+  {"type": "pair", "start": 267, "end": 288, "children": [
+   {"type": "quoted_key", "start": 267, "end": 283, "children": [
+    {"type": "\"", "start": 267, "end": 268, "text": "\""},
+    {"type": "escape_sequence", "start": 274, "end": 276, "text": "\\n"},
+    {"type": "\"", "start": 282, "end": 283, "text": "\""}
+   ]},
+   {"type": "=", "start": 284, "end": 285, "text": "="},
+   {"type": "integer", "start": 286, "end": 288, "text": "12"}
+  ]},
+  {"type": "pair", "start": 289, "end": 322, "children": [
+   {"type": "dotted_key", "start": 289, "end": 315, "children": [
+    {"type": "dotted_key", "start": 289, "end": 307, "children": [
+     {"type": "bare_key", "start": 289, "end": 293, "text": "site"},
+     {"type": ".", "start": 293, "end": 294, "text": "."},
+     {"type": "quoted_key", "start": 294, "end": 307, "children": [
+      {"type": "\"", "start": 294, "end": 295, "text": "\""},
+      {"type": "\"", "start": 306, "end": 307, "text": "\""}
+     ]}
+    ]},
+    {"type": ".", "start": 307, "end": 308, "text": "."},
+    {"type": "bare_key", "start": 308, "end": 315, "text": "enabled"}
+   ]},
+   {"type": "=", "start": 316, "end": 317, "text": "="},
+   {"type": "boolean", "start": 318, "end": 322, "text": "true"}
+  ]}
+ ]}
+}

@@ -1,0 +1,168 @@
+{
+ "language": "scheme",
+ "source_file": "corpus/src/scheme/long_sequences.scm",
+ "source": ";; onstructs that most often overflow a line: a many-argument call\n;; and a long quoted list, already broken so indent applies per element.\n(define (sum-many a b c d e f g h i j) ; ten parameters\n(+ a\nb\nc\nd\ne\nf\ng\nh\ni\nj))\n\n(define alphabet\n(list 'a\n'b\n'c\n'd\n'e\n'f\n'g\n'h\n'i\n'j\n'k\n'l\n'm\n'n\n'o\n'p\n'q\n'r\n's\n't\n'u\n'v\n'w\n'x\n'y\n'z))\n",
+ "base_source": ";; The constructs that most often overflow a line: a many-argument call\n;; and a long quoted list, already broken so indent applies per element.\n(define (sum-many a b c d e f g h i j) ; ten parameters\n(+ a\nb\nc\nd\ne\nf\ng\nh\ni\nj))\n\n(define alphabet\n(list 'a\n'b\n'c\n'd\n'e\n'f\n'g\n'h\n'i\n'j\n'k\n'l\n'm\n'n\n'o\n'p\n'q\n'r\n's\n't\n'u\n'v\n'w\n'x\n'y\n'z))\n",
+ "edit": {"kind": "delete", "label": "delete 5B", "start": 3, "old_end": 8, "new_end": 3, "removed": "The c", "inserted": ""},
+ "problems": {"error": 0, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
+ "grammar": "tree-sitter-scheme @ git+https://github.com/6cdh/tree-sitter-scheme@v0.24.7-1",
+ "seed": 0,
+ "root":
+ {"type": "program", "start": 0, "end": 325, "children": [
+  {"type": "comment", "start": 0, "end": 66, "text": ";; onstructs that most often overflow a line: a many-argument call"},
+  {"type": "comment", "start": 67, "end": 139, "text": ";; and a long quoted list, already broken so indent applies per element."},
+  {"type": "list", "start": 140, "end": 220, "children": [
+   {"type": "(", "start": 140, "end": 141, "text": "("},
+   {"type": "symbol", "start": 141, "end": 147, "text": "define"},
+   {"type": "list", "start": 148, "end": 178, "children": [
+    {"type": "(", "start": 148, "end": 149, "text": "("},
+    {"type": "symbol", "start": 149, "end": 157, "text": "sum-many"},
+    {"type": "symbol", "start": 158, "end": 159, "text": "a"},
+    {"type": "symbol", "start": 160, "end": 161, "text": "b"},
+    {"type": "symbol", "start": 162, "end": 163, "text": "c"},
+    {"type": "symbol", "start": 164, "end": 165, "text": "d"},
+    {"type": "symbol", "start": 166, "end": 167, "text": "e"},
+    {"type": "symbol", "start": 168, "end": 169, "text": "f"},
+    {"type": "symbol", "start": 170, "end": 171, "text": "g"},
+    {"type": "symbol", "start": 172, "end": 173, "text": "h"},
+    {"type": "symbol", "start": 174, "end": 175, "text": "i"},
+    {"type": "symbol", "start": 176, "end": 177, "text": "j"},
+    {"type": ")", "start": 177, "end": 178, "text": ")"}
+   ]},
+   {"type": "comment", "start": 179, "end": 195, "text": "; ten parameters"},
+   {"type": "list", "start": 196, "end": 219, "children": [
+    {"type": "(", "start": 196, "end": 197, "text": "("},
+    {"type": "symbol", "start": 197, "end": 198, "text": "+"},
+    {"type": "symbol", "start": 199, "end": 200, "text": "a"},
+    {"type": "symbol", "start": 201, "end": 202, "text": "b"},
+    {"type": "symbol", "start": 203, "end": 204, "text": "c"},
+    {"type": "symbol", "start": 205, "end": 206, "text": "d"},
+    {"type": "symbol", "start": 207, "end": 208, "text": "e"},
+    {"type": "symbol", "start": 209, "end": 210, "text": "f"},
+    {"type": "symbol", "start": 211, "end": 212, "text": "g"},
+    {"type": "symbol", "start": 213, "end": 214, "text": "h"},
+    {"type": "symbol", "start": 215, "end": 216, "text": "i"},
+    {"type": "symbol", "start": 217, "end": 218, "text": "j"},
+    {"type": ")", "start": 218, "end": 219, "text": ")"}
+   ]},
+   {"type": ")", "start": 219, "end": 220, "text": ")"}
+  ]},
+  {"type": "list", "start": 222, "end": 324, "children": [
+   {"type": "(", "start": 222, "end": 223, "text": "("},
+   {"type": "symbol", "start": 223, "end": 229, "text": "define"},
+   {"type": "symbol", "start": 230, "end": 238, "text": "alphabet"},
+   {"type": "list", "start": 239, "end": 323, "children": [
+    {"type": "(", "start": 239, "end": 240, "text": "("},
+    {"type": "symbol", "start": 240, "end": 244, "text": "list"},
+    {"type": "quote", "start": 245, "end": 247, "children": [
+     {"type": "'", "start": 245, "end": 246, "text": "'"},
+     {"type": "symbol", "start": 246, "end": 247, "text": "a"}
+    ]},
+    {"type": "quote", "start": 248, "end": 250, "children": [
+     {"type": "'", "start": 248, "end": 249, "text": "'"},
+     {"type": "symbol", "start": 249, "end": 250, "text": "b"}
+    ]},
+    {"type": "quote", "start": 251, "end": 253, "children": [
+     {"type": "'", "start": 251, "end": 252, "text": "'"},
+     {"type": "symbol", "start": 252, "end": 253, "text": "c"}
+    ]},
+    {"type": "quote", "start": 254, "end": 256, "children": [
+     {"type": "'", "start": 254, "end": 255, "text": "'"},
+     {"type": "symbol", "start": 255, "end": 256, "text": "d"}
+    ]},
+    {"type": "quote", "start": 257, "end": 259, "children": [
+     {"type": "'", "start": 257, "end": 258, "text": "'"},
+     {"type": "symbol", "start": 258, "end": 259, "text": "e"}
+    ]},
+    {"type": "quote", "start": 260, "end": 262, "children": [
+     {"type": "'", "start": 260, "end": 261, "text": "'"},
+     {"type": "symbol", "start": 261, "end": 262, "text": "f"}
+    ]},
+    {"type": "quote", "start": 263, "end": 265, "children": [
+     {"type": "'", "start": 263, "end": 264, "text": "'"},
+     {"type": "symbol", "start": 264, "end": 265, "text": "g"}
+    ]},
+    {"type": "quote", "start": 266, "end": 268, "children": [
+     {"type": "'", "start": 266, "end": 267, "text": "'"},
+     {"type": "symbol", "start": 267, "end": 268, "text": "h"}
+    ]},
+    {"type": "quote", "start": 269, "end": 271, "children": [
+     {"type": "'", "start": 269, "end": 270, "text": "'"},
+     {"type": "symbol", "start": 270, "end": 271, "text": "i"}
+    ]},
+    {"type": "quote", "start": 272, "end": 274, "children": [
+     {"type": "'", "start": 272, "end": 273, "text": "'"},
+     {"type": "symbol", "start": 273, "end": 274, "text": "j"}
+    ]},
+    {"type": "quote", "start": 275, "end": 277, "children": [
+     {"type": "'", "start": 275, "end": 276, "text": "'"},
+     {"type": "symbol", "start": 276, "end": 277, "text": "k"}
+    ]},
+    {"type": "quote", "start": 278, "end": 280, "children": [
+     {"type": "'", "start": 278, "end": 279, "text": "'"},
+     {"type": "symbol", "start": 279, "end": 280, "text": "l"}
+    ]},
+    {"type": "quote", "start": 281, "end": 283, "children": [
+     {"type": "'", "start": 281, "end": 282, "text": "'"},
+     {"type": "symbol", "start": 282, "end": 283, "text": "m"}
+    ]},
+    {"type": "quote", "start": 284, "end": 286, "children": [
+     {"type": "'", "start": 284, "end": 285, "text": "'"},
+     {"type": "symbol", "start": 285, "end": 286, "text": "n"}
+    ]},
+    {"type": "quote", "start": 287, "end": 289, "children": [
+     {"type": "'", "start": 287, "end": 288, "text": "'"},
+     {"type": "symbol", "start": 288, "end": 289, "text": "o"}
+    ]},
+    {"type": "quote", "start": 290, "end": 292, "children": [
+     {"type": "'", "start": 290, "end": 291, "text": "'"},
+     {"type": "symbol", "start": 291, "end": 292, "text": "p"}
+    ]},
+    {"type": "quote", "start": 293, "end": 295, "children": [
+     {"type": "'", "start": 293, "end": 294, "text": "'"},
+     {"type": "symbol", "start": 294, "end": 295, "text": "q"}
+    ]},
+    {"type": "quote", "start": 296, "end": 298, "children": [
+     {"type": "'", "start": 296, "end": 297, "text": "'"},
+     {"type": "symbol", "start": 297, "end": 298, "text": "r"}
+    ]},
+    {"type": "quote", "start": 299, "end": 301, "children": [
+     {"type": "'", "start": 299, "end": 300, "text": "'"},
+     {"type": "symbol", "start": 300, "end": 301, "text": "s"}
+    ]},
+    {"type": "quote", "start": 302, "end": 304, "children": [
+     {"type": "'", "start": 302, "end": 303, "text": "'"},
+     {"type": "symbol", "start": 303, "end": 304, "text": "t"}
+    ]},
+    {"type": "quote", "start": 305, "end": 307, "children": [
+     {"type": "'", "start": 305, "end": 306, "text": "'"},
+     {"type": "symbol", "start": 306, "end": 307, "text": "u"}
+    ]},
+    {"type": "quote", "start": 308, "end": 310, "children": [
+     {"type": "'", "start": 308, "end": 309, "text": "'"},
+     {"type": "symbol", "start": 309, "end": 310, "text": "v"}
+    ]},
+    {"type": "quote", "start": 311, "end": 313, "children": [
+     {"type": "'", "start": 311, "end": 312, "text": "'"},
+     {"type": "symbol", "start": 312, "end": 313, "text": "w"}
+    ]},
+    {"type": "quote", "start": 314, "end": 316, "children": [
+     {"type": "'", "start": 314, "end": 315, "text": "'"},
+     {"type": "symbol", "start": 315, "end": 316, "text": "x"}
+    ]},
+    {"type": "quote", "start": 317, "end": 319, "children": [
+     {"type": "'", "start": 317, "end": 318, "text": "'"},
+     {"type": "symbol", "start": 318, "end": 319, "text": "y"}
+    ]},
+    {"type": "quote", "start": 320, "end": 322, "children": [
+     {"type": "'", "start": 320, "end": 321, "text": "'"},
+     {"type": "symbol", "start": 321, "end": 322, "text": "z"}
+    ]},
+    {"type": ")", "start": 322, "end": 323, "text": ")"}
+   ]},
+   {"type": ")", "start": 323, "end": 324, "text": ")"}
+  ]}
+ ]}
+}

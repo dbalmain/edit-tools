@@ -1,0 +1,155 @@
+{
+ "language": "css",
+ "source_file": "corpus/src/css/calc.css",
+ "source": "/* / clamp / minmax. minmax() splits at 40. */\n\n.measure {\n  width: calc(100% - 2rem);\n  width: calc(100vw - 20px - 2rem);\n  margin: clamp(1rem, 2vw + 1rem, 3rem); /* preferred size in the middle */\n  grid-template-columns: minmax(200px, 1fr) minmax(200px, 1fr) minmax(200px, 1fr);\n}\n",
+ "base_source": "/* calc / clamp / minmax. minmax() splits at 40. */\n\n.measure {\n  width: calc(100% - 2rem);\n  width: calc(100vw - 20px - 2rem);\n  margin: clamp(1rem, 2vw + 1rem, 3rem); /* preferred size in the middle */\n  grid-template-columns: minmax(200px, 1fr) minmax(200px, 1fr) minmax(200px, 1fr);\n}\n",
+ "edit": {"kind": "delete", "label": "delete 5B", "start": 3, "old_end": 8, "new_end": 3, "removed": "calc ", "inserted": ""},
+ "problems": {"error": 0, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
+ "grammar": "tree-sitter-css==0.25.0",
+ "seed": 0,
+ "root":
+ {"type": "stylesheet", "start": 0, "end": 284, "children": [
+  {"type": "comment", "start": 0, "end": 46, "text": "/* / clamp / minmax. minmax() splits at 40. */"},
+  {"type": "rule_set", "start": 48, "end": 283, "children": [
+   {"type": "selectors", "start": 48, "end": 56, "children": [
+    {"type": "class_selector", "start": 48, "end": 56, "children": [
+     {"type": ".", "start": 48, "end": 49, "text": "."},
+     {"type": "class_name", "start": 49, "end": 56, "children": [
+      {"type": "identifier", "start": 49, "end": 56, "text": "measure"}
+     ]}
+    ]}
+   ]},
+   {"type": "block", "start": 57, "end": 283, "children": [
+    {"type": "{", "start": 57, "end": 58, "text": "{"},
+    {"type": "declaration", "start": 61, "end": 86, "children": [
+     {"type": "property_name", "start": 61, "end": 66, "text": "width"},
+     {"type": ":", "start": 66, "end": 67, "text": ":"},
+     {"type": "call_expression", "start": 68, "end": 85, "children": [
+      {"type": "function_name", "start": 68, "end": 72, "text": "calc"},
+      {"type": "arguments", "start": 72, "end": 85, "children": [
+       {"type": "(", "start": 72, "end": 73, "text": "("},
+       {"type": "binary_expression", "start": 73, "end": 84, "children": [
+        {"type": "integer_value", "start": 73, "end": 77, "children": [
+         {"type": "unit", "start": 76, "end": 77, "text": "%"}
+        ]},
+        {"type": "-", "start": 78, "end": 79, "text": "-"},
+        {"type": "integer_value", "start": 80, "end": 84, "children": [
+         {"type": "unit", "start": 81, "end": 84, "text": "rem"}
+        ]}
+       ]},
+       {"type": ")", "start": 84, "end": 85, "text": ")"}
+      ]}
+     ]},
+     {"type": ";", "start": 85, "end": 86, "text": ";"}
+    ]},
+    {"type": "declaration", "start": 89, "end": 122, "children": [
+     {"type": "property_name", "start": 89, "end": 94, "text": "width"},
+     {"type": ":", "start": 94, "end": 95, "text": ":"},
+     {"type": "call_expression", "start": 96, "end": 121, "children": [
+      {"type": "function_name", "start": 96, "end": 100, "text": "calc"},
+      {"type": "arguments", "start": 100, "end": 121, "children": [
+       {"type": "(", "start": 100, "end": 101, "text": "("},
+       {"type": "binary_expression", "start": 101, "end": 120, "children": [
+        {"type": "binary_expression", "start": 101, "end": 113, "children": [
+         {"type": "integer_value", "start": 101, "end": 106, "children": [
+          {"type": "unit", "start": 104, "end": 106, "text": "vw"}
+         ]},
+         {"type": "-", "start": 107, "end": 108, "text": "-"},
+         {"type": "integer_value", "start": 109, "end": 113, "children": [
+          {"type": "unit", "start": 111, "end": 113, "text": "px"}
+         ]}
+        ]},
+        {"type": "-", "start": 114, "end": 115, "text": "-"},
+        {"type": "integer_value", "start": 116, "end": 120, "children": [
+         {"type": "unit", "start": 117, "end": 120, "text": "rem"}
+        ]}
+       ]},
+       {"type": ")", "start": 120, "end": 121, "text": ")"}
+      ]}
+     ]},
+     {"type": ";", "start": 121, "end": 122, "text": ";"}
+    ]},
+    {"type": "declaration", "start": 125, "end": 163, "children": [
+     {"type": "property_name", "start": 125, "end": 131, "text": "margin"},
+     {"type": ":", "start": 131, "end": 132, "text": ":"},
+     {"type": "call_expression", "start": 133, "end": 162, "children": [
+      {"type": "function_name", "start": 133, "end": 138, "text": "clamp"},
+      {"type": "arguments", "start": 138, "end": 162, "children": [
+       {"type": "(", "start": 138, "end": 139, "text": "("},
+       {"type": "integer_value", "start": 139, "end": 143, "children": [
+        {"type": "unit", "start": 140, "end": 143, "text": "rem"}
+       ]},
+       {"type": ",", "start": 143, "end": 144, "text": ","},
+       {"type": "binary_expression", "start": 145, "end": 155, "children": [
+        {"type": "integer_value", "start": 145, "end": 148, "children": [
+         {"type": "unit", "start": 146, "end": 148, "text": "vw"}
+        ]},
+        {"type": "+", "start": 149, "end": 150, "text": "+"},
+        {"type": "integer_value", "start": 151, "end": 155, "children": [
+         {"type": "unit", "start": 152, "end": 155, "text": "rem"}
+        ]}
+       ]},
+       {"type": ",", "start": 155, "end": 156, "text": ","},
+       {"type": "integer_value", "start": 157, "end": 161, "children": [
+        {"type": "unit", "start": 158, "end": 161, "text": "rem"}
+       ]},
+       {"type": ")", "start": 161, "end": 162, "text": ")"}
+      ]}
+     ]},
+     {"type": ";", "start": 162, "end": 163, "text": ";"}
+    ]},
+    {"type": "comment", "start": 164, "end": 198, "text": "/* preferred size in the middle */"},
+    {"type": "declaration", "start": 201, "end": 281, "children": [
+     {"type": "property_name", "start": 201, "end": 222, "text": "grid-template-columns"},
+     {"type": ":", "start": 222, "end": 223, "text": ":"},
+     {"type": "call_expression", "start": 224, "end": 242, "children": [
+      {"type": "function_name", "start": 224, "end": 230, "text": "minmax"},
+      {"type": "arguments", "start": 230, "end": 242, "children": [
+       {"type": "(", "start": 230, "end": 231, "text": "("},
+       {"type": "integer_value", "start": 231, "end": 236, "children": [
+        {"type": "unit", "start": 234, "end": 236, "text": "px"}
+       ]},
+       {"type": ",", "start": 236, "end": 237, "text": ","},
+       {"type": "integer_value", "start": 238, "end": 241, "children": [
+        {"type": "unit", "start": 239, "end": 241, "text": "fr"}
+       ]},
+       {"type": ")", "start": 241, "end": 242, "text": ")"}
+      ]}
+     ]},
+     {"type": "call_expression", "start": 243, "end": 261, "children": [
+      {"type": "function_name", "start": 243, "end": 249, "text": "minmax"},
+      {"type": "arguments", "start": 249, "end": 261, "children": [
+       {"type": "(", "start": 249, "end": 250, "text": "("},
+       {"type": "integer_value", "start": 250, "end": 255, "children": [
+        {"type": "unit", "start": 253, "end": 255, "text": "px"}
+       ]},
+       {"type": ",", "start": 255, "end": 256, "text": ","},
+       {"type": "integer_value", "start": 257, "end": 260, "children": [
+        {"type": "unit", "start": 258, "end": 260, "text": "fr"}
+       ]},
+       {"type": ")", "start": 260, "end": 261, "text": ")"}
+      ]}
+     ]},
+     {"type": "call_expression", "start": 262, "end": 280, "children": [
+      {"type": "function_name", "start": 262, "end": 268, "text": "minmax"},
+      {"type": "arguments", "start": 268, "end": 280, "children": [
+       {"type": "(", "start": 268, "end": 269, "text": "("},
+       {"type": "integer_value", "start": 269, "end": 274, "children": [
+        {"type": "unit", "start": 272, "end": 274, "text": "px"}
+       ]},
+       {"type": ",", "start": 274, "end": 275, "text": ","},
+       {"type": "integer_value", "start": 276, "end": 279, "children": [
+        {"type": "unit", "start": 277, "end": 279, "text": "fr"}
+       ]},
+       {"type": ")", "start": 279, "end": 280, "text": ")"}
+      ]}
+     ]},
+     {"type": ";", "start": 280, "end": 281, "text": ";"}
+    ]},
+    {"type": "}", "start": 282, "end": 283, "text": "}"}
+   ]}
+  ]}
+ ]}
+}

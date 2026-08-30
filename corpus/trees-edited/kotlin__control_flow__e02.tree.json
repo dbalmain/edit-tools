@@ -1,0 +1,21 @@
+{
+ "language": "kotlin",
+ "source_file": "corpus/src/kotlin/control_flow.kt",
+ "source": "// if/for/while/try as expressions, plus a labeled loop.\n\nfun sig:Int):String=if (x>0) \"pos\" else if (x<0) \"neg\" else \"zero\"\n\nfun demo(items:List<Int>):Int {\n    var total=0\n    loop@ for (item in items) { // labeled\n        if(item<0) continue@loop\n        if(item==0) break@loop\n        total+=item\n    }\n    var n=items.size\n    while(n>0){\n        n-=1\n    }\n    val parsed=try{ items.first() } catch(e:NoSuchElementException){ -1 } finally { n=0 } // try is an expression\n    return parsed\n}\n",
+ "base_source": "// if/for/while/try as expressions, plus a labeled loop.\n\nfun sign(x:Int):String=if (x>0) \"pos\" else if (x<0) \"neg\" else \"zero\"\n\nfun demo(items:List<Int>):Int {\n    var total=0\n    loop@ for (item in items) { // labeled\n        if(item<0) continue@loop\n        if(item==0) break@loop\n        total+=item\n    }\n    var n=items.size\n    while(n>0){\n        n-=1\n    }\n    val parsed=try{ items.first() } catch(e:NoSuchElementException){ -1 } finally { n=0 } // try is an expression\n    return parsed\n}\n",
+ "edit": {"kind": "delete", "label": "delete 3B", "start": 65, "old_end": 68, "new_end": 65, "removed": "n(x", "inserted": ""},
+ "problems": {"error": 1, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
+ "grammar": "tree-sitter-kotlin==1.1.0",
+ "seed": 0,
+ "root":
+ {"type": "source_file", "start": 0, "end": 497, "children": [
+  {"type": "line_comment", "start": 0, "end": 56, "text": "// if/for/while/try as expressions, plus a labeled loop."},
+  {"type": "ERROR", "start": 58, "end": 497, "children": [
+   {"type": "fun", "start": 58, "end": 61, "text": "fun"},
+   {"type": "identifier", "start": 62, "end": 65, "text": "sig"},
+   {"type": ":", "start": 65, "end": 66, "text": ":"}
+  ]}
+ ]}
+}

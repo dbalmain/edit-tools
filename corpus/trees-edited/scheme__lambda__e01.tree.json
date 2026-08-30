@@ -1,0 +1,143 @@
+{
+ "language": "scheme",
+ "source_file": "corpus/src/scheme/lambda.scm",
+ "source": ";; lambda: rest args, nested lambda, and the specform-1 split when the\n;; formals sit on the next line versus on the head line.\n(define add\n(lambda (x y) ; formals on the head line\n(+ x y)))\n\n(defifine (sum-all . xs)\n(appadd-broken\n(lambda\n(x y)\n(+ x y)))\n\n(define (make-adder n)\n(lambda (x)\n(+ x n)))\n\n(define (sum-all . xs)\n(apply + xs))\n\n(define (split first . rest)\n(cons first rest))\n",
+ "base_source": ";; lambda: rest args, nested lambda, and the specform-1 split when the\n;; formals sit on the next line versus on the head line.\n(define add\n(lambda (x y) ; formals on the head line\n(+ x y)))\n\n(define add-broken\n(lambda\n(x y)\n(+ x y)))\n\n(define (make-adder n)\n(lambda (x)\n(+ x n)))\n\n(define (sum-all . xs)\n(apply + xs))\n\n(define (split first . rest)\n(cons first rest))\n",
+ "edit": {"kind": "replace", "label": "splice 285..309", "start": 197, "old_end": 200, "new_end": 221, "removed": "ne ", "inserted": "fine (sum-all . xs)\n(app"},
+ "problems": {"error": 1, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
+ "grammar": "tree-sitter-scheme @ git+https://github.com/6cdh/tree-sitter-scheme@v0.24.7-1",
+ "seed": 0,
+ "root":
+ {"type": "program", "start": 0, "end": 389, "children": [
+  {"type": "comment", "start": 0, "end": 70, "text": ";; lambda: rest args, nested lambda, and the specform-1 split when the"},
+  {"type": "comment", "start": 71, "end": 127, "text": ";; formals sit on the next line versus on the head line."},
+  {"type": "list", "start": 128, "end": 190, "children": [
+   {"type": "(", "start": 128, "end": 129, "text": "("},
+   {"type": "symbol", "start": 129, "end": 135, "text": "define"},
+   {"type": "symbol", "start": 136, "end": 139, "text": "add"},
+   {"type": "list", "start": 140, "end": 189, "children": [
+    {"type": "(", "start": 140, "end": 141, "text": "("},
+    {"type": "symbol", "start": 141, "end": 147, "text": "lambda"},
+    {"type": "list", "start": 148, "end": 153, "children": [
+     {"type": "(", "start": 148, "end": 149, "text": "("},
+     {"type": "symbol", "start": 149, "end": 150, "text": "x"},
+     {"type": "symbol", "start": 151, "end": 152, "text": "y"},
+     {"type": ")", "start": 152, "end": 153, "text": ")"}
+    ]},
+    {"type": "comment", "start": 154, "end": 180, "text": "; formals on the head line"},
+    {"type": "list", "start": 181, "end": 188, "children": [
+     {"type": "(", "start": 181, "end": 182, "text": "("},
+     {"type": "symbol", "start": 182, "end": 183, "text": "+"},
+     {"type": "symbol", "start": 184, "end": 185, "text": "x"},
+     {"type": "symbol", "start": 186, "end": 187, "text": "y"},
+     {"type": ")", "start": 187, "end": 188, "text": ")"}
+    ]},
+    {"type": ")", "start": 188, "end": 189, "text": ")"}
+   ]},
+   {"type": ")", "start": 189, "end": 190, "text": ")"}
+  ]},
+  {"type": "ERROR", "start": 192, "end": 389, "children": [
+   {"type": "(", "start": 192, "end": 193, "text": "("},
+   {"type": "symbol", "start": 193, "end": 201, "text": "defifine"},
+   {"type": "list", "start": 202, "end": 216, "children": [
+    {"type": "(", "start": 202, "end": 203, "text": "("},
+    {"type": "symbol", "start": 203, "end": 210, "text": "sum-all"},
+    {"type": "symbol", "start": 211, "end": 212, "text": "."},
+    {"type": "symbol", "start": 213, "end": 215, "text": "xs"},
+    {"type": ")", "start": 215, "end": 216, "text": ")"}
+   ]},
+   {"type": "list", "start": 217, "end": 255, "children": [
+    {"type": "(", "start": 217, "end": 218, "text": "("},
+    {"type": "symbol", "start": 218, "end": 231, "text": "appadd-broken"},
+    {"type": "list", "start": 232, "end": 254, "children": [
+     {"type": "(", "start": 232, "end": 233, "text": "("},
+     {"type": "symbol", "start": 233, "end": 239, "text": "lambda"},
+     {"type": "list", "start": 240, "end": 245, "children": [
+      {"type": "(", "start": 240, "end": 241, "text": "("},
+      {"type": "symbol", "start": 241, "end": 242, "text": "x"},
+      {"type": "symbol", "start": 243, "end": 244, "text": "y"},
+      {"type": ")", "start": 244, "end": 245, "text": ")"}
+     ]},
+     {"type": "list", "start": 246, "end": 253, "children": [
+      {"type": "(", "start": 246, "end": 247, "text": "("},
+      {"type": "symbol", "start": 247, "end": 248, "text": "+"},
+      {"type": "symbol", "start": 249, "end": 250, "text": "x"},
+      {"type": "symbol", "start": 251, "end": 252, "text": "y"},
+      {"type": ")", "start": 252, "end": 253, "text": ")"}
+     ]},
+     {"type": ")", "start": 253, "end": 254, "text": ")"}
+    ]},
+    {"type": ")", "start": 254, "end": 255, "text": ")"}
+   ]},
+   {"type": "list", "start": 257, "end": 301, "children": [
+    {"type": "(", "start": 257, "end": 258, "text": "("},
+    {"type": "symbol", "start": 258, "end": 264, "text": "define"},
+    {"type": "list", "start": 265, "end": 279, "children": [
+     {"type": "(", "start": 265, "end": 266, "text": "("},
+     {"type": "symbol", "start": 266, "end": 276, "text": "make-adder"},
+     {"type": "symbol", "start": 277, "end": 278, "text": "n"},
+     {"type": ")", "start": 278, "end": 279, "text": ")"}
+    ]},
+    {"type": "list", "start": 280, "end": 300, "children": [
+     {"type": "(", "start": 280, "end": 281, "text": "("},
+     {"type": "symbol", "start": 281, "end": 287, "text": "lambda"},
+     {"type": "list", "start": 288, "end": 291, "children": [
+      {"type": "(", "start": 288, "end": 289, "text": "("},
+      {"type": "symbol", "start": 289, "end": 290, "text": "x"},
+      {"type": ")", "start": 290, "end": 291, "text": ")"}
+     ]},
+     {"type": "list", "start": 292, "end": 299, "children": [
+      {"type": "(", "start": 292, "end": 293, "text": "("},
+      {"type": "symbol", "start": 293, "end": 294, "text": "+"},
+      {"type": "symbol", "start": 295, "end": 296, "text": "x"},
+      {"type": "symbol", "start": 297, "end": 298, "text": "n"},
+      {"type": ")", "start": 298, "end": 299, "text": ")"}
+     ]},
+     {"type": ")", "start": 299, "end": 300, "text": ")"}
+    ]},
+    {"type": ")", "start": 300, "end": 301, "text": ")"}
+   ]},
+   {"type": "list", "start": 303, "end": 339, "children": [
+    {"type": "(", "start": 303, "end": 304, "text": "("},
+    {"type": "symbol", "start": 304, "end": 310, "text": "define"},
+    {"type": "list", "start": 311, "end": 325, "children": [
+     {"type": "(", "start": 311, "end": 312, "text": "("},
+     {"type": "symbol", "start": 312, "end": 319, "text": "sum-all"},
+     {"type": "symbol", "start": 320, "end": 321, "text": "."},
+     {"type": "symbol", "start": 322, "end": 324, "text": "xs"},
+     {"type": ")", "start": 324, "end": 325, "text": ")"}
+    ]},
+    {"type": "list", "start": 326, "end": 338, "children": [
+     {"type": "(", "start": 326, "end": 327, "text": "("},
+     {"type": "symbol", "start": 327, "end": 332, "text": "apply"},
+     {"type": "symbol", "start": 333, "end": 334, "text": "+"},
+     {"type": "symbol", "start": 335, "end": 337, "text": "xs"},
+     {"type": ")", "start": 337, "end": 338, "text": ")"}
+    ]},
+    {"type": ")", "start": 338, "end": 339, "text": ")"}
+   ]},
+   {"type": "list", "start": 341, "end": 388, "children": [
+    {"type": "(", "start": 341, "end": 342, "text": "("},
+    {"type": "symbol", "start": 342, "end": 348, "text": "define"},
+    {"type": "list", "start": 349, "end": 369, "children": [
+     {"type": "(", "start": 349, "end": 350, "text": "("},
+     {"type": "symbol", "start": 350, "end": 355, "text": "split"},
+     {"type": "symbol", "start": 356, "end": 361, "text": "first"},
+     {"type": "symbol", "start": 362, "end": 363, "text": "."},
+     {"type": "symbol", "start": 364, "end": 368, "text": "rest"},
+     {"type": ")", "start": 368, "end": 369, "text": ")"}
+    ]},
+    {"type": "list", "start": 370, "end": 387, "children": [
+     {"type": "(", "start": 370, "end": 371, "text": "("},
+     {"type": "symbol", "start": 371, "end": 375, "text": "cons"},
+     {"type": "symbol", "start": 376, "end": 381, "text": "first"},
+     {"type": "symbol", "start": 382, "end": 386, "text": "rest"},
+     {"type": ")", "start": 386, "end": 387, "text": ")"}
+    ]},
+    {"type": ")", "start": 387, "end": 388, "text": ")"}
+   ]}
+  ]}
+ ]}
+}

@@ -1,0 +1,278 @@
+{
+ "language": "kotlin",
+ "source_file": "corpus/src/kotlin/generics.kt",
+ "source": "// Type parameters, variance, reified, where, star projection.\n\ninterface Box<out T>{\n    fun get():T // covariant producer\n}\n\ninterface Sink<in T>{\n    fun put(value:T)\n}\n\nfun <T> identity(value:T):T=value\n\ninline fun <reified T> isType(value:Any):Boolean{\n    return value is T // reified lets is work\n}\n\nfun < sortInPlace(items:MutableList<T>) where T:Comparable<T>{\n    items.sort()\n}\n\nfun star(box:Box<*>):Any?{\n    return box.get() // star projection\n}\n",
+ "base_source": "// Type parameters, variance, reified, where, star projection.\n\ninterface Box<out T>{\n    fun get():T // covariant producer\n}\n\ninterface Sink<in T>{\n    fun put(value:T)\n}\n\nfun <T> identity(value:T):T=value\n\ninline fun <reified T> isType(value:Any):Boolean{\n    return value is T // reified lets is work\n}\n\nfun <T> sortInPlace(items:MutableList<T>) where T:Comparable<T>{\n    items.sort()\n}\n\nfun star(box:Box<*>):Any?{\n    return box.get() // star projection\n}\n",
+ "edit": {"kind": "delete", "label": "delete 2B", "start": 312, "old_end": 314, "new_end": 312, "removed": "T>", "inserted": ""},
+ "problems": {"error": 1, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
+ "grammar": "tree-sitter-kotlin==1.1.0",
+ "seed": 0,
+ "root":
+ {"type": "source_file", "start": 0, "end": 459, "children": [
+  {"type": "line_comment", "start": 0, "end": 62, "text": "// Type parameters, variance, reified, where, star projection."},
+  {"type": "class_declaration", "start": 64, "end": 125, "children": [
+   {"type": "interface", "start": 64, "end": 73, "text": "interface"},
+   {"type": "identifier", "start": 74, "end": 77, "field": "name", "text": "Box"},
+   {"type": "type_parameters", "start": 77, "end": 84, "children": [
+    {"type": "<", "start": 77, "end": 78, "text": "<"},
+    {"type": "type_parameter", "start": 78, "end": 83, "children": [
+     {"type": "type_parameter_modifiers", "start": 78, "end": 81, "children": [
+      {"type": "variance_modifier", "start": 78, "end": 81, "children": [
+       {"type": "out", "start": 78, "end": 81, "text": "out"}
+      ]}
+     ]},
+     {"type": "identifier", "start": 82, "end": 83, "text": "T"}
+    ]},
+    {"type": ">", "start": 83, "end": 84, "text": ">"}
+   ]},
+   {"type": "class_body", "start": 84, "end": 125, "children": [
+    {"type": "{", "start": 84, "end": 85, "text": "{"},
+    {"type": "function_declaration", "start": 90, "end": 101, "children": [
+     {"type": "fun", "start": 90, "end": 93, "text": "fun"},
+     {"type": "identifier", "start": 94, "end": 97, "field": "name", "text": "get"},
+     {"type": "function_value_parameters", "start": 97, "end": 99, "children": [
+      {"type": "(", "start": 97, "end": 98, "text": "("},
+      {"type": ")", "start": 98, "end": 99, "text": ")"}
+     ]},
+     {"type": ":", "start": 99, "end": 100, "text": ":"},
+     {"type": "user_type", "start": 100, "end": 101, "children": [
+      {"type": "identifier", "start": 100, "end": 101, "text": "T"}
+     ]}
+    ]},
+    {"type": "line_comment", "start": 102, "end": 123, "text": "// covariant producer"},
+    {"type": "}", "start": 124, "end": 125, "text": "}"}
+   ]}
+  ]},
+  {"type": "class_declaration", "start": 127, "end": 171, "children": [
+   {"type": "interface", "start": 127, "end": 136, "text": "interface"},
+   {"type": "identifier", "start": 137, "end": 141, "field": "name", "text": "Sink"},
+   {"type": "type_parameters", "start": 141, "end": 147, "children": [
+    {"type": "<", "start": 141, "end": 142, "text": "<"},
+    {"type": "type_parameter", "start": 142, "end": 146, "children": [
+     {"type": "type_parameter_modifiers", "start": 142, "end": 144, "children": [
+      {"type": "variance_modifier", "start": 142, "end": 144, "children": [
+       {"type": "in", "start": 142, "end": 144, "text": "in"}
+      ]}
+     ]},
+     {"type": "identifier", "start": 145, "end": 146, "text": "T"}
+    ]},
+    {"type": ">", "start": 146, "end": 147, "text": ">"}
+   ]},
+   {"type": "class_body", "start": 147, "end": 171, "children": [
+    {"type": "{", "start": 147, "end": 148, "text": "{"},
+    {"type": "function_declaration", "start": 153, "end": 169, "children": [
+     {"type": "fun", "start": 153, "end": 156, "text": "fun"},
+     {"type": "identifier", "start": 157, "end": 160, "field": "name", "text": "put"},
+     {"type": "function_value_parameters", "start": 160, "end": 169, "children": [
+      {"type": "(", "start": 160, "end": 161, "text": "("},
+      {"type": "parameter", "start": 161, "end": 168, "children": [
+       {"type": "identifier", "start": 161, "end": 166, "text": "value"},
+       {"type": ":", "start": 166, "end": 167, "text": ":"},
+       {"type": "user_type", "start": 167, "end": 168, "children": [
+        {"type": "identifier", "start": 167, "end": 168, "text": "T"}
+       ]}
+      ]},
+      {"type": ")", "start": 168, "end": 169, "text": ")"}
+     ]}
+    ]},
+    {"type": "}", "start": 170, "end": 171, "text": "}"}
+   ]}
+  ]},
+  {"type": "function_declaration", "start": 173, "end": 206, "children": [
+   {"type": "fun", "start": 173, "end": 176, "text": "fun"},
+   {"type": "type_parameters", "start": 177, "end": 180, "children": [
+    {"type": "<", "start": 177, "end": 178, "text": "<"},
+    {"type": "type_parameter", "start": 178, "end": 179, "children": [
+     {"type": "identifier", "start": 178, "end": 179, "text": "T"}
+    ]},
+    {"type": ">", "start": 179, "end": 180, "text": ">"}
+   ]},
+   {"type": "identifier", "start": 181, "end": 189, "field": "name", "text": "identity"},
+   {"type": "function_value_parameters", "start": 189, "end": 198, "children": [
+    {"type": "(", "start": 189, "end": 190, "text": "("},
+    {"type": "parameter", "start": 190, "end": 197, "children": [
+     {"type": "identifier", "start": 190, "end": 195, "text": "value"},
+     {"type": ":", "start": 195, "end": 196, "text": ":"},
+     {"type": "user_type", "start": 196, "end": 197, "children": [
+      {"type": "identifier", "start": 196, "end": 197, "text": "T"}
+     ]}
+    ]},
+    {"type": ")", "start": 197, "end": 198, "text": ")"}
+   ]},
+   {"type": ":", "start": 198, "end": 199, "text": ":"},
+   {"type": "user_type", "start": 199, "end": 200, "children": [
+    {"type": "identifier", "start": 199, "end": 200, "text": "T"}
+   ]},
+   {"type": "function_body", "start": 200, "end": 206, "children": [
+    {"type": "=", "start": 200, "end": 201, "text": "="},
+    {"type": "identifier", "start": 201, "end": 206, "text": "value"}
+   ]}
+  ]},
+  {"type": "function_declaration", "start": 208, "end": 305, "children": [
+   {"type": "modifiers", "start": 208, "end": 214, "children": [
+    {"type": "function_modifier", "start": 208, "end": 214, "children": [
+     {"type": "inline", "start": 208, "end": 214, "text": "inline"}
+    ]}
+   ]},
+   {"type": "fun", "start": 215, "end": 218, "text": "fun"},
+   {"type": "type_parameters", "start": 219, "end": 230, "children": [
+    {"type": "<", "start": 219, "end": 220, "text": "<"},
+    {"type": "type_parameter", "start": 220, "end": 229, "children": [
+     {"type": "type_parameter_modifiers", "start": 220, "end": 227, "children": [
+      {"type": "reification_modifier", "start": 220, "end": 227, "text": "reified"}
+     ]},
+     {"type": "identifier", "start": 228, "end": 229, "text": "T"}
+    ]},
+    {"type": ">", "start": 229, "end": 230, "text": ">"}
+   ]},
+   {"type": "identifier", "start": 231, "end": 237, "field": "name", "text": "isType"},
+   {"type": "function_value_parameters", "start": 237, "end": 248, "children": [
+    {"type": "(", "start": 237, "end": 238, "text": "("},
+    {"type": "parameter", "start": 238, "end": 247, "children": [
+     {"type": "identifier", "start": 238, "end": 243, "text": "value"},
+     {"type": ":", "start": 243, "end": 244, "text": ":"},
+     {"type": "user_type", "start": 244, "end": 247, "children": [
+      {"type": "identifier", "start": 244, "end": 247, "text": "Any"}
+     ]}
+    ]},
+    {"type": ")", "start": 247, "end": 248, "text": ")"}
+   ]},
+   {"type": ":", "start": 248, "end": 249, "text": ":"},
+   {"type": "user_type", "start": 249, "end": 256, "children": [
+    {"type": "identifier", "start": 249, "end": 256, "text": "Boolean"}
+   ]},
+   {"type": "function_body", "start": 256, "end": 305, "children": [
+    {"type": "block", "start": 256, "end": 305, "children": [
+     {"type": "{", "start": 256, "end": 257, "text": "{"},
+     {"type": "return_expression", "start": 262, "end": 279, "children": [
+      {"type": "return", "start": 262, "end": 268, "text": "return"},
+      {"type": "is_expression", "start": 269, "end": 279, "children": [
+       {"type": "identifier", "start": 269, "end": 274, "field": "left", "text": "value"},
+       {"type": "is", "start": 275, "end": 277, "text": "is"},
+       {"type": "user_type", "start": 278, "end": 279, "field": "right", "children": [
+        {"type": "identifier", "start": 278, "end": 279, "text": "T"}
+       ]}
+      ]}
+     ]},
+     {"type": "line_comment", "start": 280, "end": 303, "text": "// reified lets is work"},
+     {"type": "}", "start": 304, "end": 305, "text": "}"}
+    ]}
+   ]}
+  ]},
+  {"type": "anonymous_function", "start": 307, "end": 388, "children": [
+   {"type": "fun", "start": 307, "end": 310, "text": "fun"},
+   {"type": "ERROR", "start": 311, "end": 324, "children": [
+    {"type": "<", "start": 311, "end": 312, "text": "<"},
+    {"type": "identifier", "start": 313, "end": 324, "text": "sortInPlace"}
+   ]},
+   {"type": "function_value_parameters", "start": 324, "end": 346, "children": [
+    {"type": "(", "start": 324, "end": 325, "text": "("},
+    {"type": "parameter", "start": 325, "end": 345, "children": [
+     {"type": "identifier", "start": 325, "end": 330, "text": "items"},
+     {"type": ":", "start": 330, "end": 331, "text": ":"},
+     {"type": "user_type", "start": 331, "end": 345, "children": [
+      {"type": "identifier", "start": 331, "end": 342, "text": "MutableList"},
+      {"type": "type_arguments", "start": 342, "end": 345, "children": [
+       {"type": "<", "start": 342, "end": 343, "text": "<"},
+       {"type": "type_projection", "start": 343, "end": 344, "children": [
+        {"type": "user_type", "start": 343, "end": 344, "children": [
+         {"type": "identifier", "start": 343, "end": 344, "text": "T"}
+        ]}
+       ]},
+       {"type": ">", "start": 344, "end": 345, "text": ">"}
+      ]}
+     ]}
+    ]},
+    {"type": ")", "start": 345, "end": 346, "text": ")"}
+   ]},
+   {"type": "type_constraints", "start": 347, "end": 368, "children": [
+    {"type": "where", "start": 347, "end": 352, "text": "where"},
+    {"type": "type_constraint", "start": 353, "end": 368, "children": [
+     {"type": "identifier", "start": 353, "end": 354, "text": "T"},
+     {"type": ":", "start": 354, "end": 355, "text": ":"},
+     {"type": "user_type", "start": 355, "end": 368, "children": [
+      {"type": "identifier", "start": 355, "end": 365, "text": "Comparable"},
+      {"type": "type_arguments", "start": 365, "end": 368, "children": [
+       {"type": "<", "start": 365, "end": 366, "text": "<"},
+       {"type": "type_projection", "start": 366, "end": 367, "children": [
+        {"type": "user_type", "start": 366, "end": 367, "children": [
+         {"type": "identifier", "start": 366, "end": 367, "text": "T"}
+        ]}
+       ]},
+       {"type": ">", "start": 367, "end": 368, "text": ">"}
+      ]}
+     ]}
+    ]}
+   ]},
+   {"type": "function_body", "start": 368, "end": 388, "children": [
+    {"type": "block", "start": 368, "end": 388, "children": [
+     {"type": "{", "start": 368, "end": 369, "text": "{"},
+     {"type": "call_expression", "start": 374, "end": 386, "children": [
+      {"type": "navigation_expression", "start": 374, "end": 384, "children": [
+       {"type": "identifier", "start": 374, "end": 379, "text": "items"},
+       {"type": ".", "start": 379, "end": 380, "text": "."},
+       {"type": "identifier", "start": 380, "end": 384, "text": "sort"}
+      ]},
+      {"type": "value_arguments", "start": 384, "end": 386, "children": [
+       {"type": "(", "start": 384, "end": 385, "text": "("},
+       {"type": ")", "start": 385, "end": 386, "text": ")"}
+      ]}
+     ]},
+     {"type": "}", "start": 387, "end": 388, "text": "}"}
+    ]}
+   ]}
+  ]},
+  {"type": "function_declaration", "start": 390, "end": 458, "children": [
+   {"type": "fun", "start": 390, "end": 393, "text": "fun"},
+   {"type": "identifier", "start": 394, "end": 398, "field": "name", "text": "star"},
+   {"type": "function_value_parameters", "start": 398, "end": 410, "children": [
+    {"type": "(", "start": 398, "end": 399, "text": "("},
+    {"type": "parameter", "start": 399, "end": 409, "children": [
+     {"type": "identifier", "start": 399, "end": 402, "text": "box"},
+     {"type": ":", "start": 402, "end": 403, "text": ":"},
+     {"type": "user_type", "start": 403, "end": 409, "children": [
+      {"type": "identifier", "start": 403, "end": 406, "text": "Box"},
+      {"type": "type_arguments", "start": 406, "end": 409, "children": [
+       {"type": "<", "start": 406, "end": 407, "text": "<"},
+       {"type": "type_projection", "start": 407, "end": 408, "children": [
+        {"type": "*", "start": 407, "end": 408, "text": "*"}
+       ]},
+       {"type": ">", "start": 408, "end": 409, "text": ">"}
+      ]}
+     ]}
+    ]},
+    {"type": ")", "start": 409, "end": 410, "text": ")"}
+   ]},
+   {"type": ":", "start": 410, "end": 411, "text": ":"},
+   {"type": "nullable_type", "start": 411, "end": 415, "children": [
+    {"type": "user_type", "start": 411, "end": 414, "children": [
+     {"type": "identifier", "start": 411, "end": 414, "text": "Any"}
+    ]},
+    {"type": "?", "start": 414, "end": 415, "text": "?"}
+   ]},
+   {"type": "function_body", "start": 415, "end": 458, "children": [
+    {"type": "block", "start": 415, "end": 458, "children": [
+     {"type": "{", "start": 415, "end": 416, "text": "{"},
+     {"type": "return_expression", "start": 421, "end": 437, "children": [
+      {"type": "return", "start": 421, "end": 427, "text": "return"},
+      {"type": "call_expression", "start": 428, "end": 437, "children": [
+       {"type": "navigation_expression", "start": 428, "end": 435, "children": [
+        {"type": "identifier", "start": 428, "end": 431, "text": "box"},
+        {"type": ".", "start": 431, "end": 432, "text": "."},
+        {"type": "identifier", "start": 432, "end": 435, "text": "get"}
+       ]},
+       {"type": "value_arguments", "start": 435, "end": 437, "children": [
+        {"type": "(", "start": 435, "end": 436, "text": "("},
+        {"type": ")", "start": 436, "end": 437, "text": ")"}
+       ]}
+      ]}
+     ]},
+     {"type": "line_comment", "start": 438, "end": 456, "text": "// star projection"},
+     {"type": "}", "start": 457, "end": 458, "text": "}"}
+    ]}
+   ]}
+  ]}
+ ]}
+}

@@ -1,0 +1,193 @@
+{
+ "language": "javascript",
+ "source_file": "corpus/src/javascript/modules.js",
+ "source": "// ES modules: imports and exports, the statement shapes a module root holds.\nimport fs from \"fs\";\n\nimport { readFile, writeFile as persist } from \"node:fs/promises;\n\nimport * as utils from \"./utils.js\";\n\nimport { first, second, third, fourth, fifth } from \"./long-import-list.js\";\n\nexport const answer = 42;\n\nexport function transform(input, options = {}) {\n  return input;\n}\n\nexport default function main() {\n  return transform(utils.default);\n}\n\nexport { namedOne, namedTwo as aliasTwo };\n",
+ "base_source": "// ES modules: imports and exports, the statement shapes a module root holds.\nimport fs from \"fs\";\n\nimport { readFile, writeFile as persist } from \"node:fs/promises\";\n\nimport * as utils from \"./utils.js\";\n\nimport { first, second, third, fourth, fifth } from \"./long-import-list.js\";\n\nexport const answer = 42;\n\nexport function transform(input, options = {}) {\n  return input;\n}\n\nexport default function main() {\n  return transform(utils.default);\n}\n\nexport { namedOne, namedTwo as aliasTwo };\n",
+ "edit": {"kind": "delete", "label": "delete 1B", "start": 164, "old_end": 165, "new_end": 164, "removed": "\"", "inserted": ""},
+ "problems": {"error": 1, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
+ "grammar": "tree-sitter-javascript==0.25.0",
+ "seed": 0,
+ "root":
+ {"type": "program", "start": 0, "end": 492, "children": [
+  {"type": "comment", "start": 0, "end": 77, "text": "// ES modules: imports and exports, the statement shapes a module root holds."},
+  {"type": "import_statement", "start": 78, "end": 98, "children": [
+   {"type": "import", "start": 78, "end": 84, "text": "import"},
+   {"type": "import_clause", "start": 85, "end": 87, "children": [
+    {"type": "identifier", "start": 85, "end": 87, "text": "fs"}
+   ]},
+   {"type": "from", "start": 88, "end": 92, "text": "from"},
+   {"type": "string", "start": 93, "end": 97, "field": "source", "children": [
+    {"type": "\"", "start": 93, "end": 94, "text": "\""},
+    {"type": "string_fragment", "start": 94, "end": 96, "text": "fs"},
+    {"type": "\"", "start": 96, "end": 97, "text": "\""}
+   ]},
+   {"type": ";", "start": 97, "end": 98, "text": ";"}
+  ]},
+  {"type": "import_statement", "start": 100, "end": 203, "children": [
+   {"type": "import", "start": 100, "end": 106, "text": "import"},
+   {"type": "ERROR", "start": 107, "end": 173, "children": [
+    {"type": "import_clause", "start": 107, "end": 141, "children": [
+     {"type": "named_imports", "start": 107, "end": 141, "children": [
+      {"type": "{", "start": 107, "end": 108, "text": "{"},
+      {"type": "import_specifier", "start": 109, "end": 117, "children": [
+       {"type": "identifier", "start": 109, "end": 117, "field": "name", "text": "readFile"}
+      ]},
+      {"type": ",", "start": 117, "end": 118, "text": ","},
+      {"type": "import_specifier", "start": 119, "end": 139, "children": [
+       {"type": "identifier", "start": 119, "end": 128, "field": "name", "text": "writeFile"},
+       {"type": "as", "start": 129, "end": 131, "text": "as"},
+       {"type": "identifier", "start": 132, "end": 139, "field": "alias", "text": "persist"}
+      ]},
+      {"type": "}", "start": 140, "end": 141, "text": "}"}
+     ]}
+    ]},
+    {"type": "from", "start": 142, "end": 146, "text": "from"},
+    {"type": "\"", "start": 147, "end": 148, "text": "\""},
+    {"type": "string_fragment", "start": 148, "end": 165, "text": "node:fs/promises;"},
+    {"type": "identifier", "start": 167, "end": 173, "text": "import"}
+   ]},
+   {"type": "import_clause", "start": 174, "end": 184, "children": [
+    {"type": "namespace_import", "start": 174, "end": 184, "children": [
+     {"type": "*", "start": 174, "end": 175, "text": "*"},
+     {"type": "as", "start": 176, "end": 178, "text": "as"},
+     {"type": "identifier", "start": 179, "end": 184, "text": "utils"}
+    ]}
+   ]},
+   {"type": "from", "start": 185, "end": 189, "text": "from"},
+   {"type": "string", "start": 190, "end": 202, "field": "source", "children": [
+    {"type": "\"", "start": 190, "end": 191, "text": "\""},
+    {"type": "string_fragment", "start": 191, "end": 201, "text": "./utils.js"},
+    {"type": "\"", "start": 201, "end": 202, "text": "\""}
+   ]},
+   {"type": ";", "start": 202, "end": 203, "text": ";"}
+  ]},
+  {"type": "import_statement", "start": 205, "end": 281, "children": [
+   {"type": "import", "start": 205, "end": 211, "text": "import"},
+   {"type": "import_clause", "start": 212, "end": 251, "children": [
+    {"type": "named_imports", "start": 212, "end": 251, "children": [
+     {"type": "{", "start": 212, "end": 213, "text": "{"},
+     {"type": "import_specifier", "start": 214, "end": 219, "children": [
+      {"type": "identifier", "start": 214, "end": 219, "field": "name", "text": "first"}
+     ]},
+     {"type": ",", "start": 219, "end": 220, "text": ","},
+     {"type": "import_specifier", "start": 221, "end": 227, "children": [
+      {"type": "identifier", "start": 221, "end": 227, "field": "name", "text": "second"}
+     ]},
+     {"type": ",", "start": 227, "end": 228, "text": ","},
+     {"type": "import_specifier", "start": 229, "end": 234, "children": [
+      {"type": "identifier", "start": 229, "end": 234, "field": "name", "text": "third"}
+     ]},
+     {"type": ",", "start": 234, "end": 235, "text": ","},
+     {"type": "import_specifier", "start": 236, "end": 242, "children": [
+      {"type": "identifier", "start": 236, "end": 242, "field": "name", "text": "fourth"}
+     ]},
+     {"type": ",", "start": 242, "end": 243, "text": ","},
+     {"type": "import_specifier", "start": 244, "end": 249, "children": [
+      {"type": "identifier", "start": 244, "end": 249, "field": "name", "text": "fifth"}
+     ]},
+     {"type": "}", "start": 250, "end": 251, "text": "}"}
+    ]}
+   ]},
+   {"type": "from", "start": 252, "end": 256, "text": "from"},
+   {"type": "string", "start": 257, "end": 280, "field": "source", "children": [
+    {"type": "\"", "start": 257, "end": 258, "text": "\""},
+    {"type": "string_fragment", "start": 258, "end": 279, "text": "./long-import-list.js"},
+    {"type": "\"", "start": 279, "end": 280, "text": "\""}
+   ]},
+   {"type": ";", "start": 280, "end": 281, "text": ";"}
+  ]},
+  {"type": "export_statement", "start": 283, "end": 308, "children": [
+   {"type": "export", "start": 283, "end": 289, "text": "export"},
+   {"type": "lexical_declaration", "start": 290, "end": 308, "field": "declaration", "children": [
+    {"type": "const", "start": 290, "end": 295, "field": "kind", "text": "const"},
+    {"type": "variable_declarator", "start": 296, "end": 307, "children": [
+     {"type": "identifier", "start": 296, "end": 302, "field": "name", "text": "answer"},
+     {"type": "=", "start": 303, "end": 304, "text": "="},
+     {"type": "number", "start": 305, "end": 307, "field": "value", "text": "42"}
+    ]},
+    {"type": ";", "start": 307, "end": 308, "text": ";"}
+   ]}
+  ]},
+  {"type": "export_statement", "start": 310, "end": 376, "children": [
+   {"type": "export", "start": 310, "end": 316, "text": "export"},
+   {"type": "function_declaration", "start": 317, "end": 376, "field": "declaration", "children": [
+    {"type": "function", "start": 317, "end": 325, "text": "function"},
+    {"type": "identifier", "start": 326, "end": 335, "field": "name", "text": "transform"},
+    {"type": "formal_parameters", "start": 335, "end": 356, "field": "parameters", "children": [
+     {"type": "(", "start": 335, "end": 336, "text": "("},
+     {"type": "identifier", "start": 336, "end": 341, "text": "input"},
+     {"type": ",", "start": 341, "end": 342, "text": ","},
+     {"type": "assignment_pattern", "start": 343, "end": 355, "children": [
+      {"type": "identifier", "start": 343, "end": 350, "field": "left", "text": "options"},
+      {"type": "=", "start": 351, "end": 352, "text": "="},
+      {"type": "object", "start": 353, "end": 355, "field": "right", "children": [
+       {"type": "{", "start": 353, "end": 354, "text": "{"},
+       {"type": "}", "start": 354, "end": 355, "text": "}"}
+      ]}
+     ]},
+     {"type": ")", "start": 355, "end": 356, "text": ")"}
+    ]},
+    {"type": "statement_block", "start": 357, "end": 376, "field": "body", "children": [
+     {"type": "{", "start": 357, "end": 358, "text": "{"},
+     {"type": "return_statement", "start": 361, "end": 374, "children": [
+      {"type": "return", "start": 361, "end": 367, "text": "return"},
+      {"type": "identifier", "start": 368, "end": 373, "text": "input"},
+      {"type": ";", "start": 373, "end": 374, "text": ";"}
+     ]},
+     {"type": "}", "start": 375, "end": 376, "text": "}"}
+    ]}
+   ]}
+  ]},
+  {"type": "export_statement", "start": 378, "end": 447, "children": [
+   {"type": "export", "start": 378, "end": 384, "text": "export"},
+   {"type": "default", "start": 385, "end": 392, "text": "default"},
+   {"type": "function_declaration", "start": 393, "end": 447, "field": "declaration", "children": [
+    {"type": "function", "start": 393, "end": 401, "text": "function"},
+    {"type": "identifier", "start": 402, "end": 406, "field": "name", "text": "main"},
+    {"type": "formal_parameters", "start": 406, "end": 408, "field": "parameters", "children": [
+     {"type": "(", "start": 406, "end": 407, "text": "("},
+     {"type": ")", "start": 407, "end": 408, "text": ")"}
+    ]},
+    {"type": "statement_block", "start": 409, "end": 447, "field": "body", "children": [
+     {"type": "{", "start": 409, "end": 410, "text": "{"},
+     {"type": "return_statement", "start": 413, "end": 445, "children": [
+      {"type": "return", "start": 413, "end": 419, "text": "return"},
+      {"type": "call_expression", "start": 420, "end": 444, "children": [
+       {"type": "identifier", "start": 420, "end": 429, "field": "function", "text": "transform"},
+       {"type": "arguments", "start": 429, "end": 444, "field": "arguments", "children": [
+        {"type": "(", "start": 429, "end": 430, "text": "("},
+        {"type": "member_expression", "start": 430, "end": 443, "children": [
+         {"type": "identifier", "start": 430, "end": 435, "field": "object", "text": "utils"},
+         {"type": ".", "start": 435, "end": 436, "text": "."},
+         {"type": "property_identifier", "start": 436, "end": 443, "field": "property", "text": "default"}
+        ]},
+        {"type": ")", "start": 443, "end": 444, "text": ")"}
+       ]}
+      ]},
+      {"type": ";", "start": 444, "end": 445, "text": ";"}
+     ]},
+     {"type": "}", "start": 446, "end": 447, "text": "}"}
+    ]}
+   ]}
+  ]},
+  {"type": "export_statement", "start": 449, "end": 491, "children": [
+   {"type": "export", "start": 449, "end": 455, "text": "export"},
+   {"type": "export_clause", "start": 456, "end": 490, "children": [
+    {"type": "{", "start": 456, "end": 457, "text": "{"},
+    {"type": "export_specifier", "start": 458, "end": 466, "children": [
+     {"type": "identifier", "start": 458, "end": 466, "field": "name", "text": "namedOne"}
+    ]},
+    {"type": ",", "start": 466, "end": 467, "text": ","},
+    {"type": "export_specifier", "start": 468, "end": 488, "children": [
+     {"type": "identifier", "start": 468, "end": 476, "field": "name", "text": "namedTwo"},
+     {"type": "as", "start": 477, "end": 479, "text": "as"},
+     {"type": "identifier", "start": 480, "end": 488, "field": "alias", "text": "aliasTwo"}
+    ]},
+    {"type": "}", "start": 489, "end": 490, "text": "}"}
+   ]},
+   {"type": ";", "start": 490, "end": 491, "text": ";"}
+  ]}
+ ]}
+}

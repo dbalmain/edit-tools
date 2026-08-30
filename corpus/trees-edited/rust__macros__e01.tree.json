@@ -1,0 +1,143 @@
+{
+ "language": "rust",
+ "source_file": "corpus/src/rust/macros.rs",
+ "source": "macro_rules! make_pair {\n    ($name:ident, $value:expr) => {\n        let $name = alue, stringify!($name));\n    };\n}\n\nfn macro_probe() {\n    make_pair!(answer, 42);\n    make_pair!(message, \"hello\");\n\n    // Macro invocations are Rust-specific syntax with opaque token bodies.\n    let values = vec![answer, message, another_value, yet_another_value];\n    consume(values);\n}\n",
+ "base_source": "macro_rules! make_pair {\n    ($name:ident, $value:expr) => {\n        let $name = ($value, stringify!($name));\n    };\n}\n\nfn macro_probe() {\n    make_pair!(answer, 42);\n    make_pair!(message, \"hello\");\n\n    // Macro invocations are Rust-specific syntax with opaque token bodies.\n    let values = vec![answer, message, another_value, yet_another_value];\n    consume(values);\n}\n",
+ "edit": {"kind": "delete", "label": "delete 3B", "start": 81, "old_end": 84, "new_end": 81, "removed": "($v", "inserted": ""},
+ "problems": {"error": 1, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
+ "grammar": "tree-sitter-rust==0.24.0",
+ "seed": 0,
+ "root":
+ {"type": "source_file", "start": 0, "end": 372, "children": [
+  {"type": "macro_definition", "start": 0, "end": 115, "children": [
+   {"type": "macro_rules!", "start": 0, "end": 12, "text": "macro_rules!"},
+   {"type": "identifier", "start": 13, "end": 22, "field": "name", "text": "make_pair"},
+   {"type": "{", "start": 23, "end": 24, "text": "{"},
+   {"type": "macro_rule", "start": 29, "end": 112, "children": [
+    {"type": "token_tree_pattern", "start": 29, "end": 55, "field": "left", "children": [
+     {"type": "(", "start": 29, "end": 30, "text": "("},
+     {"type": "token_binding_pattern", "start": 30, "end": 41, "children": [
+      {"type": "metavariable", "start": 30, "end": 35, "field": "name", "text": "$name"},
+      {"type": ":", "start": 35, "end": 36, "text": ":"},
+      {"type": "fragment_specifier", "start": 36, "end": 41, "field": "type", "children": [
+       {"type": "ident", "start": 36, "end": 41, "text": "ident"}
+      ]}
+     ]},
+     {"type": ",", "start": 41, "end": 42, "text": ","},
+     {"type": "token_binding_pattern", "start": 43, "end": 54, "children": [
+      {"type": "metavariable", "start": 43, "end": 49, "field": "name", "text": "$value"},
+      {"type": ":", "start": 49, "end": 50, "text": ":"},
+      {"type": "fragment_specifier", "start": 50, "end": 54, "field": "type", "children": [
+       {"type": "expr", "start": 50, "end": 54, "text": "expr"}
+      ]}
+     ]},
+     {"type": ")", "start": 54, "end": 55, "text": ")"}
+    ]},
+    {"type": "=>", "start": 56, "end": 58, "text": "=>"},
+    {"type": "token_tree", "start": 59, "end": 112, "field": "right", "children": [
+     {"type": "{", "start": 59, "end": 60, "text": "{"},
+     {"type": "let", "start": 69, "end": 72, "text": "let"},
+     {"type": "metavariable", "start": 73, "end": 78, "text": "$name"},
+     {"type": "=", "start": 79, "end": 80, "text": "="},
+     {"type": "identifier", "start": 81, "end": 85, "text": "alue"},
+     {"type": ",", "start": 85, "end": 86, "text": ","},
+     {"type": "identifier", "start": 87, "end": 96, "text": "stringify"},
+     {"type": "!", "start": 96, "end": 97, "text": "!"},
+     {"type": "token_tree", "start": 97, "end": 104, "children": [
+      {"type": "(", "start": 97, "end": 98, "text": "("},
+      {"type": "metavariable", "start": 98, "end": 103, "text": "$name"},
+      {"type": ")", "start": 103, "end": 104, "text": ")"}
+     ]},
+     {"type": "ERROR", "start": 104, "end": 105, "children": [
+      {"type": ")", "start": 104, "end": 105, "text": ")"}
+     ]},
+     {"type": ";", "start": 105, "end": 106, "text": ";"},
+     {"type": "}", "start": 111, "end": 112, "text": "}"}
+    ]}
+   ]},
+   {"type": ";", "start": 112, "end": 113, "text": ";"},
+   {"type": "}", "start": 114, "end": 115, "text": "}"}
+  ]},
+  {"type": "function_item", "start": 117, "end": 371, "children": [
+   {"type": "fn", "start": 117, "end": 119, "text": "fn"},
+   {"type": "identifier", "start": 120, "end": 131, "field": "name", "text": "macro_probe"},
+   {"type": "parameters", "start": 131, "end": 133, "field": "parameters", "children": [
+    {"type": "(", "start": 131, "end": 132, "text": "("},
+    {"type": ")", "start": 132, "end": 133, "text": ")"}
+   ]},
+   {"type": "block", "start": 134, "end": 371, "field": "body", "children": [
+    {"type": "{", "start": 134, "end": 135, "text": "{"},
+    {"type": "expression_statement", "start": 140, "end": 163, "children": [
+     {"type": "macro_invocation", "start": 140, "end": 162, "children": [
+      {"type": "identifier", "start": 140, "end": 149, "field": "macro", "text": "make_pair"},
+      {"type": "!", "start": 149, "end": 150, "text": "!"},
+      {"type": "token_tree", "start": 150, "end": 162, "children": [
+       {"type": "(", "start": 150, "end": 151, "text": "("},
+       {"type": "identifier", "start": 151, "end": 157, "text": "answer"},
+       {"type": ",", "start": 157, "end": 158, "text": ","},
+       {"type": "integer_literal", "start": 159, "end": 161, "text": "42"},
+       {"type": ")", "start": 161, "end": 162, "text": ")"}
+      ]}
+     ]},
+     {"type": ";", "start": 162, "end": 163, "text": ";"}
+    ]},
+    {"type": "expression_statement", "start": 168, "end": 197, "children": [
+     {"type": "macro_invocation", "start": 168, "end": 196, "children": [
+      {"type": "identifier", "start": 168, "end": 177, "field": "macro", "text": "make_pair"},
+      {"type": "!", "start": 177, "end": 178, "text": "!"},
+      {"type": "token_tree", "start": 178, "end": 196, "children": [
+       {"type": "(", "start": 178, "end": 179, "text": "("},
+       {"type": "identifier", "start": 179, "end": 186, "text": "message"},
+       {"type": ",", "start": 186, "end": 187, "text": ","},
+       {"type": "string_literal", "start": 188, "end": 195, "children": [
+        {"type": "\"", "start": 188, "end": 189, "text": "\""},
+        {"type": "string_content", "start": 189, "end": 194, "text": "hello"},
+        {"type": "\"", "start": 194, "end": 195, "text": "\""}
+       ]},
+       {"type": ")", "start": 195, "end": 196, "text": ")"}
+      ]}
+     ]},
+     {"type": ";", "start": 196, "end": 197, "text": ";"}
+    ]},
+    {"type": "line_comment", "start": 203, "end": 274, "children": [
+     {"type": "//", "start": 203, "end": 205, "text": "//"}
+    ]},
+    {"type": "let_declaration", "start": 279, "end": 348, "children": [
+     {"type": "let", "start": 279, "end": 282, "text": "let"},
+     {"type": "identifier", "start": 283, "end": 289, "field": "pattern", "text": "values"},
+     {"type": "=", "start": 290, "end": 291, "text": "="},
+     {"type": "macro_invocation", "start": 292, "end": 347, "field": "value", "children": [
+      {"type": "identifier", "start": 292, "end": 295, "field": "macro", "text": "vec"},
+      {"type": "!", "start": 295, "end": 296, "text": "!"},
+      {"type": "token_tree", "start": 296, "end": 347, "children": [
+       {"type": "[", "start": 296, "end": 297, "text": "["},
+       {"type": "identifier", "start": 297, "end": 303, "text": "answer"},
+       {"type": ",", "start": 303, "end": 304, "text": ","},
+       {"type": "identifier", "start": 305, "end": 312, "text": "message"},
+       {"type": ",", "start": 312, "end": 313, "text": ","},
+       {"type": "identifier", "start": 314, "end": 327, "text": "another_value"},
+       {"type": ",", "start": 327, "end": 328, "text": ","},
+       {"type": "identifier", "start": 329, "end": 346, "text": "yet_another_value"},
+       {"type": "]", "start": 346, "end": 347, "text": "]"}
+      ]}
+     ]},
+     {"type": ";", "start": 347, "end": 348, "text": ";"}
+    ]},
+    {"type": "expression_statement", "start": 353, "end": 369, "children": [
+     {"type": "call_expression", "start": 353, "end": 368, "children": [
+      {"type": "identifier", "start": 353, "end": 360, "field": "function", "text": "consume"},
+      {"type": "arguments", "start": 360, "end": 368, "field": "arguments", "children": [
+       {"type": "(", "start": 360, "end": 361, "text": "("},
+       {"type": "identifier", "start": 361, "end": 367, "text": "values"},
+       {"type": ")", "start": 367, "end": 368, "text": ")"}
+      ]}
+     ]},
+     {"type": ";", "start": 368, "end": 369, "text": ";"}
+    ]},
+    {"type": "}", "start": 370, "end": 371, "text": "}"}
+   ]}
+  ]}
+ ]}
+}

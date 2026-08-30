@@ -1,0 +1,131 @@
+{
+ "language": "go",
+ "source_file": "corpus/src/go/iota.go",
+ "source": "pacmain\n\nconst (\n\tSunday = iota // day zero\n\tMonday\n\tTuesday\n\tWednesday\n\tThursday\n\tFriday\n\tSaturday\n)\n\nconst (\n\tRead = 1 << iota\n\tWrite\n\tExecute\n)\n\nconst (\n\t_ = iota\n\tKB = 1 << (10 * iota) // kibibyte\n\tMB\n\tGB\n)\n\nconst (\n\tStatusUnknown = iota + 1\n\tStatusActive\n\tStatusDisabled\n)\n",
+ "base_source": "package main\n\nconst (\n\tSunday = iota // day zero\n\tMonday\n\tTuesday\n\tWednesday\n\tThursday\n\tFriday\n\tSaturday\n)\n\nconst (\n\tRead = 1 << iota\n\tWrite\n\tExecute\n)\n\nconst (\n\t_ = iota\n\tKB = 1 << (10 * iota) // kibibyte\n\tMB\n\tGB\n)\n\nconst (\n\tStatusUnknown = iota + 1\n\tStatusActive\n\tStatusDisabled\n)\n",
+ "edit": {"kind": "delete", "label": "delete 5B", "start": 3, "old_end": 8, "new_end": 3, "removed": "kage ", "inserted": ""},
+ "problems": {"error": 0, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
+ "grammar": "tree-sitter-go==0.25.0",
+ "seed": 0,
+ "root":
+ {"type": "source_file", "start": 0, "end": 278, "children": [
+  {"type": "expression_statement", "start": 0, "end": 7, "children": [
+   {"type": "identifier", "start": 0, "end": 7, "text": "pacmain"}
+  ]},
+  {"type": "const_declaration", "start": 9, "end": 101, "children": [
+   {"type": "const", "start": 9, "end": 14, "text": "const"},
+   {"type": "(", "start": 15, "end": 16, "text": "("},
+   {"type": "const_spec", "start": 18, "end": 31, "children": [
+    {"type": "identifier", "start": 18, "end": 24, "field": "name", "text": "Sunday"},
+    {"type": "=", "start": 25, "end": 26, "text": "="},
+    {"type": "expression_list", "start": 27, "end": 31, "field": "value", "children": [
+     {"type": "iota", "start": 27, "end": 31, "text": "iota"}
+    ]}
+   ]},
+   {"type": "comment", "start": 32, "end": 43, "text": "// day zero"},
+   {"type": "const_spec", "start": 45, "end": 51, "children": [
+    {"type": "identifier", "start": 45, "end": 51, "field": "name", "text": "Monday"}
+   ]},
+   {"type": "const_spec", "start": 53, "end": 60, "children": [
+    {"type": "identifier", "start": 53, "end": 60, "field": "name", "text": "Tuesday"}
+   ]},
+   {"type": "const_spec", "start": 62, "end": 71, "children": [
+    {"type": "identifier", "start": 62, "end": 71, "field": "name", "text": "Wednesday"}
+   ]},
+   {"type": "const_spec", "start": 73, "end": 81, "children": [
+    {"type": "identifier", "start": 73, "end": 81, "field": "name", "text": "Thursday"}
+   ]},
+   {"type": "const_spec", "start": 83, "end": 89, "children": [
+    {"type": "identifier", "start": 83, "end": 89, "field": "name", "text": "Friday"}
+   ]},
+   {"type": "const_spec", "start": 91, "end": 99, "children": [
+    {"type": "identifier", "start": 91, "end": 99, "field": "name", "text": "Saturday"}
+   ]},
+   {"type": ")", "start": 100, "end": 101, "text": ")"}
+  ]},
+  {"type": "const_declaration", "start": 103, "end": 146, "children": [
+   {"type": "const", "start": 103, "end": 108, "text": "const"},
+   {"type": "(", "start": 109, "end": 110, "text": "("},
+   {"type": "const_spec", "start": 112, "end": 128, "children": [
+    {"type": "identifier", "start": 112, "end": 116, "field": "name", "text": "Read"},
+    {"type": "=", "start": 117, "end": 118, "text": "="},
+    {"type": "expression_list", "start": 119, "end": 128, "field": "value", "children": [
+     {"type": "binary_expression", "start": 119, "end": 128, "children": [
+      {"type": "int_literal", "start": 119, "end": 120, "field": "left", "text": "1"},
+      {"type": "<<", "start": 121, "end": 123, "field": "operator", "text": "<<"},
+      {"type": "iota", "start": 124, "end": 128, "field": "right", "text": "iota"}
+     ]}
+    ]}
+   ]},
+   {"type": "const_spec", "start": 130, "end": 135, "children": [
+    {"type": "identifier", "start": 130, "end": 135, "field": "name", "text": "Write"}
+   ]},
+   {"type": "const_spec", "start": 137, "end": 144, "children": [
+    {"type": "identifier", "start": 137, "end": 144, "field": "name", "text": "Execute"}
+   ]},
+   {"type": ")", "start": 145, "end": 146, "text": ")"}
+  ]},
+  {"type": "const_declaration", "start": 148, "end": 210, "children": [
+   {"type": "const", "start": 148, "end": 153, "text": "const"},
+   {"type": "(", "start": 154, "end": 155, "text": "("},
+   {"type": "const_spec", "start": 157, "end": 165, "children": [
+    {"type": "identifier", "start": 157, "end": 158, "field": "name", "text": "_"},
+    {"type": "=", "start": 159, "end": 160, "text": "="},
+    {"type": "expression_list", "start": 161, "end": 165, "field": "value", "children": [
+     {"type": "iota", "start": 161, "end": 165, "text": "iota"}
+    ]}
+   ]},
+   {"type": "const_spec", "start": 167, "end": 188, "children": [
+    {"type": "identifier", "start": 167, "end": 169, "field": "name", "text": "KB"},
+    {"type": "=", "start": 170, "end": 171, "text": "="},
+    {"type": "expression_list", "start": 172, "end": 188, "field": "value", "children": [
+     {"type": "binary_expression", "start": 172, "end": 188, "children": [
+      {"type": "int_literal", "start": 172, "end": 173, "field": "left", "text": "1"},
+      {"type": "<<", "start": 174, "end": 176, "field": "operator", "text": "<<"},
+      {"type": "parenthesized_expression", "start": 177, "end": 188, "field": "right", "children": [
+       {"type": "(", "start": 177, "end": 178, "text": "("},
+       {"type": "binary_expression", "start": 178, "end": 187, "children": [
+        {"type": "int_literal", "start": 178, "end": 180, "field": "left", "text": "10"},
+        {"type": "*", "start": 181, "end": 182, "field": "operator", "text": "*"},
+        {"type": "iota", "start": 183, "end": 187, "field": "right", "text": "iota"}
+       ]},
+       {"type": ")", "start": 187, "end": 188, "text": ")"}
+      ]}
+     ]}
+    ]}
+   ]},
+   {"type": "comment", "start": 189, "end": 200, "text": "// kibibyte"},
+   {"type": "const_spec", "start": 202, "end": 204, "children": [
+    {"type": "identifier", "start": 202, "end": 204, "field": "name", "text": "MB"}
+   ]},
+   {"type": "const_spec", "start": 206, "end": 208, "children": [
+    {"type": "identifier", "start": 206, "end": 208, "field": "name", "text": "GB"}
+   ]},
+   {"type": ")", "start": 209, "end": 210, "text": ")"}
+  ]},
+  {"type": "const_declaration", "start": 212, "end": 277, "children": [
+   {"type": "const", "start": 212, "end": 217, "text": "const"},
+   {"type": "(", "start": 218, "end": 219, "text": "("},
+   {"type": "const_spec", "start": 221, "end": 245, "children": [
+    {"type": "identifier", "start": 221, "end": 234, "field": "name", "text": "StatusUnknown"},
+    {"type": "=", "start": 235, "end": 236, "text": "="},
+    {"type": "expression_list", "start": 237, "end": 245, "field": "value", "children": [
+     {"type": "binary_expression", "start": 237, "end": 245, "children": [
+      {"type": "iota", "start": 237, "end": 241, "field": "left", "text": "iota"},
+      {"type": "+", "start": 242, "end": 243, "field": "operator", "text": "+"},
+      {"type": "int_literal", "start": 244, "end": 245, "field": "right", "text": "1"}
+     ]}
+    ]}
+   ]},
+   {"type": "const_spec", "start": 247, "end": 259, "children": [
+    {"type": "identifier", "start": 247, "end": 259, "field": "name", "text": "StatusActive"}
+   ]},
+   {"type": "const_spec", "start": 261, "end": 275, "children": [
+    {"type": "identifier", "start": 261, "end": 275, "field": "name", "text": "StatusDisabled"}
+   ]},
+   {"type": ")", "start": 276, "end": 277, "text": ")"}
+  ]}
+ ]}
+}

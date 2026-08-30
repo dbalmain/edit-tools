@@ -1,0 +1,116 @@
+{
+ "language": "scheme",
+ "source_file": "corpus/src/scheme/quote.scm",
+ "source": ";; quote, quasiquote, unquote, unquote-splicing. Each is its own nods))\n\n(de;; wrapping a datum, not a list headed by the word quote.\n(define quoted '(a b c)) ; quote\n\n(define nested-quote '(a (b (c d)) e))\n\n(define (fill-template x ys)\n`(+ ,x ,@ys))\n\n(define (build xs)\n`(begin\n,@xs\nx))\n",
+ "base_source": ";; quote, quasiquote, unquote, unquote-splicing. Each is its own node\n;; wrapping a datum, not a list headed by the word quote.\n(define quoted '(a b c)) ; quote\n\n(define nested-quote '(a (b (c d)) e))\n\n(define (fill-template x ys)\n`(+ ,x ,@ys))\n\n(define (build xs)\n`(begin\n,@xs\nx))\n",
+ "edit": {"kind": "replace", "label": "splice 241..249", "start": 68, "old_end": 70, "new_end": 76, "removed": "e\n", "inserted": "s))\n\n(de"},
+ "problems": {"error": 1, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
+ "grammar": "tree-sitter-scheme @ git+https://github.com/6cdh/tree-sitter-scheme@v0.24.7-1",
+ "seed": 0,
+ "root":
+ {"type": "program", "start": 0, "end": 288, "children": [
+  {"type": "comment", "start": 0, "end": 71, "text": ";; quote, quasiquote, unquote, unquote-splicing. Each is its own nods))"},
+  {"type": "ERROR", "start": 73, "end": 288, "children": [
+   {"type": "(", "start": 73, "end": 74, "text": "("},
+   {"type": "symbol", "start": 74, "end": 76, "text": "de"},
+   {"type": "comment", "start": 76, "end": 133, "text": ";; wrapping a datum, not a list headed by the word quote."},
+   {"type": "list", "start": 134, "end": 158, "children": [
+    {"type": "(", "start": 134, "end": 135, "text": "("},
+    {"type": "symbol", "start": 135, "end": 141, "text": "define"},
+    {"type": "symbol", "start": 142, "end": 148, "text": "quoted"},
+    {"type": "quote", "start": 149, "end": 157, "children": [
+     {"type": "'", "start": 149, "end": 150, "text": "'"},
+     {"type": "list", "start": 150, "end": 157, "children": [
+      {"type": "(", "start": 150, "end": 151, "text": "("},
+      {"type": "symbol", "start": 151, "end": 152, "text": "a"},
+      {"type": "symbol", "start": 153, "end": 154, "text": "b"},
+      {"type": "symbol", "start": 155, "end": 156, "text": "c"},
+      {"type": ")", "start": 156, "end": 157, "text": ")"}
+     ]}
+    ]},
+    {"type": ")", "start": 157, "end": 158, "text": ")"}
+   ]},
+   {"type": "comment", "start": 159, "end": 166, "text": "; quote"},
+   {"type": "list", "start": 168, "end": 206, "children": [
+    {"type": "(", "start": 168, "end": 169, "text": "("},
+    {"type": "symbol", "start": 169, "end": 175, "text": "define"},
+    {"type": "symbol", "start": 176, "end": 188, "text": "nested-quote"},
+    {"type": "quote", "start": 189, "end": 205, "children": [
+     {"type": "'", "start": 189, "end": 190, "text": "'"},
+     {"type": "list", "start": 190, "end": 205, "children": [
+      {"type": "(", "start": 190, "end": 191, "text": "("},
+      {"type": "symbol", "start": 191, "end": 192, "text": "a"},
+      {"type": "list", "start": 193, "end": 202, "children": [
+       {"type": "(", "start": 193, "end": 194, "text": "("},
+       {"type": "symbol", "start": 194, "end": 195, "text": "b"},
+       {"type": "list", "start": 196, "end": 201, "children": [
+        {"type": "(", "start": 196, "end": 197, "text": "("},
+        {"type": "symbol", "start": 197, "end": 198, "text": "c"},
+        {"type": "symbol", "start": 199, "end": 200, "text": "d"},
+        {"type": ")", "start": 200, "end": 201, "text": ")"}
+       ]},
+       {"type": ")", "start": 201, "end": 202, "text": ")"}
+      ]},
+      {"type": "symbol", "start": 203, "end": 204, "text": "e"},
+      {"type": ")", "start": 204, "end": 205, "text": ")"}
+     ]}
+    ]},
+    {"type": ")", "start": 205, "end": 206, "text": ")"}
+   ]},
+   {"type": "list", "start": 208, "end": 250, "children": [
+    {"type": "(", "start": 208, "end": 209, "text": "("},
+    {"type": "symbol", "start": 209, "end": 215, "text": "define"},
+    {"type": "list", "start": 216, "end": 236, "children": [
+     {"type": "(", "start": 216, "end": 217, "text": "("},
+     {"type": "symbol", "start": 217, "end": 230, "text": "fill-template"},
+     {"type": "symbol", "start": 231, "end": 232, "text": "x"},
+     {"type": "symbol", "start": 233, "end": 235, "text": "ys"},
+     {"type": ")", "start": 235, "end": 236, "text": ")"}
+    ]},
+    {"type": "quasiquote", "start": 237, "end": 249, "children": [
+     {"type": "`", "start": 237, "end": 238, "text": "`"},
+     {"type": "list", "start": 238, "end": 249, "children": [
+      {"type": "(", "start": 238, "end": 239, "text": "("},
+      {"type": "symbol", "start": 239, "end": 240, "text": "+"},
+      {"type": "unquote", "start": 241, "end": 243, "children": [
+       {"type": ",", "start": 241, "end": 242, "text": ","},
+       {"type": "symbol", "start": 242, "end": 243, "text": "x"}
+      ]},
+      {"type": "unquote_splicing", "start": 244, "end": 248, "children": [
+       {"type": ",@", "start": 244, "end": 246, "text": ",@"},
+       {"type": "symbol", "start": 246, "end": 248, "text": "ys"}
+      ]},
+      {"type": ")", "start": 248, "end": 249, "text": ")"}
+     ]}
+    ]},
+    {"type": ")", "start": 249, "end": 250, "text": ")"}
+   ]},
+   {"type": "list", "start": 252, "end": 287, "children": [
+    {"type": "(", "start": 252, "end": 253, "text": "("},
+    {"type": "symbol", "start": 253, "end": 259, "text": "define"},
+    {"type": "list", "start": 260, "end": 270, "children": [
+     {"type": "(", "start": 260, "end": 261, "text": "("},
+     {"type": "symbol", "start": 261, "end": 266, "text": "build"},
+     {"type": "symbol", "start": 267, "end": 269, "text": "xs"},
+     {"type": ")", "start": 269, "end": 270, "text": ")"}
+    ]},
+    {"type": "quasiquote", "start": 271, "end": 286, "children": [
+     {"type": "`", "start": 271, "end": 272, "text": "`"},
+     {"type": "list", "start": 272, "end": 286, "children": [
+      {"type": "(", "start": 272, "end": 273, "text": "("},
+      {"type": "symbol", "start": 273, "end": 278, "text": "begin"},
+      {"type": "unquote_splicing", "start": 279, "end": 283, "children": [
+       {"type": ",@", "start": 279, "end": 281, "text": ",@"},
+       {"type": "symbol", "start": 281, "end": 283, "text": "xs"}
+      ]},
+      {"type": "symbol", "start": 284, "end": 285, "text": "x"},
+      {"type": ")", "start": 285, "end": 286, "text": ")"}
+     ]}
+    ]},
+    {"type": ")", "start": 286, "end": 287, "text": ")"}
+   ]}
+  ]}
+ ]}
+}

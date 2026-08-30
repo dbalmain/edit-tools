@@ -1,0 +1,170 @@
+{
+ "language": "rust",
+ "source_file": "corpus/src/rust/normalize.rs",
+ "source": "fn normalize_spacing(){\n    let values = [ 1 ,2,3,4 ]; // uneven padding before a trailing comment\n    let empty_array = [ ];\n    let empty_call = collect( );\n    let empty_block = { };\n    let empmpty_array,etuple = ( );\n    let pairs = [ (1,2) ,(3,4),(5,6) ];\n    if values.len( )>0{consume(empty_array,empty_call,empty_block,empty_tuple,pairs);}\n}\n",
+ "base_source": "fn normalize_spacing(){\n    let values = [ 1 ,2,3,4 ]; // uneven padding before a trailing comment\n    let empty_array = [ ];\n    let empty_call = collect( );\n    let empty_block = { };\n    let empty_tuple = ( );\n    let pairs = [ (1,2) ,(3,4),(5,6) ];\n    if values.len( )>0{consume(empty_array,empty_call,empty_block,empty_tuple,pairs);}\n}\n",
+ "edit": {"kind": "replace", "label": "splice 285..297", "start": 197, "old_end": 200, "new_end": 209, "removed": "ty_", "inserted": "mpty_array,e"},
+ "problems": {"error": 1, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
+ "grammar": "tree-sitter-rust==0.24.0",
+ "seed": 0,
+ "root":
+ {"type": "source_file", "start": 0, "end": 351, "children": [
+  {"type": "function_item", "start": 0, "end": 350, "children": [
+   {"type": "fn", "start": 0, "end": 2, "text": "fn"},
+   {"type": "identifier", "start": 3, "end": 20, "field": "name", "text": "normalize_spacing"},
+   {"type": "parameters", "start": 20, "end": 22, "field": "parameters", "children": [
+    {"type": "(", "start": 20, "end": 21, "text": "("},
+    {"type": ")", "start": 21, "end": 22, "text": ")"}
+   ]},
+   {"type": "block", "start": 22, "end": 350, "field": "body", "children": [
+    {"type": "{", "start": 22, "end": 23, "text": "{"},
+    {"type": "let_declaration", "start": 28, "end": 54, "children": [
+     {"type": "let", "start": 28, "end": 31, "text": "let"},
+     {"type": "identifier", "start": 32, "end": 38, "field": "pattern", "text": "values"},
+     {"type": "=", "start": 39, "end": 40, "text": "="},
+     {"type": "array_expression", "start": 41, "end": 53, "field": "value", "children": [
+      {"type": "[", "start": 41, "end": 42, "text": "["},
+      {"type": "integer_literal", "start": 43, "end": 44, "text": "1"},
+      {"type": ",", "start": 45, "end": 46, "text": ","},
+      {"type": "integer_literal", "start": 46, "end": 47, "text": "2"},
+      {"type": ",", "start": 47, "end": 48, "text": ","},
+      {"type": "integer_literal", "start": 48, "end": 49, "text": "3"},
+      {"type": ",", "start": 49, "end": 50, "text": ","},
+      {"type": "integer_literal", "start": 50, "end": 51, "text": "4"},
+      {"type": "]", "start": 52, "end": 53, "text": "]"}
+     ]},
+     {"type": ";", "start": 53, "end": 54, "text": ";"}
+    ]},
+    {"type": "line_comment", "start": 55, "end": 98, "children": [
+     {"type": "//", "start": 55, "end": 57, "text": "//"}
+    ]},
+    {"type": "let_declaration", "start": 103, "end": 125, "children": [
+     {"type": "let", "start": 103, "end": 106, "text": "let"},
+     {"type": "identifier", "start": 107, "end": 118, "field": "pattern", "text": "empty_array"},
+     {"type": "=", "start": 119, "end": 120, "text": "="},
+     {"type": "array_expression", "start": 121, "end": 124, "field": "value", "children": [
+      {"type": "[", "start": 121, "end": 122, "text": "["},
+      {"type": "]", "start": 123, "end": 124, "text": "]"}
+     ]},
+     {"type": ";", "start": 124, "end": 125, "text": ";"}
+    ]},
+    {"type": "let_declaration", "start": 130, "end": 158, "children": [
+     {"type": "let", "start": 130, "end": 133, "text": "let"},
+     {"type": "identifier", "start": 134, "end": 144, "field": "pattern", "text": "empty_call"},
+     {"type": "=", "start": 145, "end": 146, "text": "="},
+     {"type": "call_expression", "start": 147, "end": 157, "field": "value", "children": [
+      {"type": "identifier", "start": 147, "end": 154, "field": "function", "text": "collect"},
+      {"type": "arguments", "start": 154, "end": 157, "field": "arguments", "children": [
+       {"type": "(", "start": 154, "end": 155, "text": "("},
+       {"type": ")", "start": 156, "end": 157, "text": ")"}
+      ]}
+     ]},
+     {"type": ";", "start": 157, "end": 158, "text": ";"}
+    ]},
+    {"type": "let_declaration", "start": 163, "end": 185, "children": [
+     {"type": "let", "start": 163, "end": 166, "text": "let"},
+     {"type": "identifier", "start": 167, "end": 178, "field": "pattern", "text": "empty_block"},
+     {"type": "=", "start": 179, "end": 180, "text": "="},
+     {"type": "block", "start": 181, "end": 184, "field": "value", "children": [
+      {"type": "{", "start": 181, "end": 182, "text": "{"},
+      {"type": "}", "start": 183, "end": 184, "text": "}"}
+     ]},
+     {"type": ";", "start": 184, "end": 185, "text": ";"}
+    ]},
+    {"type": "let_declaration", "start": 190, "end": 221, "children": [
+     {"type": "let", "start": 190, "end": 193, "text": "let"},
+     {"type": "identifier", "start": 194, "end": 207, "field": "pattern", "text": "empmpty_array"},
+     {"type": "ERROR", "start": 207, "end": 214, "children": [
+      {"type": ",", "start": 207, "end": 208, "text": ","},
+      {"type": "identifier", "start": 208, "end": 214, "text": "etuple"}
+     ]},
+     {"type": "=", "start": 215, "end": 216, "text": "="},
+     {"type": "unit_expression", "start": 217, "end": 220, "field": "value", "children": [
+      {"type": "(", "start": 217, "end": 218, "text": "("},
+      {"type": ")", "start": 219, "end": 220, "text": ")"}
+     ]},
+     {"type": ";", "start": 220, "end": 221, "text": ";"}
+    ]},
+    {"type": "let_declaration", "start": 226, "end": 261, "children": [
+     {"type": "let", "start": 226, "end": 229, "text": "let"},
+     {"type": "identifier", "start": 230, "end": 235, "field": "pattern", "text": "pairs"},
+     {"type": "=", "start": 236, "end": 237, "text": "="},
+     {"type": "array_expression", "start": 238, "end": 260, "field": "value", "children": [
+      {"type": "[", "start": 238, "end": 239, "text": "["},
+      {"type": "tuple_expression", "start": 240, "end": 245, "children": [
+       {"type": "(", "start": 240, "end": 241, "text": "("},
+       {"type": "integer_literal", "start": 241, "end": 242, "text": "1"},
+       {"type": ",", "start": 242, "end": 243, "text": ","},
+       {"type": "integer_literal", "start": 243, "end": 244, "text": "2"},
+       {"type": ")", "start": 244, "end": 245, "text": ")"}
+      ]},
+      {"type": ",", "start": 246, "end": 247, "text": ","},
+      {"type": "tuple_expression", "start": 247, "end": 252, "children": [
+       {"type": "(", "start": 247, "end": 248, "text": "("},
+       {"type": "integer_literal", "start": 248, "end": 249, "text": "3"},
+       {"type": ",", "start": 249, "end": 250, "text": ","},
+       {"type": "integer_literal", "start": 250, "end": 251, "text": "4"},
+       {"type": ")", "start": 251, "end": 252, "text": ")"}
+      ]},
+      {"type": ",", "start": 252, "end": 253, "text": ","},
+      {"type": "tuple_expression", "start": 253, "end": 258, "children": [
+       {"type": "(", "start": 253, "end": 254, "text": "("},
+       {"type": "integer_literal", "start": 254, "end": 255, "text": "5"},
+       {"type": ",", "start": 255, "end": 256, "text": ","},
+       {"type": "integer_literal", "start": 256, "end": 257, "text": "6"},
+       {"type": ")", "start": 257, "end": 258, "text": ")"}
+      ]},
+      {"type": "]", "start": 259, "end": 260, "text": "]"}
+     ]},
+     {"type": ";", "start": 260, "end": 261, "text": ";"}
+    ]},
+    {"type": "expression_statement", "start": 266, "end": 348, "children": [
+     {"type": "if_expression", "start": 266, "end": 348, "children": [
+      {"type": "if", "start": 266, "end": 268, "text": "if"},
+      {"type": "binary_expression", "start": 269, "end": 284, "field": "condition", "children": [
+       {"type": "call_expression", "start": 269, "end": 282, "field": "left", "children": [
+        {"type": "field_expression", "start": 269, "end": 279, "field": "function", "children": [
+         {"type": "identifier", "start": 269, "end": 275, "field": "value", "text": "values"},
+         {"type": ".", "start": 275, "end": 276, "text": "."},
+         {"type": "field_identifier", "start": 276, "end": 279, "field": "field", "text": "len"}
+        ]},
+        {"type": "arguments", "start": 279, "end": 282, "field": "arguments", "children": [
+         {"type": "(", "start": 279, "end": 280, "text": "("},
+         {"type": ")", "start": 281, "end": 282, "text": ")"}
+        ]}
+       ]},
+       {"type": ">", "start": 282, "end": 283, "field": "operator", "text": ">"},
+       {"type": "integer_literal", "start": 283, "end": 284, "field": "right", "text": "0"}
+      ]},
+      {"type": "block", "start": 284, "end": 348, "field": "consequence", "children": [
+       {"type": "{", "start": 284, "end": 285, "text": "{"},
+       {"type": "expression_statement", "start": 285, "end": 347, "children": [
+        {"type": "call_expression", "start": 285, "end": 346, "children": [
+         {"type": "identifier", "start": 285, "end": 292, "field": "function", "text": "consume"},
+         {"type": "arguments", "start": 292, "end": 346, "field": "arguments", "children": [
+          {"type": "(", "start": 292, "end": 293, "text": "("},
+          {"type": "identifier", "start": 293, "end": 304, "text": "empty_array"},
+          {"type": ",", "start": 304, "end": 305, "text": ","},
+          {"type": "identifier", "start": 305, "end": 315, "text": "empty_call"},
+          {"type": ",", "start": 315, "end": 316, "text": ","},
+          {"type": "identifier", "start": 316, "end": 327, "text": "empty_block"},
+          {"type": ",", "start": 327, "end": 328, "text": ","},
+          {"type": "identifier", "start": 328, "end": 339, "text": "empty_tuple"},
+          {"type": ",", "start": 339, "end": 340, "text": ","},
+          {"type": "identifier", "start": 340, "end": 345, "text": "pairs"},
+          {"type": ")", "start": 345, "end": 346, "text": ")"}
+         ]}
+        ]},
+        {"type": ";", "start": 346, "end": 347, "text": ";"}
+       ]},
+       {"type": "}", "start": 347, "end": 348, "text": "}"}
+      ]}
+     ]}
+    ]},
+    {"type": "}", "start": 349, "end": 350, "text": "}"}
+   ]}
+  ]}
+ ]}
+}

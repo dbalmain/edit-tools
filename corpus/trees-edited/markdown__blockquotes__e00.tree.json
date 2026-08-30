@@ -1,0 +1,77 @@
+{
+ "language": "markdown",
+ "source_file": "corpus/src/markdown/blockquotes.md",
+ "source": "<ested quotes and quoted lists. -->\n\n> outer quote <!-- trailing on the first quoted line -->\n> still outer\n>\n> > inner quote\n> > still inner\n>\n> - quoted list\n> - quoted next\n>   - nested in the quote\n",
+ "base_source": "<!-- Nested quotes and quoted lists. -->\n\n> outer quote <!-- trailing on the first quoted line -->\n> still outer\n>\n> > inner quote\n> > still inner\n>\n> - quoted list\n> - quoted next\n>   - nested in the quote\n",
+ "edit": {"kind": "delete", "label": "delete 5B", "start": 1, "old_end": 6, "new_end": 1, "removed": "!-- N", "inserted": ""},
+ "problems": {"error": 0, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
+ "grammar": "tree-sitter-markdown==0.5.1",
+ "seed": 0,
+ "root":
+ {"type": "document", "start": 0, "end": 202, "children": [
+  {"type": "section", "start": 0, "end": 202, "children": [
+   {"type": "paragraph", "start": 0, "end": 36, "children": [
+    {"type": "inline", "start": 0, "end": 35, "children": [
+     {"type": "<", "start": 0, "end": 1, "text": "<"},
+     {"type": ".", "start": 30, "end": 31, "text": "."},
+     {"type": "-", "start": 32, "end": 33, "text": "-"},
+     {"type": "-", "start": 33, "end": 34, "text": "-"},
+     {"type": ">", "start": 34, "end": 35, "text": ">"}
+    ]}
+   ]},
+   {"type": "block_quote", "start": 37, "end": 202, "children": [
+    {"type": "block_quote_marker", "start": 37, "end": 39, "text": "> "},
+    {"type": "paragraph", "start": 39, "end": 109, "children": [
+     {"type": "inline", "start": 39, "end": 107, "children": [
+      {"type": "<", "start": 51, "end": 52, "text": "<"},
+      {"type": "!", "start": 52, "end": 53, "text": "!"},
+      {"type": "-", "start": 53, "end": 54, "text": "-"},
+      {"type": "-", "start": 54, "end": 55, "text": "-"},
+      {"type": "-", "start": 90, "end": 91, "text": "-"},
+      {"type": "-", "start": 91, "end": 92, "text": "-"},
+      {"type": ">", "start": 92, "end": 93, "text": ">"},
+      {"type": "block_continuation", "start": 94, "end": 96, "text": "> "}
+     ]},
+     {"type": "block_continuation", "start": 108, "end": 109, "text": ">"}
+    ]},
+    {"type": "block_continuation", "start": 110, "end": 112, "text": "> "},
+    {"type": "block_quote", "start": 112, "end": 143, "children": [
+     {"type": "block_quote_marker", "start": 112, "end": 114, "text": "> "},
+     {"type": "paragraph", "start": 114, "end": 143, "children": [
+      {"type": "inline", "start": 114, "end": 141, "children": [
+       {"type": "block_continuation", "start": 126, "end": 130, "text": "> > "}
+      ]},
+      {"type": "block_continuation", "start": 142, "end": 143, "text": ">"}
+     ]}
+    ]},
+    {"type": "block_continuation", "start": 144, "end": 146, "text": "> "},
+    {"type": "list", "start": 146, "end": 202, "children": [
+     {"type": "list_item", "start": 146, "end": 162, "children": [
+      {"type": "list_marker_minus", "start": 146, "end": 148, "text": "- "},
+      {"type": "paragraph", "start": 148, "end": 162, "children": [
+       {"type": "inline", "start": 148, "end": 159, "text": "quoted list"},
+       {"type": "block_continuation", "start": 160, "end": 162, "text": "> "}
+      ]}
+     ]},
+     {"type": "list_item", "start": 162, "end": 202, "children": [
+      {"type": "list_marker_minus", "start": 162, "end": 164, "text": "- "},
+      {"type": "paragraph", "start": 164, "end": 180, "children": [
+       {"type": "inline", "start": 164, "end": 175, "text": "quoted next"},
+       {"type": "block_continuation", "start": 176, "end": 180, "text": ">   "}
+      ]},
+      {"type": "list", "start": 180, "end": 202, "children": [
+       {"type": "list_item", "start": 180, "end": 202, "children": [
+        {"type": "list_marker_minus", "start": 180, "end": 182, "text": "- "},
+        {"type": "paragraph", "start": 182, "end": 202, "children": [
+         {"type": "inline", "start": 182, "end": 201, "text": "nested in the quote"}
+        ]}
+       ]}
+      ]}
+     ]}
+    ]}
+   ]}
+  ]}
+ ]}
+}

@@ -1,0 +1,195 @@
+{
+ "language": "xml",
+ "source_file": "corpus/src/xml/normalisation.xml",
+ "source": "<?xrsion=\"1.0\"?>\n<!-- Dirty spacing: what prettier rewrites, not what it breaks. -->\n<root  a = \"x\"  b='y' >\n<child attr = \"z\"/>\n    <indented/>\n\t<tabbed a=\"1\"/>\n<self/>\n<padded  />\n<empty> </empty>\n<r\na=\"1\"\n     b=\"2\"/>\n<packed a=\"1\" b=\"2\" c=\"3\" d=\"4\"/>\n</root>\n",
+ "base_source": "<?xml version=\"1.0\"?>\n<!-- Dirty spacing: what prettier rewrites, not what it breaks. -->\n<root  a = \"x\"  b='y' >\n<child attr = \"z\"/>\n    <indented/>\n\t<tabbed a=\"1\"/>\n<self/>\n<padded  />\n<empty> </empty>\n<r\na=\"1\"\n     b=\"2\"/>\n<packed a=\"1\" b=\"2\" c=\"3\" d=\"4\"/>\n</root>\n",
+ "edit": {"kind": "delete", "label": "delete 5B", "start": 3, "old_end": 8, "new_end": 3, "removed": "ml ve", "inserted": ""},
+ "problems": {"error": 1, "missing": 0},
+ "parse": "scratch",
+ "oracle": {"runtime": "tree-sitter-python (native)", "tree_sitter": "0.26.0", "lc_ctype": "en_AU.UTF-8", "platform": "Linux-6.18.43-x86_64-with-glibc2.42"},
+ "grammar": "tree-sitter-xml==0.7.0",
+ "seed": 0,
+ "root":
+ {"type": "document", "start": 0, "end": 263, "children": [
+  {"type": "ERROR", "start": 0, "end": 17, "children": [
+   {"type": "<?", "start": 0, "end": 2, "text": "<?"},
+   {"type": "PITarget", "start": 2, "end": 8, "text": "xrsion"},
+   {"type": "=", "start": 8, "end": 9, "text": "="},
+   {"type": "\"", "start": 9, "end": 10, "text": "\""},
+   {"type": "Nmtoken", "start": 10, "end": 13, "text": "1.0"},
+   {"type": "\"", "start": 13, "end": 14, "text": "\""},
+   {"type": "?", "start": 14, "end": 15, "text": "?"},
+   {"type": ">", "start": 15, "end": 16, "text": ">"}
+  ]},
+  {"type": "prolog", "start": 17, "end": 85, "children": [
+   {"type": "Comment", "start": 17, "end": 84, "text": "<!-- Dirty spacing: what prettier rewrites, not what it breaks. -->"}
+  ]},
+  {"type": "element", "start": 85, "end": 262, "field": "root", "children": [
+   {"type": "STag", "start": 85, "end": 108, "children": [
+    {"type": "<", "start": 85, "end": 86, "text": "<"},
+    {"type": "Name", "start": 86, "end": 90, "text": "root"},
+    {"type": "Attribute", "start": 92, "end": 99, "children": [
+     {"type": "Name", "start": 92, "end": 93, "text": "a"},
+     {"type": "=", "start": 94, "end": 95, "text": "="},
+     {"type": "AttValue", "start": 96, "end": 99, "children": [
+      {"type": "\"", "start": 96, "end": 97, "text": "\""},
+      {"type": "\"", "start": 98, "end": 99, "text": "\""}
+     ]}
+    ]},
+    {"type": "Attribute", "start": 101, "end": 106, "children": [
+     {"type": "Name", "start": 101, "end": 102, "text": "b"},
+     {"type": "=", "start": 102, "end": 103, "text": "="},
+     {"type": "AttValue", "start": 103, "end": 106, "children": [
+      {"type": "'", "start": 103, "end": 104, "text": "'"},
+      {"type": "'", "start": 105, "end": 106, "text": "'"}
+     ]}
+    ]},
+    {"type": ">", "start": 107, "end": 108, "text": ">"}
+   ]},
+   {"type": "content", "start": 108, "end": 255, "children": [
+    {"type": "CharData", "start": 108, "end": 109, "text": "\n"},
+    {"type": "element", "start": 109, "end": 128, "children": [
+     {"type": "EmptyElemTag", "start": 109, "end": 128, "children": [
+      {"type": "<", "start": 109, "end": 110, "text": "<"},
+      {"type": "Name", "start": 110, "end": 115, "text": "child"},
+      {"type": "Attribute", "start": 116, "end": 126, "children": [
+       {"type": "Name", "start": 116, "end": 120, "text": "attr"},
+       {"type": "=", "start": 121, "end": 122, "text": "="},
+       {"type": "AttValue", "start": 123, "end": 126, "children": [
+        {"type": "\"", "start": 123, "end": 124, "text": "\""},
+        {"type": "\"", "start": 125, "end": 126, "text": "\""}
+       ]}
+      ]},
+      {"type": "/>", "start": 126, "end": 128, "text": "/>"}
+     ]}
+    ]},
+    {"type": "CharData", "start": 128, "end": 133, "text": "\n    "},
+    {"type": "element", "start": 133, "end": 144, "children": [
+     {"type": "EmptyElemTag", "start": 133, "end": 144, "children": [
+      {"type": "<", "start": 133, "end": 134, "text": "<"},
+      {"type": "Name", "start": 134, "end": 142, "text": "indented"},
+      {"type": "/>", "start": 142, "end": 144, "text": "/>"}
+     ]}
+    ]},
+    {"type": "CharData", "start": 144, "end": 146, "text": "\n\t"},
+    {"type": "element", "start": 146, "end": 161, "children": [
+     {"type": "EmptyElemTag", "start": 146, "end": 161, "children": [
+      {"type": "<", "start": 146, "end": 147, "text": "<"},
+      {"type": "Name", "start": 147, "end": 153, "text": "tabbed"},
+      {"type": "Attribute", "start": 154, "end": 159, "children": [
+       {"type": "Name", "start": 154, "end": 155, "text": "a"},
+       {"type": "=", "start": 155, "end": 156, "text": "="},
+       {"type": "AttValue", "start": 156, "end": 159, "children": [
+        {"type": "\"", "start": 156, "end": 157, "text": "\""},
+        {"type": "\"", "start": 158, "end": 159, "text": "\""}
+       ]}
+      ]},
+      {"type": "/>", "start": 159, "end": 161, "text": "/>"}
+     ]}
+    ]},
+    {"type": "CharData", "start": 161, "end": 162, "text": "\n"},
+    {"type": "element", "start": 162, "end": 169, "children": [
+     {"type": "EmptyElemTag", "start": 162, "end": 169, "children": [
+      {"type": "<", "start": 162, "end": 163, "text": "<"},
+      {"type": "Name", "start": 163, "end": 167, "text": "self"},
+      {"type": "/>", "start": 167, "end": 169, "text": "/>"}
+     ]}
+    ]},
+    {"type": "CharData", "start": 169, "end": 170, "text": "\n"},
+    {"type": "element", "start": 170, "end": 181, "children": [
+     {"type": "EmptyElemTag", "start": 170, "end": 181, "children": [
+      {"type": "<", "start": 170, "end": 171, "text": "<"},
+      {"type": "Name", "start": 171, "end": 177, "text": "padded"},
+      {"type": "/>", "start": 179, "end": 181, "text": "/>"}
+     ]}
+    ]},
+    {"type": "CharData", "start": 181, "end": 182, "text": "\n"},
+    {"type": "element", "start": 182, "end": 198, "children": [
+     {"type": "STag", "start": 182, "end": 189, "children": [
+      {"type": "<", "start": 182, "end": 183, "text": "<"},
+      {"type": "Name", "start": 183, "end": 188, "text": "empty"},
+      {"type": ">", "start": 188, "end": 189, "text": ">"}
+     ]},
+     {"type": "content", "start": 189, "end": 190, "children": [
+      {"type": "CharData", "start": 189, "end": 190, "text": " "}
+     ]},
+     {"type": "ETag", "start": 190, "end": 198, "children": [
+      {"type": "</", "start": 190, "end": 192, "text": "</"},
+      {"type": "Name", "start": 192, "end": 197, "text": "empty"},
+      {"type": ">", "start": 197, "end": 198, "text": ">"}
+     ]}
+    ]},
+    {"type": "CharData", "start": 198, "end": 199, "text": "\n"},
+    {"type": "element", "start": 199, "end": 220, "children": [
+     {"type": "EmptyElemTag", "start": 199, "end": 220, "children": [
+      {"type": "<", "start": 199, "end": 200, "text": "<"},
+      {"type": "Name", "start": 200, "end": 201, "text": "r"},
+      {"type": "Attribute", "start": 202, "end": 207, "children": [
+       {"type": "Name", "start": 202, "end": 203, "text": "a"},
+       {"type": "=", "start": 203, "end": 204, "text": "="},
+       {"type": "AttValue", "start": 204, "end": 207, "children": [
+        {"type": "\"", "start": 204, "end": 205, "text": "\""},
+        {"type": "\"", "start": 206, "end": 207, "text": "\""}
+       ]}
+      ]},
+      {"type": "Attribute", "start": 213, "end": 218, "children": [
+       {"type": "Name", "start": 213, "end": 214, "text": "b"},
+       {"type": "=", "start": 214, "end": 215, "text": "="},
+       {"type": "AttValue", "start": 215, "end": 218, "children": [
+        {"type": "\"", "start": 215, "end": 216, "text": "\""},
+        {"type": "\"", "start": 217, "end": 218, "text": "\""}
+       ]}
+      ]},
+      {"type": "/>", "start": 218, "end": 220, "text": "/>"}
+     ]}
+    ]},
+    {"type": "CharData", "start": 220, "end": 221, "text": "\n"},
+    {"type": "element", "start": 221, "end": 254, "children": [
+     {"type": "EmptyElemTag", "start": 221, "end": 254, "children": [
+      {"type": "<", "start": 221, "end": 222, "text": "<"},
+      {"type": "Name", "start": 222, "end": 228, "text": "packed"},
+      {"type": "Attribute", "start": 229, "end": 234, "children": [
+       {"type": "Name", "start": 229, "end": 230, "text": "a"},
+       {"type": "=", "start": 230, "end": 231, "text": "="},
+       {"type": "AttValue", "start": 231, "end": 234, "children": [
+        {"type": "\"", "start": 231, "end": 232, "text": "\""},
+        {"type": "\"", "start": 233, "end": 234, "text": "\""}
+       ]}
+      ]},
+      {"type": "Attribute", "start": 235, "end": 240, "children": [
+       {"type": "Name", "start": 235, "end": 236, "text": "b"},
+       {"type": "=", "start": 236, "end": 237, "text": "="},
+       {"type": "AttValue", "start": 237, "end": 240, "children": [
+        {"type": "\"", "start": 237, "end": 238, "text": "\""},
+        {"type": "\"", "start": 239, "end": 240, "text": "\""}
+       ]}
+      ]},
+      {"type": "Attribute", "start": 241, "end": 246, "children": [
+       {"type": "Name", "start": 241, "end": 242, "text": "c"},
+       {"type": "=", "start": 242, "end": 243, "text": "="},
+       {"type": "AttValue", "start": 243, "end": 246, "children": [
+        {"type": "\"", "start": 243, "end": 244, "text": "\""},
+        {"type": "\"", "start": 245, "end": 246, "text": "\""}
+       ]}
+      ]},
+      {"type": "Attribute", "start": 247, "end": 252, "children": [
+       {"type": "Name", "start": 247, "end": 248, "text": "d"},
+       {"type": "=", "start": 248, "end": 249, "text": "="},
+       {"type": "AttValue", "start": 249, "end": 252, "children": [
+        {"type": "\"", "start": 249, "end": 250, "text": "\""},
+        {"type": "\"", "start": 251, "end": 252, "text": "\""}
+       ]}
+      ]},
+      {"type": "/>", "start": 252, "end": 254, "text": "/>"}
+     ]}
+    ]},
+    {"type": "CharData", "start": 254, "end": 255, "text": "\n"}
+   ]},
+   {"type": "ETag", "start": 255, "end": 262, "children": [
+    {"type": "</", "start": 255, "end": 257, "text": "</"},
+    {"type": "Name", "start": 257, "end": 261, "text": "root"},
+    {"type": ">", "start": 261, "end": 262, "text": ">"}
+   ]}
+  ]}
+ ]}
+}
