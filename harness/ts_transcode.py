@@ -225,7 +225,13 @@ def c_string(text: str) -> str:
             i += 2
         else:
             raise Unrecognised(f"string escape \\{esc} in {text!r}")
-    return "".join(out)
+    # These become `const char *`, and C strings end at the first NUL. So
+    # `"\0"` -- which is what tree-sitter-go calls its EOF terminator token --
+    # is the *empty* name, not a one-character one. Found by differential
+    # testing against real tree-sitter; no corpus file reaches it, because it
+    # only appears on a Go file with no trailing newline.
+    text = "".join(out)
+    return text.split("\0", 1)[0]
 
 
 class Symbols:

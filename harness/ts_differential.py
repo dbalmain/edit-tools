@@ -49,7 +49,13 @@ def reference_doc(parser, language: str, path: Path) -> dict | None:
     except UnicodeDecodeError:
         return None
     tree = parser.parse(source)
-    if gen_trees.check_clean(tree.root_node, path):
+    # `has_error`, not just gen_trees.check_clean: check_clean walks
+    # `node.children`, which is the *visible* children, so an **invisible**
+    # MISSING node is invisible to it too. tree-sitter-go inserts exactly that
+    # -- a MISSING aux_sym_source_file_token1 -- for a file with no trailing
+    # newline, and check_clean reports the tree as clean. Those files are
+    # error-recovery results and belong in the skipped bucket.
+    if tree.root_node.has_error or gen_trees.check_clean(tree.root_node, path):
         return None
     return {
         "language": language,

@@ -1341,8 +1341,15 @@ class Parser {
     for (let i = 0, n = stack.versionCount; i < n; i++) {
       if (stack.isPaused(i)) {
         if (!hasUnpausedVersion && this.acceptCount < MAX_VERSION_COUNT) {
+          // Upstream resumes the *best-ranked* paused version into recovery.
+          // Versions are ordered best-first by this point, so reaching here
+          // with no unpaused predecessor is exactly upstream's resume trigger.
+          const head = stack.heads[i];
+          const tok = head.lookaheadWhenPaused;
           throw new Unsupported(
-            "every stack version is paused: error recovery is out of scope"
+            `parse needs error recovery at byte ${head.node.position}` +
+            (tok ? `, lookahead ${this.lang.symbolName(tok.symbol)}` : "") +
+            `, state ${head.node.state}: out of scope`
           );
         }
         stack.removeVersion(i);
