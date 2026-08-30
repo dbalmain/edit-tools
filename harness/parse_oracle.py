@@ -377,6 +377,7 @@ class FileReport:
     states: int = 0
     dirty: int = 0
     changed: int = 0
+    clean_base_diverged: int = 0
     diverged: list[str] = field(default_factory=list)
     crashed: list[str] = field(default_factory=list)
 
@@ -389,6 +390,7 @@ def sweep_file(
     source = path.read_bytes()
     tree = parser.parse(source)
     previous = signature(convert(tree.root_node, source))
+    prev_dirty = False
 
     for index in range(edits):
         edit = random_edit(rng, source)
@@ -411,13 +413,20 @@ def sweep_file(
         if current != previous:
             report.changed += 1
         previous = current
+        prev_dirty = bool(problems["error"] or problems["missing"])
         try:
             compare(incremental, scratch)
         except Divergence as exc:
+            # Whether the *pre-edit* buffer already parsed with errors is the
+            # load-bearing fact about every divergence found here, and the one
+            # that reconciles this sweep with the wasm track's clean-base
+            # result. Recorded per divergence rather than asserted.
             report.diverged.append(
-                f"state {index} seed={seed} {edit.kind()} "
+                f"state {index} seed={seed} pre_dirty={prev_dirty} {edit.kind()} "
                 f"@{edit.start}..{edit.old_end} {edit.label}: {exc}"
             )
+            if not prev_dirty:
+                report.clean_base_diverged += 1
             # Carry the *scratch* tree forward, not the diverged one. A chain
             # that keeps reparsing from a wrong tree reports the same defect
             # once per remaining edit, and the count then measures how early
@@ -709,6 +718,7 @@ def do_sweep(
     states = sum(r.states for r in reports)
     dirty = sum(r.dirty for r in reports)
     diverged = [(r, d) for r in reports for d in r.diverged]
+    clean_base = sum(r.clean_base_diverged for r in reports)
     crashed = [(r, c) for r in reports for c in r.crashed]
     # A sweep whose edits never moved a tree proves nothing, and it reads
     # exactly like a sweep that moved every tree and found no bug. The
@@ -732,6 +742,7 @@ def do_sweep(
                 "dirty": dirty,
                 "diverged": [f"{r.language}/{r.path.name}: {d}" for r, d in diverged],
                 "crashed": [f"{r.language}/{r.path.name}: {c}" for r, c in crashed],
+                "diverged_from_clean_base": clean_base,
                 "inert": inert,
                 "never_dirty": sorted(total),
                 "per_language": per_language,
@@ -749,6 +760,11 @@ def do_sweep(
             f"{dirty} with ERROR/MISSING  {len(diverged)} DIVERGE  "
             f"{len(crashed)} CRASH  (seed {args.seed})"
         )
+        if diverged:
+            print(
+                f"        of {len(diverged)} divergences, {clean_base} began from a "
+                f"buffer that parsed cleanly"
+            )
         for r, d in diverged:
             print(f"DIVERGE {r.language}/{r.path.name}\n  {d}")
         for r, c in crashed:
