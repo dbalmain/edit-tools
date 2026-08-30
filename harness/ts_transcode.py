@@ -279,6 +279,17 @@ class Symbols:
             for item in split_items(fbody):
                 name, _, val = item.partition("=")
                 self.field[name.strip()] = int(val.strip())
+        # The external scanner's *own* token numbering, which is a third
+        # namespace: `ts_external_scanner_symbol_map` is indexed by these and
+        # holds TSSymbols, and `ts_external_scanner_states`' rows are too. Kept
+        # separate from `sym` so an accidental name collision cannot quietly
+        # change how a parse-table entry resolves.
+        self.ext: dict[str, int] = {}
+        ebody = find_decl(src, r"enum ts_external_scanner_symbol_identifiers\s*\{")
+        if ebody is not None:
+            for item in split_items(ebody):
+                name, _, val = item.partition("=")
+                self.ext[name.strip()] = int(val.strip())
 
     def value(self, text: str) -> int:
         """Evaluate a scalar initializer/designator expression to an int."""
@@ -298,6 +309,8 @@ class Symbols:
             return self.sym[t]
         if t in self.field:
             return self.field[t]
+        if t in self.ext:
+            return self.ext[t]
         if t == "NULL":
             return 0
         raise Unrecognised(f"scalar {text!r}")
