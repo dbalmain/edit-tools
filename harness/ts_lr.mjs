@@ -532,6 +532,16 @@ function newMissingLeaf(lang, symbol, padding, lookaheadBytes) {
   return t;
 }
 
+// ts_subtree_error_cost. An *accessor*, not the field, and the difference is
+// load-bearing: a MISSING leaf accumulates no cost of its own and is expensive
+// anyway, so every comparison that ranks parse versions has to be told. Reading
+// the raw field makes an invented token look free, which silently suppresses
+// recovery strategy 1 everywhere a missing token was inserted.
+function subtreeErrorCost(t) {
+  if (t.isMissing) return ERROR_COST_PER_MISSING_TREE + ERROR_COST_PER_RECOVERY;
+  return t.errorCost;
+}
+
 // ts_subtree_new_error_node
 function newErrorNode(lang, children, extra, buf, startByte) {
   const t = newNode(lang, TS_BUILTIN_SYM_ERROR, children, 0, buf, startByte);
@@ -584,7 +594,7 @@ function summarizeChildren(self, lang, buf, startByte) {
     const childLookaheadEnd = self.padding + self.size + child.lookaheadBytes;
     if (childLookaheadEnd > lookaheadEndByte) lookaheadEndByte = childLookaheadEnd;
 
-    if (child.symbol !== TS_BUILTIN_SYM_ERROR_REPEAT) self.errorCost += child.errorCost;
+    if (child.symbol !== TS_BUILTIN_SYM_ERROR_REPEAT) self.errorCost += subtreeErrorCost(child);
 
     const grandchildCount = child.childCount;
     if (self.symbol === TS_BUILTIN_SYM_ERROR || self.symbol === TS_BUILTIN_SYM_ERROR_REPEAT) {
@@ -731,7 +741,7 @@ class StackNode {
       this.dynamicPrecedence = previous.dynamicPrecedence;
       this.nodeCount = previous.nodeCount;
       if (subtree) {
-        this.errorCost += subtree.errorCost;
+        this.errorCost += subtreeErrorCost(subtree);
         this.position += subtree.totalSize;
         this.nodeCount += subtreeNodeCount(subtree);
         this.dynamicPrecedence += subtree.dynamicPrecedence;
@@ -753,7 +763,7 @@ function subtreeIsEquivalent(left, right) {
   if (left === right) return true;
   if (!left || !right) return false;
   if (left.symbol !== right.symbol) return false;
-  if (left.errorCost > 0 && right.errorCost > 0) return true;
+  if (subtreeErrorCost(left) > 0 && subtreeErrorCost(right) > 0) return true;
   return (
     left.padding === right.padding &&
     left.size === right.size &&
@@ -1277,11 +1287,11 @@ class Parser {
   selectTree(left, right) {
     if (!left) return true;
     if (!right) return false;
-    if (right.errorCost < left.errorCost) return true;
-    if (left.errorCost < right.errorCost) return false;
+    if (subtreeErrorCost(right) < subtreeErrorCost(left)) return true;
+    if (subtreeErrorCost(left) < subtreeErrorCost(right)) return false;
     if (right.dynamicPrecedence > left.dynamicPrecedence) return true;
     if (left.dynamicPrecedence > right.dynamicPrecedence) return false;
-    if (left.errorCost > 0) return true;
+    if (subtreeErrorCost(left) > 0) return true;
     const comparison = subtreeCompare(left, right);
     if (comparison === -1) return false;
     if (comparison === 1) return true;
@@ -1504,7 +1514,7 @@ class Parser {
   // at least as good as this one would be at `cost`? Every recovery decision is
   // guarded by this, which is what stops recovery exploring the whole space.
   betterVersionExists(version, isInError, cost) {
-    if (this.finishedTree && this.finishedTree.errorCost <= cost) return true;
+    if (this.finishedTree && subtreeErrorCost(this.finishedTree) <= cost) return true;
 
     const stack = this.stack;
     const position = stack.position(version);
@@ -1956,7 +1966,7 @@ class Parser {
         }
       }
       const minErrorCost = this.condenseStack();
-      if (this.finishedTree && this.finishedTree.errorCost < minErrorCost) {
+      if (this.finishedTree && subtreeErrorCost(this.finishedTree) < minErrorCost) {
         stack.clear();
         break;
       }
