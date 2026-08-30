@@ -42,7 +42,7 @@ value.** Three separate results say so:
   parsing from scratch and reparsing incrementally from an edited tree produce
   different trees — different enough that the root node's _type_ differs. 145
   divergences in 60,480 states, in 8 of 16 languages. See
-  [The oracle's own non-determinism](#the-oracles-own-non-determinism).
+  [The oracle's own non-determinism](#6-the-oracles-own-non-determinism).
 - **Native versus wasm.** The wasm track established that native and wasm
   tree-sitter disagree, because `iswalpha`/`iswalnum` are locale-dependent in a
   native build and fixed in wasm, and six pinned grammars classify identifier
@@ -67,13 +67,13 @@ not name a build, a grammar pin and a parse mode is not a claim.
 
 A document is JSON:
 
-```
+```text
 { "language": <string>, "source": <string>, "root": <node> }
 ```
 
 A node is:
 
-```
+```text
 { "type": <string>, "start": <int>, "end": <int>,
   "field"?: <string>, "language"?: <string>,
   "text"?: <string>, "children"?: [<node>], "missing"?: true }
