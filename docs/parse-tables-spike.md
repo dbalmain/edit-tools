@@ -52,6 +52,8 @@ All harness, none of it on any shipped path.
 | `harness/ts_lr.mjs`            | the parser: GLR stack, table-driven parse loop, subtree summarisation, node API      |
 | `harness/ts_check_trees.mjs`   | the acceptance bar — parse the corpus sources, compare bytes                         |
 | `harness/ts_differential.py`   | the wider oracle — compare against real tree-sitter over arbitrary source            |
+| `harness/ts_verify_blob.py` + `ts_dump_tables.c` | every table entry against `parser.c` **compiled**                  |
+| `harness/ts_verify_lex.py` + `ts_probe_lex.{c,mjs}` | the recovered DFA against the real `ts_lex`, exhaustively       |
 | `harness/ts_mutation_sweep.py` | how much of the blob the corpus actually exercises                                   |
 | `harness/test_ts_transcode.py` | 24 unit tests over the recoverer and its interval algebra                            |
 | `harness/ts_lr.test.mjs`       | 6 unit tests over the lexer, shelled out to by the Python suite                      |
@@ -208,7 +210,70 @@ Two measurements worth recording so nobody re-derives them:
 
 ## How strong is "byte-identical", really?
 
-Weaker than it sounds, and this is the number to carry alongside the green tick.
+Weaker than it sounds on its own — which is why the blob is now also checked
+against `parser.c` **compiled**, where the corpus has no say at all.
+
+### Every table entry, against compiled memory
+
+`harness/ts_dump_tables.c` includes `parser.c` in its own translation unit, so
+every `static` array is visible and `sizeof` gives the true length of the four
+the transcoder has to *derive* rather than read. `harness/ts_verify_blob.py`
+diffs that against the blob, entry for entry:
+
+| Grammar | Entries compared | Result                |
+| ------- | ---------------: | --------------------- |
+| json    |              863 | **every entry agrees** |
+| scheme  |            6,339 | **every entry agrees** |
+| go      |           80,211 | **every entry agrees** |
+
+```sh
+./harness/ts_verify_blob.py path/to/parser.c blob.json
+```
+
+That is 87,413 entries, exhaustively — including every entry no source file
+could reach, which is exactly what the mutation sweep below cannot do. It also
+pins the derived lengths, which are the ones a wrong bound would silently
+truncate.
+
+### The lex DFA, against the real `ts_lex`
+
+The tables have static arrays to compare against. The lex DFA does not — it is
+recovered from generated *code*, which is the one genuinely novel step in this
+route. `harness/ts_verify_lex.py` supplies the missing oracle.
+
+`ts_lex` observes the world through exactly three operations — `lookahead`,
+`eof`, and calls to `advance` / `mark_end` (`parse-survey.md` §3g) — so a fake
+`TSLexer` over a fixed codepoint sequence sees its complete behaviour. The same
+fake lexer drives `Lexer.run`, the real interpreter rather than a paraphrase of
+the table. Both sides fold the call sequence, the accepted symbol and the final
+position into one hash per lex state.
+
+The codepoints are every interval boundary in every guard, with neighbours —
+that is, **the partition of int32 the DFA itself induces.** Two codepoints
+inside one cell cannot be told apart by any guard in any state, so one
+representative per cell is exhaustive, not sampled.
+
+| Grammar             | States | Codepoint classes |          Runs | Disagree |
+| ------------------- | -----: | ----------------: | ------------: | -------: |
+| json                |     44 |                70 |         9,284 |    **0** |
+| scheme              |    621 |               157 |       293,112 |    **0** |
+| go                  |    165 |             4,584 |     2,269,245 |    **0** |
+| go `ts_lex_keywords`|    129 |                41 |        15,996 |    **0** |
+
+Verified discriminating rather than assumed: bending one transition target in
+the blob makes that state disagree and, correctly, every state that transitions
+into it.
+
+**What neither check can see**: a guard the transcoder dropped *entirely* takes
+its own boundaries out of the partition with it. That is why the transcoder
+raises on unrecognised syntax instead of skipping, and why the op totals are
+cross-checked against `parse-survey.md` §3's independent count.
+
+### How much the corpus alone was carrying
+
+The mutation sweep below is now a measurement of the *corpus*, not of the blob —
+the two checks above verify the blob. It is kept because the number it produces
+is the one to remember when someone reads "byte-identical on the corpus".
 
 ### The corpus exercises 44% of the blob
 
@@ -588,8 +653,14 @@ different-sized component, and it is what the second (Rust) runtime would have
 to reproduce exactly.
 
 **The caveat:** "by construction" is true of the _tables_ and false of the
-_algorithm_. The tables are tree-sitter's own, so they cannot disagree. The
-interpreter is a hand port, and a hand port of 4,000 lines of C can disagree
-anywhere — as it did, twice, in ways the corpus caught only because Go's corpus
-is bigger than JSON's, and once in a way no corpus caught at all until the
-differential ran.
+_algorithm_. The tables are tree-sitter's own, so they cannot disagree — and
+that is now checked rather than argued: 87,413 table entries against compiled
+memory and 2.6M lexer runs against the real `ts_lex`, all agreeing. The
+interpreter is a hand port, and a hand port of 1,900 lines of C can disagree
+anywhere. It did, five times. Two were caught by the corpus, two by the
+differential over 7,940 files, and one by review — and only the first two would
+have been caught by the acceptance bar this spike was given.
+
+That distribution is the durable finding. **The transcoder is the part that can
+be verified to exhaustion; the interpreter is the part that cannot**, and the
+second Rust runtime doubles exactly the half that resists proof.
