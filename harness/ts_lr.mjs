@@ -1108,7 +1108,14 @@ class Stack {
 
   renumberVersion(v1, v2) {
     if (v1 === v2) return;
-    this.heads[v2] = this.heads[v1];
+    // The summary is the one part of a head that does not travel with its node.
+    // A version created by popping has none, so renumbering it over a version
+    // that does would throw away recovery's memory of where it may rewind to --
+    // and strategy 1 then silently stops firing. Upstream moves it across.
+    const source = this.heads[v1];
+    const target = this.heads[v2];
+    if (target.summary && !source.summary) source.summary = target.summary;
+    this.heads[v2] = source;
     this.heads.splice(v1, 1);
   }
 
