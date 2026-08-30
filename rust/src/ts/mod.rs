@@ -14,3 +14,21 @@
 
 pub mod blob;
 pub mod doc;
+pub mod lexer;
+
+use std::fmt;
+
+/// The JS reference's `Unsupported` error, and it carries the same meaning:
+/// behaviour outside the supported projection that could change the tree, so
+/// the parse refuses rather than guessing. Error recovery, external scanners
+/// and undefined table encodings all arrive here.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Unsupported(pub String);
+
+impl fmt::Display for Unsupported {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str(&self.0)
+    }
+}
+
+impl std::error::Error for Unsupported {}
