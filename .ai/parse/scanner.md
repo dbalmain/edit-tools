@@ -6,7 +6,17 @@ hours out and a session limit is roughly two.
 
 ## Status
 
-Investigation complete; integration in progress. Nothing integrated yet.
+**Acceptance bar met.** toml 15/15 byte-identical through the VM; json 3/3,
+scheme 15/15, go 16/16 unchanged. `./test.sh` green at 126 harness tests and
+Rust 116/22/8, both the same as baseline.
+
+Remaining: serialize/deserialize is *exercised* but carries nothing, because
+TOML's scanner is stateless. See "What serialize actually cost" below — it is
+the one place the brief's worry is justified and my green run does not answer
+it.
+
+**Nothing here needs action on `main`.** The artifact gap below was a missing
+check, not a wrong artifact; the fix is on this branch.
 
 ## Baseline, measured before any edit
 
@@ -129,20 +139,45 @@ mirror of `pack.js`, and a round-trip test pinning `encode(build()) ==
 toml.svm`. Doing it any other way would add a third expression of the same
 program and make the divergence surface bigger, not smaller.
 
-## Plan, in landing order
+## What landed, in order
 
-1. **Row/column tracking in `ts_lr.mjs`** — narrow interface, own commit, first.
-2. **JS `.svm` decoder + regeneration of `toml.svm` from a checked-in command**,
-   closing the gap above.
-3. **External-token interface**: `ts_transcode.py` stops refusing scanner
-   grammars and emits `externalTokenCount`, `externalScannerSymbolMap`,
-   `externalScannerStates`; `ts_lr.mjs` grows the `ts_parser__lex` external
-   branch, `lastExternalToken` on stack heads, and the `canMerge` /
-   token-cache external-state equality checks upstream has.
-4. **serialize/deserialize** across GLR forks — VM-defined, per
-   `docs/scanner-vm.md`. Note TOML serializes to **0 bytes**, so TOML alone
-   cannot test this; see the honest-limits section when it is written.
+| Commit    | What                                                             |
+| --------- | ---------------------------------------------------------------- |
+| `ef34650` | these notes: baseline, program completeness, the artifact gap     |
+| `cc77079` | row/column tracking in the lexer, on its own                      |
+| `4a15b8d` | the missing JS `.svm` decoder; both runtimes now run one artifact |
+| `675c2a7` | WIP transcoder: external tables, not yet green                    |
+| `b9b03d6` | the fix — the external token enum is a third namespace            |
+| `3c52b54` | the parse loop drives the VM; **toml 15/15**                      |
 
-## Remaining eight scanners
+### Row/column (`cc77079`)
 
-Not yet estimable — I have integrated none. Deferred until piece 3 lands.
+A Length is `{bytes, row, column}`, with `lengthAdd`/`lengthSub` mirroring
+`length.h` and `point.h` including their saturation. `Subtree.padding`/`.size`
+stay byte counts so no existing reader changed; the extents ride alongside.
+`StackNode.position` became a full Length, because `ts_lexer_reset` seeks to an
+extent and a row cannot be recovered from an offset.
+
+The subtlety worth carrying forward: **there are two columns and upstream gives
+them the same name.** `extent.column` counts *bytes* within the row
+(`column += lookahead_size`); `ColumnData`/`get_column` counts *codepoints*. A
+port using one number for both agrees on ASCII and diverges on any multi-byte
+character. There is a test that fails only under that mutation.
+
+### The external-token interface (`b9b03d6`, `3c52b54`)
+
+`ts_transcode.py` emits `externalTokenCount`, `externalScannerSymbolMap` and
+`externalScannerStates`, and takes `--scanner foo.svm` to carry the program as
+base64. The parser grows `ts_parser__lex`'s external branch. The parts that
+were easy to omit and impossible to notice missing:
+
+- the failed-scan rewind restores **the column cache as well as the position**;
+- the empty-token guard, and `ts_stack_has_advanced_since_error` under it —
+  TOML needs the *keep* half at EOF, where `_line_ending_or_eof` legitimately
+  matches nothing;
+- `lastExternalToken` lives on the **stack head**, is inherited by a forked
+  version, and is compared in `canMerge`;
+- the token cache keys on it too.
+
+One latent bug fixed in passing: `ts_lexer_finish` omitted upstream's `+4` to
+the lookahead end byte on `TS_DECODE_ERROR`.
