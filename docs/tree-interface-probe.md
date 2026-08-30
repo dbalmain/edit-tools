@@ -209,6 +209,21 @@ conventions a parser can honour without being tree-sitter: emit punctuation with
 type == text, keep whitespace out of the child list, reify comments as children.
 That is a CST dialect, not a tree-sitter binary interface.
 
+> **Corrected, 2026-08-30.** Two of those three "conventions" are not observed
+> by the corpus this document reasons about, and the first is the one that
+> matters. See `docs/cst-contract.md` U-1 and C-4, which check every clause
+> against the trees rather than asserting it.
+>
+> - **"type == text" is false today.** The committed corpus holds counterexamples
+>   in ruby, rust and yaml -- a node typed `)` whose text is `]`, one typed `"`
+>   whose text is `b"`, one typed `|` whose text is `|-`. The `tok`/`named`
+>   hazard described further down as a thing a *future* parser author might
+>   cause is therefore **already shipping**, in the corpus every gate is
+>   measured against. Nothing fails today, so it is latent rather than live --
+>   and latent in the formatter, not in any parse layer.
+> - **"keep whitespace out of the child list" is a property of these packages,
+>   not of the format**: 131 whitespace-only leaves are in the corpus.
+
 ## What would break for a parser that does not work like tree-sitter
 
 **A parser that produces no `field` names.** JSON's current package refuses on
@@ -221,8 +236,9 @@ Python-shaped Aven operator chain would have to emit `left` / `right` /
 this system represents whitespace. `verbatim` allows holes; it refuses overlaps,
 inverted ranges, descendants outside the parent, and stale leaf text.
 
-**A parser that reifies whitespace or indent as children.** Refusal. The rule
-does not mention those nodes. Layout-sensitive Aven cannot ship its indent
+**A parser that reifies whitespace or indent as children.** Refusal *by the
+package*, not by the format -- corrected 2026-08-30, since the corpus already
+contains 131 whitespace-only leaves. The rule does not mention those nodes. Layout-sensitive Aven cannot ship its indent
 tokens as children unless the package consumes them, and the IR has no opcode
 for "skip this". They have to become gaps, the way tree-sitter extras do.
 

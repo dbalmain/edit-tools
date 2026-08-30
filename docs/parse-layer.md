@@ -22,6 +22,13 @@ so the pick is a decision rather than a drift.
   runtime, scanner VM" — as a component nobody has written a line of.
 - "The escape-hatch problem" names three ways to get a parser and calls the
   scanner VM "the bet worth making, and the highest-risk part of the project".
+
+> **Retired, 2026-08-30.** That label should come off. All nine external
+> scanners fit one 40-opcode ISA; the VM costs 2,533 B gz in JS and 8,581 B of
+> machine code in Rust, once; and two runtimes execute the same bytecode
+> identically across 45,678 scanner calls. It is now the best-understood part of
+> an own-the-parser route -- and, on this document's own 0.4% figure, not the
+> part that decides it.
 - And then: "**This constraint is deliberately out of scope for the first
   competition**, which cuts the parser out entirely so the formatting model can
   be evaluated on its own."
@@ -98,6 +105,10 @@ first run of this check was wrong for that reason. `-a` is load-bearing.
 **Eight of ten grammars this project already depends on have an imperative
 external scanner.** Only JSON and Go do not.
 
+> **Superseded, 2026-08-30.** Three, not two: **scheme** is also scanner-free.
+> It was onboarded after this table was written, and the omission mattered --
+> the staging advice below picks its grammars from this sentence.
+
 ### How big those scanners are, and the number next to them
 
 Line counts at the pinned versions. `scanner.c` came from the sdists where it is
@@ -141,6 +152,13 @@ Web figures already in `docs/design.md`, measured August 2026, gzipped:
 | `web-tree-sitter` | 80 KB wasm + 31 KB glue | 48 KB      | 115 KB       |
 | Lezer             | 17.5 KB (`@lezer/lr`)   | 30 KB      | 25 KB        |
 
+> **Superseded, 2026-08-30.** Measured across all sixteen: the real range is
+> **0.21–0.89×**, and 0.55–0.75 held for only **6 of 16**. It was calibrated on
+> javascript and rust, where it is excellent, and does not generalise -- kotlin
+> was estimated at 180–240 KB and measures **288.8 KB**. The runtime figure was
+> exactly right: 80,433 B wasm + 31,156 B glue = **111,589 B gz**. See
+> `docs/parse-measurements.md`.
+
 Against the two grammars measured both ways, wasm gz lands at 0.55–0.75× the
 native gz above — so Python ≈ 55–75 KB and Kotlin ≈ 180–240 KB as wasm, which
 are estimates and marked as such.
@@ -174,6 +192,24 @@ Rust links the grammar; JS loads `web-tree-sitter` plus one grammar wasm per
 language, lazily, cached across languages.
 
 Buys: seventeen grammars available now, at the quality real editors ship.
+> **Superseded, 2026-08-30, and this is the load-bearing correction on this
+> page.** Both credits in this paragraph were measured and neither survived
+> intact.
+>
+> - **"Cannot diverge between runtimes" is false.** Native and wasm produce
+>   different trees at identical core version and identical grammar: 6 shape +
+>   2 type divergences across 922 broken-input cases, every one pure ASCII.
+>   Clean input is 0, which is the honest good news. Separately, seven pinned
+>   grammars classify identifier characters through locale-dependent libc, so
+>   two *native* hosts can disagree too -- `docs/host-ctype-divergence.md`.
+> - **"For free" is free and correct, but not fast.** Incremental reparse gives
+>   **markdown a 1.4x speedup** (30.4 ms -> 22.1 ms at ~64 KB) against the
+>   ~1 ms/keystroke requirement named just below, which 5 of 16 languages miss
+>   outright. Markdown is this document's own headline requirement.
+> - And incremental reparse **disagrees with a full parse of the same bytes** in
+>   8 of 16 languages -- though only ever from a buffer that was already broken;
+>   30,240 states from clean buffers gave zero divergences.
+
 Incremental reparse and error recovery **for free** — and those are not
 conveniences, they are the highlighter's stated requirements (error-tolerant,
 viewport-only, ~1 ms/keystroke), and route C would have to build both. It also
@@ -244,6 +280,26 @@ highest-risk. Three sub-variants matter, and they differ in which half they own:
   The second is far more tractable than the LR tables. C3 is a sketch, not a
   measurement, and the lexer question is the thing to settle before it is a
   plan.
+
+  > **Settled, 2026-08-30.** The DFA recovers from the generated C as data:
+  > every guard is a boolean expression over one int32, so each evaluates
+  > symbolically into a set of int32 intervals. A table-driven JS interpreter
+  > reproduces the frozen corpus **byte-identically for json (3/3), scheme
+  > (15/15) and go (16/16)**, across ABI 14 and 15, at **6,316 B gz minified**
+  > -- under Lezer's runtime. Verified exhaustively rather than by corpus
+  > sampling: 87,413 table entries against the compiled `parser.c`, all
+  > agreeing, and 2.59M runs of the recovered DFA against the real `ts_lex`,
+  > zero disagreements. What is *not* built is error recovery and incremental
+  > reparse, priced at ~1,100 further JS lines and a fortnight.
+  > `docs/parse-tables-spike.md`.
+
+> **Superseded, 2026-08-30.** This staging order is now backwards. It was right
+> when the scanner was the unknown; the scanner is now the *known* half -- all
+> nine fit a 40-opcode VM at ~10 KB total, two runtimes agreeing across 45,678
+> calls -- and every remaining unknown is in the LR tables. Note also that both
+> grammars it names appear on GoTreeSitter's list of seven that needed
+> hand-written lexers; both have since been reproduced byte-identically here,
+> falsifying that flag. `docs/scanner-vm.md`.
 
 Staging that makes a "no" cheap: build the table half for **JSON and Go first**
 — the two scanner-free grammars — and require byte-identical trees against the
@@ -328,7 +384,10 @@ What must change if A is chosen, and these are the deliverables:
    conformance suite.** It is already 80% of the spec. The suite is what makes
    C2, E and F cheap later instead of speculative: any parse layer that passes
    it feeds both runtimes.
-4. **Measure the real thing once, end to end.** `fmt-js` taking source plus a
+4. **Measure the real thing once, end to end.** *(Done, 2026-08-30 --
+   `docs/parse-measurements.md`. 234/234 frozen trees reproduce through
+   `web-tree-sitter` byte for byte; a three-language editor measures ~246 KB
+   against the ~303 KB estimated here.)* `fmt-js` taking source plus a
    grammar wasm, on the corpus: bytes transferred, cold parse ms, warm reparse
    ms. Every number in this document about wasm is a proxy or an estimate, and
    goal 2's replacement should be written against a measurement.
@@ -358,6 +417,13 @@ that, and the parts the corpus cannot see are exactly where scanner bugs live:
 
 So a green corpus after a scanner port would be evidence about roughly the
 comfortable half of the behaviour. Before the first scanner line is worth
+> **Built, 2026-08-30.** `harness/parse_oracle.py` is that fuzzer, and it
+> immediately found the incremental divergence noted above.
+> `corpus/trees-edited/` holds 242 frozen fixtures carrying ERROR and MISSING,
+> and `harness/parse_conform.py` checks any parse layer against them -- real
+> tree-sitter passes all 6,044 checks; `harness/json_cst.py` fails 9 dirty, 15
+> total and 9 structure, which is what proves the suite discriminates.
+
 writing, the harness needs a differential fuzzer that makes random edits,
 reparses, and compares against tree-sitter as the oracle, in both runtimes. That
 is a real project sitting in front of the interesting one — and roadmap point 4
