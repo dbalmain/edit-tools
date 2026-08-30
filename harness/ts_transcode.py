@@ -14,7 +14,8 @@ data in both runtimes. Nothing here ships; the blob is the artifact.
 Which tables are in, and which are out. In: parse table, small parse table and
 its map, parse actions, symbol names, symbol metadata, lex modes, alias
 sequences, the non-terminal alias map, field names, field map slices and
-entries, and reserved words. **Out, deliberately**: `primary_state_ids`,
+entries, reserved words, and -- for a grammar with an external scanner -- the
+external scanner symbol map and per-state enabled-token table. **Out, deliberately**: `primary_state_ids`,
 `supertype_symbols`, `supertype_map_slices`, `supertype_map_entries`, and the
 language `metadata` struct. Those four serve query analysis and the supertype
 API; parsing and `node.children` never read them. So this is not "every static
@@ -25,6 +26,17 @@ Two more are transcoded but never read by `harness/ts_lr.mjs`:
 `public_symbol_map` (used only by `ts_node_symbol`) and `alias_map` (used only
 by `ts_language_aliases_for_symbol`). They are kept because they are cheap and
 because dropping a table is easier to justify once something needs it.
+
+**External scanners.** `scanner.c` is hand-written C, not generated tables, so
+unlike `ts_lex` there is nothing in it to recover: it is compiled offline to
+scanner-VM bytecode (`docs/scanner-vm.md`) and attached here with `--scanner`,
+base64 in the blob's `scannerProgram`. What this file transcodes is the two
+tables around it -- `ts_external_scanner_symbol_map`, which turns the scanner's
+own token index into a TSSymbol, and `ts_external_scanner_states`, the
+per-external-lex-state bitmap of which tokens are valid. Those are the only
+parts tree-sitter expresses as data, and they are exactly the split
+`lib/src/wasm_store.c` makes: every table is copied out, and the scanner's five
+entry points stay code.
 
 The interesting half is `ts_lex`. tree-sitter emits it as a switch-based DFA in
 C rather than as a table, so it has to be *recovered*. Each `case N:` is a lexer
@@ -73,6 +85,7 @@ Evaluating the C expression symbolically cannot make that mistake.
 from __future__ import annotations
 
 import argparse
+import base64
 import json
 import re
 import sys
@@ -741,7 +754,7 @@ def lex_only(path: Path) -> dict:
     return {"lex": lex, "keywordLex": keyword_lex}
 
 
-def transcode(path: Path) -> dict:
+def transcode(path: Path, scanner: Path | None = None) -> dict:
     raw = Path(path).read_text()
     src = strip_comments(raw)
     d = defines(src)
@@ -760,8 +773,7 @@ def transcode(path: Path) -> dict:
     max_reserved = d.get("MAX_RESERVED_WORD_SET_SIZE", 0)
     total_symbols = symbol_count + alias_count
 
-    if d.get("EXTERNAL_TOKEN_COUNT", 0):
-        raise Unrecognised("external scanner: out of scope for this spike")
+    external_token_count = d.get("EXTERNAL_TOKEN_COUNT", 0)
 
     # symbol names -----------------------------------------------------------
     names = [""] * total_symbols
@@ -850,6 +862,49 @@ def transcode(path: Path) -> dict:
         lex_states[s] = syms.value(f.get("lex_state", "0"))
         ext_lex_states[s] = syms.value(f.get("external_lex_state", "0"))
         reserved_ids[s] = syms.value(f.get("reserved_word_set_id", "0"))
+
+    # external scanner ------------------------------------------------------
+    # The scanner itself is hand-written C and cannot be transcoded; it is
+    # compiled offline to `scanner` VM bytecode and attached with --scanner.
+    # What *is* data here is the pair of tables the parser needs to call it:
+    # which TSSymbol each external token maps to, and which external tokens are
+    # enabled in each external lex state.
+    ext_symbol_map: list[int] = []
+    ext_states: list[int] = []
+    if external_token_count:
+        body = find_decl(
+            src,
+            r"static const TSSymbol ts_external_scanner_symbol_map\[EXTERNAL_TOKEN_COUNT\]\s*=\s*\{",
+        )
+        if body is None:
+            raise Unrecognised("EXTERNAL_TOKEN_COUNT set but no symbol map")
+        ext_symbol_map = sequential(body, syms, external_token_count)
+
+        m = re.search(
+            r"static const bool ts_external_scanner_states\[(\d+)\]\[EXTERNAL_TOKEN_COUNT\]\s*=\s*\{",
+            src,
+        )
+        if m is None:
+            raise Unrecognised("EXTERNAL_TOKEN_COUNT set but no scanner states")
+        ext_state_count = int(m.group(1))
+        ext_states = [0] * (ext_state_count * external_token_count)
+        body, _ = brace_body(src, m.end() - 1)
+        for des, val in designated(split_items(body)):
+            row = syms.value(des)
+            for tdes, tval in designated(split_items(val[1:-1])):
+                if tdes is None:
+                    raise Unrecognised("external scanner state row without designators")
+                if tval != "true":
+                    raise Unrecognised(f"external scanner state value {tval!r}")
+                ext_states[row * external_token_count + syms.value(tdes)] = 1
+        # `external_lex_state` indexes this table, so a state naming a row that
+        # does not exist would read past the end and silently enable nothing.
+        if max(ext_lex_states, default=0) >= ext_state_count:
+            raise Unrecognised(
+                f"external_lex_state {max(ext_lex_states)} >= {ext_state_count} rows"
+            )
+    elif any(ext_lex_states):
+        raise Unrecognised("lex modes name external lex states but there is no scanner")
     # reserved words ---------------------------------------------------------
     reserved: list[int] = []
     m = re.search(r"static const TSSymbol ts_reserved_words\[(\d+)\]\[MAX_RESERVED_WORD_SET_SIZE\]\s*=\s*\{", src)
@@ -938,6 +993,18 @@ def transcode(path: Path) -> dict:
     keyword_capture = syms.value(kw_m.group(1)) if kw_m else 0
     name_m = re.search(r"TS_PUBLIC const TSLanguage \*tree_sitter_(\w+)\(void\)", src)
 
+    program_b64 = None
+    if scanner is not None:
+        if not external_token_count:
+            raise Unrecognised("--scanner given for a grammar with no external tokens")
+        program_b64 = base64.b64encode(Path(scanner).read_bytes()).decode("ascii")
+    elif external_token_count:
+        print(
+            f"warning: {path} has {external_token_count} external tokens and no "
+            f"--scanner; the blob will not parse",
+            file=sys.stderr,
+        )
+
     return {
         "name": name_m.group(1) if name_m else path.stem,
         "abi": abi,
@@ -969,6 +1036,14 @@ def transcode(path: Path) -> dict:
         "lex": lex,
         "keywordLex": keyword_lex,
         "keywordCaptureToken": keyword_capture,
+        "externalTokenCount": external_token_count,
+        "externalScannerSymbolMap": ext_symbol_map,
+        "externalScannerStates": ext_states,
+        # base64 of the packed `.svm`, attached by --scanner. Absent for a
+        # scanner-free grammar, and absent-but-required is the parser's error
+        # to raise, not this file's: transcoding the tables is meaningful on
+        # its own (--lex-only already relies on that).
+        "scannerProgram": program_b64,
     }
 
 
@@ -1007,6 +1082,11 @@ def main() -> int:
         action="store_true",
         help="recover only ts_lex/ts_lex_keywords, ignoring external scanners",
     )
+    ap.add_argument(
+        "--scanner",
+        type=Path,
+        help="packed scanner-VM program (.svm) for a grammar with an external scanner",
+    )
     args = ap.parse_args()
     if args.lex_only:
         blob = lex_only(args.parser_c)
@@ -1020,13 +1100,15 @@ def main() -> int:
         return 0
     if args.out is None:
         ap.error("-o/--out is required unless --lex-only")
-    blob = transcode(args.parser_c)
+    blob = transcode(args.parser_c, args.scanner)
     args.out.write_text(json.dumps(blob, separators=(",", ":")) + "\n")
+    ext = blob["externalTokenCount"]
     print(
         f"{args.parser_c} -> {args.out}: "
         f"{blob['stateCount']} parse states, "
         f"{len(blob['lex'])} lex states, "
         f"{len(blob['keywordLex']) if blob['keywordLex'] else 0} keyword lex states"
+        + (f", {ext} external tokens" if ext else "")
     )
     return 0
 
