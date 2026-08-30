@@ -6,31 +6,38 @@
 // the "same algorithm" half, ported from tree-sitter 0.26.0's `lib/src`
 // (`parser.c`, `stack.c`, `subtree.c`, `node.c`, `lexer.c`, `language.c`).
 //
-// What this supports is one projection: **byte offsets, and the visible tree of
-// a clean full parse**. Not implemented (see `docs/parse-tables-spike.md`):
+// What this supports is one projection: **byte offsets, and the visible tree**,
+// for a full parse of any input -- broken input included. Not implemented (see
+// `docs/parse-tables-spike.md`):
 //
-//   * error recovery      -- ts_parser__handle_error / __recover / __breakdown
 //   * incremental reparse -- old-tree reuse, ReusableNode, __breakdown_top_of_stack
 //   * external scanners   -- the transcoder refuses grammars that have one
 //   * repeat rebalancing  -- ts_parser__balance_subtree, a rotation among
 //                            same-symbol invisible repeat nodes that preserves
 //                            leaf order and so cannot change the visible tree
-//   * row/column tracking -- only byte offsets reach the output, and the two
-//                            consumers of extents (get_column, error rows) are
-//                            scanner and error-recovery paths
+//   * row/column tracking -- only byte offsets reach the output. Recovery does
+//                            charge per skipped line, but it counts newlines in
+//                            the source (`rowsIn`) rather than tracking extents;
+//                            `get_column` remains a scanner-only path
 //
 // The guarantee is narrower than "reaching any of them throws", and the precise
 // claim matters: **unsupported behaviour that can affect this projection is
-// rejected.** Error recovery and external scanners throw, because reaching them
-// would change the tree. The last two do not, and are not silent bugs for
-// different reasons: repeat rebalancing is skipped at parser completion and
-// cannot change the visible tree by construction, and row/column state is never
-// tracked because nothing in this projection reads it. Incremental reparse has
-// no entry point at all rather than a throwing one -- there is nowhere to pass
-// an old tree.
+// rejected.** External scanners throw, because reaching them would change the
+// tree. The other two do not, and are not silent bugs for different reasons:
+// repeat rebalancing is skipped at parser completion and cannot change the
+// visible tree by construction, and row/column state is never tracked because
+// only error costs read it and they read it exactly. Incremental reparse has no
+// entry point at all rather than a throwing one -- there is nowhere to pass an
+// old tree.
 //
-// Each is still a place a reimplementation is green on clean full parses and
-// wrong in production; that is a statement about scope, not about throwing.
+// Error recovery IS implemented, and is checked the same way the clean parse is:
+// `ts_check_trees.mjs --edited` requires byte-identical roots against
+// `corpus/trees-edited/`, ERROR and MISSING included. That is 44 fixtures across
+// json, scheme and go -- a much narrower oracle than the 7,940-file differential
+// behind clean parses, since no differential over broken input exists yet.
+//
+// Each remains a place a reimplementation is green on the corpus and wrong in
+// production; that is a statement about scope, not about throwing.
 
 const ERROR_STATE = 0;
 const TS_TREE_STATE_NONE = 0xffff;
@@ -2084,3 +2091,19 @@ export function makeLexer(bytes) {
 }
 
 export { Unsupported };
+
+// Exposed for `harness/ts_lr.test.mjs`, alongside `makeLexer` above. These are
+// the four places error recovery hides a special case behind something that
+// reads like a plain field or a plain utility -- an accessor that is not the
+// field it looks like, a "renumber" that also moves the summary, a cost that
+// charges per line, and a fragile-parent test that must ignore MISSING. Each
+// was wrong here at some point, and none of them is reachable from a clean
+// parse, so the corpus cannot stand in for testing them directly.
+export const forTests = {
+  Stack,
+  newLeaf,
+  newNode,
+  newErrorNode,
+  newMissingLeaf,
+  subtreeErrorCost,
+};
