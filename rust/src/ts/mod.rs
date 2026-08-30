@@ -12,4 +12,5 @@
 //! rebalancing is skipped and row/column state is never tracked, exactly as in
 //! the JS, because neither can affect this projection.
 
+pub mod blob;
 pub mod doc;
