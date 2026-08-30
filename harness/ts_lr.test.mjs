@@ -12,7 +12,15 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { makeLexer } from "./ts_lr.mjs";
+import { encode, decode } from "./ts_scanner_pack.mjs";
+
+// `toml.program.js` is the offline compiler's output and stays CommonJS with
+// the rest of the spike's authoring tools; only the VM and the wire format
+// moved into the harness.
+const { build: buildToml } = createRequire(import.meta.url)("../spike/scanner-vm/toml.program.js");
 
 const INT32_MIN = -2147483648;
 const INT32_MAX = 2147483647;
@@ -216,4 +224,63 @@ test("markEnd and SKIP carry the extent, not just the offset", () => {
   assert.equal(lexer.tokenEnd, 4);
   assert.equal(lexer.tokenEndRow, 1);
   assert.equal(lexer.tokenEndColumn, 3);
+});
+
+// ---------------------------------------------------------------------------
+// The scanner package wire format.
+//
+// `decode` did not exist until the parser needed it: the JS replay ran off the
+// in-memory program object while only Rust read the packed bytes, so "one
+// artifact, two runtimes" was untested in the runtime where it was easiest to
+// check. These are that check.
+// ---------------------------------------------------------------------------
+
+test("the committed toml.svm still matches the program it was built from", () => {
+  // Guards the drift that was previously unnoticeable: `pack.js::encode` had no
+  // caller in the repo, so nothing said whether the checked-in artifact was
+  // still the encoding of toml.program.js.
+  const svm = readFileSync(new URL("../spike/scanner-vm/toml.svm", import.meta.url));
+  const encoded = encode(buildToml());
+  assert.deepEqual(
+    Array.from(encoded), Array.from(new Uint8Array(svm)),
+    "toml.svm is stale -- regenerate with node spike/scanner-vm/build-svm.js",
+  );
+});
+
+test("decode round-trips every section, including the ones TOML leaves empty", () => {
+  // TOML has no stacks, no strings, no valid-sets and no jump table, so a
+  // decoder that mis-walked any of those sections would round-trip TOML
+  // perfectly and corrupt every other scanner. This program fills all of them.
+  const prog = {
+    entry: 7,
+    regPersist: 0b1010_0000_0000_0000_0000_0000_0000_0101,
+    stacks: [{ persist: true }, { persist: false }, { persist: true }, { persist: false }],
+    stackInit: [{ stack: 2, values: [0, -1, 127, -128, 100000, -100000] }],
+    classes: [[9, 9, 32, 32], [0x41, 0x5a, 0x61, 0x7a, 0x10000, 0x10ffff]],
+    strings: [[104, 116, 109, 108], []],
+    // 13 is deliberately not a multiple of 8: the bitset packs 8 flags per
+    // byte, so a wrong tail length is only visible on a ragged final byte.
+    validSets: [[true, false, true, true, false, false, false, false, true, false, false, false, true]],
+    jumpTable: [0, 3, 65535],
+    code: Uint8Array.from([0x01, 0x02, 0x40, 0x00, 0x00, 0x0a]),
+  };
+  const back = decode(encode(prog));
+  assert.equal(back.entry, prog.entry);
+  assert.equal(back.regPersist, prog.regPersist >>> 0);
+  assert.deepEqual(back.stacks, prog.stacks);
+  assert.deepEqual(back.stackInit, prog.stackInit, "SLEB128 must survive both signs");
+  assert.deepEqual(back.classes, prog.classes, "class bounds run past the BMP");
+  assert.deepEqual(back.strings, prog.strings);
+  assert.deepEqual(back.validSets, prog.validSets, "ragged bitset tail");
+  assert.deepEqual(back.jumpTable, prog.jumpTable);
+  assert.deepEqual(Array.from(back.code), Array.from(prog.code));
+});
+
+test("decode rejects a package it cannot trust rather than guessing", () => {
+  const good = encode(buildToml());
+  assert.throws(() => decode(good.slice(0, good.length - 1)), /truncated/);
+  assert.throws(() => decode(new Uint8Array([...good, 0])), /trailing/);
+  const badMagic = Uint8Array.from(good);
+  badMagic[1] ^= 0xff;
+  assert.throws(() => decode(badMagic), /bad magic/);
 });

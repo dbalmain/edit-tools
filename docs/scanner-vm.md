@@ -93,7 +93,9 @@ sophisticated.
 
 Forty opcodes, one byte each, operands ULEB128 (indices) or SLEB128 (signed
 immediates) or a fixed 2-byte little-endian absolute jump target. The full
-listing is in `spike/scanner-vm/vm.js`; the groups are:
+listing is in `harness/ts_scanner_vm.mjs` (it lived at `spike/scanner-vm/vm.js`
+until the parser started driving it; that path is now a re-export); the groups
+are:
 
 | Group             | Opcodes                                                                  |
 | ----------------- | ------------------------------------------------------------------------ |
@@ -228,6 +230,20 @@ into the tree shape, and it is what let three separate weaknesses show up.
 **Both runtimes.** `spike/scanner-vm/rust/` decodes the same `toml.svm` blob and
 replays the same traces. The project's central claim — one data artifact, two
 runtimes, identical output — is demonstrated here rather than asserted.
+
+**Correction, 2026-08-30.** That paragraph was half true when it was written,
+and the half that was false is the load-bearing half. Rust decoded `toml.svm`;
+**JS did not**. `replay.js` called `build()` and handed the VM the in-memory
+program object, and there was no `.svm` decoder in JavaScript anywhere in the
+repo — `pack.js` had an `encode` and no `decode`, and that `encode` had no
+caller, so the committed 165-byte artifact could not even be regenerated. The
+two runtimes were therefore executing *one program expressed twice*, with the
+encoder on only one of the two paths, and an encoder bug would have left all
+45,678 calls green. Closed by `harness/ts_scanner_pack.mjs`'s `decode`, by
+`spike/scanner-vm/build-svm.js` (which regenerates the artifact and has a
+`--check` mode), and by repointing `replay.js` at the bytes. The artifact was in
+fact already correct — `encode(build())` is byte-identical to the committed
+`toml.svm` — but that was luck rather than something anything checked.
 
 ### The frozen corpus is a weak oracle for this
 
