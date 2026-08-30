@@ -15,6 +15,7 @@
 pub mod blob;
 pub mod doc;
 pub mod lexer;
+pub mod subtree;
 
 use std::fmt;
 
