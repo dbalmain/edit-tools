@@ -1,4 +1,4 @@
-//! `ts_check_trees <blob.json> <language> [--write-dir DIR]`: the Rust
+//! `ts_check_trees <blob.json> <language> [--write-dir DIR|--emit]`: the Rust
 //! acceptance bar.
 //!
 //! The Rust twin of `harness/ts_check_trees.mjs`. Parses a language's corpus
@@ -16,6 +16,8 @@
 #[path = "../ts/mod.rs"]
 mod ts;
 
+use serde::Serialize;
+use std::io::{BufWriter, Write};
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 use std::time::Instant;
@@ -33,6 +35,28 @@ fn repo_root() -> PathBuf {
         .parent()
         .unwrap_or(Path::new("."))
         .to_path_buf()
+}
+
+/// Node's `path.relative(from, to)`, lexically, over absolute paths.
+///
+/// `strip_prefix` is not enough: the JS emits `../../..`-style paths for files
+/// outside the repository, which is exactly what `--emit` is pointed at. A
+/// plain fallback to the absolute path makes the two runtimes' `source_file`
+/// fields disagree on every such file -- found by diffing both runtimes over
+/// the Go standard library, where it was the only divergence in 7,710 files.
+fn relative_path(from: &Path, to: &Path) -> String {
+    let (mut f, mut t) = (from.components().peekable(), to.components().peekable());
+    while f.peek().is_some() && f.peek() == t.peek() {
+        f.next();
+        t.next();
+    }
+    let mut parts: Vec<String> = f.map(|_| "..".to_string()).collect();
+    parts.extend(t.map(|c| c.as_os_str().to_string_lossy().into_owned()));
+    if parts.is_empty() {
+        String::new()
+    } else {
+        parts.join(std::path::MAIN_SEPARATOR_STR)
+    }
 }
 
 /// `gen_trees.convert()`: anonymous nodes kept, byte offsets, `field` where the
@@ -92,11 +116,16 @@ fn parse_doc(lang: &Language, language: &str, source_path: &Path) -> Result<Tree
         field: None,
     };
     let root_node = convert(lang, &parser.arena, &node, &source)?;
-    let relative = source_path
-        .strip_prefix(repo_root())
-        .unwrap_or(source_path)
-        .to_string_lossy()
-        .into_owned();
+    // Node's path.relative resolves its arguments against the cwd first, so a
+    // relative path on `--emit`'s stdin has to be absolutised the same way.
+    let absolute = if source_path.is_absolute() {
+        source_path.to_path_buf()
+    } else {
+        std::env::current_dir()
+            .unwrap_or_else(|_| PathBuf::from("."))
+            .join(source_path)
+    };
+    let relative = relative_path(&repo_root(), &absolute);
     let text = std::str::from_utf8(&source)
         .map_err(|e| format!("{}: not valid UTF-8: {e}", source_path.display()))?;
     Ok(TreeDoc {
@@ -105,6 +134,45 @@ fn parse_doc(lang: &Language, language: &str, source_path: &Path) -> Result<Tree
         source: text.to_string(),
         root: root_node,
     })
+}
+
+/// `--emit`: parse the newline-separated paths on stdin and write one compact
+/// JSON record per line, in the shape `ts_check_trees.mjs --emit` writes.
+/// `harness/ts_differential.py` consumes this to compare a runtime against real
+/// tree-sitter over a corpus far larger than the frozen one -- which is where
+/// the JS spike found three defects the 34-file corpus could not.
+#[derive(Serialize)]
+struct EmitOk<'a> {
+    path: &'a str,
+    doc: TreeDoc,
+}
+
+#[derive(Serialize)]
+struct EmitErr<'a> {
+    path: &'a str,
+    error: String,
+}
+
+fn emit(blob_path: &str, language: &str) -> Result<bool, String> {
+    let raw = std::fs::read(blob_path).map_err(|e| format!("{blob_path}: {e}"))?;
+    let blob: Blob = serde_json::from_slice(&raw).map_err(|e| format!("{blob_path}: {e}"))?;
+    let lang = Language::new(blob);
+
+    let mut input = String::new();
+    std::io::Read::read_to_string(&mut std::io::stdin(), &mut input)
+        .map_err(|e| format!("stdin: {e}"))?;
+    let stdout = std::io::stdout();
+    let mut out = BufWriter::new(stdout.lock());
+    for path in input.lines().filter(|l| !l.is_empty()) {
+        let line = match parse_doc(&lang, language, Path::new(path)) {
+            Ok(doc) => serde_json::to_string(&EmitOk { path, doc }),
+            Err(error) => serde_json::to_string(&EmitErr { path, error }),
+        }
+        .map_err(|e| format!("{path}: {e}"))?;
+        writeln!(out, "{line}").map_err(|e| format!("{path}: {e}"))?;
+    }
+    out.flush().map_err(|e| format!("stdout: {e}"))?;
+    Ok(true)
 }
 
 /// Where two byte strings first differ, rendered the way the JS renders it.
@@ -214,11 +282,16 @@ fn main() -> ExitCode {
         .collect();
 
     let (Some(blob_path), Some(language)) = (positional.first(), positional.get(1)) else {
-        eprintln!("usage: ts_check_trees <blob.json> <language> [--write-dir DIR]");
+        eprintln!("usage: ts_check_trees <blob.json> <language> [--write-dir DIR|--emit]");
         return ExitCode::from(2);
     };
 
-    match run(blob_path, language, write_dir) {
+    let result = if args.iter().any(|a| a == "--emit") {
+        emit(blob_path, language)
+    } else {
+        run(blob_path, language, write_dir)
+    };
+    match result {
         Ok(true) => ExitCode::SUCCESS,
         Ok(false) => ExitCode::FAILURE,
         Err(e) => {
