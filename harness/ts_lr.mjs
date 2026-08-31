@@ -15,18 +15,22 @@
 //   * repeat rebalancing  -- ts_parser__balance_subtree, a rotation among
 //                            same-symbol invisible repeat nodes that preserves
 //                            leaf order and so cannot change the visible tree
-//   * row/column tracking -- only byte offsets reach the output. Recovery does
-//                            charge per skipped line, but it counts newlines in
-//                            the source (`rowsIn`) rather than tracking extents;
-//                            `get_column` remains a scanner-only path
+//
+// Row and column tracking **is** implemented, as of the scanner slice. The
+// emitted trees carry byte offsets only, but both of upstream's consumers of
+// extents are live here: `get_column`, for external scanners, and recovery's
+// three per-line error-cost terms, which read `extent.row` off a Length.
+//
+// The corpus can only check the second of those, and only indirectly: a wrong
+// row leaves a byte-identical tree byte-identical, but it misprices recovery
+// and so picks a different one. `harness/ts_lr.test.mjs` is the direct
+// evidence.
 //
 // The guarantee is narrower than "reaching any of them throws", and the precise
 // claim matters: **unsupported behaviour that can affect this projection is
 // rejected.** External scanners throw, because reaching them would change the
-// tree. The other two do not, and are not silent bugs for different reasons:
-// repeat rebalancing is skipped at parser completion and cannot change the
-// visible tree by construction, and row/column state is never tracked because
-// only error costs read it and they read it exactly. Incremental reparse has no
+// tree. Repeat rebalancing does not: it is skipped at parser completion and
+// cannot change the visible tree by construction. Incremental reparse has no
 // entry point at all rather than a throwing one -- there is nowhere to pass an
 // old tree.
 //
@@ -38,6 +42,9 @@
 //
 // Each remains a place a reimplementation is green on the corpus and wrong in
 // production; that is a statement about scope, not about throwing.
+
+import { ScannerVM } from "./ts_scanner_vm.mjs";
+import { decode as decodeScannerPackage } from "./ts_scanner_pack.mjs";
 
 const ERROR_STATE = 0;
 const TS_TREE_STATE_NONE = 0xffff;
@@ -65,6 +72,16 @@ const MAX_COST_DIFFERENCE = 18 * ERROR_COST_PER_SKIPPED_TREE;
 
 class Unsupported extends Error {}
 
+// The blob carries the packed scanner as base64, because the blob is JSON.
+// Decoding to bytes and then through the shared wire-format reader means the
+// parser and `spike/scanner-vm/rust/` consume the identical byte string.
+function decodeScannerProgram(base64) {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return decodeScannerPackage(bytes);
+}
+
 // ---------------------------------------------------------------------------
 // Language: accessors over the blob, mirroring lib/src/language.{c,h}
 // ---------------------------------------------------------------------------
@@ -79,6 +96,30 @@ export class Language {
     this.maxReservedWordSetSize = blob.maxReservedWordSetSize;
     this.fieldCount = blob.fieldCount;
     this.keywordCaptureToken = blob.keywordCaptureToken;
+    this.externalTokenCount = blob.externalTokenCount || 0;
+    this.externalScannerSymbolMap = blob.externalScannerSymbolMap || [];
+  }
+
+  // ts_language_enabled_external_tokens. External lex state 0 means "no
+  // external scanning here" and upstream returns NULL; the caller never gets
+  // that far, because ts_parser__lex tests the state first.
+  enabledExternalTokens(externalLexState) {
+    if (externalLexState === 0) return null;
+    const n = this.externalTokenCount;
+    const base = externalLexState * n;
+    return this.b.externalScannerStates.slice(base, base + n);
+  }
+
+  // The scanner's own token index -> TSSymbol.
+  externalSymbol(resultSymbol) {
+    const symbol = this.externalScannerSymbolMap[resultSymbol];
+    if (symbol === undefined) {
+      throw new Unsupported(
+        `scanner returned external token ${resultSymbol}, but the grammar has ` +
+        `${this.externalTokenCount}`
+      );
+    }
+    return symbol;
   }
 
   // ts_language_lookup
@@ -136,6 +177,16 @@ export class Language {
 
   lexState(state) {
     return this.b.lexStates[state];
+  }
+
+  // ts_language_lex_mode_for_state. Read as a unit because error mode replaces
+  // the whole mode, external lex state included.
+  lexMode(state) {
+    return {
+      lexState: this.b.lexStates[state],
+      externalLexState: this.b.externalLexStates[state],
+      reservedWordSetId: this.b.reservedWordSetIds[state],
+    };
   }
 
   externalLexState(state) {
@@ -207,6 +258,38 @@ export class Language {
 const EMPTY_ENTRY = { c: 0, r: 0, a: [] };
 
 // ---------------------------------------------------------------------------
+// Length arithmetic, mirroring lib/src/length.h and lib/src/point.h.
+//
+// A Length is `{bytes, row, column}` -- a byte count paired with the extent it
+// spans. **`column` counts bytes within the row, not codepoints**: upstream's
+// `ts_lexer__do_advance` does `extent.column += lookahead_size`. The other
+// column, the one `get_column` returns, counts *codepoints* and lives in the
+// lexer's `columnValue`. Two different numbers with the same name, and the
+// distinction is upstream's rather than this port's.
+// ---------------------------------------------------------------------------
+
+function len(bytes, row, column) {
+  return { bytes, row, column };
+}
+
+const LENGTH_ZERO = len(0, 0, 0);
+
+// point_add: a row carried by the right operand resets the column.
+function lengthAdd(a, b) {
+  return b.row > 0
+    ? len(a.bytes + b.bytes, a.row + b.row, b.column)
+    : len(a.bytes + b.bytes, a.row, a.column + b.column);
+}
+
+// point_sub, with the same saturation on both fields upstream has.
+function lengthSub(a, b) {
+  const bytes = a.bytes >= b.bytes ? a.bytes - b.bytes : 0;
+  return a.row > b.row
+    ? len(bytes, a.row - b.row, a.column)
+    : len(bytes, 0, a.column >= b.column ? a.column - b.column : 0);
+}
+
+// ---------------------------------------------------------------------------
 // Lexer, mirroring lib/src/lexer.c for a single default included range and a
 // whole-buffer string input (which is what ts_parser_parse_string gives it).
 // ---------------------------------------------------------------------------
@@ -216,6 +299,8 @@ class Lexer {
     this.buf = bytes;
     this.len = bytes.length;
     this.pos = 0;
+    this.row = 0;
+    this.column = 0;
     this.chunkStart = 0;
     this.chunkSize = 0;
     this.hasChunk = false;
@@ -223,8 +308,46 @@ class Lexer {
     this.lookahead = 0;
     this.lookaheadSize = 0;
     this.tokenStart = 0;
+    this.tokenStartRow = 0;
+    this.tokenStartColumn = 0;
     this.tokenEnd = -1;
+    this.tokenEndRow = 0;
+    this.tokenEndColumn = 0;
     this.resultSymbol = 0;
+    // ColumnData: the *codepoint* column, cached because recomputing it means
+    // re-reading the line from its start. `valid` is cleared by any seek,
+    // because a seek lands somewhere the running count knows nothing about.
+    this.columnValid = false;
+    this.columnValue = 0;
+    // Set by getColumn(), read once per external scan by ts_parser__lex, and
+    // stamped onto the resulting leaf as `dependsOnColumn`.
+    this.didGetColumn = false;
+  }
+
+  position() {
+    return len(this.pos, this.row, this.column);
+  }
+
+  tokenStartPosition() {
+    return len(this.tokenStart, this.tokenStartRow, this.tokenStartColumn);
+  }
+
+  tokenEndPosition() {
+    return len(this.tokenEnd, this.tokenEndRow, this.tokenEndColumn);
+  }
+
+  setColumnData(value) {
+    this.columnValid = true;
+    this.columnValue = value;
+  }
+
+  incrementColumnData() {
+    if (this.columnValid) this.columnValue++;
+  }
+
+  invalidateColumnData() {
+    this.columnValid = false;
+    this.columnValue = 0;
   }
 
   // ts_lexer__get_chunk: the input callback returns 0 bytes at or past the end,
@@ -252,9 +375,14 @@ class Lexer {
   }
 
   // ts_lexer_goto, specialised to the single default range: it always finds
-  // range 0, so it always clears EOF and invalidates the chunk.
+  // range 0, so it always clears EOF and invalidates the chunk. Takes a full
+  // Length, because a seek has to restore the extent as well as the offset --
+  // there is no way to recompute a row from a byte offset alone.
   gotoPos(position) {
-    this.pos = position;
+    if (position.bytes !== this.pos) this.invalidateColumnData();
+    this.pos = position.bytes;
+    this.row = position.row;
+    this.column = position.column;
     this.atEof = false;
     if (this.hasChunk && (this.pos < this.chunkStart || this.pos >= this.chunkStart + this.chunkSize)) {
       this.hasChunk = false;
@@ -266,41 +394,114 @@ class Lexer {
   }
 
   reset(position) {
-    if (position !== this.pos) this.gotoPos(position);
+    if (position.bytes !== this.pos) this.gotoPos(position);
   }
 
   start() {
     this.tokenStart = this.pos;
+    this.tokenStartRow = this.row;
+    this.tokenStartColumn = this.column;
     this.tokenEnd = -1;
     this.resultSymbol = 0;
+    this.didGetColumn = false;
     if (!this.atEof) {
       if (!this.chunkSize) this.getChunk();
       if (!this.lookaheadSize) this.getLookahead();
-      if (this.pos === 0 && this.lookahead === BYTE_ORDER_MARK) this.advance(true);
+      if (this.pos === 0) {
+        if (this.lookahead === BYTE_ORDER_MARK) this.advance(true);
+        // Unconditional upstream, not an else-branch: at byte 0 the codepoint
+        // column is known to be 0 whether or not a BOM was skipped.
+        this.setColumnData(0);
+      }
     }
   }
 
+  // ts_lexer_finish. Returns the lookahead end byte this pass reached, which
+  // the caller maxes into its running value -- upstream passes a pointer.
   finish() {
     if (this.tokenEnd < 0) this.markEnd();
-    if (this.tokenEnd < this.tokenStart) this.tokenStart = this.tokenEnd;
+    if (this.tokenEnd < this.tokenStart) {
+      this.tokenStart = this.tokenEnd;
+      this.tokenStartRow = this.tokenEndRow;
+      this.tokenStartColumn = this.tokenEndColumn;
+    }
+    let end = this.pos + 1;
+    // Deciding a byte sequence is invalid took a look at what follows it, so
+    // the following bytes are part of what this token depended on. Four is
+    // upstream's constant: the most bytes read to reject a code point.
+    if (this.lookahead === TS_DECODE_ERROR) end += 4;
+    return end;
   }
 
   // ts_lexer__mark_end, specialised: with one included range the boundary
   // special case cannot fire.
   markEnd() {
     this.tokenEnd = this.pos;
+    this.tokenEndRow = this.row;
+    this.tokenEndColumn = this.column;
   }
 
+  // ts_lexer__advance: the guarded entry point the DFA and scanners call.
   advance(skip) {
     if (!this.hasChunk) return;
-    if (this.lookaheadSize) this.pos += this.lookaheadSize;
+    this.doAdvance(skip);
+  }
+
+  // ts_lexer__do_advance, split out because get_column calls it directly and
+  // deliberately bypasses the `if (!chunk) return` guard above.
+  doAdvance(skip) {
+    if (this.lookaheadSize) {
+      if (this.lookahead === 0x0a) {
+        this.row++;
+        this.column = 0;
+        this.setColumnData(0);
+      } else {
+        // A leading BOM is not a character, so it does not advance the
+        // codepoint column -- but it does advance the byte column.
+        const isBom = this.pos === 0 && this.lookahead === BYTE_ORDER_MARK;
+        if (!isBom) this.incrementColumnData();
+        this.column += this.lookaheadSize;
+      }
+      this.pos += this.lookaheadSize;
+    }
     // The included-range walk in ts_lexer__do_advance cannot fire here: the
     // default range's end_byte is UINT32_MAX.
-    if (skip) this.tokenStart = this.pos;
+    if (skip) {
+      this.tokenStart = this.pos;
+      this.tokenStartRow = this.row;
+      this.tokenStartColumn = this.column;
+    }
     if (this.pos < this.chunkStart || this.pos >= this.chunkStart + this.chunkSize) {
       this.getChunk();
     }
     this.getLookahead();
+  }
+
+  // ts_lexer__get_column. The one lexer call with a non-trivial cost: when the
+  // cache is cold it seeks to the start of the line and re-walks it, counting
+  // codepoints. `column` is the *byte* offset within the row, which is exactly
+  // what has to be subtracted to find the line start.
+  //
+  // No scanner in the pinned roster calls this, and the scanner VM has no
+  // opcode for it (docs/scanner-vm.md reserves 0x06 and traps). It is here
+  // because upstream's lexer has it and because a scanner that did call it
+  // would otherwise diverge silently rather than loudly.
+  getColumn() {
+    this.didGetColumn = true;
+    if (!this.columnValid) {
+      const goalByte = this.pos;
+      this.gotoPos(len(this.pos - this.column, this.row, 0));
+      this.setColumnData(0);
+      this.getChunk();
+      if (!this.atEof) {
+        this.getLookahead();
+        while (this.pos < goalByte && !this.atEof && this.hasChunk) {
+          this.doAdvance(false);
+          if (this.atEof) break;
+        }
+      }
+    }
+    return this.columnValue;
   }
 
   // START_LEXER()'s loop, driven by the recovered DFA rather than by C control
@@ -462,8 +663,24 @@ class Subtree {
     this.symbol = 0;
     this.children = null;
     this.childCount = 0;
+    // `padding` and `size` stay byte counts, because that is all the emitted
+    // trees carry. The row/column halves of the same two Lengths ride
+    // alongside as scalars rather than replacing them, so every existing
+    // reader of `.padding` / `.size` is untouched.
     this.padding = 0;
+    this.paddingRow = 0;
+    this.paddingColumn = 0;
     this.size = 0;
+    this.sizeRow = 0;
+    this.sizeColumn = 0;
+    this.dependsOnColumn = false;
+    // External scanner bookkeeping. `externalScannerState` is the serialized
+    // VM state at the moment this token was produced, and it is only ever set
+    // on a leaf -- upstream reads it through ts_subtree_external_scanner_state,
+    // which returns the empty state for anything with children.
+    this.hasExternalTokens = false;
+    this.hasExternalScannerStateChange = false;
+    this.externalScannerState = null;
     this.lookaheadBytes = 0;
     this.visible = false;
     this.named = false;
@@ -489,6 +706,31 @@ class Subtree {
     return this.padding + this.size;
   }
 
+  get paddingLength() {
+    return len(this.padding, this.paddingRow, this.paddingColumn);
+  }
+
+  get sizeLength() {
+    return len(this.size, this.sizeRow, this.sizeColumn);
+  }
+
+  // ts_subtree_total_size
+  get totalSizeLength() {
+    return lengthAdd(this.paddingLength, this.sizeLength);
+  }
+
+  setPaddingLength(l) {
+    this.padding = l.bytes;
+    this.paddingRow = l.row;
+    this.paddingColumn = l.column;
+  }
+
+  setSizeLength(l) {
+    this.size = l.bytes;
+    this.sizeRow = l.row;
+    this.sizeColumn = l.column;
+  }
+
   get leafSymbol() {
     return this.childCount === 0 ? this.symbol : this.firstLeafSymbol;
   }
@@ -502,11 +744,16 @@ class Subtree {
   }
 }
 
-function newLeaf(lang, symbol, padding, size, lookaheadBytes, parseState, isKeyword) {
+function newLeaf(
+  lang, symbol, padding, size, lookaheadBytes, parseState, isKeyword,
+  dependsOnColumn, hasExternalTokens,
+) {
   const t = new Subtree();
   t.symbol = symbol;
-  t.padding = padding;
-  t.size = size;
+  t.setPaddingLength(padding);
+  t.setSizeLength(size);
+  t.dependsOnColumn = !!dependsOnColumn;
+  t.hasExternalTokens = !!hasExternalTokens;
   t.lookaheadBytes = lookaheadBytes;
   t.parseState = parseState;
   t.visible = lang.visible(symbol);
@@ -534,7 +781,7 @@ function newError(lang, lookaheadChar, padding, size, lookaheadBytes, parseState
 // `"missing": true`, and it is the only thing separating this from a genuine
 // empty leaf.
 function newMissingLeaf(lang, symbol, padding, lookaheadBytes) {
-  const t = newLeaf(lang, symbol, padding, 0, lookaheadBytes, 0, false);
+  const t = newLeaf(lang, symbol, padding, LENGTH_ZERO, lookaheadBytes, 0, false);
   t.isMissing = true;
   return t;
 }
@@ -550,39 +797,23 @@ function subtreeErrorCost(t) {
 }
 
 // ts_subtree_new_error_node
-function newErrorNode(lang, children, extra, buf, startByte) {
-  const t = newNode(lang, TS_BUILTIN_SYM_ERROR, children, 0, buf, startByte);
+function newErrorNode(lang, children, extra) {
+  const t = newNode(lang, TS_BUILTIN_SYM_ERROR, children, 0);
   t.extra = extra;
   return t;
 }
 
-// `Length.extent.row` over a byte span. Upstream accumulates row and column
-// through the lexer; this port tracks byte offsets only, because the visible
-// tree never reads extents -- except here, where three error-cost terms charge
-// per skipped line.
-//
-// Counting newlines in the buffer is not an approximation of that number, it is
-// the same number by a different route: a subtree's span is contiguous over the
-// very bytes the lexer walked, and `\n` is the only thing upstream counts
-// (`lexer.c:202`). So this stays exact without the extent plumbing.
-//
-// TODO: row/column tracking is being added on another branch. When it lands,
-// the three callers should read real extents and this should go.
-function rowsIn(buf, from, to) {
-  if (!buf) return 0;
-  let rows = 0;
-  for (let i = from; i < to; i++) if (buf[i] === 0x0a) rows++;
-  return rows;
-}
-
 // ts_subtree_summarize_children
-function summarizeChildren(self, lang, buf, startByte) {
+function summarizeChildren(self, lang) {
   self.namedChildCount = 0;
   self.visibleChildCount = 0;
   self.errorCost = 0;
   self.repeatDepth = 0;
   self.visibleDescendantCount = 0;
   self.dynamicPrecedence = 0;
+  self.dependsOnColumn = false;
+  self.hasExternalTokens = false;
+  self.hasExternalScannerStateChange = false;
 
   let structuralIndex = 0;
   const hasAliases = lang.hasAliasSequence(self.productionId);
@@ -591,11 +822,18 @@ function summarizeChildren(self, lang, buf, startByte) {
 
   for (let i = 0; i < self.childCount; i++) {
     const child = children[i];
+
+    // Read before this child is folded in, exactly as upstream does: a node
+    // only inherits a column dependency while it is still on its first row,
+    // because past a newline the column no longer depends on what preceded it.
+    if (self.sizeRow === 0 && child.dependsOnColumn) self.dependsOnColumn = true;
+    if (child.hasExternalScannerStateChange) self.hasExternalScannerStateChange = true;
+
     if (i === 0) {
-      self.padding = child.padding;
-      self.size = child.size;
+      self.setPaddingLength(child.paddingLength);
+      self.setSizeLength(child.sizeLength);
     } else {
-      self.size += child.totalSize;
+      self.setSizeLength(lengthAdd(self.sizeLength, child.totalSizeLength));
     }
 
     const childLookaheadEnd = self.padding + self.size + child.lookaheadBytes;
@@ -637,6 +875,8 @@ function summarizeChildren(self, lang, buf, startByte) {
       self.namedChildCount += child.namedChildCount;
     }
 
+    if (child.hasExternalTokens) self.hasExternalTokens = true;
+
     // ts_subtree_is_error, which is the symbol test and nothing else. This read
     // `|| child.isMissing` until recovery was written, which was dead while no
     // missing leaf could exist and would have quietly diverged the moment one
@@ -653,15 +893,14 @@ function summarizeChildren(self, lang, buf, startByte) {
 
   self.lookaheadBytes = lookaheadEndByte - self.size - self.padding;
 
-  // What the wrapper itself costs, charged once. `startByte` is the node's own
-  // offset including padding, so the size span is [start + padding, ... + size)
-  // -- the same bytes upstream's Length accumulated over.
+  // What the wrapper itself costs, charged once. The per-line term is
+  // `size.extent.row` -- the rows the node's own span covers, which the
+  // Length plumbing has already accumulated through the children.
   if (self.symbol === TS_BUILTIN_SYM_ERROR || self.symbol === TS_BUILTIN_SYM_ERROR_REPEAT) {
-    const sizeStart = startByte + self.padding;
     self.errorCost +=
       ERROR_COST_PER_RECOVERY +
       ERROR_COST_PER_SKIPPED_CHAR * self.size +
-      ERROR_COST_PER_SKIPPED_LINE * rowsIn(buf, sizeStart, sizeStart + self.size);
+      ERROR_COST_PER_SKIPPED_LINE * self.sizeRow;
   }
 
   if (self.childCount > 0) {
@@ -682,10 +921,7 @@ function summarizeChildren(self, lang, buf, startByte) {
   }
 }
 
-// `buf` and `startByte` are read only when `symbol` is ERROR or ERROR_REPEAT,
-// where the cost of the node depends on how many lines it spans. Callers that
-// cannot build an error node need not pass them.
-function newNode(lang, symbol, children, productionId, buf, startByte) {
+function newNode(lang, symbol, children, productionId) {
   const t = new Subtree();
   t.symbol = symbol;
   t.children = children;
@@ -696,7 +932,7 @@ function newNode(lang, symbol, children, productionId, buf, startByte) {
   const fragile = symbol === TS_BUILTIN_SYM_ERROR || symbol === TS_BUILTIN_SYM_ERROR_REPEAT;
   t.fragileLeft = fragile;
   t.fragileRight = fragile;
-  summarizeChildren(t, lang, buf, startByte === undefined ? 0 : startByte);
+  summarizeChildren(t, lang);
   return t;
 }
 
@@ -717,6 +953,47 @@ function subtreeCompare(left, right) {
     }
   }
   return 0;
+}
+
+// ts_subtree_external_scanner_state: the empty state for anything that is not
+// a leaf carrying one. Returned as a zero-length view so callers never have to
+// null-check.
+const EMPTY_EXTERNAL_STATE = new Uint8Array(0);
+
+function externalScannerState(tree) {
+  if (tree && tree.hasExternalTokens && tree.childCount === 0 && tree.externalScannerState) {
+    return tree.externalScannerState;
+  }
+  return EMPTY_EXTERNAL_STATE;
+}
+
+function bytesEq(a, b) {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+  return true;
+}
+
+// ts_external_scanner_state_eq over two subtrees, either of which may be null.
+function externalScannerStateEq(left, right) {
+  return bytesEq(externalScannerState(left), externalScannerState(right));
+}
+
+// ts_subtree_last_external_token: the rightmost leaf that carries scanner
+// state, which is the state a later scan has to resume from.
+function subtreeLastExternalToken(tree) {
+  if (!tree || !tree.hasExternalTokens) return null;
+  while (tree.childCount > 0) {
+    let next = null;
+    for (let i = tree.childCount - 1; i >= 0; i--) {
+      if (tree.children[i].hasExternalTokens) {
+        next = tree.children[i];
+        break;
+      }
+    }
+    if (!next) break;
+    tree = next;
+  }
+  return tree;
 }
 
 function removeTrailingExtras(children) {
@@ -743,18 +1020,20 @@ class StackNode {
     this.dynamicPrecedence = 0;
     if (previous) {
       this.links.push({ node: previous, subtree, isPending });
+      // A Length, not a byte count: ts_lexer_reset needs the extent to seek to,
+      // and a row cannot be recovered from an offset alone.
       this.position = previous.position;
       this.errorCost = previous.errorCost;
       this.dynamicPrecedence = previous.dynamicPrecedence;
       this.nodeCount = previous.nodeCount;
       if (subtree) {
         this.errorCost += subtreeErrorCost(subtree);
-        this.position += subtree.totalSize;
+        this.position = lengthAdd(this.position, subtree.totalSizeLength);
         this.nodeCount += subtreeNodeCount(subtree);
         this.dynamicPrecedence += subtree.dynamicPrecedence;
       }
     } else {
-      this.position = 0;
+      this.position = LENGTH_ZERO;
     }
   }
 }
@@ -797,7 +1076,7 @@ function stackNodeAddLink(self, link) {
       }
       if (
         existing.node.state === link.node.state &&
-        existing.node.position === link.node.position &&
+        existing.node.position.bytes === link.node.position.bytes &&
         existing.node.errorCost === link.node.errorCost
       ) {
         for (let j = 0; j < link.node.links.length; j++) {
@@ -838,6 +1117,7 @@ class Stack {
         nodeCountAtLastError: 0,
         lookaheadWhenPaused: null,
         summary: null,
+        lastExternalToken: null,
       },
     ];
   }
@@ -850,7 +1130,13 @@ class Stack {
     return this.heads[v].node.state;
   }
 
+  // Bytes, which is what every caller but the lexer wants.
   position(v) {
+    return this.heads[v].node.position.bytes;
+  }
+
+  // The full Length, for ts_lexer_reset.
+  positionLength(v) {
     return this.heads[v].node.position;
   }
 
@@ -923,6 +1209,9 @@ class Stack {
       status: StackStatus.Active,
       lookaheadWhenPaused: null,
       summary: null,
+      // Inherited, not reset: a forked version resumes the scanner from
+      // wherever the version it forked from had got to.
+      lastExternalToken: this.heads[originalVersion].lastExternalToken,
     });
     return this.heads.length - 1;
   }
@@ -937,6 +1226,7 @@ class Stack {
       status: head.status,
       lookaheadWhenPaused: head.lookaheadWhenPaused,
       summary: null,
+      lastExternalToken: head.lastExternalToken,
     });
     return this.heads.length - 1;
   }
@@ -1009,6 +1299,41 @@ class Stack {
       }
     }
     return [];
+  }
+
+  lastExternalToken(v) {
+    return this.heads[v].lastExternalToken;
+  }
+
+  setLastExternalToken(v, token) {
+    this.heads[v].lastExternalToken = token;
+  }
+
+  // ts_stack_has_advanced_since_error. Only consulted by the empty-external-
+  // token guard, which is what stops a scanner that returns a zero-width token
+  // forever from hanging the parse.
+  hasAdvancedSinceError(v) {
+    const head = this.heads[v];
+    let node = head.node;
+    if (node.errorCost === 0) return true;
+    while (node) {
+      if (node.links.length > 0) {
+        const subtree = node.links[0].subtree;
+        if (subtree) {
+          if (subtree.totalSize > 0) return true;
+          // The accessor, not the field: upstream reads ts_subtree_error_cost,
+          // and a MISSING leaf is expensive without accumulating a cost of its
+          // own. Reading `.errorCost` here would walk past an inserted token as
+          // though it were free.
+          if (node.nodeCount > head.nodeCountAtLastError && subtreeErrorCost(subtree) === 0) {
+            node = node.links[0].node;
+            continue;
+          }
+        }
+      }
+      break;
+    }
+    return false;
   }
 
   addSlice(originalVersion, node, subtrees) {
@@ -1098,8 +1423,12 @@ class Stack {
       h1.status === StackStatus.Active &&
       h2.status === StackStatus.Active &&
       h1.node.state === h2.node.state &&
-      h1.node.position === h2.node.position &&
-      h1.node.errorCost === h2.node.errorCost
+      h1.node.position.bytes === h2.node.position.bytes &&
+      h1.node.errorCost === h2.node.errorCost &&
+      // Two versions that agree on everything visible can still be resuming
+      // the scanner from different state, and merging them would silently pick
+      // one. Upstream compares here for exactly that reason.
+      externalScannerStateEq(h1.lastExternalToken, h2.lastExternalToken)
     );
   }
 
@@ -1162,21 +1491,54 @@ class Parser {
     this.acceptCount = 0;
     this.cachedToken = null;
     this.cachedTokenByteIndex = 0;
+    this.cachedTokenLastExternalToken = null;
+
+    // The external scanner, if the grammar has one. `lib/src/wasm_store.c`
+    // copies every data table out of a grammar and leaves the scanner's entry
+    // points as code; this is the same split, with bytecode standing in for
+    // the code half so that both runtimes execute one artifact.
+    this.scanner = null;
+    this.vmLexer = null;
+    if (lang.externalTokenCount > 0) {
+      const packed = lang.b.scannerProgram;
+      if (!packed) {
+        throw new Unsupported(
+          `grammar has ${lang.externalTokenCount} external tokens but the blob ` +
+          `carries no scanner program: re-run ts_transcode.py with --scanner`
+        );
+      }
+      this.scanner = new ScannerVM(decodeScannerProgram(packed));
+      // The VM's whole host interface, and it really is four methods: the
+      // catalogue in docs/scanner-vm.md says no scanner in the roster calls
+      // get_column, so there is deliberately no opcode for it.
+      const lexer = this.lexer;
+      this.vmLexer = {
+        lookahead: () => lexer.lookahead,
+        advance: (skip) => lexer.advance(skip),
+        markEnd: () => lexer.markEnd(),
+        atEof: () => lexer.atEof,
+      };
+    }
   }
 
   // ts_parser__lex
   lex(version, parseState) {
     const lang = this.lang;
-    let lexState = lang.lexState(parseState);
-    if (lexState === NO_LEX_STATE) return null;
-    if (lang.externalLexState(parseState) !== 0) {
-      throw new Unsupported("external scanner state reached");
-    }
-    let reservedWordSetId = lang.reservedWordSetId(parseState);
+    let lexMode = lang.lexMode(parseState);
+    if (lexMode.lexState === NO_LEX_STATE) return null;
 
-    const startPosition = this.stack.position(version);
+    const startPosition = this.stack.positionLength(version);
+    // The scanner state this version last left off in. Per stack head, not per
+    // parser, because two GLR versions can be mid-way through different
+    // constructs -- inside a multiline string on one and not on the other.
+    const externalToken = this.stack.lastExternalToken(version);
+
+    let foundExternalToken = false;
+    let calledGetColumn = false;
     let errorMode = parseState === ERROR_STATE;
     let lookaheadEndByte = 0;
+    let scannerStateBytes = null;
+    let scannerStateChanged = false;
     const lexer = this.lexer;
     lexer.reset(startPosition);
 
@@ -1189,17 +1551,66 @@ class Parser {
     let firstErrorCharacter = 0;
     let errorStart = 0;
     let errorEnd = 0;
+    // The Length twins of the two offsets above. `padding` and `size` are
+    // extents now, and neither can be recovered from a byte offset alone.
+    let errorStartLength = LENGTH_ZERO;
+    let errorEndLength = LENGTH_ZERO;
 
     for (;;) {
+      let found = false;
+      const currentPosition = lexer.position();
+      // Saved and restored around a failed external scan: the scanner may have
+      // advanced the lexer, and the column cache it left behind describes a
+      // position the internal lexer is about to be rewound away from.
+      const savedColumnValid = lexer.columnValid;
+      const savedColumnValue = lexer.columnValue;
+
+      if (lexMode.externalLexState !== 0) {
+        const valid = lang.enabledExternalTokens(lexMode.externalLexState);
+        lexer.start();
+        this.scanner.deserialize(externalScannerState(externalToken));
+        const result = this.scanner.scan(this.vmLexer, valid);
+        if (result.ok) lexer.resultSymbol = result.symbol;
+        found = result.ok;
+        lookaheadEndByte = Math.max(lookaheadEndByte, lexer.finish());
+
+        if (found) {
+          scannerStateBytes = this.scanner.serialize();
+          scannerStateChanged = !bytesEq(externalScannerState(externalToken), scannerStateBytes);
+
+          // Empty-token guard. A scanner returning a zero-width token that also
+          // changes no state would be asked again at the same offset forever.
+          // Upstream keeps such a token only when it is genuinely making
+          // progress -- Python's indent/dedent tokens are the reason it is a
+          // guard rather than a refusal.
+          if (lexer.tokenEnd <= currentPosition.bytes && !scannerStateChanged) {
+            const symbol = lang.externalSymbol(lexer.resultSymbol);
+            const tokenIsExtra = lang.nextState(parseState, symbol) === parseState;
+            if (errorMode || !this.stack.hasAdvancedSinceError(version) || tokenIsExtra) {
+              found = false;
+            }
+          }
+        }
+
+        if (found) {
+          foundExternalToken = true;
+          calledGetColumn = lexer.didGetColumn;
+          break;
+        }
+
+        lexer.reset(currentPosition);
+        lexer.columnValid = savedColumnValid;
+        lexer.columnValue = savedColumnValue;
+      }
+
       lexer.start();
-      const found = lexer.run(this.lang.b.lex, lexState);
-      lexer.finish();
-      if (lexer.pos + 1 > lookaheadEndByte) lookaheadEndByte = lexer.pos + 1;
+      found = lexer.run(lang.b.lex, lexMode.lexState);
+      lookaheadEndByte = Math.max(lookaheadEndByte, lexer.finish());
       if (found) break;
+
       if (!errorMode) {
         errorMode = true;
-        lexState = lang.lexState(ERROR_STATE);
-        reservedWordSetId = lang.reservedWordSetId(ERROR_STATE);
+        lexMode = lang.lexMode(ERROR_STATE);
         lexer.reset(startPosition);
         continue;
       }
@@ -1208,6 +1619,8 @@ class Parser {
         skippedError = true;
         errorStart = lexer.tokenStart;
         errorEnd = lexer.tokenStart;
+        errorStartLength = lexer.tokenStartPosition();
+        errorEndLength = errorStartLength;
         firstErrorCharacter = lexer.lookahead;
       }
 
@@ -1216,14 +1629,15 @@ class Parser {
         lexer.advance(false);
       }
       errorEnd = lexer.pos;
+      errorEndLength = lexer.position();
     }
 
     if (skippedError) {
       return newError(
         lang,
         firstErrorCharacter,
-        errorStart - startPosition,
-        errorEnd - errorStart,
+        lengthSub(errorStartLength, startPosition),
+        lengthSub(errorEndLength, errorStartLength),
         lookaheadEndByte - errorEnd,
         parseState,
       );
@@ -1231,13 +1645,15 @@ class Parser {
 
     let isKeyword = false;
     let symbol = lexer.resultSymbol;
-    const padding = lexer.tokenStart - startPosition;
-    const size = lexer.tokenEnd - lexer.tokenStart;
+    const padding = lengthSub(lexer.tokenStartPosition(), startPosition);
+    const size = lengthSub(lexer.tokenEndPosition(), lexer.tokenStartPosition());
     const lookaheadBytes = lookaheadEndByte - lexer.tokenEnd;
 
-    if (symbol === lang.keywordCaptureToken && symbol !== 0) {
+    if (foundExternalToken) {
+      symbol = lang.externalSymbol(symbol);
+    } else if (symbol === lang.keywordCaptureToken && symbol !== 0) {
       const endByte = lexer.tokenEnd;
-      lexer.reset(lexer.tokenStart);
+      lexer.reset(lexer.tokenStartPosition());
       lexer.start();
       isKeyword = lexer.run(lang.b.keywordLex, 0);
       lexer.finish();
@@ -1253,7 +1669,18 @@ class Parser {
       }
     }
 
-    return newLeaf(lang, symbol, padding, size, lookaheadBytes, parseState, isKeyword);
+    // `dependsOnColumn` is upstream's `called_get_column`: whether producing
+    // this token consulted the codepoint column, which is what makes it
+    // unsafe to reuse after an edit earlier on the same line.
+    const leaf = newLeaf(
+      lang, symbol, padding, size, lookaheadBytes, parseState, isKeyword,
+      calledGetColumn, foundExternalToken,
+    );
+    if (foundExternalToken) {
+      leaf.externalScannerState = scannerStateBytes;
+      leaf.hasExternalScannerStateChange = scannerStateChanged;
+    }
+    return leaf;
   }
 
   // ts_parser__can_reuse_first_leaf
@@ -1276,8 +1703,15 @@ class Parser {
     return lang.externalLexState(state) === 0 && entry.r !== 0;
   }
 
-  getCachedToken(state, position) {
-    if (this.cachedToken && this.cachedTokenByteIndex === position) {
+  // ts_parser__get_cached_token. The external-state comparison is load-bearing
+  // and not an optimisation: the same bytes at the same offset lex to a
+  // different token depending on what the scanner was resuming from.
+  getCachedToken(state, position, lastExternalToken) {
+    if (
+      this.cachedToken &&
+      this.cachedTokenByteIndex === position &&
+      externalScannerStateEq(this.cachedTokenLastExternalToken, lastExternalToken)
+    ) {
       const entry = this.lang.tableEntry(state, this.cachedToken.symbol);
       if (this.canReuseFirstLeaf(state, this.cachedToken, entry)) {
         return { token: this.cachedToken, entry };
@@ -1295,6 +1729,9 @@ class Parser {
       toPush.extra = extra;
     }
     this.stack.push(version, toPush, !isLeaf, state);
+    if (toPush.hasExternalTokens) {
+      this.stack.setLastExternalToken(version, subtreeLastExternalToken(toPush));
+    }
   }
 
   // ts_parser__select_tree
@@ -1334,14 +1771,14 @@ class Parser {
       let children = slice.subtrees;
       let trailingExtras = removeTrailingExtras(children);
       const sliceStart = stack.position(sliceVersion);
-      let parent = newNode(this.lang, symbol, children, productionId, this.lexer.buf, sliceStart);
+      let parent = newNode(this.lang, symbol, children, productionId);
 
       while (i + 1 < pop.length && pop[i + 1].version === slice.version) {
         i++;
         const nextChildren = pop[i].subtrees;
         const nextTrailingExtras = removeTrailingExtras(nextChildren);
         const candidate = newNode(
-          this.lang, symbol, nextChildren, productionId, this.lexer.buf, sliceStart,
+          this.lang, symbol, nextChildren, productionId,
         );
         if (this.selectTree(parent, candidate)) {
           trailingExtras = nextTrailingExtras;
@@ -1392,7 +1829,7 @@ class Parser {
             .concat(tree.children || [], trees.slice(j + 1));
           // The root begins at byte 0, which is what the error-cost branch of
           // summarizeChildren needs if recovery made this root an ERROR.
-          root = newNode(this.lang, tree.symbol, spliced, tree.productionId, this.lexer.buf, 0);
+          root = newNode(this.lang, tree.symbol, spliced, tree.productionId);
           break;
         }
       }
@@ -1417,7 +1854,8 @@ class Parser {
 
     let lookahead = null;
     let tableEntry = EMPTY_ENTRY;
-    const cached = this.getCachedToken(state, position);
+    const lastExternalToken = stack.lastExternalToken(version);
+    const cached = this.getCachedToken(state, position, lastExternalToken);
     if (cached) {
       lookahead = cached.token;
       tableEntry = cached.entry;
@@ -1431,6 +1869,7 @@ class Parser {
         if (lookahead) {
           this.cachedToken = lookahead;
           this.cachedTokenByteIndex = position;
+          this.cachedTokenLastExternalToken = lastExternalToken;
           tableEntry = lang.tableEntry(state, lookahead.symbol);
         } else {
           tableEntry = lang.tableEntry(state, TS_BUILTIN_SYM_END);
@@ -1662,7 +2101,7 @@ class Parser {
 
       if (slice.subtrees.length > 0) {
         const start = stack.position(slice.version);
-        const error = newErrorNode(this.lang, slice.subtrees, true, this.lexer.buf, start);
+        const error = newErrorNode(this.lang, slice.subtrees, true);
         stack.push(slice.version, error, false, goalState);
       }
 
@@ -1688,10 +2127,10 @@ class Parser {
   recover(version, lookahead) {
     const lang = this.lang;
     const stack = this.stack;
-    const buf = this.lexer.buf;
     let didRecover = false;
     const previousVersionCount = stack.versionCount;
     const position = stack.position(version);
+    const positionLength = stack.positionLength(version);
     const summary = stack.getSummary(version);
     const nodeCountSinceError = stack.nodeCountSinceError(version);
     const currentErrorCost = stack.errorCost(version);
@@ -1699,7 +2138,7 @@ class Parser {
     if (summary && lookahead.symbol !== TS_BUILTIN_SYM_ERROR) {
       for (const entry of summary) {
         if (entry.state === ERROR_STATE) continue;
-        if (entry.position === position) continue;
+        if (entry.position.bytes === position) continue;
         let depth = entry.depth;
         if (nodeCountSinceError > 0) depth++;
 
@@ -1716,8 +2155,8 @@ class Parser {
         const newCost =
           currentErrorCost +
           entry.depth * ERROR_COST_PER_SKIPPED_TREE +
-          (position - entry.position) * ERROR_COST_PER_SKIPPED_CHAR +
-          rowsIn(buf, entry.position, position) * ERROR_COST_PER_SKIPPED_LINE;
+          (position - entry.position.bytes) * ERROR_COST_PER_SKIPPED_CHAR +
+          (positionLength.row - entry.position.row) * ERROR_COST_PER_SKIPPED_LINE;
         // `break`, not `continue`: entries are ordered by increasing depth, so
         // once one is too expensive every later one is too.
         if (this.betterVersionExists(version, false, newCost)) break;
@@ -1740,7 +2179,7 @@ class Parser {
 
     // At EOF there is no next token to skip to, so wrap the lot and finish.
     if (lookahead.symbol === TS_BUILTIN_SYM_END) {
-      const parent = newErrorNode(this.lang, [], false, buf, position);
+      const parent = newErrorNode(this.lang, [], false);
       stack.push(version, parent, false, 1);
       this.accept(version, lookahead);
       return;
@@ -1754,7 +2193,7 @@ class Parser {
     const skipCost =
       currentErrorCost + ERROR_COST_PER_SKIPPED_TREE +
       lookahead.totalSize * ERROR_COST_PER_SKIPPED_CHAR +
-      rowsIn(buf, position, position + lookahead.totalSize) * ERROR_COST_PER_SKIPPED_LINE;
+      lookahead.totalSizeLength.row * ERROR_COST_PER_SKIPPED_LINE;
     if (this.betterVersionExists(version, false, skipCost)) {
       stack.halt(version);
       return;
@@ -1771,9 +2210,7 @@ class Parser {
       }
     }
 
-    let errorRepeat = newNode(
-      this.lang, TS_BUILTIN_SYM_ERROR_REPEAT, [lookahead], 0, buf, position,
-    );
+    let errorRepeat = newNode(this.lang, TS_BUILTIN_SYM_ERROR_REPEAT, [lookahead], 0);
 
     // If tokens were already skipped there is an ERROR on top of the stack
     // already; pop it and fold both into one.
@@ -1788,10 +2225,7 @@ class Parser {
 
       stack.renumberVersion(pop[0].version, version);
       pop[0].subtrees.push(errorRepeat);
-      errorRepeat = newNode(
-        this.lang, TS_BUILTIN_SYM_ERROR_REPEAT, pop[0].subtrees, 0,
-        buf, stack.position(version),
-      );
+      errorRepeat = newNode(this.lang, TS_BUILTIN_SYM_ERROR_REPEAT, pop[0].subtrees, 0);
     }
 
     stack.push(version, errorRepeat, false, ERROR_STATE);
@@ -1809,6 +2243,7 @@ class Parser {
     this.doAllPotentialReductions(version, 0);
     const versionCount = stack.versionCount;
     const position = stack.position(version);
+    const positionLength = stack.positionLength(version);
 
     let didInsertMissingToken = false;
     for (let v = version; v < versionCount; ) {
@@ -1822,9 +2257,9 @@ class Parser {
           if (stateAfter === 0 || stateAfter === state) continue;
 
           if (lang.hasReduceAction(stateAfter, lookahead.leafSymbol)) {
-            this.lexer.reset(position);
+            this.lexer.reset(positionLength);
             this.lexer.markEnd();
-            const padding = this.lexer.tokenEnd - position;
+            const padding = lengthSub(this.lexer.tokenEndPosition(), positionLength);
             const lookaheadBytes = lookahead.totalSize + lookahead.lookaheadBytes;
 
             const versionWithMissingTree = stack.copyVersion(v);
@@ -2101,6 +2536,7 @@ export { Unsupported };
 // parse, so the corpus cannot stand in for testing them directly.
 export const forTests = {
   Stack,
+  len,
   newLeaf,
   newNode,
   newErrorNode,

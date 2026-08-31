@@ -594,11 +594,22 @@ half only.
   about the _visible tree_ and I believe it; it is not a proof, and the stack
   overflow is a reminder that "cannot change the output" is not the same as
   "cannot change anything".
-- **Row and column tracking.** Not implemented — only byte offsets reach the
-  output. The two consumers of extents are `get_column` (external scanners only)
-  and error-cost-per-line (error recovery only), so this is consistent with the
-  two holes above rather than independent of them. Any grammar whose scanner
-  calls `get_column` — Python's, for one — needs it.
+- **Row and column tracking.** ~~Not implemented~~ **implemented in the scanner
+  slice**, though still unread by this projection: only byte offsets reach the
+  output, so the frozen corpus cannot check any of it and
+  `harness/ts_lr.test.mjs` is the whole of the evidence. The two consumers of
+  extents are `get_column` (external scanners only) and error-cost-per-line
+  (error recovery only).
+
+  **Correction, 2026-08-30**: this bullet used to end "Any grammar whose scanner
+  calls `get_column` — Python's, for one — needs it." Python's scanner does
+  **not** call `get_column`. Neither does any other scanner in the roster:
+  grepping all sixteen pinned `scanner.c` files returns zero hits, which is what
+  `docs/scanner-vm.md` §1 independently recorded ("`lexer->get_column` |
+  **none**"). Python and YAML both need a column and both count it themselves in
+  `advance` rather than asking the lexer. The claim was invented rather than
+  checked, and it propagated: it is why the scanner brief said row/column
+  tracking was a prerequisite for the TOML scanner, which it is not.
 - **Invalid UTF-8.** The decoder returns `TS_DECODE_ERROR` on malformed input
   and the interval domain models it, but no test feeds it any. Every corpus file
   and every stdlib file is valid UTF-8.

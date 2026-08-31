@@ -10,6 +10,7 @@ Everything here covers behaviour the frozen corpus cannot reach. The corpus is
 of the blob that exercises.
 """
 
+import re
 import subprocess
 import unittest
 from pathlib import Path
@@ -203,13 +204,23 @@ class LexRecoveryTest(unittest.TestCase):
 
 
 class InterpreterSuiteTest(unittest.TestCase):
+    # A floor, not the exact count, so adding a test does not break this -- but
+    # dropping the suite does. `node --test` exits 0 on a file it collected no
+    # tests from, so the return code alone cannot tell a passing suite from a
+    # suite that stopped being run.
+    MIN_INTERPRETER_TESTS = 19
+
     def test_javascript_lexer_tests_pass(self):
         result = subprocess.run(
             ["node", "--test", str(HARNESS / "ts_lr.test.mjs")],
             capture_output=True,
             text=True,
         )
-        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        report = result.stdout + result.stderr
+        self.assertEqual(result.returncode, 0, report)
+        passed = re.search(r"^\u2139 pass (\d+)$", result.stdout, re.MULTILINE)
+        self.assertIsNotNone(passed, report)
+        self.assertGreaterEqual(int(passed.group(1)), self.MIN_INTERPRETER_TESTS, report)
 
 
 if __name__ == "__main__":
