@@ -2,7 +2,8 @@
 // Parse a language's corpus sources with the table interpreter and compare the
 // result, byte for byte, against the frozen trees.
 //
-//     ./harness/ts_check_trees.mjs <blob.json> <language>
+//     ./harness/ts_check_trees.mjs <blob.json> <language>          # clean
+//     ./harness/ts_check_trees.mjs <blob.json> <language> --edited # broken
 //
 // The bar is not "parses correctly". It is that the bytes this writes equal the
 // bytes in `corpus/trees/<language>__<stem>.tree.json`, which `gen_trees.py`
@@ -33,6 +34,11 @@ function convert(lang, node, source) {
   } else {
     out.text = decoder.decode(source.subarray(start, end));
   }
+  // `parse_oracle.convert` stamps this after children/text, so it is last in
+  // insertion order and the key order matches byte for byte. A MISSING node is
+  // a zero-width leaf and is otherwise indistinguishable from a real empty one,
+  // which is the whole reason the oracle track added the key.
+  if (node.subtree.isMissing) out.missing = true;
   return out;
 }
 
@@ -45,6 +51,57 @@ function parseDoc(blob, language, sourcePath) {
     source: decoder.decode(source),
     root: convert(lang, { subtree: root, alias: 0, start: startByte, field: null }, source),
   };
+}
+
+// The root this interpreter produces for one buffer, serialised the way the
+// frozen fixtures serialise theirs.
+function parseRoot(blob, source) {
+  const { lang, root, startByte } = parse(blob, source);
+  return convert(lang, { subtree: root, alias: 0, start: startByte, field: null }, source);
+}
+
+// --edited: the same bar against `corpus/trees-edited/`, whose fixtures carry
+// ERROR and MISSING. `gen_trees.py` refuses to freeze a tree containing either,
+// so `corpus/trees/` cannot exercise error recovery by construction and this is
+// the only oracle for it that this repo owns.
+//
+// The fixtures hold their source inline rather than pointing at a file, and
+// they carry keys beyond `root` (the edit, the base, the oracle's identity), so
+// the comparison is over the serialised root rather than over whole-file bytes.
+// Same serialiser, same settings, so key order is still pinned.
+function checkEdited(blobPath, language) {
+  const blob = JSON.parse(readFileSync(blobPath, "utf8"));
+  const dir = join(ROOT, "corpus", "trees-edited");
+  const files = readdirSync(dir).filter((f) => f.startsWith(`${language}__`)).sort();
+  if (files.length === 0) {
+    console.error(`no ${language} fixtures in ${relative(ROOT, dir)}`);
+    return 2;
+  }
+
+  let pass = 0;
+  const failures = [];
+  for (const file of files) {
+    const doc = JSON.parse(readFileSync(join(dir, file), "utf8"));
+    const source = Buffer.from(doc.source, "utf8");
+    const expected = JSON.stringify(doc.root, null, 1);
+    let actual;
+    try {
+      actual = JSON.stringify(parseRoot(blob, source), null, 1);
+    } catch (err) {
+      failures.push(`${file}: refused: ${err.message}`);
+      continue;
+    }
+    if (actual === expected) {
+      pass++;
+      console.log(`  ok   ${basename(file, ".tree.json")}`);
+    } else {
+      failures.push(`${file}: ${firstDiff(expected, actual)}`);
+    }
+  }
+
+  console.log(`\n${pass}/${files.length} byte-identical (with ERROR and MISSING)`);
+  for (const f of failures) console.error(`  FAIL ${f}`);
+  return failures.length === 0 ? 0 : 1;
 }
 
 // --emit: parse the newline-separated paths on stdin and write one JSON
@@ -74,10 +131,13 @@ function emit(blobPath, language) {
 function main(argv) {
   const [blobPath, language, ...rest] = argv;
   if (!blobPath || !language) {
-    console.error("usage: ts_check_trees.mjs <blob.json> <language> [--write-dir DIR|--emit]");
+    console.error(
+      "usage: ts_check_trees.mjs <blob.json> <language> [--write-dir DIR|--emit|--edited]",
+    );
     return 2;
   }
   if (rest.includes("--emit")) return emit(blobPath, language);
+  if (rest.includes("--edited")) return checkEdited(blobPath, language);
   const writeIndex = rest.indexOf("--write-dir");
   const writeDir = writeIndex >= 0 ? rest[writeIndex + 1] : null;
   if (writeDir) mkdirSync(writeDir, { recursive: true });
