@@ -15,6 +15,8 @@
 pub mod blob;
 pub mod doc;
 pub mod lexer;
+pub mod node;
+pub mod parser;
 pub mod stack;
 pub mod subtree;
 

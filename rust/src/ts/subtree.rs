@@ -105,6 +105,46 @@ impl Arena {
         self.trees.len() - 1
     }
 
+    // The JS builds a subtree and then mutates it in place before anyone else
+    // can see it -- `parent.extra = true`, `parent.parseState = ...`, and the
+    // keyword remap on a cloned lookahead. With an arena those become explicit
+    // setters. This is the one place the two runtimes genuinely cannot look
+    // alike; every setter below has a named counterpart in `ts_lr.mjs`, and
+    // each is applied to a tree that is not yet shared.
+
+    /// `parent.extra = value`.
+    pub fn set_extra(&mut self, id: SubtreeId, value: bool) {
+        self.trees[id].extra = value;
+    }
+
+    /// `parent.parseState = state`.
+    pub fn set_parse_state(&mut self, id: SubtreeId, state: u16) {
+        self.trees[id].parse_state = state;
+    }
+
+    /// The JS's three-line fragile marking:
+    /// `fragileLeft = fragileRight = true; parseState = TS_TREE_STATE_NONE`.
+    pub fn set_fragile(&mut self, id: SubtreeId, parse_state: u16) {
+        let tree = &mut self.trees[id];
+        tree.fragile_left = true;
+        tree.fragile_right = true;
+        tree.parse_state = parse_state;
+    }
+
+    /// `parent.dynamicPrecedence += value`.
+    pub fn add_dynamic_precedence(&mut self, id: SubtreeId, value: i32) {
+        self.trees[id].dynamic_precedence += value;
+    }
+
+    /// The keyword remap: `mutable.symbol = ...` and the two metadata bits the
+    /// JS recomputes alongside it.
+    pub fn set_symbol(&mut self, id: SubtreeId, symbol: Symbol, visible: bool, named: bool) {
+        let tree = &mut self.trees[id];
+        tree.symbol = symbol;
+        tree.visible = visible;
+        tree.named = named;
+    }
+
     /// The JS's `Object.assign(new Subtree(), this)`: a shallow copy, sharing
     /// the children, at a fresh identity.
     pub fn clone_tree(&mut self, id: SubtreeId) -> SubtreeId {

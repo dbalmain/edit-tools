@@ -1,6 +1,6 @@
 //! The parse loop -- `lib/src/parser.c`.
 
-use super::blob::{Action, ActionEntry, Language, StateId, Symbol};
+use super::blob::{Action, ActionEntry, Language, StateId, Symbol, EMPTY_ENTRY};
 use super::blob::{ERROR_STATE, NO_LEX_STATE, TS_BUILTIN_SYM_END, TS_TREE_STATE_NONE};
 use super::lexer::Lexer;
 use super::stack::Stack;
@@ -69,7 +69,11 @@ impl<'a> Parser<'a> {
     }
 
     /// `ts_parser__lex`.
-    fn lex(&mut self, version: usize, parse_state: StateId) -> Result<Option<SubtreeId>, Unsupported> {
+    fn lex(
+        &mut self,
+        version: usize,
+        parse_state: StateId,
+    ) -> Result<Option<SubtreeId>, Unsupported> {
         let lang = self.lang;
         let mut lex_state = lang.lex_state(parse_state);
         if lex_state == NO_LEX_STATE {
@@ -192,10 +196,12 @@ impl<'a> Parser<'a> {
 
     /// `ts_parser__shift`.
     fn shift(&mut self, version: usize, state: StateId, lookahead: SubtreeId, extra: bool) {
-        let t = self.arena.get(lookahead);
-        let is_leaf = t.child_count() == 0;
+        let (is_leaf, was_extra) = {
+            let t = self.arena.get(lookahead);
+            (t.child_count() == 0, t.extra)
+        };
         let mut to_push = lookahead;
-        if extra != t.extra && is_leaf {
+        if extra != was_extra && is_leaf {
             to_push = self.arena.clone_tree(lookahead);
             self.arena.set_extra(to_push, extra);
         }
@@ -263,8 +269,7 @@ impl<'a> Parser<'a> {
             while i + 1 < pop.len() && pop[i + 1].version == v {
                 i += 1;
                 let mut next_children = pop[i].subtrees.clone();
-                let next_trailing_extras =
-                    remove_trailing_extras(&self.arena, &mut next_children);
+                let next_trailing_extras = remove_trailing_extras(&self.arena, &mut next_children);
                 let candidate =
                     self.arena
                         .new_node(self.lang, r.symbol, next_children, r.production_id)?;
@@ -325,13 +330,13 @@ impl<'a> Parser<'a> {
                 if self.arena.get(tree).extra {
                     continue;
                 }
-                let mut spliced: Vec<SubtreeId> = trees[..j].to_vec();
-                spliced.extend_from_slice(&self.arena.get(tree).children.clone());
-                spliced.extend_from_slice(&trees[j + 1..]);
-                let (symbol, production_id) = {
+                let (symbol, production_id, children) = {
                     let t = self.arena.get(tree);
-                    (t.symbol, t.production_id)
+                    (t.symbol, t.production_id, t.children.clone())
                 };
+                let mut spliced: Vec<SubtreeId> = trees[..j].to_vec();
+                spliced.extend_from_slice(&children);
+                spliced.extend_from_slice(&trees[j + 1..]);
                 root = Some(
                     self.arena
                         .new_node(self.lang, symbol, spliced, production_id)?,
@@ -364,10 +369,12 @@ impl<'a> Parser<'a> {
         let position = self.stack.position(version);
 
         let mut lookahead: Option<SubtreeId> = None;
-        let mut table_entry: ActionEntry = ActionEntry::EMPTY_VALUE;
+        // Borrowed from the language, not from `self`, so the parse loop stays
+        // free to mutate the stack and the arena while holding it.
+        let mut table_entry: &ActionEntry = &EMPTY_ENTRY;
         if let Some(cached) = self.get_cached_token(state, position) {
             lookahead = Some(cached);
-            table_entry = lang.table_entry(state, self.arena.get(cached).symbol).clone();
+            table_entry = lang.table_entry(state, self.arena.get(cached).symbol);
         }
 
         let mut needs_lex = lookahead.is_none();
@@ -379,17 +386,17 @@ impl<'a> Parser<'a> {
                     Some(token) => {
                         self.cached_token = Some(token);
                         self.cached_token_byte_index = position;
-                        table_entry = lang.table_entry(state, self.arena.get(token).symbol).clone();
+                        table_entry = lang.table_entry(state, self.arena.get(token).symbol);
                     }
                     None => {
-                        table_entry = lang.table_entry(state, TS_BUILTIN_SYM_END).clone();
+                        table_entry = lang.table_entry(state, TS_BUILTIN_SYM_END);
                     }
                 }
             }
 
             let mut did_reduce = false;
             let mut last_reduction_version: Option<usize> = None;
-            for action in table_entry.actions().to_vec() {
+            for &action in table_entry.actions() {
                 match action {
                     Action::Shift {
                         state: target,
@@ -453,7 +460,7 @@ impl<'a> Parser<'a> {
                     None => needs_lex = true,
                     Some(token) => {
                         let leaf = self.arena.get(token).leaf_symbol();
-                        table_entry = lang.table_entry(state, leaf).clone();
+                        table_entry = lang.table_entry(state, leaf);
                     }
                 }
                 continue;
@@ -475,7 +482,6 @@ impl<'a> Parser<'a> {
                 {
                     let entry = lang.table_entry(state, lang.b.keyword_capture_token);
                     if entry.count > 0 {
-                        let entry = entry.clone();
                         let mutable = self.arena.clone_tree(token);
                         let capture = lang.b.keyword_capture_token;
                         self.arena.set_symbol(
@@ -571,11 +577,13 @@ impl<'a> Parser<'a> {
                 min_error_cost = status_i.cost;
             }
 
+            // status_i is computed once, before the inner loop, exactly as the
+            // JS does. Recomputing it per candidate would read a stack the
+            // merges and removals below have already changed.
             let mut j = 0usize;
             let mut removed = false;
             while j < i {
                 let status_j = self.version_status(j);
-                let status_i = self.version_status(i);
                 match Self::compare_versions(status_j, status_i) {
                     Cmp::TakeLeft => {
                         self.stack.remove_version(i);
