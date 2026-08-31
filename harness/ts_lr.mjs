@@ -16,15 +16,15 @@
 //                            same-symbol invisible repeat nodes that preserves
 //                            leaf order and so cannot change the visible tree
 //
-// Row and column tracking **is** implemented, as of the scanner slice, even
-// though nothing in the emitted trees reads it: they carry byte offsets only.
-// It is here because upstream's `ts_lexer__do_advance` maintains the extent on
-// every advance, so a port that skipped it would have to diverge deliberately,
-// and because one of the two consumers that read extents -- `get_column`, for
-// external scanners -- is being built now. Recovery, upstream's other consumer,
-// charges per skipped line by counting newlines in the source (`rowsIn`) rather
-// than by reading an extent. The corpus cannot check any of the row/column
-// state; the evidence for it is `harness/ts_lr.test.mjs`.
+// Row and column tracking **is** implemented, as of the scanner slice. The
+// emitted trees carry byte offsets only, but both of upstream's consumers of
+// extents are live here: `get_column`, for external scanners, and recovery's
+// three per-line error-cost terms, which read `extent.row` off a Length.
+//
+// The corpus can only check the second of those, and only indirectly: a wrong
+// row leaves a byte-identical tree byte-identical, but it misprices recovery
+// and so picks a different one. `harness/ts_lr.test.mjs` is the direct
+// evidence.
 //
 // The guarantee is narrower than "reaching any of them throws", and the precise
 // claim matters: **unsupported behaviour that can affect this projection is
@@ -797,33 +797,14 @@ function subtreeErrorCost(t) {
 }
 
 // ts_subtree_new_error_node
-function newErrorNode(lang, children, extra, buf, startByte) {
-  const t = newNode(lang, TS_BUILTIN_SYM_ERROR, children, 0, buf, startByte);
+function newErrorNode(lang, children, extra) {
+  const t = newNode(lang, TS_BUILTIN_SYM_ERROR, children, 0);
   t.extra = extra;
   return t;
 }
 
-// `Length.extent.row` over a byte span. Upstream accumulates row and column
-// through the lexer; this port tracks byte offsets only, because the visible
-// tree never reads extents -- except here, where three error-cost terms charge
-// per skipped line.
-//
-// Counting newlines in the buffer is not an approximation of that number, it is
-// the same number by a different route: a subtree's span is contiguous over the
-// very bytes the lexer walked, and `\n` is the only thing upstream counts
-// (`lexer.c:202`). So this stays exact without the extent plumbing.
-//
-// TODO: row/column tracking is being added on another branch. When it lands,
-// the three callers should read real extents and this should go.
-function rowsIn(buf, from, to) {
-  if (!buf) return 0;
-  let rows = 0;
-  for (let i = from; i < to; i++) if (buf[i] === 0x0a) rows++;
-  return rows;
-}
-
 // ts_subtree_summarize_children
-function summarizeChildren(self, lang, buf, startByte) {
+function summarizeChildren(self, lang) {
   self.namedChildCount = 0;
   self.visibleChildCount = 0;
   self.errorCost = 0;
@@ -912,15 +893,14 @@ function summarizeChildren(self, lang, buf, startByte) {
 
   self.lookaheadBytes = lookaheadEndByte - self.size - self.padding;
 
-  // What the wrapper itself costs, charged once. `startByte` is the node's own
-  // offset including padding, so the size span is [start + padding, ... + size)
-  // -- the same bytes upstream's Length accumulated over.
+  // What the wrapper itself costs, charged once. The per-line term is
+  // `size.extent.row` -- the rows the node's own span covers, which the
+  // Length plumbing has already accumulated through the children.
   if (self.symbol === TS_BUILTIN_SYM_ERROR || self.symbol === TS_BUILTIN_SYM_ERROR_REPEAT) {
-    const sizeStart = startByte + self.padding;
     self.errorCost +=
       ERROR_COST_PER_RECOVERY +
       ERROR_COST_PER_SKIPPED_CHAR * self.size +
-      ERROR_COST_PER_SKIPPED_LINE * rowsIn(buf, sizeStart, sizeStart + self.size);
+      ERROR_COST_PER_SKIPPED_LINE * self.sizeRow;
   }
 
   if (self.childCount > 0) {
@@ -941,10 +921,7 @@ function summarizeChildren(self, lang, buf, startByte) {
   }
 }
 
-// `buf` and `startByte` are read only when `symbol` is ERROR or ERROR_REPEAT,
-// where the cost of the node depends on how many lines it spans. Callers that
-// cannot build an error node need not pass them.
-function newNode(lang, symbol, children, productionId, buf, startByte) {
+function newNode(lang, symbol, children, productionId) {
   const t = new Subtree();
   t.symbol = symbol;
   t.children = children;
@@ -955,7 +932,7 @@ function newNode(lang, symbol, children, productionId, buf, startByte) {
   const fragile = symbol === TS_BUILTIN_SYM_ERROR || symbol === TS_BUILTIN_SYM_ERROR_REPEAT;
   t.fragileLeft = fragile;
   t.fragileRight = fragile;
-  summarizeChildren(t, lang, buf, startByte === undefined ? 0 : startByte);
+  summarizeChildren(t, lang);
   return t;
 }
 
@@ -1281,7 +1258,7 @@ class Stack {
           if (entry.depth < depth) break;
           if (entry.depth === depth && entry.state === state) return 0;
         }
-        summary.push({ position: it.node.position.bytes, depth, state });
+        summary.push({ position: it.node.position, depth, state });
         return 0;
       },
       false,
@@ -1794,14 +1771,14 @@ class Parser {
       let children = slice.subtrees;
       let trailingExtras = removeTrailingExtras(children);
       const sliceStart = stack.position(sliceVersion);
-      let parent = newNode(this.lang, symbol, children, productionId, this.lexer.buf, sliceStart);
+      let parent = newNode(this.lang, symbol, children, productionId);
 
       while (i + 1 < pop.length && pop[i + 1].version === slice.version) {
         i++;
         const nextChildren = pop[i].subtrees;
         const nextTrailingExtras = removeTrailingExtras(nextChildren);
         const candidate = newNode(
-          this.lang, symbol, nextChildren, productionId, this.lexer.buf, sliceStart,
+          this.lang, symbol, nextChildren, productionId,
         );
         if (this.selectTree(parent, candidate)) {
           trailingExtras = nextTrailingExtras;
@@ -1852,7 +1829,7 @@ class Parser {
             .concat(tree.children || [], trees.slice(j + 1));
           // The root begins at byte 0, which is what the error-cost branch of
           // summarizeChildren needs if recovery made this root an ERROR.
-          root = newNode(this.lang, tree.symbol, spliced, tree.productionId, this.lexer.buf, 0);
+          root = newNode(this.lang, tree.symbol, spliced, tree.productionId);
           break;
         }
       }
@@ -2124,7 +2101,7 @@ class Parser {
 
       if (slice.subtrees.length > 0) {
         const start = stack.position(slice.version);
-        const error = newErrorNode(this.lang, slice.subtrees, true, this.lexer.buf, start);
+        const error = newErrorNode(this.lang, slice.subtrees, true);
         stack.push(slice.version, error, false, goalState);
       }
 
@@ -2150,10 +2127,10 @@ class Parser {
   recover(version, lookahead) {
     const lang = this.lang;
     const stack = this.stack;
-    const buf = this.lexer.buf;
     let didRecover = false;
     const previousVersionCount = stack.versionCount;
     const position = stack.position(version);
+    const positionLength = stack.positionLength(version);
     const summary = stack.getSummary(version);
     const nodeCountSinceError = stack.nodeCountSinceError(version);
     const currentErrorCost = stack.errorCost(version);
@@ -2161,7 +2138,7 @@ class Parser {
     if (summary && lookahead.symbol !== TS_BUILTIN_SYM_ERROR) {
       for (const entry of summary) {
         if (entry.state === ERROR_STATE) continue;
-        if (entry.position === position) continue;
+        if (entry.position.bytes === position) continue;
         let depth = entry.depth;
         if (nodeCountSinceError > 0) depth++;
 
@@ -2178,8 +2155,8 @@ class Parser {
         const newCost =
           currentErrorCost +
           entry.depth * ERROR_COST_PER_SKIPPED_TREE +
-          (position - entry.position) * ERROR_COST_PER_SKIPPED_CHAR +
-          rowsIn(buf, entry.position, position) * ERROR_COST_PER_SKIPPED_LINE;
+          (position - entry.position.bytes) * ERROR_COST_PER_SKIPPED_CHAR +
+          (positionLength.row - entry.position.row) * ERROR_COST_PER_SKIPPED_LINE;
         // `break`, not `continue`: entries are ordered by increasing depth, so
         // once one is too expensive every later one is too.
         if (this.betterVersionExists(version, false, newCost)) break;
@@ -2202,7 +2179,7 @@ class Parser {
 
     // At EOF there is no next token to skip to, so wrap the lot and finish.
     if (lookahead.symbol === TS_BUILTIN_SYM_END) {
-      const parent = newErrorNode(this.lang, [], false, buf, position);
+      const parent = newErrorNode(this.lang, [], false);
       stack.push(version, parent, false, 1);
       this.accept(version, lookahead);
       return;
@@ -2216,7 +2193,7 @@ class Parser {
     const skipCost =
       currentErrorCost + ERROR_COST_PER_SKIPPED_TREE +
       lookahead.totalSize * ERROR_COST_PER_SKIPPED_CHAR +
-      rowsIn(buf, position, position + lookahead.totalSize) * ERROR_COST_PER_SKIPPED_LINE;
+      lookahead.totalSizeLength.row * ERROR_COST_PER_SKIPPED_LINE;
     if (this.betterVersionExists(version, false, skipCost)) {
       stack.halt(version);
       return;
@@ -2233,9 +2210,7 @@ class Parser {
       }
     }
 
-    let errorRepeat = newNode(
-      this.lang, TS_BUILTIN_SYM_ERROR_REPEAT, [lookahead], 0, buf, position,
-    );
+    let errorRepeat = newNode(this.lang, TS_BUILTIN_SYM_ERROR_REPEAT, [lookahead], 0);
 
     // If tokens were already skipped there is an ERROR on top of the stack
     // already; pop it and fold both into one.
@@ -2250,10 +2225,7 @@ class Parser {
 
       stack.renumberVersion(pop[0].version, version);
       pop[0].subtrees.push(errorRepeat);
-      errorRepeat = newNode(
-        this.lang, TS_BUILTIN_SYM_ERROR_REPEAT, pop[0].subtrees, 0,
-        buf, stack.position(version),
-      );
+      errorRepeat = newNode(this.lang, TS_BUILTIN_SYM_ERROR_REPEAT, pop[0].subtrees, 0);
     }
 
     stack.push(version, errorRepeat, false, ERROR_STATE);

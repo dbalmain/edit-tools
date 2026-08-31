@@ -170,19 +170,18 @@ test("renumbering a version keeps the summary it renumbers over", () => {
 
 test("an ERROR node charges per line it spans, not only per character", () => {
   const lang = new Language(TINY);
-  const source = Buffer.from("a\nb\nc", "utf8");
-  // "a\nb\nc" is five bytes spanning two newlines, ending one byte into row 2.
+  // Five bytes spanning two newlines -- "a\nb\nc" -- so the size Length ends
+  // one byte into row 2. The per-line term reads that row off the Length.
   const child = forTests.newLeaf(lang, 1, len(0, 0, 0), len(5, 2, 1), 0, 0, false);
-  const error = forTests.newErrorNode(lang, [child], false, source, 0);
+  const error = forTests.newErrorNode(lang, [child], false);
 
   // 100 skipped visible child + 500 recovery + 5 chars + 2 newlines * 30.
   assert.equal(error.errorCost, 665);
 
-  // The discriminating half: the same node over a span with no newlines costs
-  // 60 less, so a row count stuck at zero would be visible here.
-  const flat = Buffer.from("abcde", "utf8");
+  // The discriminating half: the same five bytes with no newlines in them --
+  // "abcde" -- costs 60 less, so a row count stuck at zero is visible here.
   const flatChild = forTests.newLeaf(lang, 1, len(0, 0, 0), len(5, 0, 5), 0, 0, false);
-  assert.equal(forTests.newErrorNode(lang, [flatChild], false, flat, 0).errorCost, 605);
+  assert.equal(forTests.newErrorNode(lang, [flatChild], false).errorCost, 605);
 });
 
 test("a MISSING child does not make its parent fragile", () => {
