@@ -459,3 +459,145 @@ impl Language {
         None
     }
 }
+
+#[cfg(test)]
+pub(crate) mod testing {
+    use super::*;
+
+    /// A hand-written blob exercising both parse-table paths and every
+    /// accessor that reads a derived index. States 0 and 1 are "large" (dense
+    /// rows); 2 and 3 live in the small table, which is a group scan.
+    pub const SYNTHETIC: &str = r#"{
+      "symbolCount": 6, "tokenCount": 3, "largeStateCount": 2,
+      "maxAliasSequenceLength": 2, "maxReservedWordSetSize": 3,
+      "fieldCount": 2, "keywordCaptureToken": 0,
+      "symbolNames": ["end", "a", "b", "S", "T", "U"],
+      "symbolMetadata": [2, 1, 3, 3, 0, 1],
+      "fieldNames": [null, "key", "value"],
+      "fieldMapSlices": [0, 0, 0, 2],
+      "fieldMapEntries": [1, 0, 0, 2, 1, 1],
+      "aliasSequences": [0, 0, 5, 0],
+      "lexStates": [0, 1, 2, 3],
+      "externalLexStates": [0, 0, 0, 0],
+      "reservedWordSetIds": [0, 1, 0, 0],
+      "reservedWords": [0, 0, 0, 2, 0, 0],
+      "parseTable": [0, 1, 0, 0, 0, 0, 0, 0, 2, 3, 0, 0],
+      "smallParseTable": [2, 4, 1, 1, 5, 2, 2, 4, 1, 6, 1, 3],
+      "smallParseTableMap": [0, 8],
+      "parseActions": [
+        {"c": 0, "r": 0, "a": []},
+        {"c": 1, "r": 1, "a": [[0, 7, 0, 0]]},
+        {"c": 1, "r": 0, "a": [[0, 0, 1, 0]]},
+        {"c": 1, "r": 0, "a": [[1, 4, 2, 0, 1]]},
+        null, null,
+        {"c": 1, "r": 0, "a": [[2]]}
+      ],
+      "lex": [{"o": [[0, 1]]}],
+      "keywordLex": null
+    }"#;
+
+    pub fn language() -> Language {
+        let blob: Blob = serde_json::from_str(SYNTHETIC).expect("synthetic blob parses");
+        Language::new(blob)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::testing::language;
+    use super::*;
+
+    #[test]
+    fn lookup_reads_the_dense_rows_and_the_small_table_group_scan() {
+        let lang = language();
+        // Large states index a dense row of symbolCount entries.
+        assert_eq!(lang.lookup(0, 1), 1);
+        assert_eq!(lang.lookup(1, 2), 2);
+        // Small states walk groups of (sectionValue, symbolCount, symbols...).
+        // Symbol 4 is the *second* symbol of the *second* group, so a wrong
+        // group stride finds the first group's value or nothing at all.
+        assert_eq!(lang.lookup(2, 1), 4);
+        assert_eq!(lang.lookup(2, 2), 5);
+        assert_eq!(lang.lookup(2, 4), 5);
+        assert_eq!(lang.lookup(2, 3), 0, "a symbol in no group has no action");
+        assert_eq!(lang.lookup(3, 3), 6, "the second small state starts at 8");
+    }
+
+    #[test]
+    fn the_error_symbols_never_reach_the_action_table() {
+        let lang = language();
+        assert_eq!(lang.table_entry(0, TS_BUILTIN_SYM_ERROR).count, 0);
+        assert_eq!(lang.table_entry(0, TS_BUILTIN_SYM_ERROR_REPEAT).count, 0);
+        assert_eq!(lang.next_state(0, TS_BUILTIN_SYM_ERROR), 0);
+        // A null row is EMPTY_ENTRY too, not a panic.
+        assert_eq!(lang.table_entry(2, 1).count, 0);
+    }
+
+    #[test]
+    fn next_state_keeps_the_current_state_for_a_shift_extra() {
+        let lang = language();
+        // Symbol 1 is a token whose action shifts to state 7.
+        assert_eq!(lang.next_state(0, 1), 7);
+        // Symbol 2's action is SHIFT_EXTRA, whose target field is 0 but whose
+        // meaning is "stay put". Reading the target instead would give 0.
+        assert_eq!(lang.next_state(1, 2), 1);
+        // Symbol 3 is past tokenCount, so it is a plain goto lookup.
+        assert_eq!(lang.next_state(1, 3), 3);
+    }
+
+    #[test]
+    fn reserved_words_stop_at_the_zero_terminator() {
+        let lang = language();
+        assert!(lang.is_reserved_word(1, 2), "symbol 2 is in set 1");
+        assert!(
+            !lang.is_reserved_word(1, 4),
+            "the set ends at its 0 terminator, before the next set's slots"
+        );
+        assert!(!lang.is_reserved_word(0, 2), "state 0 has no reserved set");
+    }
+
+    #[test]
+    fn the_field_map_skips_inherited_entries() {
+        let lang = language();
+        assert_eq!(lang.field_name_for(1, 0), Some("key"));
+        // The entry for child 1 is marked inherited, which this lookup ignores.
+        assert_eq!(lang.field_name_for(1, 1), None);
+        assert_eq!(lang.field_name_for(0, 0), None, "production 0 has no slice");
+    }
+
+    #[test]
+    fn aliases_and_metadata_read_through_their_derived_indices() {
+        let lang = language();
+        assert_eq!(lang.alias_at(1, 0), 5);
+        assert_eq!(lang.alias_at(1, 1), 0);
+        assert_eq!(lang.alias_at(0, 0), 0, "production 0 never aliases");
+        assert!(lang.visible(1) && !lang.named(1));
+        assert!(lang.visible(2) && lang.named(2));
+        assert!(!lang.visible(4) && !lang.named(4));
+        assert!(lang.visible(TS_BUILTIN_SYM_ERROR) && lang.named(TS_BUILTIN_SYM_ERROR));
+        assert!(!lang.visible(TS_BUILTIN_SYM_ERROR_REPEAT));
+        assert_eq!(lang.symbol_name(TS_BUILTIN_SYM_ERROR), "ERROR");
+        assert_eq!(lang.symbol_name(3), "S");
+    }
+
+    #[test]
+    fn an_entry_is_read_to_its_declared_count_not_its_array_length() {
+        // The JS loops `for (i = 0; i < tableEntry.c; i++)`. Every blob checked
+        // has c equal to the array length, so this pins the reading rather than
+        // any observed data.
+        let entry: ActionEntry =
+            serde_json::from_str(r#"{"c": 1, "r": 0, "a": [[2], [3]]}"#).expect("parses");
+        assert_eq!(entry.actions(), &[Action::Accept]);
+    }
+
+    #[test]
+    fn undefined_kinds_survive_loading_and_fail_only_when_interpreted() {
+        // Both runtimes must accept a blob carrying an unreachable oddity, or
+        // neither does; the JS throws only when it interprets one.
+        let entry: ActionEntry =
+            serde_json::from_str(r#"{"c": 1, "r": 0, "a": [[9, 1, 2]]}"#).expect("loads");
+        assert_eq!(entry.actions(), &[Action::Unknown(9)]);
+        let op: LexOp = serde_json::from_str("[9, 1, 2]").expect("loads");
+        assert_eq!(op, LexOp::Unknown(9));
+    }
+}

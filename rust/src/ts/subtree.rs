@@ -352,3 +352,151 @@ pub fn subtree_node_count(tree: &Subtree) -> u32 {
     }
     count
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::ts::blob::testing::language;
+
+    fn leaf(
+        arena: &mut Arena,
+        lang: &Language,
+        symbol: Symbol,
+        padding: usize,
+        size: usize,
+    ) -> SubtreeId {
+        arena.new_leaf(
+            lang,
+            &Leaf {
+                symbol,
+                padding,
+                size,
+                lookahead_bytes: 0,
+                parse_state: 0,
+                is_keyword: false,
+            },
+        )
+    }
+
+    #[test]
+    fn a_nodes_extent_is_its_first_childs_padding_and_the_rest_of_the_span() {
+        // padding comes from the first child alone; every later child
+        // contributes padding *and* size. Summing total_size over all children
+        // would wrongly count the first child's padding twice.
+        let lang = language();
+        let mut arena = Arena::new();
+        let a = leaf(&mut arena, &lang, 1, 2, 3);
+        let b = leaf(&mut arena, &lang, 2, 1, 4);
+        let node = arena
+            .new_node(&lang, 3, vec![a, b], 0)
+            .expect("a non-error node summarizes");
+        let t = arena.get(node);
+        assert_eq!(t.padding, 2, "the first child's padding is the node's");
+        assert_eq!(t.size, 8, "3 + (1 + 4)");
+        assert_eq!(t.total_size(), 10);
+    }
+
+    #[test]
+    fn an_invisible_nodes_visible_children_are_counted_through_it() {
+        // This is the flattening the whole node API depends on: symbol 4 is
+        // invisible, so its parent must inherit its visible child *count*, not
+        // count it as one child.
+        let lang = language();
+        let mut arena = Arena::new();
+        let a = leaf(&mut arena, &lang, 1, 0, 1);
+        let b = leaf(&mut arena, &lang, 2, 0, 1);
+        let hidden = arena.new_node(&lang, 4, vec![a, b], 0).expect("summarizes");
+        assert!(!arena.get(hidden).visible, "symbol 4 is invisible");
+        assert_eq!(arena.get(hidden).visible_child_count, 2);
+
+        let parent = arena
+            .new_node(&lang, 3, vec![hidden], 0)
+            .expect("summarizes");
+        let t = arena.get(parent);
+        assert_eq!(
+            t.visible_child_count, 2,
+            "counted through the invisible node"
+        );
+        assert_eq!(t.named_child_count, 1, "only symbol 2 is named");
+        assert_eq!(t.visible_descendant_count, 2);
+    }
+
+    #[test]
+    fn an_alias_makes_an_otherwise_invisible_child_count_as_visible() {
+        // Production 1 aliases structural child 0 to symbol 5, which is
+        // visible. Without the alias the child contributes nothing.
+        let lang = language();
+        let mut arena = Arena::new();
+        let hidden = leaf(&mut arena, &lang, 4, 0, 1);
+        let plain = arena
+            .new_node(&lang, 3, vec![hidden], 0)
+            .expect("summarizes");
+        assert_eq!(arena.get(plain).visible_child_count, 0);
+
+        let hidden = leaf(&mut arena, &lang, 4, 0, 1);
+        let aliased = arena
+            .new_node(&lang, 3, vec![hidden], 1)
+            .expect("summarizes");
+        assert_eq!(arena.get(aliased).visible_child_count, 1);
+    }
+
+    #[test]
+    fn building_an_error_node_is_refused_rather_than_guessed_at() {
+        // Error recovery is out of scope, and the refusal is what keeps a
+        // half-implemented recovery from silently producing a different tree
+        // in one runtime.
+        let lang = language();
+        let mut arena = Arena::new();
+        let a = leaf(&mut arena, &lang, 1, 0, 1);
+        assert!(arena
+            .new_node(&lang, TS_BUILTIN_SYM_ERROR, vec![a], 0)
+            .is_err());
+        let a = leaf(&mut arena, &lang, 1, 0, 1);
+        assert!(arena
+            .new_node(&lang, TS_BUILTIN_SYM_ERROR_REPEAT, vec![a], 0)
+            .is_err());
+    }
+
+    #[test]
+    fn subtree_compare_orders_by_symbol_then_arity_then_children() {
+        let lang = language();
+        let mut arena = Arena::new();
+        let a = leaf(&mut arena, &lang, 1, 0, 1);
+        let b = leaf(&mut arena, &lang, 2, 0, 1);
+        assert_eq!(subtree_compare(&arena, a, b), -1);
+        assert_eq!(subtree_compare(&arena, b, a), 1);
+        assert_eq!(subtree_compare(&arena, a, a), 0);
+
+        // Same symbol, different arity.
+        let one = arena.new_node(&lang, 3, vec![a], 0).expect("summarizes");
+        let two = arena.new_node(&lang, 3, vec![a, b], 0).expect("summarizes");
+        assert_eq!(subtree_compare(&arena, one, two), -1);
+
+        // Same symbol and arity, differing only in a grandchild: the walk has
+        // to descend to tell them apart.
+        let left = arena.new_node(&lang, 3, vec![a], 0).expect("summarizes");
+        let right = arena.new_node(&lang, 3, vec![b], 0).expect("summarizes");
+        assert_eq!(subtree_compare(&arena, left, right), -1);
+        assert_eq!(subtree_compare(&arena, left, one), 0, "structurally equal");
+    }
+
+    #[test]
+    fn trailing_extras_come_off_the_end_in_order() {
+        let lang = language();
+        let mut arena = Arena::new();
+        let a = leaf(&mut arena, &lang, 1, 0, 1);
+        let b = leaf(&mut arena, &lang, 1, 0, 1);
+        let c = leaf(&mut arena, &lang, 1, 0, 1);
+        arena.set_extra(b, true);
+        arena.set_extra(c, true);
+        let mut children = vec![a, b, c];
+        let extras = remove_trailing_extras(&arena, &mut children);
+        assert_eq!(children, vec![a], "only the non-extra prefix is left");
+        assert_eq!(extras, vec![b, c], "and the extras keep their order");
+
+        // A leading extra is not trailing, so it stays put.
+        let mut children = vec![b, a];
+        assert!(remove_trailing_extras(&arena, &mut children).is_empty());
+        assert_eq!(children, vec![b, a]);
+    }
+}
