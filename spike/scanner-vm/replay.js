@@ -9,11 +9,16 @@
 const fs = require('fs');
 const path = require('path');
 const { ScannerVM } = require('./vm.js');
+const { decode } = require('./pack.js');
 const { ByteLexer } = require('./lexer.js');
-const { build } = require('./toml.program.js');
 
 function main(traceDir, corpusDir) {
-  const prog = build();
+  // Decoded from the packed artifact, not built from `toml.program.js`.
+  // The Rust replay reads these same bytes, so "one artifact, two runtimes" is
+  // now what is actually being tested; before this it was one program written
+  // twice, and the encoder sat on only one of the two paths.
+  const svm = fs.readFileSync(path.join(__dirname, 'toml.svm'));
+  const prog = decode(new Uint8Array(svm));
   const vm = new ScannerVM(prog);
   let calls = 0, files = 0, bad = 0;
   const symCount = new Map();

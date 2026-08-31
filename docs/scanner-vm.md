@@ -5,8 +5,19 @@ prices it. Read `docs/parse-layer.md` for the six routes first, and
 `docs/host-ctype-divergence.md` for a finding that came out of this work and
 outranks it.
 
-Status: **TOML is ported and verified against a recorded scanner-call trace.**
-markdown-block is priced on paper, not built. Everything else here is design.
+Status: **TOML is ported, verified against a recorded scanner-call trace, and
+now parses end to end through the table-driven parser** — 15/15 byte-identical
+against the frozen trees, at the same 230 scanner calls with the same 26
+failures that real tree-sitter makes over the same files. markdown-block is
+priced on paper, not built. Everything else here is design.
+
+Reproduce the end-to-end run:
+
+```sh
+./harness/ts_transcode.py path/to/tree-sitter-toml/src/parser.c \
+  --scanner spike/scanner-vm/toml.svm -o /tmp/toml.blob.json
+./harness/ts_check_trees.mjs /tmp/toml.blob.json toml
+```
 
 ## 1. What the nine scanners actually need
 
@@ -93,7 +104,9 @@ sophisticated.
 
 Forty opcodes, one byte each, operands ULEB128 (indices) or SLEB128 (signed
 immediates) or a fixed 2-byte little-endian absolute jump target. The full
-listing is in `spike/scanner-vm/vm.js`; the groups are:
+listing is in `harness/ts_scanner_vm.mjs` (it lived at `spike/scanner-vm/vm.js`
+until the parser started driving it; that path is now a re-export); the groups
+are:
 
 | Group             | Opcodes                                                                  |
 | ----------------- | ------------------------------------------------------------------------ |
@@ -148,6 +161,46 @@ serialization bug. Nine chances to get it wrong become zero. Nothing reads
 upstream's serialized bytes, so byte-compatibility with upstream is not
 required — only self-compatibility across the two runtimes, which is what the
 fixed format buys.
+
+**Correction, 2026-08-31, from integrating TOML end to end.** The conclusion
+stands and one of the two arguments for it does not.
+
+Right: the serialized bytes are never *interpreted*. They are compared for
+equality in exactly three places — `external_scanner_state_changed`,
+`ts_stack_can_merge`, and the token cache — checked against 0.26.0's sources.
+So byte-compatibility with upstream really is unnecessary.
+
+Wrong: "nine chances to get it wrong become zero". What a port must reproduce is
+not a *format* but the **equivalence relation** upstream's format induces on
+scanner states, because that relation is what the three comparisons above
+decide. Upstream's serializers are lossy in scanner-specific ways, and the loss
+is load-bearing. tree-sitter-python 0.25.0's twenty-line `serialize` loses
+information three separate times:
+
+- `delimiter_count` is clamped to `UINT8_MAX`, so 255 and 300 open delimiters
+  are *equal* upstream;
+- the indents loop starts at `iter = 1`, so `indents[0]` is state that exists
+  and is defined not to matter;
+- truncation drops from the tail of `indents` specifically, not from "the top of
+  the deepest stack" as this document specifies.
+
+A VM program that faithfully declared python's two stacks persistent would be
+**strictly finer** than upstream on all three, distinguishing states tree-sitter
+merges — which changes `can_merge`, and so can change the tree.
+
+The per-scanner judgement therefore does not vanish; it **moves**, out of a
+serializer and into the port's choice of which registers and stacks are
+persistent and how state is laid out. The porter of python still has to know
+that `indents[0]` is a sentinel. Keep the fixed format — it does remove the
+class of bug where a hand-written serializer disagrees with its own
+deserializer, or across runtimes — but state the obligation as
+**relation-compatibility**, which is weaker than matching upstream's bytes and
+strictly stronger than "the two runtimes agree with each other".
+
+This is analysis, not measurement: TOML is stateless, so the 15/15 corpus run
+and all 45,678 replayed calls carry **zero** bytes of state. §8's advice to port
+**rust** next — one byte, one register — is what converts it into measurement,
+and it is now the highest-value item on this document's list.
 
 ### What the VM cannot express
 
@@ -228,6 +281,20 @@ into the tree shape, and it is what let three separate weaknesses show up.
 **Both runtimes.** `spike/scanner-vm/rust/` decodes the same `toml.svm` blob and
 replays the same traces. The project's central claim — one data artifact, two
 runtimes, identical output — is demonstrated here rather than asserted.
+
+**Correction, 2026-08-30.** That paragraph was half true when it was written,
+and the half that was false is the load-bearing half. Rust decoded `toml.svm`;
+**JS did not**. `replay.js` called `build()` and handed the VM the in-memory
+program object, and there was no `.svm` decoder in JavaScript anywhere in the
+repo — `pack.js` had an `encode` and no `decode`, and that `encode` had no
+caller, so the committed 165-byte artifact could not even be regenerated. The
+two runtimes were therefore executing *one program expressed twice*, with the
+encoder on only one of the two paths, and an encoder bug would have left all
+45,678 calls green. Closed by `harness/ts_scanner_pack.mjs`'s `decode`, by
+`spike/scanner-vm/build-svm.js` (which regenerates the artifact and has a
+`--check` mode), and by repointing `replay.js` at the bytes. The artifact was in
+fact already correct — `encode(build())` is byte-identical to the committed
+`toml.svm` — but that was luck rather than something anything checked.
 
 ### The frozen corpus is a weak oracle for this
 

@@ -43,6 +43,9 @@
 // Each remains a place a reimplementation is green on the corpus and wrong in
 // production; that is a statement about scope, not about throwing.
 
+import { ScannerVM } from "./ts_scanner_vm.mjs";
+import { decode as decodeScannerPackage } from "./ts_scanner_pack.mjs";
+
 const ERROR_STATE = 0;
 const TS_TREE_STATE_NONE = 0xffff;
 const NO_LEX_STATE = 0xffff;
@@ -69,6 +72,16 @@ const MAX_COST_DIFFERENCE = 18 * ERROR_COST_PER_SKIPPED_TREE;
 
 class Unsupported extends Error {}
 
+// The blob carries the packed scanner as base64, because the blob is JSON.
+// Decoding to bytes and then through the shared wire-format reader means the
+// parser and `spike/scanner-vm/rust/` consume the identical byte string.
+function decodeScannerProgram(base64) {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return decodeScannerPackage(bytes);
+}
+
 // ---------------------------------------------------------------------------
 // Language: accessors over the blob, mirroring lib/src/language.{c,h}
 // ---------------------------------------------------------------------------
@@ -83,6 +96,30 @@ export class Language {
     this.maxReservedWordSetSize = blob.maxReservedWordSetSize;
     this.fieldCount = blob.fieldCount;
     this.keywordCaptureToken = blob.keywordCaptureToken;
+    this.externalTokenCount = blob.externalTokenCount || 0;
+    this.externalScannerSymbolMap = blob.externalScannerSymbolMap || [];
+  }
+
+  // ts_language_enabled_external_tokens. External lex state 0 means "no
+  // external scanning here" and upstream returns NULL; the caller never gets
+  // that far, because ts_parser__lex tests the state first.
+  enabledExternalTokens(externalLexState) {
+    if (externalLexState === 0) return null;
+    const n = this.externalTokenCount;
+    const base = externalLexState * n;
+    return this.b.externalScannerStates.slice(base, base + n);
+  }
+
+  // The scanner's own token index -> TSSymbol.
+  externalSymbol(resultSymbol) {
+    const symbol = this.externalScannerSymbolMap[resultSymbol];
+    if (symbol === undefined) {
+      throw new Unsupported(
+        `scanner returned external token ${resultSymbol}, but the grammar has ` +
+        `${this.externalTokenCount}`
+      );
+    }
+    return symbol;
   }
 
   // ts_language_lookup
@@ -140,6 +177,16 @@ export class Language {
 
   lexState(state) {
     return this.b.lexStates[state];
+  }
+
+  // ts_language_lex_mode_for_state. Read as a unit because error mode replaces
+  // the whole mode, external lex state included.
+  lexMode(state) {
+    return {
+      lexState: this.b.lexStates[state],
+      externalLexState: this.b.externalLexStates[state],
+      reservedWordSetId: this.b.reservedWordSetIds[state],
+    };
   }
 
   externalLexState(state) {
@@ -369,6 +416,8 @@ class Lexer {
     }
   }
 
+  // ts_lexer_finish. Returns the lookahead end byte this pass reached, which
+  // the caller maxes into its running value -- upstream passes a pointer.
   finish() {
     if (this.tokenEnd < 0) this.markEnd();
     if (this.tokenEnd < this.tokenStart) {
@@ -376,6 +425,12 @@ class Lexer {
       this.tokenStartRow = this.tokenEndRow;
       this.tokenStartColumn = this.tokenEndColumn;
     }
+    let end = this.pos + 1;
+    // Deciding a byte sequence is invalid took a look at what follows it, so
+    // the following bytes are part of what this token depended on. Four is
+    // upstream's constant: the most bytes read to reject a code point.
+    if (this.lookahead === TS_DECODE_ERROR) end += 4;
+    return end;
   }
 
   // ts_lexer__mark_end, specialised: with one included range the boundary
@@ -619,6 +674,13 @@ class Subtree {
     this.sizeRow = 0;
     this.sizeColumn = 0;
     this.dependsOnColumn = false;
+    // External scanner bookkeeping. `externalScannerState` is the serialized
+    // VM state at the moment this token was produced, and it is only ever set
+    // on a leaf -- upstream reads it through ts_subtree_external_scanner_state,
+    // which returns the empty state for anything with children.
+    this.hasExternalTokens = false;
+    this.hasExternalScannerStateChange = false;
+    this.externalScannerState = null;
     this.lookaheadBytes = 0;
     this.visible = false;
     this.named = false;
@@ -682,12 +744,16 @@ class Subtree {
   }
 }
 
-function newLeaf(lang, symbol, padding, size, lookaheadBytes, parseState, isKeyword, dependsOnColumn) {
+function newLeaf(
+  lang, symbol, padding, size, lookaheadBytes, parseState, isKeyword,
+  dependsOnColumn, hasExternalTokens,
+) {
   const t = new Subtree();
   t.symbol = symbol;
   t.setPaddingLength(padding);
   t.setSizeLength(size);
   t.dependsOnColumn = !!dependsOnColumn;
+  t.hasExternalTokens = !!hasExternalTokens;
   t.lookaheadBytes = lookaheadBytes;
   t.parseState = parseState;
   t.visible = lang.visible(symbol);
@@ -765,6 +831,8 @@ function summarizeChildren(self, lang, buf, startByte) {
   self.visibleDescendantCount = 0;
   self.dynamicPrecedence = 0;
   self.dependsOnColumn = false;
+  self.hasExternalTokens = false;
+  self.hasExternalScannerStateChange = false;
 
   let structuralIndex = 0;
   const hasAliases = lang.hasAliasSequence(self.productionId);
@@ -778,6 +846,7 @@ function summarizeChildren(self, lang, buf, startByte) {
     // only inherits a column dependency while it is still on its first row,
     // because past a newline the column no longer depends on what preceded it.
     if (self.sizeRow === 0 && child.dependsOnColumn) self.dependsOnColumn = true;
+    if (child.hasExternalScannerStateChange) self.hasExternalScannerStateChange = true;
 
     if (i === 0) {
       self.setPaddingLength(child.paddingLength);
@@ -824,6 +893,8 @@ function summarizeChildren(self, lang, buf, startByte) {
       self.visibleChildCount += child.visibleChildCount;
       self.namedChildCount += child.namedChildCount;
     }
+
+    if (child.hasExternalTokens) self.hasExternalTokens = true;
 
     // ts_subtree_is_error, which is the symbol test and nothing else. This read
     // `|| child.isMissing` until recovery was written, which was dead while no
@@ -905,6 +976,47 @@ function subtreeCompare(left, right) {
     }
   }
   return 0;
+}
+
+// ts_subtree_external_scanner_state: the empty state for anything that is not
+// a leaf carrying one. Returned as a zero-length view so callers never have to
+// null-check.
+const EMPTY_EXTERNAL_STATE = new Uint8Array(0);
+
+function externalScannerState(tree) {
+  if (tree && tree.hasExternalTokens && tree.childCount === 0 && tree.externalScannerState) {
+    return tree.externalScannerState;
+  }
+  return EMPTY_EXTERNAL_STATE;
+}
+
+function bytesEq(a, b) {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+  return true;
+}
+
+// ts_external_scanner_state_eq over two subtrees, either of which may be null.
+function externalScannerStateEq(left, right) {
+  return bytesEq(externalScannerState(left), externalScannerState(right));
+}
+
+// ts_subtree_last_external_token: the rightmost leaf that carries scanner
+// state, which is the state a later scan has to resume from.
+function subtreeLastExternalToken(tree) {
+  if (!tree || !tree.hasExternalTokens) return null;
+  while (tree.childCount > 0) {
+    let next = null;
+    for (let i = tree.childCount - 1; i >= 0; i--) {
+      if (tree.children[i].hasExternalTokens) {
+        next = tree.children[i];
+        break;
+      }
+    }
+    if (!next) break;
+    tree = next;
+  }
+  return tree;
 }
 
 function removeTrailingExtras(children) {
@@ -1028,6 +1140,7 @@ class Stack {
         nodeCountAtLastError: 0,
         lookaheadWhenPaused: null,
         summary: null,
+        lastExternalToken: null,
       },
     ];
   }
@@ -1119,6 +1232,9 @@ class Stack {
       status: StackStatus.Active,
       lookaheadWhenPaused: null,
       summary: null,
+      // Inherited, not reset: a forked version resumes the scanner from
+      // wherever the version it forked from had got to.
+      lastExternalToken: this.heads[originalVersion].lastExternalToken,
     });
     return this.heads.length - 1;
   }
@@ -1133,6 +1249,7 @@ class Stack {
       status: head.status,
       lookaheadWhenPaused: head.lookaheadWhenPaused,
       summary: null,
+      lastExternalToken: head.lastExternalToken,
     });
     return this.heads.length - 1;
   }
@@ -1205,6 +1322,41 @@ class Stack {
       }
     }
     return [];
+  }
+
+  lastExternalToken(v) {
+    return this.heads[v].lastExternalToken;
+  }
+
+  setLastExternalToken(v, token) {
+    this.heads[v].lastExternalToken = token;
+  }
+
+  // ts_stack_has_advanced_since_error. Only consulted by the empty-external-
+  // token guard, which is what stops a scanner that returns a zero-width token
+  // forever from hanging the parse.
+  hasAdvancedSinceError(v) {
+    const head = this.heads[v];
+    let node = head.node;
+    if (node.errorCost === 0) return true;
+    while (node) {
+      if (node.links.length > 0) {
+        const subtree = node.links[0].subtree;
+        if (subtree) {
+          if (subtree.totalSize > 0) return true;
+          // The accessor, not the field: upstream reads ts_subtree_error_cost,
+          // and a MISSING leaf is expensive without accumulating a cost of its
+          // own. Reading `.errorCost` here would walk past an inserted token as
+          // though it were free.
+          if (node.nodeCount > head.nodeCountAtLastError && subtreeErrorCost(subtree) === 0) {
+            node = node.links[0].node;
+            continue;
+          }
+        }
+      }
+      break;
+    }
+    return false;
   }
 
   addSlice(originalVersion, node, subtrees) {
@@ -1295,7 +1447,11 @@ class Stack {
       h2.status === StackStatus.Active &&
       h1.node.state === h2.node.state &&
       h1.node.position.bytes === h2.node.position.bytes &&
-      h1.node.errorCost === h2.node.errorCost
+      h1.node.errorCost === h2.node.errorCost &&
+      // Two versions that agree on everything visible can still be resuming
+      // the scanner from different state, and merging them would silently pick
+      // one. Upstream compares here for exactly that reason.
+      externalScannerStateEq(h1.lastExternalToken, h2.lastExternalToken)
     );
   }
 
@@ -1358,21 +1514,54 @@ class Parser {
     this.acceptCount = 0;
     this.cachedToken = null;
     this.cachedTokenByteIndex = 0;
+    this.cachedTokenLastExternalToken = null;
+
+    // The external scanner, if the grammar has one. `lib/src/wasm_store.c`
+    // copies every data table out of a grammar and leaves the scanner's entry
+    // points as code; this is the same split, with bytecode standing in for
+    // the code half so that both runtimes execute one artifact.
+    this.scanner = null;
+    this.vmLexer = null;
+    if (lang.externalTokenCount > 0) {
+      const packed = lang.b.scannerProgram;
+      if (!packed) {
+        throw new Unsupported(
+          `grammar has ${lang.externalTokenCount} external tokens but the blob ` +
+          `carries no scanner program: re-run ts_transcode.py with --scanner`
+        );
+      }
+      this.scanner = new ScannerVM(decodeScannerProgram(packed));
+      // The VM's whole host interface, and it really is four methods: the
+      // catalogue in docs/scanner-vm.md says no scanner in the roster calls
+      // get_column, so there is deliberately no opcode for it.
+      const lexer = this.lexer;
+      this.vmLexer = {
+        lookahead: () => lexer.lookahead,
+        advance: (skip) => lexer.advance(skip),
+        markEnd: () => lexer.markEnd(),
+        atEof: () => lexer.atEof,
+      };
+    }
   }
 
   // ts_parser__lex
   lex(version, parseState) {
     const lang = this.lang;
-    let lexState = lang.lexState(parseState);
-    if (lexState === NO_LEX_STATE) return null;
-    if (lang.externalLexState(parseState) !== 0) {
-      throw new Unsupported("external scanner state reached");
-    }
-    let reservedWordSetId = lang.reservedWordSetId(parseState);
+    let lexMode = lang.lexMode(parseState);
+    if (lexMode.lexState === NO_LEX_STATE) return null;
 
     const startPosition = this.stack.positionLength(version);
+    // The scanner state this version last left off in. Per stack head, not per
+    // parser, because two GLR versions can be mid-way through different
+    // constructs -- inside a multiline string on one and not on the other.
+    const externalToken = this.stack.lastExternalToken(version);
+
+    let foundExternalToken = false;
+    let calledGetColumn = false;
     let errorMode = parseState === ERROR_STATE;
     let lookaheadEndByte = 0;
+    let scannerStateBytes = null;
+    let scannerStateChanged = false;
     const lexer = this.lexer;
     lexer.reset(startPosition);
 
@@ -1391,15 +1580,60 @@ class Parser {
     let errorEndLength = LENGTH_ZERO;
 
     for (;;) {
+      let found = false;
+      const currentPosition = lexer.position();
+      // Saved and restored around a failed external scan: the scanner may have
+      // advanced the lexer, and the column cache it left behind describes a
+      // position the internal lexer is about to be rewound away from.
+      const savedColumnValid = lexer.columnValid;
+      const savedColumnValue = lexer.columnValue;
+
+      if (lexMode.externalLexState !== 0) {
+        const valid = lang.enabledExternalTokens(lexMode.externalLexState);
+        lexer.start();
+        this.scanner.deserialize(externalScannerState(externalToken));
+        const result = this.scanner.scan(this.vmLexer, valid);
+        if (result.ok) lexer.resultSymbol = result.symbol;
+        found = result.ok;
+        lookaheadEndByte = Math.max(lookaheadEndByte, lexer.finish());
+
+        if (found) {
+          scannerStateBytes = this.scanner.serialize();
+          scannerStateChanged = !bytesEq(externalScannerState(externalToken), scannerStateBytes);
+
+          // Empty-token guard. A scanner returning a zero-width token that also
+          // changes no state would be asked again at the same offset forever.
+          // Upstream keeps such a token only when it is genuinely making
+          // progress -- Python's indent/dedent tokens are the reason it is a
+          // guard rather than a refusal.
+          if (lexer.tokenEnd <= currentPosition.bytes && !scannerStateChanged) {
+            const symbol = lang.externalSymbol(lexer.resultSymbol);
+            const tokenIsExtra = lang.nextState(parseState, symbol) === parseState;
+            if (errorMode || !this.stack.hasAdvancedSinceError(version) || tokenIsExtra) {
+              found = false;
+            }
+          }
+        }
+
+        if (found) {
+          foundExternalToken = true;
+          calledGetColumn = lexer.didGetColumn;
+          break;
+        }
+
+        lexer.reset(currentPosition);
+        lexer.columnValid = savedColumnValid;
+        lexer.columnValue = savedColumnValue;
+      }
+
       lexer.start();
-      const found = lexer.run(this.lang.b.lex, lexState);
-      lexer.finish();
-      if (lexer.pos + 1 > lookaheadEndByte) lookaheadEndByte = lexer.pos + 1;
+      found = lexer.run(lang.b.lex, lexMode.lexState);
+      lookaheadEndByte = Math.max(lookaheadEndByte, lexer.finish());
       if (found) break;
+
       if (!errorMode) {
         errorMode = true;
-        lexState = lang.lexState(ERROR_STATE);
-        reservedWordSetId = lang.reservedWordSetId(ERROR_STATE);
+        lexMode = lang.lexMode(ERROR_STATE);
         lexer.reset(startPosition);
         continue;
       }
@@ -1438,7 +1672,9 @@ class Parser {
     const size = lengthSub(lexer.tokenEndPosition(), lexer.tokenStartPosition());
     const lookaheadBytes = lookaheadEndByte - lexer.tokenEnd;
 
-    if (symbol === lang.keywordCaptureToken && symbol !== 0) {
+    if (foundExternalToken) {
+      symbol = lang.externalSymbol(symbol);
+    } else if (symbol === lang.keywordCaptureToken && symbol !== 0) {
       const endByte = lexer.tokenEnd;
       lexer.reset(lexer.tokenStartPosition());
       lexer.start();
@@ -1459,10 +1695,15 @@ class Parser {
     // `dependsOnColumn` is upstream's `called_get_column`: whether producing
     // this token consulted the codepoint column, which is what makes it
     // unsafe to reuse after an edit earlier on the same line.
-    return newLeaf(
+    const leaf = newLeaf(
       lang, symbol, padding, size, lookaheadBytes, parseState, isKeyword,
-      lexer.didGetColumn,
+      calledGetColumn, foundExternalToken,
     );
+    if (foundExternalToken) {
+      leaf.externalScannerState = scannerStateBytes;
+      leaf.hasExternalScannerStateChange = scannerStateChanged;
+    }
+    return leaf;
   }
 
   // ts_parser__can_reuse_first_leaf
@@ -1485,8 +1726,15 @@ class Parser {
     return lang.externalLexState(state) === 0 && entry.r !== 0;
   }
 
-  getCachedToken(state, position) {
-    if (this.cachedToken && this.cachedTokenByteIndex === position) {
+  // ts_parser__get_cached_token. The external-state comparison is load-bearing
+  // and not an optimisation: the same bytes at the same offset lex to a
+  // different token depending on what the scanner was resuming from.
+  getCachedToken(state, position, lastExternalToken) {
+    if (
+      this.cachedToken &&
+      this.cachedTokenByteIndex === position &&
+      externalScannerStateEq(this.cachedTokenLastExternalToken, lastExternalToken)
+    ) {
       const entry = this.lang.tableEntry(state, this.cachedToken.symbol);
       if (this.canReuseFirstLeaf(state, this.cachedToken, entry)) {
         return { token: this.cachedToken, entry };
@@ -1504,6 +1752,9 @@ class Parser {
       toPush.extra = extra;
     }
     this.stack.push(version, toPush, !isLeaf, state);
+    if (toPush.hasExternalTokens) {
+      this.stack.setLastExternalToken(version, subtreeLastExternalToken(toPush));
+    }
   }
 
   // ts_parser__select_tree
@@ -1626,7 +1877,8 @@ class Parser {
 
     let lookahead = null;
     let tableEntry = EMPTY_ENTRY;
-    const cached = this.getCachedToken(state, position);
+    const lastExternalToken = stack.lastExternalToken(version);
+    const cached = this.getCachedToken(state, position, lastExternalToken);
     if (cached) {
       lookahead = cached.token;
       tableEntry = cached.entry;
@@ -1640,6 +1892,7 @@ class Parser {
         if (lookahead) {
           this.cachedToken = lookahead;
           this.cachedTokenByteIndex = position;
+          this.cachedTokenLastExternalToken = lastExternalToken;
           tableEntry = lang.tableEntry(state, lookahead.symbol);
         } else {
           tableEntry = lang.tableEntry(state, TS_BUILTIN_SYM_END);
