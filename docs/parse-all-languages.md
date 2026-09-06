@@ -5,9 +5,9 @@ tree-sitter languages in the corpus. Aven is out of scope by instruction, and
 would be out of scope anyway -- it has no tree-sitter grammar and its plan of
 record (`docs/roadmap.md`) is its own parser.
 
-Where it stands: **6 of 16 parse byte-identically** (json 3/3, scheme 15/15,
-go 16/16, toml 15/15, css 15/15, xml 15/15). This document is what the
-remaining ten cost, measured rather than guessed.
+Where it stands: **7 of 16 parse byte-identically** (json 3/3, scheme 15/15,
+go 16/16, toml 15/15, css 15/15, xml 15/15, html 16/16). This document is what
+the remaining nine cost, measured rather than guessed.
 
 ## What is already done
 
@@ -55,7 +55,7 @@ only the `.c` undercounts the set by 30%.
 | xml        |         270 |       425 |        11 | tag-name strings *(done)* |
 | python     |         437 |       437 |        12 | 2 scalars + 2 stacks      |
 | kotlin     |         459 |       459 |        11 | stateless                 |
-| html       |         362 |       747 |         9 | stack of tag-name strings |
+| html       |         362 |       747 |         9 | tag types + names *(done)* |
 | ruby       |       1,107 |     1,107 |        30 | scalars + stacks          |
 | yaml       |       1,415 |     1,415 |       113 | 5 `i16` + 2 `i16` stacks  |
 | markdown   |       1,602 |     1,602 |        47 | 5 scalars + `u8` stack    |
@@ -91,28 +91,37 @@ Whole-file lines of the `.program.js`, which is what a reviewer actually reads:
 | toml     |                82 |       153 | 1.87x |
 | css      |               100 |       182 | 1.82x |
 | xml      |               425 |       544 | 1.28x |
-| total    |               607 |       879 | 1.45x |
+| html     |               747 |       673 | 0.90x |
+| total    |             1,354 |     1,552 | 1.15x |
 
 An earlier revision of this section put css at 147 lines and drew 1.6x from it.
 That was wrong -- `css.program.js` has been 182 lines since it landed -- and the
-correction matters less than what the third datapoint says: **the ratio falls as
-the scanner grows.** The expansion is per *construct*, not per line: each ported
-`if` carries its C beside it in a comment, and a large scanner has more repeated
-shape amortising the same header, the same class-table plumbing, the same
-`return` conventions. At xml's 1.28x the remaining ten come to roughly 16,500
-lines, which is the same order the 1.6x estimate gave; the decision does not
-turn on it.
+correction matters less than what the later datapoints say: **the ratio falls
+sharply as the scanner grows, and html is the first port that is smaller than
+its C.** The expansion is per *construct*, not per line: each ported `if`
+carries its C beside it in a comment, and a large scanner has more repeated
+shape amortising the same header and the same plumbing. html goes further,
+because its bulk is *tables* -- a 126-entry name map and a 385-line `tag.h` --
+and tables become package data rather than code. Its 126-way lookup is eight
+lines of generator emitting 252 instructions.
 
-Both css and xml landed **15/15 byte-identical on the first run** (xml also
-16/16 on the deliberately-broken corpus) and replay the recorded C-scanner calls
-with no mismatches. Three grammars in, the pipeline -- transcode, port, trace
-differential -- generalises past the one it was built on.
+**That reframes option 1's volume.** At the blended 1.15x the remaining nine
+(12,112 lines) come to roughly 13,900 rather than the ~19,000 the first estimate
+gave, and the four expensive scanners are exactly the ones most likely to be
+table-heavy. The objection to hand-compiling was never really the line count;
+it is nine separate correctness arguments. But the line count was the number on
+the page, and it is now materially smaller.
 
-Ports also price the classification tables concretely: css's program is **173
-bytes of code and 4,312 bytes packed**, because `iswalnum` is 4.1 KB of it. xml
-needs both `iswalpha` and `iswalnum` and packs to **8,939 bytes** -- 8.6 KB of
-which is two character tables. This is now the dominant cost of a port, and it
-is data, not code.
+css, xml and html all landed **byte-identical on the first run**, on the clean
+corpus and on the deliberately-broken one, and all replay the recorded
+C-scanner calls with no mismatches. Four grammars in, the pipeline -- transcode,
+port, trace differential -- generalises past the one it was built on.
+
+Ports also price the tables concretely: css's program is **173 bytes of code
+and 4,312 bytes packed**, because `iswalnum` is 4.1 KB of it. xml packs to
+**8,941 bytes** and html to **11,009**, and in every case the character and
+case tables are most of it. This is the dominant cost of a port, and it is
+data, not code.
 
 Two corrections to `docs/scanner-vm.md`, whose roster was nine scanners for ten
 languages and predates haskell, html, ruby, typescript and xml being surveyed:
@@ -211,11 +220,11 @@ The options, and what each costs, are on the decisions page -- see
    instead of twelve; every scanner then gets the same correctness argument. The
    subset is narrow for eleven of twelve, and the risk is concentrated in
    haskell.
-3. **Do the cheap ones, defer the expensive five.** html, javascript,
-   typescript, rust, python and kotlin are the 2,307 lines left in that band;
-   ruby, yaml, markdown and haskell are 7,595. Gets to 12 of 16 languages for a
-   quarter of the work. css and xml are already done out of this band, which is
-   the work option 3 shares with options 1 and 2.
+3. **Do the cheap ones, defer the expensive five.** javascript, typescript,
+   rust, python and kotlin are the 1,560 lines left in that band; ruby, yaml,
+   markdown and haskell are 7,595. Gets to 12 of 16 languages for a small
+   fraction of the work. css, xml and html are already done out of this band,
+   which is the work option 3 shares with options 1 and 2.
 4. **Scanner-only wasm.** Tables stay JSON, so the 6.3 KB interpreter win
    stands, and only the scanners ship as wasm. Reintroduces a wasm dependency
    for the browser, and the two runtimes stop executing the same artifact.
@@ -289,6 +298,64 @@ Two bounds fall out of it, and they are xml's, not the VM's:
 - The VM's stacks cap at 256 elements, so the port holds at most 256 bytes of
   open-tag names -- a *tighter* bound than upstream's, and the first place a
   scanner has come near an ISA limit. html will sit in the same band.
+
+### html forced the ISA's first new instruction, and it is a libc call
+
+`docs/scanner-vm.md`'s design claim was that nine scanners need no instruction
+the VM does not have. html needs one, and it is worth being precise about what
+kind of thing it is: not a control-flow shape, not a data structure -- a **call
+into libc**.
+
+tree-sitter-html stores `towupper(lexer->lookahead)` rather than the character,
+so which two tag names count as the same is decided by the host process's case
+mapping, exactly as `docs/host-ctype-divergence.md` shows whitespace is. It
+cannot be approximated: ASCII-only folding gets `<DIV>` right and gets U+017F
+(LATIN SMALL LETTER LONG S, which glibc upper-cases to plain `S`) wrong,
+silently. It cannot be spelled with class tables, which answer membership
+questions rather than computing functions. And it cannot be branches -- glibc
+moves 1,477 code points.
+
+So the VM gained `MAP k, rd, rs` over sorted `[lo, hi, delta]` runs, and
+`harness/ts_ctype_tables.py` gained a `maps` section: **1,477 moved code points
+compress to 690 triples**, generated from the same glibc that froze the corpus,
+agreed by all three UTF-8 locales, and checked against four discriminating
+controls. Fifteen lines in each runtime.
+
+The generalisation worth carrying into D5: **`isw*` was not the whole of the
+libc surface, and nothing had checked what the rest of it was.** A C-to-VM
+compiler meets the same wall and needs the same answer.
+
+### And it found a bug in the table interpreter, not in the port
+
+html's `IMPLICIT_END_TAG` is a **zero-width** external token -- it pops a tag
+and marks no bytes. It is the first one any port has produced, and on the
+broken corpus the parse allocated until the heap was gone. `<ul><li>a/li></ul>`
+is the smallest input that does it.
+
+The port was right; `harness/ts_lr.mjs` was missing one of `ts_parser__recover`'s
+three halts:
+
+```c
+if (did_recover && ts_subtree_has_external_scanner_state_change(lookahead)) {
+    ts_stack_halt(self->stack, version); return;
+}
+```
+
+Error recovery's second strategy wraps the lookahead in an ERROR and stays in
+the error state. If the lookahead is a zero-width external token that *changed
+the scanner's state*, skipping it again at the same offset is not a new
+situation -- it is the same one with a different scanner state, forever.
+
+What makes this the interesting kind of bug: `hasExternalScannerStateChange` was
+already being recorded on the leaf and propagated through parents. The data was
+transcribed and the **behaviour** was not, so it sat dead through five languages
+and every existing test. Nothing in the corpus could reach it, because nothing
+in the corpus had a zero-width external token.
+
+Two habits it argues for. Port a grammar that exercises a *shape* the others do
+not, rather than the cheapest next one -- that is why xml and html went before
+rust. And re-run the full `--edited` corpus after every port, not just the clean
+one: this was invisible on 16/16 clean and fatal on the same 16 broken.
 
 ### The Rust twin had stopped covering the oracle
 

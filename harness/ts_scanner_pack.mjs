@@ -48,6 +48,15 @@ export function encode(prog) {
   u16(classes.length);
   for (const c of classes) { u16(c.length >> 1); for (const v of c) uleb(v); }
 
+  // Case-mapping tables: inclusive runs of constant delta, identity outside.
+  // `[lo, hi, delta, ...]`, so the delta is signed and the bounds are not.
+  const maps = prog.maps || [];
+  u16(maps.length);
+  for (const m of maps) {
+    u16(m.length / 3);
+    for (let i = 0; i < m.length; i += 3) { uleb(m[i]); uleb(m[i + 1]); sleb(m[i + 2]); }
+  }
+
   const strings = prog.strings || [];
   u16(strings.length);
   for (const s of strings) { u8(s.length); for (const b of s) u8(b); }
@@ -115,6 +124,14 @@ export function decode(bytes) {
     classes.push(c);
   }
 
+  const maps = [];
+  for (let n = u16(), i = 0; i < n; i++) {
+    const triples = u16();
+    const m = [];
+    for (let k = 0; k < triples; k++) { m.push(uleb(), uleb(), sleb()); }
+    maps.push(m);
+  }
+
   const strings = [];
   for (let n = u16(), i = 0; i < n; i++) {
     const l = u8();
@@ -145,5 +162,5 @@ export function decode(bytes) {
     throw new Error(`scanner package has ${bytes.length - p} trailing bytes`);
   }
 
-  return { entry, regPersist, stacks, stackInit, classes, strings, validSets, jumpTable, code };
+  return { entry, regPersist, stacks, stackInit, classes, maps, strings, validSets, jumpTable, code };
 }

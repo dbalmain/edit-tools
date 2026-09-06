@@ -32,6 +32,7 @@ const SPIN_BUDGET = 4096;
 const OP = {
   NOP: 0x00,
   ADVANCE: 0x01, SKIP: 0x02, MARK_END: 0x03, LOOKAHEAD: 0x04, EOF: 0x05,
+  MAP: 0x07,
   EMIT: 0x08, EMIT_R: 0x09, FAIL: 0x0a, EMIT_IF: 0x0b, EMIT_IF_R: 0x0c,
   IF_CHAR: 0x10, IF_NCHAR: 0x11, IF_CLASS: 0x12, IF_NCLASS: 0x13,
   IF_EOF: 0x14, IF_NEOF: 0x15,
@@ -53,6 +54,7 @@ class ScannerVM {
     this.code = prog.code;
     this.entry = prog.entry >>> 0;
     this.classes = prog.classes || [];
+    this.maps = prog.maps || [];
     this.strings = prog.strings || [];
     this.validSets = prog.validSets || [];
     this.jumpTable = prog.jumpTable || [];
@@ -181,6 +183,16 @@ class ScannerVM {
         case OP.MARK_END: this.lexer.markEnd(); break;
         case OP.LOOKAHEAD: { const r = code[pc++]; this.setReg(r, this.lexer.lookahead()); break; }
         case OP.EOF: { const r = code[pc++]; this.setReg(r, this.lexer.atEof() ? 1 : 0); break; }
+        // Case mapping is a host property in exactly the way classification
+        // is -- html stores `towupper(lookahead)` in every tag name, so which
+        // characters are the same tag name depends on the process's locale.
+        // Carrying it as a table is what stops a port inheriting that.
+        case OP.MAP: {
+          const c = readUlebAt(code, pc); pc = c.pos;
+          const d = code[pc++], sr = code[pc++];
+          this.setReg(d, this.mapped(c.v, this.getReg(sr)));
+          break;
+        }
 
         case OP.EMIT: { const s = readUlebAt(code, pc); this.symbol = s.v; this.halt(true); break; }
         case OP.EMIT_R: { const r = code[pc++]; this.symbol = this.getReg(r); this.halt(true); break; }
@@ -359,6 +371,22 @@ class ScannerVM {
   getReg(i) { if (i < 0 || i >= NREG) this.trap(); return this.reg[i]; }
   setReg(i, v) { if (i < 0 || i >= NREG) this.trap(); this.reg[i] = v | 0; }
   stack(i) { if (i < 0 || i >= NSTACK) this.trap(); return this.stacks[i]; }
+
+  // Triples are sorted, inclusive and non-overlapping: [lo0,hi0,d0, ...].
+  // Anything not in a run maps to itself, which is what keeps the table to
+  // hundreds of entries rather than thousands.
+  mapped(k, cp) {
+    const m = this.maps[k];
+    if (m === undefined) this.trap();
+    let lo = 0, hi = (m.length / 3) - 1;
+    while (lo <= hi) {
+      const mid = (lo + hi) >> 1;
+      if (cp < m[mid * 3]) hi = mid - 1;
+      else if (cp > m[mid * 3 + 1]) lo = mid + 1;
+      else return (cp + m[mid * 3 + 2]) | 0;
+    }
+    return cp | 0;
+  }
 
   inClass(k, cp) {
     const r = this.classes[k];

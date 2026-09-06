@@ -2190,6 +2190,24 @@ class Parser {
       return;
     }
 
+    // ts_parser__recover's second halt, and the one that keeps strategy 2 from
+    // running forever. Strategy 2 wraps the lookahead in an ERROR and stays in
+    // the error state; if the lookahead is a zero-width external token that
+    // *changed the scanner's state*, that is progress the scanner made and the
+    // parser did not, so skipping it again at the same offset is not a new
+    // situation -- it is the same one with a different scanner state, forever.
+    //
+    // Live only since html: it is the first ported grammar with a zero-width
+    // external token (IMPLICIT_END_TAG, which pops a tag and marks no bytes).
+    // `hasExternalScannerStateChange` was already recorded on the leaf and
+    // propagated through parents; nothing read it. `<ul><li>a/li></ul>` is the
+    // smallest input that reaches it, and without this the parse allocates
+    // until the heap is gone rather than failing.
+    if (didRecover && lookahead.hasExternalScannerStateChange) {
+      stack.halt(version);
+      return;
+    }
+
     const skipCost =
       currentErrorCost + ERROR_COST_PER_SKIPPED_TREE +
       lookahead.totalSize * ERROR_COST_PER_SKIPPED_CHAR +

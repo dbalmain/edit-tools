@@ -8,9 +8,17 @@
  * that divergence; a port that carries the answer as data does not. This
  * produces the data.
  *
- * Emitted as JSON: {"locale": ..., "resolved": ..., "classes": {name: [lo, hi, ...]}}
- * with inclusive ranges, which is the same shape ts_transcode.py already uses
- * for lexer charsets.
+ * Emitted as JSON: {"locale": ..., "resolved": ..., "classes": {name: [lo, hi, ...]},
+ * "maps": {name: [lo, hi, delta, ...]}} -- classes as inclusive ranges, the
+ * same shape ts_transcode.py already uses for lexer charsets, and maps as
+ * inclusive ranges carrying a constant delta, identity everywhere else.
+ *
+ * `maps` exists because classification is not the only libc call a scanner
+ * makes. tree-sitter-html pushes `towupper(lexer->lookahead)` into every tag
+ * name and matches `towupper` against its raw-text delimiters, so the *case
+ * mapping* is a host property in exactly the way the classes are. Expressed as
+ * runs of constant delta it is small: glibc changes 1,477 code points, which
+ * is 690 triples.
  */
 #include <locale.h>
 #include <stdio.h>
@@ -32,6 +40,12 @@ static const struct { const char *name; predicate fn; } CLASSES[] = {
     {"space", iswspace}, {"upper", iswupper}, {"xdigit", iswxdigit},
 };
 
+typedef wint_t (*mapping)(wint_t);
+
+static const struct { const char *name; mapping fn; } MAPS[] = {
+    {"upper", towupper},
+};
+
 static void dump(const char *name, predicate fn, int last) {
     printf("  \"%s\": [", name);
     long start = -1, count = 0;
@@ -47,6 +61,27 @@ static void dump(const char *name, predicate fn, int last) {
     printf("]%s\n", last ? "" : ",");
 }
 
+/* Runs of constant, non-zero delta. Identity is the default and is not
+ * emitted, which is what keeps this to hundreds of triples rather than
+ * thousands: only 1,477 code points move at all. */
+static void dump_map(const char *name, mapping fn, int last) {
+    printf("  \"%s\": [", name);
+    long lo = 0, hi = 0, delta = 0, count = 0;
+    int open = 0;
+    for (long c = 0; c <= MAX_CP; c++) {
+        long d = (long)fn((wint_t)c) - c;
+        if (d == 0) {
+            if (open) { printf("%s%ld,%ld,%ld", count++ ? "," : "", lo, hi, delta); open = 0; }
+            continue;
+        }
+        if (open && d == delta && c == hi + 1) { hi = c; continue; }
+        if (open) printf("%s%ld,%ld,%ld", count++ ? "," : "", lo, hi, delta);
+        lo = hi = c; delta = d; open = 1;
+    }
+    if (open) printf("%s%ld,%ld,%ld", count++ ? "," : "", lo, hi, delta);
+    printf("]%s\n", last ? "" : ",");
+}
+
 int main(int argc, char **argv) {
     const char *want = argc > 1 ? argv[1] : "C.UTF-8";
     const char *got = setlocale(LC_CTYPE, want);
@@ -57,6 +92,9 @@ int main(int argc, char **argv) {
     int n = (int)(sizeof CLASSES / sizeof CLASSES[0]);
     printf("{\n \"locale\": \"%s\",\n \"resolved\": \"%s\",\n \"classes\": {\n", want, got);
     for (int i = 0; i < n; i++) dump(CLASSES[i].name, CLASSES[i].fn, i == n - 1);
+    printf(" },\n \"maps\": {\n");
+    int m = (int)(sizeof MAPS / sizeof MAPS[0]);
+    for (int i = 0; i < m; i++) dump_map(MAPS[i].name, MAPS[i].fn, i == m - 1);
     printf(" }\n}\n");
     return 0;
 }

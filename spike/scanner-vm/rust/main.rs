@@ -128,6 +128,18 @@ fn decode_program(bytes: &[u8]) -> Program {
         classes.push((0..nr * 2).map(|_| r.uleb()).collect());
     }
     let n = r.u16();
+    let mut maps = Vec::new();
+    for _ in 0..n {
+        let nt = r.u16();
+        let mut m = Vec::new();
+        for _ in 0..nt {
+            m.push(r.uleb() as i32);
+            m.push(r.uleb() as i32);
+            m.push(r.sleb());
+        }
+        maps.push(m);
+    }
+    let n = r.u16();
     let mut strings = Vec::new();
     for _ in 0..n {
         let l = r.u8();
@@ -150,7 +162,7 @@ fn decode_program(bytes: &[u8]) -> Program {
     let jump_table = (0..n).map(|_| r.u16()).collect();
     let cl = r.u16() as usize;
     let code = bytes[r.p..r.p + cl].to_vec();
-    Program { entry, reg_persist, stacks, stack_init, classes, strings, valid_sets, jump_table, code }
+    Program { entry, reg_persist, stacks, stack_init, classes, maps, strings, valid_sets, jump_table, code }
 }
 
 // ---- trace parsing ---------------------------------------------------------

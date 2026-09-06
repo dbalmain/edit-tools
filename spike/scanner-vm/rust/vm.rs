@@ -33,6 +33,9 @@ pub struct Program {
     pub stacks: Vec<StackSpec>,
     pub stack_init: Vec<(usize, Vec<i32>)>,
     pub classes: Vec<Vec<u32>>,
+    /// Case-mapping tables: inclusive runs of constant delta as
+    /// `[lo, hi, delta, ...]`, identity outside them.
+    pub maps: Vec<Vec<i32>>,
     pub strings: Vec<Vec<u8>>,
     pub valid_sets: Vec<Vec<bool>>,
     pub jump_table: Vec<u16>,
@@ -222,6 +225,28 @@ impl<'p> ScannerVm<'p> {
         }
     }
 
+    /// Triples are sorted, inclusive and non-overlapping.  Anything not in a
+    /// run maps to itself, which is what keeps glibc's 1,477 moved code points
+    /// down to 690 entries.
+    fn mapped(&mut self, k: u32, cp: i32) -> R<i32> {
+        let m = match self.p.maps.get(k as usize) {
+            Some(m) => m,
+            None => return self.trap(),
+        };
+        let (mut lo, mut hi) = (0isize, (m.len() / 3) as isize - 1);
+        while lo <= hi {
+            let mid = ((lo + hi) / 2) as usize;
+            if cp < m[mid * 3] {
+                hi = mid as isize - 1;
+            } else if cp > m[mid * 3 + 1] {
+                lo = mid as isize + 1;
+            } else {
+                return Ok(cp.wrapping_add(m[mid * 3 + 2]));
+            }
+        }
+        Ok(cp)
+    }
+
     fn in_class(&mut self, k: u32, cp: i32) -> R<bool> {
         let r = match self.p.classes.get(k as usize) {
             Some(r) => r,
@@ -268,6 +293,16 @@ impl<'p> ScannerVm<'p> {
                 0x03 => lx.mark_end(),
                 0x04 => { let r = self.byte(&mut pc)?; let v = lx.lookahead(); self.set_reg(r, v)?; }
                 0x05 => { let r = self.byte(&mut pc)?; let v = i32::from(lx.at_eof()); self.set_reg(r, v)?; }
+                // MAP: case mapping is a host property in exactly the way
+                // classification is -- html stores towupper(lookahead) in every
+                // tag name it compares.
+                0x07 => {
+                    let k = self.uleb(&mut pc)?;
+                    let (d, sr) = (self.byte(&mut pc)?, self.byte(&mut pc)?);
+                    let v = self.get_reg(sr)?;
+                    let m = self.mapped(k, v)?;
+                    self.set_reg(d, m)?;
+                }
 
                 0x08 => { let s = self.uleb(&mut pc)?; self.symbol = s as i32; return Err(Halt::Done(true)); }
                 0x09 => { let r = self.byte(&mut pc)?; self.symbol = self.get_reg(r)?; return Err(Halt::Done(true)); }

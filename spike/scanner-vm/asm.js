@@ -21,6 +21,7 @@ class Asm {
   markEnd() { return this.ins(OP.MARK_END); }
   lookahead(r) { return this.ins(OP.LOOKAHEAD, ['r', r]); }
   eof(r) { return this.ins(OP.EOF, ['r', r]); }
+  map(k, d, s) { return this.ins(OP.MAP, ['u', k], ['r', d], ['r', s]); }
   // -- termination
   emit(sym) { return this.ins(OP.EMIT, ['u', sym]); }
   emitR(r) { return this.ins(OP.EMIT_R, ['r', r]); }
