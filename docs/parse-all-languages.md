@@ -5,9 +5,9 @@ tree-sitter languages in the corpus. Aven is out of scope by instruction, and
 would be out of scope anyway -- it has no tree-sitter grammar and its plan of
 record (`docs/roadmap.md`) is its own parser.
 
-Where it stands: **4 of 16 parse byte-identically** (json 3/3, scheme 15/15,
-go 16/16, toml 15/15). This document is what the remaining twelve cost, measured
-rather than guessed.
+Where it stands: **5 of 16 parse byte-identically** (json 3/3, scheme 15/15,
+go 16/16, toml 15/15, css 15/15). This document is what the remaining eleven
+cost, measured rather than guessed.
 
 ## What is already done
 
@@ -44,7 +44,7 @@ Line counts are of the actual source, after completing the sdists.
 | Language   | C lines | Externals | Serialized state          |
 | ---------- | ------: | --------: | ------------------------- |
 | toml       |      82 |         5 | stateless *(done)*        |
-| css        |     100 |         3 | stateless                 |
+| css        |     100 |         3 | stateless *(done)*        |
 | xml        |     270 |        11 | stack of tag-name strings |
 | html       |     362 |         9 | stack of tag-name strings |
 | javascript |     364 |         8 | stateless                 |
@@ -57,7 +57,23 @@ Line counts are of the actual source, after completing the sdists.
 | markdown   |   1,602 |        47 | 5 scalars + `u8` stack    |
 | haskell    |   3,471 |        49 | scalars + stacks + tables |
 
-**10,327 lines of C across the twelve.** haskell alone is 34% of it.
+**10,327 lines of C across the twelve**, of which css's 100 are now done.
+haskell alone is 34% of the total.
+
+### The C-to-assembler ratio, on two datapoints
+
+toml's 82 lines became 153 lines of assembler; css's 100 became 147. So **1.6x
+is the better estimate than toml's 1.9x alone**, which puts the remaining
+eleven at roughly 16,000 lines rather than 19,000 -- still the number that
+makes this a decision.
+
+css also landed **15/15 byte-identical on the first run** and replays the
+recorded C-scanner calls with no mismatches, which says the pipeline
+(transcode + port + trace differential) generalises beyond the grammar it was
+built on.
+
+And it priced the classification tables concretely: css's program is **173
+bytes of code and 4,312 bytes packed**, because `iswalnum` is 4.1 KB of it.
 
 Two corrections to `docs/scanner-vm.md`, whose roster was nine scanners for ten
 languages and predates haskell, html, ruby, typescript and xml being surveyed:
