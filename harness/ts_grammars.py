@@ -23,7 +23,7 @@ The sdist is what PyPI built the wheel from, and the wheel is what generated
 `corpus/trees/`. So the sdist's `parser.c` is the grammar the oracle actually
 speaks, and it is what gets transcoded.
 
-**Six sdists are missing scanner sources, in two ways.** `tree-sitter-css` 0.25.0,
+**Seven sdists are missing scanner sources, in three ways.** `tree-sitter-css` 0.25.0,
 `tree-sitter-python` 0.25.0 and `tree-sitter-yaml` 0.7.2 declare external
 tokens -- 3, 12 and 113 of them -- and ship no `src/scanner.c`. Their
 `setup.py` globs `src/*.c`, so those sdists cannot build the module they
@@ -39,7 +39,15 @@ shared with dtd. **Neither sdist ships `common/`**, so both scanners are stubs
 pointing at nothing. Completeness is therefore checked by resolving each
 scanner's quoted includes transitively, not by looking for one filename.
 
-For those six, the upstream repository at the pinned tag is cloned and the
+There is a third way, and no scan of the source text can see it at all.
+tree-sitter-yaml's scanner says `#include _file(YAML_SCHEMA)`, which
+macro-expands to `schema.core.c` -- a file the sdist also omits, and whose name
+never appears in the source. So the C preprocessor gets the last word: when a
+compiler is present, whatever the regex scan believes is complete is
+preprocessed, and the first include it cannot find is treated as a gap. It
+reports one at a time, which the graft loop already handles.
+
+For those seven, the upstream repository at the pinned tag is cloned and the
 missing files copied in. That checkout is trusted only after its `parser.c`
 is shown to match the sdist's, which is what establishes that the tag holds the
 same grammar the scanner belongs to. Measured on css: identical, byte for byte.
@@ -91,6 +99,7 @@ import argparse
 import io
 import json
 import re
+import os
 import shutil
 import subprocess
 import sys
@@ -307,6 +316,41 @@ def needed_by(start: Path, root: Path) -> set[str]:
     return absent
 
 
+NO_SUCH_FILE = re.compile(r"fatal error:\s*([^\s:]+):\s*No such file", re.I)
+
+
+def preprocessor_gap(scanner: Path, root: Path) -> str | None:
+    """The first include the C preprocessor cannot find, if a compiler exists.
+
+    The regex scan above cannot see a **computed** include, and one grammar has
+    one: tree-sitter-yaml's scanner says `#include _file(YAML_SCHEMA)`, which
+    macro-expands to `schema.core.c` -- a file its sdist also omits. No pattern
+    over the source text can resolve that, because the filename does not appear
+    in it.
+
+    So the preprocessor gets the last word. It reports one missing include per
+    run, which is why the caller loops; that is the same loop it already needs
+    for a header that includes another missing header.
+
+    Returns `None` when there is no compiler, when the preprocessor is happy,
+    or when it fails for any reason other than a missing include -- a grammar's
+    C is not ours to fix, and a type error in it is not an incomplete download.
+    """
+    compiler = shutil.which(os.environ.get("CC", "cc")) or shutil.which("cc")
+    if compiler is None:
+        return None
+    includes = [f"-I{d}" for d in src_dirs(root)] + [f"-I{root}"]
+    done = subprocess.run(
+        [compiler, "-E", "-P", "-w", *includes, str(scanner), "-o", os.devnull],
+        capture_output=True,
+        text=True,
+    )
+    if done.returncode == 0:
+        return None
+    m = NO_SUCH_FILE.search(done.stderr)
+    return m.group(1) if m else None
+
+
 def incomplete(root: Path) -> dict[Path, set[str]]:
     """Each grammar `src/` that declares external tokens, mapped to what it lacks.
 
@@ -321,7 +365,11 @@ def incomplete(root: Path) -> dict[Path, set[str]]:
         scanner = scanner_of(src)
         if scanner is None:
             gaps[src] = {"scanner.c"}
-        elif missing := needed_by(scanner, root):
+            continue
+        missing = needed_by(scanner, root)
+        if not missing and (computed := preprocessor_gap(scanner, root)):
+            missing = {computed}
+        if missing:
             gaps[src] = missing
     return gaps
 
