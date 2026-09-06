@@ -246,11 +246,11 @@ class ScannerPortTest(unittest.TestCase):
     """
 
     # toml 230 scan calls, css 450, xml 803, html 1102, python 2194, rust 925,
-    # javascript 2439, typescript 2808, kotlin 2519, ruby 1855. Raise as ports
-    # land.
-    MIN_SCANNER_CALLS = 15325
-    MIN_SCANNER_STATES = 2086
-    MIN_PORTED_LANGUAGES = 10
+    # javascript 2439, typescript 2808, kotlin 2519, ruby 1855, yaml 1480,
+    # markdown 3127. Raise as ports land.
+    MIN_SCANNER_CALLS = 19932
+    MIN_SCANNER_STATES = 4224
+    MIN_PORTED_LANGUAGES = 12
 
     def _run(self, script: str, *args: str) -> str:
         result = subprocess.run(

@@ -5,10 +5,14 @@ tree-sitter languages in the corpus. Aven is out of scope by instruction, and
 would be out of scope anyway -- it has no tree-sitter grammar and its plan of
 record (`docs/roadmap.md`) is its own parser.
 
-Where it stands: **13 of 16 parse byte-identically** (json 3/3, scheme 15/15,
+Where it stands: **15 of 16 parse byte-identically** (json 3/3, scheme 15/15,
 go 16/16, toml 15/15, css 15/15, xml 15/15, html 16/16, python 12/12,
-rust 19/19, javascript 14/14, typescript 16/16, kotlin 16/16, ruby 15/15).
-Everything that is left is one of the three biggest.
+rust 19/19, javascript 14/14, typescript 16/16, kotlin 16/16, ruby 15/15,
+yaml 16/16, markdown 15/15\*). **Only haskell is left.**
+
+\* markdown's number is against the *host grammar*, not against
+`corpus/trees/`, and the difference is a property of the fixtures rather than
+of the port -- see "markdown's clean fixtures cannot judge markdown" below.
 
 ## What is already done
 
@@ -58,12 +62,13 @@ only the `.c` undercounts the set by 30%.
 | kotlin     |         459 |       459 |        11 | stateless *(done)*        |
 | html       |         362 |       747 |         9 | tag types + names *(done)* |
 | ruby       |       1,107 |     1,107 |        30 | literals + heredocs *(done)* |
-| yaml       |       1,415 |     1,415 |       113 | 5 `i16` + 2 `i16` stacks  |
-| markdown   |       1,602 |     1,602 |        47 | 5 scalars + `u8` stack    |
+| yaml       |       1,415 |     1,415 |       113 | 5 `i16` + 2 stacks *(done)* |
+| markdown   |       1,602 |     1,602 |        47 | 5 scalars + block stack *(done)* |
 | haskell    |       3,471 |     5,975 |        49 | scalars + stacks + tables |
 
-**13,466 lines of C across the thirteen**, of which ten are done. yaml,
-markdown and haskell -- 6,488 lines -- are what is left.
+**13,466 lines of C across the thirteen**, of which twelve are done. haskell
+-- 3,471 lines, or 5,975 counting its generated `unicode.h` -- is what is
+left.
 
 ### Two thirds of haskell's excess is data, not logic
 
@@ -99,7 +104,9 @@ Whole-file lines of the `.program.js`, which is what a reviewer actually reads:
 | typescript |             360 |       411 | 1.14x |
 | kotlin   |               459 |       668 | 1.46x |
 | ruby     |             1,107 |     1,567 | 1.42x |
-| total    |             4,474 |     5,805 | 1.30x |
+| yaml     |             1,415 |     2,197 | 1.55x |
+| markdown |             1,602 |     1,699 | 1.06x |
+| total    |             7,491 |     9,701 | 1.30x |
 
 An earlier revision of this section put css at 147 lines and drew 1.6x from it.
 That was wrong -- `css.program.js` has been 182 lines since it landed -- and the
@@ -112,19 +119,27 @@ because its bulk is *tables* -- a 126-entry name map and a 385-line `tag.h` --
 and tables become package data rather than code. Its 126-way lookup is eight
 lines of generator emitting 252 instructions.
 
-**But ruby says the ratio does not simply fall with size.** It is the largest
-scanner ported and it came out at **1.42x**, above xml, python, rust,
-javascript and typescript, and far above html. So the earlier reading was
-wrong in its causation: html is cheap because it is *table-heavy*, not because
-it is large. What drives the ratio down is the share of a scanner that is data
-rather than branches. That matters for the three left: haskell is 42% generated
-bitmaps and should come out low, while yaml and markdown are almost all
-branching and should look like ruby.
+**But ruby says the ratio does not simply fall with size**, and yaml and
+markdown settle why. ruby is the second-largest ported and came out at
+**1.42x**; yaml, the third-largest, came out at **1.55x** -- the *highest* of
+the twelve. markdown, larger than both, came out at **1.06x**. Size explains
+none of that.
 
-**That reframes option 1's volume.** At the blended 1.30x the remaining three
-(6,488 lines) come to roughly 8,400. The objection to hand-compiling was never
-really the line count; it is four separate correctness arguments. But the line
-count was the number on the page, and it has more than halved.
+What does explain it is how much of a scanner is **data rather than
+branches**. html is 0.90x because its bulk is a 126-entry name map and a
+385-line `tag.h` that become package data; markdown is 1.06x because its
+`match` switches and block enums collapse into range tests; yaml is 1.55x
+because 113 external tokens against a spec-defined character grammar is almost
+entirely branching, with an `ifValid` chain per token and nothing to hoist. The
+earlier reading -- "the ratio falls sharply as the scanner grows" -- had the
+correlation and the wrong cause.
+
+**That reframes option 1's volume.** At the blended 1.30x haskell's remaining
+3,471 lines of logic come to roughly 4,500, and its 2,504 lines of generated
+bitmaps come to none at all, because they are data. The objection to
+hand-compiling was never really the line count; it is four separate
+correctness arguments. But the line count was the number on the page, and it
+is now one language.
 
 Every port since toml has landed **byte-identical on the first run**, on the
 clean corpus and on the deliberately-broken one, and all replay the recorded
@@ -132,6 +147,84 @@ C-scanner calls with no mismatches -- **15,325 calls and 2,086 state
 transitions across ten languages**. Ten grammars in, the pipeline --
 transcode, port, trace differential -- generalises past the one it was built
 on.
+
+### markdown's clean fixtures cannot judge markdown
+
+markdown's port replays its recorded C-scanner calls with no mismatches (3,127
+calls, 674 state transitions) and passes `--edited` 6/6, and then
+`ts_check_trees.mjs` reports **9 of 15** on the clean corpus. The six that fail
+-- `comments`, `fences`, `kitchen`, `long_sequences`, `nesting`,
+`normalisation` -- are exactly the six whose frozen tree contains more than one
+`"type": "document"`.
+
+That is `gen_trees.py`'s **injection splice**: it reparses a fenced region with
+the guest grammar and substitutes the guest's tree for the host's
+`code_fence_content` leaf. The table interpreter has no included-range second
+pass, so it cannot produce that shape from one parse and never will. The
+mismatch is a property of the fixture, not of the port.
+
+`parse_oracle.py` already turns injections **off**, deliberately and for the
+same reason -- "a candidate parse layer parses one language, so the oracle it
+should be measured against is the host grammar's own recovery, not a splice of
+two grammars" -- which is why `corpus/trees-edited/` needs no equivalent and
+why `--edited` is clean.
+
+So the clean half needed its own check, and `harness/ts_check_hostonly.py` is
+it: parse each corpus file with the real grammar and no injection pass,
+serialise it in `gen_trees.py`'s shape, and require our `--write-dir` output to
+equal it byte for byte. markdown is **15/15**.
+
+```sh
+./harness/ts_transcode.py .grammars/markdown/tree-sitter-markdown/src/parser.c \
+  --scanner harness/scanners/markdown.svm -o /tmp/md.blob.json
+./harness/ts_check_trees.mjs /tmp/md.blob.json markdown --write-dir /tmp/md-ours
+./harness/ts_check_hostonly.py markdown /tmp/md-ours
+```
+
+It is weaker than the frozen-fixture check in one way and stronger in another:
+weaker because it re-derives its oracle from a live grammar rather than from a
+committed artifact, stronger because it is the only comparison an injected
+language's clean corpus admits at all. **Which of those two should be the
+committed bar for markdown is an open decision**, and it is on the board:
+splice injections into `ts_check_trees.mjs`, freeze a second host-only fixture
+set, or leave this script as the gate.
+
+Two other things markdown settled. `sizeof(Block)` is **4, not 1** -- the
+brief guessed one byte from `memcpy(&buffer[size], s->open_blocks.items, ...)`
+and `docs/scanner-vm.md` already had the right figure, `5 + 4*blocks`. The
+three padding bytes carry no distinctions, so a VM stack of those integers is
+relation-compatible with the raw `memcpy`. And markdown is the first port to
+use `RECURSE`: `scan(..., paragraph_interrupt_symbols)` is upstream calling
+itself with a different valid-symbols vector, which is the instruction's only
+reason for existing and had never been exercised.
+
+### yaml: the VM cannot seed a register, and that is a state distinction
+
+The brief said yaml's five `int16_t` scalars are five persistent registers.
+Two of them are not, and the reason generalises. `deserialize` initialises
+`blk_imp_row` and `blk_imp_col` to **-1**, not 0, and `(row=0, col=0,
+imp_row=0, imp_col=0)` is a *reachable, distinct* state -- `MAY_UPD_IMP_COL`
+produces it at the start of a file. The VM zeros persistent registers on reset
+and has no `registerInit`, so putting those two in registers would collapse
+"never set" onto "set to zero" and fail the bijection.
+
+`stackInit` is the only way to seed a non-zero persistent value, so each of the
+two lives as a **single-element stack**, loaded into a working register at
+entry and written back on every halt -- because `MAY_UPD_IMP_COL` mutates them
+even on scans that return false. Four persistent stacks and three persistent
+registers, for what upstream writes as five scalars.
+
+The general form: **the ISA can express any state whose reset value is zero,
+and needs a stack for every other one.** A `registerInit` alongside `stackInit`
+would be a small addition and is the obvious thing to want. haskell will meet
+the same wall: its empty-state `deserialize` sets `newline.state = NResume`,
+which is 3 in `enum NewlineState`, so it needs either the same
+single-element-stack trick or an encoding that biases the enum so the reset
+value is zero.
+
+yaml is also the port with the most state transitions by a factor of three
+(**1,464**, against ruby's 493), which is what a scanner tracking row and
+column in its persistent state looks like: nearly every token changes it.
 
 ### What ruby added: a FIFO, and a class that cannot be a class
 
