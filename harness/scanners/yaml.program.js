@@ -1288,6 +1288,10 @@ function build() {
   a.label('fail');
   failScan();
   a.label('err_true');
+  // `return true` without RET_SYM and without flush. result_symbol is
+  // whatever the lexer last held; on this corpus the path is unreached
+  // (the 16 false returns are the EOF arm when neither BL nor END_OF_FILE
+  // is valid). Emit 0 without flushing so a future hit is defined.
   writeImp();
   a.emit(END_OF_FILE);
 
@@ -1825,9 +1829,26 @@ function build() {
   retSymR();
 
   // ======================================================================
-  //   scn_pln_cnt -- R_FN is the is_plain_safe index. Returns SCN_*.
+  //   char scn_pln_cnt(scanner, lexer, bool (*is_plain_safe)(int32_t))
+  //   R_FN is the jump-table index of is_plain_safe. Returns SCN_*.
   //   Locals: R_LEAD_SP=cur_wsp, R_PRT_IND=cur_saf, R_TMP2=lka_wsp, R_N=lka_saf
   //   (parent indent / leading_spaces are finished with before this call).
+  //
+  //   bool is_cur_wsp = is_wsp(scanner->cur_chr);
+  //   bool is_cur_saf = is_plain_safe(scanner->cur_chr);
+  //   bool is_lka_wsp = is_wsp(lexer->lookahead);
+  //   bool is_lka_saf = is_plain_safe(lexer->lookahead);
+  //   if (is_lka_saf || is_lka_wsp) {
+  //     for (;;) {
+  //       if (is_lka_saf && la != '#' && la != ':') { adv; mrk_end; adv_sch; }
+  //       else if (is_cur_saf && la == '#')         { adv; mrk_end; adv_sch; }
+  //       else if (is_lka_wsp)                      { adv;         adv_sch; }
+  //       else if (la == ':')                       { adv; /* check later */ }
+  //       else break;
+  //       /* shuffle is_* ; if (cur_chr == ':') { is_lka_saf ? mrk_end+adv_sch : FAIL } */
+  //     }
+  //   } else return SCN_STOP;
+  //   return SCN_SUCC;
   // ======================================================================
   a.label('scn_pln_cnt');
   a.mov(R_CH, R_CUR_CHR);
