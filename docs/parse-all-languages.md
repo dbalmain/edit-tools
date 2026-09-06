@@ -5,10 +5,10 @@ tree-sitter languages in the corpus. Aven is out of scope by instruction, and
 would be out of scope anyway -- it has no tree-sitter grammar and its plan of
 record (`docs/roadmap.md`) is its own parser.
 
-Where it stands: **12 of 16 parse byte-identically** (json 3/3, scheme 15/15,
+Where it stands: **13 of 16 parse byte-identically** (json 3/3, scheme 15/15,
 go 16/16, toml 15/15, css 15/15, xml 15/15, html 16/16, python 12/12,
-rust 19/19, javascript 14/14, typescript 16/16, kotlin 16/16). Everything that
-is left is one of the four big ones.
+rust 19/19, javascript 14/14, typescript 16/16, kotlin 16/16, ruby 15/15).
+Everything that is left is one of the three biggest.
 
 ## What is already done
 
@@ -57,13 +57,13 @@ only the `.c` undercounts the set by 30%.
 | python     |         437 |       437 |        12 | 2 stacks + a flag *(done)* |
 | kotlin     |         459 |       459 |        11 | stateless *(done)*        |
 | html       |         362 |       747 |         9 | tag types + names *(done)* |
-| ruby       |       1,107 |     1,107 |        30 | scalars + stacks          |
+| ruby       |       1,107 |     1,107 |        30 | literals + heredocs *(done)* |
 | yaml       |       1,415 |     1,415 |       113 | 5 `i16` + 2 `i16` stacks  |
 | markdown   |       1,602 |     1,602 |        47 | 5 scalars + `u8` stack    |
 | haskell    |       3,471 |     5,975 |        49 | scalars + stacks + tables |
 
-**13,466 lines of C across the thirteen**, of which toml's 82 and css's 100 are
-done.
+**13,466 lines of C across the thirteen**, of which ten are done. yaml,
+markdown and haskell -- 6,488 lines -- are what is left.
 
 ### Two thirds of haskell's excess is data, not logic
 
@@ -98,7 +98,8 @@ Whole-file lines of the `.program.js`, which is what a reviewer actually reads:
 | javascript |             364 |       484 | 1.33x |
 | typescript |             360 |       411 | 1.14x |
 | kotlin   |               459 |       668 | 1.46x |
-| total    |             3,367 |     4,238 | 1.26x |
+| ruby     |             1,107 |     1,567 | 1.42x |
+| total    |             4,474 |     5,805 | 1.30x |
 
 An earlier revision of this section put css at 147 lines and drew 1.6x from it.
 That was wrong -- `css.program.js` has been 182 lines since it landed -- and the
@@ -111,16 +112,53 @@ because its bulk is *tables* -- a 126-entry name map and a 385-line `tag.h` --
 and tables become package data rather than code. Its 126-way lookup is eight
 lines of generator emitting 252 instructions.
 
-**That reframes option 1's volume.** At the blended 1.26x the remaining four
-(7,595 lines) come to roughly 9,600 rather than the ~19,000 the first estimate
-gave. The objection to hand-compiling was never really the line count; it is
-four separate correctness arguments. But the line count was the number on the
-page, and it has halved.
+**But ruby says the ratio does not simply fall with size.** It is the largest
+scanner ported and it came out at **1.42x**, above xml, python, rust,
+javascript and typescript, and far above html. So the earlier reading was
+wrong in its causation: html is cheap because it is *table-heavy*, not because
+it is large. What drives the ratio down is the share of a scanner that is data
+rather than branches. That matters for the three left: haskell is 42% generated
+bitmaps and should come out low, while yaml and markdown are almost all
+branching and should look like ruby.
+
+**That reframes option 1's volume.** At the blended 1.30x the remaining three
+(6,488 lines) come to roughly 8,400. The objection to hand-compiling was never
+really the line count; it is four separate correctness arguments. But the line
+count was the number on the page, and it has more than halved.
 
 Every port since toml has landed **byte-identical on the first run**, on the
 clean corpus and on the deliberately-broken one, and all replay the recorded
-C-scanner calls with no mismatches. Nine grammars in, the pipeline -- transcode,
-port, trace differential -- generalises past the one it was built on.
+C-scanner calls with no mismatches -- **15,325 calls and 2,086 state
+transitions across ten languages**. Ten grammars in, the pipeline --
+transcode, port, trace differential -- generalises past the one it was built
+on.
+
+### What ruby added: a FIFO, and a class that cannot be a class
+
+Two things worth carrying forward.
+
+**Upstream's `open_heredocs` is a queue, not a stack.** New heredocs are
+appended and `array_erase(&open_heredocs, 0)` removes the *front* -- index 0 is
+the one that content and whitespace scans always look at. The ISA has `GETIDX`
+and `SETTOP` but no `SETIDX`, so erasing or mutating the front costs a spill to
+the transient stack and back. That is the first port where the VM's stack
+discipline and upstream's data structure genuinely disagree, and it cost a
+stack rather than an instruction: three persistent (packed literals, packed
+heredoc headers, flat word bytes) plus one transient, which is all four.
+
+**`is_iden_char` is not expressible as a class table.** It truncates to `char`
+before testing, so U+0100 fails (its low byte 0 is in `NON_IDENTIFIER_CHARS`)
+while U+0101 passes. A class table answers membership on the code point; this
+predicate answers it on the low byte. The port reproduces the truncation
+explicitly rather than approximating it -- the same shape as html's `towupper`
+finding, and the second time a scanner's *host* arithmetic, not its logic,
+decided which characters are equivalent.
+
+`has_leading_whitespace`, which the survey listed as serialized scalar state,
+is not: `scan()` zeros it and `serialize` omits it. A persistent register for
+it would have made the port strictly finer than upstream and split states
+tree-sitter merges -- exactly the failure the bijection exists to catch, found
+by reading rather than by the gate.
 
 Ports also price the tables concretely: css's program is **173 bytes of code
 and 4,312 bytes packed**, because `iswalnum` is 4.1 KB of it. xml packs to
