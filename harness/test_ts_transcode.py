@@ -245,10 +245,11 @@ class ScannerPortTest(unittest.TestCase):
     replay could stop performing while still walking every call.
     """
 
-    # toml 230 scan calls, css 450, xml 803, html 1102. Raise as ports land.
-    MIN_SCANNER_CALLS = 2585
-    MIN_SCANNER_STATES = 838
-    MIN_PORTED_LANGUAGES = 4
+    # toml 230 scan calls, css 450, xml 803, html 1102, python 2194. Raise as
+    # ports land.
+    MIN_SCANNER_CALLS = 4779
+    MIN_SCANNER_STATES = 1249
+    MIN_PORTED_LANGUAGES = 5
 
     def _run(self, script: str, *args: str) -> str:
         result = subprocess.run(

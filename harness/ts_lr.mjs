@@ -2247,6 +2247,20 @@ class Parser {
     }
 
     stack.push(version, errorRepeat, false, ERROR_STATE);
+    // The same bookkeeping `shift` does, and for the same reason: the version's
+    // last external token is where the *next* scan resumes the scanner from.
+    // Skipping a token during recovery still consumed whatever state change it
+    // made, so a version that forgets it asks the scanner the same question
+    // from the same state forever.
+    //
+    // Live only since python: its `_indent` is zero-width and pushes an indent,
+    // so without this `def f):\n    pass\n` re-pushes the same INDENT until the
+    // heap is gone. html's zero-width token was caught by the halt above, which
+    // only fires when strategy 1 recovered; here strategy 1 finds nothing and
+    // strategy 2 runs, which is the path this line belongs to.
+    if (lookahead.hasExternalTokens) {
+      stack.setLastExternalToken(version, subtreeLastExternalToken(lookahead));
+    }
   }
 
   // ts_parser__handle_error: the entry point, reached when every version is
