@@ -262,6 +262,30 @@ def c_string(text: str) -> str:
     return text.split("\0", 1)[0]
 
 
+# The generator casts through tree-sitter's own typedefs, and every one of them
+# is an unsigned integer of a width the ABI fixes. The width is the whole point:
+# it is what turns `(TSStateId)(-1)` into 65535.
+CAST_WIDTH = {
+    "TSStateId": 16,
+    "TSSymbol": 16,
+    "TSFieldId": 16,
+    "uint8_t": 8,
+    "uint16_t": 16,
+    "uint32_t": 32,
+}
+CAST = re.compile(rf"\(\s*({'|'.join(CAST_WIDTH)})\s*\)\s*(.*)", re.S)
+
+
+def balanced(text: str) -> bool:
+    """Whether every parenthesis in `text` closes inside it."""
+    depth = 0
+    for ch in text:
+        depth += (ch == "(") - (ch == ")")
+        if depth < 0:
+            return False
+    return depth == 0
+
+
 class Symbols:
     def __init__(self, src: str):
         m = re.search(r"^#define LARGE_STATE_COUNT (\d+)$", src, re.M)
@@ -294,6 +318,16 @@ class Symbols:
     def value(self, text: str) -> int:
         """Evaluate a scalar initializer/designator expression to an int."""
         t = text.strip()
+        # A cast is not decoration: `(TSStateId)(-1)` is 65535, and TSStateId is
+        # 16 bits, so the wrap has to happen here. Dropping the cast and keeping
+        # -1 would put a negative where both runtimes compare against the
+        # NO_LEX_STATE sentinel and quietly never match it.
+        if m := CAST.fullmatch(t):
+            return self.value(m.group(2)) & ((1 << CAST_WIDTH[m.group(1)]) - 1)
+        if m := re.fullmatch(r"\(\s*(.*)\s*\)", t, re.S):
+            # Only strip a wrapping pair, never `(a) + (b)`.
+            if balanced(m.group(1)):
+                return self.value(m.group(1))
         m = re.fullmatch(r"(ACTIONS|STATE|SMALL_STATE)\s*\(\s*(.*?)\s*\)", t, re.S)
         if m:
             v = self.value(m.group(2))
@@ -739,7 +773,16 @@ def sequential(body: str, syms: Symbols, size: int | None = None) -> list[int]:
     return [out.get(i, 0) for i in range(top)]
 
 
-def struct_fields(text: str) -> dict[str, str]:
+def struct_fields(text: str, order: tuple[str, ...] = ()) -> dict[str, str]:
+    """A braced initializer as `{field: expression}`.
+
+    The generator mixes the two C forms in one table. Most entries are
+    designated -- `{.lex_state = 73, .external_lex_state = 2}` -- but a state
+    that needs no lookahead is emitted positionally as `{(TSStateId)(-1),}`.
+    `order` names the struct's declared fields so a positional item lands on
+    the right one; without it a positional item keeps its index as `@0`, which
+    is what the caller's unknown-field guard then rejects.
+    """
     if not (text.startswith("{") and text.endswith("}")):
         raise Unrecognised(f"expected struct, got {text!r}")
     out = {}
@@ -748,7 +791,7 @@ def struct_fields(text: str) -> dict[str, str]:
             key, _, val = item.partition("=")
             out[key.strip().lstrip(".")] = val.strip()
         else:
-            out[f"@{i}"] = item
+            out[order[i] if i < len(order) else f"@{i}"] = item
     return out
 
 
@@ -866,11 +909,15 @@ def transcode(path: Path, scanner: Path | None = None) -> dict:
     body = find_decl(
         src, r"static const TSLex(?:er)?Mode ts_lex_modes\[STATE_COUNT\]\s*=\s*\{"
     )
+    # TSLexerMode's declared field order, which is what a positional entry like
+    # `[3816] = {(TSStateId)(-1),}` is initializing. rust and ruby emit those;
+    # go and json never do.
+    LEX_MODE_FIELDS = ("lex_state", "external_lex_state", "reserved_word_set_id")
     for des, val in designated(split_items(body)):
         s = syms.value(des)
-        f = struct_fields(val)
+        f = struct_fields(val, LEX_MODE_FIELDS)
         for key in f:
-            if key not in ("lex_state", "external_lex_state", "reserved_word_set_id"):
+            if key not in LEX_MODE_FIELDS:
                 raise Unrecognised(f"lex mode field {key!r}")
         lex_states[s] = syms.value(f.get("lex_state", "0"))
         ext_lex_states[s] = syms.value(f.get("external_lex_state", "0"))
