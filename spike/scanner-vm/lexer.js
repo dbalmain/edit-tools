@@ -38,7 +38,6 @@ class ByteLexer {
   // to `cur`, not including the lookahead. A leading BOM is not a character.
   // Matches harness/ts_lr.mjs getColumn()'s cold path -- rewind to the last
   // newline (or byte 0) and walk -- rather than tracking a running count.
-  // Does not record an op: the committed traces wrap only advance/skip/mark_end.
   column() {
     const saved = this.cur;
     let lineStart = 0;
@@ -53,6 +52,7 @@ class ByteLexer {
       this.cur += size;
     }
     this.cur = saved;
+    this.ops.push('C' + saved + '=' + col + ';');
     return col;
   }
   advance(skip) {

@@ -1,8 +1,9 @@
 /* Instrumented wrapper around any grammar's external scanner.
  *
  * Records every scan invocation *and every lexer call it makes*, by swapping
- * the TSLexer function pointers before delegating. Byte offsets come from the
- * internal Lexer struct (TSLexer is its first member, so the cast is legal).
+ * the TSLexer function pointers before delegating (`advance`, `mark_end`,
+ * `get_column`). Byte offsets come from the internal Lexer struct (TSLexer is
+ * its first member, so the cast is legal). `get_column` is `C<pos>=<col>;`.
  *
  * **Not a translation unit.** It is included by the generated `shim.c`, which
  * has already pulled in the grammar's `scanner.c` with its three entry points
@@ -31,6 +32,7 @@ FILE *trace_out = NULL;
 
 static void (*orig_advance)(TSLexer *, bool);
 static void (*orig_mark_end)(TSLexer *);
+static uint32_t (*orig_get_column)(TSLexer *);
 static char opbuf[65536];
 static int oplen;
 
@@ -54,6 +56,15 @@ static void wrap_mark_end(TSLexer *lexer) {
     orig_mark_end(lexer);
 }
 
+static uint32_t wrap_get_column(TSLexer *lexer) {
+    char tmp[48];
+    uint32_t pos = ((Lexer *)lexer)->current_position.bytes;
+    uint32_t col = orig_get_column(lexer);
+    snprintf(tmp, sizeof tmp, "C%u=%u;", pos, col);
+    emit_op(tmp);
+    return col;
+}
+
 /* The valid-symbols vector is written as a bit string rather than a JSON array
  * of ints: yaml has 113 external tokens, and an array of those per call makes
  * the trace larger than the corpus file that produced it. */
@@ -72,13 +83,16 @@ bool TS_SCAN_FN(void *payload, TSLexer *lexer, const bool *valid_symbols) {
     opbuf[0] = 0;
     orig_advance = lexer->advance;
     orig_mark_end = lexer->mark_end;
+    orig_get_column = lexer->get_column;
     lexer->advance = wrap_advance;
     lexer->mark_end = wrap_mark_end;
+    lexer->get_column = wrap_get_column;
 
     bool ret = real_scan(payload, lexer, valid_symbols);
 
     lexer->advance = orig_advance;
     lexer->mark_end = orig_mark_end;
+    lexer->get_column = orig_get_column;
 
     if (trace_out) {
         fprintf(trace_out, "{\"op\":\"scan\",\"cur0\":%u,\"la0\":%d,\"valid\":",

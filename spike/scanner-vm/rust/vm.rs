@@ -348,6 +348,14 @@ impl<'p> ScannerVm<'p> {
                     let t = self.target(&mut pc)?;
                     if lx.at_range_start() { pc = t; }
                 }
+                0x17 | 0x1c => {
+                    let c = self.uleb(&mut pc)?;
+                    let r = self.byte(&mut pc)?;
+                    let t = self.target(&mut pc)?;
+                    let v = self.get_reg(r)?;
+                    let hit = self.in_class(c, v)?;
+                    if hit == (op == 0x17) { pc = t; }
+                }
                 0x18 | 0x19 => {
                     let c = self.uleb(&mut pc)? as usize;
                     let t = self.target(&mut pc)?;

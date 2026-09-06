@@ -142,23 +142,23 @@ sophisticated.
 
 ## 2. The ISA
 
-Forty-three opcodes, one byte each, operands ULEB128 (indices) or SLEB128
-(signed immediates) or a fixed 2-byte little-endian absolute jump target. The
-full listing is in `harness/ts_scanner_vm.mjs` (it lived at
-`spike/scanner-vm/vm.js` until the parser started driving it; that path is now a
-re-export); the groups are:
+Forty-five opcodes, one byte each, operands ULEB128 (indices) or SLEB128 (signed
+immediates) or a fixed 2-byte little-endian absolute jump target. The full
+listing is in `harness/ts_scanner_vm.mjs` (it lived at `spike/scanner-vm/vm.js`
+until the parser started driving it; that path is now a re-export); the groups
+are:
 
-| Group            | Opcodes                                                                         |
-| ---------------- | ------------------------------------------------------------------------------- |
-| lexer            | `ADVANCE` `SKIP` `MARK_END` `LOOKAHEAD` `EOF` `GET_COLUMN` `MAP`                |
-| termination      | `EMIT` `EMIT_R` `FAIL` `EMIT_IF` `EMIT_IF_R`                                    |
-| lookahead tests  | `IF_CHAR` `IF_NCHAR` `IF_CLASS` `IF_NCLASS` `IF_EOF` `IF_NEOF` `IF_RANGE_START` |
-| valid symbols    | `IF_VALID` `IF_NVALID` `IF_VALID_R` `IF_NVALID_R`                               |
-| registers        | `CONST` `MOV` `ALU` `ALUI`                                                      |
-| register tests   | `IF_CMP` `IF_CMPI`                                                              |
-| stacks           | `PUSH` `POP` `PEEK` `SETTOP` `LEN` `CLEAR` `GETIDX`                             |
-| buffer + strings | `BUF_CLR` `BUF_PUSH` `BUF_LEN` `IF_BUF_EQ`                                      |
-| control          | `JMP` `CALL` `RET` `CALL_R` `RECURSE`                                           |
+| Group            | Opcodes                                                                                                    |
+| ---------------- | ---------------------------------------------------------------------------------------------------------- |
+| lexer            | `ADVANCE` `SKIP` `MARK_END` `LOOKAHEAD` `EOF` `GET_COLUMN` `MAP`                                           |
+| termination      | `EMIT` `EMIT_R` `FAIL` `EMIT_IF` `EMIT_IF_R`                                                               |
+| lookahead tests  | `IF_CHAR` `IF_NCHAR` `IF_CLASS` `IF_NCLASS` `IF_EOF` `IF_NEOF` `IF_RANGE_START` `IF_CLASS_R` `IF_NCLASS_R` |
+| valid symbols    | `IF_VALID` `IF_NVALID` `IF_VALID_R` `IF_NVALID_R`                                                          |
+| registers        | `CONST` `MOV` `ALU` `ALUI`                                                                                 |
+| register tests   | `IF_CMP` `IF_CMPI`                                                                                         |
+| stacks           | `PUSH` `POP` `PEEK` `SETTOP` `LEN` `CLEAR` `GETIDX`                                                        |
+| buffer + strings | `BUF_CLR` `BUF_PUSH` `BUF_LEN` `IF_BUF_EQ`                                                                 |
+| control          | `JMP` `CALL` `RET` `CALL_R` `RECURSE`                                                                      |
 
 ### `MAP`, added 2026-09-06 for html
 
@@ -192,11 +192,13 @@ nothing executes a reserved opcode — the only thing that caught it was reading
 this document. haskell has since spent the reservation as `GET_COLUMN` (§1's
 2026-09-07 correction).
 
-The obvious next instruction, deliberately not added: **`IF_CLASS_R`**, a class
-test on a register rather than on the lookahead. html's `tag_can_contain` wants
-one for its 26-entry "not allowed in paragraphs" set and gets 26 comparisons
-instead. Nothing yet _forces_ it, and an unused instruction is worse than a
-verbose one.
+The obvious next instruction was **`IF_CLASS_R`**, a class test on a register
+rather than on the lookahead. html's `tag_can_contain` wanted one and got 26
+comparisons instead. **haskell forced it, 2026-09-07.** Its peek buffer returns
+a cached codepoint while `lexer->lookahead` has already moved on, so `IF_CLASS`
+classifies the wrong character (the `--` herald fills `-` then looks at the next
+byte; `lex` then asks whether peek0 is a symop and would see that next byte).
+`IF_CLASS_R` / `IF_NCLASS_R` (opcodes `0x17` / `0x1c`) test a register.
 
 **Tests are fused compare-and-branch.** Almost every line of every scanner is
 "look at the character, decide where to go", so `IF_CHAR c, target` is one
@@ -333,10 +335,9 @@ Stated plainly, because the interesting part of a design is its edges:
   uses it, and implementing it means re-reading the line, which is the one lexer
   call with a non-trivial cost. `0x06` was reserved and trapped. **Correction,
   2026-09-07.** haskell calls it. The reservation is now `GET_COLUMN dst`. A
-  remaining bound: the committed scanner traces wrap `advance`/`skip`/`mark_end`
-  only, so replay cannot check `GET_COLUMN` the way it checks every other lexer
-  call. End-to-end tree identity is the evidence that the columns are right,
-  unless the recorder is extended to emit `C<pos>=<col>;`.
+  remaining bound, closed 2026-09-07: the recorder now wraps `get_column` too
+  (`C<pos>=<col>;`), and haskell's traces were re-recorded against it. Replay
+  checks the column the same way it checks every other lexer call.
 - **Reading the source buffer.** Same restriction upstream scanners have: the
   only view of the input is `lookahead` at the cursor.
 - **Recursion deeper than 4**, calls deeper than 32, stacks deeper than 256.

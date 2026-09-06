@@ -36,6 +36,8 @@ class Asm {
   ifEof(t) { return this.ins(OP.IF_EOF, ['t', t]); }
   ifNEof(t) { return this.ins(OP.IF_NEOF, ['t', t]); }
   ifRangeStart(t) { return this.ins(OP.IF_RANGE_START, ['t', t]); }
+  ifClassR(k, r, t) { return this.ins(OP.IF_CLASS_R, ['u', k], ['r', r], ['t', t]); }
+  ifNClassR(k, r, t) { return this.ins(OP.IF_NCLASS_R, ['u', k], ['r', r], ['t', t]); }
   // -- valid-symbol tests
   ifValid(s, t) { return this.ins(OP.IF_VALID, ['u', s], ['t', t]); }
   ifNValid(s, t) { return this.ins(OP.IF_NVALID, ['u', s], ['t', t]); }

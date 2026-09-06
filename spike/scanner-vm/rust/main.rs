@@ -83,6 +83,11 @@ impl<'a> Lexer for ByteLexer<'a> {
             self.cur += size;
         }
         self.cur = saved;
+        self.ops.push('C');
+        self.ops.push_str(&saved.to_string());
+        self.ops.push('=');
+        self.ops.push_str(&col.to_string());
+        self.ops.push(';');
         col
     }
     fn advance(&mut self, skip: bool) {

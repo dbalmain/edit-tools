@@ -140,6 +140,13 @@ t('running off the end of the code traps', () => {
 
 // ---- classes, buffer, recursion, indirect call ------------------------------
 
+t('IF_CLASS_R tests a register, not the lookahead', () => {
+  const p = prog({ classes: [[0x30, 0x39]] }, (a) => {
+    a.const_(0, 0x35).ifClassR(0, 0, 'yes').emit(1).label('yes').emit(0);
+  });
+  assert.strictEqual(new ScannerVM(p).scan(new ByteLexer(Buffer.from('!')), [true]).symbol, 0);
+});
+
 t('IF_CLASS binary-searches sorted ranges', () => {
   const p = prog({ classes: [[0x30, 0x39, 0x41, 0x5a, 0x61, 0x7a]] }, (a) => {
     a.ifClass(0, 'yes').emit(1).label('yes').emit(0);

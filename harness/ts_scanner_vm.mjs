@@ -41,7 +41,8 @@ const OP = {
   GET_COLUMN: 0x06, MAP: 0x07,
   EMIT: 0x08, EMIT_R: 0x09, FAIL: 0x0a, EMIT_IF: 0x0b, EMIT_IF_R: 0x0c,
   IF_CHAR: 0x10, IF_NCHAR: 0x11, IF_CLASS: 0x12, IF_NCLASS: 0x13,
-  IF_EOF: 0x14, IF_NEOF: 0x15, IF_RANGE_START: 0x16,
+  IF_EOF: 0x14, IF_NEOF: 0x15, IF_RANGE_START: 0x16, IF_CLASS_R: 0x17,
+  IF_NCLASS_R: 0x1c,
   IF_VALID: 0x18, IF_NVALID: 0x19, IF_VALID_R: 0x1a, IF_NVALID_R: 0x1b,
   CONST: 0x20, MOV: 0x21, ALU: 0x22, ALUI: 0x23,
   IF_CMP: 0x28, IF_CMPI: 0x29,
@@ -243,6 +244,17 @@ class ScannerVM {
         case OP.IF_RANGE_START: {
           const t = code[pc] | (code[pc + 1] << 8); pc += 2;
           if (this.lexer.atRangeStart()) pc = t;
+          break;
+        }
+        // Class test on a register, not the lookahead. haskell's peek()
+        // returns a cached codepoint while lexer->lookahead has already
+        // moved on; IF_CLASS would classify the wrong character.
+        case OP.IF_CLASS_R: case OP.IF_NCLASS_R: {
+          const c = readUlebAt(code, pc); pc = c.pos;
+          const r = code[pc++];
+          const t = code[pc] | (code[pc + 1] << 8); pc += 2;
+          const hit = this.inClass(c.v, this.getReg(r));
+          if (hit === (op === OP.IF_CLASS_R)) pc = t;
           break;
         }
         case OP.IF_VALID: case OP.IF_NVALID: {

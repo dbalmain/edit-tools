@@ -9,7 +9,8 @@
 // returns the same verdict -- and serializes the same bytes. That is strictly
 // stronger than tree comparison, which only sees the calls surviving into the
 // tree shape, and it is what tells a port that is right from a port that is
-// merely right on this corpus.
+// merely right on this corpus. `get_column` is recorded as `C<pos>=<col>;`
+// (haskell is the language that uses it).
 //
 // Traces come from `harness/ts_scanner_record.py` and are committed under
 // `corpus/scanner-traces/`, so this needs no compiler and no network. The
