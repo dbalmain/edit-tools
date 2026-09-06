@@ -5,9 +5,10 @@ tree-sitter languages in the corpus. Aven is out of scope by instruction, and
 would be out of scope anyway -- it has no tree-sitter grammar and its plan of
 record (`docs/roadmap.md`) is its own parser.
 
-Where it stands: **8 of 16 parse byte-identically** (json 3/3, scheme 15/15,
-go 16/16, toml 15/15, css 15/15, xml 15/15, html 16/16, python 12/12). This
-document is what the remaining eight cost, measured rather than guessed.
+Where it stands: **9 of 16 parse byte-identically** (json 3/3, scheme 15/15,
+go 16/16, toml 15/15, css 15/15, xml 15/15, html 16/16, python 12/12,
+rust 19/19). This document is what the remaining seven cost, measured rather
+than guessed.
 
 ## What is already done
 
@@ -51,7 +52,7 @@ only the `.c` undercounts the set by 30%.
 | css        |         100 |       100 |         3 | stateless *(done)*        |
 | typescript |          13 |       360 |        10 | stateless                 |
 | javascript |         364 |       364 |         8 | stateless                 |
-| rust       |         393 |       393 |        10 | one `u8`                  |
+| rust       |         393 |       393 |        10 | one `u8` *(done)*         |
 | xml        |         270 |       425 |        11 | tag-name strings *(done)* |
 | python     |         437 |       437 |        12 | 2 stacks + a flag *(done)* |
 | kotlin     |         459 |       459 |        11 | stateless                 |
@@ -93,7 +94,8 @@ Whole-file lines of the `.program.js`, which is what a reviewer actually reads:
 | xml      |               425 |       544 | 1.28x |
 | html     |               747 |       673 | 0.90x |
 | python   |               437 |       613 | 1.40x |
-| total    |             1,791 |     2,165 | 1.21x |
+| rust     |               393 |       510 | 1.30x |
+| total    |             2,184 |     2,675 | 1.22x |
 
 An earlier revision of this section put css at 147 lines and drew 1.6x from it.
 That was wrong -- `css.program.js` has been 182 lines since it landed -- and the
@@ -106,17 +108,17 @@ because its bulk is *tables* -- a 126-entry name map and a 385-line `tag.h` --
 and tables become package data rather than code. Its 126-way lookup is eight
 lines of generator emitting 252 instructions.
 
-**That reframes option 1's volume.** At the blended 1.21x the remaining eight
-(11,675 lines) come to roughly 14,100 rather than the ~19,000 the first estimate
+**That reframes option 1's volume.** At the blended 1.22x the remaining seven
+(11,282 lines) come to roughly 13,800 rather than the ~19,000 the first estimate
 gave, and the four expensive scanners are exactly the ones most likely to be
 table-heavy. The objection to hand-compiling was never really the line count;
-it is eight separate correctness arguments. But the line count was the number on
+it is seven separate correctness arguments. But the line count was the number on
 the page, and it is now materially smaller.
 
-css, xml, html and python all landed **byte-identical on the first run**, on the
-clean corpus and on the deliberately-broken one, and all replay the recorded
-C-scanner calls with no mismatches. Five grammars in, the pipeline -- transcode,
-port, trace differential -- generalises past the one it was built on.
+css, xml, html, python and rust all landed **byte-identical on the first run**,
+on the clean corpus and on the deliberately-broken one, and all replay the
+recorded C-scanner calls with no mismatches. Six grammars in, the pipeline --
+transcode, port, trace differential -- generalises past the one it was built on.
 
 Ports also price the tables concretely: css's program is **173 bytes of code
 and 4,312 bytes packed**, because `iswalnum` is 4.1 KB of it. xml packs to
@@ -221,11 +223,11 @@ The options, and what each costs, are on the decisions page -- see
    instead of twelve; every scanner then gets the same correctness argument. The
    subset is narrow for eleven of twelve, and the risk is concentrated in
    haskell.
-3. **Do the cheap ones, defer the expensive four.** javascript, typescript,
-   rust and kotlin are the 1,123 lines left in that band; ruby, yaml, markdown
-   and haskell are 7,595. Gets to 12 of 16 languages for a small fraction of the
-   work. css, xml, html and python are already done out of this band, which is
-   the work option 3 shares with options 1 and 2.
+3. **Do the cheap ones, defer the expensive four.** javascript, typescript and
+   kotlin are the 730 lines left in that band; ruby, yaml, markdown and haskell
+   are 7,595. Gets to 12 of 16 languages for a small fraction of the work. css,
+   xml, html, python and rust are already done out of this band, which is the
+   work option 3 shares with options 1 and 2.
 4. **Scanner-only wasm.** Tables stay JSON, so the 6.3 KB interpreter win
    stands, and only the scanners ship as wasm. Reintroduces a wasm dependency
    for the browser, and the two runtimes stop executing the same artifact.
@@ -299,6 +301,25 @@ Two bounds fall out of it, and they are xml's, not the VM's:
 - The VM's stacks cap at 256 elements, so the port holds at most 256 bytes of
   open-tag names -- a *tighter* bound than upstream's, and the first place a
   scanner has come near an ISA limit. html will sit in the same band.
+
+### rust closes the audit `docs/scanner-vm.md` opened, at the cheap end
+
+python was the hard end of the serialization argument; rust is the trivial one
+-- a single `uint8_t opening_hash_count`, which is one persistent register and
+no stacks at all. **46 state transitions, bijection clean.** Between the two,
+the relation-compatibility claim now has both ends of its range measured.
+
+It is also the language `docs/host-ctype-divergence.md` is written about: its
+float rule is the one place across four constructed candidates where the host's
+`isw*` actually changes a tree (`1.é` is a field access under a UTF-8 locale and
+a float plus ERROR under `LC_CTYPE=C`). That divergence is closed by
+construction here, because the port reads `iswalpha` from the pinned table.
+
+Two upstream oddities the port reproduces rather than tidies: an unterminated
+block comment returns **true**, deliberately, because otherwise nothing above an
+unclosed `/*` could be highlighted; and `char first = (char)lexer->lookahead` is
+truncated to a signed char before every comparison, which is equivalent to
+masking the low byte only because every target is ASCII.
 
 ### python is the case `docs/scanner-vm.md` said a faithful port would get wrong
 
@@ -418,6 +439,27 @@ external tokens, two consecutive ports, two separate omissions in one upstream
 function** -- which says the thing to check next is not "are there more bugs like
 this" but "which other upstream functions were transcribed while no grammar could
 reach them".
+
+**That audit was run, and it is clean.** Two passes:
+
+- *Written but never read*, which is html's signature exactly. One field in
+  `ts_lr.mjs` qualifies, `lookaheadChar` -- and upstream never reads it either
+  outside `ts_subtree__write_char_to_string`, which is debug printing. No
+  methods are defined and never called except `getColumn`, which is unreachable
+  by design (no scanner in the roster calls it and the VM has no opcode).
+- *Every upstream site that touches external-scanner state*, which is python's
+  signature. There are eleven across `parser.c` and `stack.c`: the deserialize
+  and serialize in `ts_parser__lex`, the empty-token guard, the two fields
+  stamped on the leaf, the token cache's key and setter, `shift`, the two in
+  `ts_parser__recover`, and `copy_version` / `can_merge` in the stack. All
+  eleven now have counterparts. The twelfth, the reusable-node check in
+  `ts_parser__get_lookahead`, belongs to incremental reparse, which this file
+  documents as out of scope.
+
+So the class is closed rather than assumed closed. What the audit cannot reach
+is the same question for functions with no external-scanner involvement at all;
+those are exercised by the nine languages already parsing byte-identically on
+both corpora, which is a weaker argument but not a vacuous one.
 
 ### The Rust twin had stopped covering the oracle
 
