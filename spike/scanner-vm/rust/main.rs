@@ -2,7 +2,7 @@
 //! Rust VM, against the same `toml.svm` blob.  Same bytes in, same bytes out,
 //! or the project's central claim is false.
 //!
-//!   rustc -O -o replay main.rs && ./replay ../toml.svm <trace-dir> <src-dir>
+//!   rustc -O -o replay main.rs && ./replay ../../../harness/scanners/toml.svm <trace-dir> <src-dir>
 
 mod vm;
 use std::fs;

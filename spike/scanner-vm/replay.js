@@ -17,7 +17,7 @@ function main(traceDir, corpusDir) {
   // The Rust replay reads these same bytes, so "one artifact, two runtimes" is
   // now what is actually being tested; before this it was one program written
   // twice, and the encoder sat on only one of the two paths.
-  const svm = fs.readFileSync(path.join(__dirname, 'toml.svm'));
+  const svm = fs.readFileSync(path.join(__dirname, '..', '..', 'harness', 'scanners', 'toml.svm'));
   const prog = decode(new Uint8Array(svm));
   const vm = new ScannerVM(prog);
   let calls = 0, files = 0, bad = 0;

@@ -6,7 +6,7 @@ them agreeing is for a side-by-side diff to be readable.
 
 ```sh
 rustc -O -o replay main.rs
-./replay ../toml.svm ../traces ../../../corpus/src/toml
+./replay ../../../harness/scanners/toml.svm ../traces ../../../corpus/src/toml
 ```
 
 `main.rs` decodes the same `toml.svm` package blob the JS side loads and

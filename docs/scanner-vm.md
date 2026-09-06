@@ -15,7 +15,7 @@ Reproduce the end-to-end run:
 
 ```sh
 ./harness/ts_transcode.py path/to/tree-sitter-toml/src/parser.c \
-  --scanner spike/scanner-vm/toml.svm -o /tmp/toml.blob.json
+  --scanner harness/scanners/toml.svm -o /tmp/toml.blob.json
 ./harness/ts_check_trees.mjs /tmp/toml.blob.json toml
 ```
 
@@ -291,7 +291,7 @@ caller, so the committed 165-byte artifact could not even be regenerated. The
 two runtimes were therefore executing *one program expressed twice*, with the
 encoder on only one of the two paths, and an encoder bug would have left all
 45,678 calls green. Closed by `harness/ts_scanner_pack.mjs`'s `decode`, by
-`spike/scanner-vm/build-svm.js` (which regenerates the artifact and has a
+`harness/ts_scanner_build.mjs` (which regenerates the artifact and has a
 `--check` mode), and by repointing `replay.js` at the bytes. The artifact was in
 fact already correct — `encode(build())` is byte-identical to the committed
 `toml.svm` — but that was luck rather than something anything checked.

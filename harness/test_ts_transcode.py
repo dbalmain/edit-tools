@@ -223,5 +223,47 @@ class InterpreterSuiteTest(unittest.TestCase):
         self.assertGreaterEqual(int(passed.group(1)), self.MIN_INTERPRETER_TESTS, report)
 
 
+class ScannerPortTest(unittest.TestCase):
+    """The ported external scanners, against what the real C scanners did.
+
+    Two separate hazards, so two separate gates.
+
+    `--check` catches a `.svm` that no longer matches the source it was
+    assembled from -- the hazard `spike/scanner-vm/build-svm.js` was written
+    for, when a committed artifact had been produced by a command nobody could
+    re-run.
+
+    The replay catches a port that is wrong. Its floor is a **call count**, not
+    an exit status: a replay that stops finding traces, or a scanner that quietly
+    stops being replayed, exits 0 with nothing done and would read green
+    forever. The numbers below are what the committed traces contain, so a drop
+    is as much a failure as a mismatch.
+    """
+
+    # toml 230 scan calls, css 450. Raise these as ports land.
+    MIN_SCANNER_CALLS = 680
+    MIN_PORTED_LANGUAGES = 2
+
+    def _run(self, script: str, *args: str) -> str:
+        result = subprocess.run(
+            ["node", str(HARNESS / script), *args], capture_output=True, text=True
+        )
+        report = result.stdout + result.stderr
+        self.assertEqual(result.returncode, 0, report)
+        return result.stdout
+
+    def test_packed_scanners_match_their_source(self):
+        out = self._run("ts_scanner_build.mjs", "--check")
+        self.assertGreaterEqual(
+            len(re.findall(r"up to date", out)), self.MIN_PORTED_LANGUAGES, out
+        )
+
+    def test_ports_replay_the_recorded_calls(self):
+        out = self._run("ts_scanner_replay.mjs", "--all")
+        self.assertNotIn("MISMATCH", out)
+        calls = sum(int(n.replace(",", "")) for n in re.findall(r"(\d+) calls", out))
+        self.assertGreaterEqual(calls, self.MIN_SCANNER_CALLS, out)
+
+
 if __name__ == "__main__":
     unittest.main()

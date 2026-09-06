@@ -1,30 +1,12 @@
 #!/usr/bin/env node
-// Regenerate `toml.svm` from `toml.program.js`.
+// Moved to `harness/ts_scanner_build.mjs`, which builds every ported scanner
+// rather than only toml's, with the programs and packed artifacts under
+// `harness/scanners/`. Kept as a pointer because this path is named in
+// `run.sh`, in `rust/README.md`'s workflow, and in `docs/scanner-vm.md`.
 //
-//     node spike/scanner-vm/build-svm.js            # write toml.svm
-//     node spike/scanner-vm/build-svm.js --check    # verify, write nothing
-//
-// This did not exist until the parser needed the artifact, which meant the
-// committed 165-byte `toml.svm` had been produced by a command nobody could
-// re-run: there was no way to tell whether it still matched its source. It does
-// -- that is what `--check` asserts, and `harness/ts_lr.test.mjs` asserts it
-// again inside `./test.sh` so the two cannot drift apart unnoticed.
-const fs = require('fs');
-const path = require('path');
-const { encode } = require('./pack.js');
-const { build } = require('./toml.program.js');
-
-const out = path.join(__dirname, 'toml.svm');
-const bytes = Buffer.from(encode(build()));
-
-if (process.argv.includes('--check')) {
-  const disk = fs.readFileSync(out);
-  if (Buffer.compare(bytes, disk) !== 0) {
-    console.error(`toml.svm is stale: source encodes to ${bytes.length} bytes, file has ${disk.length}`);
-    process.exit(1);
-  }
-  console.log(`toml.svm up to date (${bytes.length} bytes)`);
-} else {
-  fs.writeFileSync(out, bytes);
-  console.log(`wrote ${out} (${bytes.length} bytes)`);
-}
+//     node harness/ts_scanner_build.mjs [--check] [language...]
+const { spawnSync } = require('node:child_process');
+const path = require('node:path');
+const target = path.join(__dirname, '..', '..', 'harness', 'ts_scanner_build.mjs');
+process.exit(spawnSync(process.execPath, [target, ...process.argv.slice(2)],
+                       { stdio: 'inherit' }).status ?? 1);

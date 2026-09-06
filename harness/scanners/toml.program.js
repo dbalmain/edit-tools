@@ -4,7 +4,7 @@
 //
 // External token order is upstream's enum, and it is load-bearing -- the
 // parser passes valid_symbols indexed by it.
-const { Asm } = require('./asm.js');
+const { Asm } = require('../../spike/scanner-vm/asm.js');
 
 const LINE_ENDING_OR_EOF = 0;
 const MB_CONTENT = 1;  // MULTILINE_BASIC_STRING_CONTENT

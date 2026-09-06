@@ -23,7 +23,7 @@ const { len } = forTests;
 // `toml.program.js` is the offline compiler's output and stays CommonJS with
 // the rest of the spike's authoring tools; only the VM and the wire format
 // moved into the harness.
-const { build: buildToml } = createRequire(import.meta.url)("../spike/scanner-vm/toml.program.js");
+const { build: buildToml } = createRequire(import.meta.url)("../harness/scanners/toml.program.js");
 
 const INT32_MIN = -2147483648;
 const INT32_MAX = 2147483647;
@@ -332,11 +332,11 @@ test("the committed toml.svm still matches the program it was built from", () =>
   // Guards the drift that was previously unnoticeable: `pack.js::encode` had no
   // caller in the repo, so nothing said whether the checked-in artifact was
   // still the encoding of toml.program.js.
-  const svm = readFileSync(new URL("../spike/scanner-vm/toml.svm", import.meta.url));
+  const svm = readFileSync(new URL("./scanners/toml.svm", import.meta.url));
   const encoded = encode(buildToml());
   assert.deepEqual(
     Array.from(encoded), Array.from(new Uint8Array(svm)),
-    "toml.svm is stale -- regenerate with node spike/scanner-vm/build-svm.js",
+    "toml.svm is stale -- regenerate with node harness/ts_scanner_build.mjs",
   );
 });
 
