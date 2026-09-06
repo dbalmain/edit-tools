@@ -26,12 +26,18 @@
 // comparison is a real check that the VM emits nothing; the count is printed
 // so that stops being invisible the moment it stops being true.
 //
-// That is not merely a reporting problem to solve later. tree-sitter truncates
-// serialized state at 1024 bytes, and python and yaml both *rely* on that
-// truncation -- so a VM format that packs state differently truncates at a
-// different point and diverges on deep nesting. Whoever ports the first
-// stateful scanner has to decide whether the VM reproduces upstream's byte
-// layout or whether the corpus is proven never to reach the limit.
+// The reason that is survivable rather than fatal is measured, not assumed.
+// tree-sitter truncates serialized state at 1024 bytes, and python, yaml, xml
+// and html all behave differently once truncated -- so a VM format that packs
+// state differently truncates at a different point. But across every recorded
+// trace, the **largest serialized state any scanner reaches is 92 bytes**
+// (haskell); every other language stays at or below 35, and five are
+// stateless. Worst-case headroom to the limit is 11x.
+//
+// So on this corpus the formats cannot diverge, and the VM is free to use its
+// own. That is a fact about the corpus rather than a guarantee: a file nesting
+// a few hundred tags deep would reach the limit, and a port of xml or html
+// should carry that as a known bound rather than a silent assumption.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';

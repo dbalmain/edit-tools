@@ -129,6 +129,48 @@ by hand or compiled.
 on every axis at once -- 33 switches, five static tables, two function pointers,
 a float, and 3,471 lines.
 
+### Serialized state is far smaller than the limit that would bite
+
+The VM serializes state in its own format -- persistent registers, then
+persistent stacks -- and the traces record *upstream's*. For a stateful scanner
+those differ by construction, which matters because tree-sitter truncates
+serialized state at 1024 bytes and python, yaml, xml and html all behave
+differently once truncated. A format that packs differently truncates at a
+different point.
+
+Measured across every recorded trace, that cannot happen here:
+
+| Language | max state | mean | Language | max state | mean |
+| -------- | --------: | ---: | -------- | --------: | ---: |
+| haskell  |        92 | 31.1 | python   |        11 | 3.2  |
+| xml      |        35 | 16.1 | ruby     |         9 | 3.2  |
+| yaml     |        26 | 15.1 | rust     |         1 | 1.0  |
+| markdown |        21 |  8.1 | css, javascript, | | |
+| html     |        16 |  5.6 | kotlin, toml, typescript | 0 | stateless |
+
+**The largest state any scanner reaches is 92 bytes**, against a 1024-byte
+limit -- 11x headroom at worst, and five of the thirteen are stateless
+outright. So the VM may use its own format, and the replay's serialize
+comparison stays meaningful for the stateless ports.
+
+This is a fact about the corpus, not a guarantee. A file nesting a few hundred
+tags deep would reach the limit; a port of xml or html should carry that as a
+stated bound.
+
+### The one ISA gap, and it is narrower than it looks
+
+xml and html both keep a **stack of variable-length tag-name strings**, pushed
+on an open tag and compared against on a close. The ISA has integer stacks and
+exactly *one* scratch byte buffer, and `ifBufEq` compares that buffer only
+against constants in the `strings` table -- there is no `bufGet(i)`, so the
+scanned name cannot be compared against stored state directly.
+
+It is still encodable without changing the ISA: keep the name bytes flat in one
+integer stack with lengths in a parallel one, scan the incoming name into a
+third, and compare with `getidx` and `len`. Clumsy, but nothing new is needed.
+It is an argument on option 2's side below -- a compiler meets this shape once,
+hand-porting meets it twice.
+
 ## The open decision
 
 How the twelve scanners get produced. `docs/scanner-vm.md`'s route is
