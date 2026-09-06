@@ -164,12 +164,6 @@ const DOLLAR_SPECIAL = [
   0x2e, 0x3c, 0x3e, 0x2a, 0x24, 0x3f, 0x3a, 0x22,
 ];
 
-const PCT_PAIRED = [
-  [0x28, 0x29],                           // ( )
-  [0x5b, 0x5d],                           // [ ]
-  [0x7b, 0x7d],                           // { }
-  [0x3c, 0x3e],                           // < >
-];
 const PCT_UNBALANCED = [
   '|', '!', '#', '/', '\\', '@', '$', '%', '^', '&', '*', ')', ']', '}', '>',
   '+', '-', '~', '`', ',', '.', '?', ':', ';', '_', '"', '\'',
@@ -194,6 +188,9 @@ function union(...lists) {
 const one = (c) => [CH(c), CH(c)];
 
 function build() {
+  if (NON_IDEN.length !== 36) {
+    throw new Error(`NON_IDENTIFIER_CHARS is ${NON_IDEN.length}, upstream has 36`);
+  }
   const ctype = JSON.parse(fs.readFileSync(CTYPE, 'utf8')).classes;
   const a = new Asm();
 
@@ -324,23 +321,1219 @@ function build() {
   a.ifChar(CH(':'), 'colon');
   a.ifChar(CH('['), 'bracket');
 
-  // identifier / hash-key / suffix, then open delimiters
-  a.jmp('fail');
+  a.jmp('iden_gate');
 
+  //     case '&':
+  //       if (valid_symbols[BLOCK_AMPERSAND]) {
+  //         advance(lexer);
+  //         if (lexer->lookahead != '&' && lexer->lookahead != '.' &&
+  //             lexer->lookahead != '=' && !iswspace(lexer->lookahead)) {
+  //           lexer->result_symbol = BLOCK_AMPERSAND;
+  //           return true;
+  //         }
+  //         return false;
+  //       }
+  //       break;
   a.label('amp');
+  a.ifNValid(BLOCK_AMPERSAND, 'iden_gate');
+  a.advance();
+  a.ifChar(CH('&'), 'fail');
+  a.ifChar(CH('.'), 'fail');
+  a.ifChar(CH('='), 'fail');
+  a.ifClass(C_SPACE, 'fail');
+  a.emit(BLOCK_AMPERSAND);
+
+  //     case '<':
+  //       if (valid_symbols[SINGLETON_CLASS_LEFT_ANGLE_LEFT_ANGLE]) {
+  //         advance(lexer);
+  //         if (lexer->lookahead == '<') {
+  //           advance(lexer);
+  //           lexer->result_symbol = SINGLETON_CLASS_LEFT_ANGLE_LEFT_ANGLE;
+  //           return true;
+  //         }
+  //         return false;
+  //       }
+  //       break;
   a.label('lt');
+  a.ifNValid(SINGLETON_CLASS_LEFT_ANGLE_LEFT_ANGLE, 'iden_gate');
+  a.advance();
+  a.ifNChar(CH('<'), 'fail');
+  a.advance();
+  a.emit(SINGLETON_CLASS_LEFT_ANGLE_LEFT_ANGLE);
+
+  //     case '*':
+  //       if (valid[SPLAT_STAR] || valid[BINARY_STAR] ||
+  //           valid[HASH_SPLAT_STAR_STAR] || valid[BINARY_STAR_STAR]) {
+  //         advance;
+  //         if (lookahead == '=') return false;
+  //         if (lookahead == '*') {
+  //           if (valid[HASH_SPLAT_STAR_STAR] || valid[BINARY_STAR_STAR]) {
+  //             advance;
+  //             if (lookahead == '=') return false;
+  //             if (valid[BINARY_STAR_STAR] && !has_leading_whitespace)
+  //               { result = BINARY_STAR_STAR; return true; }
+  //             if (valid[HASH_SPLAT_STAR_STAR] && !iswspace)
+  //               { result = HASH_SPLAT_STAR_STAR; return true; }
+  //             if (valid[BINARY_STAR_STAR]) { result = BINARY_STAR_STAR; return true; }
+  //             if (valid[HASH_SPLAT_STAR_STAR]) { result = HASH_SPLAT_STAR_STAR; return true; }
+  //             return false;
+  //           }
+  //           return false;
+  //         }
+  //         if (valid[BINARY_STAR] && !has_leading_whitespace)
+  //           { result = BINARY_STAR; return true; }
+  //         if (valid[SPLAT_STAR] && !iswspace)
+  //           { result = SPLAT_STAR; return true; }
+  //         if (valid[BINARY_STAR]) { result = BINARY_STAR; return true; }
+  //         if (valid[SPLAT_STAR]) { result = SPLAT_STAR; return true; }
+  //         return false;
+  //       }
+  //       break;
   a.label('star');
+  a.ifValid(SPLAT_STAR, 'star_go');
+  a.ifValid(BINARY_STAR, 'star_go');
+  a.ifValid(HASH_SPLAT_STAR_STAR, 'star_go');
+  a.ifValid(BINARY_STAR_STAR, 'star_go');
+  a.jmp('iden_gate');
+  a.label('star_go');
+  a.advance();
+  a.ifChar(CH('='), 'fail');
+  a.ifNChar(CH('*'), 'star_one');
+  //         if (lookahead == '*') {
+  //           if (valid[HASH_SPLAT_STAR_STAR] || valid[BINARY_STAR_STAR]) {
+  a.ifValid(HASH_SPLAT_STAR_STAR, 'star_two');
+  a.ifValid(BINARY_STAR_STAR, 'star_two');
+  a.jmp('fail');
+  a.label('star_two');
+  a.advance();
+  a.ifChar(CH('='), 'fail');
+  a.ifNValid(BINARY_STAR_STAR, 'star_hash');
+  a.ifCmpI('eq', R_HLW, 0, 'star_bss');
+  a.label('star_hash');
+  a.ifNValid(HASH_SPLAT_STAR_STAR, 'star_bss2');
+  a.ifNClass(C_SPACE, 'star_hss');
+  a.label('star_bss2');
+  a.ifValid(BINARY_STAR_STAR, 'star_bss');
+  a.ifValid(HASH_SPLAT_STAR_STAR, 'star_hss');
+  a.jmp('fail');
+  a.label('star_bss');
+  a.emit(BINARY_STAR_STAR);
+  a.label('star_hss');
+  a.emit(HASH_SPLAT_STAR_STAR);
+  a.label('star_one');
+  a.ifNValid(BINARY_STAR, 'star_splat');
+  a.ifCmpI('eq', R_HLW, 0, 'star_bs');
+  a.label('star_splat');
+  a.ifNValid(SPLAT_STAR, 'star_bs2');
+  a.ifNClass(C_SPACE, 'star_ss');
+  a.label('star_bs2');
+  a.ifValid(BINARY_STAR, 'star_bs');
+  a.ifValid(SPLAT_STAR, 'star_ss');
+  a.jmp('fail');
+  a.label('star_bs');
+  a.emit(BINARY_STAR);
+  a.label('star_ss');
+  a.emit(SPLAT_STAR);
+
+  //     case '-':
+  //       if (valid[UNARY_MINUS] || valid[UNARY_MINUS_NUM] || valid[BINARY_MINUS]) {
+  //         advance;
+  //         if (lookahead != '=' && lookahead != '>') {
+  //           if (valid[UNARY_MINUS_NUM] &&
+  //               (!valid[BINARY_STAR] || has_leading_whitespace) &&
+  //               iswdigit(lookahead))
+  //             { result = UNARY_MINUS_NUM; return true; }
+  //           if (valid[UNARY_MINUS] && has_leading_whitespace && !iswspace)
+  //             result = UNARY_MINUS;
+  //           else if (valid[BINARY_MINUS]) result = BINARY_MINUS;
+  //           else result = UNARY_MINUS;
+  //           return true;
+  //         }
+  //         return false;
+  //       }
+  //       break;
   a.label('minus');
+  a.ifValid(UNARY_MINUS, 'minus_go');
+  a.ifValid(UNARY_MINUS_NUM, 'minus_go');
+  a.ifValid(BINARY_MINUS, 'minus_go');
+  a.jmp('iden_gate');
+  a.label('minus_go');
+  a.advance();
+  a.ifChar(CH('='), 'fail');
+  a.ifChar(CH('>'), 'fail');
+  a.ifNValid(UNARY_MINUS_NUM, 'minus_unary');
+  a.ifNValid(BINARY_STAR, 'minus_num_digit');
+  a.ifCmpI('eq', R_HLW, 0, 'minus_unary');
+  a.label('minus_num_digit');
+  a.ifClass(C_DIGIT, 'minus_num');
+  a.label('minus_unary');
+  a.ifNValid(UNARY_MINUS, 'minus_bin');
+  a.ifCmpI('eq', R_HLW, 0, 'minus_bin');
+  a.ifNClass(C_SPACE, 'minus_um');
+  a.label('minus_bin');
+  a.ifValid(BINARY_MINUS, 'minus_bm');
+  a.emit(UNARY_MINUS);
+  a.label('minus_um');
+  a.emit(UNARY_MINUS);
+  a.label('minus_bm');
+  a.emit(BINARY_MINUS);
+  a.label('minus_num');
+  a.emit(UNARY_MINUS_NUM);
+
+  //     case ':':
+  //       if (valid[SYMBOL_START]) {
+  //         Literal literal = {0}; literal.type = SYMBOL_START; literal.nesting_depth = 1;
+  //         advance;
+  //         switch (lookahead) {
+  //           case '"': advance; open = close = '"'; interp = true; push; result = SYMBOL_START; return true;
+  //           case '\'': advance; open = close = '\''; interp = false; push; result = SYMBOL_START; return true;
+  //           default: if (scan_symbol_identifier(lexer)) { result = SIMPLE_SYMBOL; return true; }
+  //         }
+  //         return false;
+  //       }
+  //       break;
   a.label('colon');
+  a.ifNValid(SYMBOL_START, 'iden_gate');
+  a.const_(R_TYPE, SYMBOL_START);
+  a.const_(R_NEST, 1);
+  a.advance();
+  a.ifChar(CH('"'), 'colon_dq');
+  a.ifChar(CH('\''), 'colon_sq');
+  a.call('symbol_id');
+  a.ifCmpI('eq', R_OK, 0, 'fail');
+  a.emit(SIMPLE_SYMBOL);
+  a.label('colon_dq');
+  a.advance();
+  a.const_(R_OPEN, CH('"'));
+  a.const_(R_CLOSE, CH('"'));
+  a.const_(R_INTERP, 1);
+  packLit();
+  a.push(S_LITS, R_LIT);
+  a.emit(SYMBOL_START);
+  a.label('colon_sq');
+  a.advance();
+  a.const_(R_OPEN, CH('\''));
+  a.const_(R_CLOSE, CH('\''));
+  a.const_(R_INTERP, 0);
+  packLit();
+  a.push(S_LITS, R_LIT);
+  a.emit(SYMBOL_START);
+
+  //     case '[':
+  //       if (valid[ELEMENT_REFERENCE_BRACKET] &&
+  //           (!has_leading_whitespace || !valid[STRING_START])) {
+  //         advance; result = ELEMENT_REFERENCE_BRACKET; return true;
+  //       }
+  //       break;
   a.label('bracket');
-  a.label('lit_content');
-  a.label('heredoc_content');
+  a.ifNValid(ELEMENT_REFERENCE_BRACKET, 'iden_gate');
+  a.ifCmpI('eq', R_HLW, 0, 'bracket_go');
+  a.ifValid(STRING_START, 'iden_gate');
+  a.label('bracket_go');
+  a.advance();
+  a.emit(ELEMENT_REFERENCE_BRACKET);
+
+  //   if (((valid[HASH_KEY_SYMBOL] || valid[IDENTIFIER_SUFFIX]) &&
+  //        (iswalpha(lexer->lookahead) || lexer->lookahead == '_')) ||
+  //       (valid[CONSTANT_SUFFIX] && iswupper(lexer->lookahead))) {
+  a.label('iden_gate');
+  a.ifValid(HASH_KEY_SYMBOL, 'iden_al');
+  a.ifValid(IDENTIFIER_SUFFIX, 'iden_al');
+  a.jmp('iden_cu');
+  a.label('iden_al');
+  a.ifClass(C_ALPHA, 'iden_enter');
+  a.ifChar(CH('_'), 'iden_enter');
+  a.label('iden_cu');
+  a.ifNValid(CONSTANT_SUFFIX, 'str_start');
+  a.ifNClass(C_UPPER, 'str_start');
+  a.label('iden_enter');
+  a.const_(R_VID, IDENTIFIER_SUFFIX);
+  a.ifNClass(C_UPPER, 'iden_loop');
+  a.const_(R_VID, CONSTANT_SUFFIX);
+  a.label('iden_loop');
+  a.ifNClass(C_ALNUM_US, 'iden_after');
+  a.advance();
+  a.jmp('iden_loop');
+  a.label('iden_after');
+  a.ifNValid(HASH_KEY_SYMBOL, 'iden_bang');
+  a.ifNChar(CH(':'), 'iden_bang');
+  a.markEnd();
+  a.advance();
+  a.ifChar(CH(':'), 'fail');
+  a.emit(HASH_KEY_SYMBOL);
+  a.label('iden_bang');
+  a.ifNValidR(R_VID, 'fail');
+  a.ifNChar(CH('!'), 'fail');
+  a.advance();
+  a.ifChar(CH('='), 'fail');
+  a.emitR(R_VID);
+
+  //   if (valid_symbols[STRING_START]) {
+  //     Literal literal = {0}; literal.nesting_depth = 1;
+  //     if (lexer->lookahead == '<') {
+  //       advance; if (lookahead != '<') return false; advance;
+  //       Heredoc heredoc = {0};
+  //       if (lookahead == '-' || lookahead == '~') {
+  //         advance; heredoc.end_word_indentation_allowed = true;
+  //       }
+  //       scan_heredoc_word(lexer, &heredoc);
+  //       if (heredoc.word.size == 0) return false;
+  //       array_push(&open_heredocs, heredoc);
+  //       result = HEREDOC_START; return true;
+  //     }
+  //     if (scan_open_delimiter(...)) {
+  //       array_push(&literal_stack, literal);
+  //       result = literal.type; return true;
+  //     }
+  //     return false;
+  //   }
+  a.label('str_start');
+  a.ifNValid(STRING_START, 'fail');
+  a.const_(R_TYPE, 0);
+  a.const_(R_OPEN, 0);
+  a.const_(R_CLOSE, 0);
+  a.const_(R_NEST, 1);
+  a.const_(R_INTERP, 0);
+  a.ifNChar(CH('<'), 'str_delim');
+  a.advance();
+  a.ifNChar(CH('<'), 'fail');
+  a.advance();
+  a.const_(R_INDENT, 0);
+  a.const_(R_STARTED, 0);
+  a.ifChar(CH('-'), 'hd_indent');
+  a.ifChar(CH('~'), 'hd_indent');
+  a.jmp('hd_word');
+  a.label('hd_indent');
+  a.advance();
+  a.const_(R_INDENT, 1);
+  a.label('hd_word');
+  a.call('heredoc_word');
+  a.ifCmpI('eq', R_WLEN, 0, 'fail');
+  packHdoc();
+  a.push(S_HDOC, R_HDR);
+  a.emit(HEREDOC_START);
+  a.label('str_delim');
+  a.call('open_delim');
+  a.ifCmpI('eq', R_OK, 0, 'fail');
+  packLit();
+  a.push(S_LITS, R_LIT);
+  a.emitR(R_TYPE);
+
   a.label('fail');
   a.fail();
 
-  // Stub: real body lands in the next commit. Returning here means
-  // "whitespace produced NONE, continue" -- then we fall into fail.
+  // ======================================================================
+  // scan_whitespace
+  // ======================================================================
   a.label('whitespace');
+  //   bool heredoc_body_start_is_valid =
+  //       scanner->open_heredocs.size > 0 &&
+  //       !scanner->open_heredocs.contents[0].started &&
+  //       valid_symbols[HEREDOC_BODY_START];
+  a.const_(R_HBS, 0);
+  a.const_(R_CROSSED, 0);
+  a.len(S_HDOC, R_TMP);
+  a.ifCmpI('eq', R_TMP, 0, 'ws_loop');
+  a.getidx(S_HDOC, R_HDR, R_ZERO);
+  unpackHdoc();
+  a.ifCmpI('ne', R_STARTED, 0, 'ws_loop');
+  a.ifNValid(HEREDOC_BODY_START, 'ws_loop');
+  a.const_(R_HBS, 1);
+
+  a.label('ws_loop');
+  //     if (!valid[NO_LINE_BREAK] && valid[LINE_BREAK] &&
+  //         lexer->is_at_included_range_start(lexer)) {
+  a.ifValid(NO_LINE_BREAK, 'ws_sw');
+  a.ifNValid(LINE_BREAK, 'ws_sw');
+  a.ifRangeStart('ws_range_lb');
+  a.jmp('ws_sw');
+  a.label('ws_range_lb');
+  a.markEnd();
+  a.emit(LINE_BREAK);
+
+  a.label('ws_sw');
+  a.ifChar(CH(' '), 'ws_skip');
+  a.ifChar(CH('\t'), 'ws_skip');
+  a.ifChar(CH('\r'), 'ws_cr');
+  a.ifChar(CH('\n'), 'ws_nl');
+  a.ifChar(CH('\\'), 'ws_bs');
+  a.jmp('ws_default');
+
+  a.label('ws_skip');
+  skip_();
+  a.jmp('ws_loop');
+
+  a.label('ws_cr');
+  a.ifCmpI('eq', R_HBS, 0, 'ws_cr_skip');
+  a.call('hdoc0_set_started');
+  a.emit(HEREDOC_BODY_START);
+  a.label('ws_cr_skip');
+  skip_();
+  a.jmp('ws_loop');
+
+  a.label('ws_nl');
+  a.ifCmpI('ne', R_HBS, 0, 'ws_nl_hbs');
+  a.ifValid(NO_LINE_BREAK, 'ws_nl_skip');
+  a.ifNValid(LINE_BREAK, 'ws_nl_skip');
+  a.ifCmpI('ne', R_CROSSED, 0, 'ws_nl_skip');
+  a.markEnd();
+  a.advance();
+  a.const_(R_CROSSED, 1);
+  a.jmp('ws_loop');
+  a.label('ws_nl_hbs');
+  a.call('hdoc0_set_started');
+  a.emit(HEREDOC_BODY_START);
+  a.label('ws_nl_skip');
+  skip_();
+  a.jmp('ws_loop');
+
+  a.label('ws_bs');
+  a.advance();
+  a.ifNChar(CH('\r'), 'ws_bs_sp');
+  skip_();
+  a.label('ws_bs_sp');
+  a.ifNClass(C_SPACE, 'fail');
+  skip_();
+  a.jmp('ws_loop');
+
+  a.label('ws_default');
+  a.ifCmpI('eq', R_CROSSED, 0, 'ws_cont');
+  a.ifChar(CH('.'), 'ws_dot');
+  a.ifChar(CH('&'), 'ws_cont');
+  a.ifChar(CH('#'), 'ws_cont');
+  a.emit(LINE_BREAK);
+  a.label('ws_dot');
+  a.advance();
+  a.ifEof('fail');
+  a.ifChar(CH('.'), 'ws_dot_lb');
+  a.jmp('fail');
+  a.label('ws_dot_lb');
+  a.emit(LINE_BREAK);
+  a.label('ws_cont');
+  a.ret();
+
+  // ======================================================================
+  // scan_literal_content
+  //   Literal *literal = array_back(&scanner->literal_stack);
+  //   bool has_content = false;
+  //   bool stop_on_space = literal->type == SYMBOL_ARRAY_START ||
+  //                        literal->type == STRING_ARRAY_START;
+  // ======================================================================
+  a.label('lit_content');
+  a.peek(S_LITS, R_LIT, 0);
+  unpackLit();
+  a.const_(R_HAS, 0);
+  a.const_(R_STOP, 0);
+  a.ifCmpI('eq', R_TYPE, SYMBOL_ARRAY_START, 'lit_stop');
+  a.ifCmpI('eq', R_TYPE, STRING_ARRAY_START, 'lit_stop');
+  a.jmp('lit_loop');
+  a.label('lit_stop');
+  a.const_(R_STOP, 1);
+
+  a.label('lit_loop');
+  //     if (stop_on_space && iswspace(lexer->lookahead)) {
+  //       if (has_content) { mark_end; result = STRING_CONTENT; return true; }
+  //       return false;
+  //     }
+  a.ifCmpI('eq', R_STOP, 0, 'lit_close');
+  a.ifNClass(C_SPACE, 'lit_close');
+  a.ifCmpI('eq', R_HAS, 0, 'fail');
+  a.markEnd();
+  a.emit(STRING_CONTENT);
+
+  //     if (lexer->lookahead == literal->close_delimiter) {
+  //       mark_end;
+  //       if (literal->nesting_depth == 1) {
+  //         if (has_content) { result = STRING_CONTENT; }
+  //         else {
+  //           advance;
+  //           if (type == REGEX_START) while (iswlower) advance;
+  //           array_pop(&literal_stack);
+  //           result = STRING_END; mark_end;
+  //         }
+  //         return true;
+  //       }
+  //       literal->nesting_depth--;
+  //       advance;
+  //     }
+  a.label('lit_close');
+  a.lookahead(R_LA);
+  a.ifCmp('ne', R_LA, R_CLOSE, 'lit_open');
+  a.markEnd();
+  a.ifCmpI('ne', R_NEST, 1, 'lit_nest_dec');
+  a.ifCmpI('ne', R_HAS, 0, 'lit_end_content');
+  a.advance();
+  a.ifCmpI('ne', R_TYPE, REGEX_START, 'lit_pop');
+  a.label('lit_flags');
+  a.ifNClass(C_LOWER, 'lit_pop');
+  a.advance();
+  a.jmp('lit_flags');
+  a.label('lit_pop');
+  a.pop(S_LITS, R_TMP);
+  a.markEnd();
+  a.emit(STRING_END);
+  a.label('lit_end_content');
+  a.emit(STRING_CONTENT);
+  a.label('lit_nest_dec');
+  a.alui('add', R_NEST, -1);
+  packLit();
+  a.settop(S_LITS, R_LIT);
+  a.advance();
+  a.jmp('lit_has');
+
+  //     } else if (lexer->lookahead == literal->open_delimiter) {
+  //       literal->nesting_depth++;
+  //       advance;
+  a.label('lit_open');
+  a.lookahead(R_LA);
+  a.ifCmp('ne', R_LA, R_OPEN, 'lit_hash');
+  a.alui('add', R_NEST, 1);
+  packLit();
+  a.settop(S_LITS, R_LIT);
+  a.advance();
+  a.jmp('lit_has');
+
+  //     } else if (literal->allows_interpolation && lexer->lookahead == '#') {
+  //       mark_end; advance;
+  //       if (lookahead == '{') {
+  //         if (has_content) { result = STRING_CONTENT; return true; }
+  //         return false;
+  //       }
+  //       if (scan_short_interpolation(lexer, has_content, STRING_CONTENT))
+  //         return true;
+  a.label('lit_hash');
+  a.ifCmpI('eq', R_INTERP, 0, 'lit_bs');
+  a.ifNChar(CH('#'), 'lit_bs');
+  a.markEnd();
+  a.advance();
+  a.ifNChar(CH('{'), 'lit_hash_si');
+  a.ifCmpI('eq', R_HAS, 0, 'fail');
+  a.emit(STRING_CONTENT);
+  a.label('lit_hash_si');
+  a.const_(R_SYM, STRING_CONTENT);
+  a.call('short_interp');
+  a.jmp('lit_has');
+
+  //     } else if (lexer->lookahead == '\\') {
+  //       if (literal->allows_interpolation) {
+  //         if (has_content) { mark_end; result = STRING_CONTENT; return true; }
+  //         return false;
+  //       }
+  //       advance; advance;
+  a.label('lit_bs');
+  a.ifNChar(CH('\\'), 'lit_eof');
+  a.ifCmpI('eq', R_INTERP, 0, 'lit_bs_raw');
+  a.ifCmpI('eq', R_HAS, 0, 'fail');
+  a.markEnd();
+  a.emit(STRING_CONTENT);
+  a.label('lit_bs_raw');
+  a.advance();
+  a.advance();
+  a.jmp('lit_has');
+
+  //     } else if (lexer->eof(lexer)) {
+  //       advance; mark_end; return false;
+  //     } else {
+  //       advance;
+  //     }
+  //     has_content = true;
+  a.label('lit_eof');
+  a.ifNEof('lit_other');
+  a.advance();
+  a.markEnd();
+  a.jmp('fail');
+  a.label('lit_other');
+  a.advance();
+  a.label('lit_has');
+  a.const_(R_HAS, 1);
+  a.jmp('lit_loop');
+
+  // ======================================================================
+  // scan_heredoc_content
+  //   Heredoc *heredoc = array_get(&scanner->open_heredocs, 0);
+  //   size_t position_in_word = 0;
+  //   bool look_for_heredoc_end = true;
+  //   bool has_content = false;
+  // ======================================================================
+  a.label('heredoc_content');
+  a.getidx(S_HDOC, R_HDR, R_ZERO);
+  unpackHdoc();
+  a.const_(R_POS, 0);
+  a.const_(R_LOOKEND, 1);
+  a.const_(R_HAS, 0);
+
+  a.label('hc_loop');
+  //     if (position_in_word == heredoc->word.size) {
+  //       if (!has_content) mark_end;
+  //       while (lookahead == ' ' || lookahead == '\t') advance;
+  //       if (lookahead == '\n' || lookahead == '\r') {
+  //         if (has_content) result = HEREDOC_CONTENT;
+  //         else { array_erase(&open_heredocs, 0); result = HEREDOC_BODY_END; }
+  //         return true;
+  //       }
+  //       has_content = true;
+  //       position_in_word = 0;
+  //     }
+  a.ifCmp('ne', R_POS, R_WLEN, 'hc_eof');
+  a.ifCmpI('ne', R_HAS, 0, 'hc_mw_ws');
+  a.markEnd();
+  a.label('hc_mw_ws');
+  a.ifChar(CH(' '), 'hc_mw_sp');
+  a.ifChar(CH('\t'), 'hc_mw_sp');
+  a.jmp('hc_mw_nl');
+  a.label('hc_mw_sp');
+  a.advance();
+  a.jmp('hc_mw_ws');
+  a.label('hc_mw_nl');
+  a.ifChar(CH('\n'), 'hc_mw_end');
+  a.ifChar(CH('\r'), 'hc_mw_end');
+  a.const_(R_HAS, 1);
+  a.const_(R_POS, 0);
+  a.jmp('hc_eof');
+  a.label('hc_mw_end');
+  a.ifCmpI('ne', R_HAS, 0, 'hc_mw_content');
+  a.call('hdoc0_erase');
+  a.emit(HEREDOC_BODY_END);
+  a.label('hc_mw_content');
+  a.emit(HEREDOC_CONTENT);
+
+  //     if (lexer->eof(lexer)) {
+  //       mark_end;
+  //       if (has_content) result = HEREDOC_CONTENT;
+  //       else { array_erase(&open_heredocs, 0); result = HEREDOC_BODY_END; }
+  //       return true;
+  //     }
+  a.label('hc_eof');
+  a.ifNEof('hc_match');
+  a.markEnd();
+  a.ifCmpI('ne', R_HAS, 0, 'hc_eof_content');
+  a.call('hdoc0_erase');
+  a.emit(HEREDOC_BODY_END);
+  a.label('hc_eof_content');
+  a.emit(HEREDOC_CONTENT);
+
+  //     if (lookahead == *array_get(&heredoc->word, position_in_word) &&
+  //         look_for_heredoc_end) {
+  //       advance; position_in_word++;
+  //     } else {
+  //       position_in_word = 0;
+  //       look_for_heredoc_end = false;
+  a.label('hc_match');
+  a.ifCmpI('eq', R_LOOKEND, 0, 'hc_nomatch');
+  a.getidx(S_WORD, R_TMP, R_POS);
+  a.lookahead(R_LA);
+  a.ifCmp('ne', R_LA, R_TMP, 'hc_nomatch');
+  a.advance();
+  a.alui('add', R_POS, 1);
+  a.jmp('hc_loop');
+
+  a.label('hc_nomatch');
+  a.const_(R_POS, 0);
+  a.const_(R_LOOKEND, 0);
+  //       if (heredoc->allows_interpolation && lookahead == '\\') {
+  //         if (has_content) { result = HEREDOC_CONTENT; return true; }
+  //         return false;
+  //       }
+  a.ifCmpI('eq', R_INTERP, 0, 'hc_hash');
+  a.ifNChar(CH('\\'), 'hc_hash');
+  a.ifCmpI('eq', R_HAS, 0, 'fail');
+  a.emit(HEREDOC_CONTENT);
+
+  //       if (heredoc->allows_interpolation && lookahead == '#') {
+  //         mark_end; advance;
+  //         if (lookahead == '{') {
+  //           if (has_content) { result = HEREDOC_CONTENT; return true; }
+  //           return false;
+  //         }
+  //         if (scan_short_interpolation(..., HEREDOC_CONTENT)) return true;
+  //       } else if (lookahead == '\r' || lookahead == '\n') {
+  a.label('hc_hash');
+  a.ifCmpI('eq', R_INTERP, 0, 'hc_nl');
+  a.ifNChar(CH('#'), 'hc_nl');
+  a.markEnd();
+  a.advance();
+  a.ifNChar(CH('{'), 'hc_hash_si');
+  a.ifCmpI('eq', R_HAS, 0, 'fail');
+  a.emit(HEREDOC_CONTENT);
+  a.label('hc_hash_si');
+  a.const_(R_SYM, HEREDOC_CONTENT);
+  a.call('short_interp');
+  a.jmp('hc_loop');
+
+  a.label('hc_nl');
+  //         if (lookahead == '\r') { advance; if (lookahead == '\n') advance; }
+  //         else advance;
+  //         has_content = true; look_for_heredoc_end = true;
+  //         while (lookahead == ' ' || lookahead == '\t') {
+  //           advance;
+  //           if (!heredoc->end_word_indentation_allowed)
+  //             look_for_heredoc_end = false;
+  //         }
+  //         mark_end;
+  //       } else {
+  //         has_content = true; advance; mark_end;
+  //       }
+  a.ifChar(CH('\r'), 'hc_cr');
+  a.ifChar(CH('\n'), 'hc_lf');
+  a.jmp('hc_other');
+  a.label('hc_cr');
+  a.advance();
+  a.ifNChar(CH('\n'), 'hc_after_nl');
+  a.advance();
+  a.jmp('hc_after_nl');
+  a.label('hc_lf');
+  a.advance();
+  a.label('hc_after_nl');
+  a.const_(R_HAS, 1);
+  a.const_(R_LOOKEND, 1);
+  a.label('hc_nl_ws');
+  a.ifChar(CH(' '), 'hc_nl_sp');
+  a.ifChar(CH('\t'), 'hc_nl_sp');
+  a.markEnd();
+  a.jmp('hc_loop');
+  a.label('hc_nl_sp');
+  a.advance();
+  a.ifCmpI('ne', R_INDENT, 0, 'hc_nl_ws');
+  a.const_(R_LOOKEND, 0);
+  a.jmp('hc_nl_ws');
+
+  a.label('hc_other');
+  a.const_(R_HAS, 1);
+  a.advance();
+  a.markEnd();
+  a.jmp('hc_loop');
+
+  // ======================================================================
+  // scan_open_delimiter -> R_OK, fills R_TYPE/R_OPEN/R_CLOSE/R_INTERP
+  //   switch (lexer->lookahead) {
+  //     case '"': type = STRING_START; open = close = '"'; interp = true; ...
+  //     case '\'': ... interp = false;
+  //     case '`': if (!valid[SUBSHELL_START]) return false; ...
+  //     case '/': if (!valid[REGEX_START]) return false; ... FORWARD_SLASH
+  //     case '%': ...
+  //     default: return false;
+  //   }
+  // ======================================================================
+  a.label('open_delim');
+  a.ifChar(CH('"'), 'od_dq');
+  a.ifChar(CH('\''), 'od_sq');
+  a.ifChar(CH('`'), 'od_tick');
+  a.ifChar(CH('/'), 'od_slash');
+  a.ifChar(CH('%'), 'od_pct');
+  a.const_(R_OK, 0);
+  a.ret();
+
+  a.label('od_dq');
+  a.const_(R_TYPE, STRING_START);
+  a.const_(R_OPEN, CH('"'));
+  a.const_(R_CLOSE, CH('"'));
+  a.const_(R_INTERP, 1);
+  a.advance();
+  a.const_(R_OK, 1);
+  a.ret();
+
+  a.label('od_sq');
+  a.const_(R_TYPE, STRING_START);
+  a.const_(R_OPEN, CH('\''));
+  a.const_(R_CLOSE, CH('\''));
+  a.const_(R_INTERP, 0);
+  a.advance();
+  a.const_(R_OK, 1);
+  a.ret();
+
+  a.label('od_tick');
+  a.ifNValid(SUBSHELL_START, 'od_no');
+  a.const_(R_TYPE, SUBSHELL_START);
+  a.const_(R_OPEN, CH('`'));
+  a.const_(R_CLOSE, CH('`'));
+  a.const_(R_INTERP, 1);
+  a.advance();
+  a.const_(R_OK, 1);
+  a.ret();
+
+  a.label('od_slash');
+  a.ifNValid(REGEX_START, 'od_no');
+  a.const_(R_TYPE, REGEX_START);
+  a.const_(R_OPEN, CH('/'));
+  a.const_(R_CLOSE, CH('/'));
+  a.const_(R_INTERP, 1);
+  a.advance();
+  a.ifNValid(FORWARD_SLASH, 'od_yes');
+  a.ifCmpI('eq', R_HLW, 0, 'od_no');
+  a.ifChar(CH(' '), 'od_no');
+  a.ifChar(CH('\t'), 'od_no');
+  a.ifChar(CH('\n'), 'od_no');
+  a.ifChar(CH('\r'), 'od_no');
+  a.ifChar(CH('='), 'od_no');
+  a.jmp('od_yes');
+
+  a.label('od_no');
+  a.const_(R_OK, 0);
+  a.ret();
+  a.label('od_yes');
+  a.const_(R_OK, 1);
+  a.ret();
+
+  a.label('od_pct');
+  a.advance();
+  a.ifChar(CH('s'), 'od_pct_s');
+  a.ifChar(CH('r'), 'od_pct_r');
+  a.ifChar(CH('x'), 'od_pct_x');
+  a.ifChar(CH('q'), 'od_pct_q');
+  a.ifChar(CH('Q'), 'od_pct_Q');
+  a.ifChar(CH('w'), 'od_pct_w');
+  a.ifChar(CH('i'), 'od_pct_i');
+  a.ifChar(CH('W'), 'od_pct_W');
+  a.ifChar(CH('I'), 'od_pct_I');
+  a.ifNValid(STRING_START, 'od_no');
+  a.const_(R_TYPE, STRING_START);
+  a.const_(R_INTERP, 1);
+  a.jmp('od_pct_delim');
+  a.label('od_pct_s');
+  a.ifNValid(SIMPLE_SYMBOL, 'od_no');
+  a.const_(R_TYPE, SYMBOL_START);
+  a.const_(R_INTERP, 0);
+  a.advance();
+  a.jmp('od_pct_delim');
+  a.label('od_pct_r');
+  a.ifNValid(REGEX_START, 'od_no');
+  a.const_(R_TYPE, REGEX_START);
+  a.const_(R_INTERP, 1);
+  a.advance();
+  a.jmp('od_pct_delim');
+  a.label('od_pct_x');
+  a.ifNValid(SUBSHELL_START, 'od_no');
+  a.const_(R_TYPE, SUBSHELL_START);
+  a.const_(R_INTERP, 1);
+  a.advance();
+  a.jmp('od_pct_delim');
+  a.label('od_pct_q');
+  a.ifNValid(STRING_START, 'od_no');
+  a.const_(R_TYPE, STRING_START);
+  a.const_(R_INTERP, 0);
+  a.advance();
+  a.jmp('od_pct_delim');
+  a.label('od_pct_Q');
+  a.ifNValid(STRING_START, 'od_no');
+  a.const_(R_TYPE, STRING_START);
+  a.const_(R_INTERP, 1);
+  a.advance();
+  a.jmp('od_pct_delim');
+  a.label('od_pct_w');
+  a.ifNValid(STRING_ARRAY_START, 'od_no');
+  a.const_(R_TYPE, STRING_ARRAY_START);
+  a.const_(R_INTERP, 0);
+  a.advance();
+  a.jmp('od_pct_delim');
+  a.label('od_pct_i');
+  a.ifNValid(SYMBOL_ARRAY_START, 'od_no');
+  a.const_(R_TYPE, SYMBOL_ARRAY_START);
+  a.const_(R_INTERP, 0);
+  a.advance();
+  a.jmp('od_pct_delim');
+  a.label('od_pct_W');
+  a.ifNValid(STRING_ARRAY_START, 'od_no');
+  a.const_(R_TYPE, STRING_ARRAY_START);
+  a.const_(R_INTERP, 1);
+  a.advance();
+  a.jmp('od_pct_delim');
+  a.label('od_pct_I');
+  a.ifNValid(SYMBOL_ARRAY_START, 'od_no');
+  a.const_(R_TYPE, SYMBOL_ARRAY_START);
+  a.const_(R_INTERP, 1);
+  a.advance();
+
+  a.label('od_pct_delim');
+  a.ifChar(CH('('), 'od_pd_paren');
+  a.ifChar(CH('['), 'od_pd_brack');
+  a.ifChar(CH('{'), 'od_pd_brace');
+  a.ifChar(CH('<'), 'od_pd_angle');
+  a.ifChar(CH('\r'), 'od_pd_ws');
+  a.ifChar(CH('\n'), 'od_pd_ws');
+  a.ifChar(CH(' '), 'od_pd_ws');
+  a.ifChar(CH('\t'), 'od_pd_ws');
+  for (const c of PCT_UNBALANCED) a.ifChar(CH(c), 'od_pd_same');
+  a.jmp('od_no');
+  a.label('od_pd_paren');
+  a.const_(R_OPEN, CH('('));
+  a.const_(R_CLOSE, CH(')'));
+  a.jmp('od_pct_adv');
+  a.label('od_pd_brack');
+  a.const_(R_OPEN, CH('['));
+  a.const_(R_CLOSE, CH(']'));
+  a.jmp('od_pct_adv');
+  a.label('od_pd_brace');
+  a.const_(R_OPEN, CH('{'));
+  a.const_(R_CLOSE, CH('}'));
+  a.jmp('od_pct_adv');
+  a.label('od_pd_angle');
+  a.const_(R_OPEN, CH('<'));
+  a.const_(R_CLOSE, CH('>'));
+  a.jmp('od_pct_adv');
+  a.label('od_pd_ws');
+  a.ifValid(FORWARD_SLASH, 'od_no');
+  a.jmp('od_pct_adv');
+  a.label('od_pd_same');
+  a.lookahead(R_OPEN);
+  a.mov(R_CLOSE, R_OPEN);
+  a.label('od_pct_adv');
+  a.advance();
+  a.const_(R_OK, 1);
+  a.ret();
+
+  // ======================================================================
+  // scan_heredoc_word
+  //   quote = 0;
+  //   switch (lookahead) {
+  //     case '\'': case '"': case '`':
+  //       quote = lookahead; advance;
+  //       while (lookahead != quote && !eof) { array_push(&word, lookahead); advance; }
+  //       advance;
+  //       break;
+  //     default:
+  //       if (iswalnum(lookahead) || lookahead == '_') {
+  //         array_push; advance;
+  //         while (iswalnum || '_') { array_push; advance; }
+  //       }
+  //   }
+  //   heredoc->allows_interpolation = quote != '\'';
+  // ======================================================================
+  a.label('heredoc_word');
+  a.const_(R_WLEN, 0);
+  a.const_(R_INTERP, 1);
+  a.ifChar(CH('\''), 'hw_sq');
+  a.ifChar(CH('"'), 'hw_dq');
+  a.ifChar(CH('`'), 'hw_bq');
+  a.jmp('hw_unquoted');
+  a.label('hw_sq');
+  a.const_(R_INTERP, 0);
+  a.const_(R_QUOTE, CH('\''));
+  a.jmp('hw_quoted');
+  a.label('hw_dq');
+  a.const_(R_QUOTE, CH('"'));
+  a.jmp('hw_quoted');
+  a.label('hw_bq');
+  a.const_(R_QUOTE, CH('`'));
+  a.label('hw_quoted');
+  a.advance();
+  a.label('hw_qloop');
+  a.ifEof('hw_qend');
+  a.lookahead(R_LA);
+  a.ifCmp('eq', R_LA, R_QUOTE, 'hw_qend');
+  pushWordByte();
+  a.alui('add', R_WLEN, 1);
+  a.advance();
+  a.jmp('hw_qloop');
+  a.label('hw_qend');
+  a.advance();
+  a.ret();
+  a.label('hw_unquoted');
+  a.ifNClass(C_ALNUM_US, 'hw_empty');
+  pushWordByte();
+  a.alui('add', R_WLEN, 1);
+  a.advance();
+  a.label('hw_uloop');
+  a.ifNClass(C_ALNUM_US, 'hw_empty');
+  pushWordByte();
+  a.alui('add', R_WLEN, 1);
+  a.advance();
+  a.jmp('hw_uloop');
+  a.label('hw_empty');
+  a.ret();
+
+  // ======================================================================
+  // scan_short_interpolation(has_content=R_HAS, content_symbol=R_SYM)
+  //   char start = (char)lexer->lookahead;
+  //   if (start == '@' || start == '$') {
+  //     if (has_content) { result = content_symbol; return true; }
+  //     mark_end; advance;
+  //     ... $ specials / $ - alpha_ / $ alnum_ / @[@] is_iden && !digit ...
+  //     if (is_short_interpolation) { result = SHORT_INTERPOLATION; return true; }
+  //   }
+  //   return false;
+  // ======================================================================
+  a.label('short_interp');
+  a.lookahead(R_START);
+  a.alui('shl', R_START, 24);
+  a.alui('sar', R_START, 24);
+  a.ifCmpI('eq', R_START, CH('@'), 'si_go');
+  a.ifCmpI('eq', R_START, CH('$'), 'si_go');
+  a.ret();
+  a.label('si_go');
+  a.ifCmpI('eq', R_HAS, 0, 'si_scan');
+  a.emitR(R_SYM);
+  a.label('si_scan');
+  a.markEnd();
+  a.advance();
+  a.const_(R_ISI, 0);
+  a.ifCmpI('ne', R_START, CH('$'), 'si_at');
+  a.call('dollar_special');
+  a.ifCmpI('ne', R_OK, 0, 'si_yes');
+  a.ifNChar(CH('-'), 'si_dol_alnum');
+  a.advance();
+  a.ifClass(C_ALPHA, 'si_yes');
+  a.ifChar(CH('_'), 'si_yes');
+  a.jmp('si_at');
+  a.label('si_dol_alnum');
+  a.ifClass(C_ALNUM_US, 'si_yes');
+  a.jmp('si_at');
+  a.label('si_yes');
+  a.const_(R_ISI, 1);
+  a.label('si_at');
+  a.ifCmpI('ne', R_START, CH('@'), 'si_check');
+  a.ifNChar(CH('@'), 'si_at_iden');
+  a.advance();
+  a.label('si_at_iden');
+  a.call('is_iden');
+  a.ifCmpI('eq', R_OK, 0, 'si_check');
+  a.ifClass(C_DIGIT, 'si_check');
+  a.const_(R_ISI, 1);
+  a.label('si_check');
+  a.ifCmpI('eq', R_ISI, 0, 'si_no');
+  a.emit(SHORT_INTERPOLATION);
+  a.label('si_no');
+  a.ret();
+
+  // ======================================================================
+  // scan_symbol_identifier -> R_OK
+  // ======================================================================
+  a.label('symbol_id');
+  a.ifChar(CH('@'), 'syid_at');
+  a.ifChar(CH('$'), 'syid_dol');
+  a.jmp('syid_body');
+  a.label('syid_at');
+  a.advance();
+  a.ifNChar(CH('@'), 'syid_body');
+  a.advance();
+  a.jmp('syid_body');
+  a.label('syid_dol');
+  a.advance();
+  a.label('syid_body');
+  a.call('is_iden');
+  a.ifCmpI('ne', R_OK, 0, 'syid_adv');
+  a.call('operator');
+  a.ifCmpI('eq', R_OK, 0, 'syid_no');
+  a.jmp('syid_rest');
+  a.label('syid_adv');
+  a.advance();
+  a.label('syid_rest');
+  a.call('is_iden');
+  a.ifCmpI('eq', R_OK, 0, 'syid_bang');
+  a.advance();
+  a.jmp('syid_rest');
+  a.label('syid_bang');
+  a.ifChar(CH('?'), 'syid_bang_a');
+  a.ifChar(CH('!'), 'syid_bang_a');
+  a.jmp('syid_eq');
+  a.label('syid_bang_a');
+  a.advance();
+  a.label('syid_eq');
+  a.ifNChar(CH('='), 'syid_yes');
+  a.markEnd();
+  a.advance();
+  a.ifChar(CH('>'), 'syid_yes');
+  a.markEnd();
+  a.label('syid_yes');
+  a.const_(R_OK, 1);
+  a.ret();
+  a.label('syid_no');
+  a.const_(R_OK, 0);
+  a.ret();
+
+  // ======================================================================
+  // scan_operator -> R_OK
+  //   switch (lookahead) {
+  //     case '<': advance; if ('<') advance; else if ('=') { advance; if ('>') advance; } return true;
+  //     case '>': advance; if ('>' || '=') advance; return true;
+  //     case '=': advance; if ('~') { advance; return true; }
+  //               if ('=') { advance; if ('=') advance; return true; } return false;
+  //     case '+': case '-': case '~': advance; if ('@') advance; return true;
+  //     case '.': advance; if ('.') { advance; return true; } return false;
+  //     case '&': case '^': case '|': case '/': case '%': case '`': advance; return true;
+  //     case '!': advance; if ('=' || '~') advance; return true;
+  //     case '*': advance; if ('*') advance; return true;
+  //     case '[': advance; if (']') { advance; if ('=') advance; return true; } return false;
+  //     default: return false;
+  //   }
+  // ======================================================================
+  a.label('operator');
+  a.ifChar(CH('<'), 'op_lt');
+  a.ifChar(CH('>'), 'op_gt');
+  a.ifChar(CH('='), 'op_eq');
+  a.ifChar(CH('+'), 'op_pm');
+  a.ifChar(CH('-'), 'op_pm');
+  a.ifChar(CH('~'), 'op_pm');
+  a.ifChar(CH('.'), 'op_dot');
+  a.ifChar(CH('&'), 'op_one');
+  a.ifChar(CH('^'), 'op_one');
+  a.ifChar(CH('|'), 'op_one');
+  a.ifChar(CH('/'), 'op_one');
+  a.ifChar(CH('%'), 'op_one');
+  a.ifChar(CH('`'), 'op_one');
+  a.ifChar(CH('!'), 'op_bang');
+  a.ifChar(CH('*'), 'op_star');
+  a.ifChar(CH('['), 'op_brack');
+  a.const_(R_OK, 0);
+  a.ret();
+
+  a.label('op_lt');
+  a.advance();
+  a.ifChar(CH('<'), 'op_adv_yes');
+  a.ifNChar(CH('='), 'op_yes');
+  a.advance();
+  a.ifChar(CH('>'), 'op_adv_yes');
+  a.jmp('op_yes');
+
+  a.label('op_gt');
+  a.advance();
+  a.ifChar(CH('>'), 'op_adv_yes');
+  a.ifChar(CH('='), 'op_adv_yes');
+  a.jmp('op_yes');
+
+  a.label('op_eq');
+  a.advance();
+  a.ifChar(CH('~'), 'op_adv_yes');
+  a.ifNChar(CH('='), 'op_no');
+  a.advance();
+  a.ifChar(CH('='), 'op_adv_yes');
+  a.jmp('op_yes');
+
+  a.label('op_pm');
+  a.advance();
+  a.ifChar(CH('@'), 'op_adv_yes');
+  a.jmp('op_yes');
+
+  a.label('op_dot');
+  a.advance();
+  a.ifChar(CH('.'), 'op_adv_yes');
+  a.jmp('op_no');
+
+  a.label('op_one');
+  a.advance();
+  a.jmp('op_yes');
+
+  a.label('op_bang');
+  a.advance();
+  a.ifChar(CH('='), 'op_adv_yes');
+  a.ifChar(CH('~'), 'op_adv_yes');
+  a.jmp('op_yes');
+
+  a.label('op_star');
+  a.advance();
+  a.ifChar(CH('*'), 'op_adv_yes');
+  a.jmp('op_yes');
+
+  a.label('op_brack');
+  a.advance();
+  a.ifNChar(CH(']'), 'op_no');
+  a.advance();
+  a.ifChar(CH('='), 'op_adv_yes');
+  a.jmp('op_yes');
+
+  a.label('op_adv_yes');
+  a.advance();
+  a.label('op_yes');
+  a.const_(R_OK, 1);
+  a.ret();
+  a.label('op_no');
+  a.const_(R_OK, 0);
+  a.ret();
+
+  // ======================================================================
+  // is_iden_char((char)lookahead) -> R_OK
+  // ======================================================================
+  a.label('is_iden');
+  a.lookahead(R_LA);
+  a.alui('and', R_LA, 0xff);
+  for (const c of NON_IDEN) a.ifCmpI('eq', R_LA, c, 'iden_no');
+  a.const_(R_OK, 1);
+  a.ret();
+  a.label('iden_no');
+  a.const_(R_OK, 0);
+  a.ret();
+
+  // ======================================================================
+  // strchr("!@&`'+~=/\\,;.<>*$?:\"", lookahead) including NUL terminator
+  // ======================================================================
+  a.label('dollar_special');
+  a.lookahead(R_LA);
+  a.alui('and', R_LA, 0xff);
+  a.const_(R_OK, 0);
+  for (const c of DOLLAR_SPECIAL) a.ifCmpI('eq', R_LA, c, 'ds_yes');
+  a.ret();
+  a.label('ds_yes');
+  a.const_(R_OK, 1);
+  a.ret();
+
+  // ======================================================================
+  // set started on open_heredocs[0]
+  // ======================================================================
+  a.label('hdoc0_set_started');
+  a.len(S_HDOC, R_N);
+  a.mov(R_CNT, R_N);
+  a.alui('add', R_CNT, -1);
+  a.label('hs_peel');
+  a.ifCmpI('eq', R_CNT, 0, 'hs_set');
+  a.pop(S_HDOC, R_TMP);
+  a.push(S_TMP, R_TMP);
+  a.alui('add', R_CNT, -1);
+  a.jmp('hs_peel');
+  a.label('hs_set');
+  a.peek(S_HDOC, R_HDR, 0);
+  a.alui('or', R_HDR, 1 << HD_STARTED_BIT);
+  a.settop(S_HDOC, R_HDR);
+  a.label('hs_rest');
+  a.len(S_TMP, R_CNT);
+  a.ifCmpI('eq', R_CNT, 0, 'hs_done');
+  a.pop(S_TMP, R_TMP);
+  a.push(S_HDOC, R_TMP);
+  a.jmp('hs_rest');
+  a.label('hs_done');
+  a.ret();
+
+  // ======================================================================
+  // array_erase(&open_heredocs, 0) plus the matching word-byte prefix
+  // ======================================================================
+  a.label('hdoc0_erase');
+  a.getidx(S_HDOC, R_HDR, R_ZERO);
+  a.mov(R_WLEN, R_HDR);
+  a.alui('and', R_WLEN, HD_LEN_MASK);
+  a.len(S_WORD, R_N);
+  a.mov(R_I, R_N);
+  a.alui('add', R_I, -1);
+  a.label('he_copy');
+  a.ifCmp('lt', R_I, R_WLEN, 'he_copy_done');
+  a.getidx(S_WORD, R_TMP, R_I);
+  a.push(S_TMP, R_TMP);
+  a.alui('add', R_I, -1);
+  a.jmp('he_copy');
+  a.label('he_copy_done');
+  a.clear(S_WORD);
+  a.label('he_rest_w');
+  a.len(S_TMP, R_CNT);
+  a.ifCmpI('eq', R_CNT, 0, 'he_hdrs');
+  a.pop(S_TMP, R_TMP);
+  a.push(S_WORD, R_TMP);
+  a.jmp('he_rest_w');
+  a.label('he_hdrs');
+  a.len(S_HDOC, R_N);
+  a.mov(R_CNT, R_N);
+  a.alui('add', R_CNT, -1);
+  a.label('he_peel');
+  a.ifCmpI('eq', R_CNT, 0, 'he_drop');
+  a.pop(S_HDOC, R_TMP);
+  a.push(S_TMP, R_TMP);
+  a.alui('add', R_CNT, -1);
+  a.jmp('he_peel');
+  a.label('he_drop');
+  a.pop(S_HDOC, R_TMP);
+  a.label('he_rest_h');
+  a.len(S_TMP, R_CNT);
+  a.ifCmpI('eq', R_CNT, 0, 'he_done');
+  a.pop(S_TMP, R_TMP);
+  a.push(S_HDOC, R_TMP);
+  a.jmp('he_rest_h');
+  a.label('he_done');
   a.ret();
 
   return {
