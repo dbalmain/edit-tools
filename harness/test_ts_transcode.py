@@ -247,10 +247,11 @@ class ScannerPortTest(unittest.TestCase):
 
     # toml 230 scan calls, css 450, xml 803, html 1102, python 2194, rust 925,
     # javascript 2439, typescript 2808, kotlin 2519, ruby 1855, yaml 1480,
-    # markdown 3127. Raise as ports land.
-    MIN_SCANNER_CALLS = 19932
-    MIN_SCANNER_STATES = 4224
-    MIN_PORTED_LANGUAGES = 12
+    # markdown 3127, haskell 2685. All thirteen external scanners are ported,
+    # so this floor stops being a ratchet and becomes a regression check.
+    MIN_SCANNER_CALLS = 22617
+    MIN_SCANNER_STATES = 5288
+    MIN_PORTED_LANGUAGES = 13
 
     def _run(self, script: str, *args: str) -> str:
         result = subprocess.run(

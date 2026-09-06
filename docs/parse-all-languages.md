@@ -5,10 +5,23 @@ tree-sitter languages in the corpus. Aven is out of scope by instruction, and
 would be out of scope anyway -- it has no tree-sitter grammar and its plan of
 record (`docs/roadmap.md`) is its own parser.
 
-Where it stands: **15 of 16 parse byte-identically** (json 3/3, scheme 15/15,
-go 16/16, toml 15/15, css 15/15, xml 15/15, html 16/16, python 12/12,
-rust 19/19, javascript 14/14, typescript 16/16, kotlin 16/16, ruby 15/15,
-yaml 16/16, markdown 15/15\*). **Only haskell is left.**
+**Done, 2026-09-07.** All sixteen parse byte-identically, on the clean corpus
+and on the deliberately-broken one, in both runtimes:
+
+```sh
+./harness/ts_check_all.py
+# 16/16 languages byte-identical (* markdown against the host grammar)
+```
+
+json 3/3, scheme 15/15, go 16/16, toml 15/15, css 15/15, xml 15/15, html
+16/16, python 12/12, rust 19/19, javascript 14/14, typescript 16/16, kotlin
+16/16, ruby 15/15, yaml 16/16, markdown 15/15\*, haskell 16/16 -- and every
+one of them 16/16, 12/12 or 6/6 on `--edited`.
+
+All **thirteen external scanners** are ported. Their trace differential against
+the real C scanners is **22,617 calls and 5,288 state transitions with zero
+mismatches**, and it runs identically in JS and in Rust off the same packed
+`.svm` bytes.
 
 \* markdown's number is against the *host grammar*, not against
 `corpus/trees/`, and the difference is a property of the fixtures rather than
@@ -64,11 +77,9 @@ only the `.c` undercounts the set by 30%.
 | ruby       |       1,107 |     1,107 |        30 | literals + heredocs *(done)* |
 | yaml       |       1,415 |     1,415 |       113 | 5 `i16` + 2 stacks *(done)* |
 | markdown   |       1,602 |     1,602 |        47 | 5 scalars + block stack *(done)* |
-| haskell    |       3,471 |     5,975 |        49 | scalars + stacks + tables |
+| haskell    |       3,471 |     5,975 |        49 | contexts + newline *(done)* |
 
-**13,466 lines of C across the thirteen**, of which twelve are done. haskell
--- 3,471 lines, or 5,975 counting its generated `unicode.h` -- is what is
-left.
+**13,466 lines of C across the thirteen, all ported.**
 
 ### Two thirds of haskell's excess is data, not logic
 
@@ -106,7 +117,8 @@ Whole-file lines of the `.program.js`, which is what a reviewer actually reads:
 | ruby     |             1,107 |     1,567 | 1.42x |
 | yaml     |             1,415 |     2,197 | 1.55x |
 | markdown |             1,602 |     1,699 | 1.06x |
-| total    |             7,491 |     9,701 | 1.30x |
+| haskell  |             5,975 |     2,571 | 0.43x |
+| total    |            13,466 |    12,272 | 0.91x |
 
 An earlier revision of this section put css at 147 lines and drew 1.6x from it.
 That was wrong -- `css.program.js` has been 182 lines since it landed -- and the
@@ -134,12 +146,17 @@ entirely branching, with an `ifValid` chain per token and nothing to hoist. The
 earlier reading -- "the ratio falls sharply as the scanner grows" -- had the
 correlation and the wrong cause.
 
-**That reframes option 1's volume.** At the blended 1.30x haskell's remaining
-3,471 lines of logic come to roughly 4,500, and its 2,504 lines of generated
-bitmaps come to none at all, because they are data. The objection to
-hand-compiling was never really the line count; it is four separate
-correctness arguments. But the line count was the number on the page, and it
-is now one language.
+**haskell settles it, at 0.43x.** It is the largest scanner by a factor of
+two and the *cheapest* to port, because 2,504 of its 5,975 lines are generated
+codepoint bitmaps that become 3,102 class intervals -- one JSON file, produced
+by a 239-line generator with a `--check` mode, not by hand. The final blended
+ratio across all thirteen is **0.91x: the ported set is smaller than the C it
+replaces.**
+
+The estimate for this work started at ~19,000 lines of hand-written bytecode
+and was revised down four times. It came in at **12,272**, and the revisions
+were all wrong in the same direction for the same reason: every one of them
+priced branches and forgot that data compiles to data.
 
 Every port since toml has landed **byte-identical on the first run**, on the
 clean corpus and on the deliberately-broken one, and all replay the recorded
@@ -147,6 +164,48 @@ C-scanner calls with no mismatches -- **15,325 calls and 2,086 state
 transitions across ten languages**. Ten grammars in, the pipeline --
 transcode, port, trace differential -- generalises past the one it was built
 on.
+
+### haskell spent the reserved opcode, and needed one nobody predicted
+
+`docs/scanner-vm.md`'s host-API survey recorded `lexer->get_column` as used by
+**none** of the scanners and called it "the significant one" -- the only lexer
+call with a non-trivial implementation, since it rewinds to the start of the
+line and counts *codepoints* forward. Opcode `0x06` was reserved for it and
+trapped. haskell calls it, at `scanner.c:637`, outside any debug guard. So the
+survey was wrong and the reservation is spent: `GET_COLUMN` now exists in the
+VM, the assembler, both replay hosts and the Rust twin, and `ts_lr.mjs` routes
+it to the `getColumn()` that had been written during the scanner slice and was
+unreachable until now -- so `didGetColumn` still stamps `depends_on_column` on
+the leaf.
+
+**The oracle had a hole there and it is closed.** `harness/scanner_record/
+trace_scanner.c` swapped exactly two function pointers, `advance` and
+`mark_end`, so no recorded trace contained a `get_column` call and the
+differential could not have checked one. It wraps three now, emitting
+`C<pos>=<col>;`, and haskell's traces were re-recorded against it. There are
+**5 column calls in the whole corpus** and both runtimes reproduce all five.
+Five is a small number to have built an instruction for, and it is also the
+number that would have gone unchecked.
+
+**And a second instruction that nothing predicted:** `IF_CLASS_R` /
+`IF_NCLASS_R`, which classify a *register* rather than the current lookahead.
+haskell keeps a peek buffer whose cached codepoint is not `lexer->lookahead`,
+so `IF_CLASS` was classifying the wrong character -- the `--` comment herald is
+the specimen. That is **four ISA additions across sixteen languages**: `MAP`,
+`IF_RANGE_START`, `GET_COLUMN`, `IF_CLASS_R`. The first three are the same
+miss, a survey that catalogued what scanners *compute* and under-catalogued
+what they *call out to*. The fourth is a different one: an instruction that
+implicitly reads the lexer, in a scanner that does not always want the lexer's
+answer.
+
+**The state encoding needed one trick and it is the one yaml predicted.**
+Upstream's empty `deserialize` sets `newline.state = NResume`, which is 3, and
+the VM has no `registerInit`. Rather than yaml's single-element stack, this
+port **renumbers the enum** so `NResume` is 0 and `NInactive` is 3 -- the two
+tags swap, `NInit` and `NProcess` keep their values, and the relation is
+preserved because nothing outside the scanner reads the tag. Two ports, two
+different answers to the same missing feature; `registerInit` would have made
+both unnecessary.
 
 ### markdown's clean fixtures cannot judge markdown
 

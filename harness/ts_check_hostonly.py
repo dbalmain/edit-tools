@@ -46,24 +46,14 @@ import manifest as mf  # noqa: E402
 import gen_trees as gt  # noqa: E402
 
 
-def main() -> int:
-    ap = argparse.ArgumentParser()
-    ap.add_argument("language")
-    ap.add_argument("trees_dir", help="output of ts_check_trees.mjs --write-dir")
-    args = ap.parse_args()
-
-    known = mf.bootstrap()
-    if args.language not in known:
-        print(f"unknown language {args.language}", file=sys.stderr)
-        return 2
-    m = known[args.language]
-    parsers = mf.parsers(known)
+def compare(m, trees_dir: Path, parsers: dict, verbose: bool = True) -> list[str]:
+    """Stems whose host-only tree differs from ours. Callers that already hold
+    a bootstrapped manifest set use this; `ts_check_all.py` is one, and it has
+    to, because `mf.bootstrap()` re-execs under `uv run --with` and a nested
+    invocation loses the grammar modules the outer one installed."""
     gt.pin_ctype()
-
-    ours = Path(args.trees_dir)
-    files = sorted(gt.sources(m))
     bad: list[str] = []
-    for path in files:
+    for path in sorted(gt.sources(m)):
         source = path.read_bytes()
         tree = parsers[m.name].parse(source)
         doc = {
@@ -75,12 +65,28 @@ def main() -> int:
             "root": gt.convert(tree.root_node, source, None),
         }
         want = json.dumps(doc, indent=1, ensure_ascii=False) + "\n"
-        got = (ours / f"{m.name}__{path.stem}.tree.json").read_text(encoding="utf-8")
+        got = (trees_dir / f"{m.name}__{path.stem}.tree.json").read_text(encoding="utf-8")
         if want != got:
             bad.append(path.stem)
-        print(f"  {path.stem:<24} {'ok' if want == got else 'DIFFERS'}")
+        if verbose:
+            print(f"  {path.stem:<24} {'ok' if want == got else 'DIFFERS'}")
+    return bad
 
-    print(f"\n{len(files) - len(bad)}/{len(files)} byte-identical, injections off")
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("language")
+    ap.add_argument("trees_dir", help="output of ts_check_trees.mjs --write-dir")
+    args = ap.parse_args()
+
+    known = mf.bootstrap()
+    if args.language not in known:
+        print(f"unknown language {args.language}", file=sys.stderr)
+        return 2
+    m = known[args.language]
+    bad = compare(m, Path(args.trees_dir), mf.parsers(known))
+    total = len(list(gt.sources(m)))
+    print(f"\n{total - len(bad)}/{total} byte-identical, injections off")
     return 1 if bad else 0
 
 
