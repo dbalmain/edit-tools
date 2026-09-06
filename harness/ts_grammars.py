@@ -23,7 +23,7 @@ The sdist is what PyPI built the wheel from, and the wheel is what generated
 `corpus/trees/`. So the sdist's `parser.c` is the grammar the oracle actually
 speaks, and it is what gets transcoded.
 
-**Three sdists are missing their scanner.** `tree-sitter-css` 0.25.0,
+**Six sdists are missing scanner sources, in two ways.** `tree-sitter-css` 0.25.0,
 `tree-sitter-python` 0.25.0 and `tree-sitter-yaml` 0.7.2 declare external
 tokens -- 3, 12 and 113 of them -- and ship no `src/scanner.c`. Their
 `setup.py` globs `src/*.c`, so those sdists cannot build the module they
@@ -32,8 +32,15 @@ of those trees yields a blob with no scanner, which cannot parse. Every other
 pinned grammar ships its scanner, including the multi-grammar ones -- xml's
 sdist carries both `xml/src/scanner.c` and `dtd/src/scanner.c`.
 
-For those three only, the upstream repository at the pinned tag is cloned and
-its `scanner.c` copied in. That checkout is trusted only after its `parser.c`
+The second way is subtler and a presence check for `scanner.c` does not see
+it. typescript's `scanner.c` is thirteen lines that delegate to
+`../../common/scanner.h`, shared with tsx; xml's does the same with a header
+shared with dtd. **Neither sdist ships `common/`**, so both scanners are stubs
+pointing at nothing. Completeness is therefore checked by resolving each
+scanner's quoted includes transitively, not by looking for one filename.
+
+For those six, the upstream repository at the pinned tag is cloned and the
+missing files copied in. That checkout is trusted only after its `parser.c`
 is shown to match the sdist's, which is what establishes that the tag holds the
 same grammar the scanner belongs to. Measured on css: identical, byte for byte.
 
@@ -173,6 +180,26 @@ def fetch_git(url: str, ref: str, dest: Path) -> None:
     raise GrammarError(f"no tag {' or '.join(attempts)} in {url}")
 
 
+# Grammars migrate between these two organisations without their PyPI metadata
+# following them: tree-sitter-xml 0.7.0's PKG-INFO still names
+# `tree-sitter/tree-sitter-xml`, which carries no v0.7.0 tag, while the grammar
+# lives under `tree-sitter-grammars/`. So the metadata URL is the first guess,
+# not the only one.
+ORGS = ("tree-sitter", "tree-sitter-grammars")
+
+
+def repo_urls(sdist: Path) -> list[str]:
+    """The metadata's URL first, then the same repository name under each known org."""
+    url = repo_url(sdist).rstrip("/").removesuffix(".git")
+    out = [url]
+    name = url.rsplit("/", 1)[-1]
+    for org in ORGS:
+        candidate = f"https://github.com/{org}/{name}"
+        if candidate != url:
+            out.append(candidate)
+    return out
+
+
 def repo_url(sdist: Path) -> str:
     """The upstream repository, out of the sdist's own metadata rather than a guess."""
     info = sdist / "PKG-INFO"
@@ -216,26 +243,135 @@ def tables_of(parser_c: Path) -> bytes:
     return VERSION_FIELD.sub(b"", BANNER.sub(b"", raw, count=1))
 
 
-def missing_scanners(root: Path) -> list[Path]:
-    """Each grammar `src/` that declares external tokens and has no scanner."""
-    absent = []
+LOCAL_INCLUDE = re.compile(r'^\s*#\s*include\s+"([^"]+)"', re.M)
+
+
+def scanner_of(src: Path) -> Path | None:
+    return next(
+        (p for ext in (".c", ".cc") if (p := src / f"scanner{ext}").is_file()), None
+    )
+
+
+def src_dirs(root: Path) -> list[Path]:
+    """Every grammar's `src/`, which is also the compiler's `-I` path."""
+    return sorted({p.parent for p in parsers_in(root)})
+
+
+def find_include(target: str, includer: Path, root: Path) -> Path | None:
+    """Where a quoted `#include` resolves, or `None`.
+
+    A quoted include is searched relative to the includer *and* along the
+    compiler's include path, and grammars rely on both. `common/scanner.h`
+    says `#include "tree_sitter/parser.h"`, which lives in each grammar's
+    `src/`, not beside the header; resolving only relative to the includer
+    reports the runtime's own headers as missing at a path no upstream tag has
+    them either, so an incomplete *search* presents as an incomplete sdist.
+    """
+    direct = (includer.parent / target).resolve()
+    if direct.is_file():
+        return direct
+    for src in src_dirs(root):
+        if (candidate := (src / target).resolve()).is_file():
+            return candidate
+    return None
+
+
+def needed_by(start: Path, root: Path) -> set[str]:
+    """Every quoted include reachable from `start` that is not in the tree.
+
+    Returned as include *targets* rather than paths, because the path a missing
+    header should occupy is not knowable from the include alone -- 
+    `tree_sitter/parser.h` belongs in a `src/`, not beside the file that names
+    it -- and the upstream checkout is what settles it.
+
+    A `scanner.c` on its own is not a complete scanner. typescript's is thirteen
+    lines delegating to `../../common/scanner.h`, shared with tsx; xml's does
+    the same with a header shared with dtd. Checking only for the presence of
+    `scanner.c` calls both complete and hands the porter a stub.
+    """
+    absent: set[str] = set()
+    seen: set[Path] = set()
+    queue = [start]
+    while queue:
+        current = queue.pop()
+        if current in seen or not current.is_file():
+            continue
+        seen.add(current)
+        text = current.read_text(encoding="utf-8", errors="replace")
+        for target in LOCAL_INCLUDE.findall(text):
+            found = find_include(target, current, root)
+            if found is None:
+                absent.add(target)
+            else:
+                queue.append(found)
+    return absent
+
+
+def incomplete(root: Path) -> dict[Path, set[str]]:
+    """Each grammar `src/` that declares external tokens, mapped to what it lacks.
+
+    A grammar with no external tokens needs no scanner and is never incomplete.
+    """
+    gaps: dict[Path, set[str]] = {}
     for parser in parsers_in(root):
         src = parser.parent
         declared = EXTERNALS.search(parser.read_text(encoding="utf-8", errors="replace"))
         if declared is None or int(declared.group(1)) == 0:
             continue
-        if not any((src / f"scanner{ext}").is_file() for ext in (".c", ".cc")):
-            absent.append(src)
-    return absent
+        scanner = scanner_of(src)
+        if scanner is None:
+            gaps[src] = {"scanner.c"}
+        elif missing := needed_by(scanner, root):
+            gaps[src] = missing
+    return gaps
 
 
-def graft_scanners(name: str, version: str, sdist: Path, absent: list[Path]) -> str:
-    """Copy the missing `scanner.c`s in from the upstream tag, once it is trusted."""
-    checkout = CACHE / ".git" / name
+def locate(checkout: Path, target: str) -> Path | None:
+    """The file in `checkout` that an unresolved include target names.
+
+    Matched by path suffix rather than by an assumed location, since the same
+    include resolves differently per grammar: `tree_sitter/parser.h` sits under
+    every grammar's own `src/`, and a repository holds several.
+
+    Leading `..` segments are dropped first. `#include "../../common/scanner.h"`
+    is a path relative to the includer, and its `..`s cannot appear in any
+    file's own parts -- only the tail `common/scanner.h` identifies the file.
+    """
+    target = "/".join(part for part in Path(target).parts if part not in ("..", "."))
+    stems = [target] + ([target[:-2] + ".cc"] if target.endswith(".c") else [])
+    for stem in stems:
+        parts = tuple(Path(stem).parts)
+        matches = [
+            p for p in checkout.rglob(Path(stem).name)
+            if ".git" not in p.parts and p.parts[-len(parts):] == parts
+        ]
+        if matches:
+            return min(matches, key=lambda p: len(p.parts))
+    return None
+
+
+def graft(name: str, version: str, sdist: Path, gaps: dict[Path, set[str]]) -> str:
+    """Copy the missing scanner sources in from the upstream tag, once it is trusted.
+
+    Each missing file is placed in the `src/` of the grammar that needs it,
+    which is where the compiler's include path looks and where the upstream
+    repository keeps it. Grafting repeats until the gaps close, because a header
+    copied in can itself include another file the sdist also omitted.
+    """
+    # Not `.git`: paths under it are filtered out as version-control
+    # noise by every search in this module, the checkout included.
+    checkout = CACHE / ".checkout" / name
     shutil.rmtree(checkout, ignore_errors=True)
     checkout.parent.mkdir(parents=True, exist_ok=True)
     try:
-        fetch_git(repo_url(sdist), version, checkout)
+        candidates = repo_urls(sdist)
+        for i, url in enumerate(candidates):
+            try:
+                fetch_git(url, version, checkout)
+                break
+            except GrammarError:
+                if i == len(candidates) - 1:
+                    raise
         for theirs in parsers_in(sdist):
             ours = checkout / theirs.relative_to(sdist)
             if not ours.is_file():
@@ -245,20 +381,34 @@ def graft_scanners(name: str, version: str, sdist: Path, absent: list[Path]) -> 
                     f"{theirs.relative_to(sdist)} differs from the sdist's outside "
                     "the generator banner and metadata version"
                 )
-        grafted = []
-        for src in absent:
-            found = [
-                p for ext in (".c", ".cc")
-                if (p := checkout / src.relative_to(sdist) / f"scanner{ext}").is_file()
-            ]
-            if not found:
-                raise GrammarError(
-                    f"{src.relative_to(sdist)}: declares external tokens and neither "
-                    "the sdist nor the tag has a scanner"
-                )
-            shutil.copy2(found[0], src / found[0].name)
-            grafted.append(str(src.relative_to(sdist) / found[0].name))
-        return "; scanner grafted from the tag: " + ", ".join(grafted)
+
+        grafted: set[str] = set()
+        while gaps:
+            copied = 0
+            for src, targets in gaps.items():
+                for target in targets:
+                    source = locate(checkout, target)
+                    if source is None:
+                        raise GrammarError(
+                            f"{target}: absent from both the sdist and the tag, and "
+                            f"{src.relative_to(sdist)} declares external tokens"
+                        )
+                    dest = (src / target).resolve()
+                    if sdist.resolve() not in dest.parents:
+                        raise GrammarError(
+                            f"{target} from {src.relative_to(sdist)} resolves outside "
+                            "the grammar tree"
+                        )
+                    if target.endswith(".c") and source.suffix == ".cc":
+                        dest = dest.with_suffix(".cc")
+                    dest.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(source, dest)
+                    grafted.add(str(dest.relative_to(sdist)))
+                    copied += 1
+            gaps = incomplete(sdist)
+            if gaps and copied == 0:
+                raise GrammarError(f"cannot complete {sorted(map(str, gaps))}")
+        return "; grafted from the tag: " + ", ".join(sorted(grafted))
     finally:
         shutil.rmtree(checkout, ignore_errors=True)
 
@@ -283,8 +433,8 @@ def fetch(name: str, spec: str, refresh: bool = False) -> Path:
         else:
             fetch_sdist(a, b, dest)
             note = f"{a}=={b} sdist"
-            if absent := missing_scanners(dest):
-                note += graft_scanners(name, b, dest, absent)
+            if gaps := incomplete(dest):
+                note += graft(name, b, dest, gaps)
         stamp.write_text(note + "\n", encoding="utf-8")
     except BaseException:
         # A half-unpacked directory would be treated as a cache hit next run.
