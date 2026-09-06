@@ -41,24 +41,46 @@ and nothing else.
 
 Line counts are of the actual source, after completing the sdists.
 
-| Language   | C lines | Externals | Serialized state          |
-| ---------- | ------: | --------: | ------------------------- |
-| toml       |      82 |         5 | stateless *(done)*        |
-| css        |     100 |         3 | stateless *(done)*        |
-| xml        |     270 |        11 | stack of tag-name strings |
-| html       |     362 |         9 | stack of tag-name strings |
-| javascript |     364 |         8 | stateless                 |
-| typescript |     347 |        10 | stateless                 |
-| rust       |     393 |        10 | one `u8`                  |
-| python     |     437 |        12 | 2 scalars + 2 stacks      |
-| kotlin     |     459 |        11 | stateless                 |
-| ruby       |   1,107 |        30 | scalars + stacks          |
-| yaml       |   1,415 |       113 | 5 `i16` + 2 `i16` stacks  |
-| markdown   |   1,602 |        47 | 5 scalars + `u8` stack    |
-| haskell    |   3,471 |        49 | scalars + stacks + tables |
+Counted over each scanner's **include closure**, not just its `scanner.c` --
+five of the thirteen carry a local header that is compiled in, and counting
+only the `.c` undercounts the set by 30%.
 
-**10,327 lines of C across the twelve**, of which css's 100 are now done.
-haskell alone is 34% of the total.
+| Language   | `scanner.c` | + headers | Externals | Serialized state          |
+| ---------- | ----------: | --------: | --------: | ------------------------- |
+| toml       |          82 |        82 |         5 | stateless *(done)*        |
+| css        |         100 |       100 |         3 | stateless *(done)*        |
+| typescript |          13 |       360 |        10 | stateless                 |
+| javascript |         364 |       364 |         8 | stateless                 |
+| rust       |         393 |       393 |        10 | one `u8`                  |
+| xml        |         270 |       425 |        11 | stack of tag-name strings |
+| python     |         437 |       437 |        12 | 2 scalars + 2 stacks      |
+| kotlin     |         459 |       459 |        11 | stateless                 |
+| html       |         362 |       747 |         9 | stack of tag-name strings |
+| ruby       |       1,107 |     1,107 |        30 | scalars + stacks          |
+| yaml       |       1,415 |     1,415 |       113 | 5 `i16` + 2 `i16` stacks  |
+| markdown   |       1,602 |     1,602 |        47 | 5 scalars + `u8` stack    |
+| haskell    |       3,471 |     5,975 |        49 | scalars + stacks + tables |
+
+**13,466 lines of C across the thirteen**, of which toml's 82 and css's 100 are
+done.
+
+### Two thirds of haskell's excess is data, not logic
+
+haskell's `unicode.h` is **2,504 lines of generated codepoint bitmaps** --
+twenty of them, behind twenty-four trivial `is_*_char(int32_t)` predicates.
+That is not code to port. It is exactly what the VM's class tables already
+hold, and converting it is the same mechanical extraction already done twice
+for glibc's `wctype.h`. Measured: the bitmaps become **3,102 intervals**.
+
+So the honest split is **10,962 lines of logic and 2,504 of data**, and
+haskell's share of the logic is 32% rather than the 44% its raw line count
+suggests.
+
+It does carry a size consequence though. 3,102 ranges is roughly four times
+glibc's `alnum` table, which is 802 ranges and 3.5 KB gzipped -- so haskell's
+character classes alone are on the order of 12-14 KB gz. That is a data cost
+specific to haskell, not a porting cost, and it lands on the same question as
+the `isw*` tables: shared runtime, or per blob.
 
 ### The C-to-assembler ratio, on two datapoints
 
