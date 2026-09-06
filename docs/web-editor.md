@@ -1,8 +1,11 @@
 # The web editor, the discrepancy app, and the markdown surface
 
-**Status: specified, not started.** Parked 2026-09-06 in favour of finishing the
-parse layer for all sixteen tree-sitter languages, which question 1 below shows
-is a hard dependency of the interesting version of this.
+**Status: specified, not started. The dependency it was parked behind is
+done.** Parked 2026-09-06 in favour of finishing the parse layer for all
+sixteen tree-sitter languages, which question 1 below shows is a hard
+dependency of the interesting version of this. **That finished 2026-09-07** --
+`./harness/ts_check_all.py` reports 16/16 byte-identical -- so Q1's answer has
+changed and Q2 and Q3 are unblocked. See the revision under Q1.
 
 Three deliverables, in the order Dave asked for them. Each depends on the one
 before it.
@@ -71,8 +74,11 @@ here with their options so the answer does not have to be reconstructed.
 
 ### Q1 — Where does parsing happen?
 
-The formatter needs a tree. The C3 parse layer covers **4 of 16** grammars
-today (json, scheme, go, toml).
+The formatter needs a tree. The C3 parse layer covered **4 of 16** grammars
+when this was written (json, scheme, go, toml). **It now covers 16 of 16**,
+every one byte-identical against real tree-sitter on the clean corpus and on
+the broken one, in both runtimes. The table below is kept as written; the
+revision follows it.
 
 | Option | Buys | Costs |
 | --- | --- | --- |
@@ -83,6 +89,33 @@ today (json, scheme, go, toml).
 **The one fact that changes the recommendation:** whether this must deploy as a
 static page with no local process. If it must, it is option 2 and the parse
 layer's coverage is the app's coverage.
+
+#### Revised 2026-09-07: the recommendation flips to option 2
+
+The whole cost of "browser only" was coverage -- 4 languages and 26 of the 142
+divergences. **That cost is now zero.** All sixteen grammars transcode, and
+`ts_lr.mjs` parses every one of them byte-identically, so the browser can
+answer `parse(text, lang)` for the entire corpus with no server at all.
+
+What option 2 buys, now that it is free: the app deploys as a static page,
+`:w` works offline, and the C3 parse layer is exercised *as the product*
+rather than as a test harness -- which is the strongest evidence anyone can
+generate for it. Option 1's swappable interface was scaffolding for a
+migration that no longer has anything left to migrate.
+
+**Two things to check before committing to it**, neither of which is known:
+
+1. **Blob size in a browser.** The sixteen blobs were measured for the runtime
+   argument, not for a page load; haskell's tables and its 3,102-interval
+   unicode class file are the outliers. Lazy-load per language is the obvious
+   answer, but it has not been priced.
+2. **Wall-clock to parse a corpus file in `ts_lr.mjs`.** Never measured, and it
+   is a per-keystroke cost if `:w` reformats. If it is slow, a worker or a
+   debounce is the fix, not a server.
+
+**The one fact that would change it back:** if the parse of a realistic file
+takes long enough to be felt on `:w`, option 1's server buys native
+tree-sitter speed and the browser path becomes a later optimisation.
 
 ### Q2 — What does the left editor hold on load?
 
