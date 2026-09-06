@@ -32,6 +32,8 @@ class ByteLexer {
   }
   lookahead() { return this.decode().cp; }
   atEof() { return this.cur >= this.b.length; }
+  // ts_lexer__is_at_included_range_start, for a buffer that is one range.
+  atRangeStart() { return this.cur === 0; }
   advance(skip) {
     this.ops.push((skip ? 'S' : 'A') + this.cur + ';');
     this.cur += this.decode().size;

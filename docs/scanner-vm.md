@@ -40,11 +40,25 @@ The whole host interface, across all nine files:
 | `lexer->eof`            | css, kotlin, markdown-block, markdown-inline, python, rust |
 | `lexer->get_column`     | **none**                                       |
 
+**Correction, 2026-09-06.** The interface is **six** operations, not five: this
+table missed `lexer->is_at_included_range_start`, which javascript calls inside
+`scan_automatic_semicolon`. The VM gained `IF_RANGE_START` for it. Where the
+*answer* lives is the interesting part -- for a whole-document parse there is
+one included range starting at byte zero, so it reduces to "are we at the
+start", but that is a fact about the host's ranges rather than about the VM, so
+the host answers it and a host with injected ranges answers differently without
+the bytecode changing.
+
+With `MAP` (§"`MAP`, added 2026-09-06 for html") that is two additions across
+eleven ported languages, and both are the same kind of miss: this survey
+catalogued what the scanners *compute* and under-catalogued what they *call out
+to*.
+
 `get_column` is the significant one: it is the only lexer call with a
 non-trivial implementation (it re-reads the line from the start of the token),
 and **no scanner in this roster uses it.** YAML and markdown-block both need a
 column and both track it themselves by counting in `advance`. So the VM's host
-interface is five operations.
+interface is five operations -- see the correction below; it is six.
 
 ### State carried across tokens
 
@@ -111,7 +125,7 @@ sophisticated.
 
 ## 2. The ISA
 
-Forty-one opcodes, one byte each, operands ULEB128 (indices) or SLEB128 (signed
+Forty-two opcodes, one byte each, operands ULEB128 (indices) or SLEB128 (signed
 immediates) or a fixed 2-byte little-endian absolute jump target. The full
 listing is in `harness/ts_scanner_vm.mjs` (it lived at `spike/scanner-vm/vm.js`
 until the parser started driving it; that path is now a re-export); the groups
@@ -121,7 +135,7 @@ are:
 | ----------------- | ------------------------------------------------------------------------ |
 | lexer             | `ADVANCE` `SKIP` `MARK_END` `LOOKAHEAD` `EOF` `MAP`                      |
 | termination       | `EMIT` `EMIT_R` `FAIL` `EMIT_IF` `EMIT_IF_R`                             |
-| lookahead tests   | `IF_CHAR` `IF_NCHAR` `IF_CLASS` `IF_NCLASS` `IF_EOF` `IF_NEOF`           |
+| lookahead tests   | `IF_CHAR` `IF_NCHAR` `IF_CLASS` `IF_NCLASS` `IF_EOF` `IF_NEOF` `IF_RANGE_START` |
 | valid symbols     | `IF_VALID` `IF_NVALID` `IF_VALID_R` `IF_NVALID_R`                        |
 | registers         | `CONST` `MOV` `ALU` `ALUI`                                               |
 | register tests    | `IF_CMP` `IF_CMPI`                                                       |

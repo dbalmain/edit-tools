@@ -21,6 +21,8 @@ pub trait Lexer {
     fn advance(&mut self, skip: bool);
     fn mark_end(&mut self);
     fn at_eof(&self) -> bool;
+    /// ts_lexer__is_at_included_range_start; only javascript asks.
+    fn at_range_start(&self) -> bool;
 }
 
 pub struct StackSpec {
@@ -335,6 +337,10 @@ impl<'p> ScannerVm<'p> {
                 0x14 | 0x15 => {
                     let t = self.target(&mut pc)?;
                     if lx.at_eof() == (op == 0x14) { pc = t; }
+                }
+                0x16 => {
+                    let t = self.target(&mut pc)?;
+                    if lx.at_range_start() { pc = t; }
                 }
                 0x18 | 0x19 => {
                     let c = self.uleb(&mut pc)? as usize;

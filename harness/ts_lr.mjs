@@ -1517,6 +1517,11 @@ class Parser {
         advance: (skip) => lexer.advance(skip),
         markEnd: () => lexer.markEnd(),
         atEof: () => lexer.atEof,
+        // ts_lexer__is_at_included_range_start. This lexer parses one whole
+        // buffer, which is a single included range starting at byte 0, so the
+        // question reduces to "are we at the start". It lives here rather than
+        // in the VM precisely because that reduction is the host's to make.
+        atRangeStart: () => lexer.pos === 0,
       };
     }
   }

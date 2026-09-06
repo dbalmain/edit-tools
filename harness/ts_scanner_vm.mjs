@@ -9,8 +9,14 @@
 // it inside a single runtime.  `spike/scanner-vm/vm.js` is now a re-export, so
 // the spike's replay and record harnesses still run against this file.
 //
-// The host supplies a lexer with four methods: lookahead(), advance(skip),
-// markEnd(), atEof().  Everything else is in here.
+// The host supplies a lexer with five methods: lookahead(), advance(skip),
+// markEnd(), atEof(), atRangeStart().  Everything else is in here.
+//
+// The fifth arrived with javascript, whose automatic-semicolon scan calls
+// `lexer->is_at_included_range_start`.  `docs/scanner-vm.md`'s host-interface
+// table surveyed javascript and missed it: for a whole-document parse there is
+// one included range and the answer is "position is zero", but that is a fact
+// about the host, not about the VM, so the host answers it.
 //
 // Every value is a wrapping i32.  Every trap -- bad opcode, bad index, stack
 // over/underflow, budget exhaustion -- halts the scan as `false`, identically
@@ -35,7 +41,7 @@ const OP = {
   MAP: 0x07,
   EMIT: 0x08, EMIT_R: 0x09, FAIL: 0x0a, EMIT_IF: 0x0b, EMIT_IF_R: 0x0c,
   IF_CHAR: 0x10, IF_NCHAR: 0x11, IF_CLASS: 0x12, IF_NCLASS: 0x13,
-  IF_EOF: 0x14, IF_NEOF: 0x15,
+  IF_EOF: 0x14, IF_NEOF: 0x15, IF_RANGE_START: 0x16,
   IF_VALID: 0x18, IF_NVALID: 0x19, IF_VALID_R: 0x1a, IF_NVALID_R: 0x1b,
   CONST: 0x20, MOV: 0x21, ALU: 0x22, ALUI: 0x23,
   IF_CMP: 0x28, IF_CMPI: 0x29,
@@ -223,6 +229,13 @@ class ScannerVM {
         case OP.IF_EOF: case OP.IF_NEOF: {
           const t = code[pc] | (code[pc + 1] << 8); pc += 2;
           if (this.lexer.atEof() === (op === OP.IF_EOF)) pc = t;
+          break;
+        }
+        // ts_lexer__is_at_included_range_start. Only javascript asks, and only
+        // inside its automatic-semicolon scan.
+        case OP.IF_RANGE_START: {
+          const t = code[pc] | (code[pc + 1] << 8); pc += 2;
+          if (this.lexer.atRangeStart()) pc = t;
           break;
         }
         case OP.IF_VALID: case OP.IF_NVALID: {

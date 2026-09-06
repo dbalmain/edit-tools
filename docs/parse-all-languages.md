@@ -5,10 +5,10 @@ tree-sitter languages in the corpus. Aven is out of scope by instruction, and
 would be out of scope anyway -- it has no tree-sitter grammar and its plan of
 record (`docs/roadmap.md`) is its own parser.
 
-Where it stands: **9 of 16 parse byte-identically** (json 3/3, scheme 15/15,
+Where it stands: **11 of 16 parse byte-identically** (json 3/3, scheme 15/15,
 go 16/16, toml 15/15, css 15/15, xml 15/15, html 16/16, python 12/12,
-rust 19/19). This document is what the remaining seven cost, measured rather
-than guessed.
+rust 19/19, javascript 14/14, typescript 16/16). This document is what the
+remaining five cost, measured rather than guessed.
 
 ## What is already done
 
@@ -50,8 +50,8 @@ only the `.c` undercounts the set by 30%.
 | ---------- | ----------: | --------: | --------: | ------------------------- |
 | toml       |          82 |        82 |         5 | stateless *(done)*        |
 | css        |         100 |       100 |         3 | stateless *(done)*        |
-| typescript |          13 |       360 |        10 | stateless                 |
-| javascript |         364 |       364 |         8 | stateless                 |
+| typescript |          13 |       360 |        10 | stateless *(done)*        |
+| javascript |         364 |       364 |         8 | stateless *(done)*        |
 | rust       |         393 |       393 |        10 | one `u8` *(done)*         |
 | xml        |         270 |       425 |        11 | tag-name strings *(done)* |
 | python     |         437 |       437 |        12 | 2 stacks + a flag *(done)* |
@@ -95,7 +95,9 @@ Whole-file lines of the `.program.js`, which is what a reviewer actually reads:
 | html     |               747 |       673 | 0.90x |
 | python   |               437 |       613 | 1.40x |
 | rust     |               393 |       510 | 1.30x |
-| total    |             2,184 |     2,675 | 1.22x |
+| javascript |             364 |       484 | 1.33x |
+| typescript |             360 |       411 | 1.14x |
+| total    |             2,908 |     3,570 | 1.23x |
 
 An earlier revision of this section put css at 147 lines and drew 1.6x from it.
 That was wrong -- `css.program.js` has been 182 lines since it landed -- and the
@@ -108,16 +110,16 @@ because its bulk is *tables* -- a 126-entry name map and a 385-line `tag.h` --
 and tables become package data rather than code. Its 126-way lookup is eight
 lines of generator emitting 252 instructions.
 
-**That reframes option 1's volume.** At the blended 1.22x the remaining seven
-(11,282 lines) come to roughly 13,800 rather than the ~19,000 the first estimate
-gave, and the four expensive scanners are exactly the ones most likely to be
-table-heavy. The objection to hand-compiling was never really the line count;
-it is seven separate correctness arguments. But the line count was the number on
-the page, and it is now materially smaller.
+**That reframes option 1's volume.** At the blended 1.23x the remaining five
+(10,558 lines) come to roughly 13,000 rather than the ~19,000 the first estimate
+gave, and four of the five are exactly the ones most likely to be table-heavy.
+The objection to hand-compiling was never really the line count; it is five
+separate correctness arguments. But the line count was the number on the page,
+and it is now materially smaller.
 
-css, xml, html, python and rust all landed **byte-identical on the first run**,
-on the clean corpus and on the deliberately-broken one, and all replay the
-recorded C-scanner calls with no mismatches. Six grammars in, the pipeline --
+Every port since toml has landed **byte-identical on the first run**, on the
+clean corpus and on the deliberately-broken one, and all replay the recorded
+C-scanner calls with no mismatches. Eight grammars in, the pipeline --
 transcode, port, trace differential -- generalises past the one it was built on.
 
 Ports also price the tables concretely: css's program is **173 bytes of code
@@ -223,11 +225,10 @@ The options, and what each costs, are on the decisions page -- see
    instead of twelve; every scanner then gets the same correctness argument. The
    subset is narrow for eleven of twelve, and the risk is concentrated in
    haskell.
-3. **Do the cheap ones, defer the expensive four.** javascript, typescript and
-   kotlin are the 730 lines left in that band; ruby, yaml, markdown and haskell
-   are 7,595. Gets to 12 of 16 languages for a small fraction of the work. css,
-   xml, html, python and rust are already done out of this band, which is the
-   work option 3 shares with options 1 and 2.
+3. **Do the cheap ones, defer the expensive four.** Only kotlin's 459 lines are
+   left in that band; ruby, yaml, markdown and haskell are 7,595. This option
+   has almost collapsed into option 1: the cheap band is one scanner from done,
+   and the decision is now entirely about the four expensive ones.
 4. **Scanner-only wasm.** Tables stay JSON, so the 6.3 KB interpreter win
    stands, and only the scanners ship as wasm. Reintroduces a wasm dependency
    for the browser, and the two runtimes stop executing the same artifact.
@@ -301,6 +302,46 @@ Two bounds fall out of it, and they are xml's, not the VM's:
 - The VM's stacks cap at 256 elements, so the port holds at most 256 bytes of
   open-tag names -- a *tighter* bound than upstream's, and the first place a
   scanner has come near an ISA limit. html will sit in the same band.
+
+### javascript needed a *sixth* lexer call, which the host-interface table missed
+
+`docs/scanner-vm.md` states the VM's host interface is five operations, and
+discusses exactly one omission -- `get_column`, deliberately absent because no
+scanner calls it. javascript calls a sixth: `is_at_included_range_start`, inside
+its automatic-semicolon scan. That table surveyed javascript.
+
+So the VM gained `IF_RANGE_START`. The instructive part is *where the answer
+lives*: for a whole-document parse there is one included range starting at byte
+zero, so the question reduces to "are we at the start" -- but that is a fact
+about the host's ranges, not about the VM. The reduction sits in the host, and a
+host that parses injected ranges answers differently without the bytecode
+changing.
+
+Together with `MAP`, that is **two additions in eleven languages, both of them
+the same kind of miss**: the design survey catalogued what the scanners *compute*
+and under-catalogued what they *call out to*. Worth expecting one more in the
+four that remain rather than being surprised by it.
+
+### Sharing a header bought two functions, not a scanner
+
+typescript's `scanner.c` is a 13-line shim over a `common/scanner.h` it shares
+with tsx, and an earlier revision of this document already corrected "typescript
+is free once javascript is done" to "call it 40% of a fresh port". Porting both
+puts a number on it, and the number is lower than 40%.
+
+`scan_template_chars` and `scan_jsx_text` are character-for-character identical.
+**Every other function differs**: `scan_whitespace_and_comments` returns a bool
+rather than a tri-state, takes no `consume` flag, tracks no block newline and
+stops its line comment at `\n` only; `scan_automatic_semicolon` has no `/` arm,
+no `is_at_included_range_start`, and a `}` arm that skips trailing space looking
+for `:` so `type F = ({a}: {a: number}) => number` is not cut in half; the switch
+moves `:` and `.` to the reject list and makes `{`, `(` and `[` conditional on
+valid symbols; `scan_ternary_qmark` rejects `?.` as well as `??`, consumes
+whitespace with *advance* rather than skip, and rejects `:`, `)` and `,`.
+
+**The general lesson for the four left: a shared header is evidence of a shared
+shape, not of shared code.** Two of the four -- markdown's block and inline
+scanners -- are the next place to apply it.
 
 ### rust closes the audit `docs/scanner-vm.md` opened, at the cheap end
 

@@ -63,6 +63,7 @@ impl<'a> ByteLexer<'a> {
 impl<'a> Lexer for ByteLexer<'a> {
     fn lookahead(&self) -> i32 { self.decode().0 }
     fn at_eof(&self) -> bool { self.cur >= self.b.len() }
+    fn at_range_start(&self) -> bool { self.cur == 0 }
     fn advance(&mut self, skip: bool) {
         self.ops.push(if skip { 'S' } else { 'A' });
         self.ops.push_str(&self.cur.to_string());
