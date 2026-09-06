@@ -117,15 +117,46 @@ The options, and what each costs, are on the decisions page -- see
    stands, and only the scanners ship as wasm. Reintroduces a wasm dependency
    for the browser, and the two runtimes stop executing the same artifact.
 
-## What every option needs regardless
+## What every option needs, and now has
 
-**A per-grammar scanner-call oracle.** `spike/scanner-vm/record/` wraps toml's
-real `scanner.c` and logs every invocation -- entry offset, lookahead, the
-valid-symbols vector, each `advance`/`mark_end`, and the verdict -- by casting
-`TSLexer *` to tree-sitter's internal `Lexer *` and swapping the lexer's
-function pointers. The technique is generic; the build script is not. Whatever
-produces the twelve scanners is checked against traces recorded this way, so
-generalising the recorder is work that no decision can waste.
+Two pieces of groundwork that no answer to the decision above can waste. Both
+are built.
+
+### The scanner-call oracle, for all thirteen
+
+`harness/ts_scanner_record.py` records every call each grammar's real C scanner
+makes over the corpus: entry offset, lookahead, the valid-symbols vector, every
+`advance`/`mark_end` in order, and the verdict -- plus every `serialize` and
+`deserialize`, which the toml-only original did not need and eight of the twelve
+remaining scanners do. **Thirteen languages, 50,522 scanner calls**, frozen into
+`corpus/scanner-traces/` the way `corpus/trees/` is, so the oracle is available
+without a compiler or the network.
+
+It confirms itself on the one language with a published figure: toml records
+**230 scan calls with 26 failures**, which is exactly what `docs/scanner-vm.md`
+reports for the working port.
+
+### Character classification, pinned as data
+
+`harness/ts_ctype_tables.py`. Nine of the twelve scanners call `isw*`, and those
+are a property of the host process rather than of the grammar -- the finding in
+`docs/host-ctype-divergence.md`. The generated table reproduces that document's
+glibc-UTF-8 column exactly, and its four control rows discriminate in both
+directions: the C locale answers `False` for U+2003 and U+3000, musl/emscripten
+answers `True` for U+00A0.
+
+It settles one unstated assumption and creates one new cost:
+
+- **`gen_trees.pin_ctype`'s three-locale fallback is safe.** `C.UTF-8`,
+  `en_US.UTF-8` and `en_AU.UTF-8` produce byte-identical tables for all twelve
+  classes, so the frozen corpus does not depend on which one the generating
+  machine had. Nothing had checked that.
+- **`alnum` is 802 ranges, 3,492 bytes gzipped** -- against a 6.3 KB
+  interpreter, not a rounding error. `space` is 8 ranges and 65 bytes. Nine
+  scanners want classification, so **embedded per blob the tables cost roughly
+  31 KB gz across the language set, and hoisted into the shared runtime they
+  cost one copy.** That belongs with the decision above rather than with
+  whoever ports the first scanner.
 
 ## Not in scope here
 
