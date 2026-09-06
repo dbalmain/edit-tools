@@ -17,27 +17,42 @@
 // because the Rust replay reads those same bytes: "one artifact, two runtimes"
 // is only tested if the encoder sits on both paths.
 //
-// ## The serialize comparison is only meaningful for a stateless scanner
+// ## State is checked by correspondence, not by bytes
 //
 // The recorded bytes are *upstream's* serialization format. The VM has its own
 // -- persistent registers by index, then persistent stacks -- so for a scanner
-// that carries state the two will differ by construction, and comparing them
-// would fail a correct port. Today every ported scanner is stateless and the
-// comparison is a real check that the VM emits nothing; the count is printed
-// so that stops being invisible the moment it stops being true.
+// that carries state the two differ by construction, and comparing them
+// directly would fail a correct port. For a stateless program the comparison
+// is still worth making literally, because there the right answer is "no bytes
+// at all" in either format; the state count is printed so a scanner that
+// silently starts carrying state stops being invisible.
 //
-// The reason that is survivable rather than fatal is measured, not assumed.
-// tree-sitter truncates serialized state at 1024 bytes, and python, yaml, xml
-// and html all behave differently once truncated -- so a VM format that packs
-// state differently truncates at a different point. But across every recorded
-// trace, the **largest serialized state any scanner reaches is 92 bytes**
-// (haskell); every other language stays at or below 35, and five are
-// stateless. Worst-case headroom to the limit is 11x.
+// For a stateful program the check becomes a **bijection**, which is the
+// property that actually matters: every time upstream serialized the same
+// bytes we must have serialized the same bytes, and vice versa. A port that
+// forgot to push something would collapse two upstream states onto one of
+// ours; a port that carried junk would split one of theirs across two of ours.
+// Both are caught, and neither requires the two formats to agree. Replay then
+// restores state through that mapping, so a `deserialize` of bytes upstream
+// never emitted is itself a failure rather than a silent reset.
+//
+// Empty state is the one special case: upstream writes it as a length-0 buffer
+// *and* as an all-zeros header, so it is not a single key. A length-0
+// deserialize is a reset in every scanner (upstream's own deserialize returns
+// early on it), which is what the VM does too.
+//
+// The formats being free to differ is survivable rather than fatal, and that
+// was measured. tree-sitter truncates serialized state at 1024 bytes, and
+// python, yaml, xml and html all behave differently once truncated -- so a VM
+// format that packs state differently truncates at a different point. But
+// across every recorded trace, the **largest serialized state any scanner
+// reaches is 92 bytes** (haskell); every other language stays at or below 35,
+// and five are stateless. Worst-case headroom to the limit is 11x.
 //
 // So on this corpus the formats cannot diverge, and the VM is free to use its
 // own. That is a fact about the corpus rather than a guarantee: a file nesting
-// a few hundred tags deep would reach the limit, and a port of xml or html
-// should carry that as a known bound rather than a silent assumption.
+// a few hundred tags deep would reach the limit, and xml and html carry that
+// as a known bound rather than a silent assumption.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -58,6 +73,8 @@ const bits = (s) => Array.from(s, (c) => c === '1');
 const hex = (bytes) =>
   Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
 
+const unhex = (s) => Uint8Array.from(s.match(/../g) ?? [], (h) => parseInt(h, 16));
+
 function sourceFor(language, stem) {
   // `gen_trees.py` refuses two corpus files that share a stem, so the glob is
   // unambiguous by construction.
@@ -77,6 +94,8 @@ function replay(language) {
 
   const program = decode(new Uint8Array(fs.readFileSync(svm)));
   const vm = new ScannerVM(program);
+  const stateful =
+    program.regPersist !== 0 || (program.stacks || []).some((s) => s && s.persist);
   let files = 0, calls = 0, bad = 0, states = 0;
   const shown = [];
 
@@ -87,20 +106,54 @@ function replay(language) {
     // Scanner state is per-parse, and the trace is one parse: reset once per
     // file, then let serialize/deserialize drive it exactly as recorded.
     vm.reset();
+    // The two halves of the state bijection, rebuilt per file: one parse is one
+    // scanner lifetime, so nothing should carry across.
+    const oursFor = new Map();
+    const theirsFor = new Map();
     for (const line of fs.readFileSync(path.join(traceDir, name), 'utf8').split('\n')) {
       if (!line) continue;
       const t = JSON.parse(line);
       if (t.op === 'deserialize') {
-        vm.deserialize(Uint8Array.from(t.bytes.match(/../g) ?? [], (h) => parseInt(h, 16)));
+        if (!stateful || t.bytes === '') {
+          vm.deserialize(unhex(t.bytes));
+          continue;
+        }
+        const ours = oursFor.get(t.bytes);
+        if (ours === undefined) {
+          bad++;
+          if (shown.length < 10) {
+            shown.push(`${stem} deserialize: upstream state ${t.bytes} was never serialized`);
+          }
+          continue;
+        }
+        vm.deserialize(unhex(ours));
         continue;
       }
       if (t.op === 'serialize') {
         states++;
         const got = hex(vm.serialize());
-        if (got !== t.bytes) {
-          bad++;
-          if (shown.length < 10) shown.push(`${stem} serialize: want ${t.bytes}, got ${got}`);
+        if (!stateful) {
+          if (got !== t.bytes) {
+            bad++;
+            if (shown.length < 10) shown.push(`${stem} serialize: want ${t.bytes}, got ${got}`);
+          }
+          continue;
         }
+        const seenOurs = oursFor.get(t.bytes);
+        const seenTheirs = theirsFor.get(got);
+        if (seenOurs !== undefined && seenOurs !== got) {
+          bad++;
+          if (shown.length < 10) {
+            shown.push(`${stem} state: upstream ${t.bytes} was ${seenOurs}, now ${got}`);
+          }
+        } else if (seenTheirs !== undefined && seenTheirs !== t.bytes) {
+          bad++;
+          if (shown.length < 10) {
+            shown.push(`${stem} state: ours ${got} was upstream ${seenTheirs}, now ${t.bytes}`);
+          }
+        }
+        oursFor.set(t.bytes, got);
+        theirsFor.set(got, t.bytes);
         continue;
       }
       calls++;

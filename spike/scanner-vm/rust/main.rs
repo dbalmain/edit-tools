@@ -1,8 +1,22 @@
 //! Replays the same recorded scanner traces the JS side replays, through the
-//! Rust VM, against the same `toml.svm` blob.  Same bytes in, same bytes out,
-//! or the project's central claim is false.
+//! Rust VM, against the same packed blob.  Same bytes in, same bytes out, or
+//! the project's central claim is false.
 //!
-//!   rustc -O -o replay main.rs && ./replay ../../../harness/scanners/toml.svm <trace-dir> <src-dir>
+//!   rustc -O -o replay main.rs
+//!   ./replay ../../../harness/scanners/xml.svm \
+//!            ../../../corpus/scanner-traces/xml ../../../corpus/src/xml
+//!
+//! This reads the canonical traces under `corpus/scanner-traces/`, the same
+//! ones `harness/ts_scanner_replay.mjs` reads.  It used to read a second copy
+//! under `spike/scanner-vm/traces/` in an older format, which meant the Rust
+//! side quietly stopped covering the oracle the JS side was checking against --
+//! two copies of the same evidence is the divergence this project exists to
+//! prevent, so there is now one.
+//!
+//! Serialize and deserialize are replayed by the same **correspondence** check
+//! the JS driver uses, and for the same reason: the VM's state format is not
+//! upstream's, so the test is that the mapping between them is a bijection.
+//! See `harness/ts_scanner_replay.mjs` for the argument.
 
 mod vm;
 use std::fs;
@@ -159,12 +173,39 @@ fn str_field(line: &str, key: &str) -> String {
     }
 }
 
+/// The recorder writes valid-symbols as a bit string: yaml has 113 external
+/// tokens, and an array of ints per call outweighs the file it came from.
 fn valid_field(line: &str) -> Vec<bool> {
-    let pat = "\"valid\":[";
-    let i = line.find(pat).unwrap() + pat.len();
-    let rest = &line[i..];
-    let end = rest.find(']').unwrap();
-    rest[..end].split(',').map(|s| s.trim() == "1").collect()
+    str_field(line, "valid").chars().map(|c| c == '1').collect()
+}
+
+fn hex(bytes: &[u8]) -> String {
+    let mut s = String::with_capacity(bytes.len() * 2);
+    for b in bytes {
+        s.push_str(&format!("{b:02x}"));
+    }
+    s
+}
+
+fn unhex(s: &str) -> Vec<u8> {
+    let b = s.as_bytes();
+    (0..b.len() / 2)
+        .map(|i| u8::from_str_radix(&s[i * 2..i * 2 + 2], 16).unwrap_or(0))
+        .collect()
+}
+
+/// The corpus file whose stem matches the trace's.  `gen_trees.py` refuses two
+/// corpus files that share a stem, so this is unambiguous by construction --
+/// which is what lets one driver serve every language rather than hardcoding an
+/// extension the way this file used to hardcode `.toml`.
+fn source_for(src_dir: &Path, stem: &str) -> Option<Vec<u8>> {
+    for entry in fs::read_dir(src_dir).ok()? {
+        let path = entry.ok()?.path();
+        if path.file_stem().map(|s| s == stem).unwrap_or(false) {
+            return fs::read(path).ok();
+        }
+    }
+    None
 }
 
 fn main() {
@@ -185,19 +226,73 @@ fn main() {
         .collect();
     entries.sort();
 
-    let (mut calls, mut files, mut bad) = (0u64, 0u64, 0u64);
+    let (mut calls, mut files, mut bad, mut states) = (0u64, 0u64, 0u64, 0u64);
     let mut hist: std::collections::BTreeMap<i32, u64> = Default::default();
     let mut vm = ScannerVm::new(&prog);
+    let stateful = prog.reg_persist != 0 || prog.stacks.iter().any(|s| s.persist);
 
     for path in entries {
         let stem = path.file_stem().unwrap().to_string_lossy().to_string();
-        let src = match fs::read(src_dir.join(format!("{stem}.toml"))) {
-            Ok(s) => s,
-            Err(_) => continue,
+        let src = match source_for(src_dir, &stem) {
+            Some(s) => s,
+            None => continue,
         };
         files += 1;
+        // Scanner state is per-parse, and the trace is one parse.  The two
+        // halves of the bijection are rebuilt with it.
+        vm.reset();
+        let mut ours_for: std::collections::HashMap<String, String> = Default::default();
+        let mut theirs_for: std::collections::HashMap<String, String> = Default::default();
         for line in fs::read_to_string(&path).unwrap().lines() {
             if line.trim().is_empty() { continue; }
+            let op = str_field(line, "op");
+            if op == "deserialize" {
+                let theirs = str_field(line, "bytes");
+                if !stateful || theirs.is_empty() {
+                    vm.deserialize(&unhex(&theirs));
+                } else if let Some(ours) = ours_for.get(&theirs) {
+                    let bytes = unhex(ours);
+                    vm.deserialize(&bytes);
+                } else {
+                    bad += 1;
+                    if bad <= 10 {
+                        println!("MISMATCH {stem} deserialize: upstream state {theirs} was never serialized");
+                    }
+                }
+                continue;
+            }
+            if op == "serialize" {
+                states += 1;
+                let theirs = str_field(line, "bytes");
+                let got = hex(&vm.serialize(1024));
+                if !stateful {
+                    if got != theirs {
+                        bad += 1;
+                        if bad <= 10 {
+                            println!("MISMATCH {stem} serialize: want {theirs}, got {got}");
+                        }
+                    }
+                    continue;
+                }
+                if let Some(seen) = ours_for.get(&theirs) {
+                    if *seen != got {
+                        bad += 1;
+                        if bad <= 10 {
+                            println!("MISMATCH {stem} state: upstream {theirs} was {seen}, now {got}");
+                        }
+                    }
+                } else if let Some(seen) = theirs_for.get(&got) {
+                    if *seen != theirs {
+                        bad += 1;
+                        if bad <= 10 {
+                            println!("MISMATCH {stem} state: ours {got} was upstream {seen}, now {theirs}");
+                        }
+                    }
+                }
+                ours_for.insert(theirs.clone(), got.clone());
+                theirs_for.insert(got, theirs);
+                continue;
+            }
             calls += 1;
             let cur0: usize = field(line, "cur0").unwrap().parse().unwrap();
             let want_ret: i32 = field(line, "ret").unwrap().parse().unwrap();
@@ -221,7 +316,7 @@ fn main() {
         }
     }
     let h: Vec<String> = hist.iter().map(|(k, v)| format!("{k}:{v}")).collect();
-    println!("files {files}  calls {calls}  mismatches {bad}");
+    println!("files {files}  calls {calls}  states {states}  mismatches {bad}");
     println!("result_symbol histogram (-1 = returned false): {}", h.join(" "));
     std::process::exit(if bad == 0 { 0 } else { 1 });
 }

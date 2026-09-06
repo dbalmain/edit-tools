@@ -6,6 +6,18 @@
 // comparison, which only sees the calls that survive into the tree shape.
 //
 //   node replay.js <trace-dir> <corpus-dir>
+//
+// This is the *spike's* replay, over the *spike's* recorder in
+// `record/trace_scanner.c`, which is toml-only and writes `valid` as a JSON
+// array.  `run.sh` needs it for the two things the harness track has no
+// equivalent of: the fuzz corpus and the incremental-reparse traces, both
+// generated on the fly.
+//
+// For the committed cross-language traces under `corpus/scanner-traces/`, use
+// `harness/ts_scanner_replay.mjs` instead -- those write `valid` as a bit
+// string, and every character of a JS string is truthy, so feeding one to this
+// file would pass every valid-symbol test and report a confident green.  The
+// assertion below is there because that failure is silent.
 const fs = require('fs');
 const path = require('path');
 const { ScannerVM } = require('./vm.js');
@@ -30,6 +42,12 @@ function main(traceDir, corpusDir) {
     files++;
     for (const line of lines) {
       const t = JSON.parse(line);
+      if (!Array.isArray(t.valid)) {
+        throw new Error(
+          `${stem}: valid-symbols is not an array -- these look like the ` +
+          'cross-language traces; replay them with harness/ts_scanner_replay.mjs',
+        );
+      }
       calls++;
       symCount.set(t.sym, (symCount.get(t.sym) || 0) + 1);
 

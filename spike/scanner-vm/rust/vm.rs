@@ -103,6 +103,92 @@ impl<'p> ScannerVm<'p> {
         self.call_stack.clear();
     }
 
+    // ---- serialize / deserialize ------------------------------------------
+    // VM-defined and canonical, so no per-scanner code can get it wrong.  Order
+    // is fixed: persistent registers by index, then persistent stacks by index.
+    // Over-long state drops elements from the *top* of the deepest stack, which
+    // is what python's and yaml's own truncation does.
+    //
+    // Transcribed from `harness/ts_scanner_vm.mjs` line for line, including the
+    // out-of-range read: JS's `bytes[pos++]` past the end yields `undefined`,
+    // and `undefined & 0x7f` is 0, so the LEB loop terminates with the position
+    // still advanced.  `byte_at` reproduces that rather than clamping, because
+    // a truncated state must decode to the same thing in both runtimes.
+    pub fn serialize(&self, limit: usize) -> Vec<u8> {
+        let mut head = Vec::new();
+        for i in 0..NREG {
+            if (self.p.reg_persist >> i) & 1 == 1 {
+                write_sleb(&mut head, self.reg[i]);
+            }
+        }
+        let mut bodies: Vec<Vec<i32>> = Vec::new();
+        for i in 0..NSTACK {
+            if self.p.stacks.get(i).map(|s| s.persist).unwrap_or(false) {
+                bodies.push(self.stacks[i].clone());
+            }
+        }
+        loop {
+            let mut buf = head.clone();
+            for values in &bodies {
+                write_uleb(&mut buf, values.len() as u32);
+                for v in values {
+                    write_sleb(&mut buf, *v);
+                }
+            }
+            if buf.len() <= limit {
+                return buf;
+            }
+            let mut deepest: Option<usize> = None;
+            for i in 0..bodies.len() {
+                let floor = deepest.map(|d| bodies[d].len()).unwrap_or(0);
+                if bodies[i].len() > floor {
+                    deepest = Some(i);
+                }
+            }
+            match deepest {
+                Some(d) if !bodies[d].is_empty() => {
+                    bodies[d].pop();
+                }
+                _ => {
+                    buf.truncate(limit);
+                    return buf;
+                }
+            }
+        }
+    }
+
+    pub fn deserialize(&mut self, bytes: &[u8]) {
+        self.reset();
+        if bytes.is_empty() {
+            return;
+        }
+        let mut pos = 0usize;
+        for i in 0..NREG {
+            if (self.p.reg_persist >> i) & 1 == 1 {
+                if pos >= bytes.len() {
+                    return;
+                }
+                self.reg[i] = read_sleb(bytes, &mut pos);
+            }
+        }
+        for i in 0..NSTACK {
+            if !self.p.stacks.get(i).map(|s| s.persist).unwrap_or(false) {
+                continue;
+            }
+            if pos >= bytes.len() {
+                return;
+            }
+            let n = read_uleb(bytes, &mut pos);
+            self.stacks[i].clear();
+            let mut k = 0u32;
+            while k < n && pos < bytes.len() {
+                let v = read_sleb(bytes, &mut pos);
+                self.stacks[i].push(v);
+                k += 1;
+            }
+        }
+    }
+
     /// Returns (emitted, result_symbol).
     pub fn scan(&mut self, lx: &mut dyn Lexer, valid: &[bool]) -> (bool, i32) {
         self.enter_scan();
@@ -451,6 +537,69 @@ impl<'p> ScannerVm<'p> {
                 return Ok(v);
             }
             if s > 35 { return self.trap(); }
+        }
+    }
+}
+
+// LEB128, the same four helpers `harness/ts_scanner_vm.mjs` carries.
+fn write_uleb(out: &mut Vec<u8>, v: u32) {
+    let mut x = v;
+    loop {
+        let mut b = (x & 0x7f) as u8;
+        x >>= 7;
+        if x != 0 {
+            b |= 0x80;
+        }
+        out.push(b);
+        if x == 0 {
+            return;
+        }
+    }
+}
+
+fn write_sleb(out: &mut Vec<u8>, v: i32) {
+    let mut x = v;
+    loop {
+        let b = (x & 0x7f) as u8;
+        x >>= 7;
+        if (x == 0 && b & 0x40 == 0) || (x == -1 && b & 0x40 != 0) {
+            out.push(b);
+            return;
+        }
+        out.push(b | 0x80);
+    }
+}
+
+/// Out of range reads as 0 and still advances, matching JS's `undefined & 0x7f`.
+fn byte_at(b: &[u8], pos: &mut usize) -> u8 {
+    let v = b.get(*pos).copied().unwrap_or(0);
+    *pos += 1;
+    v
+}
+
+fn read_uleb(b: &[u8], pos: &mut usize) -> u32 {
+    let (mut v, mut s) = (0u32, 0u32);
+    loop {
+        let byte = byte_at(b, pos);
+        v |= ((byte & 0x7f) as u32).wrapping_shl(s);
+        s += 7;
+        if byte & 0x80 == 0 {
+            return v;
+        }
+    }
+}
+
+fn read_sleb(b: &[u8], pos: &mut usize) -> i32 {
+    let (mut v, mut s) = (0i32, 0u32);
+    loop {
+        let byte = byte_at(b, pos);
+        v |= ((byte & 0x7f) as i32).wrapping_shl(s);
+        s += 7;
+        if byte & 0x80 == 0 {
+            if s < 32 && byte & 0x40 != 0 {
+                v |= (-1i32).wrapping_shl(s);
+            }
+            return v;
         }
     }
 }

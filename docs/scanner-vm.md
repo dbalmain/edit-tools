@@ -64,6 +64,15 @@ Four of nine are stateless; the rest need scalars plus at most two stacks of
 small integers. No scanner stores a string, a pointer, or anything the VM would
 have to represent as a heap object.
 
+**Correction, 2026-09-06.** True of *this roster*, false of the language set:
+html and xml both serialize a stack of tag names, matched by content on close,
+and neither was surveyed when this table was written. It does not need a new
+instruction. A stack of strings is two parallel stacks — one holding every
+string's bytes concatenated flat, one holding a length per string — compared
+with `GETIDX` over both. `harness/scanners/xml.program.js` is the worked
+example; `BUF_PUSH`/`IF_BUF_EQ` are *not* the answer, since `IF_BUF_EQ` compares
+against a constant from the string table and here both sides are dynamic.
+
 Two upstream details a port must not copy blindly. **python and yaml truncate**
 when the state exceeds tree-sitter's 1024-byte buffer, silently dropping the
 top of their stacks — deep-nesting behaviour that no test in this repo covers.
@@ -202,13 +211,48 @@ and all 45,678 replayed calls carry **zero** bytes of state. §8's advice to por
 **rust** next — one byte, one register — is what converts it into measurement,
 and it is now the highest-value item on this document's list.
 
+**Measured, 2026-09-06, by porting xml instead.** rust would have been the
+cheaper conversion; xml was taken first because it is one of the two scanners
+holding a *stack of strings*, and that was the open question about the ISA
+(§"What the VM cannot express" below says a growable string would not fit, and
+this document's roster is where the claim that no scanner stores one comes
+from). Both answers are in `docs/parse-all-languages.md`. The one that belongs
+here:
+
+**Relation-compatibility is checkable mechanically, and cheaply.** The test is a
+**bijection** between upstream's serialized bytes and the VM's, rebuilt per
+parse: whenever upstream serialized the same bytes we must have too, and the
+converse. A port strictly finer than upstream splits one of their states across
+two of ours and is caught; a port coarser than upstream collapses two of theirs
+onto one of ours and is caught. Replay restores state *through* the mapping, so
+deserializing bytes upstream never emitted fails rather than silently resetting.
+`harness/ts_scanner_replay.mjs` does it in about thirty lines and it costs
+nothing on a stateless program, where the literal comparison against zero bytes
+is kept instead.
+
+xml passes it over **350 state transitions on 803 scan calls**, first run. So
+the obligation this section named is real, is not free, and is now enforced by a
+gate rather than by the porter's care — which is what the paragraph above should
+have asked for and did not.
+
+It does not make the porter's judgement vanish, exactly as argued: xml's port is
+**strictly finer than upstream past 1024 bytes**, because upstream truncates
+there and rebuilds the dropped tags as empty names while the VM keeps them. The
+bijection cannot see that on a corpus whose deepest state is 35 bytes. The
+python porter still has to know that `indents[0]` is a sentinel; what changed is
+that being wrong about it now shows up as a mismatch rather than as a tree
+diff three layers away.
+
 ### What the VM cannot express
 
 Stated plainly, because the interesting part of a design is its edges:
 
 - **Unbounded scratch memory.** There is one 32-byte buffer and four stacks
   capped at 256. A scanner needing a growable string would not fit. None of the
-  nine does.
+  nine does — but xml and html, outside this roster, hold a *stack* of strings,
+  which fits in two stacks (§1) at a cost: xml's port holds at most 256 bytes of
+  open-tag names against upstream's 1024, the first place a real scanner has
+  come near an ISA limit.
 - **Arbitrary-precision or floating-point arithmetic.** No `MUL`, no `DIV`, no
   floats. None of the nine uses any (both `float` matches in the catalogue are
   comments).

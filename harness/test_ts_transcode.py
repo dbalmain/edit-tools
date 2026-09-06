@@ -238,11 +238,17 @@ class ScannerPortTest(unittest.TestCase):
     stops being replayed, exits 0 with nothing done and would read green
     forever. The numbers below are what the committed traces contain, so a drop
     is as much a failure as a mismatch.
+
+    The state count is floored separately for the same reason. xml is the first
+    port that carries state across tokens, and its serialize/deserialize
+    correspondence is a different check from its scan behaviour -- one that a
+    replay could stop performing while still walking every call.
     """
 
-    # toml 230 scan calls, css 450. Raise these as ports land.
-    MIN_SCANNER_CALLS = 680
-    MIN_PORTED_LANGUAGES = 2
+    # toml 230 scan calls, css 450, xml 803. Raise these as ports land.
+    MIN_SCANNER_CALLS = 1483
+    MIN_SCANNER_STATES = 566
+    MIN_PORTED_LANGUAGES = 3
 
     def _run(self, script: str, *args: str) -> str:
         result = subprocess.run(
@@ -263,6 +269,8 @@ class ScannerPortTest(unittest.TestCase):
         self.assertNotIn("MISMATCH", out)
         calls = sum(int(n.replace(",", "")) for n in re.findall(r"(\d+) calls", out))
         self.assertGreaterEqual(calls, self.MIN_SCANNER_CALLS, out)
+        states = sum(int(n.replace(",", "")) for n in re.findall(r"(\d+) states", out))
+        self.assertGreaterEqual(states, self.MIN_SCANNER_STATES, out)
 
 
 if __name__ == "__main__":
