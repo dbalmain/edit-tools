@@ -5,10 +5,10 @@ tree-sitter languages in the corpus. Aven is out of scope by instruction, and
 would be out of scope anyway -- it has no tree-sitter grammar and its plan of
 record (`docs/roadmap.md`) is its own parser.
 
-Where it stands: **11 of 16 parse byte-identically** (json 3/3, scheme 15/15,
+Where it stands: **12 of 16 parse byte-identically** (json 3/3, scheme 15/15,
 go 16/16, toml 15/15, css 15/15, xml 15/15, html 16/16, python 12/12,
-rust 19/19, javascript 14/14, typescript 16/16). This document is what the
-remaining five cost, measured rather than guessed.
+rust 19/19, javascript 14/14, typescript 16/16, kotlin 16/16). Everything that
+is left is one of the four big ones.
 
 ## What is already done
 
@@ -55,7 +55,7 @@ only the `.c` undercounts the set by 30%.
 | rust       |         393 |       393 |        10 | one `u8` *(done)*         |
 | xml        |         270 |       425 |        11 | tag-name strings *(done)* |
 | python     |         437 |       437 |        12 | 2 stacks + a flag *(done)* |
-| kotlin     |         459 |       459 |        11 | stateless                 |
+| kotlin     |         459 |       459 |        11 | stateless *(done)*        |
 | html       |         362 |       747 |         9 | tag types + names *(done)* |
 | ruby       |       1,107 |     1,107 |        30 | scalars + stacks          |
 | yaml       |       1,415 |     1,415 |       113 | 5 `i16` + 2 `i16` stacks  |
@@ -97,7 +97,8 @@ Whole-file lines of the `.program.js`, which is what a reviewer actually reads:
 | rust     |               393 |       510 | 1.30x |
 | javascript |             364 |       484 | 1.33x |
 | typescript |             360 |       411 | 1.14x |
-| total    |             2,908 |     3,570 | 1.23x |
+| kotlin   |               459 |       668 | 1.46x |
+| total    |             3,367 |     4,238 | 1.26x |
 
 An earlier revision of this section put css at 147 lines and drew 1.6x from it.
 That was wrong -- `css.program.js` has been 182 lines since it landed -- and the
@@ -110,17 +111,16 @@ because its bulk is *tables* -- a 126-entry name map and a 385-line `tag.h` --
 and tables become package data rather than code. Its 126-way lookup is eight
 lines of generator emitting 252 instructions.
 
-**That reframes option 1's volume.** At the blended 1.23x the remaining five
-(10,558 lines) come to roughly 13,000 rather than the ~19,000 the first estimate
-gave, and four of the five are exactly the ones most likely to be table-heavy.
-The objection to hand-compiling was never really the line count; it is five
-separate correctness arguments. But the line count was the number on the page,
-and it is now materially smaller.
+**That reframes option 1's volume.** At the blended 1.26x the remaining four
+(7,595 lines) come to roughly 9,600 rather than the ~19,000 the first estimate
+gave. The objection to hand-compiling was never really the line count; it is
+four separate correctness arguments. But the line count was the number on the
+page, and it has halved.
 
 Every port since toml has landed **byte-identical on the first run**, on the
 clean corpus and on the deliberately-broken one, and all replay the recorded
-C-scanner calls with no mismatches. Eight grammars in, the pipeline --
-transcode, port, trace differential -- generalises past the one it was built on.
+C-scanner calls with no mismatches. Nine grammars in, the pipeline -- transcode,
+port, trace differential -- generalises past the one it was built on.
 
 Ports also price the tables concretely: css's program is **173 bytes of code
 and 4,312 bytes packed**, because `iswalnum` is 4.1 KB of it. xml packs to
@@ -225,10 +225,10 @@ The options, and what each costs, are on the decisions page -- see
    instead of twelve; every scanner then gets the same correctness argument. The
    subset is narrow for eleven of twelve, and the risk is concentrated in
    haskell.
-3. **Do the cheap ones, defer the expensive four.** Only kotlin's 459 lines are
-   left in that band; ruby, yaml, markdown and haskell are 7,595. This option
-   has almost collapsed into option 1: the cheap band is one scanner from done,
-   and the decision is now entirely about the four expensive ones.
+3. ~~**Do the cheap ones, defer the expensive four.**~~ **Overtaken by events.**
+   The cheap band is *done* -- all nine of it -- so this option no longer names
+   a different piece of work from option 1. What is left is ruby, yaml, markdown
+   and haskell, and the question is only how those four get produced.
 4. **Scanner-only wasm.** Tables stay JSON, so the 6.3 KB interpreter win
    stands, and only the scanners ship as wasm. Reintroduces a wasm dependency
    for the browser, and the two runtimes stop executing the same artifact.
@@ -302,6 +302,31 @@ Two bounds fall out of it, and they are xml's, not the VM's:
 - The VM's stacks cap at 256 elements, so the port holds at most 256 bytes of
   open-tag names -- a *tighter* bound than upstream's, and the first place a
   scanner has come near an ISA limit. html will sit in the same band.
+
+### kotlin: the hardest C to read was not the hardest to port
+
+kotlin has the most tangled control flow of the twelve -- four `goto`s that jump
+*into* the middle of later blocks, one of them backwards to re-enter a switch
+that a preceding declaration must not re-initialise. In C that is the kind of
+thing a reviewer has to trace by hand.
+
+In the VM it costs nothing. Every label is a jump target, there is no block
+structure to violate, and a `goto` into the middle of a block is an ordinary
+`jmp`. The one place it needed care was placing the buffer clear *above* the
+re-entered label rather than inside it, which is exactly what the C's
+declaration-before-label placement says.
+
+Its `scan_words` is what the buffer opcodes were designed for and had never been
+used by: fifteen alphabetic characters into a 16-byte buffer, then `strncmp`
+against two tables of zero-padded 16-byte entries -- which is `BUF_PUSH` and
+`IF_BUF_EQ` against a string table, exactly. The port also reproduces an
+upstream hang (`while (!iswspace(lookahead)) skip;` never terminates at EOF,
+because `iswspace(0)` is false) rather than guarding it, because a guard would
+be a divergence and no corpus file reaches it.
+
+**With kotlin the cheap band is finished.** Nine scanners ported, nine
+byte-identical on both corpora, and everything left is one of the four the
+decision was always about.
 
 ### javascript needed a *sixth* lexer call, which the host-interface table missed
 
