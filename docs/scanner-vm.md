@@ -30,20 +30,20 @@ from the right tags.
 
 The whole host interface, across all nine files:
 
-| API                     | Used by                                        |
-| ----------------------- | ---------------------------------------------- |
-| `lexer->lookahead`      | all nine                                       |
-| `lexer->advance(l, false)` | all nine                                    |
-| `lexer->advance(l, true)`  | css, javascript, kotlin, python, rust, yaml |
-| `lexer->mark_end`       | all nine                                       |
-| `lexer->result_symbol`  | all nine                                       |
-| `lexer->eof`            | css, kotlin, markdown-block, markdown-inline, python, rust |
-| `lexer->get_column`     | **none**                                       |
+| API                        | Used by                                                    |
+| -------------------------- | ---------------------------------------------------------- |
+| `lexer->lookahead`         | all nine                                                   |
+| `lexer->advance(l, false)` | all nine                                                   |
+| `lexer->advance(l, true)`  | css, javascript, kotlin, python, rust, yaml                |
+| `lexer->mark_end`          | all nine                                                   |
+| `lexer->result_symbol`     | all nine                                                   |
+| `lexer->eof`               | css, kotlin, markdown-block, markdown-inline, python, rust |
+| `lexer->get_column`        | **none** (see correction below)                            |
 
 **Correction, 2026-09-06.** The interface is **six** operations, not five: this
 table missed `lexer->is_at_included_range_start`, which javascript calls inside
 `scan_automatic_semicolon`. The VM gained `IF_RANGE_START` for it. Where the
-*answer* lives is the interesting part -- for a whole-document parse there is
+_answer_ lives is the interesting part -- for a whole-document parse there is
 one included range starting at byte zero, so it reduces to "are we at the
 start", but that is a fact about the host's ranges rather than about the VM, so
 the host answers it and a host with injected ranges answers differently without
@@ -51,8 +51,8 @@ the bytecode changing.
 
 With `MAP` (§"`MAP`, added 2026-09-06 for html") that is two additions across
 eleven ported languages, and both are the same kind of miss: this survey
-catalogued what the scanners *compute* and under-catalogued what they *call out
-to*.
+catalogued what the scanners _compute_ and under-catalogued what they _call out
+to_.
 
 `get_column` is the significant one: it is the only lexer call with a
 non-trivial implementation (it re-reads the line from the start of the token),
@@ -60,52 +60,69 @@ and **no scanner in this roster uses it.** YAML and markdown-block both need a
 column and both track it themselves by counting in `advance`. So the VM's host
 interface is five operations -- see the correction below; it is six.
 
+**Correction, 2026-09-07.** The claim above was true of the nine-language roster
+this document surveyed and false of the sixteen. tree-sitter-haskell calls
+`lexer->get_column` (via `column()` at `scanner.c:637`) to compute the indent of
+a layout started at an interior token -- `start_column` is `get_column` minus
+the number of codepoints already pushed into the lookahead buffer. Opcode `0x06`
+was reserved for this and trapped; haskell spends it as `GET_COLUMN dst`. The
+three hosts -- `ts_lr.mjs`'s already-working `getColumn()`,
+`ByteLexer.column()`, and the Rust twin -- agree on the cold-path semantics:
+rewind to the last newline (or byte 0), walk counting codepoints, a leading BOM
+is not a character. The parser host also sets `didGetColumn`, which stamps
+`depends_on_column` on the resulting leaf.
+
+YAML and markdown-block still track a column themselves; they do not go through
+this instruction. The host interface is now seven operations (`lookahead`,
+`advance`, `skip`, `mark_end`, `eof`, `is_at_included_range_start`,
+`get_column`).
+
 ### State carried across tokens
 
-| Scanner         | `serialize` output                                       | Shape                    |
-| --------------- | -------------------------------------------------------- | ------------------------ |
-| toml            | 0 bytes                                                   | stateless                |
-| css             | 0 bytes                                                   | stateless                |
-| javascript      | 0 bytes                                                   | stateless                |
-| kotlin          | 0 bytes                                                   | stateless                |
-| rust            | 1 byte                                                    | one `u8` counter         |
-| markdown-inline | 4 bytes                                                   | four `u8` scalars        |
-| markdown-block  | 5 + 4·blocks                                              | 5 scalars + `u8` stack   |
-| python          | 2 + delims + 2·indents                                    | 2 scalars + 2 stacks     |
-| yaml            | 10 + 4·depth                                              | 5 `i16` + 2 `i16` stacks |
+| Scanner         | `serialize` output     | Shape                    |
+| --------------- | ---------------------- | ------------------------ |
+| toml            | 0 bytes                | stateless                |
+| css             | 0 bytes                | stateless                |
+| javascript      | 0 bytes                | stateless                |
+| kotlin          | 0 bytes                | stateless                |
+| rust            | 1 byte                 | one `u8` counter         |
+| markdown-inline | 4 bytes                | four `u8` scalars        |
+| markdown-block  | 5 + 4·blocks           | 5 scalars + `u8` stack   |
+| python          | 2 + delims + 2·indents | 2 scalars + 2 stacks     |
+| yaml            | 10 + 4·depth           | 5 `i16` + 2 `i16` stacks |
 
 Four of nine are stateless; the rest need scalars plus at most two stacks of
 small integers. No scanner stores a string, a pointer, or anything the VM would
 have to represent as a heap object.
 
-**Correction, 2026-09-06.** True of *this roster*, false of the language set:
+**Correction, 2026-09-06.** True of _this roster_, false of the language set:
 html and xml both serialize a stack of tag names, matched by content on close,
 and neither was surveyed when this table was written. It does not need a new
 instruction. A stack of strings is two parallel stacks — one holding every
 string's bytes concatenated flat, one holding a length per string — compared
 with `GETIDX` over both. `harness/scanners/xml.program.js` is the worked
-example; `BUF_PUSH`/`IF_BUF_EQ` are *not* the answer, since `IF_BUF_EQ` compares
+example; `BUF_PUSH`/`IF_BUF_EQ` are _not_ the answer, since `IF_BUF_EQ` compares
 against a constant from the string table and here both sides are dynamic.
 
 Two upstream details a port must not copy blindly. **python and yaml truncate**
-when the state exceeds tree-sitter's 1024-byte buffer, silently dropping the
-top of their stacks — deep-nesting behaviour that no test in this repo covers.
+when the state exceeds tree-sitter's 1024-byte buffer, silently dropping the top
+of their stacks — deep-nesting behaviour that no test in this repo covers.
 **markdown-block does not truncate at all**: `sizeof(Block)` is 4 (a bare C
 enum), so 255 open blocks overflow the serialization buffer. That is an upstream
 bug, and it is the kind of thing a transcription reproduces by accident.
 
 ### C features used
 
-| Feature                             | Scanners                                             |
-| ----------------------------------- | ---------------------------------------------------- |
-| `<wctype.h>` classification         | css, javascript, kotlin, rust, markdown-block        |
-| dynamic array / stack               | python, yaml, markdown-block                          |
-| `malloc`/`realloc`/`free`           | python, yaml, markdown-block, markdown-inline         |
-| fixed char buffer + string compare  | kotlin (16 B), markdown-block (11 B)                  |
-| function pointer (indirect call)    | yaml                                                  |
-| self-recursion                      | markdown-block                                        |
-| floating point                      | **none** (both matches are comments)                  |
-| `get_column`                        | **none**                                              |
+| Feature                            | Scanners                                      |
+| ---------------------------------- | --------------------------------------------- |
+| `<wctype.h>` classification        | css, javascript, kotlin, rust, markdown-block |
+| dynamic array / stack              | python, yaml, markdown-block                  |
+| `malloc`/`realloc`/`free`          | python, yaml, markdown-block, markdown-inline |
+| fixed char buffer + string compare | kotlin (16 B), markdown-block (11 B)          |
+| function pointer (indirect call)   | yaml                                          |
+| self-recursion                     | markdown-block                                |
+| floating point                     | **none** (both matches are comments)          |
+| `get_column`                       | **none** (haskell, added 2026-09-07; see §1)  |
 
 That list is the whole ISA requirement, and it is small. The allocation is only
 ever "grow a stack of small integers"; nothing allocates a variable-length
@@ -125,23 +142,23 @@ sophisticated.
 
 ## 2. The ISA
 
-Forty-two opcodes, one byte each, operands ULEB128 (indices) or SLEB128 (signed
-immediates) or a fixed 2-byte little-endian absolute jump target. The full
-listing is in `harness/ts_scanner_vm.mjs` (it lived at `spike/scanner-vm/vm.js`
-until the parser started driving it; that path is now a re-export); the groups
-are:
+Forty-three opcodes, one byte each, operands ULEB128 (indices) or SLEB128
+(signed immediates) or a fixed 2-byte little-endian absolute jump target. The
+full listing is in `harness/ts_scanner_vm.mjs` (it lived at
+`spike/scanner-vm/vm.js` until the parser started driving it; that path is now a
+re-export); the groups are:
 
-| Group             | Opcodes                                                                  |
-| ----------------- | ------------------------------------------------------------------------ |
-| lexer             | `ADVANCE` `SKIP` `MARK_END` `LOOKAHEAD` `EOF` `MAP`                      |
-| termination       | `EMIT` `EMIT_R` `FAIL` `EMIT_IF` `EMIT_IF_R`                             |
-| lookahead tests   | `IF_CHAR` `IF_NCHAR` `IF_CLASS` `IF_NCLASS` `IF_EOF` `IF_NEOF` `IF_RANGE_START` |
-| valid symbols     | `IF_VALID` `IF_NVALID` `IF_VALID_R` `IF_NVALID_R`                        |
-| registers         | `CONST` `MOV` `ALU` `ALUI`                                               |
-| register tests    | `IF_CMP` `IF_CMPI`                                                       |
-| stacks            | `PUSH` `POP` `PEEK` `SETTOP` `LEN` `CLEAR` `GETIDX`                      |
-| buffer + strings  | `BUF_CLR` `BUF_PUSH` `BUF_LEN` `IF_BUF_EQ`                               |
-| control           | `JMP` `CALL` `RET` `CALL_R` `RECURSE`                                    |
+| Group            | Opcodes                                                                         |
+| ---------------- | ------------------------------------------------------------------------------- |
+| lexer            | `ADVANCE` `SKIP` `MARK_END` `LOOKAHEAD` `EOF` `GET_COLUMN` `MAP`                |
+| termination      | `EMIT` `EMIT_R` `FAIL` `EMIT_IF` `EMIT_IF_R`                                    |
+| lookahead tests  | `IF_CHAR` `IF_NCHAR` `IF_CLASS` `IF_NCLASS` `IF_EOF` `IF_NEOF` `IF_RANGE_START` |
+| valid symbols    | `IF_VALID` `IF_NVALID` `IF_VALID_R` `IF_NVALID_R`                               |
+| registers        | `CONST` `MOV` `ALU` `ALUI`                                                      |
+| register tests   | `IF_CMP` `IF_CMPI`                                                              |
+| stacks           | `PUSH` `POP` `PEEK` `SETTOP` `LEN` `CLEAR` `GETIDX`                             |
+| buffer + strings | `BUF_CLR` `BUF_PUSH` `BUF_LEN` `IF_BUF_EQ`                                      |
+| control          | `JMP` `CALL` `RET` `CALL_R` `RECURSE`                                           |
 
 ### `MAP`, added 2026-09-06 for html
 
@@ -149,35 +166,36 @@ The one instruction added since this document was written, and it is worth
 recording why, because "no new instructions" was most of the ISA's claim.
 
 tree-sitter-html does not store tag names; it stores
-`towupper(lexer->lookahead)`. So *which two tag names are the same tag* is
+`towupper(lexer->lookahead)`. So _which two tag names are the same tag_ is
 decided by the host process's case mapping, in exactly the way
-`docs/host-ctype-divergence.md` shows whitespace is — and a port that called
-the runtime's own upper-casing would inherit that divergence into JS and Rust
+`docs/host-ctype-divergence.md` shows whitespace is — and a port that called the
+runtime's own upper-casing would inherit that divergence into JS and Rust
 differently, which is the failure this route exists to prevent.
 
 It could not be spelled with what was already here. The class tables answer a
-*membership* question and this is a *function*; approximating it with ASCII-only
+_membership_ question and this is a _function_; approximating it with ASCII-only
 folding gets `<DIV>` right and gets U+017F (LATIN SMALL LETTER LONG S, which
 glibc upper-cases to plain `S`) wrong, silently; and writing it as branches is
 absurd — glibc moves 1,477 code points.
 
-`MAP k, rd, rs` applies mapping table *k*, binary-searched over sorted
+`MAP k, rd, rs` applies mapping table _k_, binary-searched over sorted
 `[lo, hi, delta]` runs with identity outside them. As runs, those 1,477 code
 points are **690 triples**, generated by `harness/ts_ctype_tables.py` from the
 same glibc that froze the corpus, and checked against four discriminating
 controls the way the classification tables are. The package format gained a
 `maps` section beside `classes`; both runtimes gained about fifteen lines.
 
-Note it took opcode `0x07`, not `0x06`: `0x06` is reserved for `get_column` and
-traps, which §"What the VM cannot express" states and `harness/ts_lr.mjs` names.
-It was written as `0x06` first and every test still passed, because nothing
-executes a reserved opcode — the only thing that caught it was reading this
-document.
+Note it took opcode `0x07`, not `0x06`: `0x06` was reserved for `get_column` and
+trapped, which §"What the VM cannot express" stated and `harness/ts_lr.mjs`
+named. It was written as `0x06` first and every test still passed, because
+nothing executes a reserved opcode — the only thing that caught it was reading
+this document. haskell has since spent the reservation as `GET_COLUMN` (§1's
+2026-09-07 correction).
 
 The obvious next instruction, deliberately not added: **`IF_CLASS_R`**, a class
 test on a register rather than on the lookahead. html's `tag_can_contain` wants
 one for its 26-entry "not allowed in paragraphs" set and gets 26 comparisons
-instead. Nothing yet *forces* it, and an unused instruction is worse than a
+instead. Nothing yet _forces_ it, and an unused instruction is worse than a
 verbose one.
 
 **Tests are fused compare-and-branch.** Almost every line of every scanner is
@@ -192,20 +210,20 @@ disagree about.
 stack. All sized from the catalogue, not from taste:
 
 - **32 registers** because markdown-block's `parse_minus` holds 11 locals live
-  alongside the six scalars its `Scanner` struct carries. 16 was the first
-  guess and pricing markdown-block disproved it. A register operand is a whole
-  byte either way, so the wider file costs zero encoded bytes.
+  alongside the six scalars its `Scanner` struct carries. 16 was the first guess
+  and pricing markdown-block disproved it. A register operand is a whole byte
+  either way, so the wider file costs zero encoded bytes.
 - **4 stacks** because python and yaml each carry two, and markdown-block one.
-- **32 bytes of buffer** because kotlin's word buffer is 16 and
-  markdown-block's tag-name buffer is 11.
+- **32 bytes of buffer** because kotlin's word buffer is 16 and markdown-block's
+  tag-name buffer is 11.
 - **`GETIDX`** exists because markdown-block walks its open-block stack with
   `items[s->matched]` — an absolute index from the bottom — at three sites, and
   `PEEK` only reaches down from the top. Also found by pricing markdown-block.
 
 The program header declares which registers and stacks are persistent. Those
-survive between scans; everything else is zeroed on entry. That is the
-partition upstream expresses by putting some things in `Scanner` and some in
-locals, made explicit.
+survive between scans; everything else is zeroed on entry. That is the partition
+upstream expresses by putting some things in `Scanner` and some in locals, made
+explicit.
 
 ### `serialize` / `deserialize` are VM-defined, not scanner-defined
 
@@ -213,32 +231,32 @@ This is the design decision I would defend hardest. Upstream, every scanner
 writes its own serializer, and two of the nine get it subtly wrong (§1). In the
 VM the format is fixed by the header: persistent registers in index order as
 SLEB128, then persistent stacks in index order as a ULEB128 length and SLEB128
-elements. Over-long state drops elements from the *top* of the deepest stack,
+elements. Over-long state drops elements from the _top_ of the deepest stack,
 which is the behaviour python and yaml already have.
 
 So there is no per-scanner serialization code, and therefore no per-scanner
 serialization bug. Nine chances to get it wrong become zero. Nothing reads
-upstream's serialized bytes, so byte-compatibility with upstream is not
-required — only self-compatibility across the two runtimes, which is what the
-fixed format buys.
+upstream's serialized bytes, so byte-compatibility with upstream is not required
+— only self-compatibility across the two runtimes, which is what the fixed
+format buys.
 
 **Correction, 2026-08-31, from integrating TOML end to end.** The conclusion
 stands and one of the two arguments for it does not.
 
-Right: the serialized bytes are never *interpreted*. They are compared for
+Right: the serialized bytes are never _interpreted_. They are compared for
 equality in exactly three places — `external_scanner_state_changed`,
-`ts_stack_can_merge`, and the token cache — checked against 0.26.0's sources.
-So byte-compatibility with upstream really is unnecessary.
+`ts_stack_can_merge`, and the token cache — checked against 0.26.0's sources. So
+byte-compatibility with upstream really is unnecessary.
 
 Wrong: "nine chances to get it wrong become zero". What a port must reproduce is
-not a *format* but the **equivalence relation** upstream's format induces on
+not a _format_ but the **equivalence relation** upstream's format induces on
 scanner states, because that relation is what the three comparisons above
 decide. Upstream's serializers are lossy in scanner-specific ways, and the loss
 is load-bearing. tree-sitter-python 0.25.0's twenty-line `serialize` loses
 information three separate times:
 
 - `delimiter_count` is clamped to `UINT8_MAX`, so 255 and 300 open delimiters
-  are *equal* upstream;
+  are _equal_ upstream;
 - the indents loop starts at `iter = 1`, so `indents[0]` is state that exists
   and is defined not to matter;
 - truncation drops from the tail of `indents` specifically, not from "the top of
@@ -264,7 +282,7 @@ and it is now the highest-value item on this document's list.
 
 **Measured, 2026-09-06, by porting xml instead.** rust would have been the
 cheaper conversion; xml was taken first because it is one of the two scanners
-holding a *stack of strings*, and that was the open question about the ISA
+holding a _stack of strings_, and that was the open question about the ISA
 (§"What the VM cannot express" below says a growable string would not fit, and
 this document's roster is where the claim that no scanner stores one comes
 from). Both answers are in `docs/parse-all-languages.md`. The one that belongs
@@ -275,7 +293,7 @@ here:
 parse: whenever upstream serialized the same bytes we must have too, and the
 converse. A port strictly finer than upstream splits one of their states across
 two of ours and is caught; a port coarser than upstream collapses two of theirs
-onto one of ours and is caught. Replay restores state *through* the mapping, so
+onto one of ours and is caught. Replay restores state _through_ the mapping, so
 deserializing bytes upstream never emitted fails rather than silently resetting.
 `harness/ts_scanner_replay.mjs` does it in about thirty lines and it costs
 nothing on a stateless program, where the literal comparison against zero bytes
@@ -291,8 +309,8 @@ It does not make the porter's judgement vanish, exactly as argued: xml's port is
 there and rebuilds the dropped tags as empty names while the VM keeps them. The
 bijection cannot see that on a corpus whose deepest state is 35 bytes. The
 python porter still has to know that `indents[0]` is a sentinel; what changed is
-that being wrong about it now shows up as a mismatch rather than as a tree
-diff three layers away.
+that being wrong about it now shows up as a mismatch rather than as a tree diff
+three layers away.
 
 ### What the VM cannot express
 
@@ -300,7 +318,7 @@ Stated plainly, because the interesting part of a design is its edges:
 
 - **Unbounded scratch memory.** There is one 32-byte buffer and four stacks
   capped at 256. A scanner needing a growable string would not fit. None of the
-  nine does — but xml and html, outside this roster, hold a *stack* of strings,
+  nine does — but xml and html, outside this roster, hold a _stack_ of strings,
   which fits in two stacks (§1) at a cost: xml's port holds at most 256 bytes of
   open-tag names against upstream's 1024, the first place a real scanner has
   come near an ISA limit.
@@ -311,9 +329,14 @@ Stated plainly, because the interesting part of a design is its edges:
   above. The general shape is that anything a scanner calls out to the C library
   for is a property of the process rather than of the grammar, and has to become
   package data or it becomes a divergence.
-- **`get_column`.** Deliberately absent — no scanner uses it, and implementing
-  it means re-reading the line, which is the one lexer call with a non-trivial
-  cost. `0x06` is reserved and traps.
+- **`get_column`.** Was deliberately absent — no scanner in the original roster
+  uses it, and implementing it means re-reading the line, which is the one lexer
+  call with a non-trivial cost. `0x06` was reserved and trapped. **Correction,
+  2026-09-07.** haskell calls it. The reservation is now `GET_COLUMN dst`. A
+  remaining bound: the committed scanner traces wrap `advance`/`skip`/`mark_end`
+  only, so replay cannot check `GET_COLUMN` the way it checks every other lexer
+  call. End-to-end tree identity is the evidence that the columns are right,
+  unless the recorder is extended to emit `C<pos>=<col>;`.
 - **Reading the source buffer.** Same restriction upstream scanners have: the
   only view of the input is `lookahead` at the cursor.
 - **Recursion deeper than 4**, calls deeper than 32, stacks deeper than 256.
@@ -327,30 +350,30 @@ imperative-code-in-a-package that the route exists to eliminate.
 
 Every one of these is a place the two languages differ and the ISA closes:
 
-| Hazard                    | What the ISA does                                                                                     |
-| ------------------------- | ----------------------------------------------------------------------------------------------------- |
-| integer width, overflow   | Every value is `i32`, wrapping. JS applies `\| 0`; Rust uses `wrapping_*`. No other numeric type exists. |
-| shift counts ≥ 32         | Masked to 5 bits in the instruction definition. JS masks silently, Rust panics; neither is left to chance. |
-| logical vs arithmetic shift | Only arithmetic `SAR`. A logical shift is `AND` then `SAR`.                                            |
-| `i32::MIN % -1`           | `MOD` traps on a non-positive divisor. Rust overflows there; JS does not.                              |
-| division                  | Absent. Not needed, and a rounding-mode question nobody should have to answer.                         |
-| character classification  | No `isw*`. Classes are sorted code-point ranges carried in the package. This is the fix for the libc divergence in `docs/host-ctype-divergence.md`. |
-| case folding              | No fold instruction. ASCII-lowering is written out as a range test and a subtract, so no locale or Turkish-I question arises. |
-| UTF-8 vs UTF-16           | `lookahead` is a Unicode scalar value; `ADVANCE` moves by the code point's UTF-8 length. A JS host must iterate code points, not code units. This is the single most important host-interface rule and where a naive JS port silently diverges on astral input. |
-| string comparison         | The buffer is bytes and `BUF_PUSH` takes the low 8 bits explicitly. String-table entries are byte arrays. |
-| undefined behaviour       | There is none. Every out-of-range index, bad opcode, empty pop, full push, budget exhaustion and unknown ALU op is a **trap**, defined as halting the scan as `false`. |
+| Hazard                      | What the ISA does                                                                                                                                                                                                                                               |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| integer width, overflow     | Every value is `i32`, wrapping. JS applies `\| 0`; Rust uses `wrapping_*`. No other numeric type exists.                                                                                                                                                        |
+| shift counts ≥ 32           | Masked to 5 bits in the instruction definition. JS masks silently, Rust panics; neither is left to chance.                                                                                                                                                      |
+| logical vs arithmetic shift | Only arithmetic `SAR`. A logical shift is `AND` then `SAR`.                                                                                                                                                                                                     |
+| `i32::MIN % -1`             | `MOD` traps on a non-positive divisor. Rust overflows there; JS does not.                                                                                                                                                                                       |
+| division                    | Absent. Not needed, and a rounding-mode question nobody should have to answer.                                                                                                                                                                                  |
+| character classification    | No `isw*`. Classes are sorted code-point ranges carried in the package. This is the fix for the libc divergence in `docs/host-ctype-divergence.md`.                                                                                                             |
+| case folding                | No fold instruction. ASCII-lowering is written out as a range test and a subtract, so no locale or Turkish-I question arises.                                                                                                                                   |
+| UTF-8 vs UTF-16             | `lookahead` is a Unicode scalar value; `ADVANCE` moves by the code point's UTF-8 length. A JS host must iterate code points, not code units. This is the single most important host-interface rule and where a naive JS port silently diverges on astral input. |
+| string comparison           | The buffer is bytes and `BUF_PUSH` takes the low 8 bits explicitly. String-table entries are byte arrays.                                                                                                                                                       |
+| undefined behaviour         | There is none. Every out-of-range index, bad opcode, empty pop, full push, budget exhaustion and unknown ALU op is a **trap**, defined as halting the scan as `false`.                                                                                          |
 
 **Termination.** A scanner must terminate. Rather than a total instruction cap,
-which would scale with file size, the VM caps instructions *between two
-consecutive lexer advances* at 4,096. That bounds non-advancing loops — the
+which would scale with file size, the VM caps instructions _between two
+consecutive lexer advances_ at 4,096. That bounds non-advancing loops — the
 actual hazard — without bounding total work on a large file.
 
 ### How the parser drives it
 
-`scan(lexer, valid_symbols) -> (emitted, symbol)`. The host supplies four
-methods: `lookahead()`, `advance(skip)`, `markEnd()`, `atEof()`. That is the
-entire interface, and it is five operations because the catalogue says
-`get_column` is unused.
+`scan(lexer, valid_symbols) -> (emitted, symbol)`. The host supplies
+`lookahead()`, `advance(skip)`, `markEnd()`, `atEof()`, `atRangeStart()`, and
+`column()`. That is the entire interface. `column()` arrived with haskell;
+before that the catalogue said `get_column` was unused and `0x06` trapped.
 
 ## 3. TOML: the result
 
@@ -365,7 +388,7 @@ records **every invocation the parser makes** — entry offset, lookahead, the
 valid-symbols vector, every `advance`/`skip`/`mark_end` in order, and the
 verdict — by casting `TSLexer *` to tree-sitter's internal `Lexer *` and
 swapping the lexer function pointers. Replay asserts the VM issues the
-*identical call sequence* and returns the identical verdict.
+_identical call sequence_ and returns the identical verdict.
 
 That is stronger than comparing trees, which only sees the calls that survive
 into the tree shape, and it is what let three separate weaknesses show up.
@@ -387,7 +410,7 @@ and the half that was false is the load-bearing half. Rust decoded `toml.svm`;
 program object, and there was no `.svm` decoder in JavaScript anywhere in the
 repo — `pack.js` had an `encode` and no `decode`, and that `encode` had no
 caller, so the committed 165-byte artifact could not even be regenerated. The
-two runtimes were therefore executing *one program expressed twice*, with the
+two runtimes were therefore executing _one program expressed twice_, with the
 encoder on only one of the two paths, and an encoder bug would have left all
 45,678 calls green. Closed by `harness/ts_scanner_pack.mjs`'s `decode`, by
 `harness/ts_scanner_build.mjs` (which regenerates the artifact and has a
@@ -409,21 +432,21 @@ the oracle gap `docs/parse-layer.md` names, met for one scanner.
 
 ## 4. markdown-block, priced on paper
 
-The worst case: 1,602 raw lines, 1,376 code lines. Split by what the VM
-actually has to carry:
+The worst case: 1,602 raw lines, 1,376 code lines. Split by what the VM actually
+has to carry:
 
-| Region                                  | Code lines | Becomes                        |
-| --------------------------------------- | ---------: | ------------------------------ |
-| enums, constants, tag tables, struct    |        175 | package **data** (classes, string table, valid-sets) |
-| `serialize` / `deserialize`             |         46 | **free** — VM-defined          |
-| `create` / `destroy` / ABI wrappers     |         33 | **free**                       |
-| `push_block` / `pop_block` / `roundup_32` |       ~20 | **free** — VM stacks           |
-| executable body                         |    **1,299** | bytecode                     |
+| Region                                    | Code lines | Becomes                                              |
+| ----------------------------------------- | ---------: | ---------------------------------------------------- |
+| enums, constants, tag tables, struct      |        175 | package **data** (classes, string table, valid-sets) |
+| `serialize` / `deserialize`               |         46 | **free** — VM-defined                                |
+| `create` / `destroy` / ABI wrappers       |         33 | **free**                                             |
+| `push_block` / `pop_block` / `roundup_32` |        ~20 | **free** — VM stacks                                 |
+| executable body                           |  **1,299** | bytecode                                             |
 
 ### Does it fit?
 
-Yes, after two ISA changes, both already made and retested: 32 registers
-instead of 16, and `GETIDX`. Everything else maps directly:
+Yes, after two ISA changes, both already made and retested: 32 registers instead
+of 16, and `GETIDX`. Everything else maps directly:
 
 - the `simulate` flag is a register, and the `if (!s->simulate)` guards are
   branches;
@@ -445,17 +468,16 @@ does anything the other eight do not.
 
 ### How many bytes?
 
-Calibrated by hand-compiling two real markdown-block functions —
-`advance()` and `match()`, 78 code lines, **193 bytes measured**, in
+Calibrated by hand-compiling two real markdown-block functions — `advance()` and
+`match()`, 78 code lines, **193 bytes measured**, in
 `spike/scanner-vm/mdblock.sample.js`, with tests so the figure cannot rot. That
 is **2.47 bytes per body line**, on the hard scanner, not on TOML.
 
 Two independent estimates:
 
 - **Line rate**: 1,299 × 2.47 = **3,209 B**.
-- **Construct count** (142 lookahead tests, 188 `if`s, 48 loops, 63
-  valid-symbol tests, 106 advances, 43 case arms, …, costed per opcode):
-  **3,151 B**.
+- **Construct count** (142 lookahead tests, 188 `if`s, 48 loops, 63 valid-symbol
+  tests, 106 advances, 43 case arms, …, costed per opcode): **3,151 B**.
 
 They agree within 2%. And the rate, derived only from markdown-block, predicts
 TOML at 136 bytes against an actual **137** — a 1% error on a scanner it was not
@@ -476,18 +498,18 @@ elsewhere in that band.
 
 Same rate applied to each scanner's body lines:
 
-| Scanner         | Raw lines | Body lines | Est. bytecode |
-| --------------- | --------: | ---------: | ------------: |
-| toml            |        82 |         55 |  136 (**137 actual**) |
-| css             |       100 |         71 |           175 |
-| javascript      |       364 |        264 |           652 |
-| rust            |       393 |        290 |           716 |
-| markdown-inline |       397 |        276 |           682 |
-| python          |       437 |        340 |           840 |
-| kotlin          |       459 |        389 |           961 |
-| yaml            |     1,415 |      1,163 |         2,873 |
-| markdown-block  |     1,602 |      1,299 |         3,209 |
-| **total**       | **5,249** |  **4,147** |    **~10 KB** |
+| Scanner         | Raw lines | Body lines |        Est. bytecode |
+| --------------- | --------: | ---------: | -------------------: |
+| toml            |        82 |         55 | 136 (**137 actual**) |
+| css             |       100 |         71 |                  175 |
+| javascript      |       364 |        264 |                  652 |
+| rust            |       393 |        290 |                  716 |
+| markdown-inline |       397 |        276 |                  682 |
+| python          |       437 |        340 |                  840 |
+| kotlin          |       459 |        389 |                  961 |
+| yaml            |     1,415 |      1,163 |                2,873 |
+| markdown-block  |     1,602 |      1,299 |                3,209 |
+| **total**       | **5,249** |  **4,147** |           **~10 KB** |
 
 **~10 KB of bytecode for the entire roster, raw**, spread across nine packages
 that download independently. The marginal language costs 0.1–3.2 KB. Against
@@ -517,37 +539,37 @@ The argument that survives is about **which way the errors point**, and it is
 the asymmetry the brief identified:
 
 - **Hand-porting**: 9 scanners × 2 runtimes = **18 ports**. Each pair can
-  disagree *with each other* on inputs neither the corpus nor the goldens
+  disagree _with each other_ on inputs neither the corpus nor the goldens
   contain. That is a silent, input-dependent divergence between runtimes — this
   project's established failure mode, and the one thing its whole test strategy
   is built to catch and would not catch here.
 - **Compiling to bytecode**: 9 programs, **1 compilation each**. A bug is still
   possible, but both runtimes execute the same bytes, so a bug makes both
-  runtimes wrong *in the same way*. The tree then differs from tree-sitter's and
+  runtimes wrong _in the same way_. The tree then differs from tree-sitter's and
   the corpus catches it on the next run.
 
 GoTreeSitter is the right calibration for the first row and it does not have the
 second problem, because it has **one** runtime. It is evidence that 9 ports is
 affordable; it is not evidence that 18 ports agree. That distinction is the
 entire case for this route, and it is worth being precise that the VM does not
-buy less work — it buys work whose errors are *visible*.
+buy less work — it buys work whose errors are _visible_.
 
 ## 5. What it costs to ship
 
 All gzipped, `esbuild --minify` for JS, measured today in this worktree.
 
-| Component                                  | Raw     | gz         |
-| ------------------------------------------ | ------: | ---------: |
-| `runtime-js/bundle.js` as shipped          | 59,842  | 16,501     |
-| `runtime-js/bundle.js` minified            | 27,489  |  9,048     |
-| **scanner VM, JS, minified**               |  7,876  |  **2,533** |
-| both concatenated                          | 35,365  | 11,444     |
-| **VM's marginal cost when bundled**        |         |  **2,396** |
+| Component                           |    Raw |        gz |
+| ----------------------------------- | -----: | --------: |
+| `runtime-js/bundle.js` as shipped   | 59,842 |    16,501 |
+| `runtime-js/bundle.js` minified     | 27,489 |     9,048 |
+| **scanner VM, JS, minified**        |  7,876 | **2,533** |
+| both concatenated                   | 35,365 |    11,444 |
+| **VM's marginal cost when bundled** |        | **2,396** |
 
-| Rust                                | Machine code |
-| ----------------------------------- | -----------: |
-| scanner VM, `-O`                    |      8,581 B |
-| scanner VM, `-C opt-level=s`        |      6,643 B |
+| Rust                         | Machine code |
+| ---------------------------- | -----------: |
+| scanner VM, `-O`             |      8,581 B |
+| scanner VM, `-C opt-level=s` |      6,643 B |
 
 So the VM is **~2.4 KB gz on the JS side** and **~8.6 KB of machine code on the
 Rust side**, one time, for all languages. Against the brief's threshold — "a VM
@@ -577,8 +599,8 @@ Three reasons, in decreasing order of how much they'd have to change my mind.
 character of the file. The external scanner runs only at the handful of
 positions where the parser asks for an external token — for TOML, 230 calls
 across the entire corpus. Putting the per-character path through a general
-bytecode interpreter means paying an interpretive dispatch per *branch* rather
-than per *transition*: css has 437 lex states and emits long inline
+bytecode interpreter means paying an interpretive dispatch per _branch_ rather
+than per _transition_: css has 437 lex states and emits long inline
 range-comparison chains, so a single character could cost dozens of dispatches.
 A transition table is one binary search. Spending the interpreter's overhead on
 the cold path is free; spending it on the hot path is the whole cost.
@@ -587,29 +609,29 @@ the cold path is free; spending it on the hot path is the whole cost.
 is `(lo, hi, next, skip)` — four small fields, in a sorted, highly repetitive
 array. As bytecode the same transition is a class-or-char test plus a 2-byte
 absolute target, which is at least as many bytes and has far less exploitable
-redundancy. The survey measured this effect directly in the C artifacts:
-**code compresses about 4× worse than tables** (json 59% vs 25% of raw; go 40%
-vs 15%), so `ts_lex` is 11.8% of go's gzipped payload against 4.6% raw. Turning
-a table into instructions moves bytes the wrong way across exactly that line.
+redundancy. The survey measured this effect directly in the C artifacts: **code
+compresses about 4× worse than tables** (json 59% vs 25% of raw; go 40% vs 15%),
+so `ts_lex` is 11.8% of go's gzipped payload against 4.6% raw. Turning a table
+into instructions moves bytes the wrong way across exactly that line.
 
 **3. One engine would be the complex engine.** `ts_lex` needs three lexer
-operations and *no state at all* — no registers, no stacks, no valid-symbols, no
+operations and _no state at all_ — no registers, no stacks, no valid-symbols, no
 serialization. The scanner VM has all of those plus a trap surface. Unifying
 means running the simple thing on the complex engine and importing its whole
 failure surface into the hot path, for no reduction in what has to be verified.
 The DFA interpreter is small enough (`inRanges` plus a state loop) that it is
-*less* divergence risk standing alone than folded in.
+_less_ divergence risk standing alone than folded in.
 
 **Why the split is stable rather than a temporary convenience.** The two halves
 differ in kind, not degree, and the difference is structural:
 
-| | `ts_lex` | external scanner |
-| --- | --- | --- |
-| state across tokens | none | up to two stacks + scalars |
-| sees `valid_symbols` | no | yes, centrally |
-| control flow | a DFA — closed construct set | arbitrary, open-ended |
-| frequency | every character | a few positions per file |
-| recoverable mechanically | yes, demonstrated twice | no — it is hand-written C |
+|                          | `ts_lex`                     | external scanner           |
+| ------------------------ | ---------------------------- | -------------------------- |
+| state across tokens      | none                         | up to two stacks + scalars |
+| sees `valid_symbols`     | no                           | yes, centrally             |
+| control flow             | a DFA — closed construct set | arbitrary, open-ended      |
+| frequency                | every character              | a few positions per file   |
+| recoverable mechanically | yes, demonstrated twice      | no — it is hand-written C  |
 
 Nothing about a future grammar moves a construct from one column to the other,
 because the boundary is drawn by tree-sitter's own generator: what it can
@@ -619,8 +641,8 @@ express as a DFA goes in `ts_lex`, and what it cannot is precisely why
 **A qualification against my own point 3, added 2026-08-30.** I argued the DFA
 interpreter is safer standing alone because it is simpler. A codex review of the
 tables track's interpreter at `xhigh` found a real encoding defect that cuts
-against that: a guard which is false in **both** EOF modes encodes identically to
-one that is true everywhere, because an empty interval set short-circuits the
+against that: a guard which is false in **both** EOF modes encodes identically
+to one that is true everywhere, because an empty interval set short-circuits the
 interpreter's range test. It is latent — no pinned grammar triggers it — but it
 is a case where the table representation is not injective, so "the table is
 simple and therefore safe" is weaker than I wrote. It does not move the
@@ -648,7 +670,7 @@ not a law.
 The load-bearing gaps, worst first.
 
 **Scanner state across a resumption is untested against a real scanner.** This
-is the gap the brief named and it is still open. TOML's scanner is *stateless* —
+is the gap the brief named and it is still open. TOML's scanner is _stateless_ —
 `serialize` returns 0 bytes — so all 45,678 calls say nothing about
 serialization. The VM's serializer is covered only by unit tests I wrote against
 my own format (`vm.test.js`): round-trip, sentinel restoration, top-drop
@@ -682,14 +704,14 @@ it did not exist when this work started.
 track has found and minimised a **scratch-vs-incremental divergence inside
 tree-sitter**. My replay asserts the VM matches tree-sitter call-for-call, so
 where tree-sitter is inconsistent with itself, the VM faithfully reproduces
-whichever behaviour was recorded. That is correct for measuring *fidelity* and
-useless for measuring *correctness*, and the two should not be confused.
+whichever behaviour was recorded. That is correct for measuring _fidelity_ and
+useless for measuring _correctness_, and the two should not be confused.
 
 **Sizing limits are asserted from the catalogue, not proven.** 32 registers, 4
 stacks, 256 deep, 32-byte buffer, recursion depth 4, the 4,096-instruction spin
-budget. Every one is read off the nine scanners at their current pins. A
-grammar bump can invalidate any of them, and the failure would be a trap — a
-silent `false` — not a crash.
+budget. Every one is read off the nine scanners at their current pins. A grammar
+bump can invalidate any of them, and the failure would be a trap — a silent
+`false` — not a crash.
 
 **The wasm rows in `docs/host-ctype-divergence.md` remain confounded** with
 grammar version, as recorded there. Building `tree-sitter-css` 0.25.0 to wasm
@@ -717,14 +739,14 @@ now backwards: the scanner is the known half, and every remaining unknown is in
 the LR tables.
 
 **But that does not make route C cheap, and I want to be blunt about it.** The
-parse-layer document's own figure is that scanners are **0.4%** of what a grammar
-is. I have made the cheap half cheaper and measured it honestly. It changes the
-route's total cost by almost nothing. **The VM is worth building if and only if
-the table half is built** — it has no standalone value, and building it
-speculatively would be spending weeks on the 0.4%.
+parse-layer document's own figure is that scanners are **0.4%** of what a
+grammar is. I have made the cheap half cheaper and measured it honestly. It
+changes the route's total cost by almost nothing. **The VM is worth building if
+and only if the table half is built** — it has no standalone value, and building
+it speculatively would be spending weeks on the 0.4%.
 
 **What actually moved the board is not the VM.** It is
-`docs/host-ctype-divergence.md`: route A was credited with *deleting* the
+`docs/host-ctype-divergence.md`: route A was credited with _deleting_ the
 parse-layer's divergence risk, and it does not. Its Rust host and its wasm host
 classify characters differently, by measurement. (My further claim that the
 frozen corpus carried a third answer was wrong and is corrected in that
@@ -753,6 +775,7 @@ board can say that.
 4. Only then price the rest.
 
 **The one fact that would change this recommendation**: if the LR-table half
-cannot reproduce tree-sitter's trees byte-identically for a scanner-free grammar,
-the scanner VM is worthless regardless of how well it works, and this document
-describes a well-built component of a project that should not be started.
+cannot reproduce tree-sitter's trees byte-identically for a scanner-free
+grammar, the scanner VM is worthless regardless of how well it works, and this
+document describes a well-built component of a project that should not be
+started.

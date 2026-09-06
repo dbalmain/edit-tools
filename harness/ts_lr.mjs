@@ -482,10 +482,10 @@ class Lexer {
   // codepoints. `column` is the *byte* offset within the row, which is exactly
   // what has to be subtracted to find the line start.
   //
-  // No scanner in the pinned roster calls this, and the scanner VM has no
-  // opcode for it (docs/scanner-vm.md reserves 0x06 and traps). It is here
-  // because upstream's lexer has it and because a scanner that did call it
-  // would otherwise diverge silently rather than loudly.
+  // haskell is the scanner that spends the 0x06 reservation
+  // (docs/scanner-vm.md). The VM's GET_COLUMN calls this through the host
+  // object below; ByteLexer reimplements the same cold-path walk so replay
+  // and the parser agree.
   getColumn() {
     this.didGetColumn = true;
     if (!this.columnValid) {
@@ -1508,9 +1508,11 @@ class Parser {
         );
       }
       this.scanner = new ScannerVM(decodeScannerProgram(packed));
-      // The VM's whole host interface, and it really is four methods: the
-      // catalogue in docs/scanner-vm.md says no scanner in the roster calls
-      // get_column, so there is deliberately no opcode for it.
+      // The VM's whole host interface. GET_COLUMN delegates to Lexer.getColumn
+      // so didGetColumn is stamped on the resulting leaf -- that flag is
+      // load-bearing for reuse. atRangeStart is the host's because the
+      // reduction "whole buffer => position is zero" is a fact about ranges,
+      // not about the VM.
       const lexer = this.lexer;
       this.vmLexer = {
         lookahead: () => lexer.lookahead,
@@ -1522,6 +1524,7 @@ class Parser {
         // question reduces to "are we at the start". It lives here rather than
         // in the VM precisely because that reduction is the host's to make.
         atRangeStart: () => lexer.pos === 0,
+        column: () => lexer.getColumn(),
       };
     }
   }

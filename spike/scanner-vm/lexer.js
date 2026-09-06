@@ -34,6 +34,27 @@ class ByteLexer {
   atEof() { return this.cur >= this.b.length; }
   // ts_lexer__is_at_included_range_start, for a buffer that is one range.
   atRangeStart() { return this.cur === 0; }
+  // ts_lexer__get_column: codepoint count from the start of the current line
+  // to `cur`, not including the lookahead. A leading BOM is not a character.
+  // Matches harness/ts_lr.mjs getColumn()'s cold path -- rewind to the last
+  // newline (or byte 0) and walk -- rather than tracking a running count.
+  // Does not record an op: the committed traces wrap only advance/skip/mark_end.
+  column() {
+    const saved = this.cur;
+    let lineStart = 0;
+    for (let i = saved; i > 0; i--) {
+      if (this.b[i - 1] === 0x0a) { lineStart = i; break; }
+    }
+    let col = 0;
+    this.cur = lineStart;
+    while (this.cur < saved) {
+      const { cp, size } = this.decode();
+      if (!(this.cur === 0 && cp === 0xfeff)) col++;
+      this.cur += size;
+    }
+    this.cur = saved;
+    return col;
+  }
   advance(skip) {
     this.ops.push((skip ? 'S' : 'A') + this.cur + ';');
     this.cur += this.decode().size;

@@ -23,6 +23,9 @@ pub trait Lexer {
     fn at_eof(&self) -> bool;
     /// ts_lexer__is_at_included_range_start; only javascript asks.
     fn at_range_start(&self) -> bool;
+    /// ts_lexer__get_column: codepoint count from the start of the line.
+    /// haskell is the first ported scanner that calls it.
+    fn column(&mut self) -> i32;
 }
 
 pub struct StackSpec {
@@ -295,6 +298,9 @@ impl<'p> ScannerVm<'p> {
                 0x03 => lx.mark_end(),
                 0x04 => { let r = self.byte(&mut pc)?; let v = lx.lookahead(); self.set_reg(r, v)?; }
                 0x05 => { let r = self.byte(&mut pc)?; let v = i32::from(lx.at_eof()); self.set_reg(r, v)?; }
+                // GET_COLUMN: codepoint column. 0x06 was reserved and trapped;
+                // haskell is the first scanner that spends the reservation.
+                0x06 => { let r = self.byte(&mut pc)?; let v = lx.column(); self.set_reg(r, v)?; }
                 // MAP: case mapping is a host property in exactly the way
                 // classification is -- html stores towupper(lookahead) in every
                 // tag name it compares.

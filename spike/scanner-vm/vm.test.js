@@ -236,6 +236,35 @@ t('invalid UTF-8 decodes to -1 with a one-byte step, as tree-sitter does', () =>
   assert.strictEqual(lx.lookahead(), 0x61);
 });
 
+t('GET_COLUMN counts codepoints from the last newline, matching get_column', () => {
+  const lx = new ByteLexer(Buffer.from('ab\ncdé', 'utf8'));
+  assert.strictEqual(lx.column(), 0);
+  lx.advance(false); lx.advance(false);
+  assert.strictEqual(lx.column(), 2, 'two ASCII chars into row 0');
+  lx.advance(false); // over the newline
+  assert.strictEqual(lx.column(), 0, 'newline resets the column');
+  lx.advance(false); lx.advance(false); lx.advance(false); // c, d, é
+  assert.strictEqual(lx.column(), 3, 'é is one codepoint, two bytes');
+  assert.strictEqual(lx.cur, 7);
+});
+
+t('GET_COLUMN skips a leading BOM the way ts_lexer__do_advance does', () => {
+  const lx = new ByteLexer(Buffer.from('\uFEFFab', 'utf8'));
+  lx.advance(false); // over the BOM
+  assert.strictEqual(lx.column(), 0, 'a BOM is not a character');
+  lx.advance(false); // 'a'
+  assert.strictEqual(lx.column(), 1);
+});
+
+t('GET_COLUMN writes the host column into a register', () => {
+  const p = prog({ regPersist: 1 }, (a) => {
+    a.advance().advance().getColumn(0).fail();
+  });
+  const vm = new ScannerVM(p);
+  vm.scan(new ByteLexer(Buffer.from('abc')), [true]);
+  assert.strictEqual(vm.reg[0], 2);
+});
+
 
 t('GETIDX reads from the bottom of a stack by register index', () => {
   const p = prog({ stacks: [{}, {}, {}, {}] }, (a) => {
