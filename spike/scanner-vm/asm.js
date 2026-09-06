@@ -21,6 +21,7 @@ class Asm {
   markEnd() { return this.ins(OP.MARK_END); }
   lookahead(r) { return this.ins(OP.LOOKAHEAD, ['r', r]); }
   eof(r) { return this.ins(OP.EOF, ['r', r]); }
+  getColumn(r) { return this.ins(OP.GET_COLUMN, ['r', r]); }
   map(k, d, s) { return this.ins(OP.MAP, ['u', k], ['r', d], ['r', s]); }
   // -- termination
   emit(sym) { return this.ins(OP.EMIT, ['u', sym]); }
@@ -35,6 +36,8 @@ class Asm {
   ifEof(t) { return this.ins(OP.IF_EOF, ['t', t]); }
   ifNEof(t) { return this.ins(OP.IF_NEOF, ['t', t]); }
   ifRangeStart(t) { return this.ins(OP.IF_RANGE_START, ['t', t]); }
+  ifClassR(k, r, t) { return this.ins(OP.IF_CLASS_R, ['u', k], ['r', r], ['t', t]); }
+  ifNClassR(k, r, t) { return this.ins(OP.IF_NCLASS_R, ['u', k], ['r', r], ['t', t]); }
   // -- valid-symbol tests
   ifValid(s, t) { return this.ins(OP.IF_VALID, ['u', s], ['t', t]); }
   ifNValid(s, t) { return this.ins(OP.IF_NVALID, ['u', s], ['t', t]); }

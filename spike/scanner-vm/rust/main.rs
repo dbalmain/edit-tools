@@ -64,6 +64,32 @@ impl<'a> Lexer for ByteLexer<'a> {
     fn lookahead(&self) -> i32 { self.decode().0 }
     fn at_eof(&self) -> bool { self.cur >= self.b.len() }
     fn at_range_start(&self) -> bool { self.cur == 0 }
+    fn column(&mut self) -> i32 {
+        let saved = self.cur;
+        let mut line_start = 0usize;
+        for i in (1..=saved).rev() {
+            if self.b[i - 1] == 0x0a {
+                line_start = i;
+                break;
+            }
+        }
+        let mut col = 0i32;
+        self.cur = line_start;
+        while self.cur < saved {
+            let (cp, size) = self.decode();
+            if !(self.cur == 0 && cp == 0xfeff) {
+                col = col.wrapping_add(1);
+            }
+            self.cur += size;
+        }
+        self.cur = saved;
+        self.ops.push('C');
+        self.ops.push_str(&saved.to_string());
+        self.ops.push('=');
+        self.ops.push_str(&col.to_string());
+        self.ops.push(';');
+        col
+    }
     fn advance(&mut self, skip: bool) {
         self.ops.push(if skip { 'S' } else { 'A' });
         self.ops.push_str(&self.cur.to_string());
