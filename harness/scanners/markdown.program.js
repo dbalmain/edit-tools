@@ -110,13 +110,12 @@ const STATE_CLOSE_BLOCK = 0x1 << 4;
 
 // Class table slots.
 const C_ALPHA = 0;                        // iswalpha
-const C_ALNUM = 1;                        // iswalnum
-const C_DIGIT = 2;                        // isdigit — ASCII '0'..'9', not iswdigit
-const C_PUNCT = 3;                        // is_punctuation (markdown spec, ASCII)
-const C_AZ = 4;                           // 'A'..'Z' (HTML block 4)
-const C_ATTR_START = 5;                   // iswalpha || '_' || ':'
-const C_ATTR_CHAR = 6;                    // iswalnum || '_' || '.' || ':' || '-'
-const C_NAME_CONT = 7;                    // iswalnum || '-'  (HTML tag name continued)
+const C_DIGIT = 1;                        // isdigit — ASCII '0'..'9', not iswdigit
+const C_PUNCT = 2;                        // is_punctuation (markdown spec, ASCII)
+const C_AZ = 3;                           // 'A'..'Z' (HTML block 4)
+const C_ATTR_START = 4;                   // iswalpha || '_' || ':'
+const C_ATTR_CHAR = 5;                    // iswalnum || '_' || '.' || ':' || '-'
+const C_NAME_CONT = 6;                    // iswalnum || '-'  (HTML tag name continued)
 
 // Stacks.
 const S_BLOCKS = 0;                       // persistent: open_blocks
@@ -264,11 +263,6 @@ function build() {
     a.mov(R_TMP, R_EXTRA);
     a.alui('add', R_TMP, LIST_ITEM);
     a.push(S_BLOCKS, R_TMP);
-    a.label(skip);
-  };
-  const maybePop = (skip) => {
-    a.ifCmpI('ne', R_SIM, 0, skip);
-    a.pop(S_BLOCKS, R_TMP);
     a.label(skip);
   };
   // if (!s->simulate) lexer->mark_end(lexer);
@@ -441,7 +435,6 @@ function build() {
   a.ifChar(0x0a, 'sc_line_end');
   a.ifNValid(PIPE_TABLE_START, 'sc_line_end');
   a.jmp('parse_pipe');
-  a.jmp('sc_line_end');
 
   //   } else { // matching
   a.label('sc_matching');
@@ -1687,7 +1680,6 @@ function build() {
     stackInit: [],
     classes: [
       ctype.alpha,
-      ctype.alnum,
       [CH('0'), CH('9')],
       // is_punctuation: '!'..'/'  ':'..'@'  '['..'`'  '{'..'~'
       [CH('!'), CH('/'), CH(':'), CH('@'), CH('['), CH('`'), CH('{'), CH('~')],
