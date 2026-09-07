@@ -1,0 +1,407 @@
+/* One stylesheet for all three apps.
+ *
+ * No web fonts on purpose. `:w` is supposed to work offline -- that is half of
+ * what Q1's answer bought -- and a page that blocks on fonts.googleapis.com to
+ * render its own text is not offline. Everything below is a system stack.
+ *
+ * Three themes, not two: an explicit choice stamps `data-theme`, and the
+ * default stamps nothing, so `prefers-color-scheme` has to carry the un-stamped
+ * case on its own. Every colour is a token defined on bare `:root` and
+ * redefined in both dark blocks; nothing is defined only inside one.
+ */
+
+:root {
+  --ground: #faf9f6;
+  --panel: #ffffff;
+  --sunk: #f2f1ec;
+  --rule: #e0ded5;
+  --rule-soft: #ecebe4;
+  --ink: #1a1d1b;
+  --ink-soft: #4e534e;
+  --ink-faint: #838878;
+  --pine: #2c5b48;
+  --pine-wash: #e8f0ea;
+  --clay: #9c4230;
+  --clay-wash: #fbecea;
+  --amber: #8a5a15;
+  --amber-wash: #fbf2e2;
+  --cursor: #2c5b48;
+  --cursor-ink: #ffffff;
+  --add: #dff0e2;
+  --del: #fbe4e0;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --ui: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground: #14171a;
+    --panel: #1b1f22;
+    --sunk: #101315;
+    --rule: #2f353a;
+    --rule-soft: #242a2e;
+    --ink: #e5e9e3;
+    --ink-soft: #a7b0a6;
+    --ink-faint: #767f77;
+    --pine: #7cc0a1;
+    --pine-wash: #1c2a25;
+    --clay: #e08c78;
+    --clay-wash: #2c1d19;
+    --amber: #d6a05f;
+    --amber-wash: #2a2118;
+    --cursor: #7cc0a1;
+    --cursor-ink: #101315;
+    --add: #1d3226;
+    --del: #35201d;
+  }
+}
+
+:root[data-theme="dark"] {
+  --ground: #14171a;
+  --panel: #1b1f22;
+  --sunk: #101315;
+  --rule: #2f353a;
+  --rule-soft: #242a2e;
+  --ink: #e5e9e3;
+  --ink-soft: #a7b0a6;
+  --ink-faint: #767f77;
+  --pine: #7cc0a1;
+  --pine-wash: #1c2a25;
+  --clay: #e08c78;
+  --clay-wash: #2c1d19;
+  --amber: #d6a05f;
+  --amber-wash: #2a2118;
+  --cursor: #7cc0a1;
+  --cursor-ink: #101315;
+  --add: #1d3226;
+  --del: #35201d;
+}
+
+* { box-sizing: border-box; }
+
+html { height: 100%; }
+
+/* The two full-height pages hang their layout off the body rather than off a
+ * `calc(100vh - <header>)` guess: the header wraps on a narrow window, and a
+ * hard-coded height is wrong the moment it does. `.split` and `.md-page` take
+ * the remainder, and `min-height: 0` is what actually lets them scroll inside
+ * instead of pushing the page taller. */
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--ui);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--pine); }
+:focus-visible { outline: 2px solid var(--pine); outline-offset: 2px; }
+
+/* -- chrome ------------------------------------------------------------- */
+
+header.bar {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: .75rem 1.25rem;
+  border-bottom: 1px solid var(--rule);
+  background: var(--panel);
+}
+header.bar .title {
+  font-family: var(--mono);
+  font-weight: 700;
+  letter-spacing: -.01em;
+}
+header.bar .crumb { font-family: var(--mono); font-size: .82rem; color: var(--ink-faint); }
+header.bar .spacer { flex: 1 1 auto; }
+header.bar nav { display: flex; gap: .9rem; font-size: .85rem; }
+
+.hint {
+  font-family: var(--mono);
+  font-size: .76rem;
+  color: var(--ink-faint);
+  letter-spacing: .02em;
+}
+.hint kbd {
+  font: inherit;
+  background: var(--sunk);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 0 .3em;
+  color: var(--ink-soft);
+}
+
+main { padding: 1.5rem 1.25rem 4rem; }
+.wrap { max-width: 74rem; margin: 0 auto; }
+
+h1 {
+  font-family: var(--mono);
+  font-size: 1.5rem;
+  letter-spacing: -.02em;
+  margin: 0 0 .35rem;
+}
+.lede { margin: 0 0 1.75rem; color: var(--ink-soft); max-width: 46rem; }
+
+/* -- dashboard ---------------------------------------------------------- */
+
+table.languages {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+table.languages th {
+  text-align: left;
+  font-family: var(--mono);
+  font-size: .68rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  font-weight: 500;
+  padding: 0 .7rem .5rem;
+  border-bottom: 1px solid var(--rule);
+}
+table.languages th.n, table.languages td.n { text-align: right; }
+table.languages td {
+  padding: .55rem .7rem;
+  border-bottom: 1px solid var(--rule-soft);
+}
+table.languages tbody tr:hover { background: var(--sunk); }
+table.languages td.name a {
+  font-family: var(--mono);
+  font-weight: 500;
+  text-decoration: none;
+}
+table.languages td.name a:hover { text-decoration: underline; }
+table.languages td.ext { font-family: var(--mono); font-size: .8rem; color: var(--ink-faint); }
+table.languages .zero { color: var(--ink-faint); }
+table.languages .some { color: var(--clay); font-weight: 600; }
+table.languages tfoot td {
+  padding: .6rem .7rem;
+  font-family: var(--mono);
+  font-size: .82rem;
+  border-top: 1px solid var(--rule);
+  color: var(--ink-soft);
+}
+
+.bar-cell { width: 9rem; }
+.bar-track {
+  height: 6px;
+  background: var(--sunk);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.bar-fill { height: 100%; background: var(--clay); }
+
+/* -- language page ------------------------------------------------------ */
+
+body:has(.split), body:has(.md-page) {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+body:has(.split) header.bar, body:has(.md-page) header.bar { flex: 0 0 auto; }
+
+.split {
+  display: grid;
+  grid-template-columns: 15rem minmax(0, 1fr);
+  gap: 0;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.entries {
+  border-right: 1px solid var(--rule);
+  overflow-y: auto;
+  background: var(--panel);
+}
+.entries ol { list-style: none; margin: 0; padding: 0; }
+.entries li { border-bottom: 1px solid var(--rule-soft); }
+.entries button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  padding: .55rem .8rem;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.entries button:hover { background: var(--sunk); }
+.entries button[aria-current="true"] {
+  background: var(--pine-wash);
+  box-shadow: inset 3px 0 0 var(--pine);
+}
+.entries .file { font-family: var(--mono); font-size: .84rem; }
+.entries .meta {
+  font-family: var(--mono);
+  font-size: .68rem;
+  color: var(--ink-faint);
+  display: flex;
+  gap: .5rem;
+}
+.entries .verdict-accepted { color: var(--pine); }
+.entries .verdict-open { color: var(--clay); }
+.entries .empty { padding: 1.5rem .9rem; color: var(--ink-faint); font-size: .9rem; }
+
+.panes {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  min-width: 0;
+  min-height: 0;
+}
+
+.panes-head {
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+  flex-wrap: wrap;
+  padding: .5rem .9rem;
+  border-bottom: 1px solid var(--rule);
+  background: var(--panel);
+}
+.panes-head .case { font-family: var(--mono); font-size: .9rem; }
+.panes-head .spacer { flex: 1 1 auto; }
+
+button.action {
+  font: inherit;
+  font-family: var(--mono);
+  font-size: .78rem;
+  background: var(--panel);
+  color: var(--ink);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: .25rem .6rem;
+  cursor: pointer;
+}
+button.action:hover { border-color: var(--pine); color: var(--pine); }
+button.action[aria-pressed="true"] {
+  background: var(--pine-wash);
+  border-color: var(--pine);
+  color: var(--pine);
+}
+
+.pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  min-height: 0;
+}
+.pair > * { min-width: 0; min-height: 0; }
+.pane-label {
+  font-family: var(--mono);
+  font-size: .66rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  padding: .35rem .8rem;
+  border-bottom: 1px solid var(--rule-soft);
+  background: var(--panel);
+}
+.pane {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-height: 0;
+  border-right: 1px solid var(--rule);
+}
+.pane:last-child { border-right: 0; }
+
+pre.frozen, pre.diff {
+  margin: 0;
+  overflow: auto;
+  padding: .5rem .8rem;
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.5;
+  background: var(--sunk);
+  tab-size: 4;
+}
+pre.diff .add { background: var(--add); display: block; }
+pre.diff .del { background: var(--del); display: block; }
+pre.diff .hunk { color: var(--ink-faint); display: block; }
+
+.verdict-card {
+  border-top: 1px solid var(--rule);
+  background: var(--panel);
+  padding: .6rem .9rem;
+  font-size: .88rem;
+  color: var(--ink-soft);
+}
+.verdict-card b { color: var(--ink); font-family: var(--mono); font-size: .82rem; }
+
+/* -- the editor component ----------------------------------------------- */
+
+.vici {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  min-height: 0;
+  background: var(--panel);
+}
+.vici-view {
+  overflow: auto;
+  padding: .5rem .8rem;
+  outline-offset: -2px;
+}
+.vici-code {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre;
+  tab-size: 4;
+}
+.vici-cursor {
+  background: var(--cursor);
+  color: var(--cursor-ink);
+  border-radius: 1px;
+}
+.vici-view:not(:focus) .vici-cursor {
+  background: transparent;
+  color: inherit;
+  box-shadow: inset 0 0 0 1px var(--cursor);
+}
+.vici-status {
+  display: flex;
+  gap: .8rem;
+  align-items: baseline;
+  padding: .25rem .8rem;
+  border-top: 1px solid var(--rule);
+  background: var(--panel);
+  font-family: var(--mono);
+  font-size: .76rem;
+  min-height: 1.9rem;
+}
+.vici-mode { color: var(--pine); font-weight: 700; }
+.vici-message { color: var(--amber); }
+.vici-ex { color: var(--ink); flex: 1 1 auto; }
+.vici-pending { color: var(--ink-faint); margin-left: auto; }
+
+/* -- markdown surface --------------------------------------------------- */
+
+.md-page { flex: 1 1 auto; min-height: 0; display: grid; grid-template-rows: minmax(0, 1fr); }
+.md .vici-code { white-space: pre-wrap; }
+.md .vici-view { max-width: 52rem; margin: 0 auto; width: 100%; padding: 1.5rem 1rem 6rem; }
+.md-block-raw { background: var(--sunk); border-radius: 3px; }
+
+/* Rendered markdown, drawn over the same monospace grid the raw block uses so
+ * a block does not jump when the cursor enters it. */
+.md-rendered { font-family: var(--ui); display: block; margin: 0; }
+.md-h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: -.02em; }
+.md-h2 { font-size: 1.3rem; font-weight: 700; }
+.md-h3 { font-size: 1.1rem; font-weight: 600; }
+.md-h4, .md-h5, .md-h6 { font-size: 1rem; font-weight: 600; }
+.md-quote { border-left: 3px solid var(--rule); padding-left: .8rem; color: var(--ink-soft); }
+.md-code { font-family: var(--mono); font-size: 13px; background: var(--sunk); display: block; padding: .4rem .6rem; border-radius: 4px; }
+.md-rule { color: var(--ink-faint); }
+
+@media (max-width: 60rem) {
+  body:has(.split) { overflow: auto; }
+  .split { grid-template-columns: 1fr; flex: 0 0 auto; }
+  .entries { border-right: 0; border-bottom: 1px solid var(--rule); max-height: 14rem; }
+  .pair { grid-template-columns: 1fr; }
+  .pane { border-right: 0; border-bottom: 1px solid var(--rule); }
+}

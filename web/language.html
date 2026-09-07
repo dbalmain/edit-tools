@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Discrepancies</title>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<header class="bar">
+  <span class="title">editor-tools</span>
+  <span class="crumb"><a href="index.html">discrepancies</a> / <span id="crumb-lang"></span></span>
+  <span class="spacer"></span>
+  <span class="hint"><kbd>:w</kbd> format &amp; save &middot; <kbd>\F</kbd> format &middot; vim keys</span>
+</header>
+<div class="split">
+  <aside class="entries"><div class="empty">loading…</div></aside>
+  <section class="panes">
+    <div class="panes-head">
+      <span class="case" id="case">—</span>
+      <span class="spacer"></span>
+      <button class="action" id="toggle-diff" aria-pressed="false">diff</button>
+      <button class="action" id="refresh">refresh</button>
+    </div>
+    <div class="pair">
+      <div class="pane">
+        <div class="pane-label">ours &middot; editable</div>
+        <div id="editor"></div>
+      </div>
+      <div class="pane">
+        <div class="pane-label" id="right-label">reference</div>
+        <pre class="frozen" id="right"></pre>
+      </div>
+    </div>
+    <div class="verdict-card" id="verdict" hidden></div>
+  </section>
+</div>
+<script type="module" src="js/language.js"></script>
+</body>
+</html>

@@ -1,0 +1,328 @@
+// The single-pane markdown surface: the block under the cursor is raw, and
+// every other block is rendered.
+//
+// # What "the current component" turned out to be
+//
+// The premise it was specified under was that `document`'s children are the
+// blocks. They are not: `tree-sitter-markdown`'s block grammar nests `section`
+// nodes by heading level, so a whole file is usually one `section`, and taking
+// the root's child containing the cursor would put the entire document in raw
+// mode. The rule that works is to treat `document` and `section` as containers
+// and flatten through them, which lands on the `paragraph`, `atx_heading`,
+// `list`, `fenced_code_block`, `block_quote`, `table` or `html_block` the
+// cursor is actually in.
+//
+// `CONTAINERS` is therefore the knob. Adding `list` to it narrows the raw
+// region from a whole list to one `list_item`; removing `section` widens it to
+// a whole heading's worth of document.
+//
+// # Why the block list is cached and patched rather than re-parsed
+//
+// A 40 KB document parses in about 81 ms, which is fine on `:w` and much too
+// slow on a keystroke. But an edit only ever changes the block the cursor is
+// in, so the other blocks' text is still exactly what the last parse said it
+// was: shifting their offsets by the edit's delta is not an approximation, it
+// is the same answer sooner. A real parse follows on idle, which is what
+// notices a block that has just split in two.
+
+import { parse } from "./lang.js";
+import { VimEditor } from "./editor.js";
+
+/** Node types that hold blocks rather than being one. See the header. */
+const CONTAINERS = new Set(["document", "section"]);
+
+const STARTER = `# The markdown surface
+
+This pane is one editor. The block your cursor is in shows as **raw markdown**;
+every other block is rendered. Move down and watch this paragraph turn back into
+prose with asterisks in it.
+
+## What is bound
+
+- vim keys, from vici — motions, operators, counts, text objects, visual mode,
+  undo, dot-repeat, macros
+- \`:w\` formats the buffer with our own formatter and saves it to the session
+- \`\\F\` formats without saving
+- autoindent and comment continuation on \`<CR>\`, \`o\` and \`O\`
+
+## What a block is
+
+A block is what the parser says it is, not what a line is. This list is one
+block, so the whole list goes raw when you enter it. A fenced code block is one
+block too:
+
+\`\`\`js
+const blocks = flatten(root);   // containers are walked through, not rendered
+\`\`\`
+
+> A block quote is a block. So is a heading, a table, and a thematic break.
+
+Nothing here is written to disk. \`:w\` saves to \`sessionStorage\`, and closing
+the tab is how you discard it.
+`;
+
+const SESSION_KEY = "editor-tools:markdown";
+
+/** Inline markdown, rendered by hand. */
+function inline(text, into) {
+  // The block grammar is the one this repo transcodes; emphasis, code spans and
+  // links live in `tree-sitter-markdown-inline`, which it does not. So inline
+  // rendering here is app-level and deliberately shallow -- enough that a
+  // rendered paragraph reads as prose, and honest about not being a parse. The
+  // raw block is always one keystroke away and is always the truth.
+  const pattern = /`([^`]+)`|\*\*([^*]+)\*\*|\*([^*]+)\*|_([^_]+)_|\[([^\]]+)\]\(([^)]+)\)/g;
+  let at = 0;
+  for (let m = pattern.exec(text); m !== null; m = pattern.exec(text)) {
+    if (m.index > at) into.append(document.createTextNode(text.slice(at, m.index)));
+    if (m[1] !== undefined) {
+      const code = document.createElement("code");
+      code.className = "md-code";
+      code.style.display = "inline";
+      code.textContent = m[1];
+      into.append(code);
+    } else if (m[2] !== undefined) {
+      const b = document.createElement("strong");
+      b.textContent = m[2];
+      into.append(b);
+    } else if (m[3] !== undefined || m[4] !== undefined) {
+      const i = document.createElement("em");
+      i.textContent = m[3] ?? m[4];
+      into.append(i);
+    } else {
+      const a = document.createElement("a");
+      a.href = m[6];
+      a.textContent = m[5];
+      a.rel = "noreferrer";
+      into.append(a);
+    }
+    at = m.index + m[0].length;
+  }
+  if (at < text.length) into.append(document.createTextNode(text.slice(at)));
+}
+
+/** One block's rendered form. */
+function renderBlock(block) {
+  const text = block.text.replace(/\n+$/, "");
+  const node = document.createElement("div");
+  node.className = "md-rendered";
+
+  if (block.type === "atx_heading") {
+    const hashes = /^(#{1,6})\s*/.exec(text);
+    const level = hashes ? hashes[1].length : 1;
+    node.classList.add(`md-h${level}`);
+    inline(hashes ? text.slice(hashes[0].length) : text, node);
+    return node;
+  }
+  if (block.type === "fenced_code_block" || block.type === "indented_code_block") {
+    const body = text.replace(/^```[^\n]*\n?/, "").replace(/\n?```$/, "");
+    const pre = document.createElement("pre");
+    pre.className = "md-code";
+    pre.textContent = body;
+    node.append(pre);
+    return node;
+  }
+  if (block.type === "block_quote") {
+    node.classList.add("md-quote");
+    inline(text.replace(/^>\s?/gm, ""), node);
+    return node;
+  }
+  if (block.type === "thematic_break") {
+    node.classList.add("md-rule");
+    node.append(document.createElement("hr"));
+    return node;
+  }
+  if (block.type === "list") {
+    const ordered = /^\s*\d+[.)]/.test(text);
+    const list = document.createElement(ordered ? "ol" : "ul");
+    for (const line of text.split("\n")) {
+      const item = /^\s*(?:[-*+]|\d+[.)])\s+(.*)$/.exec(line);
+      if (item) {
+        const li = document.createElement("li");
+        inline(item[1], li);
+        list.append(li);
+      } else if (list.lastElementChild && line.trim() !== "") {
+        list.lastElementChild.append(document.createTextNode(" " + line.trim()));
+      }
+    }
+    node.append(list);
+    return node;
+  }
+  // paragraph, html_block, table, and anything the grammar adds later.
+  inline(text, node);
+  return node;
+}
+
+/** Every non-container block, in document order, with its byte range. */
+function flatten(root) {
+  const out = [];
+  const walk = (node) => {
+    if (CONTAINERS.has(node.type)) {
+      for (const child of node.children ?? []) walk(child);
+    } else {
+      out.push({ type: node.type, start: node.start, end: node.end });
+    }
+  };
+  walk(root);
+  return out;
+}
+
+const encoder = new TextEncoder();
+const decoder = new TextDecoder();
+
+/**
+ * A markdown editor: everything `VimEditor` does, drawn as blocks.
+ *
+ * Only `render` is overridden. The editing core, the ex line, `<leader>F` and
+ * autoindent are all inherited unchanged, which is the point of the component
+ * having two hosts.
+ */
+class MarkdownEditor extends VimEditor {
+  constructor(host, options) {
+    super(host, options);
+    /** Block ranges from the last real parse, patched by every edit since. */
+    this.blocks = null;
+    this.reparseTimer = null;
+    this.scheduleReparse(0);
+  }
+
+  /** Re-derive block ranges from a real parse, after `delay` ms of quiet. */
+  scheduleReparse(delay = 150) {
+    clearTimeout(this.reparseTimer);
+    this.reparseTimer = setTimeout(async () => {
+      const text = this.editor.text();
+      try {
+        const tree = await parse(text, "markdown");
+        this.blocks = flatten(tree.root);
+      } catch {
+        this.blocks = null; // fall back to plain text rather than to a wrong shape
+      }
+      if (this.editor.text() === text) this.render();
+    }, delay);
+  }
+
+  render() {
+    if (!this.code) return; // called from the base constructor, before blocks exist
+    const text = this.editor.text();
+    const bytes = encoder.encode(text);
+    const cursor = this.editor.cursor;
+    const blocks = this.blocks;
+
+    if (!blocks || blocks.length === 0) {
+      super.render();
+      return;
+    }
+
+    // The blocks are byte ranges from a possibly-stale parse; clamp them and
+    // drop any that no longer fit, so a stale list degrades to less rendering
+    // rather than to wrong text.
+    this.code.textContent = "";
+    let at = 0;
+    let drewCursor = false;
+    const slice = (from, to) => decoder.decode(bytes.subarray(from, to));
+
+    // The whitespace between two blocks belongs to neither, and the cursor can
+    // sit in it -- on the blank line between two paragraphs. It is drawn as
+    // plain text, with the caret in it when that is where the caret is.
+    const gap = (from, to) => {
+      if (to <= from) return;
+      const text = slice(from, to);
+      if (!drewCursor && cursor >= from && cursor < to) {
+        const span = document.createElement("span");
+        this.drawText(span, text, cursor - from);
+        this.code.append(span);
+        drewCursor = true;
+      } else {
+        this.code.append(document.createTextNode(text));
+      }
+    };
+
+    for (const block of blocks) {
+      const start = Math.min(block.start, bytes.length);
+      const end = Math.min(block.end, bytes.length);
+      if (end <= start || start < at) continue;
+      gap(at, start);
+      if (!drewCursor && cursor >= start && cursor <= end) {
+        const span = document.createElement("span");
+        span.className = "md-block-raw";
+        this.drawText(span, slice(start, end), cursor - start);
+        this.code.append(span);
+        drewCursor = true;
+      } else {
+        this.code.append(renderBlock({ type: block.type, text: slice(start, end) }));
+      }
+      at = end;
+    }
+    gap(at, bytes.length);
+    // A cursor past everything the stale block list covers still has to be
+    // drawn, or the caret vanishes until the next parse lands.
+    if (!drewCursor) this.code.append(this.caret(" "));
+    this.drawStatus();
+  }
+
+  /**
+   * `dispatch`, not `handle`: the base class renders once at the end of
+   * `handle`, so patching the block ranges here means that single render
+   * already sees them shifted. Overriding `handle` instead would draw the
+   * document twice on every keystroke that changed it.
+   */
+  dispatch(key) {
+    const before = this.editor.text();
+    super.dispatch(key);
+    const after = this.editor.text();
+    if (after === before) return;
+    this.patch(before, after);
+    this.scheduleReparse();
+    this.options.onChange?.(after);
+  }
+
+  /** A whole-buffer replacement invalidates every cached range. */
+  replaceAll(text) {
+    this.blocks = null;
+    super.replaceAll(text);
+    this.scheduleReparse(0);
+  }
+
+  /**
+   * Shift cached block ranges by an edit's size delta.
+   *
+   * The edited block is the one holding the cursor, so it absorbs the delta and
+   * every later block slides. Blocks before it are untouched, and their text is
+   * unchanged, which is what makes rendering them from the cache correct rather
+   * than merely fast.
+   */
+  patch(before, after) {
+    if (!this.blocks) return;
+    const delta = encoder.encode(after).length - encoder.encode(before).length;
+    if (delta === 0) return;
+    const cursor = this.editor.cursor;
+    let shifting = false;
+    for (const block of this.blocks) {
+      if (shifting) {
+        block.start += delta;
+        block.end += delta;
+      } else if (cursor <= block.end + Math.max(delta, 0)) {
+        block.end += delta;
+        shifting = true;
+      }
+    }
+  }
+}
+
+async function main() {
+  const host = document.getElementById("editor");
+  const saved = sessionStorage.getItem(SESSION_KEY);
+  const editor = new MarkdownEditor(host, {
+    language: "markdown",
+    text: saved ?? STARTER,
+    indent: 2,
+    lineComment: null,
+    format: async (text) => {
+      const { formatText } = await import("./lang.js");
+      return formatText(text, "markdown", 80);
+    },
+    onWrite: (text) => sessionStorage.setItem(SESSION_KEY, text),
+  });
+  editor.focus();
+}
+
+main();

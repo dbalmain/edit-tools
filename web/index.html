@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Formatting discrepancies</title>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<header class="bar">
+  <span class="title">editor-tools</span>
+  <span class="crumb">discrepancies</span>
+  <span class="spacer"></span>
+  <nav><a href="markdown.html">markdown surface</a></nav>
+</header>
+<main class="wrap">
+  <h1>Where we disagree with the reference formatter</h1>
+  <p class="lede">
+    One row per language. A discrepancy is one corpus file at one width whose
+    output differs from the reference formatter's, and every one is counted —
+    an approved divergence is a decision, not an absence. The three columns
+    that split them are the interesting part: <em>accepted</em> carries a
+    reviewed verdict, <em>excluded</em> is a file the reference rewrites in a
+    way gate 3 cannot call equivalent and so can never be reviewed, and
+    <em>open</em> is what is left. Only the last column is work.
+  </p>
+  <div id="table"></div>
+</main>
+<script type="module" src="js/dashboard.js"></script>
+</body>
+</html>

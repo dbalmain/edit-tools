@@ -9,55 +9,20 @@
 // bytes in `corpus/trees/<language>__<stem>.tree.json`, which `gen_trees.py`
 // produced from real tree-sitter. Anything less is a negative result.
 //
-// The document shape is `gen_trees.py`'s `convert()`: anonymous nodes kept,
-// byte offsets, `field` where the production names one, `text` on leaves.
-// Python's `json.dumps(..., indent=1, ensure_ascii=False)` and JavaScript's
-// `JSON.stringify(..., null, 1)` agree byte for byte on this shape, so the
-// comparison really is over the artifact and not over a normalised form.
+// The document shape is `gen_trees.py`'s `convert()`, and it lives in
+// `ts_doc.mjs` because the web apps build the same shape from a buffer rather
+// than from a file. Python's `json.dumps(..., indent=1, ensure_ascii=False)`
+// and JavaScript's `JSON.stringify(..., null, 1)` agree byte for byte on it, so
+// the comparison really is over the artifact and not over a normalised form.
 
 import { readFileSync, readdirSync, writeFileSync, mkdirSync } from "node:fs";
 import { basename, extname, join, relative, resolve } from "node:path";
-import { parse, visibleChildren } from "./ts_lr.mjs";
+import { parseDoc as buildDoc, parseRoot } from "./ts_doc.mjs";
 
 const ROOT = resolve(import.meta.dirname, "..");
-const decoder = new TextDecoder("utf-8", { fatal: true });
-
-function convert(lang, node, source) {
-  const symbol = node.alias || node.subtree.symbol;
-  const start = node.start;
-  const end = start + node.subtree.size;
-  const out = { type: lang.symbolName(symbol), start, end };
-  if (node.field != null) out.field = node.field;
-  const kids = visibleChildren(lang, node.subtree, start);
-  if (kids.length > 0) {
-    out.children = kids.map((k) => convert(lang, k, source));
-  } else {
-    out.text = decoder.decode(source.subarray(start, end));
-  }
-  // `parse_oracle.convert` stamps this after children/text, so it is last in
-  // insertion order and the key order matches byte for byte. A MISSING node is
-  // a zero-width leaf and is otherwise indistinguishable from a real empty one,
-  // which is the whole reason the oracle track added the key.
-  if (node.subtree.isMissing) out.missing = true;
-  return out;
-}
 
 function parseDoc(blob, language, sourcePath) {
-  const source = readFileSync(sourcePath);
-  const { lang, root, startByte } = parse(blob, source);
-  return {
-    language,
-    source_file: relative(ROOT, sourcePath),
-    source: decoder.decode(source),
-    root: convert(lang, { subtree: root, alias: 0, start: startByte, field: null }, source),
-  };
-}
-
-// The root this interpreter produces for one buffer, serialised the way the
-// frozen fixtures serialise theirs.
-function parseRoot(blob, source) {
-  const { lang, root, startByte } = parse(blob, source);
-  return convert(lang, { subtree: root, alias: 0, start: startByte, field: null }, source);
+  return buildDoc(blob, language, readFileSync(sourcePath), relative(ROOT, sourcePath));
 }
 
 // --edited: the same bar against `corpus/trees-edited/`, whose fixtures carry

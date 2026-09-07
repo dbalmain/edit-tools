@@ -16,6 +16,9 @@ cargo test --manifest-path rust/Cargo.toml
 cargo clippy --manifest-path rust/Cargo.toml --all-targets -- -D warnings
 node --test runtime-js/bundle.test.js
 node --test runtime-js/highlight.test.js
+# The web apps' host-side policy. `web/js/host.js` has no imports on purpose,
+# so this runs on a clean checkout, before `web/gen.py` has written vendor/.
+node --test web/js/host.test.js
 python3 -m unittest discover -s harness
 ./harness/check_gate3.py
 ./harness/score.py .
