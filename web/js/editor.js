@@ -51,8 +51,10 @@ export class VimEditor {
   constructor(host, options = {}) {
     this.options = { indent: 4, lineComment: null, leader: "\\", ...options };
     this.editor = new Editor(options.text ?? "");
-    this.editor.setIndent({ shiftWidth: this.options.indent, tabWidth: 8, useTabs: false });
     this.language = options.language ?? null;
+    /** The shift width vici currently holds, so `syntax()` changes reach `>>`. */
+    this.shiftWidth = null;
+    this.applySyntax();
     /** Non-null while the ex line is open; holds what has been typed after the `:`. */
     this.ex = null;
     /** True while a leader sequence is half-typed. */
@@ -64,6 +66,30 @@ export class VimEditor {
     this.render();
   }
 
+  /**
+   * The language rules in force **at the cursor**: which language, how far it
+   * indents, and what it spells a line comment as.
+   *
+   * One method rather than three reads of `this.options`, because a buffer can
+   * hold more than one language. The markdown surface overrides it so that
+   * inside a ```ruby fence the answer is ruby -- see `markdown.js`.
+   */
+  syntax() {
+    return {
+      language: this.language,
+      indent: this.options.indent,
+      lineComment: this.options.lineComment,
+    };
+  }
+
+  /** Push the cursor's shift width into vici, which is what `>>` and `<<` use. */
+  applySyntax() {
+    const { indent } = this.syntax();
+    if (indent === this.shiftWidth) return;
+    this.shiftWidth = indent;
+    this.editor.setIndent({ shiftWidth: indent, tabWidth: 8, useTabs: false });
+  }
+
   // -- view ------------------------------------------------------------
 
   build(host) {
@@ -71,11 +97,13 @@ export class VimEditor {
     host.innerHTML =
       '<div class="vici-view" tabindex="0" role="textbox" aria-multiline="true">' +
       '<pre class="vici-code"></pre></div>' +
-      '<div class="vici-status"><span class="vici-mode"></span>' +
+      '<div class="vici-status"><span class="vici-lang"></span>' +
+      '<span class="vici-mode"></span>' +
       '<span class="vici-message"></span><span class="vici-ex"></span>' +
       '<span class="vici-pending"></span></div>';
     this.view = host.querySelector(".vici-view");
     this.code = host.querySelector(".vici-code");
+    this.langEl = host.querySelector(".vici-lang");
     this.modeEl = host.querySelector(".vici-mode");
     this.messageEl = host.querySelector(".vici-message");
     this.exEl = host.querySelector(".vici-ex");
@@ -124,6 +152,10 @@ export class VimEditor {
   }
 
   drawStatus() {
+    // The language chip is how a fenced block announces itself: step into a
+    // ```ruby block and the status line says ruby, because that is now what
+    // <CR> continues, what >> shifts by, and what a parse of the region used.
+    this.langEl.textContent = this.syntax().language ?? "";
     this.modeEl.textContent = MODE_NAME.get(this.editor.mode) ?? "";
     this.messageEl.textContent = this.message;
     this.exEl.textContent = this.ex === null ? "" : `:${this.ex}`;
@@ -168,6 +200,9 @@ export class VimEditor {
 
   /** `handleKey` plus the host-side behaviours its effects imply. */
   dispatch(key) {
+    // Before the key, not after: `>>` shifts by the width in force where the
+    // cursor already is, the same way it would in a file of that language.
+    this.applySyntax();
     const wasInsert = this.editor.mode === INSERT;
     const effects = this.editor.handleKey(key);
     for (const effect of effects) {
@@ -198,10 +233,8 @@ export class VimEditor {
     if (before.slice(start + 1) !== "") return; // not at a fresh line's start
     const previous = before.slice(0, start);
     const line = previous.slice(previous.lastIndexOf("\n") + 1);
-    const prefix = continuation(line, {
-      indent: this.options.indent,
-      lineComment: this.options.lineComment,
-    });
+    const { indent, lineComment } = this.syntax();
+    const prefix = continuation(line, { indent, lineComment });
     if (prefix === "") return;
     this.replaying = true;
     try {

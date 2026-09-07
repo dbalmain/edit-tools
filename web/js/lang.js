@@ -10,6 +10,7 @@
 // visits never use.
 
 import { parseDoc } from "../vendor/ts_doc.mjs";
+import { injectAll } from "../vendor/ts_inject.mjs";
 import { format, Refusal } from "../vendor/runtime.mjs";
 
 const DATA = new URL("../data/", import.meta.url);
@@ -17,6 +18,7 @@ const DATA = new URL("../data/", import.meta.url);
 const encoder = new TextEncoder();
 
 let index = null;
+let injections = null;
 const blobs = new Map();
 const packages = new Map();
 const divergences = new Map();
@@ -50,6 +52,18 @@ export async function blobFor(name) {
   return blobs.get(name);
 }
 
+/**
+ * The injection routing declarations: which node type holds an embedded
+ * region, which info string names which guest, and which guests have tables.
+ *
+ * A few hundred bytes, and every parse wants it, so it is fetched alongside
+ * the first parse rather than lazily per language.
+ */
+export async function injectionConfig() {
+  if (injections === null) injections = await json("injections.json");
+  return injections;
+}
+
 /** One formatting package. */
 export async function packageFor(name) {
   if (!packages.has(name)) packages.set(name, await json(`packages/${name}.json`));
@@ -65,7 +79,18 @@ export async function packageFor(name) {
  */
 export async function parse(text, name) {
   const blob = await blobFor(name);
-  return parseDoc(blob, name, encoder.encode(text), `<${name} buffer>`);
+  const source = encoder.encode(text);
+  const doc = parseDoc(blob, name, source, `<${name} buffer>`);
+  const config = await injectionConfig();
+  if (!config.sites[name]) return doc;
+  // The second pass: reparse each fenced region with its guest grammar and
+  // splice the result in, so ```ruby really is ruby. `injectAll` asks for one
+  // guest table at a time and stops when nothing new is wanted, which is why
+  // the loader may be async -- node has every table in hand, a browser fetches
+  // them. A guest with no table listed is not fetched at all, and its region
+  // stays verbatim, exactly as an unknown info string does.
+  const load = async (guest) => (config.blobs[guest] ? blobFor(guest) : null);
+  return injectAll(doc, source, config, load, new Map([[name, blob]]));
 }
 
 /**
@@ -97,6 +122,17 @@ export function treeLanguages(tree) {
   };
   visit(tree.root);
   return out;
+}
+
+/**
+ * The editing rules for one language: how far it indents, and what it spells a
+ * line comment as. What the markdown surface adopts when the cursor enters a
+ * fence -- see `syntax()` in `editor.js`.
+ */
+export async function syntaxOf(name) {
+  const entry = await language(name);
+  if (entry === null) return null;
+  return { language: name, indent: entry.indent, lineComment: entry.lineComment };
 }
 
 export { Refusal };

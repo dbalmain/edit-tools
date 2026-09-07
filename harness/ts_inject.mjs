@@ -106,7 +106,7 @@ function isClean(root) {
  * It walks already-spliced subtrees as well, which is what lets a markdown
  * fence inside markdown resolve on a later round.
  */
-export function pendingGuests(doc, config, blobs) {
+export function pendingGuests(doc, source, config, blobs) {
   const out = new Set();
   const walk = (root, language) => {
     const sites = config.sites[language] ?? [];
@@ -116,10 +116,7 @@ export function pendingGuests(doc, config, blobs) {
         continue;
       }
       if (sites.length === 0) continue;
-      const region = regionFor(node, sites, config.aliases, null);
-      // A null source means info strings could not be read; fall back to
-      // reporting every guest the aliases can name, which over-fetches nothing
-      // in practice because `inject` passes the real source.
+      const region = regionFor(node, sites, config.aliases, source);
       if (region && !blobs.has(region.guest)) out.add(region.guest);
     }
   };
@@ -187,7 +184,7 @@ export function inject(doc, source, config, blobs) {
  */
 export async function injectAll(doc, source, config, load, blobs = new Map(), rounds = 4) {
   for (let round = 0; round < rounds; round++) {
-    const pending = pendingGuests(doc, config, blobs);
+    const pending = pendingGuests(doc, source, config, blobs);
     if (pending.size === 0) break;
     let loaded = 0;
     for (const language of pending) {

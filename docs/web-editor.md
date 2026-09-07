@@ -1,12 +1,13 @@
 # The web editor, the discrepancy app, and the markdown surface
 
-**Status: all three questions answered 2026-09-07; building.** Parked
+**Status: all four questions answered 2026-09-07; built.** Parked
 2026-09-06 in favour of finishing the parse layer for all sixteen tree-sitter
 languages, which question 1 below shows is a hard dependency of the interesting
 version of this. That finished 2026-09-07 -- `./harness/ts_check_all.py`
-reports 16/16 byte-identical. Q2 and Q3 were answered by Dave; Q1 was settled
-by measuring the two things it turned on. The answers are recorded in place
-under each question, with the reasoning that produced them left standing.
+reports 16/16 byte-identical, markdown included, splices and all. Q2, Q3 and Q4
+were answered by Dave; Q1 was settled by measuring the two things it turned on.
+The answers are recorded in place under each question, with the reasoning that
+produced them left standing.
 
 Three deliverables, in the order Dave asked for them. Each depends on the one
 before it.
@@ -69,6 +70,10 @@ divergences, this one is a *live* probe for fixing them. Keep both, and keep the
 new one out of `review_page.py`'s way.
 
 ## Open questions
+
+Q1 to Q3 were the questions the survey raised. Q4 is Dave's, and arrived after
+the first build shipped -- it is here rather than in a changelog because it
+changed what the parse layer does.
 
 Three. Each was going to be asked before any code was written; they are recorded
 here with their options so the answer does not have to be reconstructed.
@@ -228,6 +233,51 @@ section raw. It is a set of node types, so changing it is changing a list.
 | **The block under the cursor** *(recommended)* | A paragraph, heading, list item, fence or blockquote goes raw as a whole; everything else stays styled. Matches Obsidian and Typora, and a block is whole lines, which keeps vici's linewise motions honest. | A long paragraph reveals all its markers at once. |
 | **The line under the cursor** | Finer grained, simplest to compute. | A wrapped paragraph shows half raw and half styled, and a fence's delimiters render separately from its body. |
 | **The inline span under the cursor** | Closest to true WYSIWYG. | Hardest to keep byte offsets stable under vici's motions; `w` and `b` start crossing hidden characters. |
+
+### Q4 — Inside a fenced code block, which parser is running? (added 2026-09-07)
+
+**Answered 2026-09-07 by Dave, unprompted:** *"When I enter a code block, it
+should be as if I'm in a file of that language. So if the code block starts
+with ` ```ruby `, everything I type after that should be parsed by the ruby
+parser. Only when I exit the fenced region should it go back to parsing
+Markdown."*
+
+It arrived as a clarification of D6 on the parse-layer board, which had asked a
+narrower question -- which oracle should judge markdown's port -- and none of
+whose three options changed what the parse layer does. Dave's framing was the
+better one, and answering it dissolved D6 rather than settling it.
+
+The gap it exposed was real and unshipped: `web/` did a single markdown parse
+with no injection pass, so `fences.md@80` formatted `{ }` where `fmt-rust`
+produced `{}`, and `kitchen.md@80` left a 27-element array on one line where
+`fmt-rust` broke it. The browser disagreed with the scorer on every markdown
+file containing code.
+
+**What it cost was 120 lines, because this is not tree-sitter's included
+ranges.** Upstream's injection machinery re-runs the parser over disjoint
+ranges of one buffer, which the table interpreter has no entry point for -- but
+`harness/injection.py` never used it either. It slices the region's bytes,
+parses that slice as a standalone document, and rebases every offset by a
+constant, and `ts_lr.mjs` already does both halves. Verified before writing
+anything: slicing `fences.md`'s json region, reparsing it and adding 707 to
+every offset reproduces the frozen spliced subtree byte for byte.
+
+So `harness/ts_inject.mjs` is that pass, shared by the harness check and the
+browser. Three consequences, all measured in headless chromium:
+
+- `formatText` on `fences.md` and `kitchen.md` at width 80 now equals
+  `fmt-rust`, which it did not before.
+- `treeLanguages` of a document with a json fence and a ruby fence returns
+  `markdown, json, ruby`.
+- The editor adopts the guest's rules **for the range the guest parser actually
+  covered**, not for a range guessed from the info string. In a ` ```ruby `
+  fence the status line says `ruby` and `<CR>` after `  # note` continues
+  `  # `; on the prose line above it says `markdown` and continues nothing,
+  which is markdown's correct answer since it has no line comment.
+
+Innermost wins, so a json fence inside a markdown fence answers json. The fence
+lines themselves stay markdown, which is right -- that is where the info string
+is edited.
 
 ## Decided without asking
 

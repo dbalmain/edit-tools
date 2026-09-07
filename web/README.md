@@ -47,6 +47,8 @@ Everything under `web/data/` and `web/vendor/`. Nothing hand-written lives in
 either, so deleting them is always safe.
 
 - `data/languages.json` -- the registry the dashboard renders
+- `data/injections.json` -- which node types hold an embedded region, and which
+  info string routes to which guest grammar
 - `data/divergences/<lang>.json` -- both texts, the diff and the ledger verdict
 - `data/blobs/<lang>.blob.json` -- transcoded parse tables, 6 KB to 7.3 MB
 - `data/packages/<lang>.json` -- the formatting packages, copied
@@ -55,6 +57,27 @@ either, so deleting them is always safe.
 - `vendor/runtime.mjs` -- `runtime-js/bundle.js` with its one CommonJS export
   line rewritten as ESM. Otherwise byte-identical, so the browser runs the same
   formatter the scorer does.
+
+## Inside a fenced code block, it is that language
+
+A ` ```ruby ` block is parsed by the ruby parser, not held as opaque markdown
+text. `js/lang.js` runs the same second pass `harness/injection.py` does --
+slice the fence's content, parse it with the guest grammar, rebase every offset
+and splice it in -- so a markdown buffer holding ruby holds a real ruby tree.
+
+Two things follow, and both are visible:
+
+- `:w` and `\F` **format the code inside the fence**, because the formatter is
+  handed a tree that knows what the fence is. Without it, `web/` disagreed with
+  `fmt-rust` on every markdown file with a code block.
+- The editor **adopts the guest's rules while the cursor is in the region**.
+  The status line names the language, `<CR>` continues ruby's `#` rather than
+  markdown's nothing, and `>>` shifts by ruby's width. Leave the fence and it
+  is markdown again, which is what the range the guest parser actually covered
+  says -- not a guess from the info string.
+
+Guest tables are fetched only when a document routes to them, so a markdown
+page with no fences never pays for one.
 
 ## Keys
 

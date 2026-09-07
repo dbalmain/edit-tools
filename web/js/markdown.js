@@ -25,7 +25,7 @@
 // is the same answer sooner. A real parse follows on idle, which is what
 // notices a block that has just split in two.
 
-import { parse } from "./lang.js";
+import { parse, syntaxOf } from "./lang.js";
 import { VimEditor } from "./editor.js";
 
 /** Node types that hold blocks rather than being one. See the header. */
@@ -152,6 +152,27 @@ function renderBlock(block) {
   return node;
 }
 
+/**
+ * Every injected region, innermost last, with the language it was parsed as.
+ *
+ * A node carries `language` only if `ts_inject.mjs` put it there, which it does
+ * exactly when it reparsed that region with a guest grammar. So this is not a
+ * guess about what the fence said -- it is the range the guest parser actually
+ * covered, which is why "inside the fence" and "parsed as ruby" cannot drift
+ * apart.
+ */
+function guestsOf(root) {
+  const out = [];
+  const walk = (node) => {
+    if (node.language !== undefined) {
+      out.push({ start: node.start, end: node.end, language: node.language });
+    }
+    for (const child of node.children ?? []) walk(child);
+  };
+  walk(root);
+  return out;
+}
+
 /** Every non-container block, in document order, with its byte range. */
 function flatten(root) {
   const out = [];
@@ -170,6 +191,30 @@ const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
 /**
+ * Absorb an edit's size delta into the range holding the cursor, and slide
+ * every range after it.
+ *
+ * Shared by the block list and the guest list because they are the same shape
+ * and the same edit moved both -- and a second copy of this arithmetic that
+ * drifted from the first would put the caret in one block and the syntax rules
+ * of another.
+ */
+function shift(ranges, delta, cursor) {
+  for (const range of ranges) {
+    if (cursor <= range.start) {
+      range.start += delta;
+      range.end += delta;
+    } else if (cursor <= range.end + Math.max(delta, 0)) {
+      // The cursor is inside this range, so the range grew rather than moved.
+      // Tested per range rather than by "everything after the edited one",
+      // because guest regions nest: a json fence inside a markdown fence is
+      // inside its parent's range, and sliding it whole would tear it loose.
+      range.end += delta;
+    }
+  }
+}
+
+/**
  * A markdown editor: everything `VimEditor` does, drawn as blocks.
  *
  * Only `render` is overridden. The editing core, the ex line, `<leader>F` and
@@ -181,6 +226,10 @@ class MarkdownEditor extends VimEditor {
     super(host, options);
     /** Block ranges from the last real parse, patched by every edit since. */
     this.blocks = null;
+    /** Injected regions from the same parse, patched the same way. */
+    this.guests = [];
+    /** Indent width and comment marker per guest language, fetched once each. */
+    this.syntaxes = new Map();
     this.reparseTimer = null;
     this.scheduleReparse(0);
   }
@@ -193,11 +242,47 @@ class MarkdownEditor extends VimEditor {
       try {
         const tree = await parse(text, "markdown");
         this.blocks = flatten(tree.root);
+        this.guests = guestsOf(tree.root);
+        for (const guest of this.guests) {
+          if (this.syntaxes.has(guest.language)) continue;
+          this.syntaxes.set(guest.language, await syntaxOf(guest.language));
+        }
       } catch {
         this.blocks = null; // fall back to plain text rather than to a wrong shape
+        this.guests = [];
       }
       if (this.editor.text() === text) this.render();
     }, delay);
+  }
+
+  /**
+   * Markdown, unless the cursor is inside a fence that routed to a guest --
+   * then that guest's, which is what Dave asked for: a ```ruby block should
+   * behave as if it were a ruby file, right up to the closing fence.
+   *
+   * Innermost wins, so a json fence inside a markdown fence answers json. The
+   * ranges are the guest *content*, not the whole `fenced_code_block`, so the
+   * fence lines themselves are still markdown -- which is right, because that
+   * is where the info string is edited.
+   *
+   * A guest with no package (`indent: null`) keeps the host's width rather
+   * than inheriting a null; only what the guest actually declares overrides.
+   */
+  syntax() {
+    const host = super.syntax();
+    const cursor = this.editor.cursor;
+    let best = null;
+    for (const guest of this.guests ?? []) {
+      if (cursor < guest.start || cursor >= guest.end) continue;
+      if (best === null || guest.end - guest.start <= best.end - best.start) best = guest;
+    }
+    if (best === null) return host;
+    const rules = this.syntaxes?.get(best.language);
+    return {
+      language: best.language,
+      indent: rules?.indent ?? host.indent,
+      lineComment: rules?.lineComment ?? null,
+    };
   }
 
   render() {
@@ -278,6 +363,7 @@ class MarkdownEditor extends VimEditor {
   /** A whole-buffer replacement invalidates every cached range. */
   replaceAll(text) {
     this.blocks = null;
+    this.guests = [];
     super.replaceAll(text);
     this.scheduleReparse(0);
   }
@@ -295,16 +381,8 @@ class MarkdownEditor extends VimEditor {
     const delta = encoder.encode(after).length - encoder.encode(before).length;
     if (delta === 0) return;
     const cursor = this.editor.cursor;
-    let shifting = false;
-    for (const block of this.blocks) {
-      if (shifting) {
-        block.start += delta;
-        block.end += delta;
-      } else if (cursor <= block.end + Math.max(delta, 0)) {
-        block.end += delta;
-        shifting = true;
-      }
-    }
+    shift(this.blocks, delta, cursor);
+    shift(this.guests, delta, cursor);
   }
 }
 

@@ -375,6 +375,15 @@ pre.diff .hunk { color: var(--ink-faint); display: block; }
   font-size: .76rem;
   min-height: 1.9rem;
 }
+/* The language in force at the cursor. It changes as the cursor crosses into a
+   fenced block, which is the visible half of the injection second pass. */
+.vici-lang {
+  color: var(--ink-faint);
+  background: var(--sunk);
+  border-radius: 3px;
+  padding: 0 .4rem;
+}
+.vici-lang:empty { display: none; }
 .vici-mode { color: var(--pine); font-weight: 700; }
 .vici-message { color: var(--amber); }
 .vici-ex { color: var(--ink); flex: 1 1 auto; }

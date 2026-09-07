@@ -44,6 +44,7 @@ import review_formatter  # noqa: E402
 import review_ledger  # noqa: E402
 import score  # noqa: E402
 import ts_grammars as tg  # noqa: E402
+import ts_injections as tj  # noqa: E402
 import ts_scanner_record as rec  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -84,7 +85,8 @@ LINE_COMMENT = {
 # The parse layer, already ESM and already free of node imports. Copied rather
 # than imported across `../../harness/` so that `web/` is a directory a static
 # host can serve on its own -- which is the whole content of Q1's answer.
-PARSE_LAYER = ("ts_lr.mjs", "ts_doc.mjs", "ts_scanner_vm.mjs", "ts_scanner_pack.mjs")
+PARSE_LAYER = ("ts_lr.mjs", "ts_doc.mjs", "ts_inject.mjs",
+               "ts_scanner_vm.mjs", "ts_scanner_pack.mjs")
 
 
 def vendor() -> None:
@@ -212,6 +214,18 @@ def main() -> int:
             continue
         shutil.copy(path, packages / path.name)
         shipped.add(path.stem)
+
+    # Which node types hold an embedded region, and which info string routes
+    # to which guest. Manifest data rather than grammar data, so it cannot ride
+    # in a blob; `blobs` lists only the guests whose tables were actually
+    # written, and a guest missing from it leaves its fence verbatim.
+    print("injections")
+    injections = tj.config(known, DATA / "blobs")
+    (DATA / "injections.json").write_text(
+        json.dumps(injections, indent=1) + "\n", encoding="utf-8"
+    )
+    print(f"  {len(injections['sites'])} host(s), "
+          f"{len(injections['aliases'])} aliases, {len(injections['blobs'])} tables")
 
     print("divergences")
     by_language = cases(ROOT, selected)
