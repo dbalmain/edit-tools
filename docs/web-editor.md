@@ -1,11 +1,12 @@
 # The web editor, the discrepancy app, and the markdown surface
 
-**Status: specified, not started. The dependency it was parked behind is
-done.** Parked 2026-09-06 in favour of finishing the parse layer for all
-sixteen tree-sitter languages, which question 1 below shows is a hard
-dependency of the interesting version of this. **That finished 2026-09-07** --
-`./harness/ts_check_all.py` reports 16/16 byte-identical -- so Q1's answer has
-changed and Q2 and Q3 are unblocked. See the revision under Q1.
+**Status: all three questions answered 2026-09-07; building.** Parked
+2026-09-06 in favour of finishing the parse layer for all sixteen tree-sitter
+languages, which question 1 below shows is a hard dependency of the interesting
+version of this. That finished 2026-09-07 -- `./harness/ts_check_all.py`
+reports 16/16 byte-identical. Q2 and Q3 were answered by Dave; Q1 was settled
+by measuring the two things it turned on. The answers are recorded in place
+under each question, with the reasoning that produced them left standing.
 
 Three deliverables, in the order Dave asked for them. Each depends on the one
 before it.
@@ -117,7 +118,73 @@ migration that no longer has anything left to migrate.
 takes long enough to be felt on `:w`, option 1's server buys native
 tree-sitter speed and the browser path becomes a later optimisation.
 
+#### Answered 2026-09-07: option 2, and both unknowns are now measured
+
+Neither unknown was left as a judgement call. Both were measured before
+committing, because both were the reason not to commit.
+
+**Blob size.** All sixteen blobs, raw and gzipped:
+
+| Language | Raw | gzip -9 | | Language | Raw | gzip -9 |
+| --- | ---: | ---: | --- | --- | ---: | ---: |
+| json | 6.6 KB | 1.5 KB | | markdown | 469 KB | 50 KB |
+| html | 30 KB | 12 KB | | javascript | 594 KB | 48 KB |
+| toml | 30 KB | 5.0 KB | | python | 790 KB | 63 KB |
+| xml | 72 KB | 15 KB | | rust | 1.95 MB | 120 KB |
+| scheme | 88 KB | 8.9 KB | | typescript | 2.05 MB | 137 KB |
+| css | 121 KB | 18 KB | | ruby | 3.16 MB | 182 KB |
+| yaml | 272 KB | 34 KB | | haskell | 5.62 MB | 326 KB |
+| go | 373 KB | 36 KB | | kotlin | 7.27 MB | 339 KB |
+
+**The predicted outlier was wrong.** haskell was expected to top the table on
+the strength of its 3,102-interval unicode class file; kotlin beats it, at
+7.27 MB raw, with no external unicode data at all. The unicode file is not
+what drives blob size -- the LR tables are.
+
+Raw totals 22.9 MB, which is why blobs are **generated and gitignored, not
+committed**. Gzipped they total 1.4 MB, and the number that matters is not the
+total but the **worst single page load, 339 KB gzipped**, because each page
+loads exactly one language. That is an ordinary bundle, so lazy-load per
+language is sufficient and no further work is needed.
+
+**Parse wall-clock**, `harness/ts_lr.mjs` under node, median of 5 after a warm
+run, on real files rather than the ~600-byte corpus ones:
+
+| File | Language | Bytes | Blob parse | Parse | Rate |
+| --- | --- | ---: | ---: | ---: | ---: |
+| `harness/ts_lr.mjs` | javascript | 90,882 | 5 ms | 61 ms | 1.45 MB/s |
+| `runtime-js/bundle.js` | javascript | 59,842 | 5 ms | 61 ms | 0.96 MB/s |
+| `harness/ts_transcode.py` | python | 45,733 | 6 ms | 55 ms | 0.81 MB/s |
+| `rust/src/eval.rs` | rust | 116,908 | 16 ms | 111 ms | 1.03 MB/s |
+| `rust/src/pkg.rs` | rust | 40,828 | 12 ms | 39 ms | 1.03 MB/s |
+| `docs/parse-all-languages.md` | markdown | 41,459 | 4 ms | 81 ms | 0.50 MB/s |
+
+Roughly **1 MB/s**, and flat across languages within a factor of three. Two
+consequences, and they point the same way:
+
+* A corpus file is ~600 bytes, so the discrepancy app's parse is **under a
+  millisecond**. Its performance question does not exist.
+* A 40 KB markdown document costs **81 ms**, and that is on `:w`, not on a
+  keystroke. Felt, but not in the way that would buy a server: the fix, if it
+  ever becomes one, is a worker or a debounce.
+
+So the fact that would have flipped it back did not occur, and **the answer is
+option 2**. Both figures were measured on this machine on 2026-09-07, by
+`ts_check_all.py --keep` for the sizes and a five-run harness around
+`parse(blob, bytes)` for the times.
+
 ### Q2 — What does the left editor hold on load?
+
+**Answered 2026-09-07: our formatter's output (option 2).** Dave: *"The editor
+on the left holds the original source already formatted by our formatter. I
+want to be able to scroll through the entries and see the differences. In most
+cases, I'm not going to enter the editor at all."*
+
+That is exactly the fact the option-1 recommendation named as the thing that
+would change it: the page is read far more often than it is edited, so the
+divergence has to be on screen with no keystroke. The edit-save-compare loop
+survives anyway -- `:w` reformats the buffer in place, and refresh restores the
+left pane to our formatter's output rather than to the raw source.
 
 | Option | Buys | Costs |
 | --- | --- | --- |
@@ -131,6 +198,30 @@ formatted" means here, and what the refresh button restores the left pane
 against.
 
 ### Q3 — In the markdown surface, what is "the current component"?
+
+**Answered 2026-09-07: the block under the cursor (option 1), resolved through
+tree-sitter.** Dave: *"The current component means the current line component.
+The treesitter parser should be used to determine this. I assume markdown has a
+series of root-level components or objects which are trees themselves.
+Hopefully, if we choose that method of identifying the component, we can adjust
+once I start to play around with it."*
+
+The assumption is nearly right and the correction matters. `document`'s
+children are **not** the blocks: `tree-sitter-markdown`'s block grammar nests
+`section` nodes by heading level, so this file's root has one `section`, and
+that section has an `atx_heading`, two `paragraph`s and five nested `section`s.
+Taking "the child of the root containing the cursor" would put the whole
+document in raw mode.
+
+The rule that does work is one line anyway: **descend from the root, taking
+the child that contains the cursor's byte offset, while that child is a
+container** -- `document` or `section` -- **and stop at the first one that is
+not.** That lands on the `paragraph`, `atx_heading`, `list`,
+`fenced_code_block`, `block_quote`, `table` or `html_block` the cursor is in.
+
+The knob Dave wants is then just where that descent stops. Continuing one level
+past a `list` narrows to the `list_item`; stopping earlier keeps a whole
+section raw. It is a set of node types, so changing it is changing a list.
 
 | Option | Buys | Costs |
 | --- | --- | --- |
