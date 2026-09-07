@@ -207,46 +207,49 @@ preserved because nothing outside the scanner reads the tag. Two ports, two
 different answers to the same missing feature; `registerInit` would have made
 both unnecessary.
 
-### markdown's clean fixtures cannot judge markdown
+### markdown's clean fixtures needed a second pass, not a second oracle
 
 markdown's port replays its recorded C-scanner calls with no mismatches (3,127
 calls, 674 state transitions) and passes `--edited` 6/6, and then
-`ts_check_trees.mjs` reports **9 of 15** on the clean corpus. The six that fail
--- `comments`, `fences`, `kitchen`, `long_sequences`, `nesting`,
+`ts_check_trees.mjs` reported **9 of 15** on the clean corpus. The six that
+failed -- `comments`, `fences`, `kitchen`, `long_sequences`, `nesting`,
 `normalisation` -- are exactly the six whose frozen tree contains more than one
 `"type": "document"`.
 
 That is `gen_trees.py`'s **injection splice**: it reparses a fenced region with
 the guest grammar and substitutes the guest's tree for the host's
-`code_fence_content` leaf. The table interpreter has no included-range second
-pass, so it cannot produce that shape from one parse and never will. The
-mismatch is a property of the fixture, not of the port.
+`code_fence_content` leaf. For a while this looked like a shape the table
+interpreter could never produce, because tree-sitter's own injection machinery
+re-runs the parser over disjoint ranges of one buffer and the interpreter has
+no entry point for that. The bar was moved instead: `ts_check_hostonly.py`
+re-derived a host-only oracle from the live grammar and required our output to
+match it, and markdown was 15/15 against that.
 
-`parse_oracle.py` already turns injections **off**, deliberately and for the
-same reason -- "a candidate parse layer parses one language, so the oracle it
-should be measured against is the host grammar's own recovery, not a splice of
-two grammars" -- which is why `corpus/trees-edited/` needs no equivalent and
-why `--edited` is clean.
+**`injection.py` never used included ranges either.** It slices the region's
+bytes out, parses that slice as a standalone document, and rebases every offset
+by a constant -- and `ts_lr.mjs` already does both halves, because `parseRoot`
+takes any `Uint8Array` and rebasing is addition. Verified before anything was
+written: slicing `fences.md`'s json region, reparsing it with the json table
+and adding 707 to every offset reproduces the frozen spliced subtree byte for
+byte.
 
-So the clean half needed its own check, and `harness/ts_check_hostonly.py` is
-it: parse each corpus file with the real grammar and no injection pass,
-serialise it in `gen_trees.py`'s shape, and require our `--write-dir` output to
-equal it byte for byte. markdown is **15/15**.
+So `harness/ts_inject.mjs` is that second pass, and `ts_check_trees.mjs
+--inject` runs it. markdown is **15/15 against the real committed fixtures**,
+splices included, and the host-only script is gone along with the open decision
+about which oracle should be the bar.
 
 ```sh
-./harness/ts_transcode.py .grammars/markdown/tree-sitter-markdown/src/parser.c \
-  --scanner harness/scanners/markdown.svm -o /tmp/md.blob.json
-./harness/ts_check_trees.mjs /tmp/md.blob.json markdown --write-dir /tmp/md-ours
-./harness/ts_check_hostonly.py markdown /tmp/md-ours
+./harness/ts_check_all.py --language markdown
 ```
 
-It is weaker than the frozen-fixture check in one way and stronger in another:
-weaker because it re-derives its oracle from a live grammar rather than from a
-committed artifact, stronger because it is the only comparison an injected
-language's clean corpus admits at all. **Which of those two should be the
-committed bar for markdown is an open decision**, and it is on the board:
-splice injections into `ts_check_trees.mjs`, freeze a second host-only fixture
-set, or leave this script as the gate.
+The negative control is the same command without `--inject`, which still
+reports 9/15 -- so the flag is doing the work, not hiding a difference.
+
+`parse_oracle.py` still turns injections **off**, deliberately -- "a candidate
+parse layer parses one language, so the oracle it should be measured against is
+the host grammar's own recovery, not a splice of two grammars" -- which is why
+`corpus/trees-edited/` needs no injection pass and why `--edited` was clean
+throughout.
 
 Two other things markdown settled. `sizeof(Block)` is **4, not 1** -- the
 brief guessed one byte from `memcpy(&buffer[size], s->open_blocks.items, ...)`

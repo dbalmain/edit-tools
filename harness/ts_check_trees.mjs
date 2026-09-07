@@ -16,13 +16,41 @@
 // the comparison really is over the artifact and not over a normalised form.
 
 import { readFileSync, readdirSync, writeFileSync, mkdirSync } from "node:fs";
-import { basename, extname, join, relative, resolve } from "node:path";
+import { basename, dirname, extname, join, relative, resolve } from "node:path";
 import { parseDoc as buildDoc, parseRoot } from "./ts_doc.mjs";
+import { inject } from "./ts_inject.mjs";
 
 const ROOT = resolve(import.meta.dirname, "..");
 
-function parseDoc(blob, language, sourcePath) {
-  return buildDoc(blob, language, readFileSync(sourcePath), relative(ROOT, sourcePath));
+// --inject <injections.json>: run the second pass, so a fenced region is
+// reparsed with its guest grammar and spliced in. `corpus/trees/` is frozen
+// *with* that splice, so for markdown this is the difference between checking
+// nine of fifteen files and checking all fifteen against the real fixtures.
+//
+// The guest tables come from the directory holding the config, which is where
+// `ts_check_all.py` puts every blob it transcodes. A guest with no blob there
+// leaves its region verbatim rather than failing -- same as an unknown info
+// string -- so a `--language markdown` run, which transcodes markdown alone,
+// simply checks the nine unspliced files and reports the six it cannot judge.
+function loadInjection(configPath) {
+  const config = JSON.parse(readFileSync(configPath, "utf8"));
+  const dir = dirname(configPath);
+  const blobs = new Map();
+  for (const [language, file] of Object.entries(config.blobs)) {
+    try {
+      blobs.set(language, JSON.parse(readFileSync(join(dir, file), "utf8")));
+    } catch {
+      // Absent is the normal case for a single-language run.
+    }
+  }
+  return { config, blobs };
+}
+
+function parseDoc(blob, language, sourcePath, injection) {
+  const source = readFileSync(sourcePath);
+  const doc = buildDoc(blob, language, source, relative(ROOT, sourcePath));
+  if (injection) inject(doc, source, injection.config, injection.blobs);
+  return doc;
 }
 
 // --edited: the same bar against `corpus/trees-edited/`, whose fixtures carry
@@ -72,14 +100,14 @@ function checkEdited(blobPath, language) {
 // --emit: parse the newline-separated paths on stdin and write one JSON
 // document per line. `harness/ts_differential.py` compares those against real
 // tree-sitter over a corpus far larger than the frozen one.
-function emit(blobPath, language) {
+function emit(blobPath, language, injection) {
   const blob = JSON.parse(readFileSync(blobPath, "utf8"));
   const paths = readFileSync(0, "utf8").split("\n").filter(Boolean);
   const out = [];
   for (const path of paths) {
     let record;
     try {
-      record = { path, doc: parseDoc(blob, language, path) };
+      record = { path, doc: parseDoc(blob, language, path, injection) };
     } catch (err) {
       record = { path, error: err.message };
     }
@@ -97,11 +125,14 @@ function main(argv) {
   const [blobPath, language, ...rest] = argv;
   if (!blobPath || !language) {
     console.error(
-      "usage: ts_check_trees.mjs <blob.json> <language> [--write-dir DIR|--emit|--edited]",
+      "usage: ts_check_trees.mjs <blob.json> <language> " +
+        "[--write-dir DIR|--emit|--edited] [--inject injections.json]",
     );
     return 2;
   }
-  if (rest.includes("--emit")) return emit(blobPath, language);
+  const injectIndex = rest.indexOf("--inject");
+  const injection = injectIndex >= 0 ? loadInjection(rest[injectIndex + 1]) : null;
+  if (rest.includes("--emit")) return emit(blobPath, language, injection);
   if (rest.includes("--edited")) return checkEdited(blobPath, language);
   const writeIndex = rest.indexOf("--write-dir");
   const writeDir = writeIndex >= 0 ? rest[writeIndex + 1] : null;
@@ -126,7 +157,8 @@ function main(argv) {
     let actual;
     const started = process.hrtime.bigint();
     try {
-      actual = JSON.stringify(parseDoc(blob, language, join(srcDir, file)), null, 1) + "\n";
+      const doc = parseDoc(blob, language, join(srcDir, file), injection);
+      actual = JSON.stringify(doc, null, 1) + "\n";
     } catch (err) {
       failures.push(`${file}: ${err.message}`);
       continue;
