@@ -59,21 +59,21 @@ unknown names, bad argument counts and holes outside a definition body.
 
 ### Layout
 
-| Opcode           | Meaning                                                  |
-| ---------------- | -------------------------------------------------------- |
-| `["seq", e…]`    | concatenation                                            |
-| `["group", e…]`  | one layout decision: all-flat if it fits, else broken    |
-| `["indent", e…]` | one indent level deeper (`indent` in the package header) |
+| Opcode                | Meaning                                                      |
+| --------------------- | ------------------------------------------------------------ |
+| `["seq", e…]`         | concatenation                                                |
+| `["group", e…]`       | one layout decision: all-flat if it fits, else broken        |
+| `["indent", e…]`      | one indent level deeper (`indent` in the package header)     |
 | `["prefix", sel, e…]` | consume the `sel` child and indent `e…` by *its* source text |
-| `["line"]`       | a space when flat, a newline when broken                 |
-| `["soft"]`       | nothing when flat, a newline when broken                 |
-| `["hard"]`       | always a newline; forces every enclosing group open      |
-| `["sp"]`         | a space, never a break                                   |
-| `["blank", n]`   | up to `n` blank lines, as the source had them; see below |
-| `["srcgap"]`     | exact horizontal source whitespace flat, newline broken |
-| `["srcline"]`    | a space, or a newline where the source broke the line    |
-| `["srcsoft"]`    | nothing, or a newline where the source broke the line    |
-| `["srcbreak"]`   | a `line`, or a hard newline where the source broke it    |
+| `["line"]`            | a space when flat, a newline when broken                     |
+| `["soft"]`            | nothing when flat, a newline when broken                     |
+| `["hard"]`            | always a newline; forces every enclosing group open          |
+| `["sp"]`              | a space, never a break                                       |
+| `["blank", n]`        | up to `n` blank lines, as the source had them; see below     |
+| `["srcgap"]`          | exact horizontal source whitespace flat, newline broken      |
+| `["srcline"]`         | a space, or a newline where the source broke the line        |
+| `["srcsoft"]`         | nothing, or a newline where the source broke the line        |
+| `["srcbreak"]`        | a `line`, or a hard newline where the source broke it        |
 
 `["blank", n]` takes an optional third operand, a list of node types. A gap next
 to one of those types opens to exactly `n` — the cap is also a floor, but only
@@ -107,14 +107,14 @@ Every opcode that emits a child **consumes** it. See _linearity_ below.
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------ |
 | `["child", sel]`         | format the child under the cursor, which must match `sel`                                                          |
 | `["each", sel, sep]`     | format every `sel` child in turn, evaluating `sep` between them — `sep` consumes whatever punctuation lies between |
-| `["fill", sel, sep]`     | `each`, but each `sep` independently stays flat or breaks according to whether the next content fits                |
+| `["fill", sel, sep]`     | `each`, but each `sep` independently stays flat or breaks according to whether the next content fits               |
 | `["tok", "s"]`           | the child under the cursor is the token `s`; emit it                                                               |
 | `["opt", sel, e]`        | evaluate `e` only if the child under the cursor matches `sel`                                                      |
 | `["verbatim"]`           | take every child and emit the node's original source text, exactly — after the subtree's offsets check out         |
 | `["flatten", type, sep]` | collect a left-nested operator chain and join it — see below                                                       |
-| `["drop", "s"]`          | consume the token `s` without emitting it, if it is there — the only sanctioned deletion                          |
+| `["drop", "s"]`          | consume the token `s` without emitting it, if it is there — the only sanctioned deletion                           |
 | `["srctrail", "s"]`      | adopt a source separator and emit it only when what follows starts a fresh line                                    |
-| `["table"]`              | take every child and lay the node out as an aligned pipe table — the third sanctioned mutation, see below         |
+| `["table"]`              | take every child and lay the node out as an aligned pipe table — the third sanctioned mutation, see below          |
 
 `fill` has the same cursor and separator-consumption contract as `each`, but
 builds an alternating content/separator Doc. At each separator the printer asks
