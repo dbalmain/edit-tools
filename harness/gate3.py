@@ -60,6 +60,7 @@ evidence of override strength.
 from __future__ import annotations
 
 import importlib.util
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -133,6 +134,34 @@ def _extras(
 # the generic structural default
 
 
+RULE = re.compile(r"^:?-+:?$")
+
+
+def _layout(node, source: bytes) -> str:
+    """A declared layout leaf, reduced to what it means.
+
+    Outer whitespace goes, because a pipe table's cells are padded to a column
+    width the author did not choose. A cell that is entirely a rule -- dashes,
+    optionally anchored by a colon -- reduces further, to its anchors alone,
+    because the ruler's *length* is that same column width drawn out and `:-`
+    has to become `:-----` for the table to line up at all.
+
+    This is the third declared narrowing of the generic default, and it is
+    there for the same reason as the first two: the gate rejected the reference
+    formatter's own correct output (`check_gate3.py` fails on prettier's
+    padding of `corpus/src/markdown/tables.md`), and the doc above says that
+    means the gate is wrong rather than strict.
+
+    What it stops catching, stated plainly: a body cell whose content is
+    `--` becoming `---`. Nothing else -- a cell's text, a ruler's colons, the
+    number of cells and the number of rows are all still compared exactly.
+    """
+    text = source[node.start_byte:node.end_byte].decode().strip()
+    if RULE.match(text):
+        return f"{':' if text.startswith(':') else ''}-{':' if text.endswith(':') else ''}"
+    return text
+
+
 def _tokens(node, source: bytes) -> str | tuple[str, ...]:
     """The spelling of a node that has no named children, with the whitespace
     *between* its tokens dropped.
@@ -199,6 +228,7 @@ def _generic(
     aliases: dict[str, _mf.Manifest],
     wrappers: frozenset[str],
     canon: dict[str, str],
+    layout: frozenset[str] = frozenset(),
 ):
     while node.type in wrappers:
         inner = [c for c in node.children if c.is_named and not c.is_extra]
@@ -211,13 +241,15 @@ def _generic(
         return ("injection_region", "")
     kids = [c for c in node.children if c.is_named and not c.is_extra]
     if not kids:
+        if node.type in layout:
+            return (kind, _layout(node, source))
         return (kind, _tokens(node, source))
     return (
         kind,
         tuple(
             ("injection_region", "")
             if region is not None and child == region.content
-            else _generic(child, source, manifest, aliases, wrappers, canon)
+            else _generic(child, source, manifest, aliases, wrappers, canon, layout)
             for child in kids
         ),
     )
@@ -254,6 +286,7 @@ def generic_part_from_root(
         aliases,
         manifest.transparent_wrappers,
         _canon_map(manifest),
+        manifest.layout_leaves,
     )
 
 

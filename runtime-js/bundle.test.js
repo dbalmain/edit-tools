@@ -1848,3 +1848,116 @@ test("a swallowed terminator is peeled once and only once", () => {
     /malformed tree: node `file`.*past the source/,
   );
 });
+
+// --- table -----------------------------------------------------------------
+
+const tablePkg = () => ({
+  format: "et-doc-rules/1",
+  indent: 2,
+  tokens: ["|", "cont"],
+  rules: { table: ["table"] },
+});
+
+const cell = (type, start, end) => ({ type, start, end, children: [] });
+const bar = (at) => ({ type: "|", start: at, end: at + 1, text: "|" });
+const row = (type, start, end, cells) => ({
+  type,
+  start,
+  end,
+  children: [bar(start), ...cells, bar(end - 1)],
+});
+
+// `| a | bb |` / `|:-|-:|` / `| longer | 2 |`, with the grammar's own cell
+// spans: it strips a cell's leading space and keeps its trailing one.
+const wonky =
+  "| a | bb |\n" +
+  "|:-|-:|\n" +
+  "| longer | 2 |\n";
+
+const wonkyTable = () => ({
+  type: "table",
+  start: 0,
+  end: 34,
+  children: [
+    row("head", 0, 10, [cell("cell", 2, 4), cell("cell", 6, 9)]),
+    row("ruler", 11, 18, [cell("rule", 12, 14), cell("rule", 15, 17)]),
+    row("body", 19, 33, [cell("cell", 21, 28), cell("cell", 30, 32)]),
+  ],
+});
+
+test("table pads to the widest cell and redraws the ruler to match", () => {
+  assert.strictEqual(
+    runOn(tablePkg(), wonky, wonkyTable(), 80),
+    "| a      |  bb |\n| :----- | --: |\n| longer |   2 |\n",
+  );
+});
+
+test("table floors a column at three and never measures the ruler", () => {
+  // Both columns hold one character; the ruler in the source is seven wide
+  // and carries no alignment, so every column comes out at the floor.
+  const source = "| a | b |\n|-------|-|\n";
+  const root = {
+    type: "table",
+    start: 0,
+    end: 22,
+    children: [
+      row("head", 0, 9, [cell("cell", 2, 4), cell("cell", 6, 8)]),
+      row("ruler", 10, 21, [cell("rule", 11, 18), cell("rule", 19, 20)]),
+    ],
+  };
+  assert.strictEqual(
+    runOn(tablePkg(), source, root, 80),
+    "| a   | b   |\n| --- | --- |\n",
+  );
+});
+
+test("table keeps a container's per-line marker in front of its row", () => {
+  // What a table inside a block quote looks like: the host's `> ` arrives as
+  // a token child of the table, between the rows it prefixes.
+  const source = "| a |\n> |-|\n> | bb |\n";
+  const root = {
+    type: "table",
+    start: 0,
+    end: 21,
+    children: [
+      row("head", 0, 5, [cell("cell", 2, 4)]),
+      { type: "cont", start: 6, end: 8, text: "> " },
+      row("ruler", 8, 11, [cell("rule", 9, 10)]),
+      { type: "cont", start: 12, end: 14, text: "> " },
+      row("body", 14, 20, [cell("cell", 16, 19)]),
+    ],
+  };
+  assert.strictEqual(
+    runOn(tablePkg(), source, root, 80),
+    "| a   |\n> | --- |\n> | bb  |\n",
+  );
+});
+
+test("table leaves a ragged row ragged rather than squaring it off", () => {
+  const source = "| a | b |\n| - | - |\n| 1 |\n";
+  const root = {
+    type: "table",
+    start: 0,
+    end: 26,
+    children: [
+      row("head", 0, 9, [cell("cell", 2, 4), cell("cell", 6, 8)]),
+      row("ruler", 10, 19, [cell("rule", 12, 13), cell("rule", 16, 17)]),
+      row("body", 20, 25, [cell("cell", 22, 24)]),
+    ],
+  };
+  assert.strictEqual(
+    runOn(tablePkg(), source, root, 80),
+    "| a   | b   |\n| --- | --- |\n| 1   |\n",
+  );
+});
+
+test("table refuses to share its node with another expression", () => {
+  const pkg = tablePkg();
+  pkg.rules.table = ["seq", ["child", "t:cont"], ["table"]];
+  const root = wonkyTable();
+  root.children.unshift({ type: "cont", start: 0, end: 0, text: "" });
+  assert.throws(
+    () => runOn(pkg, wonky, root, 80),
+    (e) => e instanceof Refusal && /`table` takes every child/.test(e.message),
+  );
+});

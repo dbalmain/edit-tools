@@ -96,14 +96,65 @@ impl<'a> Fmt<'a> {
         Ok(doc)
     }
 
-    fn slice(&self, node: &Node) -> Result<Doc, Refusal> {
+    fn text(&self, node: &Node) -> Result<&'a str, Refusal> {
         let bytes = self
             .src
             .get(node.start..node.end)
             .ok_or_else(|| Refusal(format!("`{}` runs past the source", node.kind)))?;
         std::str::from_utf8(bytes)
-            .map(Doc::text)
             .map_err(|e| Refusal(format!("`{}` is not valid UTF-8: {e}", node.kind)))
+    }
+
+    fn slice(&self, node: &Node) -> Result<Doc, Refusal> {
+        self.text(node).map(Doc::text)
+    }
+}
+
+/// Scalar count, the same measure the align pass uses.
+fn width(s: &str) -> usize {
+    s.chars().count()
+}
+
+/// A ruler cell: dashes, optionally anchored by a colon at either end.
+fn is_ruler(cell: &str) -> bool {
+    let body = cell.trim_start_matches(':').trim_end_matches(':');
+    !body.is_empty() && body.bytes().all(|b| b == b'-')
+}
+
+/// The ruler's shape, as its own canonical spelling: `-`, `:-`, `-:` or `:-:`
+/// for none, left, right and centre.
+fn ruler_shape(cell: &str) -> &'static str {
+    match (cell.starts_with(':'), cell.ends_with(':')) {
+        (true, true) => ":-:",
+        (true, false) => ":-",
+        (false, true) => "-:",
+        (false, false) => "-",
+    }
+}
+
+/// Widen `cell` to `w` columns. Centre rounds the shorter half down to the
+/// left, which is what prettier does with an odd remainder.
+fn table_cell(cell: &str, w: usize, a: &str) -> String {
+    let gap = w.saturating_sub(width(cell));
+    match a {
+        "-:" => format!("{}{cell}", " ".repeat(gap)),
+        ":-:" => {
+            let left = gap / 2;
+            format!("{}{cell}{}", " ".repeat(left), " ".repeat(gap - left))
+        }
+        _ => format!("{cell}{}", " ".repeat(gap)),
+    }
+}
+
+/// The ruler cell for a column of `w` columns, regenerated rather than padded:
+/// the source's own dash count carries no information once the column width is
+/// known, and `:-` has to grow to reach it.
+fn table_rule(w: usize, a: &str) -> String {
+    match a {
+        ":-:" => format!(":{}:", "-".repeat(w - 2)),
+        ":-" => format!(":{}", "-".repeat(w - 1)),
+        "-:" => format!("{}:", "-".repeat(w - 1)),
+        _ => "-".repeat(w),
     }
 }
 
@@ -282,6 +333,7 @@ impl<'a> Ctx<'a> {
             Expr::Fill(sel, sep) => self.fill(sel, sep, f),
             Expr::Tok(s) => self.tok(s, f),
             Expr::Verbatim => self.verbatim(f),
+            Expr::Table => self.table(f),
             Expr::Opt(sel, body) => {
                 if self.matches(self.cursor, sel, f.pkg) {
                     self.eval(body, f)
@@ -536,6 +588,88 @@ impl<'a> Ctx<'a> {
         check_verbatim(self.node, f.src)?;
         self.cursor = self.items.len();
         f.slice(self.node)
+    }
+
+    /// The whole node as an aligned pipe table: rows are named children, cells
+    /// are named grandchildren, and the ruler is the row whose cells are all
+    /// dashes. Tokens between rows are a container's per-line marker and
+    /// belong in front of the row that follows.
+    ///
+    /// `runtime-js/bundle.js` carries the full account of why a ruler has to
+    /// be regenerated rather than padded; gate 1 checks the two byte for byte.
+    fn table(&mut self, f: &Fmt<'a>) -> Result<Doc, Refusal> {
+        if self.cursor != 0 {
+            return Err(self.refuse("to be the whole rule (`table` takes every child)"));
+        }
+        if self.items.iter().any(Item::decorated) {
+            return Err(self.refuse("no comments inside a table"));
+        }
+        self.cursor = self.items.len();
+
+        let mut rows: Vec<(String, Vec<String>)> = Vec::new();
+        let mut lead = String::new();
+        for item in &self.items {
+            let node = item.node;
+            if f.pkg.is_token(&node.kind) {
+                lead.push_str(f.text(node)?);
+                continue;
+            }
+            let mut cells = Vec::new();
+            for child in &node.children {
+                if !f.pkg.is_token(&child.kind) {
+                    cells.push(f.text(child)?.trim().to_owned());
+                }
+            }
+            rows.push((std::mem::take(&mut lead), cells));
+        }
+
+        let ruler = rows
+            .iter()
+            .position(|(_, cells)| !cells.is_empty() && cells.iter().all(|c| is_ruler(c)));
+        let align: Vec<&str> = match ruler {
+            Some(r) => rows[r].1.iter().map(|c| ruler_shape(c)).collect(),
+            None => Vec::new(),
+        };
+        let mut cols: Vec<usize> = Vec::new();
+        for (r, (_, cells)) in rows.iter().enumerate() {
+            if Some(r) == ruler {
+                continue;
+            }
+            for (c, cell) in cells.iter().enumerate() {
+                if c == cols.len() {
+                    cols.push(3);
+                }
+                cols[c] = cols[c].max(width(cell));
+            }
+        }
+
+        let mut parts = Vec::new();
+        for (r, (row_lead, cells)) in rows.iter().enumerate() {
+            if r > 0 {
+                parts.push(Doc::Hard);
+            }
+            if !row_lead.is_empty() {
+                parts.push(Doc::text(row_lead.as_str()));
+            }
+            let mut line = String::from("|");
+            for (c, cell) in cells.iter().enumerate() {
+                let w = cols.get(c).copied().unwrap_or_else(|| width(cell).max(3));
+                let a = align.get(c).copied().unwrap_or("-");
+                line.push(' ');
+                line.push_str(&if Some(r) == ruler {
+                    table_rule(w, a)
+                } else {
+                    table_cell(cell, w, a)
+                });
+                line.push_str(" |");
+            }
+            parts.push(Doc::text(line));
+        }
+        parts.push(Doc::Hard);
+        if !lead.is_empty() {
+            parts.push(Doc::text(lead));
+        }
+        Ok(Doc::Concat(parts))
     }
 
     /// The trailing-separator policy: adopt a separator the source already has
@@ -3155,4 +3289,120 @@ try {{
             "[a\n\n[b\n"
         );
     }
+
+    // --- table ------------------------------------------------------------
+
+    fn table_pkg() -> PackageMap {
+        one(serde_json::from_value(json!({
+            "format": "et-doc-rules/1",
+            "indent": 2,
+            "tokens": ["|", "cont"],
+            "rules": { "table": ["table"] },
+        }))
+        .expect("table package parses"))
+    }
+
+    fn tcell(kind: &str, start: usize, end: usize) -> serde_json::Value {
+        json!({ "type": kind, "start": start, "end": end, "children": [] })
+    }
+
+    fn trow(
+        kind: &str,
+        start: usize,
+        end: usize,
+        cells: Vec<serde_json::Value>,
+    ) -> serde_json::Value {
+        let mut kids = vec![span("|", start, start + 1, "|")];
+        kids.extend(cells);
+        kids.push(span("|", end - 1, end, "|"));
+        json!({ "type": kind, "start": start, "end": end, "children": kids })
+    }
+
+    /// `| a | bb |` / `|:-|-:|` / `| longer | 2 |`, with the grammar's own cell
+    /// spans: it strips a cell's leading space and keeps its trailing one.
+    const WONKY: &str = "| a | bb |\n|:-|-:|\n| longer | 2 |\n";
+
+    fn wonky_table() -> serde_json::Value {
+        json!({
+            "type": "table", "start": 0, "end": 34,
+            "children": [
+                trow("head", 0, 10, vec![tcell("cell", 2, 4), tcell("cell", 6, 9)]),
+                trow("ruler", 11, 18, vec![tcell("rule", 12, 14), tcell("rule", 15, 17)]),
+                trow("body", 19, 33, vec![tcell("cell", 21, 28), tcell("cell", 30, 32)]),
+            ],
+        })
+    }
+
+    #[test]
+    fn table_pads_to_the_widest_cell_and_redraws_the_ruler_to_match() {
+        let out = run_on(&table_pkg(), WONKY, wonky_table(), 80).expect("formats");
+        assert_eq!(out, "| a      |  bb |\n| :----- | --: |\n| longer |   2 |\n");
+    }
+
+    #[test]
+    fn table_floors_a_column_at_three_and_never_measures_the_ruler() {
+        // Both columns hold one character; the ruler in the source is seven
+        // wide and carries no alignment, so every column comes out at the floor.
+        let source = "| a | b |\n|-------|-|\n";
+        let root = json!({
+            "type": "table", "start": 0, "end": 22,
+            "children": [
+                trow("head", 0, 9, vec![tcell("cell", 2, 4), tcell("cell", 6, 8)]),
+                trow("ruler", 10, 21, vec![tcell("rule", 11, 18), tcell("rule", 19, 20)]),
+            ],
+        });
+        let out = run_on(&table_pkg(), source, root, 80).expect("formats");
+        assert_eq!(out, "| a   | b   |\n| --- | --- |\n");
+    }
+
+    #[test]
+    fn table_keeps_a_containers_per_line_marker_in_front_of_its_row() {
+        // What a table inside a block quote looks like: the host's `> ` arrives
+        // as a token child of the table, between the rows it prefixes.
+        let source = "| a |\n> |-|\n> | bb |\n";
+        let root = json!({
+            "type": "table", "start": 0, "end": 21,
+            "children": [
+                trow("head", 0, 5, vec![tcell("cell", 2, 4)]),
+                span("cont", 6, 8, "> "),
+                trow("ruler", 8, 11, vec![tcell("rule", 9, 10)]),
+                span("cont", 12, 14, "> "),
+                trow("body", 14, 20, vec![tcell("cell", 16, 19)]),
+            ],
+        });
+        let out = run_on(&table_pkg(), source, root, 80).expect("formats");
+        assert_eq!(out, "| a   |\n> | --- |\n> | bb  |\n");
+    }
+
+    #[test]
+    fn table_leaves_a_ragged_row_ragged_rather_than_squaring_it_off() {
+        let source = "| a | b |\n| - | - |\n| 1 |\n";
+        let root = json!({
+            "type": "table", "start": 0, "end": 26,
+            "children": [
+                trow("head", 0, 9, vec![tcell("cell", 2, 4), tcell("cell", 6, 8)]),
+                trow("ruler", 10, 19, vec![tcell("rule", 12, 13), tcell("rule", 16, 17)]),
+                trow("body", 20, 25, vec![tcell("cell", 22, 24)]),
+            ],
+        });
+        let out = run_on(&table_pkg(), source, root, 80).expect("formats");
+        assert_eq!(out, "| a   | b   |\n| --- | --- |\n| 1   |\n");
+    }
+
+    #[test]
+    fn table_refuses_to_share_its_node_with_another_expression() {
+        let pkg: PackageMap = one(serde_json::from_value(json!({
+            "format": "et-doc-rules/1",
+            "indent": 2,
+            "tokens": ["|", "cont"],
+            "rules": { "table": ["seq", ["child", "t:cont"], ["table"]] },
+        }))
+        .expect("package"));
+        let mut root = wonky_table();
+        let kids = root["children"].as_array_mut().expect("children");
+        kids.insert(0, span("cont", 0, 0, ""));
+        let err = run_on(&pkg, WONKY, root, 80).expect_err("must refuse");
+        assert!(err.0.contains("`table` takes every child"), "{}", err.0);
+    }
+
 }

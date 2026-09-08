@@ -63,6 +63,13 @@ gate3 = "default"
 transparent_wrappers = []
 equivalent_kinds = []
 
+# Pipe-table cells are padded to a computed column width and the ruler row's
+# dashes are drawn to that same width, so both are layout rather than content
+# and gate 3 compares them by meaning. Without this the gate rejects prettier's
+# own output on `tables.md` -- the same failure black's added parentheses
+# produced, and the same remedy: declare the narrowing, per language, by kind.
+layout_leaves = ["pipe_table_cell", "pipe_table_delimiter_cell"]
+
 # The block grammar has no extras. HTML comments are `html_block` nodes; they
 # remain structurally checked and also feed gate 3's universal comment layer.
 comment_kinds = ["html_block"]

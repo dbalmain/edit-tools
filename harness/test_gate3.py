@@ -12,10 +12,10 @@ import gate3
 from test_check_gate3 import Node, make_manifest
 
 
-def signature_of(node, source: str):
+def signature_of(node, source: str, layout: frozenset[str] = frozenset()):
     manifest = make_manifest(Path("/nonexistent/x.toml"), "x", "default")
     return gate3._generic(
-        node, source.encode(), manifest, {}, frozenset(), {}
+        node, source.encode(), manifest, {}, frozenset(), {}, layout
     )
 
 
@@ -107,6 +107,38 @@ class SpellingTests(unittest.TestCase):
             ("parameter_list", ("(", ",", ")")),
         )
         self.assertIn("leaf text", message)
+
+
+class LayoutLeafTests(unittest.TestCase):
+    """`layout_leaves`: kinds whose text is the formatter's to choose.
+
+    Declared by markdown for pipe-table cells, which are padded to a computed
+    column width, and for the ruler, whose dashes are that width drawn out.
+    """
+
+    CELLS = frozenset({"pipe_table_cell", "pipe_table_delimiter_cell"})
+
+    def test_padding_a_declared_cell_is_layout(self):
+        tight = signature_of(Node("pipe_table_cell", 0, 1), "a", self.CELLS)
+        padded = signature_of(Node("pipe_table_cell", 0, 4), "a   ", self.CELLS)
+        self.assertEqual(tight, padded)
+
+    def test_a_rulers_length_is_layout_but_its_colons_are_not(self):
+        short = signature_of(Node("pipe_table_delimiter_cell", 0, 3), ":-:", self.CELLS)
+        long = signature_of(Node("pipe_table_delimiter_cell", 0, 7), ":-----:", self.CELLS)
+        left = signature_of(Node("pipe_table_delimiter_cell", 0, 6), ":-----", self.CELLS)
+        self.assertEqual(short, long)
+        self.assertNotEqual(short, left)
+
+    def test_the_cells_own_content_is_still_compared(self):
+        one = signature_of(Node("pipe_table_cell", 0, 3), "a  ", self.CELLS)
+        other = signature_of(Node("pipe_table_cell", 0, 3), "b  ", self.CELLS)
+        self.assertNotEqual(one, other)
+
+    def test_an_undeclared_kind_keeps_the_strict_comparison(self):
+        tight = signature_of(Node("number", 0, 1), "1")
+        padded = signature_of(Node("number", 0, 4), "1   ")
+        self.assertNotEqual(tight, padded)
 
 
 if __name__ == "__main__":

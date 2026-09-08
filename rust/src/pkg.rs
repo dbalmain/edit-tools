@@ -608,6 +608,8 @@ pub enum Expr {
     Drop(String),
     /// A column break. `print` emits a marker; a later pass aligns runs.
     Cell,
+    /// The whole node as an aligned pipe table. See `Ctx::table`.
+    Table,
     /// Wrap a grouped declaration so the align pass full-tabwrites it.
     /// Standalone specs of the same node type stay comment-column only.
     CellBlock(Vec<Expr>),
@@ -680,6 +682,7 @@ impl TryFrom<Value> for Expr {
             "hard" => arity(0).map(|()| Expr::Hard),
             "sp" => arity(0).map(|()| Expr::Sp),
             "verbatim" => arity(0).map(|()| Expr::Verbatim),
+            "table" => arity(0).map(|()| Expr::Table),
             "srcline" => arity(0).map(|()| Expr::SrcLine),
             "srcsoft" => arity(0).map(|()| Expr::SrcSoft),
             "srcgap" => arity(0).map(|()| Expr::SrcGap),

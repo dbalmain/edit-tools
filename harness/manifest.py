@@ -40,7 +40,8 @@ _REQUIRED = ("name", "extensions", "grammar", "grammar_module", "reference",
              "injection_aliases")
 _KNOWN = set(_REQUIRED) | {"grammar_symbol", "gate3_requires",
                            "transparent_wrappers", "equivalent_kinds",
-                           "comment_kinds", "injections", "incomparable"}
+                           "comment_kinds", "layout_leaves", "injections",
+                           "incomparable"}
 
 
 class ManifestError(Exception):
@@ -75,6 +76,7 @@ class Manifest:
     incomparable: dict[str, str]  # corpus filename -> why the reference rewrite is not scored
     path: Path
     comment_kinds: tuple[str, ...] = ()  # non-extra node kinds that hold comments
+    layout_leaves: frozenset[str] = frozenset()  # leaf kinds whose text is layout
 
     @property
     def waives_width(self) -> bool:
@@ -295,6 +297,7 @@ def parse(path: Path) -> Manifest:
         incomparable=_incomparable(raw, name, extensions, path),
         path=path,
         comment_kinds=_comment_kinds(raw, path),
+        layout_leaves=frozenset(raw.get("layout_leaves", [])),
     )
 
 

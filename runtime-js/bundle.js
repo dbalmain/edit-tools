@@ -255,6 +255,7 @@ function validateExpr(value) {
     case "srcgap":
     case "cell":
     case "srcbreak":
+    case "table":
       arity(0);
       return;
     case "child":
@@ -488,6 +489,35 @@ const fillDoc = (parts) => {
 };
 
 const width = (s) => [...s].length;
+
+// ------------------------------------------------------- pipe-table alignment
+
+/** A ruler cell: dashes, optionally anchored by a colon at either end. */
+const RULER = /^:?-+:?$/;
+
+/** Widen `cell` to `w` columns. `a` is the ruler's shape: "-", ":-", "-:" or
+ *  ":-:" for none, left, right and centre. Centre rounds the shorter half
+ *  down to the left, which is what prettier does with an odd remainder. */
+function tableCell(cell, w, a) {
+  const gap = Math.max(w - width(cell), 0);
+  if (a === "-:") return " ".repeat(gap) + cell;
+  if (a === ":-:") {
+    const left = Math.floor(gap / 2);
+    return " ".repeat(left) + cell + " ".repeat(gap - left);
+  }
+  return cell + " ".repeat(gap);
+}
+
+/** The ruler cell for a column of `w` columns, regenerated rather than
+ *  padded: the source's own dash count carries no information once the
+ *  column width is known, and `:-` has to grow to reach it. */
+function tableRule(w, a) {
+  if (a === ":-:") return `:${"-".repeat(w - 2)}:`;
+  if (a === ":-") return `:${"-".repeat(w - 1)}`;
+  if (a === "-:") return `${"-".repeat(w - 1)}:`;
+  return "-".repeat(w);
+}
+
 
 // ----------------------------------------------------------------- the printer
 
@@ -1210,6 +1240,8 @@ class Ctx {
         return this.tok(rest[0]);
       case "verbatim":
         return this.verbatim();
+      case "table":
+        return this.table();
       case "opt":
         return this.matches(this.cursor, parseSelector(rest[0])) ? this.eval(rest[1]) : nil;
       case "trail":
@@ -1315,6 +1347,72 @@ class Ctx {
     checkVerbatim(this.fmt, this.node);
     this.cursor = this.items.length;
     return this.fmt.slice(this.node);
+  }
+
+
+  /** The whole node as an aligned pipe table.
+   *
+   *  The one rule that *rewrites* rather than lays out: a ruler's dashes are
+   *  a function of the column width, not of the author, so `:-` has to grow
+   *  into `:-----`. `["each", "named", ["hard"]]` -- what this replaces --
+   *  could print the rows but could neither pad them nor do that.
+   *
+   *  Nothing here names a markdown node type. A row is a named child, a cell
+   *  a named grandchild, and the ruler the row whose cells are all dashes.
+   *  Tokens between rows are a container's per-line marker (`> ` in a block
+   *  quote) and belong in front of the row that follows.
+   *
+   *  Widths floor at 3 so the narrowest ruler still reads as one, and the
+   *  ruler row never counts toward them. Ragged input stays ragged: a short
+   *  row stops, a long one keeps its extra cells unpadded. */
+  table() {
+    if (this.cursor !== 0) {
+      throw this.refuse("to be the whole rule (`table` takes every child)");
+    }
+    if (this.items.some(decorated)) throw this.refuse("no comments inside a table");
+    this.cursor = this.items.length;
+
+    const rows = [];
+    let lead = "";
+    for (const item of this.items) {
+      const node = item.node;
+      if (this.fmt.tokens.has(node.type)) {
+        lead += this.fmt.sliceText(node);
+        continue;
+      }
+      const cells = (node.children ?? [])
+        .filter((child) => !this.fmt.tokens.has(child.type))
+        .map((child) => this.fmt.sliceText(child).trim());
+      rows.push({ lead, cells });
+      lead = "";
+    }
+
+    const ruler = rows.findIndex((row) => row.cells.length > 0 && row.cells.every((c) => RULER.test(c)));
+    const align = ruler < 0
+      ? []
+      : rows[ruler].cells.map((c) => `${c.startsWith(":") ? ":" : ""}-${c.endsWith(":") ? ":" : ""}`);
+    const cols = [];
+    rows.forEach((row, r) => {
+      if (r === ruler) return;
+      row.cells.forEach((cell, c) => {
+        cols[c] = Math.max(cols[c] ?? 3, width(cell));
+      });
+    });
+
+    const parts = [];
+    rows.forEach((row, r) => {
+      if (r > 0) parts.push(hard);
+      if (row.lead !== "") parts.push(text(row.lead));
+      const line = ["|"];
+      row.cells.forEach((cell, c) => {
+        const w = cols[c] ?? Math.max(width(cell), 3);
+        line.push(" ", r === ruler ? tableRule(w, align[c]) : tableCell(cell, w, align[c] ?? "-"), " |");
+      });
+      parts.push(text(line.join("")));
+    });
+    parts.push(hard);
+    if (lead !== "") parts.push(text(lead));
+    return concat(parts);
   }
 
   /** The trailing-separator policy: adopt a separator the source already has
@@ -1650,8 +1748,12 @@ class Formatter {
     return (op && this.precedence[op.text]) ?? 0;
   }
 
+  sliceText(node) {
+    return this.decoder.decode(this.bytes.subarray(node.start, node.end));
+  }
+
   slice(node) {
-    return text(this.decoder.decode(this.bytes.subarray(node.start, node.end)));
+    return text(this.sliceText(node));
   }
 
   node(node) {
