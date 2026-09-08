@@ -139,6 +139,15 @@ them, JavaScript one, Scheme is built almost entirely out of two, and HTML's
 reflows — black, prettier, rustfmt — should not reach for these; a reference
 that only re-indents cannot be expressed without them.
 
+Source breaks also matter when a subtree ends with the *next* line's marker.
+A markdown list item can own the `> ` before the following paragraph. Emitting
+that marker in tree order is correct; an unconditional `hard` after the list
+would separate the marker from its paragraph. The quote's separator uses
+`srcsoft`, which sees no source newline between that marker and the paragraph.
+The item's trailing marker also uses `srcsoft` instead of `blank`: it needs the
+line terminator before the marker, not a count of blank lines. No cross-sibling
+token transfer or Doc inspection is needed (FINDINGS 35).
+
 `["drop", "s"]` is the mirror of the linearity invariant that forbids inventing
 token text: it deletes one **declared-punctuation** token, refuses on a named
 node, and refuses if the token carries a comment. Ruby uses it to turn

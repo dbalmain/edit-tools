@@ -3709,9 +3709,25 @@ defect in the probe, and entry 16's usual complaint does not apply here.
 
 ## 35. A container's per-line marker can be sealed inside the sibling above it
 
-**Status:** open · **Cost:** contextual — the marker for one block's first line
-lives in the previous block's subtree · **Languages:** markdown (off-corpus;
-found sweeping 6,615 real `*.md` files under `~/w`)
+**Status:** resolved, 2026-09-09 · **Cost:** package rules only; no runtime
+capability · **Languages:** markdown (originally off-corpus; now covered by
+`blockquotes.md`)
+
+**Resolution corrects the missing-capability diagnosis below.** The marker is
+in the previous subtree, but already in the right *emission order*. The
+`hard_blocks` separator then inserts a newline between that marker and the
+paragraph it belongs to. A quote-specific separator using `srcsoft` sees their
+adjacent source ranges and emits nothing there. Replacing the item's trailing
+`blank` with `srcsoft` supplies the line ending before its marker; adding both
+would double-count the gap after a nested fence (`nesting.md`). Headings also
+consume their optional trailing marker after their own `hard`.
+
+The exact repro, a nested quoted list followed by a paragraph, and a quoted
+list followed by a heading now agree with Prettier. `blockquotes.md` was
+formatted, reparsed and formatted again with **both runtimes at 80 and 40**:
+the two outputs are byte-identical. The tree shape was observed correctly;
+the claim that it requires cross-sibling attachment was not. Historical
+diagnosis and failed experiment follow.
 
 A block quote's blank line may be spelled `>` or `> `. Either way
 tree-sitter-markdown attaches that marker to the block *above* it as a trailing
@@ -3734,7 +3750,7 @@ own line, so it emitted the trailing marker and *then* its `hard` — putting th
 Swapping the two operands fixes it, `blockquotes.md` covers it, and it is
 recorded here only because the second shape looks identical and is not.
 
-**The second is the tree shape and is open.** A quoted list followed by a
+**The second was attributed to tree shape.** A quoted list followed by a
 paragraph in the same quote:
 
 ```text
@@ -3764,7 +3780,7 @@ markers — the doubled `>>` becomes two lines — and does nothing for the
 paragraph, which still starts unmarked; it also costs one corpus file. So half
 the defect is reachable from the package and half is not.
 
-**What is missing is not an opcode.** The marker is in the tree, exactly once,
+**Original diagnosis (disproved above): what is missing is not an opcode.** The marker is in the tree, exactly once,
 in the wrong place for the rule that needs it. `prefix` (entry 24) is the
 nearest existing capability and points the wrong way: it takes a marker the
 current node owns and pushes it down onto lines the node's guest invents. Here

@@ -27,3 +27,26 @@ not to whatever follows:
 > ```
 >
 > and still in it
+
+A quoted list followed by a paragraph; the paragraph's marker belongs to the
+last list item in the tree:
+
+> - one
+> - two
+>
+> after
+
+The same boundary inside another quote:
+
+> > - inner one
+> > - inner two
+> >
+> > after the inner list
+
+A list followed by a heading in its quote:
+
+> - before the heading
+>
+> ## Still quoted
+>
+> after the heading

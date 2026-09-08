@@ -38,6 +38,13 @@ judges after the fact and may recommend a freeze. Every edit lands here.
 
 | 21  | Markdown   | Opus (orchestrator) | `blank_owner` — a manifest-free package field naming node types whose own source range already carries the blank line that follows them                      | Gate 2 run over all 6,615 `*.md` files under `~/w` found 121 documents the formatter is not idempotent on, 65 of which produced output that would not re-format at all. `indented_code_block`'s range runs past the blank that terminates it, so `blanks()` reads zero, `blank` forces its cap, and every pass adds a line. FINDINGS 30 from the other side: `gap_owner` is the gap read short because it sits deeper than the bound reaches, this is the gap read short because the node ate it. Declared, never inferred — a rule that reconstructs rather than slices never emitted those newlines. Walks the last-child spine, because a block nested in a `list_item` ate the blank just as surely. 121 → 58 not idempotent, refusals 167 → 107. | **unreviewed.** Built by Claude (Opus 5) 2026-09-09, `248e029`. Four tests each side including the undeclared control. |
 
+| 22  | Markdown | Codex | FINDINGS 35: quote separators and trailing list-item markers use `srcsoft`; headings consume their trailing continuation after `hard` | No runtime change earned its place. The previous subtree emits the following paragraph's marker in the correct token order; an unconditional quote separator then detaches it. Source adjacency already expresses the necessary boundary. Replacing the item's `blank` with `srcsoft` also separates the two markers without adding a second gap after nested fences. Added exact repro, nested quote and list-to-heading cases to `blockquotes.md`; explicit double-format checks in JS and Rust at 80 and 40 are identical and match Prettier. | **unreviewed.** Built by Codex, 2026-09-09; package-only change shared by both runtimes. |
+
+**Standing verification rule (2026-09-09):** after any fix, format every new or
+changed corpus fixture, reparse that output, format it again and diff the two.
+The done-note must name the fixtures, runtimes and widths and state the observed
+result; a green gate 2 alone does not replace this explicit check.
+
 **Rows 19 to 21 do not follow row 18 in time.** The table stopped being kept
 somewhere after row 18, and at least three runtime capabilities landed in the
 gap without an entry: `tab_stop` (`7ed6942`, 2026-08-23), `prefix` (`ef97d01`,

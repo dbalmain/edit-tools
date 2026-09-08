@@ -63,6 +63,14 @@
       ],
       [
         "hard"
+      ],
+      [
+        "opt",
+        "t:block_continuation",
+        [
+          "child",
+          "t:block_continuation"
+        ]
       ]
     ],
     "setext_heading": [
@@ -87,7 +95,7 @@
       ],
       [
         "use",
-        "hard_blocks"
+        "quote_blocks"
       ]
     ],
     "list": [
@@ -159,8 +167,7 @@
         [
           "seq",
           [
-            "blank",
-            1
+            "srcsoft"
           ],
           [
             "child",
@@ -378,6 +385,24 @@
         "seq",
         [
           "hard"
+        ],
+        [
+          "opt",
+          "t:block_continuation",
+          [
+            "child",
+            "t:block_continuation"
+          ]
+        ]
+      ]
+    ],
+    "quote_blocks": [
+      "each",
+      "named",
+      [
+        "seq",
+        [
+          "srcsoft"
         ],
         [
           "opt",
