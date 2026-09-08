@@ -500,6 +500,13 @@ Width is Unicode scalar values in both runtimes: `s.chars().count()` in Rust,
 `[...s].length` in JS. Both runtimes have a test that pins it, because the
 failure is invisible until someone writes an emoji.
 
+`["table"]`'s column widths are scalar counts too, so a CJK or emoji cell
+occupies its true two display columns but is measured as one, and the ruler
+comes out a column narrow per wide character. Considered and declined: zero of
+2,157 table rows in this repo need it, and a display-width table is ~15
+East-Asian-Width ranges mirrored byte-for-byte in both runtimes, forever, for a
+case that has not occurred once. Revisit if a document ever needs it.
+
 Indentation is written lazily, so a blank line is genuinely empty rather than a
 run of spaces. Each `Indent` node carries its own column count, resolved from
 the package header when the Doc is built, so the printer has no global tab. The
