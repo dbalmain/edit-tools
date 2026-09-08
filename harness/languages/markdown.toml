@@ -88,6 +88,7 @@ comment_kinds = ["html_block"]
 "emphasis.md" = "prettier rewrites *emphasis* to _emphasis_ (delimiter token)"
 "list_markers.md" = "prettier respells unordered-list markers: * becomes -, and + becomes * so the second list stays a second list"
 "thematic.md" = "prettier rewrites ***, ___ and * * * thematic breaks to ---"
+"fence_delimiters.md" = "prettier rewrites ~~~ fence delimiters to ```, dropping the author's choice of character and count"
 
 # Host shape. Keep array tables after every root key: TOML keys below
 # [[injections]] would belong to that entry, not to the manifest root.

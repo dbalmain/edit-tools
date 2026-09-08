@@ -1,16 +1,16 @@
 {
  "language": "markdown",
  "source_file": "corpus/src/markdown/fences.md",
- "source": "<!-- Fenced guests, verbatim fallbacks, empty { }. -->\n\nA document with one unparseable snippet must still format.\n\nA JSON fence prettier formats, including the empty object written with a space:\n\n```json\n{ }\n```\n\n```json\n[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]\n```\n\nA JavaScript fence prettier also formats:\n\n```javascript\nconst x = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];\n```\n\nNo info string, unknown info string, and unparseable JSON stay verbatim:\n\n```\nleave   this    spacing\n```\n\n```xyzzy\nleave   this    too\n```\n\n```json\n{broken\n```\n\nNested markdown containing JSON — the host-in-host case:\n\n````markdown\n```json\n{\"a\":1,\"b\":2,\"c\":3,\"d\":4,\"e\":5,\"f\":6,\"g\":7,\"h\":8}\n```\n````\n",
+ "source": "<!-- Fenced guests, verbatim fallbacks, empty { }. -->\n\nA document with one unparseable snippet must still format.\n\nA JSON fence prettier formats, including the empty object written with a space:\n\n```json\n{ }\n```\n\n```json\n[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]\n```\n\nA JavaScript fence prettier also formats:\n\n```javascript\nconst x = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];\n```\n\nNo info string, unknown info string, and unparseable JSON stay verbatim:\n\n```\nleave   this    spacing\n```\n\n```xyzzy\nleave   this    too\n```\n\n```json\n{broken\n```\n\nNested markdown containing JSON — the host-in-host case:\n\n````markdown\n```json\n{\"a\":1,\"b\":2,\"c\":3,\"d\":4,\"e\":5,\"f\":6,\"g\":7,\"h\":8}\n```\n````\n\nAn info string that is not one bare word: the grammar gives it children, and a\nrule that walks into it has to have one for each of them.\n\n```exercism/note\nA slash in the info string, which makes `language` an interior node.\n```\n\n```c++ title=\"x.cc\"\nint main() { return 0; }\n```\n",
  "root": {
   "type": "document",
   "start": 0,
-  "end": 766,
+  "end": 1045,
   "children": [
    {
     "type": "section",
     "start": 0,
-    "end": 766,
+    "end": 1045,
     "children": [
      {
       "type": "html_block",
@@ -1728,6 +1728,238 @@
         "start": 761,
         "end": 765,
         "text": "````"
+       }
+      ]
+     },
+     {
+      "type": "paragraph",
+      "start": 767,
+      "end": 904,
+      "children": [
+       {
+        "type": "inline",
+        "start": 767,
+        "end": 903,
+        "children": [
+         {
+          "type": ":",
+          "start": 807,
+          "end": 808,
+          "text": ":"
+         },
+         {
+          "type": ",",
+          "start": 838,
+          "end": 839,
+          "text": ","
+         },
+         {
+          "type": ".",
+          "start": 902,
+          "end": 903,
+          "text": "."
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "fenced_code_block",
+      "start": 905,
+      "end": 995,
+      "children": [
+       {
+        "type": "fenced_code_block_delimiter",
+        "start": 905,
+        "end": 908,
+        "text": "```"
+       },
+       {
+        "type": "info_string",
+        "start": 908,
+        "end": 921,
+        "children": [
+         {
+          "type": "language",
+          "start": 908,
+          "end": 921,
+          "children": [
+           {
+            "type": "/",
+            "start": 916,
+            "end": 917,
+            "text": "/"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "block_continuation",
+        "start": 922,
+        "end": 922,
+        "text": ""
+       },
+       {
+        "type": "code_fence_content",
+        "start": 922,
+        "end": 991,
+        "children": [
+         {
+          "type": ",",
+          "start": 948,
+          "end": 949,
+          "text": ","
+         },
+         {
+          "type": "`",
+          "start": 962,
+          "end": 963,
+          "text": "`"
+         },
+         {
+          "type": "`",
+          "start": 971,
+          "end": 972,
+          "text": "`"
+         },
+         {
+          "type": ".",
+          "start": 989,
+          "end": 990,
+          "text": "."
+         },
+         {
+          "type": "block_continuation",
+          "start": 991,
+          "end": 991,
+          "text": ""
+         }
+        ]
+       },
+       {
+        "type": "fenced_code_block_delimiter",
+        "start": 991,
+        "end": 994,
+        "text": "```"
+       }
+      ]
+     },
+     {
+      "type": "fenced_code_block",
+      "start": 996,
+      "end": 1045,
+      "children": [
+       {
+        "type": "fenced_code_block_delimiter",
+        "start": 996,
+        "end": 999,
+        "text": "```"
+       },
+       {
+        "type": "info_string",
+        "start": 999,
+        "end": 1015,
+        "children": [
+         {
+          "type": "language",
+          "start": 999,
+          "end": 1002,
+          "children": [
+           {
+            "type": "+",
+            "start": 1000,
+            "end": 1001,
+            "text": "+"
+           },
+           {
+            "type": "+",
+            "start": 1001,
+            "end": 1002,
+            "text": "+"
+           }
+          ]
+         },
+         {
+          "type": "=",
+          "start": 1008,
+          "end": 1009,
+          "text": "="
+         },
+         {
+          "type": "\"",
+          "start": 1009,
+          "end": 1010,
+          "text": "\""
+         },
+         {
+          "type": ".",
+          "start": 1011,
+          "end": 1012,
+          "text": "."
+         },
+         {
+          "type": "\"",
+          "start": 1014,
+          "end": 1015,
+          "text": "\""
+         }
+        ]
+       },
+       {
+        "type": "block_continuation",
+        "start": 1016,
+        "end": 1016,
+        "text": ""
+       },
+       {
+        "type": "code_fence_content",
+        "start": 1016,
+        "end": 1041,
+        "children": [
+         {
+          "type": "(",
+          "start": 1024,
+          "end": 1025,
+          "text": "("
+         },
+         {
+          "type": ")",
+          "start": 1025,
+          "end": 1026,
+          "text": ")"
+         },
+         {
+          "type": "{",
+          "start": 1027,
+          "end": 1028,
+          "text": "{"
+         },
+         {
+          "type": ";",
+          "start": 1037,
+          "end": 1038,
+          "text": ";"
+         },
+         {
+          "type": "}",
+          "start": 1039,
+          "end": 1040,
+          "text": "}"
+         },
+         {
+          "type": "block_continuation",
+          "start": 1041,
+          "end": 1041,
+          "text": ""
+         }
+        ]
+       },
+       {
+        "type": "fenced_code_block_delimiter",
+        "start": 1041,
+        "end": 1044,
+        "text": "```"
        }
       ]
      }

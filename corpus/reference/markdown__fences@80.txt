@@ -45,3 +45,14 @@ Nested markdown containing JSON — the host-in-host case:
 { "a": 1, "b": 2, "c": 3, "d": 4, "e": 5, "f": 6, "g": 7, "h": 8 }
 ```
 ````
+
+An info string that is not one bare word: the grammar gives it children, and a
+rule that walks into it has to have one for each of them.
+
+```exercism/note
+A slash in the info string, which makes `language` an interior node.
+```
+
+```c++ title="x.cc"
+int main() { return 0; }
+```

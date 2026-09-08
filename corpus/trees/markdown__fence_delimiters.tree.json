@@ -1,0 +1,369 @@
+{
+ "language": "markdown",
+ "source_file": "corpus/src/markdown/fence_delimiters.md",
+ "source": "<!-- Tilde fences. prettier respells the delimiter; we keep the author's. -->\n\n~~~\nA tilde fence with no info string.\n~~~\n\n~~~~exercism/note\nFour tildes, and an info string with a slash in it. The extra delimiters are\nwhat lets a fence hold a three-tilde fence, so the count is the author's\nchoice and not a spelling.\n~~~~\n\n~~~json\n{\"a\":  1,\"b\":2}\n~~~\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 352,
+  "children": [
+   {
+    "type": "section",
+    "start": 0,
+    "end": 352,
+    "children": [
+     {
+      "type": "html_block",
+      "start": 0,
+      "end": 78,
+      "children": [
+       {
+        "type": ".",
+        "start": 17,
+        "end": 18,
+        "text": "."
+       },
+       {
+        "type": ";",
+        "start": 50,
+        "end": 51,
+        "text": ";"
+       },
+       {
+        "type": "'",
+        "start": 70,
+        "end": 71,
+        "text": "'"
+       },
+       {
+        "type": ".",
+        "start": 72,
+        "end": 73,
+        "text": "."
+       },
+       {
+        "type": "-->",
+        "start": 74,
+        "end": 77,
+        "text": "-->"
+       }
+      ]
+     },
+     {
+      "type": "fenced_code_block",
+      "start": 79,
+      "end": 122,
+      "children": [
+       {
+        "type": "fenced_code_block_delimiter",
+        "start": 79,
+        "end": 82,
+        "text": "~~~"
+       },
+       {
+        "type": "block_continuation",
+        "start": 83,
+        "end": 83,
+        "text": ""
+       },
+       {
+        "type": "code_fence_content",
+        "start": 83,
+        "end": 118,
+        "children": [
+         {
+          "type": ".",
+          "start": 116,
+          "end": 117,
+          "text": "."
+         },
+         {
+          "type": "block_continuation",
+          "start": 118,
+          "end": 118,
+          "text": ""
+         }
+        ]
+       },
+       {
+        "type": "fenced_code_block_delimiter",
+        "start": 118,
+        "end": 121,
+        "text": "~~~"
+       }
+      ]
+     },
+     {
+      "type": "fenced_code_block",
+      "start": 123,
+      "end": 323,
+      "children": [
+       {
+        "type": "fenced_code_block_delimiter",
+        "start": 123,
+        "end": 127,
+        "text": "~~~~"
+       },
+       {
+        "type": "info_string",
+        "start": 127,
+        "end": 140,
+        "children": [
+         {
+          "type": "language",
+          "start": 127,
+          "end": 140,
+          "children": [
+           {
+            "type": "/",
+            "start": 135,
+            "end": 136,
+            "text": "/"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "block_continuation",
+        "start": 141,
+        "end": 141,
+        "text": ""
+       },
+       {
+        "type": "code_fence_content",
+        "start": 141,
+        "end": 318,
+        "children": [
+         {
+          "type": ",",
+          "start": 152,
+          "end": 153,
+          "text": ","
+         },
+         {
+          "type": ".",
+          "start": 191,
+          "end": 192,
+          "text": "."
+         },
+         {
+          "type": "block_continuation",
+          "start": 218,
+          "end": 218,
+          "text": ""
+         },
+         {
+          "type": "-",
+          "start": 248,
+          "end": 249,
+          "text": "-"
+         },
+         {
+          "type": ",",
+          "start": 260,
+          "end": 261,
+          "text": ","
+         },
+         {
+          "type": "'",
+          "start": 288,
+          "end": 289,
+          "text": "'"
+         },
+         {
+          "type": "block_continuation",
+          "start": 291,
+          "end": 291,
+          "text": ""
+         },
+         {
+          "type": ".",
+          "start": 316,
+          "end": 317,
+          "text": "."
+         },
+         {
+          "type": "block_continuation",
+          "start": 318,
+          "end": 318,
+          "text": ""
+         }
+        ]
+       },
+       {
+        "type": "fenced_code_block_delimiter",
+        "start": 318,
+        "end": 322,
+        "text": "~~~~"
+       }
+      ]
+     },
+     {
+      "type": "fenced_code_block",
+      "start": 324,
+      "end": 352,
+      "children": [
+       {
+        "type": "fenced_code_block_delimiter",
+        "start": 324,
+        "end": 327,
+        "text": "~~~"
+       },
+       {
+        "type": "info_string",
+        "start": 327,
+        "end": 331,
+        "children": [
+         {
+          "type": "language",
+          "start": 327,
+          "end": 331,
+          "text": "json"
+         }
+        ]
+       },
+       {
+        "type": "block_continuation",
+        "start": 332,
+        "end": 332,
+        "text": ""
+       },
+       {
+        "type": "document",
+        "start": 332,
+        "end": 348,
+        "children": [
+         {
+          "type": "object",
+          "start": 332,
+          "end": 347,
+          "children": [
+           {
+            "type": "{",
+            "start": 332,
+            "end": 333,
+            "text": "{"
+           },
+           {
+            "type": "pair",
+            "start": 333,
+            "end": 340,
+            "children": [
+             {
+              "type": "string",
+              "start": 333,
+              "end": 336,
+              "field": "key",
+              "children": [
+               {
+                "type": "\"",
+                "start": 333,
+                "end": 334,
+                "text": "\""
+               },
+               {
+                "type": "string_content",
+                "start": 334,
+                "end": 335,
+                "text": "a"
+               },
+               {
+                "type": "\"",
+                "start": 335,
+                "end": 336,
+                "text": "\""
+               }
+              ]
+             },
+             {
+              "type": ":",
+              "start": 336,
+              "end": 337,
+              "text": ":"
+             },
+             {
+              "type": "number",
+              "start": 339,
+              "end": 340,
+              "field": "value",
+              "text": "1"
+             }
+            ]
+           },
+           {
+            "type": ",",
+            "start": 340,
+            "end": 341,
+            "text": ","
+           },
+           {
+            "type": "pair",
+            "start": 341,
+            "end": 346,
+            "children": [
+             {
+              "type": "string",
+              "start": 341,
+              "end": 344,
+              "field": "key",
+              "children": [
+               {
+                "type": "\"",
+                "start": 341,
+                "end": 342,
+                "text": "\""
+               },
+               {
+                "type": "string_content",
+                "start": 342,
+                "end": 343,
+                "text": "b"
+               },
+               {
+                "type": "\"",
+                "start": 343,
+                "end": 344,
+                "text": "\""
+               }
+              ]
+             },
+             {
+              "type": ":",
+              "start": 344,
+              "end": 345,
+              "text": ":"
+             },
+             {
+              "type": "number",
+              "start": 345,
+              "end": 346,
+              "field": "value",
+              "text": "2"
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 346,
+            "end": 347,
+            "text": "}"
+           }
+          ]
+         }
+        ],
+        "language": "json"
+       },
+       {
+        "type": "fenced_code_block_delimiter",
+        "start": 348,
+        "end": 351,
+        "text": "~~~"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}
