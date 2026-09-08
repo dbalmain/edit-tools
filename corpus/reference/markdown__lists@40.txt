@@ -20,3 +20,14 @@
 - [ ] empty checkbox with a space
 - [x] checked
 - [ ] another open task
+
+An empty item, which carries no line ending of its own -- so without one the
+marker joins the item below it and two items become one:
+
+- alpha
+-
+- gamma
+
+1. one
+2.
+3. three
