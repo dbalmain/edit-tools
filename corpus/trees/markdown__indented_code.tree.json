@@ -1,0 +1,280 @@
+{
+ "language": "markdown",
+ "source_file": "corpus/src/markdown/indented_code.md",
+ "source": "<!-- Four-space indented code. Its range swallows the blank line after it. -->\n\nA paragraph, then an indented block:\n\n    one indented line\n\nAnd one that spans a blank line, which is what puts a `block_continuation`\ninside the node and made it need a rule at all:\n\n    first line\n\n    after a blank line\n\n- a list item\n\n      indented code inside it, six spaces\n\n- and a second item, so the list does not end there\n\n> a quote\n\n>     indented code in the quote\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 460,
+  "children": [
+   {
+    "type": "section",
+    "start": 0,
+    "end": 460,
+    "children": [
+     {
+      "type": "html_block",
+      "start": 0,
+      "end": 79,
+      "children": [
+       {
+        "type": "-",
+        "start": 9,
+        "end": 10,
+        "text": "-"
+       },
+       {
+        "type": ".",
+        "start": 29,
+        "end": 30,
+        "text": "."
+       },
+       {
+        "type": ".",
+        "start": 73,
+        "end": 74,
+        "text": "."
+       },
+       {
+        "type": "-->",
+        "start": 75,
+        "end": 78,
+        "text": "-->"
+       }
+      ]
+     },
+     {
+      "type": "paragraph",
+      "start": 80,
+      "end": 117,
+      "children": [
+       {
+        "type": "inline",
+        "start": 80,
+        "end": 116,
+        "children": [
+         {
+          "type": ",",
+          "start": 91,
+          "end": 92,
+          "text": ","
+         },
+         {
+          "type": ":",
+          "start": 115,
+          "end": 116,
+          "text": ":"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "indented_code_block",
+      "start": 118,
+      "end": 141,
+      "text": "    one indented line\n\n"
+     },
+     {
+      "type": "paragraph",
+      "start": 141,
+      "end": 264,
+      "children": [
+       {
+        "type": "inline",
+        "start": 141,
+        "end": 263,
+        "children": [
+         {
+          "type": ",",
+          "start": 172,
+          "end": 173,
+          "text": ","
+         },
+         {
+          "type": "`",
+          "start": 195,
+          "end": 196,
+          "text": "`"
+         },
+         {
+          "type": "_",
+          "start": 201,
+          "end": 202,
+          "text": "_"
+         },
+         {
+          "type": "`",
+          "start": 214,
+          "end": 215,
+          "text": "`"
+         },
+         {
+          "type": ":",
+          "start": 262,
+          "end": 263,
+          "text": ":"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "indented_code_block",
+      "start": 265,
+      "end": 305,
+      "text": "    first line\n\n    after a blank line\n\n"
+     },
+     {
+      "type": "list",
+      "start": 305,
+      "end": 416,
+      "children": [
+       {
+        "type": "list_item",
+        "start": 305,
+        "end": 363,
+        "children": [
+         {
+          "type": "list_marker_minus",
+          "start": 305,
+          "end": 307,
+          "text": "- "
+         },
+         {
+          "type": "paragraph",
+          "start": 307,
+          "end": 319,
+          "children": [
+           {
+            "type": "inline",
+            "start": 307,
+            "end": 318,
+            "text": "a list item"
+           },
+           {
+            "type": "block_continuation",
+            "start": 319,
+            "end": 319,
+            "text": ""
+           }
+          ]
+         },
+         {
+          "type": "block_continuation",
+          "start": 320,
+          "end": 322,
+          "text": "  "
+         },
+         {
+          "type": "indented_code_block",
+          "start": 322,
+          "end": 363,
+          "children": [
+           {
+            "type": ",",
+            "start": 349,
+            "end": 350,
+            "text": ","
+           },
+           {
+            "type": "block_continuation",
+            "start": 362,
+            "end": 362,
+            "text": ""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "list_item",
+        "start": 363,
+        "end": 416,
+        "children": [
+         {
+          "type": "list_marker_minus",
+          "start": 363,
+          "end": 365,
+          "text": "- "
+         },
+         {
+          "type": "paragraph",
+          "start": 365,
+          "end": 415,
+          "children": [
+           {
+            "type": "inline",
+            "start": 365,
+            "end": 414,
+            "children": [
+             {
+              "type": ",",
+              "start": 382,
+              "end": 383,
+              "text": ","
+             }
+            ]
+           },
+           {
+            "type": "block_continuation",
+            "start": 415,
+            "end": 415,
+            "text": ""
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "block_quote",
+      "start": 416,
+      "end": 426,
+      "children": [
+       {
+        "type": "block_quote_marker",
+        "start": 416,
+        "end": 418,
+        "text": "> "
+       },
+       {
+        "type": "paragraph",
+        "start": 418,
+        "end": 426,
+        "children": [
+         {
+          "type": "inline",
+          "start": 418,
+          "end": 425,
+          "text": "a quote"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "block_quote",
+      "start": 427,
+      "end": 460,
+      "children": [
+       {
+        "type": "block_quote_marker",
+        "start": 427,
+        "end": 429,
+        "text": "> "
+       },
+       {
+        "type": "indented_code_block",
+        "start": 429,
+        "end": 460,
+        "text": "    indented code in the quote\n"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

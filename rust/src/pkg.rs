@@ -124,6 +124,13 @@ pub struct Package {
     /// consumer keeps the shallow bound. FINDINGS 30.
     #[serde(default)]
     pub gap_owner: HashMap<String, HashSet<String>>,
+    /// Node types whose own source range already carries the blank line that
+    /// follows them, so a separator after one must not add a second. The
+    /// mirror of `gap_owner`: that one is the gap read short because it sits
+    /// deeper than the bound reaches, this one is the gap read short because
+    /// the node ate it.
+    #[serde(default)]
+    pub blank_owner: HashSet<String>,
     /// Node types that get a balanced paren pair when their layout breaks.
     #[serde(default)]
     pub optional_parens: HashSet<String>,
@@ -166,6 +173,8 @@ struct RawPackage {
     descend: HashSet<String>,
     #[serde(default)]
     gap_owner: HashMap<String, HashSet<String>>,
+    #[serde(default)]
+    blank_owner: HashSet<String>,
     #[serde(default)]
     optional_parens: HashSet<String>,
     #[serde(default)]
@@ -228,6 +237,7 @@ impl TryFrom<RawPackage> for Package {
             comments: raw.comments,
             descend: raw.descend,
             gap_owner: raw.gap_owner,
+            blank_owner: raw.blank_owner,
             optional_parens: raw.optional_parens,
             precedence: raw.precedence,
             flatten_fields,

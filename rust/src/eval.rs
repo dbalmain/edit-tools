@@ -371,8 +371,9 @@ impl<'a> Ctx<'a> {
                 } else {
                     self.blanks().min(*cap)
                 };
+                let spent = n.saturating_sub(self.blanks_already_spent(f));
                 Ok(Doc::Concat(
-                    std::iter::repeat_with(|| Doc::Hard).take(n).collect(),
+                    std::iter::repeat_with(|| Doc::Hard).take(spent).collect(),
                 ))
             }
         }
@@ -408,6 +409,49 @@ impl<'a> Ctx<'a> {
     /// live in the gap after the block-scalar pair. A package may name the
     /// declaring leaf spelling; the gap bypasses the cap only when that leaf
     /// ends the preceding item, since only then is the gap the token's own.
+    /// Blank lines the previous item's own output already carried.
+    ///
+    /// `blanks()` measures the gap *between* two nodes, so a node whose range
+    /// ends after the blank line that follows it makes that gap read zero --
+    /// and the separator then adds a blank the output already had. Markdown's
+    /// `indented_code_block` is the case: every reformat added another line
+    /// and the file grew without bound. Declared, never inferred, because a
+    /// rule that reconstructs rather than slices never emitted those newlines.
+    fn blanks_already_spent(&self, f: &Fmt<'a>) -> usize {
+        if self.cursor == 0 || f.pkg.blank_owner.is_empty() {
+            return 0;
+        }
+        let prev = self.items[self.cursor - 1].node;
+        // The blank belongs to whichever node's range ends where this one does
+        // -- a listed block deep inside a `list_item` ate it just as surely as
+        // one at this level, and every node on that last-child spine shares
+        // the byte.
+        let mut node = Some(prev);
+        let mut found = false;
+        while let Some(current) = node {
+            if f.pkg.blank_owner.contains(&current.kind) {
+                found = true;
+                break;
+            }
+            node = current
+                .children
+                .last()
+                .filter(|last| last.end == prev.end);
+        }
+        if !found {
+            return 0;
+        }
+        let mut newlines: usize = 0;
+        for &byte in f.src[prev.start..prev.end].iter().rev() {
+            match byte {
+                b'\n' => newlines += 1,
+                b'\r' => {}
+                _ => break,
+            }
+        }
+        newlines.saturating_sub(1)
+    }
+
     fn keeps_gap(&self, spellings: &[String]) -> bool {
         if spellings.is_empty() || self.cursor == 0 {
             return false;
@@ -3403,6 +3447,85 @@ try {{
         kids.insert(0, span("cont", 0, 0, ""));
         let err = run_on(&pkg, WONKY, root, 80).expect_err("must refuse");
         assert!(err.0.contains("`table` takes every child"), "{}", err.0);
+    }
+
+
+    // --- blank_owner ------------------------------------------------------
+
+    /// `block` is a leaf whose source range runs past the blank line that ends
+    /// it, which is markdown's `indented_code_block`. `p` is a paragraph.
+    fn spent_pkg(owner: Option<&[&str]>) -> PackageMap {
+        let mut raw = json!({
+            "format": "et-doc-rules/1",
+            "indent": 2,
+            "blank_cap": 1,
+            "rules": {
+                "file": ["each", "named", ["blank", 1, ["list", "p", "block"]]],
+                "p": ["verbatim"],
+            },
+        });
+        if let Some(kinds) = owner {
+            raw["blank_owner"] = json!(kinds);
+        }
+        one(serde_json::from_value(raw).expect("package parses"))
+    }
+
+    const SPENT_SRC: &str = "one line\n\n    code\n\nlast line\n";
+
+    fn spent_tree() -> serde_json::Value {
+        json!({
+            "type": "file", "start": 0, "end": 30,
+            "children": [
+                {"type": "p", "start": 0, "end": 9, "children": []},
+                {"type": "block", "start": 10, "end": 20, "text": "    code\n\n"},
+                {"type": "p", "start": 20, "end": 30, "children": []},
+            ],
+        })
+    }
+
+    #[test]
+    fn a_listed_nodes_own_trailing_blank_is_not_emitted_twice() {
+        let pkg = spent_pkg(Some(&["block"]));
+        let out = run_on(&pkg, SPENT_SRC, spent_tree(), 80).expect("formats");
+        assert_eq!(out, "one line\n\n    code\n\nlast line\n");
+    }
+
+    #[test]
+    fn without_the_declaration_the_same_tree_grows_a_blank_line() {
+        let pkg = spent_pkg(None);
+        let out = run_on(&pkg, SPENT_SRC, spent_tree(), 80).expect("formats");
+        assert_eq!(out, "one line\n\n    code\n\n\nlast line\n");
+    }
+
+    #[test]
+    fn blank_owner_reaches_through_the_spine_that_ends_where_the_item_does() {
+        // The blank is eaten by a `block` nested inside the item, and the
+        // separator that has to know is the one *after the item*.
+        let src = "- a\n\n      code\n\n- b\n";
+        let root = json!({
+            "type": "file", "start": 0, "end": 21,
+            "children": [
+                {"type": "p", "start": 0, "end": 17, "children": [
+                    {"type": "lead", "start": 0, "end": 4, "text": "- a\n"},
+                    {"type": "block", "start": 4, "end": 17, "text": "\n      code\n\n"},
+                ]},
+                {"type": "p", "start": 17, "end": 21, "children": []},
+            ],
+        });
+        let pkg = spent_pkg(Some(&["block"]));
+        let out = run_on(&pkg, src, root, 80).expect("formats");
+        assert_eq!(out, "- a\n\n      code\n\n- b\n");
+    }
+
+    #[test]
+    fn blank_owner_refuses_anything_but_an_array_of_node_types() {
+        let raw = json!({
+            "format": "et-doc-rules/1",
+            "indent": 2,
+            "blank_owner": "block",
+            "rules": { "file": ["each", "named", ["blank", 1]] },
+        });
+        assert!(serde_json::from_value::<Package>(raw).is_err(), "must refuse a bare string");
     }
 
 }

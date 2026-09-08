@@ -1961,3 +1961,79 @@ test("table refuses to share its node with another expression", () => {
     (e) => e instanceof Refusal && /`table` takes every child/.test(e.message),
   );
 });
+
+// --- blank_owner -----------------------------------------------------------
+
+// `block` is a leaf whose source range runs past the blank line that ends it,
+// which is markdown's `indented_code_block`. `p` is an ordinary paragraph.
+const spentPkg = (owner) => ({
+  format: "et-doc-rules/1",
+  indent: 2,
+  blank_cap: 1,
+  ...(owner ? { blank_owner: owner } : {}),
+  rules: {
+    file: ["each", "named", ["blank", 1, ["list", "p", "block"]]],
+    p: ["verbatim"],
+  },
+});
+
+//        0        9 10          24        33
+const spentSrc = "one line\n\n    code\n\nlast line\n";
+const spentTree = () => ({
+  type: "file",
+  start: 0,
+  end: 30,
+  children: [
+    { type: "p", start: 0, end: 9, children: [] },
+    { type: "block", start: 10, end: 20, text: "    code\n\n" },
+    { type: "p", start: 20, end: 30, children: [] },
+  ],
+});
+
+test("a listed node's own trailing blank is not emitted twice", () => {
+  assert.strictEqual(
+    runOn(spentPkg(["block"]), spentSrc, spentTree(), 80),
+    "one line\n\n    code\n\nlast line\n",
+  );
+});
+
+test("without the declaration the same tree grows a blank line", () => {
+  assert.strictEqual(
+    runOn(spentPkg(null), spentSrc, spentTree(), 80),
+    "one line\n\n    code\n\n\nlast line\n",
+  );
+});
+
+test("blank_owner reaches a listed node through the spine that ends where it does", () => {
+  // The blank is eaten by a `block` nested inside the item, and the separator
+  // that has to know is the one *after the item*.
+  const src = "- a\n\n      code\n\n- b\n";
+  const root = {
+    type: "file",
+    start: 0,
+    end: 21,
+    children: [
+      {
+        type: "p",
+        start: 0,
+        end: 17,
+        children: [
+          { type: "lead", start: 0, end: 4, text: "- a\n" },
+          { type: "block", start: 4, end: 17, text: "\n      code\n\n" },
+        ],
+      },
+      { type: "p", start: 17, end: 21, children: [] },
+    ],
+  };
+  assert.strictEqual(
+    runOn(spentPkg(["block"]), src, root, 80),
+    "- a\n\n      code\n\n- b\n",
+  );
+});
+
+test("blank_owner refuses anything but an array of node types", () => {
+  assert.throws(
+    () => runOn(spentPkg("block"), spentSrc, spentTree(), 80),
+    (e) => e instanceof Refusal && /`blank_owner` must be an array/.test(e.message),
+  );
+});

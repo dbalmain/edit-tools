@@ -1,0 +1,22 @@
+<!-- Four-space indented code. Its range swallows the blank line after it. -->
+
+A paragraph, then an indented block:
+
+    one indented line
+
+And one that spans a blank line, which is what puts a `block_continuation`
+inside the node and made it need a rule at all:
+
+    first line
+
+    after a blank line
+
+- a list item
+
+      indented code inside it, six spaces
+
+- and a second item, so the list does not end there
+
+> a quote
+
+>     indented code in the quote

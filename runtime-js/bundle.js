@@ -414,6 +414,17 @@ function gapOwnerField(pkg) {
   });
 }
 
+/** Same shape Rust deserialises. See `gap_owner` above -- this is its mirror,
+ *  and a package that loads in one runtime and refuses in the other is a
+ *  parity break no corpus can see. */
+function blankOwnerField(pkg) {
+  const raw = pkg.blank_owner;
+  if (raw === undefined) return;
+  if (!Array.isArray(raw) || raw.some((kind) => typeof kind !== "string")) {
+    throw new Refusal("`blank_owner` must be an array of node types");
+  }
+}
+
 function buildPackage(pkg) {
   validatePackageFormat(pkg);
   const comment_cells = commentCellsField(pkg);
@@ -422,6 +433,7 @@ function buildPackage(pkg) {
   const blank_cap = gapField(pkg, "blank_cap");
   const flatten_fields = flattenFields(pkg);
   gapOwnerField(pkg);
+  blankOwnerField(pkg);
   const defs = pkg.defs === undefined ? {} : pkg.defs;
   if (!isObject(defs)) throw new Refusal("`defs` must be an object");
   if (!isObject(pkg.rules)) throw new Refusal("`rules` must be an object");
@@ -1165,6 +1177,44 @@ class Ctx {
     return kinds.includes(prev.node.type) || kinds.includes(next.node.type);
   }
 
+  /** Blank lines the previous item's own output already carried.
+   *
+   *  `blanks()` measures the gap *between* two nodes, so a node whose range
+   *  ends after the blank line that follows it makes that gap read zero -- and
+   *  the separator then adds a blank the output already had. Markdown's
+   *  `indented_code_block` is the case: its range swallows the blank that
+   *  terminates it, so every reformat added another one and the file grew
+   *  without bound. `gap_owner` is the same measurement error in the other
+   *  direction (FINDINGS 30); this is the half where the gap reads short
+   *  because the node ate it.
+   *
+   *  Declared, never inferred. Subtracting whenever a node's *source* ends in
+   *  blank lines would be wrong for any rule that reconstructs rather than
+   *  slices, since that rule never emitted them. */
+  blanksAlreadySpent() {
+    if (this.cursor === 0 || this.fmt.blankOwner.size === 0) return 0;
+    const prev = this.items[this.cursor - 1].node;
+    // The blank belongs to whichever node's range ends where this one does --
+    // a listed block deep inside a `list_item` ate it just as surely as one at
+    // this level, and every node on that last-child spine shares the byte.
+    let owner = null;
+    for (let node = prev; node; ) {
+      if (this.fmt.blankOwner.has(node.type)) { owner = node; break; }
+      const kids = node.children;
+      node = kids && kids.length > 0 && kids[kids.length - 1].end === prev.end
+        ? kids[kids.length - 1]
+        : null;
+    }
+    if (owner === null) return 0;
+    let newlines = 0;
+    for (let at = prev.end - 1; at >= prev.start; at--) {
+      const byte = this.fmt.bytes[at];
+      if (byte === 0x0a) newlines++;
+      else if (byte !== 0x0d) break;
+    }
+    return Math.max(newlines - 1, 0);
+  }
+
   keepsGap(spellings) {
     if (!spellings || spellings.length === 0 || this.cursor === 0) return false;
     return endsWithLeafText(this.items[this.cursor - 1].node, spellings);
@@ -1275,7 +1325,8 @@ class Ctx {
         const n = keep
           ? this.blanks()
           : this.forcesBlank(around) ? cap : Math.min(this.blanks(), cap);
-        return concat(Array.from({ length: n }, () => hard));
+        const spent = Math.max(n - this.blanksAlreadySpent(), 0);
+        return concat(Array.from({ length: spent }, () => hard));
       }
       default:
         throw new Refusal(`unknown opcode \`${op}\``);
@@ -1732,6 +1783,7 @@ class Formatter {
     this.gapOwner = new Map(
       Object.entries(this.pkg.gap_owner ?? {}).map(([parent, kinds]) => [parent, new Set(kinds)]),
     );
+    this.blankOwner = new Set(this.pkg.blank_owner ?? []);
     this.optionalParens = new Set(this.pkg.optional_parens ?? []);
     this.precedence = this.pkg.precedence ?? {};
     this.commentGap = this.pkg.comment_gap;
