@@ -660,9 +660,21 @@ impl<'a> Ctx<'a> {
             }
             let mut cells = Vec::new();
             for child in &node.children {
-                if !f.pkg.is_token(&child.kind) {
-                    cells.push(f.text(child)?.trim().to_owned());
+                if f.pkg.is_token(&child.kind) {
+                    continue;
                 }
+                // A cell is emitted as its own source, so an `ERROR` here would
+                // be re-emitted as a cell: for `` `||` `` the grammar splits the
+                // code span and leaves a bare `|` behind, which comes back as
+                // another column and never settles.
+                if child.kind == "ERROR" {
+                    return Err(Refusal(format!(
+                        "`{}` has an unparsed cell at byte {}, so its columns \
+                         cannot be measured",
+                        self.node.kind, child.start
+                    )));
+                }
+                cells.push(f.text(child)?.trim().to_owned());
             }
             rows.push((std::mem::take(&mut lead), cells));
         }
@@ -3526,6 +3538,37 @@ try {{
             "rules": { "file": ["each", "named", ["blank", 1]] },
         });
         assert!(serde_json::from_value::<Package>(raw).is_err(), "must refuse a bare string");
+    }
+
+
+    #[test]
+    fn table_refuses_an_error_where_a_cell_goes_rather_than_re_emitting_it() {
+        // What `` `||` `` in a cell produces: the grammar splits the code span
+        // and leaves a bare `|` behind as an ERROR, which would come back as a
+        // column and never settle.
+        let source = "| a |\n| - |\n| ` | | ` |\n";
+        let root = json!({
+            "type": "table", "start": 0, "end": 24,
+            "children": [
+                trow("head", 0, 5, vec![tcell("cell", 2, 4)]),
+                trow("ruler", 6, 11, vec![tcell("rule", 8, 9)]),
+                {"type": "body", "start": 12, "end": 23, "children": [
+                    span("|", 12, 13, "|"),
+                    tcell("cell", 14, 16),
+                    span("|", 16, 17, "|"),
+                    {"type": "ERROR", "start": 17, "end": 18, "children": []},
+                    span("|", 18, 19, "|"),
+                    tcell("cell", 20, 22),
+                    span("|", 22, 23, "|"),
+                ]},
+            ],
+        });
+        let err = run_on(&table_pkg(), source, root, 80).expect_err("must refuse");
+        assert!(
+            err.0.contains("unparsed cell at byte 17"),
+            "{}",
+            err.0
+        );
     }
 
 }

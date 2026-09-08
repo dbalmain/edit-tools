@@ -1431,9 +1431,22 @@ class Ctx {
         lead += this.fmt.sliceText(node);
         continue;
       }
-      const cells = (node.children ?? [])
-        .filter((child) => !this.fmt.tokens.has(child.type))
-        .map((child) => this.fmt.sliceText(child).trim());
+      const cells = [];
+      for (const child of node.children ?? []) {
+        if (this.fmt.tokens.has(child.type)) continue;
+        // A cell is emitted as its own source, so an `ERROR` here would be
+        // re-emitted as a cell: for `` `||` `` the grammar splits the code
+        // span and leaves a bare `|` behind, which comes back as another
+        // column and never settles. Every other opcode refuses an `ERROR` by
+        // having no rule for it; this one has to say so itself.
+        if (child.type === "ERROR" || child.missing) {
+          throw new Refusal(
+            `\`${this.node.type}\` has an ${child.missing ? "incomplete" : "unparsed"} ` +
+              `cell at byte ${child.start}, so its columns cannot be measured`,
+          );
+        }
+        cells.push(this.fmt.sliceText(child).trim());
+      }
       rows.push({ lead, cells });
       lead = "";
     }

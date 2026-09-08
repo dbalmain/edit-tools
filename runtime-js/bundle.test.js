@@ -2037,3 +2037,37 @@ test("blank_owner refuses anything but an array of node types", () => {
     (e) => e instanceof Refusal && /`blank_owner` must be an array/.test(e.message),
   );
 });
+
+test("table refuses an ERROR where a cell goes rather than re-emitting it", () => {
+  // What `` `||` `` in a cell produces: the grammar splits the code span and
+  // leaves a bare `|` behind as an ERROR, which would come back as a column.
+  const source = "| a |\n| - |\n| ` | | ` |\n";
+  const root = {
+    type: "table",
+    start: 0,
+    end: 24,
+    children: [
+      row("head", 0, 5, [cell("cell", 2, 4)]),
+      row("ruler", 6, 11, [cell("rule", 8, 9)]),
+      {
+        type: "body",
+        start: 12,
+        end: 23,
+        children: [
+          bar(12),
+          cell("cell", 14, 16),
+          bar(16),
+          { type: "ERROR", start: 17, end: 18, children: [] },
+          bar(18),
+          cell("cell", 20, 22),
+          bar(22),
+        ],
+      },
+    ],
+  };
+  assert.throws(
+    () => runOn(tablePkg(), source, root, 80),
+    (e) => e instanceof Refusal && /has an unparsed cell at byte 17, so its columns cannot be measured/.test(e.message),
+  );
+});
+
