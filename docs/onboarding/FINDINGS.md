@@ -3776,3 +3776,56 @@ the trigger this file exists to record.
 Until then the output is not the same document, which puts this above every
 padding or blank-line divergence in the queue. Repro:
 `> - one\n> - two\n>\n> after\n`.
+
+---
+
+## 36. A blank line between two blocks is a node, and it gets a separator of its own
+
+**Status:** open · **Cost:** contextual — a separator cannot see that the item
+beside it produced only whitespace · **Languages:** markdown (off-corpus; 43
+files in the `~/w` sweep, and every one of them grows a line per reformat)
+
+tree-sitter-markdown gives a run of blank lines between two blocks its own
+`section` node. That node has no named children, so it is emitted as a **leaf**
+— its text, `"\n"` or `"\n\n"`, verbatim — and then the separator on each side
+of it fires as well. The blank is counted twice, once as content and once as
+layout, and the second copy survives into the input of the next run.
+
+Two shapes, one cause:
+
+```text
+---                      ---
+name: x                  name: x
+---            ────▶     ---
+                                         <- prettier writes one blank here;
+# Title                                     we write two, then three, then …
+                         # Title
+```
+
+```text
+                         (three blank lines)
+                ────▶
+# Title                  # Title          <- prettier strips leading blanks
+```
+
+**It is not `blank_owner`** (LEDGER 20), although it looks like it. That field
+subtracts the blanks a node's *own* text already carried, and it works because
+the separator is the only other thing emitting them. Here the empty node is an
+*item*, not the thing before one: `document` separates it from its neighbours
+on **both** sides, so any subtraction has two separators to pay and no way to
+tell which. Measured: `document` on a `blank`-based separator with `section`
+declared as a blank owner gives two blanks after front matter instead of three,
+and still not the one prettier writes.
+
+**What is missing is a separator that vanishes.** `each` evaluates its
+separator between every adjacent pair; nothing in the language asks whether the
+item on either side emitted anything at all. Every other opcode is a function
+of the *tree*, and this would be the first that is a function of the **doc
+already built** — which is why it is recorded rather than added. The cheap
+version, a predicate like `["empty"]` that tests whether the node under the
+cursor has no named children, does not help: the separator runs between items,
+and both of this one's separators would see the same answer.
+
+`blank_cap` does not reach it either, for the same reason `blank_owner` did not
+reach `indented_code_block`: the newlines are inside a node's text, where no
+gap measurement looks.
