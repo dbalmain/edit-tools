@@ -1,16 +1,16 @@
 {
  "language": "markdown",
  "source_file": "corpus/src/markdown/blockquotes.md",
- "source": "<!-- Nested quotes and quoted lists. -->\n\n> outer quote <!-- trailing on the first quoted line -->\n> still outer\n>\n> > inner quote\n> > still inner\n>\n> - quoted list\n> - quoted next\n>   - nested in the quote\n",
+ "source": "<!-- Nested quotes and quoted lists. -->\n\n> outer quote <!-- trailing on the first quoted line -->\n> still outer\n>\n> > inner quote\n> > still inner\n>\n> - quoted list\n> - quoted next\n>   - nested in the quote\n\nA quoted fence, and the bare `>` that ends it. The grammar hands that marker to\nthe fence as its last child, so the line break belongs to the fence rule and\nnot to whatever follows:\n\n> before the fence\n>\n> ```json\n> { \"quoted\": true }\n> ```\n>\n> after the fence\n\n> ```sh\n> echo 'a fence that opens the quote'\n> ```\n>\n> and still in it\n",
  "root": {
   "type": "document",
   "start": 0,
-  "end": 207,
+  "end": 542,
   "children": [
    {
     "type": "section",
     "start": 0,
-    "end": 207,
+    "end": 542,
     "children": [
      {
       "type": "html_block",
@@ -262,6 +262,307 @@
             ]
            }
           ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "paragraph",
+      "start": 208,
+      "end": 390,
+      "children": [
+       {
+        "type": "inline",
+        "start": 208,
+        "end": 389,
+        "children": [
+         {
+          "type": ",",
+          "start": 222,
+          "end": 223,
+          "text": ","
+         },
+         {
+          "type": "`",
+          "start": 237,
+          "end": 238,
+          "text": "`"
+         },
+         {
+          "type": ">",
+          "start": 238,
+          "end": 239,
+          "text": ">"
+         },
+         {
+          "type": "`",
+          "start": 239,
+          "end": 240,
+          "text": "`"
+         },
+         {
+          "type": ".",
+          "start": 253,
+          "end": 254,
+          "text": "."
+         },
+         {
+          "type": ",",
+          "start": 315,
+          "end": 316,
+          "text": ","
+         },
+         {
+          "type": ":",
+          "start": 388,
+          "end": 389,
+          "text": ":"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "block_quote",
+      "start": 391,
+      "end": 469,
+      "children": [
+       {
+        "type": "block_quote_marker",
+        "start": 391,
+        "end": 393,
+        "text": "> "
+       },
+       {
+        "type": "paragraph",
+        "start": 393,
+        "end": 411,
+        "children": [
+         {
+          "type": "inline",
+          "start": 393,
+          "end": 409,
+          "text": "before the fence"
+         },
+         {
+          "type": "block_continuation",
+          "start": 410,
+          "end": 411,
+          "text": ">"
+         }
+        ]
+       },
+       {
+        "type": "block_continuation",
+        "start": 412,
+        "end": 414,
+        "text": "> "
+       },
+       {
+        "type": "fenced_code_block",
+        "start": 414,
+        "end": 450,
+        "children": [
+         {
+          "type": "fenced_code_block_delimiter",
+          "start": 414,
+          "end": 417,
+          "text": "```"
+         },
+         {
+          "type": "info_string",
+          "start": 417,
+          "end": 421,
+          "children": [
+           {
+            "type": "language",
+            "start": 417,
+            "end": 421,
+            "text": "json"
+           }
+          ]
+         },
+         {
+          "type": "block_continuation",
+          "start": 422,
+          "end": 424,
+          "text": "> "
+         },
+         {
+          "type": "code_fence_content",
+          "start": 424,
+          "end": 445,
+          "children": [
+           {
+            "type": "{",
+            "start": 424,
+            "end": 425,
+            "text": "{"
+           },
+           {
+            "type": "\"",
+            "start": 426,
+            "end": 427,
+            "text": "\""
+           },
+           {
+            "type": "\"",
+            "start": 433,
+            "end": 434,
+            "text": "\""
+           },
+           {
+            "type": ":",
+            "start": 434,
+            "end": 435,
+            "text": ":"
+           },
+           {
+            "type": "}",
+            "start": 441,
+            "end": 442,
+            "text": "}"
+           },
+           {
+            "type": "block_continuation",
+            "start": 443,
+            "end": 445,
+            "text": "> "
+           }
+          ]
+         },
+         {
+          "type": "fenced_code_block_delimiter",
+          "start": 445,
+          "end": 448,
+          "text": "```"
+         },
+         {
+          "type": "block_continuation",
+          "start": 449,
+          "end": 450,
+          "text": ">"
+         }
+        ]
+       },
+       {
+        "type": "block_continuation",
+        "start": 451,
+        "end": 453,
+        "text": "> "
+       },
+       {
+        "type": "paragraph",
+        "start": 453,
+        "end": 469,
+        "children": [
+         {
+          "type": "inline",
+          "start": 453,
+          "end": 468,
+          "text": "after the fence"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "block_quote",
+      "start": 470,
+      "end": 542,
+      "children": [
+       {
+        "type": "block_quote_marker",
+        "start": 470,
+        "end": 472,
+        "text": "> "
+       },
+       {
+        "type": "fenced_code_block",
+        "start": 472,
+        "end": 523,
+        "children": [
+         {
+          "type": "fenced_code_block_delimiter",
+          "start": 472,
+          "end": 475,
+          "text": "```"
+         },
+         {
+          "type": "info_string",
+          "start": 475,
+          "end": 477,
+          "children": [
+           {
+            "type": "language",
+            "start": 475,
+            "end": 477,
+            "text": "sh"
+           }
+          ]
+         },
+         {
+          "type": "block_continuation",
+          "start": 478,
+          "end": 480,
+          "text": "> "
+         },
+         {
+          "type": "code_fence_content",
+          "start": 480,
+          "end": 518,
+          "children": [
+           {
+            "type": "'",
+            "start": 485,
+            "end": 486,
+            "text": "'"
+           },
+           {
+            "type": "'",
+            "start": 514,
+            "end": 515,
+            "text": "'"
+           },
+           {
+            "type": "block_continuation",
+            "start": 516,
+            "end": 518,
+            "text": "> "
+           }
+          ]
+         },
+         {
+          "type": "fenced_code_block_delimiter",
+          "start": 518,
+          "end": 521,
+          "text": "```"
+         },
+         {
+          "type": "block_continuation",
+          "start": 522,
+          "end": 523,
+          "text": ">"
+         }
+        ]
+       },
+       {
+        "type": "block_continuation",
+        "start": 524,
+        "end": 526,
+        "text": "> "
+       },
+       {
+        "type": "paragraph",
+        "start": 526,
+        "end": 542,
+        "children": [
+         {
+          "type": "inline",
+          "start": 526,
+          "end": 541,
+          "text": "and still in it"
          }
         ]
        }
