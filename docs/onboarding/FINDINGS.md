@@ -3704,3 +3704,75 @@ the construct at all — one trailing comment on a short array — already trips
 this entry. A split would produce a second file carrying the same two ledger
 records, not a clean one. The bundling is a property of the construct, not a
 defect in the probe, and entry 16's usual complaint does not apply here.
+
+---
+
+## 35. A container's per-line marker can be sealed inside the sibling above it
+
+**Status:** open · **Cost:** contextual — the marker for one block's first line
+lives in the previous block's subtree · **Languages:** markdown (off-corpus;
+found sweeping 6,615 real `*.md` files under `~/w`)
+
+A block quote's blank line may be spelled `>` or `> `. Either way
+tree-sitter-markdown attaches that marker to the block *above* it as a trailing
+`block_continuation`, because that is where the line it terminates began. For
+most pairs of blocks nothing goes wrong: the separator in `blocks` emits the
+break, the marker follows it, and the next block starts on a marked line.
+
+Two shapes break, and they are not the same defect.
+
+**The first was an operand order and is fixed.** `fenced_code_block` ends its
+own line, so it emitted the trailing marker and *then* its `hard` — putting the
+`>` on the closing fence's line:
+
+````text
+> ```>
+                        <- and the quote ends here
+> after                 <- no longer quoted
+````
+
+Swapping the two operands fixes it, `blockquotes.md` covers it, and it is
+recorded here only because the second shape looks identical and is not.
+
+**The second is the tree shape and is open.** A quoted list followed by a
+paragraph in the same quote:
+
+```text
+> - one
+> - two
+>
+> after the list
+```
+
+(That fence says `text` and not `markdown` on purpose. A ` ```markdown ` fence
+injects the markdown formatter into its own body, so labelling it honestly made
+this entry reproduce its own defect every time the file was formatted.)
+
+The `> ` that begins the paragraph's line is a child of the **last
+`list_item`**, one level inside `list`. So `list_item` consumes it, the list's
+own range ends after it, and the paragraph begins with nothing in front of it:
+
+```text
+> - one
+> - two
+>>                      <- the item's marker and the paragraph's, same line
+after the list          <- outside the quote
+```
+
+Adding `["srcsoft"]` before the item's trailing `blank` separates the two
+markers — the doubled `>>` becomes two lines — and does nothing for the
+paragraph, which still starts unmarked; it also costs one corpus file. So half
+the defect is reachable from the package and half is not.
+
+**What is missing is not an opcode.** The marker is in the tree, exactly once,
+in the wrong place for the rule that needs it. `prefix` (entry 24) is the
+nearest existing capability and points the wrong way: it takes a marker the
+current node owns and pushes it down onto lines the node's guest invents. Here
+a node needs a marker its *previous sibling's descendant* owns. That is the
+same class as YAML's entry 9 — a token attached inside the preceding subtree
+that a package cannot reach — and it is the third language to hit it, which is
+the trigger this file exists to record.
+
+Until then the output is not the same document, which puts this above every
+padding or blank-line divergence in the queue. Repro:
+`> - one\n> - two\n>\n> after\n`.

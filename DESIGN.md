@@ -27,7 +27,7 @@ here are the evidence: their rules use the same small Doc language.
 ## The rule language
 
 An expression is a JSON array whose first element is the opcode. The set is
-small and closed — **twenty-eight opcodes**, listed in the tables below — and an
+small and closed — **twenty-nine opcodes**, listed in the tables below — and an
 unknown opcode is a load-time refusal in both runtimes. `rust/src/pkg.rs`'s
 `Expr` loader and `runtime-js/bundle.js`'s `validateExpr` are the contract;
 this document explains it and has drifted behind it before.
@@ -114,6 +114,7 @@ Every opcode that emits a child **consumes** it. See _linearity_ below.
 | `["flatten", type, sep]` | collect a left-nested operator chain and join it — see below                                                       |
 | `["drop", "s"]`          | consume the token `s` without emitting it, if it is there — the only sanctioned deletion                          |
 | `["srctrail", "s"]`      | adopt a source separator and emit it only when what follows starts a fresh line                                    |
+| `["table"]`              | take every child and lay the node out as an aligned pipe table — the third sanctioned mutation, see below         |
 
 `fill` has the same cursor and separator-consumption contract as `each`, but
 builds an alternating content/separator Doc. At each separator the printer asks
@@ -416,7 +417,8 @@ ordered partition of the node's direct children, and that token mutation is
 allowed only through enumerated policies. Here that holds **by construction,
 because the language cannot express anything else**:
 
-- There is no opcode that emits arbitrary text. `tok` names a token it must find
+- No opcode emits arbitrary text, and only `table` emits a token the source did
+  not contain. `tok` names a token it must find
   under the cursor; `child` recurses into a real child; `verbatim` emits the
   node's own source, but only after walking the subtree and refusing unless
   every range sits inside its parent, siblings are ordered and disjoint, and
@@ -428,7 +430,7 @@ because the language cannot express anything else**:
 - At the end of a rule the cursor must be at the end of the children, or the
   runtime refuses the file with a non-zero exit.
 
-The two sanctioned mutations are opcodes:
+The three sanctioned mutations are opcodes:
 
 - **`["trail", ",", sel]`** — if the source already has a trailing separator,
   consume it and pin the layout open (black's magic trailing comma); otherwise
@@ -440,6 +442,15 @@ The two sanctioned mutations are opcodes:
   one when the region breaks. `import_from_statement` uses it directly (black
   parenthesises a long import list); `autoparen` applies it to any child whose
   type is in `optional_parens`, which is how `x = (\n    a\n    + b\n)` happens.
+- **`["table"]`** — pad a grid's cells to their column widths, and redraw the
+  ruler row to match. This is the only opcode that writes a token the source
+  never held, and it is confined to a shape where the token's spelling *is* the
+  layout: the width of a markdown table's `---` is the width of the column
+  above it, so `:-` in the source and `:-----` in the output say the same thing
+  and there is nothing else they could say. The alignment colons, the cells'
+  own text, the cell count and the row count all pass through untouched, and
+  gate 3 still compares every one of them — a language declares
+  `layout_leaves` to tell it which leaves are the padded ones.
 
 Refusals are honest and specific: _"rule for `parenthesized_expression` wants
 Named but found `lambda`"_ was a real bug report from the runtime to me during
