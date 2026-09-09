@@ -350,3 +350,74 @@ adjacent to the fence. That is the right split, but it means a fence's
 surrounding blank lines are the host's business and its interior blank lines are
 the guest's — worth stating in the markdown brief so a builder does not discover
 it from a diff.
+
+## Structure without layout
+
+Everything above assumes a spliced region is a region the formatter will lay
+out again. Markdown's raw HTML blocks are the case where that assumption breaks,
+and the capability they needed is worth stating separately: **an injection site
+may hand the guest parse to readers and keep the bytes for the host.**
+
+An injection site declares `format = false`. `gen_trees.py` then stamps `opaque`
+beside `language`, and both runtimes emit the region's source slice instead of
+dispatching to the guest package — after the same subtree check `verbatim`
+makes, so a stale offset refuses rather than emitting the wrong bytes. The
+highlighter still routes to the guest, which is the whole point: an editor sees
+real HTML structure where the block grammar offered only stray anonymous tokens
+(a comment arrived as `-`, `-`, `-`, `.`, `-->`), and the formatter does not
+touch a byte. An opaque region's package is never loaded, so a host does not
+depend on shipping one.
+
+### Why markdown's html blocks ship opaque
+
+Not caution — measurement. Letting the html package format these regions
+corrupts them today. The host `html_block`'s extent includes the line terminator
+that ends it and the guest `document` rule does not reproduce it, so comments
+glue onto the block below: three sites in `comments.md` alone, including
+`<!-- own-line comment inside a list… -->- nested`. That is the same
+trailing-newline tension recorded above for `code_fence_content`, in the form
+where it destroys rather than pads.
+
+Two further things must be answered before `format = false` can become
+`format = true` — the `format_html_blocks` opt-in:
+
+- **prettier does not format html blocks in markdown at all.**
+  `<div    class="x"   id="y">` and `<table><tr><td>a</td>…` pass through
+  prettier@3.9.6 untouched at width 80. Laying them out could only lose
+  agreement against the pinned reference.
+- **The ERROR guard does not catch fragment splitting.** Under
+  tree-sitter-html 0.23.2 an unbalanced open tag parses as a *complete* element
+  whenever it carries an attribute: `<div class="x">` is clean and `<div id=a>`,
+  bare `<div>`, `<p>` and `</div>` are all ERRORs. So the `<div>`/blank/`</div>`
+  wrapper idiom splices its opener as an element that is not one, and refuses
+  its closer, with nothing noticing the two belong together.
+  `corpus/src/markdown/html_blocks.md` writes both halves down.
+
+### What whole-node injection costs a host
+
+A site with no `content` replaces the host node with the guest root, and the
+host's own separator policy then sees a *guest* node type. Markdown must name
+`document` in `blank_owner` beside `html_block`, because a spliced region
+inherits the swallowed trailing blank the host node had; without both names the
+formatter added a blank line after every html block. A site that splices a
+*child* — a fence's `code_fence_content` — leaves the block-level type alone and
+needs none of this.
+
+Gate 3 has a matching sharp edge. `_extras` bails out on a whole-node region
+(`region.content == node`), so such a site contributes no comments of its own;
+markdown's html comments stay visible only because `html_block` is *also* in
+`comment_kinds`, which is tested first. `harness/test_gate3.py` pins both halves.
+Removing the declaration is loud rather than silent — markdown's dropped-comment
+count falls 40 → 0 and `check_gate3.py` prints "arm inert" — but the ordering is
+load-bearing and was not written down before.
+
+### The defect this surfaced, which is not about HTML
+
+`html_blocks.md` is the corpus's first non-comment html block, and it exposed a
+pre-existing runtime bug: **every `blank_owner` node followed by an ATX heading
+gains a newline.** `    code\n\n# H\n` reproduces it on `indented_code_block`,
+declared since long before this round. No other successor triggers it — a
+thematic break, quote, list or second block after the same node are all
+byte-exact. It is blank arithmetic in the runtime, not the injection site, and
+is recorded as a design limit on `html_blocks.md` at both widths rather than
+fixed here; the fix belongs with a slice that can fix `indented_code_block` too.

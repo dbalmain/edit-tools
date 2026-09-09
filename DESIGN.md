@@ -172,6 +172,25 @@ nor a projection parser ships yet; the opcode count and mutation policies above
 are unchanged. Safe break classification and an independent gate equivalence
 remain prerequisites, not consequences of preserving source bytes.
 
+A language region may also be spliced **for readers only**. An injection site
+declaring `format = false` makes the harness stamp `opaque` beside `language`,
+and the formatter then emits the region's source bytes rather than dispatching
+to the guest package — after the same subtree check `verbatim` makes, so a stale
+offset refuses instead of emitting the wrong bytes. The highlighter is
+unaffected and still uses the guest, which is the point: an editor gets real
+structure where the host grammar offered none, and the formatter keeps its
+hands off. An opaque region's package is never loaded, so a host does not
+depend on shipping one. This adds no opcode and no fourth token mutation — the
+bytes emitted are exactly the bytes read.
+
+Markdown's `html_block` is the first user, and it records what whole-node
+injection costs a host. Replacing the host node with the guest root means the
+host's own separator policy now sees a *guest* node type: markdown must name
+`document` in `blank_owner` alongside `html_block`, because a spliced region
+inherits the swallowed trailing blank the host node had. Splicing a child (a
+fence's `code_fence_content`) leaves the block-level type alone and needs no
+such thing.
+
 The four `src*` opcodes mirror the **source's own line structure** rather than a
 group's fit, and they are what a source-preserving reference needs. `srcline`,
 `srcsoft` and `srcbreak` ask only whether the source put a line break before the

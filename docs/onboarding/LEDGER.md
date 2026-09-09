@@ -125,6 +125,23 @@ Row 25 validation: `./test.sh` exit 0, zero warnings, all four gates 417/417;
 The existing `prose_wrap.md` was also explicitly reparsed and double-formatted
 in JS and Rust at 80 and 40: all four pairs byte-identical (1,019 bytes).
 
+| 26 | Markdown | Claude (orchestrator, in-thread) | Opaque injection regions: `format = false` on an injection site, `opaque` on the node, both runtimes | Roadmap step 3. `html_block` is now an injection site parsed with tree-sitter-html, so the highlighter and an editor see real HTML structure where the block grammar offered stray anonymous tokens; the formatter emits the region's source bytes instead, after the same subtree check `verbatim` makes. Measured, not assumed: letting the html package format these regions corrupts them today -- the host node's extent includes the line terminator its `document` rule does not reproduce, gluing comments onto the block below at three sites in `comments.md`. Ships off because prettier does not format html blocks in markdown at all, and because the ERROR guard misses fragment splitting: under tree-sitter-html 0.23.2 an unbalanced open tag parses as a complete element whenever it carries an attribute (`<div class="x">` clean, bare `<div>` an ERROR). Flipping it to `true` is the `format_html_blocks` opt-in. New fixture `html_blocks.md` writes both halves of the wrapper idiom down. | **unreviewed**, 2026-09-10. Codex was briefed for this and hit its usage limit before writing anything, so the orchestrator took it over per standing instruction. 419/419 all four gates, 800 destructive mutations rejected (796 before), 0 unreviewed divergences, exit 0, zero warnings. 29 opcodes and three sanctioned mutations unchanged. |
+
+Row 26 validation: `./test.sh` exit 0, zero warnings, all four gates 419/419;
+800 destructive mutations rejected. Output on all 20 pre-existing markdown files
+is byte-identical to before the change, at both widths, in both runtimes. The
+new `html_blocks.md` was formatted, its output reparsed, and formatted again:
+identical at 80 and 40 in both Rust and JS (1,733 bytes), and `comments.md`
+re-checked the same way (754 / 756 bytes).
+
+Row 26 surfaced a defect it did not cause and did not fix: **every `blank_owner`
+node followed by an ATX heading gains a newline**, reproduced by
+`    code\n\n# H\n` on `indented_code_block`, which has been declared far longer
+than this round. Six of the seven hunks on the new fixture were fixed by naming
+`html_block` and the spliced `document` in `blank_owner`; the seventh is that
+bug and is recorded as a design limit at both widths. It belongs to a slice that
+can fix `indented_code_block` with it.
+
 **Standing verification rule (2026-09-09):** after any fix, format every new or
 changed corpus fixture, reparse that output, format it again and diff the two.
 The done-note must name the fixtures, runtimes and widths and state the observed
