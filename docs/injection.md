@@ -212,16 +212,40 @@ through the same place.
 ## `proseWrap` decides whether markdown needs `fill`
 
 Markdown was the obvious argument for adding `fill` (paragraph-style wrapping)
-to the Doc IR, which `docs/design.md` lists as deliberately deferred.
+to the Doc IR. The original conclusion here was conditional: retain Prettier's
+`proseWrap=preserve` default and markdown can ship without prose filling.
+**Superseded by the roadmap-step-2 measurement, 2026-09-09:** `fill` now exists
+(JSON and CSS use it), and switching the pinned Prettier 3.9.6 reference to
+`--prose-wrap always` drops unchanged-corpus agreement **27/32 -> 8/32**.
+At width 80 the change is 13/16 -> 7/16; at 40 it is 14/16 -> 1/16. The
+reference changes on 7/20 files at 80 and 16/20 at 40. Reflow is worth a real
+follow-up; retaining `preserve` is no longer evidence that prose needs no work.
 
-It may not be. **Prettier's `proseWrap` defaults to `preserve`** — it does not
-reflow prose at all by default, only normalises the markup around it. If we
-adopt the same default, markdown prose needs no `fill`, and markdown-with-
-injection can ship before `fill` exists.
+The live pin nevertheless remains `preserve` for now: the measurement rejects
+20 reference outputs at gate 3, so changing only the flag cannot be a green
+commit. The generated `always` diff is retained with the
+[measurement and design report](../corpus/reports/markdown/prose-wrap.md).
 
-That is worth confirming against the pinned prettier version rather than taken
-on trust, because it changes the order of two roadmap items. If it holds, `fill`
-is driven by HTML/XML inline content alone, which is round 4.
+The runtime cannot express this from the current tree. The block grammar leaves
+words in raw gaps or one leaf, and `fill` only selects existing child Docs. A
+probe of `inline_language()` confirms that it supplies `emphasis`, `inline_link`
+and `code_span`, **but no visible word nodes**. That second pass needs an
+additional projection of source ranges into words, protected spans and safe
+separators. Long emphasis also breaks internally in Prettier, so named markup
+children alone are not the fill sequence.
+
+Existing fence injection supplies routing and package switching; it parses
+slices, not upstream included ranges. Markdown inline parsing would additionally
+need omitted continuation prefixes mapped back to source, matching Python and
+JavaScript parse paths, grammar/scanner artifacts, and the corresponding gate-3
+equivalence. The highlighter would share that richer tree and language routing;
+the inline parse and word projection do not arrive for free.
+
+No runtime capability was added in this step. A source-range projection in the
+parse layer is the preferred direction to investigate. A delimiter-aware raw
+splitter inside the runtime is declined as a second, partial markdown parser.
+The need for atoms is structural; the choice of projection design versus a new
+declared text capability remains an engineering judgment, not a settled spec.
 
 ## The highlighter gets this for free
 

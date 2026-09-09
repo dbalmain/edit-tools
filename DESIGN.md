@@ -130,6 +130,38 @@ means a broken group; the fill separator is the only one that picks its mode
 without consulting that, and letting it stay flat flushes the comment after the
 next item — inside it, when that item leads with a line comment.
 
+#### Prose needs source atoms before it can use `fill`
+
+`fill` selects direct children; it does not inspect or split a child's text.
+Markdown's block grammar leaves words in gaps between anonymous delimiters, or
+in one `inline` leaf. `paragraph` and `inline` currently use `verbatim`; a leaf
+also emits its `text` before rule dispatch. Neither path can expose word-sized
+Docs to `fill`. Selecting the delimiter children would omit the words.
+
+Measured with Prettier 3.9.6 `--prose-wrap always`, the unchanged 20-file corpus
+falls from 27/32 to 8/32 comparable cases (13/16 to 7/16 at 80; 14/16 to 1/16
+at 40). This is a real design limit, not an unwritten package rule. The inline
+grammar adds `emphasis`, `inline_link` and `code_span`, but still hides words;
+an included-range second pass alone is insufficient. Emphasis can itself wrap,
+so treating every markup subtree as an indivisible atom is insufficient too.
+
+No new opcode or header field is added here: the count stays 29 and the three
+sanctioned mutations stay unchanged. A future source-range projection could
+expose words and protected spans while keeping `fill`'s contract. Slicing
+validated source bytes does not inherently invent tokens, so this need not be
+a fourth token mutation, but it is a new capability requiring an explicit
+provenance and break-safety contract. A delimiter heuristic inside the runtime
+would make the runtime a partial markdown parser; that shape is declined.
+
+The measurement also exposed a prerequisite in the harness: gate 3 rejects 20
+of the reflowing reference outputs. Prose gaps, continuation markers and HTML
+comment placement need a justified equivalence before the live reference can
+switch. `layout_leaves` or blanket whitespace normalization would also relax
+code-span or hard-break semantics and cannot stand in for that work. The live
+reference remains `preserve`; the complete alternative diff, measurements and
+remaining design work are in
+[`corpus/reports/markdown/prose-wrap.md`](corpus/reports/markdown/prose-wrap.md).
+
 The four `src*` opcodes mirror the **source's own line structure** rather than a
 group's fit, and they are what a source-preserving reference needs. `srcline`,
 `srcsoft` and `srcbreak` ask only whether the source put a line break before the

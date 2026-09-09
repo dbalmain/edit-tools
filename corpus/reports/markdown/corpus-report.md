@@ -1,5 +1,28 @@
 # Markdown corpus report (stage A)
 
+## Roadmap step 2 supersedes the prose policy conclusions below (2026-09-09)
+
+The stage-A/B account below is historical: it describes the original 15 files
+and `proseWrap=preserve`. The new
+[prose-wrap report](prose-wrap.md) measures the unchanged 20-file corpus at
+`dcb790a`: switching **only** the reference to `--prose-wrap always` drops
+agreement **27/32 -> 8/32** (80: 13/16 -> 7/16; 40: 14/16 -> 1/16).
+Reference width discrimination rises 5/20 -> 16/20 and overflow at 40 falls
+96 -> 44. Thus the old claim that only guests can drive width differences no
+longer applies to the proposed reference policy.
+
+The switch also makes gate 3 reject 20 reference outputs. The live manifest
+therefore retains `preserve` pending a prose equivalence; the generated `always`
+patch and measured failure are retained, without marking files incomparable or
+weakening any gate. The inline grammar supplies markup structure but no word
+nodes, so the old source-preservation handoff cannot simply become a `fill`
+rule. No runtime or package change was made.
+
+The corpus now has 21 files. `prose_wrap.md` adds long plain and marked
+paragraphs, two list depths and a quote; the alternative references reflow each
+at both widths. Its live references preserve the source, documenting the current
+limit. Current live counts and validation are in the new report and `score.json`.
+
 ## Builder
 
 **grok-4.6 via the grok CLI.**

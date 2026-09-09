@@ -1,0 +1,377 @@
+{
+ "language": "markdown",
+ "source_file": "corpus/src/markdown/prose_wrap.md",
+ "source": "<!-- Prose wrapping at both widths. -->\n\nThis plain paragraph starts on one deliberately long source line so wrapping at eighty columns and at forty columns must produce different line boundaries while preserving every word in order.\n\nThe marked paragraph puts _several emphasized words across a likely wrap point_ beside [a link label with spaces](https://example.com/docs) and a `code  span with spaces` before continuing with enough ordinary words to wrap again at both widths.\n\n- This list paragraph starts after a marker and continues far beyond eighty columns so each new line needs the list indentation while the words still use the remaining width.\n  - This nested item includes **strong words near the wrapping boundary** and `fixed  code` before more prose tests the smaller width available inside two list levels.\n\n> This quoted paragraph includes _emphasized words near the boundary_ and a [link](https://example.com) while enough additional prose forces new quote markers at both eighty and forty columns.\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 1019,
+  "children": [
+   {
+    "type": "section",
+    "start": 0,
+    "end": 1019,
+    "children": [
+     {
+      "type": "html_block",
+      "start": 0,
+      "end": 40,
+      "children": [
+       {
+        "type": ".",
+        "start": 34,
+        "end": 35,
+        "text": "."
+       },
+       {
+        "type": "-->",
+        "start": 36,
+        "end": 39,
+        "text": "-->"
+       }
+      ]
+     },
+     {
+      "type": "paragraph",
+      "start": 41,
+      "end": 234,
+      "children": [
+       {
+        "type": "inline",
+        "start": 41,
+        "end": 233,
+        "children": [
+         {
+          "type": ".",
+          "start": 232,
+          "end": 233,
+          "text": "."
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "paragraph",
+      "start": 235,
+      "end": 481,
+      "children": [
+       {
+        "type": "inline",
+        "start": 235,
+        "end": 480,
+        "children": [
+         {
+          "type": "_",
+          "start": 261,
+          "end": 262,
+          "text": "_"
+         },
+         {
+          "type": "_",
+          "start": 313,
+          "end": 314,
+          "text": "_"
+         },
+         {
+          "type": "[",
+          "start": 322,
+          "end": 323,
+          "text": "["
+         },
+         {
+          "type": "]",
+          "start": 347,
+          "end": 348,
+          "text": "]"
+         },
+         {
+          "type": "(",
+          "start": 348,
+          "end": 349,
+          "text": "("
+         },
+         {
+          "type": ":",
+          "start": 354,
+          "end": 355,
+          "text": ":"
+         },
+         {
+          "type": "/",
+          "start": 355,
+          "end": 356,
+          "text": "/"
+         },
+         {
+          "type": "/",
+          "start": 356,
+          "end": 357,
+          "text": "/"
+         },
+         {
+          "type": ".",
+          "start": 364,
+          "end": 365,
+          "text": "."
+         },
+         {
+          "type": "/",
+          "start": 368,
+          "end": 369,
+          "text": "/"
+         },
+         {
+          "type": ")",
+          "start": 373,
+          "end": 374,
+          "text": ")"
+         },
+         {
+          "type": "`",
+          "start": 381,
+          "end": 382,
+          "text": "`"
+         },
+         {
+          "type": "`",
+          "start": 404,
+          "end": 405,
+          "text": "`"
+         },
+         {
+          "type": ".",
+          "start": 479,
+          "end": 480,
+          "text": "."
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "list",
+      "start": 482,
+      "end": 826,
+      "children": [
+       {
+        "type": "list_item",
+        "start": 482,
+        "end": 826,
+        "children": [
+         {
+          "type": "list_marker_minus",
+          "start": 482,
+          "end": 484,
+          "text": "- "
+         },
+         {
+          "type": "paragraph",
+          "start": 484,
+          "end": 659,
+          "children": [
+           {
+            "type": "inline",
+            "start": 484,
+            "end": 656,
+            "children": [
+             {
+              "type": ".",
+              "start": 655,
+              "end": 656,
+              "text": "."
+             }
+            ]
+           },
+           {
+            "type": "block_continuation",
+            "start": 657,
+            "end": 659,
+            "text": "  "
+           }
+          ]
+         },
+         {
+          "type": "list",
+          "start": 659,
+          "end": 826,
+          "children": [
+           {
+            "type": "list_item",
+            "start": 659,
+            "end": 826,
+            "children": [
+             {
+              "type": "list_marker_minus",
+              "start": 659,
+              "end": 661,
+              "text": "- "
+             },
+             {
+              "type": "paragraph",
+              "start": 661,
+              "end": 825,
+              "children": [
+               {
+                "type": "inline",
+                "start": 661,
+                "end": 824,
+                "children": [
+                 {
+                  "type": "*",
+                  "start": 687,
+                  "end": 688,
+                  "text": "*"
+                 },
+                 {
+                  "type": "*",
+                  "start": 688,
+                  "end": 689,
+                  "text": "*"
+                 },
+                 {
+                  "type": "*",
+                  "start": 728,
+                  "end": 729,
+                  "text": "*"
+                 },
+                 {
+                  "type": "*",
+                  "start": 729,
+                  "end": 730,
+                  "text": "*"
+                 },
+                 {
+                  "type": "`",
+                  "start": 735,
+                  "end": 736,
+                  "text": "`"
+                 },
+                 {
+                  "type": "`",
+                  "start": 747,
+                  "end": 748,
+                  "text": "`"
+                 },
+                 {
+                  "type": ".",
+                  "start": 823,
+                  "end": 824,
+                  "text": "."
+                 }
+                ]
+               },
+               {
+                "type": "block_continuation",
+                "start": 825,
+                "end": 825,
+                "text": ""
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "block_quote",
+      "start": 826,
+      "end": 1019,
+      "children": [
+       {
+        "type": "block_quote_marker",
+        "start": 826,
+        "end": 828,
+        "text": "> "
+       },
+       {
+        "type": "paragraph",
+        "start": 828,
+        "end": 1019,
+        "children": [
+         {
+          "type": "inline",
+          "start": 828,
+          "end": 1018,
+          "children": [
+           {
+            "type": "_",
+            "start": 859,
+            "end": 860,
+            "text": "_"
+           },
+           {
+            "type": "_",
+            "start": 894,
+            "end": 895,
+            "text": "_"
+           },
+           {
+            "type": "[",
+            "start": 902,
+            "end": 903,
+            "text": "["
+           },
+           {
+            "type": "]",
+            "start": 907,
+            "end": 908,
+            "text": "]"
+           },
+           {
+            "type": "(",
+            "start": 908,
+            "end": 909,
+            "text": "("
+           },
+           {
+            "type": ":",
+            "start": 914,
+            "end": 915,
+            "text": ":"
+           },
+           {
+            "type": "/",
+            "start": 915,
+            "end": 916,
+            "text": "/"
+           },
+           {
+            "type": "/",
+            "start": 916,
+            "end": 917,
+            "text": "/"
+           },
+           {
+            "type": ".",
+            "start": 924,
+            "end": 925,
+            "text": "."
+           },
+           {
+            "type": ")",
+            "start": 928,
+            "end": 929,
+            "text": ")"
+           },
+           {
+            "type": ".",
+            "start": 1017,
+            "end": 1018,
+            "text": "."
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}
