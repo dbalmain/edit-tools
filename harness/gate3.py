@@ -162,7 +162,7 @@ def _layout(node, source: bytes) -> str:
     return text
 
 
-def _tokens(node, source: bytes) -> str | tuple[str, ...]:
+def _tokens(node, source: bytes, ignored=()) -> str | tuple[str, ...]:
     """The spelling of a node that has no named children, with the whitespace
     *between* its tokens dropped.
 
@@ -210,6 +210,8 @@ def _tokens(node, source: bytes) -> str | tuple[str, ...]:
     parts: list[str] = []
     cursor = node.start_byte
     for child in node.children:
+        if child in ignored:
+            continue
         gap = source[cursor:child.start_byte].decode()
         if gap.strip():
             parts.append(gap)
@@ -218,7 +220,26 @@ def _tokens(node, source: bytes) -> str | tuple[str, ...]:
     tail = source[cursor:node.end_byte].decode()
     if tail.strip():
         parts.append(tail)
-    return tuple(parts)
+    return tuple(parts) if parts else ""
+
+
+def _whitespace_node(node, source: bytes, manifest, aliases) -> bool:
+    """Only declared, genuinely leaf-shaped whitespace is gap trivia.
+
+    Prettier removes Markdown's leading empty section altogether. Comparing
+    named-child counts rejected its own output on leading_sections.md. This
+    declaration admits that removal without admitting loss of a meaningful
+    section, a comment, anonymous syntax inside a node, or an injected region.
+    It is independent of the formatter package and empty by default.
+    """
+    return (
+        node.type in manifest.whitespace_nodes
+        and not node.children
+        and not node.is_extra
+        and node.type not in manifest.comment_kinds
+        and not source[node.start_byte:node.end_byte].strip(b" \t\n\r\f")
+        and injection.region_for(node, source, manifest, aliases) is None
+    )
 
 
 def _generic(
@@ -240,10 +261,16 @@ def _generic(
     if region is not None and region.content == node:
         return ("injection_region", "")
     kids = [c for c in node.children if c.is_named and not c.is_extra]
+    ignored = [
+        child for child in node.children
+        if not (region is not None and child == region.content)
+        and _whitespace_node(child, source, manifest, aliases)
+    ]
+    kids = [child for child in kids if child not in ignored]
     if not kids:
         if node.type in layout:
             return (kind, _layout(node, source))
-        return (kind, _tokens(node, source))
+        return (kind, _tokens(node, source, ignored))
     return (
         kind,
         tuple(

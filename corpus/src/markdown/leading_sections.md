@@ -1,0 +1,12 @@
+
+
+
+# Leading blank section
+
+The leading blank run is a leaf section before the section with this heading.
+
+
+
+## Following section
+
+The gap before this heading should settle to one blank line.

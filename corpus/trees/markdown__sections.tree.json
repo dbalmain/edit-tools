@@ -1,38 +1,70 @@
 {
  "language": "markdown",
  "source_file": "corpus/src/markdown/sections.md",
- "source": "<!-- Sibling sections with bodies: the blank a section swallows at its end. -->\n\n# Document title\n\nAn opening paragraph, so the first section has a body and not just its\nheading.\n\n## First section\n\nA paragraph whose trailing blank line falls inside this section's byte\nrange rather than between the two sections.\n\n## Second section\n\n### A deeper heading\n\nThe blank before this one is swallowed by the paragraph's own section.\n\n## Third section, entered with no blank line above its body\nProse starting on the very next line.\n\n## Fourth section\n\nA section that ends in a fenced block rather than a paragraph.\n\n```sh\necho done\n```\n\n## Fifth section\n\n- a list, which is the other thing a section can end with\n- second item\n\n## Sixth section\n\n> and a block quote, whose continuation marker also ends a section\n\n## Seventh section\n\n#### A jump from h2 to h4, so the nesting is not one level per heading\n\n##### And back down again, with no body between them\n\nText closing the document.\n",
+ "source": "---\nname: sections\n---\n\n# Metadata heading\n\n<!-- Sibling sections with bodies: the blank a section swallows at its end. -->\n\n# Document title\n\nAn opening paragraph, so the first section has a body and not just its\nheading.\n\n## First section\n\nA paragraph whose trailing blank line falls inside this section's byte\nrange rather than between the two sections.\n\n## Second section\n\n### A deeper heading\n\nThe blank before this one is swallowed by the paragraph's own section.\n\n## Third section, entered with no blank line above its body\nProse starting on the very next line.\n\n## Fourth section\n\nA section that ends in a fenced block rather than a paragraph.\n\n```sh\necho done\n```\n\n## Fifth section\n\n- a list, which is the other thing a section can end with\n- second item\n\n## Sixth section\n\n> and a block quote, whose continuation marker also ends a section\n\n## Seventh section\n\n#### A jump from h2 to h4, so the nesting is not one level per heading\n\n##### And back down again, with no body between them\n\nText closing the document.\n",
  "root": {
   "type": "document",
   "start": 0,
-  "end": 980,
+  "end": 1024,
   "children": [
    {
-    "type": "section",
+    "type": "minus_metadata",
     "start": 0,
-    "end": 81,
+    "end": 23,
+    "text": "---\nname: sections\n---\n"
+   },
+   {
+    "type": "section",
+    "start": 23,
+    "end": 24,
+    "text": "\n"
+   },
+   {
+    "type": "section",
+    "start": 24,
+    "end": 125,
     "children": [
      {
+      "type": "atx_heading",
+      "start": 24,
+      "end": 43,
+      "children": [
+       {
+        "type": "atx_h1_marker",
+        "start": 24,
+        "end": 25,
+        "text": "#"
+       },
+       {
+        "type": "inline",
+        "start": 26,
+        "end": 42,
+        "field": "heading_content",
+        "text": "Metadata heading"
+       }
+      ]
+     },
+     {
       "type": "html_block",
-      "start": 0,
-      "end": 80,
+      "start": 44,
+      "end": 124,
       "children": [
        {
         "type": ":",
-        "start": 33,
-        "end": 34,
+        "start": 77,
+        "end": 78,
         "text": ":"
        },
        {
         "type": ".",
-        "start": 74,
-        "end": 75,
+        "start": 118,
+        "end": 119,
         "text": "."
        },
        {
         "type": "-->",
-        "start": 76,
-        "end": 79,
+        "start": 120,
+        "end": 123,
         "text": "-->"
        }
       ]
@@ -41,24 +73,24 @@
    },
    {
     "type": "section",
-    "start": 81,
-    "end": 980,
+    "start": 125,
+    "end": 1024,
     "children": [
      {
       "type": "atx_heading",
-      "start": 81,
-      "end": 98,
+      "start": 125,
+      "end": 142,
       "children": [
        {
         "type": "atx_h1_marker",
-        "start": 81,
-        "end": 82,
+        "start": 125,
+        "end": 126,
         "text": "#"
        },
        {
         "type": "inline",
-        "start": 83,
-        "end": 97,
+        "start": 127,
+        "end": 141,
         "field": "heading_content",
         "text": "Document title"
        }
@@ -66,24 +98,24 @@
      },
      {
       "type": "paragraph",
-      "start": 99,
-      "end": 179,
+      "start": 143,
+      "end": 223,
       "children": [
        {
         "type": "inline",
-        "start": 99,
-        "end": 178,
+        "start": 143,
+        "end": 222,
         "children": [
          {
           "type": ",",
-          "start": 119,
-          "end": 120,
+          "start": 163,
+          "end": 164,
           "text": ","
          },
          {
           "type": ".",
-          "start": 177,
-          "end": 178,
+          "start": 221,
+          "end": 222,
           "text": "."
          }
         ]
@@ -92,24 +124,24 @@
      },
      {
       "type": "section",
-      "start": 180,
-      "end": 314,
+      "start": 224,
+      "end": 358,
       "children": [
        {
         "type": "atx_heading",
-        "start": 180,
-        "end": 197,
+        "start": 224,
+        "end": 241,
         "children": [
          {
           "type": "atx_h2_marker",
-          "start": 180,
-          "end": 182,
+          "start": 224,
+          "end": 226,
           "text": "##"
          },
          {
           "type": "inline",
-          "start": 183,
-          "end": 196,
+          "start": 227,
+          "end": 240,
           "field": "heading_content",
           "text": "First section"
          }
@@ -117,24 +149,24 @@
        },
        {
         "type": "paragraph",
-        "start": 198,
-        "end": 313,
+        "start": 242,
+        "end": 357,
         "children": [
          {
           "type": "inline",
-          "start": 198,
-          "end": 312,
+          "start": 242,
+          "end": 356,
           "children": [
            {
             "type": "'",
-            "start": 261,
-            "end": 262,
+            "start": 305,
+            "end": 306,
             "text": "'"
            },
            {
             "type": ".",
-            "start": 311,
-            "end": 312,
+            "start": 355,
+            "end": 356,
             "text": "."
            }
           ]
@@ -145,24 +177,24 @@
      },
      {
       "type": "section",
-      "start": 314,
-      "end": 427,
+      "start": 358,
+      "end": 471,
       "children": [
        {
         "type": "atx_heading",
-        "start": 314,
-        "end": 332,
+        "start": 358,
+        "end": 376,
         "children": [
          {
           "type": "atx_h2_marker",
-          "start": 314,
-          "end": 316,
+          "start": 358,
+          "end": 360,
           "text": "##"
          },
          {
           "type": "inline",
-          "start": 317,
-          "end": 331,
+          "start": 361,
+          "end": 375,
           "field": "heading_content",
           "text": "Second section"
          }
@@ -170,24 +202,24 @@
        },
        {
         "type": "section",
-        "start": 333,
-        "end": 427,
+        "start": 377,
+        "end": 471,
         "children": [
          {
           "type": "atx_heading",
-          "start": 333,
-          "end": 354,
+          "start": 377,
+          "end": 398,
           "children": [
            {
             "type": "atx_h3_marker",
-            "start": 333,
-            "end": 336,
+            "start": 377,
+            "end": 380,
             "text": "###"
            },
            {
             "type": "inline",
-            "start": 337,
-            "end": 353,
+            "start": 381,
+            "end": 397,
             "field": "heading_content",
             "text": "A deeper heading"
            }
@@ -195,24 +227,24 @@
          },
          {
           "type": "paragraph",
-          "start": 355,
-          "end": 426,
+          "start": 399,
+          "end": 470,
           "children": [
            {
             "type": "inline",
-            "start": 355,
-            "end": 425,
+            "start": 399,
+            "end": 469,
             "children": [
              {
               "type": "'",
-              "start": 410,
-              "end": 411,
+              "start": 454,
+              "end": 455,
               "text": "'"
              },
              {
               "type": ".",
-              "start": 424,
-              "end": 425,
+              "start": 468,
+              "end": 469,
               "text": "."
              }
             ]
@@ -225,30 +257,30 @@
      },
      {
       "type": "section",
-      "start": 427,
-      "end": 526,
+      "start": 471,
+      "end": 570,
       "children": [
        {
         "type": "atx_heading",
-        "start": 427,
-        "end": 487,
+        "start": 471,
+        "end": 531,
         "children": [
          {
           "type": "atx_h2_marker",
-          "start": 427,
-          "end": 429,
+          "start": 471,
+          "end": 473,
           "text": "##"
          },
          {
           "type": "inline",
-          "start": 430,
-          "end": 486,
+          "start": 474,
+          "end": 530,
           "field": "heading_content",
           "children": [
            {
             "type": ",",
-            "start": 443,
-            "end": 444,
+            "start": 487,
+            "end": 488,
             "text": ","
            }
           ]
@@ -257,18 +289,18 @@
        },
        {
         "type": "paragraph",
-        "start": 487,
-        "end": 525,
+        "start": 531,
+        "end": 569,
         "children": [
          {
           "type": "inline",
-          "start": 487,
-          "end": 524,
+          "start": 531,
+          "end": 568,
           "children": [
            {
             "type": ".",
-            "start": 523,
-            "end": 524,
+            "start": 567,
+            "end": 568,
             "text": "."
            }
           ]
@@ -279,24 +311,24 @@
      },
      {
       "type": "section",
-      "start": 526,
-      "end": 630,
+      "start": 570,
+      "end": 674,
       "children": [
        {
         "type": "atx_heading",
-        "start": 526,
-        "end": 544,
+        "start": 570,
+        "end": 588,
         "children": [
          {
           "type": "atx_h2_marker",
-          "start": 526,
-          "end": 528,
+          "start": 570,
+          "end": 572,
           "text": "##"
          },
          {
           "type": "inline",
-          "start": 529,
-          "end": 543,
+          "start": 573,
+          "end": 587,
           "field": "heading_content",
           "text": "Fourth section"
          }
@@ -304,18 +336,18 @@
        },
        {
         "type": "paragraph",
-        "start": 545,
-        "end": 608,
+        "start": 589,
+        "end": 652,
         "children": [
          {
           "type": "inline",
-          "start": 545,
-          "end": 607,
+          "start": 589,
+          "end": 651,
           "children": [
            {
             "type": ".",
-            "start": 606,
-            "end": 607,
+            "start": 650,
+            "end": 651,
             "text": "."
            }
           ]
@@ -324,51 +356,51 @@
        },
        {
         "type": "fenced_code_block",
-        "start": 609,
-        "end": 629,
+        "start": 653,
+        "end": 673,
         "children": [
          {
           "type": "fenced_code_block_delimiter",
-          "start": 609,
-          "end": 612,
+          "start": 653,
+          "end": 656,
           "text": "```"
          },
          {
           "type": "info_string",
-          "start": 612,
-          "end": 614,
+          "start": 656,
+          "end": 658,
           "children": [
            {
             "type": "language",
-            "start": 612,
-            "end": 614,
+            "start": 656,
+            "end": 658,
             "text": "sh"
            }
           ]
          },
          {
           "type": "block_continuation",
-          "start": 615,
-          "end": 615,
+          "start": 659,
+          "end": 659,
           "text": ""
          },
          {
           "type": "code_fence_content",
-          "start": 615,
-          "end": 625,
+          "start": 659,
+          "end": 669,
           "children": [
            {
             "type": "block_continuation",
-            "start": 625,
-            "end": 625,
+            "start": 669,
+            "end": 669,
             "text": ""
            }
           ]
          },
          {
           "type": "fenced_code_block_delimiter",
-          "start": 625,
-          "end": 628,
+          "start": 669,
+          "end": 672,
           "text": "```"
          }
         ]
@@ -377,24 +409,24 @@
      },
      {
       "type": "section",
-      "start": 630,
-      "end": 721,
+      "start": 674,
+      "end": 765,
       "children": [
        {
         "type": "atx_heading",
-        "start": 630,
-        "end": 647,
+        "start": 674,
+        "end": 691,
         "children": [
          {
           "type": "atx_h2_marker",
-          "start": 630,
-          "end": 632,
+          "start": 674,
+          "end": 676,
           "text": "##"
          },
          {
           "type": "inline",
-          "start": 633,
-          "end": 646,
+          "start": 677,
+          "end": 690,
           "field": "heading_content",
           "text": "Fifth section"
          }
@@ -402,34 +434,34 @@
        },
        {
         "type": "list",
-        "start": 648,
-        "end": 721,
+        "start": 692,
+        "end": 765,
         "children": [
          {
           "type": "list_item",
-          "start": 648,
-          "end": 706,
+          "start": 692,
+          "end": 750,
           "children": [
            {
             "type": "list_marker_minus",
-            "start": 648,
-            "end": 650,
+            "start": 692,
+            "end": 694,
             "text": "- "
            },
            {
             "type": "paragraph",
-            "start": 650,
-            "end": 706,
+            "start": 694,
+            "end": 750,
             "children": [
              {
               "type": "inline",
-              "start": 650,
-              "end": 705,
+              "start": 694,
+              "end": 749,
               "children": [
                {
                 "type": ",",
-                "start": 656,
-                "end": 657,
+                "start": 700,
+                "end": 701,
                 "text": ","
                }
               ]
@@ -440,30 +472,30 @@
          },
          {
           "type": "list_item",
-          "start": 706,
-          "end": 721,
+          "start": 750,
+          "end": 765,
           "children": [
            {
             "type": "list_marker_minus",
-            "start": 706,
-            "end": 708,
+            "start": 750,
+            "end": 752,
             "text": "- "
            },
            {
             "type": "paragraph",
-            "start": 708,
-            "end": 720,
+            "start": 752,
+            "end": 764,
             "children": [
              {
               "type": "inline",
-              "start": 708,
-              "end": 719,
+              "start": 752,
+              "end": 763,
               "text": "second item"
              },
              {
               "type": "block_continuation",
-              "start": 720,
-              "end": 720,
+              "start": 764,
+              "end": 764,
               "text": ""
              }
             ]
@@ -476,24 +508,24 @@
      },
      {
       "type": "section",
-      "start": 721,
-      "end": 807,
+      "start": 765,
+      "end": 851,
       "children": [
        {
         "type": "atx_heading",
-        "start": 721,
-        "end": 738,
+        "start": 765,
+        "end": 782,
         "children": [
          {
           "type": "atx_h2_marker",
-          "start": 721,
-          "end": 723,
+          "start": 765,
+          "end": 767,
           "text": "##"
          },
          {
           "type": "inline",
-          "start": 724,
-          "end": 737,
+          "start": 768,
+          "end": 781,
           "field": "heading_content",
           "text": "Sixth section"
          }
@@ -501,29 +533,29 @@
        },
        {
         "type": "block_quote",
-        "start": 739,
-        "end": 806,
+        "start": 783,
+        "end": 850,
         "children": [
          {
           "type": "block_quote_marker",
-          "start": 739,
-          "end": 741,
+          "start": 783,
+          "end": 785,
           "text": "> "
          },
          {
           "type": "paragraph",
-          "start": 741,
-          "end": 806,
+          "start": 785,
+          "end": 850,
           "children": [
            {
             "type": "inline",
-            "start": 741,
-            "end": 805,
+            "start": 785,
+            "end": 849,
             "children": [
              {
               "type": ",",
-              "start": 758,
-              "end": 759,
+              "start": 802,
+              "end": 803,
               "text": ","
              }
             ]
@@ -536,24 +568,24 @@
      },
      {
       "type": "section",
-      "start": 807,
-      "end": 980,
+      "start": 851,
+      "end": 1024,
       "children": [
        {
         "type": "atx_heading",
-        "start": 807,
-        "end": 826,
+        "start": 851,
+        "end": 870,
         "children": [
          {
           "type": "atx_h2_marker",
-          "start": 807,
-          "end": 809,
+          "start": 851,
+          "end": 853,
           "text": "##"
          },
          {
           "type": "inline",
-          "start": 810,
-          "end": 825,
+          "start": 854,
+          "end": 869,
           "field": "heading_content",
           "text": "Seventh section"
          }
@@ -561,30 +593,30 @@
        },
        {
         "type": "section",
-        "start": 827,
-        "end": 980,
+        "start": 871,
+        "end": 1024,
         "children": [
          {
           "type": "atx_heading",
-          "start": 827,
-          "end": 898,
+          "start": 871,
+          "end": 942,
           "children": [
            {
             "type": "atx_h4_marker",
-            "start": 827,
-            "end": 831,
+            "start": 871,
+            "end": 875,
             "text": "####"
            },
            {
             "type": "inline",
-            "start": 832,
-            "end": 897,
+            "start": 876,
+            "end": 941,
             "field": "heading_content",
             "children": [
              {
               "type": ",",
-              "start": 852,
-              "end": 853,
+              "start": 896,
+              "end": 897,
               "text": ","
              }
             ]
@@ -593,30 +625,30 @@
          },
          {
           "type": "section",
-          "start": 899,
-          "end": 980,
+          "start": 943,
+          "end": 1024,
           "children": [
            {
             "type": "atx_heading",
-            "start": 899,
-            "end": 952,
+            "start": 943,
+            "end": 996,
             "children": [
              {
               "type": "atx_h5_marker",
-              "start": 899,
-              "end": 904,
+              "start": 943,
+              "end": 948,
               "text": "#####"
              },
              {
               "type": "inline",
-              "start": 905,
-              "end": 951,
+              "start": 949,
+              "end": 995,
               "field": "heading_content",
               "children": [
                {
                 "type": ",",
-                "start": 924,
-                "end": 925,
+                "start": 968,
+                "end": 969,
                 "text": ","
                }
               ]
@@ -625,18 +657,18 @@
            },
            {
             "type": "paragraph",
-            "start": 953,
-            "end": 980,
+            "start": 997,
+            "end": 1024,
             "children": [
              {
               "type": "inline",
-              "start": 953,
-              "end": 979,
+              "start": 997,
+              "end": 1023,
               "children": [
                {
                 "type": ".",
-                "start": 978,
-                "end": 979,
+                "start": 1022,
+                "end": 1023,
                 "text": "."
                }
               ]

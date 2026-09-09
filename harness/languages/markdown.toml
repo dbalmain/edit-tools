@@ -70,6 +70,11 @@ equivalent_kinds = []
 # produced, and the same remedy: declare the narrowing, per language, by kind.
 layout_leaves = ["pipe_table_cell", "pipe_table_delimiter_cell"]
 
+# The block grammar wraps a leading blank run in a leaf section. Prettier
+# removes it; only a section with no children and only ASCII layout whitespace
+# may disappear. Meaningful sections still participate in the full tree check.
+whitespace_nodes = ["section"]
+
 # The block grammar has no extras. HTML comments are `html_block` nodes; they
 # remain structurally checked and also feed gate 3's universal comment layer.
 comment_kinds = ["html_block"]

@@ -148,6 +148,16 @@ pub struct Split<'a> {
     pub trailing_blanks: usize,
 }
 
+pub fn whitespace_node(node: &Node, pkg: &Package) -> bool {
+    pkg.whitespace_nodes.contains(&node.kind)
+        && node.language.is_none()
+        && node.children.is_empty()
+        && node
+            .text
+            .as_ref()
+            .is_some_and(|text| text.bytes().all(|b| b.is_ascii_whitespace()))
+}
+
 pub fn split<'a>(node: &'a Node, src: &[u8], pkg: &Package) -> Split<'a> {
     let mut items: Vec<Item<'a>> = Vec::new();
     let mut lead: Vec<Comment> = Vec::new();
@@ -155,6 +165,11 @@ pub fn split<'a>(node: &'a Node, src: &[u8], pkg: &Package) -> Split<'a> {
     let mut shallow_end = node.start;
 
     for child in &node.children {
+        // Keep measuring from the last real item: consumed trivia belongs to
+        // one source gap, not to an item with a separator on each side.
+        if whitespace_node(child, pkg) {
+            continue;
+        }
         let gap = newlines(src, prev_end, child.start);
         shallow_end = content_end(src, child);
         prev_end = if pkg.owns_gap_after(&node.kind, &child.kind) {

@@ -6,14 +6,18 @@ These run without tree-sitter, on the same hand-built `Node` fixture the
 """
 
 import unittest
+from dataclasses import replace
 from pathlib import Path
 
 import gate3
+from manifest import Injection
 from test_check_gate3 import Node, make_manifest
 
 
-def signature_of(node, source: str, layout: frozenset[str] = frozenset()):
+def signature_of(node, source: str, layout: frozenset[str] = frozenset(),
+                 whitespace: frozenset[str] = frozenset()):
     manifest = make_manifest(Path("/nonexistent/x.toml"), "x", "default")
+    manifest = replace(manifest, whitespace_nodes=whitespace)
     return gate3._generic(
         node, source.encode(), manifest, {}, frozenset(), {}, layout
     )
@@ -139,6 +143,54 @@ class LayoutLeafTests(unittest.TestCase):
         tight = signature_of(Node("number", 0, 1), "1")
         padded = signature_of(Node("number", 0, 4), "1   ")
         self.assertNotEqual(tight, padded)
+
+
+class WhitespaceNodeTests(unittest.TestCase):
+    def document(self, prefix, kind="section", children=(), declared=True):
+        body = "# Title\n"
+        nodes = []
+        if prefix:
+            nodes.append(Node(kind, 0, len(prefix.encode()), children))
+        start = len(prefix.encode())
+        nodes.append(Node("section", start, start + len(body), (
+            Node("heading", start, start + len(body)),
+        )))
+        return signature_of(Node("document", 0, start + len(body), tuple(nodes)),
+                            prefix + body,
+                            whitespace=frozenset({"section"}) if declared else frozenset())
+
+    def test_only_declared_whitespace_leaves_can_disappear(self):
+        self.assertEqual(self.document("\n\n\n"), self.document(""))
+        self.assertNotEqual(self.document("\n\n\n", declared=False), self.document(""))
+        self.assertNotEqual(self.document("\n", kind="string_content"), self.document(""))
+        self.assertNotEqual(self.document("\u00a0\n"), self.document(""))
+
+    def test_content_and_anonymous_syntax_still_count(self):
+        self.assertNotEqual(self.document("paragraph\n"), self.document(""))
+        self.assertNotEqual(self.document("#\n", children=(Node("#", 0, 1, named=False),)),
+                            self.document(""))
+
+    def test_a_node_containing_only_declared_trivia_matches_an_empty_node(self):
+        blank = Node("document", 0, 2, (Node("section", 0, 2),))
+        empty = Node("document", 0, 0)
+        self.assertEqual(signature_of(blank, "\n\n", whitespace=frozenset({"section"})),
+                         signature_of(empty, "", whitespace=frozenset({"section"})))
+
+    def test_dropping_the_meaningful_section_is_still_destruction(self):
+        empty = signature_of(Node("document", 0, 0), "", whitespace=frozenset({"section"}))
+        self.assertNotEqual(self.document("\n\n\n"), empty)
+
+    def test_a_host_cannot_discard_a_whitespace_injection_boundary(self):
+        manifest = make_manifest(Path("/nonexistent/x.toml"), "x", "default")
+        for site in (Injection(node="host", content="payload", guest="x"),
+                     Injection(node="payload", guest="x")):
+            host = replace(manifest, whitespace_nodes=frozenset({"payload"}),
+                           injections=(site,))
+            root = Node("host", 0, 1, (Node("payload", 0, 1),))
+            with_region = gate3.generic_part_from_root(root, b"\n", host, {"x": manifest})
+            without = gate3.generic_part_from_root(Node("host", 0, 0), b"", host,
+                                                  {"x": manifest})
+            self.assertNotEqual(with_region, without)
 
 
 if __name__ == "__main__":

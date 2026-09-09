@@ -1,0 +1,112 @@
+{
+ "language": "markdown",
+ "source_file": "corpus/src/markdown/leading_sections.md",
+ "source": "\n\n\n# Leading blank section\n\nThe leading blank run is a leaf section before the section with this heading.\n\n\n\n## Following section\n\nThe gap before this heading should settle to one blank line.\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 192,
+  "children": [
+   {
+    "type": "section",
+    "start": 0,
+    "end": 3,
+    "text": "\n\n\n"
+   },
+   {
+    "type": "section",
+    "start": 3,
+    "end": 192,
+    "children": [
+     {
+      "type": "atx_heading",
+      "start": 3,
+      "end": 27,
+      "children": [
+       {
+        "type": "atx_h1_marker",
+        "start": 3,
+        "end": 4,
+        "text": "#"
+       },
+       {
+        "type": "inline",
+        "start": 5,
+        "end": 26,
+        "field": "heading_content",
+        "text": "Leading blank section"
+       }
+      ]
+     },
+     {
+      "type": "paragraph",
+      "start": 28,
+      "end": 106,
+      "children": [
+       {
+        "type": "inline",
+        "start": 28,
+        "end": 105,
+        "children": [
+         {
+          "type": ".",
+          "start": 104,
+          "end": 105,
+          "text": "."
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "section",
+      "start": 109,
+      "end": 192,
+      "children": [
+       {
+        "type": "atx_heading",
+        "start": 109,
+        "end": 130,
+        "children": [
+         {
+          "type": "atx_h2_marker",
+          "start": 109,
+          "end": 111,
+          "text": "##"
+         },
+         {
+          "type": "inline",
+          "start": 112,
+          "end": 129,
+          "field": "heading_content",
+          "text": "Following section"
+         }
+        ]
+       },
+       {
+        "type": "paragraph",
+        "start": 131,
+        "end": 192,
+        "children": [
+         {
+          "type": "inline",
+          "start": 131,
+          "end": 191,
+          "children": [
+           {
+            "type": ".",
+            "start": 190,
+            "end": 191,
+            "text": "."
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

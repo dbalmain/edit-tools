@@ -1,3 +1,9 @@
+---
+name: sections
+---
+
+# Metadata heading
+
 <!-- Sibling sections with bodies: the blank a section swallows at its end. -->
 
 # Document title

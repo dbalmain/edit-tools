@@ -40,7 +40,7 @@ _REQUIRED = ("name", "extensions", "grammar", "grammar_module", "reference",
              "injection_aliases")
 _KNOWN = set(_REQUIRED) | {"grammar_symbol", "gate3_requires",
                            "transparent_wrappers", "equivalent_kinds",
-                           "comment_kinds", "layout_leaves", "injections",
+                           "comment_kinds", "layout_leaves", "whitespace_nodes", "injections",
                            "incomparable"}
 
 
@@ -77,6 +77,7 @@ class Manifest:
     path: Path
     comment_kinds: tuple[str, ...] = ()  # non-extra node kinds that hold comments
     layout_leaves: frozenset[str] = frozenset()  # leaf kinds whose text is layout
+    whitespace_nodes: frozenset[str] = frozenset()  # whitespace-only leaves that are gaps
 
     @property
     def waives_width(self) -> bool:
@@ -278,6 +279,15 @@ def parse(path: Path) -> Manifest:
             )
         equiv.append(frozenset(group))
 
+    whitespace_nodes = raw.get("whitespace_nodes", [])
+    if not isinstance(whitespace_nodes, list) or not all(
+        isinstance(kind, str) for kind in whitespace_nodes
+    ):
+        raise ManifestError(f"{path.name}: `whitespace_nodes` must be a list of node kinds")
+    comment_kinds = _comment_kinds(raw, path)
+    if set(whitespace_nodes).intersection(comment_kinds):
+        raise ManifestError(f"{path.name}: `whitespace_nodes` and `comment_kinds` must not overlap")
+
     return Manifest(
         name=name,
         extensions=extensions,
@@ -296,8 +306,9 @@ def parse(path: Path) -> Manifest:
         equivalent_kinds=tuple(equiv),
         incomparable=_incomparable(raw, name, extensions, path),
         path=path,
-        comment_kinds=_comment_kinds(raw, path),
+        comment_kinds=comment_kinds,
         layout_leaves=frozenset(raw.get("layout_leaves", [])),
+        whitespace_nodes=frozenset(whitespace_nodes),
     )
 
 

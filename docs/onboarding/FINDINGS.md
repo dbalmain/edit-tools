@@ -3797,9 +3797,46 @@ padding or blank-line divergence in the queue. Repro:
 
 ## 36. A blank line between two blocks is a node, and it gets a separator of its own
 
-**Status:** open · **Cost:** contextual — a separator cannot see that the item
-beside it produced only whitespace · **Languages:** markdown (off-corpus; 43
-files in the `~/w` sweep, and every one of them grows a line per reformat)
+**Status:** resolved, 2026-09-09 · **Cost:** runtime trivia classification,
+mirrored in JS and Rust; no opcode added · **Languages:** markdown (originally
+43 files in the `~/w` sweep; now forced by `sections.md` and
+`leading_sections.md`)
+
+**Resolution corrects the proposed Doc-level fix below.** `whitespace_nodes`
+declares kinds whose whitespace-only leaves are consumed before runtime
+comment attachment and gap measurement. Markdown declares `section`. The
+previous content end stays put when such a leaf is consumed, so the next real
+item measures one source gap across it and receives one separator. Meaningful
+sections remain items. Non-leaves and injected language roots cannot disappear;
+the containing subtree must pass source/range validation before any trivia is
+consumed. Comments attach across it rather than to it.
+
+This is a new language fact available to every package, not a Markdown loader
+special case. It requires `et-doc-rules/2` so older runtimes refuse the package
+instead of silently ignoring the header. Version 1 packages remain supported;
+the opcode set stays at 29 and the three sanctioned mutations are unchanged.
+
+The harness also needs an independent `whitespace_nodes = ["section"]`
+manifest declaration: its raw named-child count rejected **Prettier's own
+output** when the leading leaf disappeared. Gate 3 now excludes only these
+declared whitespace-only leaves, retaining meaningful sections, descendants,
+injection boundaries and the universal comment check. No mutation generator
+or oracle was weakened: all 792 destructive mutations are rejected (782 before
+this session's added fixtures).
+
+The exact front-matter/heading boundary and a leading three-blank-line run now
+match Prettier. Both changed fixtures were formatted, reparsed and formatted
+again in JS and Rust at widths 80 and 40: all first and second outputs are
+byte-identical. The diagnosis of literal blank leaves plus two separators was
+correct; the claim that the separator needs to inspect an already-built Doc
+was not. Historical evidence and proposed mechanism follow.
+
+**Measurement correction:** the exact `---\nname: x\n---\n\n# Title\n`
+repro on the original runtime has 1, then 3, then 5 blank lines after the
+metadata. `document` uses `hard_blocks`, so each pass adds two hard breaks;
+neither those breaks nor the whitespace leaf's text is bounded by `blank`'s
+cap. The original `sections.md` fixture had no front matter; the regression
+boundary was added here rather than already being covered by that file.
 
 tree-sitter-markdown gives a run of blank lines between two blocks its own
 `section` node. That node has no named children, so it is emitted as a **leaf**
@@ -3824,7 +3861,7 @@ name: x                  name: x
 # Title                  # Title          <- prettier strips leading blanks
 ```
 
-**It is not `blank_owner`** (LEDGER 20), although it looks like it. That field
+**It is not `blank_owner`** (LEDGER 21), although it looks like it. That field
 subtracts the blanks a node's *own* text already carried, and it works because
 the separator is the only other thing emitting them. Here the empty node is an
 *item*, not the thing before one: `document` separates it from its neighbours
@@ -3833,7 +3870,7 @@ tell which. Measured: `document` on a `blank`-based separator with `section`
 declared as a blank owner gives two blanks after front matter instead of three,
 and still not the one prettier writes.
 
-**What is missing is a separator that vanishes.** `each` evaluates its
+**Original proposal (superseded above): a separator that vanishes.** `each` evaluates its
 separator between every adjacent pair; nothing in the language asks whether the
 item on either side emitted anything at all. Every other opcode is a function
 of the *tree*, and this would be the first that is a function of the **doc
@@ -3842,6 +3879,6 @@ version, a predicate like `["empty"]` that tests whether the node under the
 cursor has no named children, does not help: the separator runs between items,
 and both of this one's separators would see the same answer.
 
-`blank_cap` does not reach it either, for the same reason `blank_owner` did not
+`blank_cap` does not reach it either, for the same reason `blank_cap` did not
 reach `indented_code_block`: the newlines are inside a node's text, where no
 gap measurement looks.

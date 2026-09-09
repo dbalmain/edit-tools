@@ -211,8 +211,12 @@ accidentally become block merely because a deeper nested element is block.
 }
 ```
 
-`format` is required. Both runtimes refuse any value other than
-`et-doc-rules/1`, naming the value they found and the one they expected.
+`format` is required. Both runtimes accept `et-doc-rules/1` and
+`et-doc-rules/2`, refusing other values by name. Version 2 adds the
+`whitespace_nodes` declaration below; the 29 opcodes are the same in both.
+Packages using that declaration must say version 2, including an empty list.
+The markdown package does; older runtimes refuse it at load instead of silently
+ignoring its layout policy. Existing version 1 packages keep their behaviour.
 
 That protection covers the format string and the opcode set -- an unknown
 opcode refuses by name. It does **not** cover header fields. Neither loader
@@ -257,6 +261,40 @@ not strings, because packages may choose whitespace quantities but may not emit
 arbitrary text. `blank_cap` applies only inside runtime-owned comment
 attachment; the `blank` opcode's operand still governs gaps between items
 visible to a rule.
+
+`whitespace_nodes` is a version 2 package fact: a list of node types whose
+**whitespace-only leaves** are gap trivia. Markdown declares `["section"]`.
+The runtime consumes those direct children before comment attachment, without
+advancing the previous content end. The next real item therefore measures one
+gap spanning their bytes, and `each` puts just one separator in that gap. Leading
+trivia has no preceding item and creates no separator. `blank` still decides
+the quantity; this field supplies no cap or floor of its own.
+
+The declaration alone cannot delete content: only a leaf with text consisting
+entirely of space, tab, LF, CR or FF qualifies. Empty text qualifies too. A
+non-whitespace leaf or an interior node of the same type remains an item;
+an injected language root is never consumed by the host's declaration. Before
+consuming trivia, the runtime checks the containing subtree's ranges, ordering,
+and leaf text against the source, using the same validation as `verbatim`.
+The declaration must be a list of strings and must not overlap `comments`.
+Comments attach across this trivia to real items, preserving their order and gaps.
+
+This is a language fact, like `tokens` or `comments`: a package must not declare
+whitespace-bearing syntax whose bytes carry meaning as gap trivia. It is not a
+fourth sanctioned token mutation. No non-whitespace token is dropped, invented,
+moved or rewritten, and the input tree is unchanged. The runtime's item view
+accounts for consumed trivia just as it already accounts for attached comments.
+Unlike a Doc-emptiness predicate, this cannot erase a subtree because its rule
+happened to emit nothing. FINDINGS 36 needed ownership of source whitespace,
+not a separator that inspects Docs already built.
+
+The harness has its own `whitespace_nodes` manifest declaration, independently
+checked against reparsed source. Its only new equivalence is inserting or
+removing a declared whitespace-only leaf; meaningful nodes and injection
+boundaries remain structural, and the universal comment comparison stays on.
+This was required because gate 3 rejected Prettier's removal of a leading
+empty section in `leading_sections.md`. `layout_leaves` is insufficient:
+it normalises a leaf's spelling but still requires the leaf to exist.
 
 `indent` is how many spaces one level writes. Two header fields override that
 spelling and they answer different questions, so a package that sets both is

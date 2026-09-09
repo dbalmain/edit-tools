@@ -689,12 +689,12 @@ test("the current package format is required", () => {
 
 test("an unknown package format names the value found and expected", () => {
   const pkg = toy({ list: listRule });
-  pkg.format = "et-doc-rules/2";
+  pkg.format = "et-doc-rules/99";
   assert.throws(
     () => run(pkg, list(["a"], false), 80),
     (e) =>
       e instanceof Refusal &&
-      /unknown package format "et-doc-rules\/2"; expected "et-doc-rules\/1"/.test(e.message),
+      /unknown package format "et-doc-rules\/99"; expected "et-doc-rules\/1"/.test(e.message),
   );
 });
 
@@ -2071,3 +2071,78 @@ test("table refuses an ERROR where a cell goes rather than re-emitting it", () =
   );
 });
 
+// Whitespace trivia is declared by kind, checked against source, and consumed
+// before attachment. These toy kinds exercise the capability without Markdown.
+const whitespacePkg = (fields = {}) => ({
+  format: "et-doc-rules/2", indent: 2, whitespace_nodes: ["gap"],
+  comments: ["comment"],
+  rules: { file: ["each", "named", ["blank", 1]], gap: ["verbatim"] },
+  ...fields,
+});
+function triviaFile(chunks) {
+  let source = "";
+  const children = chunks.map(([kind, text]) => {
+    const start = Buffer.byteLength(source);
+    source += text;
+    return span(kind, start, Buffer.byteLength(source), text);
+  });
+  return { source, root: { type: "file", start: 0, end: Buffer.byteLength(source), children } };
+}
+const runTrivia = (pkg, { source, root }) => runOn(pkg, source, root, 80);
+
+test("declared whitespace leaves form one capped gap and no edge items", () => {
+  const file = triviaFile([["gap", "\n\n"], ["a", "a\n"], ["gap", "\n"],
+    ["gap", "\n\n"], ["b", "b\n"], ["gap", "\n\n"]]);
+  assert.equal(runTrivia(whitespacePkg(), file), "a\n\nb\n");
+  assert.equal(runTrivia(whitespacePkg(), triviaFile([["gap", "\n\n"]])), "\n");
+});
+
+test("whitespace trivia is opt in and separators still see their real neighbours", () => {
+  const file = triviaFile([["a", "a\n"], ["gap", "\n"], ["b", "b\n"]]);
+  const rules = { file: ["each", "named", ["hard"]] };
+  assert.equal(runTrivia(whitespacePkg({ rules }), file), "a\n\nb\n");
+  assert.equal(runTrivia(whitespacePkg({ rules, whitespace_nodes: [] }), file), "a\n\n\n\nb\n");
+  const adjacent = triviaFile([["a", "a\n"], ["gap", ""], ["b", "b\n"]]);
+  assert.equal(runTrivia(whitespacePkg({ rules: {
+    file: ["each", "named", ["blank", 1, ["a"]]],
+  } }), adjacent), "a\n\nb\n");
+});
+
+test("non-whitespace, interior nodes and injection boundaries remain items", () => {
+  const file = triviaFile([["gap", "# Keep\n"], ["gap", "\u00a0\n"]]);
+  assert.equal(runTrivia(whitespacePkg(), file), file.source);
+  const interior = triviaFile([["gap", " \n"]]);
+  const parent = interior.root.children[0];
+  parent.children = [span("content", 0, 2, " \n")];
+  delete parent.text;
+  assert.equal(runTrivia(whitespacePkg(), interior), " \n");
+  const injected = triviaFile([["a", "a\n"], ["gap", "\n"], ["b", "b\n"]]);
+  injected.root.children[1].language = "toy";
+  assert.equal(runTrivia(whitespacePkg({ rules: { file: ["each", "named", ["hard"]] } }), injected), "a\n\n\n\nb\n");
+});
+
+test("comments attach across whitespace trivia without being swallowed", () => {
+  const file = triviaFile([["a", "a\n"], ["gap", "\n"], ["comment", "# keep"],
+    ["gap", "\n\n"], ["b", "b\n"]]);
+  assert.equal(runTrivia(whitespacePkg(), file), "a\n\n# keep\n\nb\n");
+});
+
+test("whitespace trivia cannot hide stale text or overlapping ranges", () => {
+  const stale = triviaFile([["gap", "x"]]);
+  stale.root.children[0].text = " ";
+  assert.throws(() => runTrivia(whitespacePkg(), stale), /text does not match the source/);
+  const overlap = triviaFile([["a", "a\n"], ["gap", "\n"], ["b", "b\n"]]);
+  overlap.root.children[0].end = 3;
+  overlap.root.children[0].text = "a\n\n";
+  assert.throws(() => runTrivia(whitespacePkg(), overlap), /overlapping siblings/);
+});
+
+test("whitespace declarations require v2, a list of kinds, and disjoint comments", () => {
+  const file = triviaFile([["a", "a\n"]]);
+  for (const value of [null, "gap", {}, [1]]) {
+    assert.throws(() => runTrivia(whitespacePkg({ whitespace_nodes: value }), file), Refusal);
+  }
+  assert.throws(() => runTrivia(whitespacePkg({ format: "et-doc-rules/1" }), file), /requires package format/);
+  assert.throws(() => runTrivia(whitespacePkg({ format: "et-doc-rules/1", whitespace_nodes: [] }), file), /requires package format/);
+  assert.throws(() => runTrivia(whitespacePkg({ comments: ["gap"] }), file), /must not overlap/);
+});

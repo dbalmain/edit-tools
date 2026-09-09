@@ -98,7 +98,7 @@ class InjectionManifestTests(unittest.TestCase):
             manifest.injection_map({"json": first, "other": second})
 
 
-class CommentKindsManifestTests(unittest.TestCase):
+class TriviaKindsManifestTests(unittest.TestCase):
     def parse(self, extra: str = "") -> manifest.Manifest:
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
@@ -116,6 +116,18 @@ class CommentKindsManifestTests(unittest.TestCase):
     def test_comment_kinds_must_be_non_empty_strings(self):
         with self.assertRaisesRegex(manifest.ManifestError, "non-empty string"):
             self.parse('comment_kinds = [""]\n')
+
+    def test_whitespace_nodes_default_to_empty_and_preserve_declarations(self):
+        self.assertEqual(self.parse().whitespace_nodes, frozenset())
+        self.assertEqual(self.parse('whitespace_nodes = ["section"]\n').whitespace_nodes,
+                         frozenset({"section"}))
+
+    def test_whitespace_nodes_require_a_list_and_cannot_hide_comments(self):
+        for value in ('"section"', '[1]', '{}'):
+            with self.assertRaisesRegex(manifest.ManifestError, "list of node kinds"):
+                self.parse(f'whitespace_nodes = {value}\n')
+        with self.assertRaisesRegex(manifest.ManifestError, "must not overlap"):
+            self.parse('whitespace_nodes = ["comment"]\ncomment_kinds = ["comment"]\n')
 
 
 class IncomparableManifestTests(unittest.TestCase):

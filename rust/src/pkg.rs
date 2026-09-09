@@ -13,6 +13,7 @@ use serde_json::Value;
 use crate::Refusal;
 
 const FORMAT: &str = "et-doc-rules/1";
+const WHITESPACE_FORMAT: &str = "et-doc-rules/2";
 const MAX_MACRO_DEPTH: usize = 32;
 const MAX_JSON_INTEGER: f64 = 9_007_199_254_740_991.0;
 /// Ceiling on the two whitespace-shaped header fields. Neither can allocate
@@ -28,17 +29,17 @@ fn one() -> usize {
 
 #[derive(Deserialize)]
 #[serde(try_from = "String")]
-struct PackageFormat;
+struct PackageFormat(String);
 
 impl TryFrom<String> for PackageFormat {
     type Error = String;
 
     fn try_from(found: String) -> Result<Self, Self::Error> {
-        if found == FORMAT {
-            Ok(Self)
+        if found == FORMAT || found == WHITESPACE_FORMAT {
+            Ok(Self(found))
         } else {
             Err(format!(
-                "unknown package format `{found}`; expected `{FORMAT}`"
+                "unknown package format `{found}`; expected `{FORMAT}` or `{WHITESPACE_FORMAT}`"
             ))
         }
     }
@@ -131,6 +132,9 @@ pub struct Package {
     /// the node ate it.
     #[serde(default)]
     pub blank_owner: HashSet<String>,
+    /// Declared kinds whose whitespace-only leaves are consumed as source gaps
+    /// before comment attachment. Non-leaves and non-whitespace remain items.
+    pub whitespace_nodes: HashSet<String>,
     /// Node types that get a balanced paren pair when their layout breaks.
     #[serde(default)]
     pub optional_parens: HashSet<String>,
@@ -156,8 +160,7 @@ pub struct Package {
 
 #[derive(Deserialize)]
 struct RawPackage {
-    #[serde(rename = "format")]
-    _format: PackageFormat,
+    format: PackageFormat,
     indent: usize,
     #[serde(default)]
     comment_cells: RawCommentCells,
@@ -175,6 +178,10 @@ struct RawPackage {
     gap_owner: HashMap<String, HashSet<String>>,
     #[serde(default)]
     blank_owner: HashSet<String>,
+    // Option distinguishes an absent declaration from an explicit empty one:
+    // either spelling of the field requires v2, as in the JS loader.
+    #[serde(default, deserialize_with = "present_whitespace_nodes")]
+    whitespace_nodes: Option<HashSet<String>>,
     #[serde(default)]
     optional_parens: HashSet<String>,
     #[serde(default)]
@@ -194,6 +201,13 @@ impl TryFrom<RawPackage> for Package {
     type Error = String;
 
     fn try_from(raw: RawPackage) -> Result<Self, Self::Error> {
+        if raw.whitespace_nodes.is_some() && raw.format.0 != WHITESPACE_FORMAT {
+            return Err("`whitespace_nodes` requires package format et-doc-rules/2".to_owned());
+        }
+        let whitespace_nodes = raw.whitespace_nodes.unwrap_or_default();
+        if !whitespace_nodes.is_disjoint(&raw.comments) {
+            return Err("`whitespace_nodes` and `comments` must not overlap".to_owned());
+        }
         for (name, value) in [
             ("comment_gap", raw.comment_gap),
             ("blank_cap", raw.blank_cap),
@@ -238,6 +252,7 @@ impl TryFrom<RawPackage> for Package {
             descend: raw.descend,
             gap_owner: raw.gap_owner,
             blank_owner: raw.blank_owner,
+            whitespace_nodes,
             optional_parens: raw.optional_parens,
             precedence: raw.precedence,
             flatten_fields,
@@ -246,6 +261,13 @@ impl TryFrom<RawPackage> for Package {
             rules,
         })
     }
+}
+
+fn present_whitespace_nodes<'de, D>(de: D) -> Result<Option<HashSet<String>>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    HashSet::deserialize(de).map(Some)
 }
 
 /// The three labels `flatten` walks. A package that says nothing gets
@@ -570,7 +592,7 @@ pub enum Pred {
     SourceMultiline,
 }
 
-/// One expression of the package language. Twenty-eight opcodes; see DESIGN.md.
+/// One expression of the package language. Twenty-nine opcodes; see DESIGN.md.
 #[derive(Debug, Deserialize)]
 #[serde(try_from = "Value")]
 pub enum Expr {
@@ -895,12 +917,12 @@ mod tests {
 
     #[test]
     fn refuses_an_unknown_package_format() {
-        let err = serde_json::from_value::<Package>(package("et-doc-rules/2"))
+        let err = serde_json::from_value::<Package>(package("et-doc-rules/99"))
             .err()
             .expect("future format must be refused");
         assert!(
             err.to_string()
-                .contains("unknown package format `et-doc-rules/2`; expected `et-doc-rules/1`"),
+                .contains("unknown package format `et-doc-rules/99`; expected `et-doc-rules/1`"),
             "{err}"
         );
     }

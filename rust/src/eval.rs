@@ -8,7 +8,7 @@
 use std::cell::Cell;
 use std::collections::HashMap;
 
-use crate::attach::{split, Comment, Item};
+use crate::attach::{split, whitespace_node, Comment, Item};
 use crate::doc::Doc;
 use crate::pkg::{CommentCells, Expr, Package, Pred, Sel};
 use crate::tree::{Node, TreeDoc};
@@ -80,7 +80,7 @@ impl<'a> Fmt<'a> {
             self.pkg.rules.get(&node.kind).ok_or_else(|| {
                 Refusal(format!("package has no rule for node type `{}`", node.kind))
             })?;
-        let mut ctx = Ctx::new(node, self);
+        let mut ctx = Ctx::new(node, self)?;
         let mut doc = ctx.eval(rule, self)?;
         doc = Doc::Concat(vec![doc, ctx.flush_after(self)]);
         if !ctx.dangling.is_empty() {
@@ -247,16 +247,21 @@ struct Ctx<'a> {
 }
 
 impl<'a> Ctx<'a> {
-    fn new(node: &'a Node, f: &Fmt<'a>) -> Ctx<'a> {
+    fn new(node: &'a Node, f: &Fmt<'a>) -> Result<Ctx<'a>, Refusal> {
+        // A declaration cannot hide stale text or overlapping ranges. Only
+        // check the subtree where whitespace trivia is actually consumed.
+        if node.children.iter().any(|child| whitespace_node(child, f.pkg)) {
+            check_source(node, f.src, "whitespace_nodes")?;
+        }
         let parts = split(node, f.src, f.pkg);
-        Ctx {
+        Ok(Ctx {
             node,
             items: parts.items,
             dangling: parts.dangling,
             cursor: 0,
             pending_after: Vec::new(),
             trailing_blanks: parts.trailing_blanks,
-        }
+        })
     }
 
     fn flush_after(&mut self, f: &Fmt<'a>) -> Doc {
@@ -629,7 +634,7 @@ impl<'a> Ctx<'a> {
         if self.items.iter().any(Item::decorated) {
             return Err(self.refuse("no comments inside an opaque node"));
         }
-        check_verbatim(self.node, f.src)?;
+        check_source(self.node, f.src, "verbatim")?;
         self.cursor = self.items.len();
         f.slice(self.node)
     }
@@ -925,7 +930,10 @@ impl<'a> Ctx<'a> {
             spine.push(next);
             cur = next;
         }
-        let mut inner: Vec<Ctx<'a>> = spine.iter().map(|n| Ctx::new(n, f)).collect();
+        let mut inner: Vec<Ctx<'a>> = spine
+            .iter()
+            .map(|n| Ctx::new(n, f))
+            .collect::<Result<_, _>>()?;
 
         let mut parts = Vec::new();
         let mut outer_skipped = None;
@@ -1066,18 +1074,20 @@ fn positional_left<'a>(node: &'a Node, pkg: &Package) -> Option<&'a Node> {
 /// `verbatim` is the one opcode that emits source bytes nobody compared
 /// against the tree. Every other path reaches text through a real child, so
 /// the linearity invariant protects it; this walk is the equivalent for a
-/// node whose offsets may be stale.
-fn check_verbatim(node: &Node, src: &[u8]) -> Result<(), Refusal> {
-    check_verbatim_node(node, src, None, &node.kind)
+/// node whose offsets may be stale. Whitespace-trivia consumption needs the
+/// same proof before removing a leaf from the item view.
+fn check_source(node: &Node, src: &[u8], operation: &str) -> Result<(), Refusal> {
+    check_source_node(node, src, None, &node.kind, operation)
 }
 
-fn check_verbatim_node(
+fn check_source_node(
     node: &Node,
     src: &[u8],
     parent: Option<&Node>,
     root_kind: &str,
+    operation: &str,
 ) -> Result<(), Refusal> {
-    let fail = |why: &str| Refusal(format!("verbatim `{root_kind}` {why}"));
+    let fail = |why: &str| Refusal(format!("{operation} `{root_kind}` {why}"));
 
     if node.start > node.end {
         return Err(fail("has inverted range"));
@@ -1105,7 +1115,7 @@ fn check_verbatim_node(
             }
         }
         prev_end = Some(child.end);
-        check_verbatim_node(child, src, Some(node), root_kind)?;
+        check_source_node(child, src, Some(node), root_kind, operation)?;
     }
     Ok(())
 }
@@ -3569,6 +3579,136 @@ try {{
             "{}",
             err.0
         );
+    }
+
+    // Toy kinds exercise whitespace attachment independently of Markdown.
+    fn whitespace_pkg(fields: serde_json::Value) -> PackageMap {
+        let mut raw = json!({
+            "format": "et-doc-rules/2", "indent": 2, "whitespace_nodes": ["gap"],
+            "comments": ["comment"],
+            "rules": {"file": ["each", "named", ["blank", 1]], "gap": ["verbatim"]},
+        });
+        raw.as_object_mut()
+            .expect("formats")
+            .extend(fields.as_object().expect("object").clone());
+        one(serde_json::from_value(raw).expect("package"))
+    }
+
+    fn trivia_file(chunks: &[(&str, &str)]) -> (String, serde_json::Value) {
+        let mut source = String::new();
+        let children: Vec<_> = chunks
+            .iter()
+            .map(|(kind, text)| {
+                let start = source.len();
+                source.push_str(text);
+                span(kind, start, source.len(), text)
+            })
+            .collect();
+        let root = json!({"type": "file", "start": 0, "end": source.len(), "children": children});
+        (source, root)
+    }
+
+    #[test]
+    fn declared_whitespace_leaves_form_one_capped_gap_and_no_edge_items() {
+        let (source, root) = trivia_file(&[
+            ("gap", "\n\n"),
+            ("a", "a\n"),
+            ("gap", "\n"),
+            ("gap", "\n\n"),
+            ("b", "b\n"),
+            ("gap", "\n\n"),
+        ]);
+        let pkg = whitespace_pkg(json!({}));
+        assert_eq!(run_on(&pkg, &source, root, 80).expect("formats"), "a\n\nb\n");
+        let (source, root) = trivia_file(&[("gap", "\n\n")]);
+        assert_eq!(run_on(&pkg, &source, root, 80).expect("formats"), "\n");
+    }
+
+    #[test]
+    fn whitespace_trivia_is_opt_in_and_separators_see_the_real_neighbours() {
+        let (source, root) = trivia_file(&[("a", "a\n"), ("gap", "\n"), ("b", "b\n")]);
+        let rules = json!({"file": ["each", "named", ["hard"]]});
+        let pkg = whitespace_pkg(json!({"rules": rules}));
+        assert_eq!(run_on(&pkg, &source, root.clone(), 80).expect("formats"), "a\n\nb\n");
+        let pkg = whitespace_pkg(json!({"rules": rules, "whitespace_nodes": []}));
+        assert_eq!(run_on(&pkg, &source, root, 80).expect("formats"), "a\n\n\n\nb\n");
+        let (source, root) = trivia_file(&[("a", "a\n"), ("gap", ""), ("b", "b\n")]);
+        let pkg = whitespace_pkg(json!({"rules": {"file": ["each", "named", ["blank", 1, ["a"]]]}}));
+        assert_eq!(run_on(&pkg, &source, root, 80).expect("formats"), "a\n\nb\n");
+    }
+
+    #[test]
+    fn non_whitespace_interior_nodes_and_injection_boundaries_remain_items() {
+        let pkg = whitespace_pkg(json!({}));
+        let (source, root) = trivia_file(&[("gap", "# Keep\n"), ("gap", "\u{a0}\n")]);
+        assert_eq!(run_on(&pkg, &source, root, 80).expect("formats"), source);
+        let (source, mut root) = trivia_file(&[("gap", " \n")]);
+        root["children"][0]["children"] = json!([span("content", 0, 2, " \n")]);
+        root["children"][0].as_object_mut().expect("object").remove("text");
+        assert_eq!(run_on(&pkg, &source, root, 80).expect("formats"), " \n");
+        let (source, mut root) = trivia_file(&[("a", "a\n"), ("gap", "\n"), ("b", "b\n")]);
+        root["children"][1]["language"] = json!("toy");
+        let pkg = whitespace_pkg(json!({"rules": {"file": ["each", "named", ["hard"]]}}));
+        assert_eq!(run_on(&pkg, &source, root, 80).expect("formats"), "a\n\n\n\nb\n");
+    }
+
+    #[test]
+    fn comments_attach_across_whitespace_trivia_without_being_swallowed() {
+        let (source, root) = trivia_file(&[
+            ("a", "a\n"),
+            ("gap", "\n"),
+            ("comment", "# keep"),
+            ("gap", "\n\n"),
+            ("b", "b\n"),
+        ]);
+        assert_eq!(
+            run_on(&whitespace_pkg(json!({})), &source, root, 80).expect("formats"),
+            "a\n\n# keep\n\nb\n"
+        );
+    }
+
+    #[test]
+    fn whitespace_trivia_cannot_hide_stale_text_or_overlapping_ranges() {
+        let pkg = whitespace_pkg(json!({}));
+        let (source, mut root) = trivia_file(&[("gap", "x")]);
+        root["children"][0]["text"] = json!(" ");
+        let err = run_on(&pkg, &source, root, 80).expect_err("stale leaf");
+        assert!(
+            err.0.contains("text does not match the source"),
+            "{}",
+            err.0
+        );
+        let (source, mut root) = trivia_file(&[("a", "a\n"), ("gap", "\n"), ("b", "b\n")]);
+        root["children"][0]["end"] = json!(3);
+        root["children"][0]["text"] = json!("a\n\n");
+        let err = run_on(&pkg, &source, root, 80).expect_err("overlap");
+        assert!(err.0.contains("overlapping siblings"), "{}", err.0);
+    }
+
+    #[test]
+    fn whitespace_declarations_require_v2_a_list_of_kinds_and_disjoint_comments() {
+        let raw = json!({"format": "et-doc-rules/2", "indent": 2, "rules": {}});
+        for value in [json!(null), json!("gap"), json!({}), json!([1])] {
+            let mut raw = raw.clone();
+            raw["whitespace_nodes"] = value;
+            assert!(serde_json::from_value::<Package>(raw).is_err());
+        }
+        for value in [json!([]), json!(["gap"])] {
+            let mut raw = raw.clone();
+            raw["format"] = json!("et-doc-rules/1");
+            raw["whitespace_nodes"] = value;
+            let err = serde_json::from_value::<Package>(raw)
+                .err()
+                .expect("v1 refuses declaration");
+            assert!(err.to_string().contains("requires package format"), "{err}");
+        }
+        let mut raw = raw;
+        raw["whitespace_nodes"] = json!(["gap"]);
+        raw["comments"] = json!(["gap"]);
+        let err = serde_json::from_value::<Package>(raw)
+            .err()
+            .expect("conflicting declarations");
+        assert!(err.to_string().contains("must not overlap"), "{err}");
     }
 
 }

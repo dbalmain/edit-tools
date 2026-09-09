@@ -44,12 +44,13 @@ function validateNode(node, bytes) {
 }
 
 const PACKAGE_FORMAT = "et-doc-rules/1";
+const WHITESPACE_FORMAT = "et-doc-rules/2";
 const MAX_MACRO_DEPTH = 32;
 
 function validatePackageFormat(pkg) {
-  if (pkg.format !== PACKAGE_FORMAT) {
+  if (pkg.format !== PACKAGE_FORMAT && pkg.format !== WHITESPACE_FORMAT) {
     throw new Refusal(
-      `unknown package format ${JSON.stringify(pkg.format)}; expected ${JSON.stringify(PACKAGE_FORMAT)}`,
+      `unknown package format ${JSON.stringify(pkg.format)}; expected ${JSON.stringify(PACKAGE_FORMAT)} or ${JSON.stringify(WHITESPACE_FORMAT)}`,
     );
   }
 }
@@ -434,6 +435,15 @@ function buildPackage(pkg) {
   const flatten_fields = flattenFields(pkg);
   gapOwnerField(pkg);
   blankOwnerField(pkg);
+  if (pkg.whitespace_nodes !== undefined) {
+    if (pkg.format !== WHITESPACE_FORMAT) {
+      throw new Refusal("`whitespace_nodes` requires package format et-doc-rules/2");
+    }
+    nodeTypes(pkg.whitespace_nodes);
+    if (pkg.whitespace_nodes.some((kind) => (pkg.comments ?? []).includes(kind))) {
+      throw new Refusal("`whitespace_nodes` and `comments` must not overlap");
+    }
+  }
   const defs = pkg.defs === undefined ? {} : pkg.defs;
   if (!isObject(defs)) throw new Refusal("`defs` must be an object");
   if (!isObject(pkg.rules)) throw new Refusal("`rules` must be an object");
@@ -960,8 +970,15 @@ function newlinesBetween(bytes, from, to) {
   return n;
 }
 
-/** A node's children, split into items with every comment attached to one of
- *  them -- or, for a node that holds nothing but comments, left dangling. */
+/** Only declared whitespace-only leaves can become gap trivia. Injected
+ *  roots belong to their own package even when their type happens to match. */
+function whitespaceNode(fmt, node) {
+  return fmt.whitespaceNodes.has(node.type) && node.language === undefined &&
+    (node.children ?? []).length === 0 && typeof node.text === "string" &&
+    !/[^\t\n\f\r ]/.test(node.text);
+}
+
+/** Consume whitespace trivia first, then attach comments to real items. */
 function splitChildren(fmt, node) {
   const items = [];
   let lead = [];
@@ -969,6 +986,9 @@ function splitChildren(fmt, node) {
   let shallowEnd = node.start;
 
   for (const child of node.children ?? []) {
+    // Consumed as gap trivia, before attachment: keep measuring from the last
+    // real item so these bytes contribute to one gap, never two separators.
+    if (whitespaceNode(fmt, child)) continue;
     const gap = newlinesBetween(fmt.bytes, prevEnd, child.start);
     shallowEnd = contentEnd(fmt.bytes, child);
     prevEnd = ownsGapAfter(fmt, node.type, child.type)
@@ -1124,6 +1144,11 @@ function parseSelector(raw) {
 
 class Ctx {
   constructor(fmt, node) {
+    // A declaration cannot hide stale text, overlapping ranges or descendants.
+    // Pay for the subtree check only where trivia is actually consumed.
+    if ((node.children ?? []).some((child) => whitespaceNode(fmt, child))) {
+      checkSource(fmt, node, "whitespace_nodes");
+    }
     this.fmt = fmt;
     this.node = node;
     const split = splitChildren(fmt, node);
@@ -1395,7 +1420,7 @@ class Ctx {
       throw this.refuse("to be the whole rule (`verbatim` takes every child)");
     }
     if (this.items.some(decorated)) throw this.refuse("no comments inside an opaque node");
-    checkVerbatim(this.fmt, this.node);
+    checkSource(this.fmt, this.node, "verbatim");
     this.cursor = this.items.length;
     return this.fmt.slice(this.node);
   }
@@ -1748,9 +1773,9 @@ class Ctx {
  *  against the tree. Every other path reaches text through a real child, so
  *  the linearity invariant protects it; this walk is the equivalent for a
  *  node whose offsets may be stale. */
-function checkVerbatim(fmt, node) {
+function checkSource(fmt, node, operation) {
   const root = node.type;
-  const fail = (why) => new Refusal(`verbatim \`${root}\` ${why}`);
+  const fail = (why) => new Refusal(`${operation} \`${root}\` ${why}`);
   const walk = (n, parent) => {
     if (n.start > n.end) throw fail("has inverted range");
     if (parent == null) {
@@ -1797,6 +1822,7 @@ class Formatter {
       Object.entries(this.pkg.gap_owner ?? {}).map(([parent, kinds]) => [parent, new Set(kinds)]),
     );
     this.blankOwner = new Set(this.pkg.blank_owner ?? []);
+    this.whitespaceNodes = new Set(this.pkg.whitespace_nodes ?? []);
     this.optionalParens = new Set(this.pkg.optional_parens ?? []);
     this.precedence = this.pkg.precedence ?? {};
     this.commentGap = this.pkg.comment_gap;
