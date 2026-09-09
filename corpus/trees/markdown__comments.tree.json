@@ -13,29 +13,19 @@
     "end": 35,
     "children": [
      {
-      "type": "html_block",
+      "type": "document",
       "start": 0,
       "end": 34,
       "children": [
        {
-        "type": "-",
-        "start": 9,
-        "end": 10,
-        "text": "-"
-       },
-       {
-        "type": ".",
-        "start": 28,
-        "end": 29,
-        "text": "."
-       },
-       {
-        "type": "-->",
-        "start": 30,
+        "type": "comment",
+        "start": 0,
         "end": 33,
-        "text": "-->"
+        "text": "<!-- File-level HTML comment. -->"
        }
-      ]
+      ],
+      "language": "html",
+      "opaque": true
      }
     ]
    },
@@ -274,35 +264,19 @@
           ]
          },
          {
-          "type": "html_block",
+          "type": "document",
           "start": 209,
           "end": 273,
           "children": [
            {
-            "type": "-",
-            "start": 217,
-            "end": 218,
-            "text": "-"
-           },
-           {
-            "type": ",",
-            "start": 244,
-            "end": 245,
-            "text": ","
-           },
-           {
-            "type": "-->",
-            "start": 267,
+            "type": "comment",
+            "start": 209,
             "end": 270,
-            "text": "-->"
-           },
-           {
-            "type": "block_continuation",
-            "start": 271,
-            "end": 273,
-            "text": "  "
+            "text": "<!-- own-line comment inside a list, before a nested item -->"
            }
-          ]
+          ],
+          "language": "html",
+          "opaque": true
          },
          {
           "type": "list",
@@ -1031,62 +1005,64 @@
       ]
      },
      {
-      "type": "html_block",
+      "type": "document",
       "start": 604,
       "end": 640,
       "children": [
        {
-        "type": "-->",
-        "start": 636,
+        "type": "comment",
+        "start": 604,
         "end": 639,
-        "text": "-->"
+        "text": "<!-- comment between two blocks -->"
        }
-      ]
+      ],
+      "language": "html",
+      "opaque": true
      },
      {
-      "type": "html_block",
+      "type": "document",
       "start": 641,
       "end": 679,
       "children": [
        {
-        "type": "-",
-        "start": 661,
-        "end": 662,
-        "text": "-"
-       },
-       {
-        "type": "-->",
-        "start": 675,
+        "type": "comment",
+        "start": 641,
         "end": 678,
-        "text": "-->"
+        "text": "<!-- consecutive own-line comment -->"
        }
-      ]
+      ],
+      "language": "html",
+      "opaque": true
      },
      {
-      "type": "html_block",
+      "type": "document",
       "start": 679,
       "end": 707,
       "children": [
        {
-        "type": "-->",
-        "start": 703,
+        "type": "comment",
+        "start": 679,
         "end": 706,
-        "text": "-->"
+        "text": "<!-- second of the pair -->"
        }
-      ]
+      ],
+      "language": "html",
+      "opaque": true
      },
      {
-      "type": "html_block",
+      "type": "document",
       "start": 708,
       "end": 748,
       "children": [
        {
-        "type": "-->",
-        "start": 744,
+        "type": "comment",
+        "start": 708,
         "end": 747,
-        "text": "-->"
+        "text": "<!-- comment at the end of the file -->"
        }
-      ]
+      ],
+      "language": "html",
+      "opaque": true
      }
     ]
    }

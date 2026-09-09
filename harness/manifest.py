@@ -54,6 +54,9 @@ class Injection:
     info: str | None = None
     content: str | None = None
     guest: str | None = None
+    # False: splice the guest parse for readers, but leave the formatter the
+    # host's original bytes. See docs/injection.md, "Structure without layout".
+    format: bool = True
 
 
 @dataclass(frozen=True)
@@ -113,7 +116,7 @@ def _injection_aliases(raw: dict[str, Any], path: Path) -> tuple[str, ...]:
 
 def _injections(raw: dict[str, Any], path: Path) -> tuple[Injection, ...]:
     out = []
-    fields = {"node", "info", "content", "guest"}
+    fields = {"node", "info", "content", "guest", "format"}
     entries = raw.get("injections", [])
     if not isinstance(entries, list):
         raise ManifestError(f"{path.name}: `injections` must be a list")
@@ -130,7 +133,9 @@ def _injections(raw: dict[str, Any], path: Path) -> tuple[Injection, ...]:
             raise ManifestError(
                 f"{path.name}: `{name}` missing required field(s) ['node']"
             )
-        for field in sorted(entry):
+        if "format" in entry and not isinstance(entry["format"], bool):
+            raise ManifestError(f"{path.name}: `{name}.format` must be a boolean")
+        for field in sorted(set(entry) - {"format"}):
             value = entry[field]
             if not isinstance(value, str) or not value:
                 raise ManifestError(
@@ -147,6 +152,7 @@ def _injections(raw: dict[str, Any], path: Path) -> tuple[Injection, ...]:
                 info=entry.get("info"),
                 content=entry.get("content"),
                 guest=entry.get("guest"),
+                format=entry.get("format", True),
             )
         )
     return tuple(out)

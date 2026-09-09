@@ -13,41 +13,19 @@
     "end": 352,
     "children": [
      {
-      "type": "html_block",
+      "type": "document",
       "start": 0,
       "end": 78,
       "children": [
        {
-        "type": ".",
-        "start": 17,
-        "end": 18,
-        "text": "."
-       },
-       {
-        "type": ";",
-        "start": 50,
-        "end": 51,
-        "text": ";"
-       },
-       {
-        "type": "'",
-        "start": 70,
-        "end": 71,
-        "text": "'"
-       },
-       {
-        "type": ".",
-        "start": 72,
-        "end": 73,
-        "text": "."
-       },
-       {
-        "type": "-->",
-        "start": 74,
+        "type": "comment",
+        "start": 0,
         "end": 77,
-        "text": "-->"
+        "text": "<!-- Tilde fences. prettier respells the delimiter; we keep the author's. -->"
        }
-      ]
+      ],
+      "language": "html",
+      "opaque": true
      },
      {
       "type": "fenced_code_block",

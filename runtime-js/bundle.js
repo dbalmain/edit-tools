@@ -1849,6 +1849,14 @@ class Formatter {
 
   node(node) {
     if (node.language !== undefined) {
+      // Structure without layout: the guest parse is spliced so readers can
+      // see it, but the region's bytes are the host's to keep. The same source
+      // check `verbatim` makes, for the same reason -- a stale offset must
+      // refuse rather than emit the wrong bytes.
+      if (node.opaque === true) {
+        checkSource(this, node, "opaque");
+        return this.slice(node);
+      }
       return new Formatter(this.packages, node.language, this.bytes, this.decoder).nodeCurrent(node);
     }
     return this.nodeCurrent(node);

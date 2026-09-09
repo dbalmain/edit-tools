@@ -98,3 +98,22 @@ comment_kinds = ["html_block"]
 node = "fenced_code_block"
 info = "info_string"
 content = "code_fence_content"
+
+# Structure without layout. An `html_block` is spliced with tree-sitter-html so
+# the highlighter and an editor can see real HTML structure inside it, but
+# `format = false` keeps the region's bytes the host's: the formatter emits the
+# original source, byte for byte.
+#
+# It ships off because turning it on is not safe yet, for two measured reasons.
+# prettier does not format html blocks in markdown at all (`<div    class="x">`
+# passes through untouched at width 80), so laying them out could only lose
+# agreement against the pinned reference. And an unbalanced open tag -- the
+# `<div>`/blank line/`</div>` idiom -- parses as a *complete* element under
+# tree-sitter-html 0.23.2 whenever it carries an attribute (`<div class="x">`
+# is clean; bare `<div>` is an ERROR and refuses), so the ERROR guard in
+# harness/injection.py does not catch fragment splitting. Flipping this to
+# `true` is the `format_html_blocks` opt-in, and it waits on that answer.
+[[injections]]
+node = "html_block"
+guest = "html"
+format = false

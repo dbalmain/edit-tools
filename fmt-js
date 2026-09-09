@@ -7,7 +7,9 @@ const { format, Refusal } = require(path.join(__dirname, "runtime-js", "bundle.j
 function treeLanguages(tree) {
   const languages = new Set([tree.language]);
   const visit = (node) => {
-    if (node.language !== undefined) languages.add(node.language);
+    // An opaque region is emitted from source, so its package is never
+    // loaded: a host must not depend on shipping one.
+    if (node.language !== undefined && node.opaque !== true) languages.add(node.language);
     for (const child of node.children ?? []) visit(child);
   };
   visit(tree.root);

@@ -13,6 +13,9 @@ class Region:
     content: Any
     source: bytes
     guest: mf.Manifest | None
+    # False: the guest parse is spliced for readers, but the formatter is to
+    # reproduce the host's bytes rather than lay the region out again.
+    format: bool = True
 
 
 def _direct(node, kind: str):
@@ -46,6 +49,7 @@ def region_for(
         content,
         source[content.start_byte : content.end_byte],
         guest,
+        site.format,
     )
 
 

@@ -67,6 +67,14 @@ impl<'a> Fmt<'a> {
 
     fn node(&self, node: &'a Node) -> Result<Doc, Refusal> {
         if let Some(language) = node.language.as_deref() {
+            // Structure without layout: the guest parse is spliced so readers
+            // can see it, but the region's bytes are the host's to keep. The
+            // same source check `verbatim` makes, for the same reason -- a
+            // stale offset must refuse rather than emit the wrong bytes.
+            if node.opaque {
+                check_source(node, self.src, "opaque")?;
+                return self.slice(node);
+            }
             return Self::for_language(language, self.packages, self.src)?.node_current(node);
         }
         self.node_current(node)

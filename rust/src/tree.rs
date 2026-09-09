@@ -21,6 +21,11 @@ pub struct Node {
     /// Starts a formatter/highlighter language region at this node.
     #[serde(default)]
     pub language: Option<String>,
+    /// A language region the formatter must not lay out again: the guest parse
+    /// is spliced for readers (the highlighter, an editor), and the formatter
+    /// reproduces the region's original bytes. See docs/injection.md.
+    #[serde(default)]
+    pub opaque: bool,
     pub start: usize,
     pub end: usize,
     #[serde(default)]
@@ -46,7 +51,11 @@ impl TreeDoc {
     pub fn languages(&self) -> BTreeSet<&str> {
         fn collect<'a>(node: &'a Node, languages: &mut BTreeSet<&'a str>) {
             if let Some(language) = node.language.as_deref() {
-                languages.insert(language);
+                // An opaque region is emitted from source, so its package is
+                // never loaded: a host must not depend on shipping one.
+                if !node.opaque {
+                    languages.insert(language);
+                }
             }
             for child in &node.children {
                 collect(child, languages);

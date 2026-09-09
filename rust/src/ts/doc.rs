@@ -38,11 +38,21 @@ pub struct TreeNode {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub text: Option<String>,
     /// Set only by the injection track, on the node holding an injected
-    /// region: 13 nodes across 6 markdown trees carry it. The interpreter
+    /// region: 39 nodes across 20 markdown trees carry it. The interpreter
     /// never emits one -- it is modelled so that the round-trip test below can
     /// cover every frozen tree rather than a subset that happens to fit.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub language: Option<String>,
+    /// Set with `language` on a region spliced for readers but not laid out
+    /// again: 25 of those 39 nodes are markdown's `html_block`s. Written only
+    /// when true, so a formatted region serialises exactly as it did before
+    /// the field existed.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub opaque: bool,
+}
+
+fn is_false(flag: &bool) -> bool {
+    !*flag
 }
 
 /// The whole document: one frozen `.tree.json` file.
@@ -153,6 +163,7 @@ mod tests {
                 children: None,
                 text: Some(text),
                 language: None,
+                opaque: false,
             },
         };
         let want = format!(

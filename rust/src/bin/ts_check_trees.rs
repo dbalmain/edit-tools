@@ -97,9 +97,10 @@ fn convert(
         field: node.field.clone(),
         children,
         text,
-        // Only the injection track writes a node-level language; the
-        // interpreter never does.
+        // Only the injection track writes a node-level language, or marks a
+        // region opaque; the interpreter never does either.
         language: None,
+        opaque: false,
     })
 }
 

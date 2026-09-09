@@ -121,6 +121,8 @@ def convert(
             parsers=parsers,
         )
         embedded["language"] = guest.name
+        if not region.format:
+            embedded["opaque"] = True
         return embedded
 
     out: dict = {"type": node.type, "start": start, "end": end}
@@ -145,6 +147,8 @@ def convert(
                     parsers=parsers,
                 )
                 embedded["language"] = guest.name
+                if not region.format:
+                    embedded["opaque"] = True
                 children.append(embedded)
             else:
                 children.append(

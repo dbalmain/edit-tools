@@ -180,6 +180,34 @@ class WhitespaceNodeTests(unittest.TestCase):
         empty = signature_of(Node("document", 0, 0), "", whitespace=frozenset({"section"}))
         self.assertNotEqual(self.document("\n\n\n"), empty)
 
+    def test_a_whole_node_region_keeps_its_comments_only_via_comment_kinds(self):
+        """Markdown declares `html_block` as a whole-node injection site (step
+        3) *and* in `comment_kinds`. Only the second declaration keeps its
+        comments visible to gate 3: `_extras` bails out on a whole-node region
+        (`region.content == node`), so a site that is not also a comment kind
+        contributes nothing.
+
+        Declaring the site did not cost markdown anything, and that is what the
+        first assertion pins: `comment_kinds` is tested before the region, so
+        the child is harvested rather than descended into, and the count stayed
+        at 40 across the change. Removing `comment_kinds` is loud rather than
+        silent -- checked by hand, markdown's dropped-comment count falls 40 ->
+        0 and `check_gate3.py` prints "arm inert" -- so the second assertion
+        documents the boundary rather than guarding a silent failure.
+        """
+        base = make_manifest(Path("/nonexistent/x.toml"), "x", "default")
+        site = Injection(node="html_block", guest="x", format=False)
+        source = b"<!-- c -->"
+        root = Node("document", 0, 10, (Node("html_block", 0, 10),))
+
+        declared = replace(base, comment_kinds=("html_block",), injections=(site,))
+        self.assertEqual(
+            gate3._extras(root, source, declared, {"x": base}, []), ["<!-- c -->"]
+        )
+
+        undeclared = replace(base, injections=(site,))
+        self.assertEqual(gate3._extras(root, source, undeclared, {"x": base}, []), [])
+
     def test_a_host_cannot_discard_a_whitespace_injection_boundary(self):
         manifest = make_manifest(Path("/nonexistent/x.toml"), "x", "default")
         for site in (Injection(node="host", content="payload", guest="x"),
