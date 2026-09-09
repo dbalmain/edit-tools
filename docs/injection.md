@@ -223,7 +223,7 @@ follow-up; retaining `preserve` is no longer evidence that prose needs no work.
 
 The live pin nevertheless remains `preserve` for now: the measurement rejects
 20 reference outputs at gate 3, so changing only the flag cannot be a green
-commit. The generated `always` diff is retained with the
+commit. The `always` measurements are retained in the
 [measurement and design report](../corpus/reports/markdown/prose-wrap.md).
 
 The runtime cannot express this from the current tree. The block grammar leaves
@@ -246,6 +246,16 @@ parse layer is the preferred direction to investigate. A delimiter-aware raw
 splitter inside the runtime is declined as a second, partial markdown parser.
 The need for atoms is structural; the choice of projection design versus a new
 declared text capability remains an engineering judgment, not a settled spec.
+
+The [2026-09-10 projection proposal](prose-projection.md) narrows that choice:
+derive a formatter view containing source-backed atoms and explicit whitespace
+leaves, then compose existing `fill`, `verbatim` and `whitespace_nodes`. Keep
+the inline syntax tree for highlighting. A mirrored composition probe succeeds,
+but deleting an atom from the projected tree exposes a coverage guarantee that
+existing source validation does not provide. The proposal calls for generic,
+versioned partition validation before any projection ships. It specifies a
+top-level words-plus-emphasis first slice; container prefix mapping, safe break
+classification and the gate equivalence remain unimplemented.
 
 ## The highlighter gets this for free
 

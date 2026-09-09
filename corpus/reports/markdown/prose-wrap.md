@@ -41,8 +41,8 @@ currently use `verbatim`. Neither path exposes word-sized Docs for `fill` to
 select over.
 
 The obvious fix — splice in tree-sitter-markdown's separate `inline_language()`
-grammar via an included-range second pass, the same shape fence injection
-already uses for guest languages — was checked directly and is **not sufficient
+grammar via an included-range second pass — fence injection already provides
+related slice-parsing and splicing machinery — was checked directly and is **not sufficient
 by itself**: that grammar supplies `emphasis`, `inline_link` and `code_span`
 structure, but still no word-level nodes. Prose between and inside those spans
 is still an unsplit run, and Prettier itself wraps _inside_ a long `emphasis`
@@ -79,10 +79,16 @@ formatted at every width (up from 415/415), 796 destructive mutations rejected
 
 ## Where this leaves roadmap step 2
 
-Quantified, not built. The number does not say "abandon this" — 16/20 files
-would newly discriminate by width, which is real coverage this project has
+Quantified, not built. The number does not say "abandon this" — width
+discrimination rises from 5/20 to 16/20 files, which is real coverage this project has
 wanted elsewhere — but it does say the honest next unit of work is a parse-
 layer design question (a source-range projection for words and protected spans,
 plus the gate-3 equivalence prose reflow would need), not a package rule. That
 is a separate, larger design task than this step's budget, and is recorded here
 rather than forced into a partial fix.
+
+The [2026-09-10 design follow-up](../../../docs/prose-projection.md) specifies
+the proposed source partition, its composition from existing opcodes, the
+additional coverage validation it would require, and the remaining parse/gate
+work. It is a design proposal with a scratch Doc-composition probe, not shipped
+prose reflow.

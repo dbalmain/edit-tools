@@ -118,6 +118,13 @@ above were recovered from the working diff and the report, ledger row and
 double-format check were completed by the orchestrator, 2026-09-09. 417/417
 corpus files formatted, 796 destructive mutations rejected (792 before). |
 
+| 25 | Markdown | Codex (gpt-6-astra, medium) | Source-range projection design; no shipped capability | Derive a formatter-only partition into contiguous source atoms and explicit whitespace leaves. Existing `fill` + `whitespace_nodes` + atom `verbatim` composes successfully across emphasis in both runtimes. Stale atom/gap text refuses, but removing an atom and gap is accepted: source validation is not a total-coverage check. The proposal requires generic partition validation and a versioned package declaration before adoption, with independent syntax/break checks in the parse layer and gate 3. See `docs/prose-projection.md` for inputs, exact ranges, ownership and a bounded implementation handoff. | **unreviewed design proposal**, 2026-09-10. No runtime, parser, package or corpus changes; 29 opcodes and three mutations remain. Scratch composition double-format identical in JS/Rust at 12/40/80; not an end-to-end markdown prototype. |
+
+Row 25 validation: `./test.sh` exit 0, zero warnings, all four gates 417/417;
+796 destructive mutations rejected, unchanged from the checked baseline.
+The existing `prose_wrap.md` was also explicitly reparsed and double-formatted
+in JS and Rust at 80 and 40: all four pairs byte-identical (1,019 bytes).
+
 **Standing verification rule (2026-09-09):** after any fix, format every new or
 changed corpus fixture, reparse that output, format it again and diff the two.
 The done-note must name the fixtures, runtimes and widths and state the observed

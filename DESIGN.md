@@ -158,9 +158,19 @@ of the reflowing reference outputs. Prose gaps, continuation markers and HTML
 comment placement need a justified equivalence before the live reference can
 switch. `layout_leaves` or blanket whitespace normalization would also relax
 code-span or hard-break semantics and cannot stand in for that work. The live
-reference remains `preserve`; the complete alternative diff, measurements and
-remaining design work are in
+reference remains `preserve`; the measurements and remaining design work are in
 [`corpus/reports/markdown/prose-wrap.md`](corpus/reports/markdown/prose-wrap.md).
+
+The follow-up [source-projection proposal](docs/prose-projection.md) describes
+an explicit partition into source atoms and whitespace leaves. Existing `fill`,
+`verbatim` and `whitespace_nodes` can render that view, including breaks inside
+emphasis. A composition probe in both runtimes also exposed the missing
+guarantee: source validation checks existing children, not exhaustive coverage
+of their parent. The proposal therefore requires generic partition validation
+before consumption, with a versioned package declaration. Neither that header
+nor a projection parser ships yet; the opcode count and mutation policies above
+are unchanged. Safe break classification and an independent gate equivalence
+remain prerequisites, not consequences of preserving source bytes.
 
 The four `src*` opcodes mirror the **source's own line structure** rather than a
 group's fit, and they are what a source-preserving reference needs. `srcline`,
