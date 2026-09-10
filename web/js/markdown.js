@@ -27,6 +27,8 @@
 
 import { parse, syntaxOf } from "./lang.js";
 import { VimEditor } from "./editor.js";
+import { tableSlots } from "./host.js";
+import { NORMAL } from "../vendor/vici/index.js";
 
 /** Node types that hold blocks rather than being one. See the header. */
 const CONTAINERS = new Set(["document", "section"]);
@@ -100,6 +102,66 @@ function inline(text, into) {
   if (at < text.length) into.append(document.createTextNode(text.slice(at)));
 }
 
+/**
+ * A pipe table as a real table, with the cell under the cursor left raw.
+ *
+ * Every other block goes raw whole when the cursor enters it. A table must not,
+ * and the measurement says why: of 3,860 tables wider than 100 columns under
+ * `~/w`, 3,601 are still wider than 100 with every pad byte removed, and 1,535
+ * have one cell that alone exceeds it. The width is the content, so there is no
+ * layout change that makes the source narrow -- only drawing it as a grid does,
+ * and a table that reverted to source the moment you tried to edit it would
+ * hand the width back exactly when it mattered.
+ *
+ * Returns null when the block is not a table any more, which is what a
+ * half-typed row is; the caller then renders it the ordinary way.
+ */
+function renderTable(text, cursor, draw) {
+  const table = tableSlots(text);
+  if (table === null) return null;
+  const total = table.rows.at(-1).cells.at(-1).end;
+  // The cursor may sit one past the last byte, which is a position no range
+  // contains; the final cell is where it belongs.
+  const holds = (range) =>
+    cursor !== null &&
+    cursor >= range.start &&
+    (cursor < range.end || (range.end === total && cursor === total));
+
+  const node = document.createElement("table");
+  node.className = "md-rendered md-table";
+  const head = document.createElement("thead");
+  const body = document.createElement("tbody");
+  let drewCursor = false;
+
+  for (const [index, row] of table.rows.entries()) {
+    // The delimiter row is the ruler -- layout, not content -- so it is drawn
+    // only while the caret is in it, which is the only time it is being edited.
+    if (row.delimiter && !holds(row)) continue;
+    const tr = document.createElement("tr");
+    for (const [column, cell] of row.cells.entries()) {
+      const el = document.createElement(index === 0 ? "th" : "td");
+      const align = table.aligns[column];
+      if (align !== null && align !== undefined) el.style.textAlign = align;
+      if (!drewCursor && holds(cell)) {
+        el.className = "md-cell-raw";
+        // Without its newline: the caret can sit on that newline, and
+        // `drawText` already draws an end-of-text caret as a space.
+        draw(el, cell.text.replace(/\n$/, ""), cursor - cell.start);
+        drewCursor = true;
+      } else if (row.delimiter) {
+        el.textContent = cell.content;
+      } else {
+        inline(cell.content, el);
+      }
+      tr.append(el);
+    }
+    (index === 0 ? head : body).append(tr);
+  }
+  if (head.childElementCount > 0) node.append(head);
+  if (body.childElementCount > 0) node.append(body);
+  return { node, drewCursor };
+}
+
 /** One block's rendered form. */
 function renderBlock(block) {
   const text = block.text.replace(/\n+$/, "");
@@ -147,7 +209,9 @@ function renderBlock(block) {
     node.append(list);
     return node;
   }
-  // paragraph, html_block, table, and anything the grammar adds later.
+  // paragraph, html_block, and anything the grammar adds later. A table
+  // is handled by `renderTable`, which needs the cursor and so is called by
+  // `render` rather than from here.
   inline(text, node);
   return node;
 }
@@ -285,6 +349,67 @@ class MarkdownEditor extends VimEditor {
     };
   }
 
+  /**
+   * The table block holding `cursor`, with its cells, or null.
+   *
+   * Derived from the block's text rather than kept as state, for the same
+   * reason `renderTable` is: between two parses the block's range is patched
+   * but its interior is not, and the interior is exactly what is being typed
+   * in. A table is small, so re-deriving it per keystroke is free.
+   */
+  tableAt(cursor) {
+    const bytes = encoder.encode(this.editor.text());
+    for (const block of this.blocks ?? []) {
+      if (block.type !== "pipe_table") continue;
+      const start = Math.min(block.start, bytes.length);
+      const end = Math.min(block.end, bytes.length);
+      if (cursor < start || cursor > end) continue;
+      const table = tableSlots(decoder.decode(bytes.subarray(start, end)));
+      if (table !== null) return { table, base: start };
+    }
+    return null;
+  }
+
+  /**
+   * Move to the next or previous cell's content. Returns false when there is
+   * no table, or no cell that way -- the key then does whatever it usually
+   * does, which for `<Tab>` in normal mode is nothing.
+   *
+   * The delimiter row is skipped: it is the ruler, and the formatter redraws
+   * it on `:w` from the alignment colons, so tabbing into it would offer to
+   * edit the one row whose content is not content.
+   */
+  moveCell(direction) {
+    const found = this.tableAt(this.editor.cursor);
+    if (found === null) return false;
+    const cells = found.table.rows.flatMap((row) => (row.delimiter ? [] : row.cells));
+    const cursor = this.editor.cursor - found.base;
+    let index = cells.findIndex((cell) => cursor >= cell.start && cursor < cell.end);
+    if (index === -1) index = cursor < cells[0].start ? 0 : cells.length - 1;
+    const next = cells[index + direction];
+    if (next === undefined) return false;
+    this.editor.jumpTo(found.base + next.contentStart);
+    return true;
+  }
+
+  /**
+   * `<Tab>` and `<S-Tab>` step between cells, and are intercepted here rather
+   * than bound in vici because vici's bindings are data and cannot call this.
+   *
+   * Normal mode only. vici binds `<Tab>` in insert mode to insert a tab, and
+   * shadowing a documented binding of the editing core is not this host's to
+   * do -- the four host-side behaviours are the ones vici cannot own, not the
+   * ones we would spell differently.
+   */
+  handle(key) {
+    const stepping = key === "<Tab>" || key === "<S-Tab>";
+    if (stepping && this.ex === null && !this.leaderPending && this.editor.mode === NORMAL) {
+      this.message = "";
+      if (this.moveCell(key === "<Tab>" ? 1 : -1)) return this.render();
+    }
+    super.handle(key);
+  }
+
   render() {
     if (!this.code) return; // called from the base constructor, before blocks exist
     const text = this.editor.text();
@@ -321,19 +446,32 @@ class MarkdownEditor extends VimEditor {
       }
     };
 
+    const draw = (into, text, offset) => this.drawText(into, text, offset);
+
     for (const block of blocks) {
       const start = Math.min(block.start, bytes.length);
       const end = Math.min(block.end, bytes.length);
       if (end <= start || start < at) continue;
       gap(at, start);
-      if (!drewCursor && cursor >= start && cursor <= end) {
+      const text = slice(start, end);
+      const inBlock = !drewCursor && cursor >= start && cursor <= end;
+      // A table draws itself even while the caret is in it. If it declined to
+      // hold the caret it cannot be used, or the caret would vanish -- so the
+      // ordinary raw path takes over, which is also what a stale block range
+      // and a half-typed row land on.
+      const table =
+        block.type === "pipe_table" ? renderTable(text, inBlock ? cursor - start : null, draw) : null;
+      if (table !== null && (!inBlock || table.drewCursor)) {
+        this.code.append(table.node);
+        if (table.drewCursor) drewCursor = true;
+      } else if (inBlock) {
         const span = document.createElement("span");
         span.className = "md-block-raw";
-        this.drawText(span, slice(start, end), cursor - start);
+        this.drawText(span, text, cursor - start);
         this.code.append(span);
         drewCursor = true;
       } else {
-        this.code.append(renderBlock({ type: block.type, text: slice(start, end) }));
+        this.code.append(renderBlock({ type: block.type, text }));
       }
       at = end;
     }

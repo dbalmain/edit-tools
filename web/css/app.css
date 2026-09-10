@@ -407,6 +407,24 @@ pre.diff .hunk { color: var(--ink-faint); display: block; }
 .md-code { font-family: var(--mono); font-size: 13px; background: var(--sunk); display: block; padding: .4rem .6rem; border-radius: 4px; }
 .md-rule { color: var(--ink-faint); }
 
+/* A table is drawn as a grid so the browser wraps the cells the source could
+ * not: the whole point is that the source is wider than the screen. `layout:
+ * auto` and `word-break` together are what let a 300-column table fit -- a
+ * fixed layout would divide the width evenly and cut the long cell instead. */
+.md-table { border-collapse: collapse; width: 100%; margin: .2rem 0; font-size: .95em; }
+.md-table th, .md-table td {
+  border: 1px solid var(--rule);
+  padding: .15rem .5rem;
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+.md-table th { background: var(--sunk); font-weight: 600; }
+/* The cell being edited: monospace and `pre`, because it is source now. It
+ * keeps the row's height rather than the block's, which is what makes editing
+ * a cell feel like editing a cell. */
+.md-cell-raw { font-family: var(--mono); font-size: 13px; background: var(--sunk); white-space: pre-wrap; }
+
 @media (max-width: 60rem) {
   body:has(.split) { overflow: auto; }
   .split { grid-template-columns: 1fr; flex: 0 0 auto; }
