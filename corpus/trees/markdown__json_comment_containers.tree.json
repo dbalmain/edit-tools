@@ -1,0 +1,220 @@
+{
+ "language": "markdown",
+ "source_file": "corpus/src/markdown/json_comment_containers.md",
+ "source": "```json\n{\"object\": {\n/*c*/\n}}\n```\n\n```json\n[\n/*c*/\n]\n```\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 57,
+  "children": [
+   {
+    "type": "section",
+    "start": 0,
+    "end": 57,
+    "children": [
+     {
+      "type": "fenced_code_block",
+      "start": 0,
+      "end": 34,
+      "children": [
+       {
+        "type": "fenced_code_block_delimiter",
+        "start": 0,
+        "end": 3,
+        "text": "```"
+       },
+       {
+        "type": "info_string",
+        "start": 3,
+        "end": 7,
+        "children": [
+         {
+          "type": "language",
+          "start": 3,
+          "end": 7,
+          "text": "json"
+         }
+        ]
+       },
+       {
+        "type": "block_continuation",
+        "start": 8,
+        "end": 8,
+        "text": ""
+       },
+       {
+        "type": "document",
+        "start": 8,
+        "end": 30,
+        "children": [
+         {
+          "type": "object",
+          "start": 8,
+          "end": 29,
+          "children": [
+           {
+            "type": "{",
+            "start": 8,
+            "end": 9,
+            "text": "{"
+           },
+           {
+            "type": "pair",
+            "start": 9,
+            "end": 28,
+            "children": [
+             {
+              "type": "string",
+              "start": 9,
+              "end": 17,
+              "field": "key",
+              "children": [
+               {
+                "type": "\"",
+                "start": 9,
+                "end": 10,
+                "text": "\""
+               },
+               {
+                "type": "string_content",
+                "start": 10,
+                "end": 16,
+                "text": "object"
+               },
+               {
+                "type": "\"",
+                "start": 16,
+                "end": 17,
+                "text": "\""
+               }
+              ]
+             },
+             {
+              "type": ":",
+              "start": 17,
+              "end": 18,
+              "text": ":"
+             },
+             {
+              "type": "object",
+              "start": 19,
+              "end": 28,
+              "field": "value",
+              "children": [
+               {
+                "type": "{",
+                "start": 19,
+                "end": 20,
+                "text": "{"
+               },
+               {
+                "type": "comment",
+                "start": 21,
+                "end": 26,
+                "text": "/*c*/"
+               },
+               {
+                "type": "}",
+                "start": 27,
+                "end": 28,
+                "text": "}"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "}",
+            "start": 28,
+            "end": 29,
+            "text": "}"
+           }
+          ]
+         }
+        ],
+        "language": "json"
+       },
+       {
+        "type": "fenced_code_block_delimiter",
+        "start": 30,
+        "end": 33,
+        "text": "```"
+       }
+      ]
+     },
+     {
+      "type": "fenced_code_block",
+      "start": 35,
+      "end": 57,
+      "children": [
+       {
+        "type": "fenced_code_block_delimiter",
+        "start": 35,
+        "end": 38,
+        "text": "```"
+       },
+       {
+        "type": "info_string",
+        "start": 38,
+        "end": 42,
+        "children": [
+         {
+          "type": "language",
+          "start": 38,
+          "end": 42,
+          "text": "json"
+         }
+        ]
+       },
+       {
+        "type": "block_continuation",
+        "start": 43,
+        "end": 43,
+        "text": ""
+       },
+       {
+        "type": "document",
+        "start": 43,
+        "end": 53,
+        "children": [
+         {
+          "type": "array",
+          "start": 43,
+          "end": 52,
+          "children": [
+           {
+            "type": "[",
+            "start": 43,
+            "end": 44,
+            "text": "["
+           },
+           {
+            "type": "comment",
+            "start": 45,
+            "end": 50,
+            "text": "/*c*/"
+           },
+           {
+            "type": "]",
+            "start": 51,
+            "end": 52,
+            "text": "]"
+           }
+          ]
+         }
+        ],
+        "language": "json"
+       },
+       {
+        "type": "fenced_code_block_delimiter",
+        "start": 53,
+        "end": 56,
+        "text": "```"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}
