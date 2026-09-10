@@ -6,7 +6,7 @@ Three things, sharing one editor component and one parse layer:
 | --- | --- |
 | `index.html` | the dashboard: every language and its divergence count |
 | `language.html?lang=NAME` | one language's divergences, ours on the left and the reference on the right |
-| `markdown.html` | a single-pane markdown editor: the block under the cursor is raw, the rest renders |
+| `markdown.html` | a single-pane markdown editor: the block under the cursor is raw, the rest renders -- except a table, where it is the cell |
 
 ## Running it
 
@@ -79,17 +79,47 @@ Two things follow, and both are visible:
 Guest tables are fetched only when a document routes to them, so a markdown
 page with no fences never pays for one.
 
+## A table is edited cell by cell
+
+Every block goes raw whole when the cursor enters it. A table does not, and the
+reason is the only reason to render one at all: markdown tables are wider than
+the screen, and a table that reverted to source on entry would hand that width
+back at the moment you wanted to edit it.
+
+So a `pipe_table` is drawn as a real `<table>`, which the browser wraps to the
+pane, and the **cell** under the cursor is what goes raw -- in monospace, with
+its own pipe in front of it, so what you are editing is visibly source. The
+delimiter row is the ruler rather than content, so it is drawn only while the
+caret is in it.
+
+`<Tab>` and `<S-Tab>` step between cells, skipping the delimiter row. They are
+normal-mode only: vici binds `<Tab>` in insert mode to insert a tab, and this
+host does not shadow the editing core's own bindings.
+
+Nothing about the *file* changes. The buffer is still the pipe table you typed,
+every vi motion still moves over the source, and `:w` re-pads it through the
+same formatter the scorer runs. The grid is a view, not a format.
+
+**Why not switch wide tables to HTML instead**, which is where this started:
+because the width is the content. Of the 3,860 tables wider than 100 columns
+under `~/w`, 3,601 are still wider than 100 with every pad byte removed, and
+1,535 have a single cell that alone exceeds it. There is no layout the source
+could adopt that would make those narrow, so a format switch at 100 columns
+would fire on half of all tables and buy nothing that this does not.
+
 ## Keys
 
 vim, from [vici](https://github.com/dbalmain/vici) -- motions, operators,
 counts, text objects, visual mode, undo, dot-repeat, macros, marks, surround.
-Four things are the host's rather than vici's, and `js/editor.js` says why:
+Four things are the host's rather than vici's, and `js/editor.js` says why; a
+fifth, cell stepping, belongs to the markdown surface alone:
 
 | Key | What it does |
 | --- | --- |
 | `:w` | format the buffer and save it to the session |
 | `\F` | format without saving |
 | `:123` | go to a line |
+| `<Tab>`, `<S-Tab>` | in a table, step to the next or previous cell |
 | `<CR>`, `o`, `O` | continue the previous line's indentation and comment marker |
 
 Nothing writes to disk. `:w` saves to `sessionStorage`, and closing the tab

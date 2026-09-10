@@ -279,6 +279,72 @@ Innermost wins, so a json fence inside a markdown fence answers json. The fence
 lines themselves stay markdown, which is right -- that is where the info string
 is edited.
 
+## Editing a table (2026-09-10)
+
+Dave's, and the reason the previous three pieces of work happened at all:
+
+> *"I think I want to be able to edit cells in the table. The way I picture this
+> working is that we continue to use the current markdown tables up to 100
+> characters and then switch to a different table format (either HTML or some
+> other table plugin) when a table grows beyond that."*
+
+**What was built is the first half. The second half was measured and is not
+worth building** -- not as stated, and the measurement says why.
+
+### The width is the content, so no format switch fixes it
+
+The 100-column threshold assumes a wide table is wide because of how it is laid
+out. Over 8,101 pipe tables in 8,444 markdown files under `~/w`:
+
+| | tables |
+| --- | ---: |
+| wider than 100 columns | 3,860 |
+| still wider than 100 with every pad byte removed | 3,601 |
+| holding one cell that alone exceeds 100 characters | 1,535 |
+
+Padding accounts for 259 of the 3,860, which is 7%. Switching format at 100
+columns would fire on 48% of all tables and leave 93% of them just as wide, so
+it is not an escape hatch -- it is a second default that does not help.
+
+What does help is not changing the source at all. A `<table>` wraps its cells to
+the pane at any width, and the browser has done that since 1996.
+
+### So the raw region is the cell, not the block
+
+The surface's one rule is "the block under the cursor is raw". A table is the
+one block where that rule is wrong: rendering it is the whole point, and going
+raw on entry hands the width straight back at the moment you want to edit.
+
+`web/js/host.js` grew `tableSlots`, which is where the cells are:
+
+- It reads the **block's text**, not the tree. The block's range is patched
+  between parses but its interior is not, and the interior is exactly what is
+  being typed in; the text is never stale.
+- Slots **tile the row**. Every byte of a table row belongs to exactly one cell,
+  pipes and padding included, because the caret has to be drawable wherever
+  vici puts it. A cell owns the pipe on its left, so `0` and `f|` land inside a
+  cell rather than in a gap between two. That totality is the property the unit
+  tests assert, rather than a second copy of the offsets.
+- It returns **null** when the text is not a table any more, which is what a
+  half-typed row is. The caller then renders the block the ordinary way.
+
+Nothing else moved. No opcode, no package field, no runtime change, no corpus
+change -- the formatter still emits the same pipe table it always did, and `:w`
+re-pads it. The grid is a view.
+
+`<Tab>` and `<S-Tab>` step between cells and skip the delimiter row. Normal mode
+only: vici binds `<Tab>` in insert mode, and the host's four behaviours are the
+ones vici cannot own, not the ones we would spell differently.
+
+### What is still open
+
+Cells that need a newline or a block inside them are the part of Dave's request
+that a pipe table genuinely cannot express, and no amount of rendering changes
+that -- GFM has no syntax for it. That is an HTML table, and an HTML table in
+this repo is an `html_block`, which step 3 made **opaque**: spliced for readers,
+never laid out by the formatter. So the escape hatch is available and its cost
+is known, which is the useful state for a question nobody has had to answer yet.
+
 ## Decided without asking
 
 - **Vanilla ES modules, no build step and no framework**, matching
