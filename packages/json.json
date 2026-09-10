@@ -3,7 +3,7 @@
   "indent": 2,
   "tokens": ["{", "}", "[", "]", ",", ":"],
   "comments": ["comment"],
-  "descend": [],
+  "descend": ["object", "array"],
   "optional_parens": [],
   "precedence": {},
 
@@ -23,7 +23,7 @@
     "object": [
       "when",
       ["count", "t:pair", 0],
-      ["seq", ["tok", "{"], ["tok", "}"]],
+      ["group", ["tok", "{"], ["indent"], ["soft"], ["tok", "}"]],
       [
         "group",
         ["tok", "{"],
@@ -40,7 +40,7 @@
     "array": [
       "when",
       ["count", "named", 0],
-      ["seq", ["tok", "["], ["tok", "]"]],
+      ["group", ["tok", "["], ["indent"], ["soft"], ["tok", "]"]],
       [
         "when",
         ["all", "named", ["number"]],
