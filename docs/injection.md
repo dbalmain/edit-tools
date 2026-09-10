@@ -421,3 +421,15 @@ thematic break, quote, list or second block after the same node are all
 byte-exact. It is blank arithmetic in the runtime, not the injection site, and
 is recorded as a design limit on `html_blocks.md` at both widths rather than
 fixed here; the fix belongs with a slice that can fix `indented_code_block` too.
+
+**The two owners diverge after the first pass, and the difference matters more
+than the shared line does.** On an `html_block` the extra newline is emitted
+once and the file is then a fixed point, which is why `html_blocks.md` passes
+gate 2. On an `indented_code_block` it is cumulative: the block's own extent
+swallows the blank line after it -- the very thing `blank_owner` exists to
+subtract -- so the next pass sees a longer block and adds another.
+`    code\n\n# H\n` measures 15, 16 and 17 bytes over three passes. That is
+the non-idempotence class this project treats as worse than any divergence, so
+the slice that fixes this is not cosmetic. Measured across `~/w` (2026-09-10):
+of 8,444 markdown files, 65 put an indented block immediately before a heading
+and 2 of those actually grow.
