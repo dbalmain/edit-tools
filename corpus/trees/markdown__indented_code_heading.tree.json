@@ -1,0 +1,52 @@
+{
+ "language": "markdown",
+ "source_file": "corpus/src/markdown/indented_code_heading.md",
+ "source": "    code\n\n# H\n",
+ "root": {
+  "type": "document",
+  "start": 0,
+  "end": 14,
+  "children": [
+   {
+    "type": "section",
+    "start": 0,
+    "end": 10,
+    "children": [
+     {
+      "type": "indented_code_block",
+      "start": 0,
+      "end": 10,
+      "text": "    code\n\n"
+     }
+    ]
+   },
+   {
+    "type": "section",
+    "start": 10,
+    "end": 14,
+    "children": [
+     {
+      "type": "atx_heading",
+      "start": 10,
+      "end": 14,
+      "children": [
+       {
+        "type": "atx_h1_marker",
+        "start": 10,
+        "end": 11,
+        "text": "#"
+       },
+       {
+        "type": "inline",
+        "start": 12,
+        "end": 13,
+        "field": "heading_content",
+        "text": "H"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

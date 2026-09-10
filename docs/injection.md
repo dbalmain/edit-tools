@@ -411,25 +411,21 @@ Removing the declaration is loud rather than silent — markdown's dropped-comme
 count falls 40 → 0 and `check_gate3.py` prints "arm inert" — but the ordering is
 load-bearing and was not written down before.
 
-### The defect this surfaced, which is not about HTML
+### The package defect this surfaced, which is not about HTML
 
-`html_blocks.md` is the corpus's first non-comment html block, and it exposed a
-pre-existing runtime bug: **every `blank_owner` node followed by an ATX heading
-gains a newline.** `    code\n\n# H\n` reproduces it on `indented_code_block`,
-declared since long before this round. No other successor triggers it — a
-thematic break, quote, list or second block after the same node are all
-byte-exact. It is blank arithmetic in the runtime, not the injection site, and
-is recorded as a design limit on `html_blocks.md` at both widths rather than
-fixed here; the fix belongs with a slice that can fix `indented_code_block` too.
+`html_blocks.md` was the corpus's first non-comment html block, and it exposed a
+Markdown separator bug. The document rule's `hard_blocks` definition used a
+bare `hard` between top-level sections. Unlike `blank`, `hard` is unconditional
+and does not consult `blank_owner`, so it duplicated a blank line already held
+by the preceding section's last node. An `html_block` gained the duplicate once;
+an `indented_code_block` swallowed it into its next parsed extent and therefore
+grew by one byte on every pass. The exact reproducer is now its own corpus file,
+`indented_code_heading.md`.
 
-**The two owners diverge after the first pass, and the difference matters more
-than the shared line does.** On an `html_block` the extra newline is emitted
-once and the file is then a fixed point, which is why `html_blocks.md` passes
-gate 2. On an `indented_code_block` it is cumulative: the block's own extent
-swallows the blank line after it -- the very thing `blank_owner` exists to
-subtract -- so the next pass sees a longer block and adds another.
-`    code\n\n# H\n` measures 15, 16 and 17 bytes over three passes. That is
-the non-idempotence class this project treats as worse than any divergence, so
-the slice that fixes this is not cosmetic. Measured across `~/w` (2026-09-10):
-of 8,444 markdown files, 65 put an indented block immediately before a heading
-and 2 of those actually grow.
+The correction is package-only: `hard_blocks` uses `blank` capped at one and
+forced around `section`. It retains the intended empty line between sections,
+while the existing `blank_owner` accounting subtracts a line already emitted by
+an `indented_code_block`, `html_block`, or injected `document`. The fixture is a
+fixed point through both runtimes at widths 80 and 40, and `html_blocks.md` now
+agrees with the reference at both widths; its former design-limit reviews were
+retired.
