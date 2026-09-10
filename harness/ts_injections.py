@@ -37,7 +37,8 @@ def config(manifests: dict[str, mf.Manifest], blob_dir: Path) -> dict:
     sites = {
         name: [
             {"node": site.node, "info": site.info,
-             "content": site.content, "guest": site.guest}
+             "content": site.content, "guest": site.guest,
+             "format": site.format}
             for site in m.injections
         ]
         for name, m in sorted(manifests.items())

@@ -78,7 +78,7 @@ function regionFor(node, sites, aliases, source) {
     if (words.length > 0) guest = aliases[words[0]] ?? null;
   }
   if (guest === null) return null;
-  return { node, content, guest };
+  return { node, content, guest, format: site.format };
 }
 
 /** Shift every offset by `by`, and put `field` back where the host had it. */
@@ -155,6 +155,7 @@ export function inject(doc, source, config, blobs) {
       if (!isClean(guestRoot)) continue;
       const spliced = rebase(guestRoot, region.content.start, region.content.field);
       spliced.language = region.guest;
+      if (region.format === false) spliced.opaque = true;
       if (region.content === node) {
         // The node is its own content: replace it in place, keeping identity so
         // the parent's children array does not have to be rewritten.

@@ -26,3 +26,4 @@ python3 -m unittest discover -s harness
 ./harness/score_highlight.py .
 ./harness/probe_tree_interface.py
 ./harness/probe_injection.py
+./harness/probe_injection_parity.py

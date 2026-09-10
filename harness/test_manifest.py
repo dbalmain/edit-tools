@@ -5,6 +5,7 @@ from types import SimpleNamespace
 
 import injection
 import manifest
+import ts_injections
 
 
 BASE = """\
@@ -68,6 +69,25 @@ class InjectionManifestTests(unittest.TestCase):
         self.assertIs(region.content, node)
         self.assertEqual(region.source, b"title: demo")
         self.assertIs(region.guest, parsed)
+
+    def test_non_formatting_site_reaches_javascript_config(self):
+        parsed = self.parse(
+            'injections = [{ node = "html_block", guest = "json", '
+            'format = false }]\n'
+        )
+
+        config = ts_injections.config({parsed.name: parsed}, Path("missing-blobs"))
+
+        self.assertEqual(
+            config["sites"]["json"],
+            [{
+                "node": "html_block",
+                "info": None,
+                "content": None,
+                "guest": "json",
+                "format": False,
+            }],
+        )
 
     def test_info_and_guest_are_rejected(self):
         with self.assertRaisesRegex(
