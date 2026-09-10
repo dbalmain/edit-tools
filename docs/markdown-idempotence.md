@@ -29,13 +29,15 @@ Minimal Markdown input, 29 bytes:
 ```
 ````
 
-Its lengths are 29 bytes in the source, 34 after pass one, and 32 after pass
-two; pass three remains 32. On the first pass the comment is the only named
-content of the inner object. The runtime's comment attachment leaves it
-dangling, while the JSON empty-object rule immediately prints `{}`. The result
-places the comment before the empty object. Reparsing that output attaches the
-comment at the parent level, where it becomes a suffix, removing one line and
-its indentation.
+Before the fix it measured 29 bytes in the source, 34 after pass one and 32
+after pass two, settling at 32; it now measures 29 and then 39 at every pass.
+
+The cause was this. On the first pass the comment is the only named content of
+the inner object, so the runtime's comment attachment left it dangling while
+the JSON empty-object rule printed `{}` immediately, placing the comment
+*before* the empty object. Reparsing that output attached the comment at the
+parent level instead, where it became a suffix -- losing one line and its
+indentation.
 
 This is a JSON package bug. `object` and `array` now declare that leading
 comments descend into them, activating the runtime's existing comment-only
