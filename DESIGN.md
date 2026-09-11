@@ -565,7 +565,10 @@ Named but found `lambda`"_ was a real bug report from the runtime to me during
 development.
 
 Everything else that could destroy code is simply not in the language. There is
-no reordering, no deletion, no quote rewriting, and no way to add one.
+no reordering, no quote rewriting, and no way to add one. The one deletion is
+`["drop", "s"]`, which consumes a redundant token the source already held and
+refuses when that token carries a comment; it cannot remove anything the tree
+did not justify.
 
 ### 3. Comments belong to the runtime, not the package
 
