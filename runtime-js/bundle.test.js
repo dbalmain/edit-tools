@@ -2146,3 +2146,39 @@ test("whitespace declarations require v2, a list of kinds, and disjoint comments
   assert.throws(() => runTrivia(whitespacePkg({ format: "et-doc-rules/1", whitespace_nodes: [] }), file), /requires package format/);
   assert.throws(() => runTrivia(whitespacePkg({ comments: ["gap"] }), file), /must not overlap/);
 });
+
+// Discriminating trees from the 889c3ac repro: a `prose_run` that claims
+// `[0, 16)` over `alpha beta gamma` but may omit children inside it.
+const fs = require("node:fs");
+const path = require("node:path");
+const partitionPkg = (fields = {}) => ({
+  format: "et-doc-rules/3",
+  indent: 2,
+  tokens: [],
+  whitespace_nodes: ["prose_gap"],
+  source_partitions: ["prose_run"],
+  rules: {
+    prose_run: ["fill", "t:prose_atom", ["line"]],
+    prose_atom: ["verbatim"],
+  },
+  ...fields,
+});
+function partitionFixture(name) {
+  return JSON.parse(fs.readFileSync(
+    path.join(__dirname, "..", "testdata", "source_partitions", `${name}.tree.json`),
+    "utf8",
+  ));
+}
+
+test("a complete source partition formats", () => {
+  const { source, root } = partitionFixture("full");
+  assert.equal(runOn(partitionPkg(), source, root, 80), "alpha beta gamma\n");
+});
+
+test("a declared partition with a leading hole refuses", () => {
+  const { source, root } = partitionFixture("hole-lead");
+  assert.throws(
+    () => runOn(partitionPkg(), source, root, 80),
+    (e) => e instanceof Refusal && e.message === "source_partitions `prose_run` has a leading gap",
+  );
+});

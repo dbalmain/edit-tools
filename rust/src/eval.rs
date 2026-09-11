@@ -3719,4 +3719,58 @@ try {{
         assert!(err.to_string().contains("must not overlap"), "{err}");
     }
 
+    // Discriminating trees from the 889c3ac repro: a `prose_run` that claims
+    // `[0, 16)` over `alpha beta gamma` but may omit children inside it.
+    fn partition_pkg(fields: serde_json::Value) -> PackageMap {
+        let mut raw = json!({
+            "format": "et-doc-rules/3",
+            "indent": 2,
+            "tokens": [],
+            "whitespace_nodes": ["prose_gap"],
+            "source_partitions": ["prose_run"],
+            "rules": {
+                "prose_run": ["fill", "t:prose_atom", ["line"]],
+                "prose_atom": ["verbatim"],
+            },
+        });
+        raw.as_object_mut()
+            .expect("formats")
+            .extend(fields.as_object().expect("object").clone());
+        one(serde_json::from_value(raw).expect("partition package parses"))
+    }
+
+    fn partition_fixture(name: &str) -> (String, serde_json::Value) {
+        let path = format!(
+            "{}/../testdata/source_partitions/{name}.tree.json",
+            env!("CARGO_MANIFEST_DIR")
+        );
+        let raw = std::fs::read_to_string(&path).unwrap_or_else(|e| panic!("{path}: {e}"));
+        let tree: serde_json::Value =
+            serde_json::from_str(&raw).unwrap_or_else(|e| panic!("{path}: {e}"));
+        (
+            tree["source"]
+                .as_str()
+                .expect("fixture source")
+                .to_owned(),
+            tree["root"].clone(),
+        )
+    }
+
+    #[test]
+    fn a_complete_source_partition_formats() {
+        let (source, root) = partition_fixture("full");
+        assert_eq!(
+            run_on(&partition_pkg(json!({})), &source, root, 80).expect("formats"),
+            "alpha beta gamma\n"
+        );
+    }
+
+    #[test]
+    fn a_declared_partition_with_a_leading_hole_refuses() {
+        let (source, root) = partition_fixture("hole-lead");
+        let err = run_on(&partition_pkg(json!({})), &source, root, 80)
+            .expect_err("leading hole must refuse");
+        assert_eq!(err.0, "source_partitions `prose_run` has a leading gap");
+    }
+
 }
