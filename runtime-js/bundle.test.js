@@ -2182,3 +2182,137 @@ test("a declared partition with a leading hole refuses", () => {
     (e) => e instanceof Refusal && e.message === "source_partitions `prose_run` has a leading gap",
   );
 });
+
+test("a declared partition with an interior hole refuses", () => {
+  const { source, root } = partitionFixture("hole-mid");
+  assert.throws(
+    () => runOn(partitionPkg(), source, root, 80),
+    (e) => e instanceof Refusal && e.message === "source_partitions `prose_run` has an interior gap",
+  );
+});
+
+const PARTITION_SOURCE = "alpha beta gamma";
+const partitionRoot = (children) => ({ type: "prose_run", start: 0, end: 16, children });
+const proseAtom = (start, end, text) => ({
+  type: "prose_atom",
+  start,
+  end,
+  children: [span("word", start, end, text)],
+});
+const proseGap = (start, end) => span("prose_gap", start, end, " ");
+
+test("a declared partition with a trailing hole refuses", () => {
+  const root = partitionRoot([
+    proseAtom(0, 5, "alpha"),
+    proseGap(5, 6),
+    proseAtom(6, 10, "beta"),
+    proseGap(10, 11),
+  ]);
+  assert.throws(
+    () => runOn(partitionPkg(), PARTITION_SOURCE, root, 80),
+    (e) => e instanceof Refusal && e.message === "source_partitions `prose_run` has a trailing gap",
+  );
+});
+
+test("a declared partition with a zero-width child refuses", () => {
+  const root = partitionRoot([
+    proseAtom(0, 5, "alpha"),
+    span("prose_gap", 5, 5, ""),
+    proseGap(5, 6),
+    proseAtom(6, 10, "beta"),
+    proseGap(10, 11),
+    proseAtom(11, 16, "gamma"),
+  ]);
+  assert.throws(
+    () => runOn(partitionPkg(), PARTITION_SOURCE, root, 80),
+    (e) => e instanceof Refusal && e.message === "source_partitions `prose_run` has a zero-width child",
+  );
+});
+
+test("a childless non-empty declared node refuses", () => {
+  assert.throws(
+    () => runOn(partitionPkg(), PARTITION_SOURCE, partitionRoot([]), 80),
+    (e) =>
+      e instanceof Refusal
+      && e.message === "source_partitions `prose_run` has no children but a non-empty range",
+  );
+});
+
+test("a childless empty declared node formats", () => {
+  assert.equal(
+    runOn(partitionPkg(), "", { type: "prose_run", start: 0, end: 0, children: [] }, 80),
+    "\n",
+  );
+});
+
+test("a one-child declared node that covers its parent formats", () => {
+  assert.equal(
+    runOn(partitionPkg(), PARTITION_SOURCE, partitionRoot([proseAtom(0, 16, "alpha beta gamma")]), 80),
+    "alpha beta gamma\n",
+  );
+});
+
+test("an undeclared node type with the same hole still formats", () => {
+  const { source, root } = partitionFixture("hole-lead");
+  assert.equal(runOn(partitionPkg({ source_partitions: [] }), source, root, 80), "beta gamma\n");
+});
+
+test("whitespace nodes at format 3 still format", () => {
+  const file = triviaFile([["a", "a\n"], ["gap", "\n"], ["b", "b\n"]]);
+  assert.equal(runTrivia(whitespacePkg({ format: "et-doc-rules/3" }), file), "a\n\nb\n");
+});
+
+test("source_partitions require v3, a list of kinds, and disjoint roles", () => {
+  const file = partitionFixture("full");
+  for (const value of [null, "prose_run", {}, [1]]) {
+    assert.throws(() => runOn(partitionPkg({ source_partitions: value }), file.source, file.root, 80), Refusal);
+  }
+  for (const value of [[], ["prose_run"]]) {
+    assert.throws(
+      () => runOn(partitionPkg({
+        format: "et-doc-rules/1",
+        source_partitions: value,
+        whitespace_nodes: undefined,
+      }), file.source, file.root, 80),
+      /`source_partitions` requires package format et-doc-rules\/3/,
+    );
+    assert.throws(
+      () => runOn(partitionPkg({ format: "et-doc-rules/2", source_partitions: value }), file.source, file.root, 80),
+      /`source_partitions` requires package format et-doc-rules\/3/,
+    );
+  }
+  assert.throws(
+    () => runOn(partitionPkg({ comments: ["prose_run"] }), file.source, file.root, 80),
+    /`source_partitions` and `comments` must not overlap/,
+  );
+  assert.throws(
+    () => runOn(partitionPkg({ whitespace_nodes: ["prose_run"] }), file.source, file.root, 80),
+    /`source_partitions` and `whitespace_nodes` must not overlap/,
+  );
+  assert.equal(runOn(partitionPkg({ source_partitions: [] }), file.source, file.root, 80), "alpha beta gamma\n");
+});
+
+test("both runtimes refuse the same corrupt source partition", () => {
+  const { source, root } = partitionFixture("hole-lead");
+  const pkg = partitionPkg();
+  assert.throws(
+    () => runOn(pkg, source, root, 80),
+    (e) => e instanceof Refusal && e.message === "source_partitions `prose_run` has a leading gap",
+  );
+
+  const os = require("node:os");
+  const { spawnSync } = require("node:child_process");
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "source-partitions-"));
+  const treePath = path.join(dir, "tree.json");
+  const pkgDir = path.join(dir, "packages");
+  fs.mkdirSync(pkgDir);
+  fs.writeFileSync(treePath, JSON.stringify({ language: "toy", source, root }));
+  fs.writeFileSync(path.join(pkgDir, "toy.json"), JSON.stringify(pkg));
+  const rust = path.join(__dirname, "..", "rust", "target", "release", "docfmt");
+  const result = spawnSync(rust, [treePath, "80"], {
+    env: { ...process.env, FMT_PACKAGES: pkgDir },
+    encoding: "utf8",
+  });
+  assert.notEqual(result.status, 0, "rust must refuse");
+  assert.equal(result.stderr.trim(), "source_partitions `prose_run` has a leading gap");
+});

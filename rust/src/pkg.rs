@@ -14,6 +14,7 @@ use crate::Refusal;
 
 const FORMAT: &str = "et-doc-rules/1";
 const WHITESPACE_FORMAT: &str = "et-doc-rules/2";
+const SOURCE_PARTITIONS_FORMAT: &str = "et-doc-rules/3";
 const MAX_MACRO_DEPTH: usize = 32;
 const MAX_JSON_INTEGER: f64 = 9_007_199_254_740_991.0;
 /// Ceiling on the two whitespace-shaped header fields. Neither can allocate
@@ -35,13 +36,23 @@ impl TryFrom<String> for PackageFormat {
     type Error = String;
 
     fn try_from(found: String) -> Result<Self, Self::Error> {
-        if found == FORMAT || found == WHITESPACE_FORMAT {
+        if found == FORMAT || found == WHITESPACE_FORMAT || found == SOURCE_PARTITIONS_FORMAT {
             Ok(Self(found))
         } else {
             Err(format!(
-                "unknown package format `{found}`; expected `{FORMAT}` or `{WHITESPACE_FORMAT}`"
+                "unknown package format `{found}`; expected `{FORMAT}` or `{WHITESPACE_FORMAT}` or `{SOURCE_PARTITIONS_FORMAT}`"
             ))
         }
+    }
+}
+
+impl PackageFormat {
+    fn allows_whitespace_nodes(&self) -> bool {
+        self.0 == WHITESPACE_FORMAT || self.0 == SOURCE_PARTITIONS_FORMAT
+    }
+
+    fn allows_source_partitions(&self) -> bool {
+        self.0 == SOURCE_PARTITIONS_FORMAT
     }
 }
 
@@ -135,6 +146,9 @@ pub struct Package {
     /// Declared kinds whose whitespace-only leaves are consumed as source gaps
     /// before comment attachment. Non-leaves and non-whitespace remain items.
     pub whitespace_nodes: HashSet<String>,
+    /// Declared kinds that must be an exact partition of their own source
+    /// range: children abut, cover `[start, end)`, and are never empty.
+    pub source_partitions: HashSet<String>,
     /// Node types that get a balanced paren pair when their layout breaks.
     #[serde(default)]
     pub optional_parens: HashSet<String>,
@@ -180,8 +194,12 @@ struct RawPackage {
     blank_owner: HashSet<String>,
     // Option distinguishes an absent declaration from an explicit empty one:
     // either spelling of the field requires v2, as in the JS loader.
-    #[serde(default, deserialize_with = "present_whitespace_nodes")]
+    #[serde(default, deserialize_with = "present_set")]
     whitespace_nodes: Option<HashSet<String>>,
+    // Same presence-vs-empty split as whitespace_nodes: either spelling of
+    // the field requires v3, as in the JS loader.
+    #[serde(default, deserialize_with = "present_set")]
+    source_partitions: Option<HashSet<String>>,
     #[serde(default)]
     optional_parens: HashSet<String>,
     #[serde(default)]
@@ -201,12 +219,24 @@ impl TryFrom<RawPackage> for Package {
     type Error = String;
 
     fn try_from(raw: RawPackage) -> Result<Self, Self::Error> {
-        if raw.whitespace_nodes.is_some() && raw.format.0 != WHITESPACE_FORMAT {
-            return Err("`whitespace_nodes` requires package format et-doc-rules/2".to_owned());
+        if raw.whitespace_nodes.is_some() && !raw.format.allows_whitespace_nodes() {
+            return Err(
+                "`whitespace_nodes` requires package format et-doc-rules/2 or later".to_owned(),
+            );
+        }
+        if raw.source_partitions.is_some() && !raw.format.allows_source_partitions() {
+            return Err("`source_partitions` requires package format et-doc-rules/3".to_owned());
         }
         let whitespace_nodes = raw.whitespace_nodes.unwrap_or_default();
+        let source_partitions = raw.source_partitions.unwrap_or_default();
         if !whitespace_nodes.is_disjoint(&raw.comments) {
             return Err("`whitespace_nodes` and `comments` must not overlap".to_owned());
+        }
+        if !source_partitions.is_disjoint(&raw.comments) {
+            return Err("`source_partitions` and `comments` must not overlap".to_owned());
+        }
+        if !source_partitions.is_disjoint(&whitespace_nodes) {
+            return Err("`source_partitions` and `whitespace_nodes` must not overlap".to_owned());
         }
         for (name, value) in [
             ("comment_gap", raw.comment_gap),
@@ -253,6 +283,7 @@ impl TryFrom<RawPackage> for Package {
             gap_owner: raw.gap_owner,
             blank_owner: raw.blank_owner,
             whitespace_nodes,
+            source_partitions,
             optional_parens: raw.optional_parens,
             precedence: raw.precedence,
             flatten_fields,
@@ -263,7 +294,7 @@ impl TryFrom<RawPackage> for Package {
     }
 }
 
-fn present_whitespace_nodes<'de, D>(de: D) -> Result<Option<HashSet<String>>, D::Error>
+fn present_set<'de, D>(de: D) -> Result<Option<HashSet<String>>, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
@@ -1199,5 +1230,66 @@ mod tests {
 
         let err = refusal(json!({}), json!({ "list": ["fill", "named"] }));
         assert!(err.contains("`fill` takes 2 operands, got 1"), "{err}");
+    }
+
+    #[test]
+    fn source_partitions_require_v3_a_list_of_kinds_and_disjoint_roles() {
+        let raw = json!({"format": "et-doc-rules/3", "indent": 2, "rules": {}});
+        serde_json::from_value::<Package>(raw.clone()).expect("v3 with no declaration loads");
+        for value in [json!([]), json!(["prose_run"])] {
+            let mut raw = raw.clone();
+            raw["source_partitions"] = value;
+            serde_json::from_value::<Package>(raw).expect("v3 declaration loads");
+        }
+        for format in ["et-doc-rules/1", "et-doc-rules/2"] {
+            for value in [json!([]), json!(["prose_run"])] {
+                let mut raw = raw.clone();
+                raw["format"] = json!(format);
+                raw["source_partitions"] = value;
+                let err = serde_json::from_value::<Package>(raw)
+                    .err()
+                    .expect("below v3 refuses declaration");
+                assert!(
+                    err.to_string()
+                        .contains("`source_partitions` requires package format et-doc-rules/3"),
+                    "{err}"
+                );
+            }
+        }
+        for value in [json!(null), json!("prose_run"), json!({}), json!([1])] {
+            let mut raw = raw.clone();
+            raw["source_partitions"] = value;
+            assert!(serde_json::from_value::<Package>(raw).is_err());
+        }
+        let mut overlap = raw.clone();
+        overlap["source_partitions"] = json!(["gap"]);
+        overlap["comments"] = json!(["gap"]);
+        let err = serde_json::from_value::<Package>(overlap)
+            .err()
+            .expect("comments overlap");
+        assert!(
+            err.to_string()
+                .contains("`source_partitions` and `comments` must not overlap"),
+            "{err}"
+        );
+        let mut overlap = raw;
+        overlap["source_partitions"] = json!(["gap"]);
+        overlap["whitespace_nodes"] = json!(["gap"]);
+        let err = serde_json::from_value::<Package>(overlap)
+            .err()
+            .expect("whitespace overlap");
+        assert!(
+            err.to_string()
+                .contains("`source_partitions` and `whitespace_nodes` must not overlap"),
+            "{err}"
+        );
+    }
+
+    #[test]
+    fn whitespace_nodes_load_at_format_3() {
+        let mut raw = json!({"format": "et-doc-rules/3", "indent": 2, "rules": {}});
+        serde_json::from_value::<Package>(raw.clone()).expect("v3 with no whitespace_nodes");
+        raw["whitespace_nodes"] = json!(["gap"]);
+        serde_json::from_value::<Package>(raw).expect("v3 with whitespace_nodes");
     }
 }

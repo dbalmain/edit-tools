@@ -1,7 +1,8 @@
 # Prose projection: source ranges before layout
 
 Design proposal, 2026-09-10. Codex, gpt-6-astra at medium effort.
-**Nothing in this proposal is a shipped opcode, header or parser feature.**
+**The projection itself is not a shipped opcode, parser feature or package
+declaration.** The `source_partitions` check it asked for is.
 It follows the [measured prose-wrap limit](../corpus/reports/markdown/prose-wrap.md).
 
 ## Decision
@@ -16,7 +17,9 @@ covers its entire source range. Existing source validation checks the children
 that exist, but does not detect an omitted child and the newly exposed gap.
 The preferred extension is a generic source-partition check, declared by the
 package and mirrored in both runtimes, rather than a markdown-only emitter.
-The spelling `source_partitions` below is a proposal, not an accepted schema.
+The `source_partitions` header and package format 3 now exist in both
+runtimes; the projection itself does not. The spelling below is the shipped
+schema for that check. The rest of this document remains a proposal.
 
 This chooses where syntax interpretation belongs. It does not yet settle the
 complete markdown break policy, container prefixes or gate-3 equivalence.
@@ -127,16 +130,18 @@ in the tree. A gap leaf contains only the whitespace the syntax policy admitted.
 
 Repeat the source/range and total-coverage checks at the runtime boundary.
 Producer-only validation would not protect a frozen projection edited or made
-stale afterward. A proposed `source_partitions: ["prose_run"]` package header
-would require these checks **before leaf dispatch, trivia consumption or Doc
-construction**. A declared partition must be an interior node. Other node types
-retain their existing validation behavior. Atom `verbatim` validation remains
-in place; this is an additional coverage condition, not a relaxation of it.
+stale afterward. A `source_partitions: ["prose_run"]` package header requires
+these checks **before leaf dispatch, trivia consumption or Doc construction**.
+A childless
+declared node is accepted only when its range is empty; a childless non-empty
+node refuses. Other node types retain their existing validation behavior. Atom
+`verbatim` validation remains in place; this is an additional coverage
+condition, not a relaxation of it.
 
-This header would require a new package format version (proposed version 3):
-older loaders ignore unknown header fields, so version 2 plus a new field would
-silently omit the guarantee. Both loaders and evaluators must agree on malformed
-declarations and partition refusals. There is no new Doc opcode in this design.
+This header requires package format version 3: older loaders ignore unknown
+header fields, so version 2 plus a new field would silently omit the guarantee.
+Both loaders and evaluators agree on malformed declarations and partition
+refusals. There is no new Doc opcode in this design.
 
 These checks prove byte provenance and coverage, **not markdown semantics**.
 A malicious producer can still label meaningful whitespace as layout, just as

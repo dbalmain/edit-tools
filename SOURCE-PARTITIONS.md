@@ -1,6 +1,6 @@
 # source_partitions / package format 3
 
-Working note for the coverage-check slice. Updated as the work proceeds.
+Working note for the coverage-check slice.
 
 ## Verified against the brief (at `889c3ac`)
 
@@ -14,21 +14,22 @@ Working note for the coverage-check slice. Updated as the work proceeds.
 | Neither loader sets `deny_unknown_fields`                               | Correct. `RawPackage` has no such attribute; JS `buildPackage` copies unknown fields through. DESIGN.md passage matches the brief, including the 2026-08-28 `gap_owner` / `tab_stop` measurement. |
 | `both_runtimes_refuse_the_same_corrupt_verbatim_tree` at `eval.rs:2355` | Correct. JS analogue at `bundle.test.js:1095` shells out to `rust/target/release/docfmt` (needs `./build.sh` first).                                                                              |
 
-Entry-point description is right: the check belongs at the start of
-`node_current` / `nodeCurrent`, ahead of the leaf return and ahead of `Ctx::new`
-/ `new Ctx`.
+Entry-point description is right: the check is at the start of `node_current` /
+`nodeCurrent`, ahead of the leaf return and ahead of `Ctx::new` / `new Ctx`.
 
-## Discriminating cases
+## What changed
 
-Copied from the 889c3ac repro into `testdata/source_partitions/`:
+- `rust/src/pkg.rs`, `runtime-js/bundle.js`: accept `et-doc-rules/3`;
+  `whitespace_nodes` is a floor (v2 or later); `source_partitions` requires v3
+  even as `[]`.
+- `rust/src/eval.rs`, `runtime-js/bundle.js`: coverage check on node entry,
+  after `check_source` / `checkSource` with operation `source_partitions`.
+- Tests in `pkg.rs`, `eval.rs`, `bundle.test.js`. Discriminating hole trees in
+  `testdata/source_partitions/`.
+- `DESIGN.md` and `docs/prose-projection.md` record the shipped header. No file
+  under `packages/` was touched.
 
-- `full.tree.json` — complete partition of `alpha beta gamma`
-- `hole-lead.tree.json` — first atom and gap omitted
-- `hole-mid.tree.json` — interior atom omitted
-
-JS at HEAD formats the two hole trees as `beta gamma` and `alpha gamma`, rc=0.
-
-## Malformed-declaration decision (intent)
+## Malformed-declaration decision
 
 Refuse at load when `source_partitions` is not a list of strings, overlaps
 `comments`, or overlaps `whitespace_nodes`. Duplicates use set semantics (same
@@ -36,15 +37,22 @@ as `whitespace_nodes` / `comments`), not a load error.
 
 Overlap with `whitespace_nodes` is refused because a non-empty trivia leaf is
 childless and so cannot satisfy the partition rule; the combination is a package
-mistake, not a useful dual role.
+mistake, not a useful dual role. Same reasoning as the existing
+`whitespace_nodes`/`comments` disjointness check.
 
-## Test counts at `889c3ac` (before)
+## Test counts
 
-- Rust: 321 tests listed by `cargo test -- --list`
-- `rust/src/pkg.rs`: 17 `#[test]`
-- `rust/src/eval.rs`: 85 `#[test]`
-- JS `bundle.test.js`: 104 `test(` / 104 collected
+| suite                               | before (`889c3ac`) | after |
+| ----------------------------------- | ------------------ | ----- |
+| `cargo test -- --list` (all bins)   | 321                | 347   |
+| `docfmt` tests                      | 132                | 145   |
+| `rust/src/pkg.rs` `#[test]`         | 17                 | 19    |
+| `rust/src/eval.rs` `#[test]`        | 85                 | 96    |
+| `runtime-js/bundle.test.js` `test(` | 104                | 116   |
+
+The +26 on the all-bins list is the +13 `docfmt` tests also compiled into
+`bench_format`.
 
 ## Status
 
-Failing tests first. Production change not yet written.
+Implementation in; unit tests green in both runtimes; `./test.sh` not yet run.

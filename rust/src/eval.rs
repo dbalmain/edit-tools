@@ -81,6 +81,9 @@ impl<'a> Fmt<'a> {
     }
 
     fn node_current(&self, node: &'a Node) -> Result<Doc, Refusal> {
+        if self.pkg.source_partitions.contains(&node.kind) {
+            check_source_partition(node, self.src)?;
+        }
         if let Some(text) = &node.text {
             return Ok(Doc::text(text.as_str()));
         }
@@ -258,7 +261,11 @@ impl<'a> Ctx<'a> {
     fn new(node: &'a Node, f: &Fmt<'a>) -> Result<Ctx<'a>, Refusal> {
         // A declaration cannot hide stale text or overlapping ranges. Only
         // check the subtree where whitespace trivia is actually consumed.
-        if node.children.iter().any(|child| whitespace_node(child, f.pkg)) {
+        if node
+            .children
+            .iter()
+            .any(|child| whitespace_node(child, f.pkg))
+        {
             check_source(node, f.src, "whitespace_nodes")?;
         }
         let parts = split(node, f.src, f.pkg);
@@ -446,10 +453,7 @@ impl<'a> Ctx<'a> {
                 found = true;
                 break;
             }
-            node = current
-                .children
-                .last()
-                .filter(|last| last.end == prev.end);
+            node = current.children.last().filter(|last| last.end == prev.end);
         }
         if !found {
             return 0;
@@ -1088,6 +1092,36 @@ fn check_source(node: &Node, src: &[u8], operation: &str) -> Result<(), Refusal>
     check_source_node(node, src, None, &node.kind, operation)
 }
 
+/// A declared source partition covers `[start, end)` with non-empty, abutting
+/// children. `check_source` still runs: the declaration cannot weaken it.
+fn check_source_partition(node: &Node, src: &[u8]) -> Result<(), Refusal> {
+    check_source(node, src, "source_partitions")?;
+    let fail = |why: &str| Refusal(format!("source_partitions `{}` {why}", node.kind));
+    if node.children.is_empty() {
+        if node.start != node.end {
+            return Err(fail("has no children but a non-empty range"));
+        }
+        return Ok(());
+    }
+    let mut expect = node.start;
+    for (i, child) in node.children.iter().enumerate() {
+        if child.start >= child.end {
+            return Err(fail("has a zero-width child"));
+        }
+        if child.start != expect {
+            if i == 0 {
+                return Err(fail("has a leading gap"));
+            }
+            return Err(fail("has an interior gap"));
+        }
+        expect = child.end;
+    }
+    if expect != node.end {
+        return Err(fail("has a trailing gap"));
+    }
+    Ok(())
+}
+
 fn check_source_node(
     node: &Node,
     src: &[u8],
@@ -1417,7 +1451,9 @@ mod tests {
         });
         let error = run_on(&packages, "#> ", root, 80).expect_err("refuses");
         assert!(
-            error.0.contains("no comment on the marker a `prefix` consumes"),
+            error
+                .0
+                .contains("no comment on the marker a `prefix` consumes"),
             "{}",
             error.0
         );
@@ -3043,9 +3079,8 @@ try {{
                 "name": ["verbatim"]
             }
         });
-        let pkg = || -> Package {
-            serde_json::from_value(raw.clone()).expect("swallow package parses")
-        };
+        let pkg =
+            || -> Package { serde_json::from_value(raw.clone()).expect("swallow package parses") };
         let source = "a\n\nb";
         let tree = |first_end: usize, file_end: usize| {
             json!({
@@ -3141,20 +3176,18 @@ try {{
         // see one source blank. Ownership settles the sibling gap only -- the
         // trailing measure keeps the shallow bound, so the two never claim the
         // same newline.
-        let pkg: PackageMap = one(
-            serde_json::from_value(json!({
-                "format": "et-doc-rules/1",
-                "indent": 2,
-                "tokens": [],
-                "gap_owner": { "file": ["item"] },
-                "rules": {
-                    "file": ["seq", ["each", "named", ["seq", ["hard"], ["blank", 1]]], ["blank", 1]],
-                    "item": ["child", "t:name"],
-                    "name": ["verbatim"]
-                }
-            }))
-            .expect("package parses"),
-        );
+        let pkg: PackageMap = one(serde_json::from_value(json!({
+            "format": "et-doc-rules/1",
+            "indent": 2,
+            "tokens": [],
+            "gap_owner": { "file": ["item"] },
+            "rules": {
+                "file": ["seq", ["each", "named", ["seq", ["hard"], ["blank", 1]]], ["blank", 1]],
+                "item": ["child", "t:name"],
+                "name": ["verbatim"]
+            }
+        }))
+        .expect("package parses"));
         // `b\n\n` swallows its ending and the blank after it. Shallow peels one
         // terminator and stops; deep would reach `b` and count the blank twice.
         let root = json!({
@@ -3410,7 +3443,10 @@ try {{
     #[test]
     fn table_pads_to_the_widest_cell_and_redraws_the_ruler_to_match() {
         let out = run_on(&table_pkg(), WONKY, wonky_table(), 80).expect("formats");
-        assert_eq!(out, "| a      |  bb |\n| :----- | --: |\n| longer |   2 |\n");
+        assert_eq!(
+            out,
+            "| a      |  bb |\n| :----- | --: |\n| longer |   2 |\n"
+        );
     }
 
     #[test]
@@ -3478,7 +3514,6 @@ try {{
         let err = run_on(&pkg, WONKY, root, 80).expect_err("must refuse");
         assert!(err.0.contains("`table` takes every child"), "{}", err.0);
     }
-
 
     // --- blank_owner ------------------------------------------------------
 
@@ -3555,9 +3590,11 @@ try {{
             "blank_owner": "block",
             "rules": { "file": ["each", "named", ["blank", 1]] },
         });
-        assert!(serde_json::from_value::<Package>(raw).is_err(), "must refuse a bare string");
+        assert!(
+            serde_json::from_value::<Package>(raw).is_err(),
+            "must refuse a bare string"
+        );
     }
-
 
     #[test]
     fn table_refuses_an_error_where_a_cell_goes_rather_than_re_emitting_it() {
@@ -3582,11 +3619,7 @@ try {{
             ],
         });
         let err = run_on(&table_pkg(), source, root, 80).expect_err("must refuse");
-        assert!(
-            err.0.contains("unparsed cell at byte 17"),
-            "{}",
-            err.0
-        );
+        assert!(err.0.contains("unparsed cell at byte 17"), "{}", err.0);
     }
 
     // Toy kinds exercise whitespace attachment independently of Markdown.
@@ -3627,7 +3660,10 @@ try {{
             ("gap", "\n\n"),
         ]);
         let pkg = whitespace_pkg(json!({}));
-        assert_eq!(run_on(&pkg, &source, root, 80).expect("formats"), "a\n\nb\n");
+        assert_eq!(
+            run_on(&pkg, &source, root, 80).expect("formats"),
+            "a\n\nb\n"
+        );
         let (source, root) = trivia_file(&[("gap", "\n\n")]);
         assert_eq!(run_on(&pkg, &source, root, 80).expect("formats"), "\n");
     }
@@ -3637,12 +3673,22 @@ try {{
         let (source, root) = trivia_file(&[("a", "a\n"), ("gap", "\n"), ("b", "b\n")]);
         let rules = json!({"file": ["each", "named", ["hard"]]});
         let pkg = whitespace_pkg(json!({"rules": rules}));
-        assert_eq!(run_on(&pkg, &source, root.clone(), 80).expect("formats"), "a\n\nb\n");
+        assert_eq!(
+            run_on(&pkg, &source, root.clone(), 80).expect("formats"),
+            "a\n\nb\n"
+        );
         let pkg = whitespace_pkg(json!({"rules": rules, "whitespace_nodes": []}));
-        assert_eq!(run_on(&pkg, &source, root, 80).expect("formats"), "a\n\n\n\nb\n");
+        assert_eq!(
+            run_on(&pkg, &source, root, 80).expect("formats"),
+            "a\n\n\n\nb\n"
+        );
         let (source, root) = trivia_file(&[("a", "a\n"), ("gap", ""), ("b", "b\n")]);
-        let pkg = whitespace_pkg(json!({"rules": {"file": ["each", "named", ["blank", 1, ["a"]]]}}));
-        assert_eq!(run_on(&pkg, &source, root, 80).expect("formats"), "a\n\nb\n");
+        let pkg =
+            whitespace_pkg(json!({"rules": {"file": ["each", "named", ["blank", 1, ["a"]]]}}));
+        assert_eq!(
+            run_on(&pkg, &source, root, 80).expect("formats"),
+            "a\n\nb\n"
+        );
     }
 
     #[test]
@@ -3652,12 +3698,18 @@ try {{
         assert_eq!(run_on(&pkg, &source, root, 80).expect("formats"), source);
         let (source, mut root) = trivia_file(&[("gap", " \n")]);
         root["children"][0]["children"] = json!([span("content", 0, 2, " \n")]);
-        root["children"][0].as_object_mut().expect("object").remove("text");
+        root["children"][0]
+            .as_object_mut()
+            .expect("object")
+            .remove("text");
         assert_eq!(run_on(&pkg, &source, root, 80).expect("formats"), " \n");
         let (source, mut root) = trivia_file(&[("a", "a\n"), ("gap", "\n"), ("b", "b\n")]);
         root["children"][1]["language"] = json!("toy");
         let pkg = whitespace_pkg(json!({"rules": {"file": ["each", "named", ["hard"]]}}));
-        assert_eq!(run_on(&pkg, &source, root, 80).expect("formats"), "a\n\n\n\nb\n");
+        assert_eq!(
+            run_on(&pkg, &source, root, 80).expect("formats"),
+            "a\n\n\n\nb\n"
+        );
     }
 
     #[test]
@@ -3748,10 +3800,7 @@ try {{
         let tree: serde_json::Value =
             serde_json::from_str(&raw).unwrap_or_else(|e| panic!("{path}: {e}"));
         (
-            tree["source"]
-                .as_str()
-                .expect("fixture source")
-                .to_owned(),
+            tree["source"].as_str().expect("fixture source").to_owned(),
             tree["root"].clone(),
         )
     }
@@ -3773,4 +3822,169 @@ try {{
         assert_eq!(err.0, "source_partitions `prose_run` has a leading gap");
     }
 
+    #[test]
+    fn a_declared_partition_with_an_interior_hole_refuses() {
+        let (source, root) = partition_fixture("hole-mid");
+        let err = run_on(&partition_pkg(json!({})), &source, root, 80)
+            .expect_err("interior hole must refuse");
+        assert_eq!(err.0, "source_partitions `prose_run` has an interior gap");
+    }
+
+    fn partition_source() -> &'static str {
+        "alpha beta gamma"
+    }
+
+    fn partition_root(children: Vec<serde_json::Value>) -> serde_json::Value {
+        json!({"type": "prose_run", "start": 0, "end": 16, "children": children})
+    }
+
+    fn prose_atom(start: usize, end: usize, text: &str) -> serde_json::Value {
+        json!({
+            "type": "prose_atom",
+            "start": start,
+            "end": end,
+            "children": [span("word", start, end, text)],
+        })
+    }
+
+    fn prose_gap(start: usize, end: usize) -> serde_json::Value {
+        span("prose_gap", start, end, " ")
+    }
+
+    #[test]
+    fn a_declared_partition_with_a_trailing_hole_refuses() {
+        let root = partition_root(vec![
+            prose_atom(0, 5, "alpha"),
+            prose_gap(5, 6),
+            prose_atom(6, 10, "beta"),
+            prose_gap(10, 11),
+        ]);
+        let err = run_on(&partition_pkg(json!({})), partition_source(), root, 80)
+            .expect_err("trailing hole must refuse");
+        assert_eq!(err.0, "source_partitions `prose_run` has a trailing gap");
+    }
+
+    #[test]
+    fn a_declared_partition_with_a_zero_width_child_refuses() {
+        let root = partition_root(vec![
+            prose_atom(0, 5, "alpha"),
+            span("prose_gap", 5, 5, ""),
+            prose_gap(5, 6),
+            prose_atom(6, 10, "beta"),
+            prose_gap(10, 11),
+            prose_atom(11, 16, "gamma"),
+        ]);
+        let err = run_on(&partition_pkg(json!({})), partition_source(), root, 80)
+            .expect_err("zero-width child must refuse");
+        assert_eq!(
+            err.0,
+            "source_partitions `prose_run` has a zero-width child"
+        );
+    }
+
+    #[test]
+    fn a_childless_non_empty_declared_node_refuses() {
+        let root = partition_root(vec![]);
+        let err = run_on(&partition_pkg(json!({})), partition_source(), root, 80)
+            .expect_err("childless non-empty must refuse");
+        assert_eq!(
+            err.0,
+            "source_partitions `prose_run` has no children but a non-empty range"
+        );
+    }
+
+    #[test]
+    fn a_childless_empty_declared_node_formats() {
+        let root = json!({"type": "prose_run", "start": 0, "end": 0, "children": []});
+        assert_eq!(
+            run_on(&partition_pkg(json!({})), "", root, 80).expect("formats"),
+            "\n"
+        );
+    }
+
+    #[test]
+    fn a_one_child_declared_node_that_covers_its_parent_formats() {
+        let root = partition_root(vec![prose_atom(0, 16, "alpha beta gamma")]);
+        assert_eq!(
+            run_on(&partition_pkg(json!({})), partition_source(), root, 80).expect("formats"),
+            "alpha beta gamma\n"
+        );
+    }
+
+    #[test]
+    fn an_undeclared_node_type_with_the_same_hole_still_formats() {
+        let (source, root) = partition_fixture("hole-lead");
+        assert_eq!(
+            run_on(
+                &partition_pkg(json!({"source_partitions": []})),
+                &source,
+                root,
+                80
+            )
+            .expect("opt-in"),
+            "beta gamma\n"
+        );
+    }
+
+    #[test]
+    fn whitespace_nodes_at_format_3_still_format() {
+        let (source, root) = trivia_file(&[("a", "a\n"), ("gap", "\n"), ("b", "b\n")]);
+        let pkg = whitespace_pkg(json!({"format": "et-doc-rules/3"}));
+        assert_eq!(
+            run_on(&pkg, &source, root, 80).expect("formats"),
+            "a\n\nb\n"
+        );
+    }
+
+    #[test]
+    fn both_runtimes_refuse_the_same_corrupt_source_partition() {
+        let pkg_json = json!({
+            "format": "et-doc-rules/3",
+            "indent": 2,
+            "tokens": [],
+            "whitespace_nodes": ["prose_gap"],
+            "source_partitions": ["prose_run"],
+            "rules": {
+                "prose_run": ["fill", "t:prose_atom", ["line"]],
+                "prose_atom": ["verbatim"],
+            },
+        });
+        let pkg: Package =
+            serde_json::from_value(pkg_json.clone()).expect("partition package parses");
+        let (source, root) = partition_fixture("hole-lead");
+        let rust_err = run_on(&one(pkg), &source, root.clone(), 80).expect_err("rust must refuse");
+        assert_eq!(
+            rust_err.0,
+            "source_partitions `prose_run` has a leading gap"
+        );
+
+        let bundle = concat!(env!("CARGO_MANIFEST_DIR"), "/../runtime-js/bundle.js");
+        let script = format!(
+            r#"
+const {{ format }} = require({bundle:?});
+const tree = {{ language: "toy", source: {source}, root: {root} }};
+const pkg = {pkg};
+try {{
+  format(tree, new Map([["toy", pkg]]), 80);
+  console.error("js accepted a corrupt source partition");
+  process.exit(2);
+}} catch (e) {{
+  if (e.message !== "source_partitions `prose_run` has a leading gap") {{
+    console.error(e.message);
+    process.exit(3);
+  }}
+}}
+"#,
+            bundle = bundle,
+            source = serde_json::to_string(&source).expect("source json"),
+            root = root,
+            pkg = pkg_json,
+        );
+        let status = std::process::Command::new("node")
+            .arg("-e")
+            .arg(script)
+            .status()
+            .expect("spawn node");
+        assert!(status.success(), "js runtime disagreed (exit {status})");
+    }
 }
