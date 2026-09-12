@@ -15,11 +15,12 @@ from test_check_gate3 import Node, make_manifest
 
 
 def signature_of(node, source: str, layout: frozenset[str] = frozenset(),
-                 whitespace: frozenset[str] = frozenset()):
+                 whitespace: frozenset[str] = frozenset(),
+                 prose: frozenset[str] = frozenset()):
     manifest = make_manifest(Path("/nonexistent/x.toml"), "x", "default")
     manifest = replace(manifest, whitespace_nodes=whitespace)
     return gate3._generic(
-        node, source.encode(), manifest, {}, frozenset(), {}, layout
+        node, source.encode(), manifest, {}, frozenset(), {}, layout, prose
     )
 
 
@@ -143,6 +144,57 @@ class LayoutLeafTests(unittest.TestCase):
         tight = signature_of(Node("number", 0, 1), "1")
         padded = signature_of(Node("number", 0, 4), "1   ")
         self.assertNotEqual(tight, padded)
+
+
+class ProseNodeTests(unittest.TestCase):
+    PROSE = frozenset({"inline"})
+
+    def inline(self, source: str, children=()):
+        return signature_of(
+            Node("inline", 0, len(source.encode()), children),
+            source,
+            prose=self.PROSE,
+        )
+
+    def test_soft_whitespace_inside_plain_prose_is_layout(self):
+        self.assertEqual(self.inline("alpha beta"), self.inline("alpha\n  beta"))
+        self.assertEqual(self.inline(" alpha beta "), self.inline("alpha beta"))
+
+    def test_soft_whitespace_in_an_untokenized_token_gap_is_layout(self):
+        flat = "alpha *beta gamma* omega"
+        broken = "alpha *beta\n  gamma* omega"
+        flat_stars = (Node("*", 6, 7, named=False), Node("*", 17, 18, named=False))
+        broken_stars = (
+            Node("*", 6, 7, named=False),
+            Node("*", 19, 20, named=False),
+        )
+        self.assertEqual(self.inline(flat, flat_stars), self.inline(broken, broken_stars))
+
+    def test_words_and_tokens_remain_exact(self):
+        self.assertNotEqual(self.inline("alpha beta"), self.inline("alpha"))
+        self.assertNotEqual(
+            self.inline("alpha *beta*", (Node("*", 6, 7, named=False),
+                                         Node("*", 11, 12, named=False))),
+            self.inline("alpha _beta_", (Node("_", 6, 7, named=False),
+                                         Node("_", 11, 12, named=False))),
+        )
+
+    def test_two_space_hard_break_is_not_a_soft_break(self):
+        self.assertNotEqual(self.inline("alpha  \nbeta"), self.inline("alpha\nbeta"))
+
+    def test_nonbreaking_space_is_content(self):
+        self.assertNotEqual(self.inline("alpha\u00a0beta"), self.inline("alpha beta"))
+
+    def test_backslash_hard_break_is_not_backslash_space(self):
+        newline = "alpha\\\nbeta"
+        spaced = "alpha\\ beta"
+        slash = (Node("\\", 5, 6, named=False),)
+        self.assertNotEqual(self.inline(newline, slash), self.inline(spaced, slash))
+
+    def test_an_undeclared_node_keeps_soft_whitespace_exact(self):
+        plain = signature_of(Node("inline", 0, 10), "alpha beta")
+        broken = signature_of(Node("inline", 0, 10), "alpha\nbeta")
+        self.assertNotEqual(plain, broken)
 
 
 class WhitespaceNodeTests(unittest.TestCase):

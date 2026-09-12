@@ -35,8 +35,11 @@ failure, because it has tested no adversarial input at all.
 **3. The gate must still reject destruction.** A gate that accepts everything
 passes checks 1 and 2 perfectly. So each language's reference output is mutated
 in two ways a real formatter bug would produce -- a comment dropped, a token
-dropped -- and the gate must reject both. Without this, gate 3 could rot into a
-no-op and every other check here would keep saying PASS.
+dropped -- and the gate must reject both. A language that declares prose nodes
+gets a third mutation: a word dropped specifically from an untokenized prose
+gap. Producing zero prose candidates is a failure, not a silent pass. Without
+this, gate 3 could rot into a no-op and every other check here would keep saying
+PASS.
 
 The injection fixture adds the adversarial shape the single-language mutations
 cannot cover: valid guest-only reformatting must pass, while changed guest
@@ -112,6 +115,32 @@ def drop_a_token(text: str, parser) -> str | None:
         return None
     b = text.encode()
     return (b[: last.start_byte] + b[last.end_byte :]).decode()
+
+
+_PROSE_WORD = re.compile(rb"[A-Za-z][A-Za-z0-9]*(?:[-'][A-Za-z0-9]+)*")
+
+
+def drop_a_prose_word(text: str, parser, prose_nodes: frozenset[str]) -> str | None:
+    """Remove one word from a retained gap in a declared prose node."""
+    source = text.encode()
+    root = parser.parse(source).root_node
+    stack = [root]
+    while stack:
+        node = stack.pop()
+        stack.extend(reversed(node.children))
+        if node.type not in prose_nodes or _named_children(node):
+            continue
+        cursor = node.start_byte
+        gaps = []
+        for child in node.children:
+            gaps.append((cursor, child.start_byte))
+            cursor = child.end_byte
+        gaps.append((cursor, node.end_byte))
+        for start, end in gaps:
+            match = _PROSE_WORD.search(source, start, end)
+            if match is not None:
+                return (source[: match.start()] + source[match.end() :]).decode()
+    return None
 
 
 # --------------------------------------------------------------------------
@@ -501,12 +530,18 @@ def main() -> int:
                         )
 
             # --- 3. the gate must still reject destruction
-            for what, mutate in (("a dropped comment", drop_a_comment),
-                                 ("a dropped token", drop_a_token)):
-                if mutate is drop_a_comment:
-                    broken = mutate(formatted, parser, m.comment_kinds)
-                else:
-                    broken = mutate(formatted, parser)
+            mutations = (
+                (
+                    "a dropped comment",
+                    drop_a_comment(formatted, parser, m.comment_kinds),
+                ),
+                ("a dropped token", drop_a_token(formatted, parser)),
+                (
+                    "a dropped prose word",
+                    drop_a_prose_word(formatted, parser, m.prose_nodes),
+                ),
+            )
+            for what, broken in mutations:
                 if broken is None or broken == formatted:
                     continue
                 destructive += 1
@@ -526,8 +561,15 @@ def main() -> int:
         print(
             f"  destructive {name}: "
             f"dropped-comment={destructive_for_language['a dropped comment']}, "
-            f"dropped-token={destructive_for_language['a dropped token']}"
+            f"dropped-token={destructive_for_language['a dropped token']}, "
+            f"dropped-prose-word="
+            f"{destructive_for_language['a dropped prose word']}"
         )
+        if m.prose_nodes and not destructive_for_language["a dropped prose word"]:
+            failures.append(
+                f"{name}: ZERO dropped-prose-word mutations -- prose narrowing "
+                f"NOT TESTED"
+            )
         counts = useful_counts[name]
         total = sum(counts.values())
         families = ", ".join(

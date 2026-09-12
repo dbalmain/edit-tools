@@ -40,7 +40,8 @@ _REQUIRED = ("name", "extensions", "grammar", "grammar_module", "reference",
              "injection_aliases")
 _KNOWN = set(_REQUIRED) | {"grammar_symbol", "gate3_requires",
                            "transparent_wrappers", "equivalent_kinds",
-                           "comment_kinds", "layout_leaves", "whitespace_nodes", "injections",
+                           "comment_kinds", "layout_leaves", "whitespace_nodes",
+                           "prose_nodes", "injections",
                            "incomparable"}
 
 
@@ -81,6 +82,7 @@ class Manifest:
     comment_kinds: tuple[str, ...] = ()  # non-extra node kinds that hold comments
     layout_leaves: frozenset[str] = frozenset()  # leaf kinds whose text is layout
     whitespace_nodes: frozenset[str] = frozenset()  # whitespace-only leaves that are gaps
+    prose_nodes: frozenset[str] = frozenset()  # leaf-shaped kinds with soft prose gaps
 
     @property
     def waives_width(self) -> bool:
@@ -293,6 +295,13 @@ def parse(path: Path) -> Manifest:
     comment_kinds = _comment_kinds(raw, path)
     if set(whitespace_nodes).intersection(comment_kinds):
         raise ManifestError(f"{path.name}: `whitespace_nodes` and `comment_kinds` must not overlap")
+    prose_nodes = raw.get("prose_nodes", [])
+    if not isinstance(prose_nodes, list) or not all(
+        isinstance(kind, str) and kind for kind in prose_nodes
+    ):
+        raise ManifestError(
+            f"{path.name}: `prose_nodes` must be a list of non-empty node kinds"
+        )
 
     return Manifest(
         name=name,
@@ -315,6 +324,7 @@ def parse(path: Path) -> Manifest:
         comment_kinds=comment_kinds,
         layout_leaves=frozenset(raw.get("layout_leaves", [])),
         whitespace_nodes=frozenset(whitespace_nodes),
+        prose_nodes=frozenset(prose_nodes),
     )
 
 

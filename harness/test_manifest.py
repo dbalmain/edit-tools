@@ -149,6 +149,20 @@ class TriviaKindsManifestTests(unittest.TestCase):
         with self.assertRaisesRegex(manifest.ManifestError, "must not overlap"):
             self.parse('whitespace_nodes = ["comment"]\ncomment_kinds = ["comment"]\n')
 
+    def test_prose_nodes_default_to_empty_and_preserve_declarations(self):
+        self.assertEqual(self.parse().prose_nodes, frozenset())
+        self.assertEqual(
+            self.parse('prose_nodes = ["inline"]\n').prose_nodes,
+            frozenset({"inline"}),
+        )
+
+    def test_prose_nodes_require_a_list_of_non_empty_kinds(self):
+        for value in ('"inline"', '[1]', '[""]', '{}'):
+            with self.assertRaisesRegex(
+                manifest.ManifestError, "list of non-empty node kinds"
+            ):
+                self.parse(f"prose_nodes = {value}\n")
+
 
 class IncomparableManifestTests(unittest.TestCase):
     """A table keyed by filename, so a reason cannot drift off its file."""
