@@ -16,7 +16,7 @@ emit and the bytes differ). SOFT (both refuse, different exit codes) is
 reported and does not fail. COSMETIC (same exit, different message) is one
 summary line.
 
-Covers the 12 format-path source-byte sites plus the tree loader. It cannot
+Covers the 13 format-path source-byte sites plus the tree loader. It cannot
 reach the highlighter CLI, printer/aligner IR slices, or cursor/map lookups.
 
 Does not replace or wrap any existing gate.
@@ -75,6 +75,20 @@ TOY = {
         "blank_root": ["each", "named", ["seq", ["hard"], ["blank", 1]]],
         "owned": ["each", "t:item", ["seq", ["hard"], ["blank", 1]]],
         "item": ["child", "named"],
+    },
+}
+
+# Separate from TOY so existing v1 cases do not change behaviour. language
+# "prose" loads this file from the same temp packages dir.
+PROSE = {
+    "format": "et-doc-rules/3",
+    "indent": 2,
+    "tokens": [],
+    "whitespace_nodes": ["prose_gap"],
+    "source_partitions": ["prose_run"],
+    "rules": {
+        "prose_run": ["fill", "t:prose_atom", ["line"]],
+        "prose_atom": ["verbatim"],
     },
 }
 
@@ -717,6 +731,96 @@ def newlines_cases() -> Iterator[Case]:
     yield Case("deep_end", "reversed", source, owned(0))  # empty deepest leaf
 
 
+def partition_cases() -> Iterator[Case]:
+    """Site 13: source_partitions walks child ranges at node entry."""
+    source = "alpha beta gamma"
+    nlen = nbytes(source)
+
+    def atom(start: int, end: int, text: str) -> dict:
+        return n(
+            "prose_atom",
+            start,
+            end,
+            children=[n("word", start, end, text=text)],
+        )
+
+    def gap(start: int, end: int, text: str = " ") -> dict:
+        return n("prose_gap", start, end, text=text)
+
+    def run(*children: dict, start: int = 0, end: int | None = None) -> dict:
+        stop = nlen if end is None else end
+        return n("prose_run", start, stop, children=list(children))
+
+    def case(name: str, root: dict, src: str = source, *, well_formed: bool = False) -> Case:
+        return Case(
+            "partition",
+            name,
+            src,
+            root,
+            language="prose",
+            well_formed=well_formed,
+        )
+
+    yield case(
+        "well_formed",
+        run(
+            atom(0, 5, "alpha"),
+            gap(5, 6),
+            atom(6, 10, "beta"),
+            gap(10, 11),
+            atom(11, 16, "gamma"),
+        ),
+        well_formed=True,
+    )
+    yield case(
+        "leading_gap",
+        run(
+            atom(6, 10, "beta"),
+            gap(10, 11),
+            atom(11, 16, "gamma"),
+        ),
+    )
+    yield case(
+        "interior_gap",
+        run(
+            atom(0, 5, "alpha"),
+            gap(5, 6),
+            atom(11, 16, "gamma"),
+        ),
+    )
+    yield case(
+        "trailing_gap",
+        run(
+            atom(0, 5, "alpha"),
+            gap(5, 6),
+            atom(6, 10, "beta"),
+            gap(10, 11),
+        ),
+    )
+    yield case(
+        "zero_width",
+        run(
+            atom(0, 5, "alpha"),
+            gap(5, 5, ""),
+            gap(5, 6),
+            atom(6, 10, "beta"),
+            gap(10, 11),
+            atom(11, 16, "gamma"),
+        ),
+    )
+    yield case("childless_nonempty", run())
+    yield case(
+        "childless_empty",
+        n("prose_run", 0, 0, children=[]),
+        "",
+        well_formed=True,
+    )
+    yield case(
+        "child_past_parent",
+        run(atom(0, nlen, source), end=10),
+    )
+
+
 def loader_cases() -> Iterator[Case]:
     """JSON start/end that Rust usize rejects and JS ToInteger / subarray accept."""
     source = ASCII
@@ -829,6 +933,7 @@ def all_cases() -> list[Case]:
         multiline_cases,
         comment_cases,
         newlines_cases,
+        partition_cases,
         loader_cases,
         shipped_cases,
     ):
@@ -872,7 +977,7 @@ def preview_range(root: dict) -> str:
             f"gap {kids[0].get('type')}.end={kids[0].get('end')!r} .. "
             f"{kids[1].get('type')}.start={kids[1].get('start')!r}"
         )
-    if kind in {"srcgap_open", "srcgap_close", "multi_root"}:
+    if kind in {"srcgap_open", "srcgap_close", "multi_root", "prose_run"}:
         return f"{kind} start={root.get('start')!r} end={root.get('end')!r}"
     stack = [root]
     while stack:
@@ -958,6 +1063,7 @@ def main() -> int:
         packages = tmp_path / "packages"
         packages.mkdir()
         (packages / "toy.json").write_text(json.dumps(TOY), encoding="utf-8")
+        (packages / "prose.json").write_text(json.dumps(PROSE), encoding="utf-8")
         trees = tmp_path / "trees"
         trees.mkdir()
         for i, case in enumerate(cases):
