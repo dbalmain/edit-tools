@@ -46,7 +46,7 @@ equivalent_kinds = []
 # caught, because gate 3 reparses: it either fails to parse or changes the
 # named tree. See FINDINGS.md entry 5.
 # rustfmt adds a trailing `,` to a broken list.
-optional_separators = [","]
+optional_tokens = [","]
 
 [incomparable]
 "leading_pipes.rs" = "rustfmt deletes the leading `|` of each match arm (token deletion)"

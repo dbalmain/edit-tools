@@ -94,7 +94,7 @@ equivalent_kinds = []
 # caught, because gate 3 reparses: it either fails to parse or changes the
 # named tree. See FINDINGS.md entry 5.
 # the reference drops the redundant `;` between statements it puts on separate lines.
-optional_separators = [";"]
+optional_tokens = [";"]
 
 [incomparable]
 "block_conversion.rb" = "syntax_tree rewrites `{…}` to `do…end` (and the reverse) by whether the body fits at the target width; gate 3 rejects the named-node change `block` → `do_block`"

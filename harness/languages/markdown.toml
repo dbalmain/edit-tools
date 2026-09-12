@@ -79,7 +79,7 @@ whitespace_nodes = ["section"]
 # gate compares the cells and their count, which it still does exactly, rather
 # than the row's outer punctuation.
 
-optional_separators = ["|"]
+optional_tokens = ["|"]
 
 # The block grammar has no extras. HTML comments are `html_block` nodes; they
 # remain structurally checked and also feed gate 3's universal comment layer.

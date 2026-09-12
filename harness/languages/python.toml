@@ -41,5 +41,9 @@ equivalent_kinds = [["pattern_list", "tuple_pattern"]]
 # caught, because gate 3 reparses: it either fails to parse or changes the
 # named tree. See FINDINGS.md entry 5.
 # black's magic trailing comma: a broken bracket gains a `,` the source did not have.
-optional_separators = [","]
+# black also parenthesises a region it breaks -- the `paren` sanctioned
+# mutation. Those brackets are anonymous children here; a bracket that
+# changes meaning becomes a named `parenthesized_expression` instead, so
+# the named tree still catches one that is not merely layout.
+optional_tokens = [",", "(", ")"]
 

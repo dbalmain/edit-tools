@@ -94,7 +94,7 @@ equivalent_kinds = []
 # ktfmt adds a trailing `,` to a broken argument or parameter list, and drops
 # the redundant `;` between statements it puts on separate lines (Kotlin leaves
 # that `;` untokenised, so it reaches the gate as a gap rather than a child).
-optional_separators = [",", ";"]
+optional_tokens = [",", ";"]
 
 [incomparable]
 "imports.kt" = "ktfmt sorts imports and has no flag to stop it"

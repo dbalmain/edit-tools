@@ -40,7 +40,7 @@ _REQUIRED = ("name", "extensions", "grammar", "grammar_module", "reference",
              "injection_aliases")
 _KNOWN = set(_REQUIRED) | {"grammar_symbol", "gate3_requires",
                            "transparent_wrappers", "equivalent_kinds",
-                           "comment_kinds", "layout_leaves", "whitespace_nodes", "optional_separators",
+                           "comment_kinds", "layout_leaves", "whitespace_nodes", "optional_tokens", "equivalent_tokens",
                            "injections",
                            "incomparable"}
 
@@ -82,7 +82,18 @@ class Manifest:
     comment_kinds: tuple[str, ...] = ()  # non-extra node kinds that hold comments
     layout_leaves: frozenset[str] = frozenset()  # leaf kinds whose text is layout
     whitespace_nodes: frozenset[str] = frozenset()  # whitespace-only leaves that are gaps
-    optional_separators: frozenset[str] = frozenset()  # anonymous tokens a formatter may add or drop
+    optional_tokens: frozenset[str] = frozenset()  # anonymous tokens a reference may add or drop
+    equivalent_tokens: tuple[frozenset[str], ...] = ()  # anonymous spellings that mean the same
+
+    @property
+    def token_canon(self) -> dict[str, str]:
+        """Anonymous token spelling -> the group's representative."""
+        out: dict[str, str] = {}
+        for group in self.equivalent_tokens:
+            rep = min(group)
+            for tok in group:
+                out[tok] = rep
+        return out
 
     @property
     def waives_width(self) -> bool:
@@ -292,14 +303,24 @@ def parse(path: Path) -> Manifest:
         isinstance(kind, str) for kind in whitespace_nodes
     ):
         raise ManifestError(f"{path.name}: `whitespace_nodes` must be a list of node kinds")
-    separators = raw.get("optional_separators", [])
+    separators = raw.get("optional_tokens", [])
     if not isinstance(separators, list) or not all(
         isinstance(tok, str) and tok and not tok.strip() == "" for tok in separators
     ):
         raise ManifestError(
-            f"{path.name}: `optional_separators` must be a list of non-empty "
+            f"{path.name}: `optional_tokens` must be a list of non-empty "
             f"anonymous token spellings like [\",\", \";\"]"
         )
+    tok_equiv = []
+    for group in raw.get("equivalent_tokens", []):
+        if not isinstance(group, list) or len(group) < 2 or not all(
+            isinstance(tok, str) and tok for tok in group
+        ):
+            raise ManifestError(
+                f"{path.name}: each `equivalent_tokens` entry must be a list of "
+                f"two or more anonymous token spellings"
+            )
+        tok_equiv.append(frozenset(group))
     comment_kinds = _comment_kinds(raw, path)
     if set(whitespace_nodes).intersection(comment_kinds):
         raise ManifestError(f"{path.name}: `whitespace_nodes` and `comment_kinds` must not overlap")
@@ -323,7 +344,8 @@ def parse(path: Path) -> Manifest:
         incomparable=_incomparable(raw, name, extensions, path),
         path=path,
         comment_kinds=comment_kinds,
-        optional_separators=frozenset(separators),
+        optional_tokens=frozenset(separators),
+        equivalent_tokens=tuple(tok_equiv),
         layout_leaves=frozenset(raw.get("layout_leaves", [])),
         whitespace_nodes=frozenset(whitespace_nodes),
     )

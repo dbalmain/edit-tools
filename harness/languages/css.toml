@@ -53,5 +53,11 @@ equivalent_kinds = []
 # caught, because gate 3 reparses: it either fails to parse or changes the
 # named tree. See FINDINGS.md entry 5.
 # prettier adds the optional final `;` to a declaration block.
-optional_separators = [";"]
+optional_tokens = [";"]
+
+# prettier rewrites a single-quoted string to double quotes. The quote is an
+# anonymous child of `string_value`, so comparing anonymous tokens rejects
+# the reference's own correct output without this. The string's contents,
+# and the fact that it is quoted at all, are still compared exactly.
+equivalent_tokens = [["'", "\""]]
 

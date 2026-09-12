@@ -81,5 +81,8 @@ equivalent_kinds = []
 # caught, because gate 3 reparses: it either fails to parse or changes the
 # named tree. See FINDINGS.md entry 5.
 # prettier adds a trailing `,` to a broken flow collection.
-optional_separators = [","]
+# prettier also drops the explicit-key `?` where the key is short enough to
+# be implicit. FINDINGS entry 5's stage-B sweep named this as the fourth
+# member of the tail; the mapping pair keeps both its named children.
+optional_tokens = [",", "?"]
 

@@ -105,6 +105,13 @@ equivalent_kinds = []
 # (`(sort, nub, foldl')` -> `(foldl', nub, sort)`, `(sort, nub, sort)` ->
 # `(nub, sort)`). That is the same reorder class as (1); every corpus import
 # list is written already-sorted and duplicate-free so no file depends on it.
+# Anonymous tokens are compared by default (gate3.py, `_generic`). Haskell
+# writes a `do` block either with explicit `{ ; }` or by layout, and the
+# reference rewrites the first form into the second. The block keeps every
+# named statement child, and a brace removal that changed the grouping
+# would reparse differently, so the reparse still carries the proof.
+optional_tokens = ["{", "}"]
+
 [incomparable]
 "imports.hs" = "ormolu sorts import declarations; gate 3 rejects with leaf text 'Data' became 'Control'"
 "import_merging.hs" = "ormolu collapses repeated imports of one module (duplicate dropped, lists unioned); gate 3 rejects with 4 named children became 2"

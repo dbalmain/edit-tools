@@ -71,5 +71,5 @@ equivalent_kinds = []
 # caught, because gate 3 reparses: it either fails to parse or changes the
 # named tree. See FINDINGS.md entry 5.
 # gofmt drops the redundant `;` between statements it puts on separate lines, and adds a trailing `,` to a composite literal it breaks.
-optional_separators = [",", ";"]
+optional_tokens = [",", ";"]
 

@@ -256,7 +256,7 @@ def _significant_gap(gap: bytes, manifest) -> bool:
     text = gap.strip()
     if not text:
         return False
-    for sep in manifest.optional_separators:
+    for sep in manifest.optional_tokens:
         text = text.replace(sep.encode(), b"")
     return bool(text.strip())
 
@@ -300,7 +300,7 @@ def _generic(
     for child in node.children:
         gap = source[cursor:child.start_byte]
         if _significant_gap(gap, manifest):
-            parts.append(gap.decode())
+            parts.append(gap.strip().decode())
         cursor = child.end_byte
         if child.is_extra or child in ignored:
             continue
@@ -312,11 +312,11 @@ def _generic(
             )
         else:
             text = source[child.start_byte:child.end_byte].decode()
-            if text not in manifest.optional_separators:
-                parts.append(text)
+            if text not in manifest.optional_tokens:
+                parts.append(manifest.token_canon.get(text, text))
     tail = source[cursor:node.end_byte]
     if _significant_gap(tail, manifest):
-        parts.append(tail.decode())
+        parts.append(tail.strip().decode())
     return (kind, tuple(parts))
 
 
