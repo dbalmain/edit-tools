@@ -2163,97 +2163,40 @@ const partitionPkg = (fields = {}) => ({
   },
   ...fields,
 });
-function partitionFixture(name) {
-  return JSON.parse(fs.readFileSync(
-    path.join(__dirname, "..", "testdata", "source_partitions", `${name}.tree.json`),
-    "utf8",
-  ));
-}
+const readTreeIn = (directory, name) =>
+  JSON.parse(fs.readFileSync(path.join(__dirname, "..", "corpus", directory, name), "utf8"));
+const partitionFixture = (stem) =>
+  readTreeIn("trees-partition", `toy__partition_${stem}.tree.json`);
 
-test("a complete source partition formats", () => {
-  const { source, root } = partitionFixture("full");
-  assert.equal(runOn(partitionPkg(), source, root, 80), "alpha beta gamma\n");
-});
-
-test("a declared partition with a leading hole refuses", () => {
-  const { source, root } = partitionFixture("hole-lead");
-  assert.throws(
-    () => runOn(partitionPkg(), source, root, 80),
-    (e) => e instanceof Refusal && e.message === "source_partitions `prose_run` has a leading gap",
-  );
-});
-
-test("a declared partition with an interior hole refuses", () => {
-  const { source, root } = partitionFixture("hole-mid");
-  assert.throws(
-    () => runOn(partitionPkg(), source, root, 80),
-    (e) => e instanceof Refusal && e.message === "source_partitions `prose_run` has an interior gap",
-  );
-});
-
-const PARTITION_SOURCE = "alpha beta gamma";
-const partitionRoot = (children) => ({ type: "prose_run", start: 0, end: 16, children });
-const proseAtom = (start, end, text) => ({
-  type: "prose_atom",
-  start,
-  end,
-  children: [span("word", start, end, text)],
-});
-const proseGap = (start, end) => span("prose_gap", start, end, " ");
-
-test("a declared partition with a trailing hole refuses", () => {
-  const root = partitionRoot([
-    proseAtom(0, 5, "alpha"),
-    proseGap(5, 6),
-    proseAtom(6, 10, "beta"),
-    proseGap(10, 11),
-  ]);
-  assert.throws(
-    () => runOn(partitionPkg(), PARTITION_SOURCE, root, 80),
-    (e) => e instanceof Refusal && e.message === "source_partitions `prose_run` has a trailing gap",
-  );
-});
-
-test("a declared partition with a zero-width child refuses", () => {
-  const root = partitionRoot([
-    proseAtom(0, 5, "alpha"),
-    span("prose_gap", 5, 5, ""),
-    proseGap(5, 6),
-    proseAtom(6, 10, "beta"),
-    proseGap(10, 11),
-    proseAtom(11, 16, "gamma"),
-  ]);
-  assert.throws(
-    () => runOn(partitionPkg(), PARTITION_SOURCE, root, 80),
-    (e) => e instanceof Refusal && e.message === "source_partitions `prose_run` has a zero-width child",
-  );
-});
-
-test("a childless non-empty declared node refuses", () => {
-  assert.throws(
-    () => runOn(partitionPkg(), PARTITION_SOURCE, partitionRoot([]), 80),
-    (e) =>
-      e instanceof Refusal
-      && e.message === "source_partitions `prose_run` has no children but a non-empty range",
-  );
-});
-
-test("a childless empty declared node formats", () => {
-  assert.equal(
-    runOn(partitionPkg(), "", { type: "prose_run", start: 0, end: 0, children: [] }, 80),
-    "\n",
-  );
-});
-
-test("a one-child declared node that covers its parent formats", () => {
-  assert.equal(
-    runOn(partitionPkg(), PARTITION_SOURCE, partitionRoot([proseAtom(0, 16, "alpha beta gamma")]), 80),
-    "alpha beta gamma\n",
-  );
+test("source partitions cover the declared range or refuse", () => {
+  const pkg = partitionPkg();
+  for (const [stem, expect] of [
+    ["full", { out: "alpha beta gamma\n" }],
+    ["hole_lead", { refuse: "source_partitions `prose_run` has a leading gap" }],
+    ["hole_mid", { refuse: "source_partitions `prose_run` has an interior gap" }],
+    ["hole_trail", { refuse: "source_partitions `prose_run` has a trailing gap" }],
+    ["zero_width", { refuse: "source_partitions `prose_run` has a zero-width child" }],
+    ["childless_nonempty", {
+      refuse: "source_partitions `prose_run` has no children but a non-empty range",
+    }],
+    ["childless_empty", { out: "\n" }],
+    ["one_child", { out: "alpha beta gamma\n" }],
+  ]) {
+    const { source, root } = partitionFixture(stem);
+    if (Object.hasOwn(expect, "out")) {
+      assert.equal(runOn(pkg, source, root, 80), expect.out, stem);
+    } else {
+      assert.throws(
+        () => runOn(pkg, source, root, 80),
+        (e) => e instanceof Refusal && e.message === expect.refuse,
+        stem,
+      );
+    }
+  }
 });
 
 test("an undeclared node type with the same hole still formats", () => {
-  const { source, root } = partitionFixture("hole-lead");
+  const { source, root } = partitionFixture("hole_lead");
   assert.equal(runOn(partitionPkg({ source_partitions: [] }), source, root, 80), "beta gamma\n");
 });
 
@@ -2293,7 +2236,7 @@ test("source_partitions require v3, a list of kinds, and disjoint roles", () => 
 });
 
 test("both runtimes refuse the same corrupt source partition", () => {
-  const { source, root } = partitionFixture("hole-lead");
+  const { source, root } = partitionFixture("hole_lead");
   const pkg = partitionPkg();
   assert.throws(
     () => runOn(pkg, source, root, 80),

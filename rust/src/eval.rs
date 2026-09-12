@@ -3772,129 +3772,75 @@ try {{
         one(serde_json::from_value(raw).expect("partition package parses"))
     }
 
-    fn partition_fixture(name: &str) -> (String, serde_json::Value) {
-        let path = format!(
-            "{}/../testdata/source_partitions/{name}.tree.json",
-            env!("CARGO_MANIFEST_DIR")
-        );
-        let raw = std::fs::read_to_string(&path).unwrap_or_else(|e| panic!("{path}: {e}"));
-        let tree: serde_json::Value =
-            serde_json::from_str(&raw).unwrap_or_else(|e| panic!("{path}: {e}"));
+    fn corpus_in(directory: &str, name: &str) -> (String, serde_json::Value) {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../corpus")
+            .join(directory)
+            .join(name);
+        let raw = std::fs::read_to_string(&path)
+            .unwrap_or_else(|e| panic!("{}: {e}", path.display()));
+        let tree: serde_json::Value = serde_json::from_str(&raw)
+            .unwrap_or_else(|e| panic!("{}: {e}", path.display()));
         (
             tree["source"].as_str().expect("fixture source").to_owned(),
             tree["root"].clone(),
         )
     }
 
-    #[test]
-    fn a_complete_source_partition_formats() {
-        let (source, root) = partition_fixture("full");
-        assert_eq!(
-            run_on(&partition_pkg(json!({})), &source, root, 80).expect("formats"),
-            "alpha beta gamma\n"
-        );
+    fn partition_fixture(stem: &str) -> (String, serde_json::Value) {
+        corpus_in(
+            "trees-partition",
+            &format!("toy__partition_{stem}.tree.json"),
+        )
     }
 
     #[test]
-    fn a_declared_partition_with_a_leading_hole_refuses() {
-        let (source, root) = partition_fixture("hole-lead");
-        let err = run_on(&partition_pkg(json!({})), &source, root, 80)
-            .expect_err("leading hole must refuse");
-        assert_eq!(err.0, "source_partitions `prose_run` has a leading gap");
-    }
-
-    #[test]
-    fn a_declared_partition_with_an_interior_hole_refuses() {
-        let (source, root) = partition_fixture("hole-mid");
-        let err = run_on(&partition_pkg(json!({})), &source, root, 80)
-            .expect_err("interior hole must refuse");
-        assert_eq!(err.0, "source_partitions `prose_run` has an interior gap");
-    }
-
-    fn partition_source() -> &'static str {
-        "alpha beta gamma"
-    }
-
-    fn partition_root(children: Vec<serde_json::Value>) -> serde_json::Value {
-        json!({"type": "prose_run", "start": 0, "end": 16, "children": children})
-    }
-
-    fn prose_atom(start: usize, end: usize, text: &str) -> serde_json::Value {
-        json!({
-            "type": "prose_atom",
-            "start": start,
-            "end": end,
-            "children": [span("word", start, end, text)],
-        })
-    }
-
-    fn prose_gap(start: usize, end: usize) -> serde_json::Value {
-        span("prose_gap", start, end, " ")
-    }
-
-    #[test]
-    fn a_declared_partition_with_a_trailing_hole_refuses() {
-        let root = partition_root(vec![
-            prose_atom(0, 5, "alpha"),
-            prose_gap(5, 6),
-            prose_atom(6, 10, "beta"),
-            prose_gap(10, 11),
-        ]);
-        let err = run_on(&partition_pkg(json!({})), partition_source(), root, 80)
-            .expect_err("trailing hole must refuse");
-        assert_eq!(err.0, "source_partitions `prose_run` has a trailing gap");
-    }
-
-    #[test]
-    fn a_declared_partition_with_a_zero_width_child_refuses() {
-        let root = partition_root(vec![
-            prose_atom(0, 5, "alpha"),
-            span("prose_gap", 5, 5, ""),
-            prose_gap(5, 6),
-            prose_atom(6, 10, "beta"),
-            prose_gap(10, 11),
-            prose_atom(11, 16, "gamma"),
-        ]);
-        let err = run_on(&partition_pkg(json!({})), partition_source(), root, 80)
-            .expect_err("zero-width child must refuse");
-        assert_eq!(
-            err.0,
-            "source_partitions `prose_run` has a zero-width child"
-        );
-    }
-
-    #[test]
-    fn a_childless_non_empty_declared_node_refuses() {
-        let root = partition_root(vec![]);
-        let err = run_on(&partition_pkg(json!({})), partition_source(), root, 80)
-            .expect_err("childless non-empty must refuse");
-        assert_eq!(
-            err.0,
-            "source_partitions `prose_run` has no children but a non-empty range"
-        );
-    }
-
-    #[test]
-    fn a_childless_empty_declared_node_formats() {
-        let root = json!({"type": "prose_run", "start": 0, "end": 0, "children": []});
-        assert_eq!(
-            run_on(&partition_pkg(json!({})), "", root, 80).expect("formats"),
-            "\n"
-        );
-    }
-
-    #[test]
-    fn a_one_child_declared_node_that_covers_its_parent_formats() {
-        let root = partition_root(vec![prose_atom(0, 16, "alpha beta gamma")]);
-        assert_eq!(
-            run_on(&partition_pkg(json!({})), partition_source(), root, 80).expect("formats"),
-            "alpha beta gamma\n"
-        );
+    fn source_partitions_cover_the_declared_range_or_refuse() {
+        let pkg = partition_pkg(json!({}));
+        for (stem, expect) in [
+            ("full", Ok("alpha beta gamma\n")),
+            (
+                "hole_lead",
+                Err("source_partitions `prose_run` has a leading gap"),
+            ),
+            (
+                "hole_mid",
+                Err("source_partitions `prose_run` has an interior gap"),
+            ),
+            (
+                "hole_trail",
+                Err("source_partitions `prose_run` has a trailing gap"),
+            ),
+            (
+                "zero_width",
+                Err("source_partitions `prose_run` has a zero-width child"),
+            ),
+            (
+                "childless_nonempty",
+                Err("source_partitions `prose_run` has no children but a non-empty range"),
+            ),
+            ("childless_empty", Ok("\n")),
+            ("one_child", Ok("alpha beta gamma\n")),
+        ] {
+            let (source, root) = partition_fixture(stem);
+            match expect {
+                Ok(want) => assert_eq!(
+                    run_on(&pkg, &source, root, 80).unwrap_or_else(|e| panic!("{stem}: {}", e.0)),
+                    want,
+                    "{stem}"
+                ),
+                Err(want) => {
+                    let err = run_on(&pkg, &source, root, 80)
+                        .expect_err(stem);
+                    assert_eq!(err.0, want, "{stem}");
+                }
+            }
+        }
     }
 
     #[test]
     fn an_undeclared_node_type_with_the_same_hole_still_formats() {
-        let (source, root) = partition_fixture("hole-lead");
+        let (source, root) = partition_fixture("hole_lead");
         assert_eq!(
             run_on(
                 &partition_pkg(json!({"source_partitions": []})),
@@ -3932,7 +3878,7 @@ try {{
         });
         let pkg: Package =
             serde_json::from_value(pkg_json.clone()).expect("partition package parses");
-        let (source, root) = partition_fixture("hole-lead");
+        let (source, root) = partition_fixture("hole_lead");
         let rust_err = run_on(&one(pkg), &source, root.clone(), 80).expect_err("rust must refuse");
         assert_eq!(
             rust_err.0,
