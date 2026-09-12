@@ -134,6 +134,23 @@ new `html_blocks.md` was formatted, its output reparsed, and formatted again:
 identical at 80 and 40 in both Rust and JS (1,733 bytes), and `comments.md`
 re-checked the same way (754 / 756 bytes).
 
+| 27 | Markdown | Codex | Gate-3 prose-equivalence probe; no shipped
+narrowing and no reference flip | The suggested `inline` `_tokens` normalization
+was implemented with hard-break preservation and a counted dropped-word
+mutation, then tested against all 24 files at both widths. It reduced
+`--prose-wrap always` structural mismatches 32/48 → 20/48, but check 1 still
+failed on 12/40 comparable runs and exposed two larger
+boundaries: prose reflow adds/removes named `block_continuation` nodes in lists
+and quotes, and an inline HTML comment moved to line start becomes an
+`html_block`, changing universal comments and injected regions. The block
+grammar also cannot distinguish a two-space hard break from a soft break; the
+inline grammar can. Correctness therefore requires the block-and-inline logical
+prose projection from `docs/prose-projection.md`, including container-prefix
+ownership and comment reclassification, not a broader `_tokens` waiver. |
+**stopped and reverted**, 2026-09-12. Prototype `1c5d111`, revert `3857f81`.
+Raw agreement re-derived exactly at 33/48 → 10/48; strict gate rejects 32/48.
+Live `preserve` pin and all runtime/package behavior remain unchanged. | 0 B |
+
 Row 26 surfaced a defect it did not cause and did not fix: **every `blank_owner`
 node followed by an ATX heading gains a newline**, reproduced by
 `    code\n\n# H\n` on `indented_code_block`, which has been declared far longer

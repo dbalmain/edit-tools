@@ -203,6 +203,31 @@ whitespace changes. It must also retain block/container structure, comments and
 injection checks. It must not compare only the formatter's atom stream: that
 would repeat the classifier's mistakes and lose independent semantic evidence.
 
+### Gate-equivalence probe, 2026-09-12
+
+The proposed `_tokens` shortcut was implemented against the full 24-file
+corpus, then reverted. Soft-whitespace normalization on declared `inline` nodes
+reduced `--prose-wrap always` structural signature mismatches from 32/48 to
+20/48. After the four existing incomparable files were skipped, check 1 still
+failed on 12/40 comparisons:
+
+- list and quote wrapping changes the number of named `block_continuation`
+  children inside `inline`; these prefixes must be removed by a range-aware
+  logical-prose projection, not treated as ordinary gaps;
+- Prettier can move an inline HTML comment to the start of a continuation line,
+  where the block grammar reclassifies the line as `html_block`. The equivalent
+  content then spans paragraph / HTML-block / paragraph boundaries and changes
+  the universal comment and injection signatures;
+- the block grammar gives a two-space hard break and a soft line break the same
+  `paragraph/inline` shape. Its separate inline grammar correctly emits
+  `hard_line_break` for both the two-space and backslash forms.
+
+Therefore step 3 below must operate on logical prose runs, not one `_tokens`
+tuple or one block node at a time. Its design must include container-prefix
+ownership and comment reclassification before the live reference moves from
+`preserve`. The prototype commits (`1c5d111`, reverted by `3857f81`) retain the
+exact experiment without weakening the live gate.
+
 The existing generic gate rejects such reflow and an override cannot merely
 weaken it unnoticed. Specify the declared equivalence and its adversarial
 checks before changing either the generic path or override comparison. HTML
@@ -263,8 +288,10 @@ bounded implementation should:
 2. Implement and differentially test a declared top-level words-plus-emphasis
    projection from real grammar output, including soft-line reparsing. Check
    exact source coverage before and after serialization.
-3. Define the independent gate equivalence for that subset, including changed
-   words, delimiters, code bytes, hard breaks and newly created block syntax.
+3. Define the independent gate equivalence over logical prose runs, including
+   container-continuation ownership and inline-comment/block-comment
+   reclassification as well as changed words, delimiters, code bytes, hard
+   breaks and newly created block syntax.
 4. Exercise one fixture through parse, projection, both runtimes, reparse and
    projection again at 80 and 40. Keep the live `preserve` reference until the
    full corpus's reference-policy change has an honest green boundary.

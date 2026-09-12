@@ -7,26 +7,59 @@ limit before it could write this file itself; the measurements and diffs it had
 already produced were recovered from the working tree and are reproduced here
 unchanged, with the double-format check and gate run added afterward.
 
-## 2026-09-12 gate-equivalence design note
+## 2026-09-12 gate-equivalence attempt
 
 The block grammar makes `inline`, rather than its parent `paragraph`, the
-declaration boundary gate 3 can use. A paragraph has one named `inline` child;
-the `inline` node has anonymous delimiter tokens and retains ordinary prose in
-the untokenized gaps between them. Consequently `_tokens` currently compares a
-soft line break byte-for-byte in the same tuple member that protects its words.
+first declaration boundary suggested by a flat paragraph. A paragraph has one
+named `inline` child; the `inline` node has anonymous delimiter tokens and
+retains ordinary prose in the untokenized gaps between them. Consequently
+`_tokens` compares a soft line break byte-for-byte in the same tuple member that
+protects its words.
 
-The per-language declaration will canonicalize soft ASCII whitespace only in
-retained gaps of a declared `inline` node. It will not canonicalize token text,
-non-whitespace bytes, or Markdown hard-break events. The last restriction is
-load-bearing: a direct parser probe found that `alpha  \nbeta` (a two-space hard
-break) and `alpha\nbeta` (a soft break) both reparse to the same
-`paragraph/inline` block tree. A blanket whitespace collapse would therefore
-admit a semantic change that reparsing cannot detect. Gate 3's destructive arm
-will cover both a dropped prose word and this hard-break distinction.
+That observation is true but insufficient. A production prototype declared
+`prose_nodes = ["inline"]`, canonicalized soft ASCII whitespace in retained
+gaps, kept every non-whitespace byte and delimiter exact, added a counted
+dropped-word mutation, and regenerated the 24-file reference corpus with
+`--prose-wrap always`. It was committed as `1c5d111` and then reverted by
+`3857f81`; the live pin remains `preserve`.
 
-This is a gate declaration and reference-policy change only. It does not add
-the source projection or reflow described below, and it requires no package or
-runtime change.
+| 24 files at both widths | `preserve` | `always` |
+| --- | ---: | ---: |
+| Raw byte agreement, no exclusions | 33/48 | 10/48 |
+| Scorer agreement, four incomparable files excluded | 33/40 | 10/40 |
+| Structural signature mismatches, including incomparable files | 8/48 | 32/48 |
+| Check-1 failures after the four incomparable files are skipped | 0/40 | 24/40 |
+| Check-1 failures after the prototype's safe gap normalization | — | 12/40 |
+
+The 33/48 → 10/48 and 32/48 figures were re-derived at `a0735f8`, not copied
+from the brief. They match its measurements exactly.
+
+Two counterexamples stop the proposed narrowing from being the equivalence:
+
+1. A direct parser probe found that `alpha  \nbeta` (a two-space hard break)
+   and `alpha\nbeta` (a soft break) both reparse to the same
+   `paragraph/inline` block tree. Blanket whitespace collapse would admit a
+   semantic change that reparsing cannot detect. The separate inline grammar
+   does distinguish both space- and backslash-authored hard breaks.
+2. Of the 12 residual check-1 failures, nine add or remove named `block_continuation`
+   children when prose wraps inside lists or quotes. Three move an inline HTML
+   comment to the start of a continuation line; the block grammar then
+   reclassifies it as `html_block`, changing the universal comment signature
+   and the injected-region structure as well as the local prose leaf.
+
+The second case cannot be repaired in `_tokens`, and changing `_extras` is
+explicitly outside this slice. Naming `paragraph` instead of `inline` does not
+help: the moved comment splits one source paragraph into paragraph, HTML block
+and paragraph nodes. Ignoring named children or all whitespace would merely
+hide the evidence and weaken the project's content-loss defence.
+
+The correct gate shape is the block-and-inline projection already called for
+below: reconstruct logical prose runs across declared container continuations,
+parse them with `inline_language()`, compare ordered content, delimiter spelling,
+comments and hard-break events, and permit only grammar-confirmed soft gaps to
+move. It must also specify how an inline comment reclassified as an HTML block
+participates in the universal layer. Until that larger design is implemented,
+the reference cannot safely flip and no package or runtime change is justified.
 
 ## What was measured
 
