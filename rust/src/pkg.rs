@@ -12,9 +12,9 @@ use serde_json::Value;
 
 use crate::Refusal;
 
-const FORMAT: &str = "et-doc-rules/1";
-const WHITESPACE_FORMAT: &str = "et-doc-rules/2";
-const SOURCE_PARTITIONS_FORMAT: &str = "et-doc-rules/3";
+const FORMAT_PREFIX: &str = "et-doc-rules/";
+const MIN_FORMAT_VERSION: u32 = 1;
+const MAX_FORMAT_VERSION: u32 = 3;
 const MAX_MACRO_DEPTH: usize = 32;
 const MAX_JSON_INTEGER: f64 = 9_007_199_254_740_991.0;
 /// Ceiling on the two whitespace-shaped header fields. Neither can allocate
@@ -30,29 +30,54 @@ fn one() -> usize {
 
 #[derive(Deserialize)]
 #[serde(try_from = "String")]
-struct PackageFormat(String);
+struct PackageFormat(u32);
+
+fn format_name(version: u32) -> String {
+    format!("{FORMAT_PREFIX}{version}")
+}
+
+fn expected_formats() -> String {
+    (MIN_FORMAT_VERSION..=MAX_FORMAT_VERSION)
+        .map(|v| format!("`{}`", format_name(v)))
+        .collect::<Vec<_>>()
+        .join(" or ")
+}
+
+fn unknown_format(found: &str) -> String {
+    format!(
+        "unknown package format `{found}`; expected {}",
+        expected_formats()
+    )
+}
 
 impl TryFrom<String> for PackageFormat {
     type Error = String;
 
     fn try_from(found: String) -> Result<Self, Self::Error> {
-        if found == FORMAT || found == WHITESPACE_FORMAT || found == SOURCE_PARTITIONS_FORMAT {
-            Ok(Self(found))
-        } else {
-            Err(format!(
-                "unknown package format `{found}`; expected `{FORMAT}` or `{WHITESPACE_FORMAT}` or `{SOURCE_PARTITIONS_FORMAT}`"
-            ))
+        let Some(rest) = found.strip_prefix(FORMAT_PREFIX) else {
+            return Err(unknown_format(&found));
+        };
+        let Ok(version) = rest.parse::<u32>() else {
+            return Err(unknown_format(&found));
+        };
+        // Canonical spelling only: `et-doc-rules/01` parses as 1 but must
+        // still refuse, or a future `>= 2` predicate would accept it.
+        if format_name(version) != found
+            || !(MIN_FORMAT_VERSION..=MAX_FORMAT_VERSION).contains(&version)
+        {
+            return Err(unknown_format(&found));
         }
+        Ok(Self(version))
     }
 }
 
 impl PackageFormat {
     fn allows_whitespace_nodes(&self) -> bool {
-        self.0 == WHITESPACE_FORMAT || self.0 == SOURCE_PARTITIONS_FORMAT
+        self.0 >= 2
     }
 
     fn allows_source_partitions(&self) -> bool {
-        self.0 == SOURCE_PARTITIONS_FORMAT
+        self.0 >= 3
     }
 }
 
@@ -924,6 +949,10 @@ mod tests {
     use super::*;
     use serde_json::json;
 
+    const FORMAT: &str = "et-doc-rules/1";
+    const WHITESPACE_FORMAT: &str = "et-doc-rules/2";
+    const SOURCE_PARTITIONS_FORMAT: &str = "et-doc-rules/3";
+
     fn package(format: &str) -> Value {
         json!({
             "format": format,
@@ -942,20 +971,33 @@ mod tests {
     }
 
     #[test]
-    fn accepts_the_current_package_format() {
-        serde_json::from_value::<Package>(package(FORMAT)).expect("current format parses");
+    fn accepts_the_current_package_formats() {
+        for format in [FORMAT, WHITESPACE_FORMAT, SOURCE_PARTITIONS_FORMAT] {
+            serde_json::from_value::<Package>(package(format)).expect(format);
+        }
     }
 
     #[test]
     fn refuses_an_unknown_package_format() {
-        let err = serde_json::from_value::<Package>(package("et-doc-rules/99"))
-            .err()
-            .expect("future format must be refused");
-        assert!(
-            err.to_string()
-                .contains("unknown package format `et-doc-rules/99`; expected `et-doc-rules/1`"),
-            "{err}"
-        );
+        // Round-trip spellings an integer parse would otherwise accept.
+        let expected = "expected `et-doc-rules/1` or `et-doc-rules/2` or `et-doc-rules/3`";
+        for found in [
+            "et-doc-rules/99",
+            "et-doc-rules/01",
+            "et-doc-rules/1.0",
+            "et-doc-rules/ 1",
+            "et-doc-rules/+1",
+            "et-doc-rules/1x",
+        ] {
+            let err = serde_json::from_value::<Package>(package(found))
+                .err()
+                .expect(found);
+            assert_eq!(
+                err.to_string(),
+                format!("unknown package format `{found}`; {expected}"),
+                "{found}"
+            );
+        }
     }
 
     #[test]

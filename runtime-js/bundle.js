@@ -43,29 +43,51 @@ function validateNode(node, bytes) {
   for (const child of node.children ?? []) validateNode(child, bytes);
 }
 
-const PACKAGE_FORMAT = "et-doc-rules/1";
-const WHITESPACE_FORMAT = "et-doc-rules/2";
-const SOURCE_PARTITIONS_FORMAT = "et-doc-rules/3";
+const FORMAT_PREFIX = "et-doc-rules/";
+const MIN_FORMAT_VERSION = 1;
+const MAX_FORMAT_VERSION = 3;
 const MAX_MACRO_DEPTH = 32;
 
-function validatePackageFormat(pkg) {
-  if (
-    pkg.format !== PACKAGE_FORMAT
-    && pkg.format !== WHITESPACE_FORMAT
-    && pkg.format !== SOURCE_PARTITIONS_FORMAT
-  ) {
-    throw new Refusal(
-      `unknown package format ${JSON.stringify(pkg.format)}; expected ${JSON.stringify(PACKAGE_FORMAT)} or ${JSON.stringify(WHITESPACE_FORMAT)} or ${JSON.stringify(SOURCE_PARTITIONS_FORMAT)}`,
-    );
+function formatName(version) {
+  return `${FORMAT_PREFIX}${version}`;
+}
+
+function expectedFormats() {
+  const names = [];
+  for (let version = MIN_FORMAT_VERSION; version <= MAX_FORMAT_VERSION; version++) {
+    names.push(`\`${formatName(version)}\``);
   }
+  return names.join(" or ");
 }
 
-function allowsWhitespaceNodes(format) {
-  return format === WHITESPACE_FORMAT || format === SOURCE_PARTITIONS_FORMAT;
+function unknownFormatMessage(found) {
+  return `unknown package format \`${found}\`; expected ${expectedFormats()}`;
 }
 
-function allowsSourcePartitions(format) {
-  return format === SOURCE_PARTITIONS_FORMAT;
+function parsePackageFormat(format) {
+  if (typeof format !== "string" || !format.startsWith(FORMAT_PREFIX)) {
+    throw new Refusal(unknownFormatMessage(format));
+  }
+  const version = Number(format.slice(FORMAT_PREFIX.length));
+  // Canonical spelling only: `et-doc-rules/01` parses as 1 but must still
+  // refuse, or a future `>= 2` predicate would accept it.
+  if (
+    !Number.isSafeInteger(version)
+    || `${FORMAT_PREFIX}${version}` !== format
+    || version < MIN_FORMAT_VERSION
+    || version > MAX_FORMAT_VERSION
+  ) {
+    throw new Refusal(unknownFormatMessage(format));
+  }
+  return version;
+}
+
+function allowsWhitespaceNodes(version) {
+  return version >= 2;
+}
+
+function allowsSourcePartitions(version) {
+  return version >= 3;
 }
 
 const isObject = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
@@ -440,7 +462,7 @@ function blankOwnerField(pkg) {
 }
 
 function buildPackage(pkg) {
-  validatePackageFormat(pkg);
+  const version = parsePackageFormat(pkg.format);
   const comment_cells = commentCellsField(pkg);
   const tab_stop = tabStopField(pkg, comment_cells);
   const comment_gap = gapField(pkg, "comment_gap");
@@ -449,7 +471,7 @@ function buildPackage(pkg) {
   gapOwnerField(pkg);
   blankOwnerField(pkg);
   if (pkg.whitespace_nodes !== undefined) {
-    if (!allowsWhitespaceNodes(pkg.format)) {
+    if (!allowsWhitespaceNodes(version)) {
       throw new Refusal("`whitespace_nodes` requires package format et-doc-rules/2 or later");
     }
     nodeTypes(pkg.whitespace_nodes);
@@ -458,7 +480,7 @@ function buildPackage(pkg) {
     }
   }
   if (pkg.source_partitions !== undefined) {
-    if (!allowsSourcePartitions(pkg.format)) {
+    if (!allowsSourcePartitions(version)) {
       throw new Refusal("`source_partitions` requires package format et-doc-rules/3");
     }
     nodeTypes(pkg.source_partitions);

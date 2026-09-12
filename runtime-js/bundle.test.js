@@ -676,26 +676,39 @@ test("comment fields refuse invalid counts", () => {
   }
 });
 
+const UNKNOWN_FORMAT_EXPECTED =
+  "expected `et-doc-rules/1` or `et-doc-rules/2` or `et-doc-rules/3`";
+
 test("the current package format is required", () => {
   const pkg = toy({ list: listRule });
   delete pkg.format;
   assert.throws(
     () => run(pkg, list(["a"], false), 80),
     (e) =>
-      e instanceof Refusal &&
-      /unknown package format undefined; expected "et-doc-rules\/1"/.test(e.message),
+      e instanceof Refusal
+      && e.message === `unknown package format \`undefined\`; ${UNKNOWN_FORMAT_EXPECTED}`,
   );
 });
 
 test("an unknown package format names the value found and expected", () => {
   const pkg = toy({ list: listRule });
-  pkg.format = "et-doc-rules/99";
-  assert.throws(
-    () => run(pkg, list(["a"], false), 80),
-    (e) =>
-      e instanceof Refusal &&
-      /unknown package format "et-doc-rules\/99"; expected "et-doc-rules\/1"/.test(e.message),
-  );
+  for (const found of [
+    "et-doc-rules/99",
+    "et-doc-rules/01",
+    "et-doc-rules/1.0",
+    "et-doc-rules/ 1",
+    "et-doc-rules/+1",
+    "et-doc-rules/1x",
+  ]) {
+    pkg.format = found;
+    assert.throws(
+      () => run(pkg, list(["a"], false), 80),
+      (e) =>
+        e instanceof Refusal
+        && e.message === `unknown package format \`${found}\`; ${UNKNOWN_FORMAT_EXPECTED}`,
+      found,
+    );
+  }
 });
 
 test("defs expand recursively and accept arbitrary JSON arguments", () => {
