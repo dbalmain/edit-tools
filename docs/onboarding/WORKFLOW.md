@@ -119,8 +119,10 @@ this section is now the description of what a builder is working against.
    runs in `./test.sh`. It proves four things: the reference formatter passes
    for every language (files listed in `incomparable` skip only this assertion);
    every override rejects all useful adversarial mutations rejected by the
-   generic default; the gate still **rejects** a dropped comment and a dropped
-   token; and Markdown-shaped mutations cannot hide in an opaque host node. The
+   generic default; the gate still **rejects** a dropped comment, a dropped
+   named token, an anonymous token respelled (`+` → `-`) and a damaged
+   untokenised gap; and Markdown-shaped mutations cannot hide in an opaque host
+   node. The
    boundary cases cover valid guest reformatting, invalid guest text, changed
    guest meaning, guest comments, exact-byte fallbacks, and nested hosts. A zero
    useful-mutation count for an override is a failure, not a pass.
@@ -171,6 +173,13 @@ transparent_wrappers = []             # node kinds the formatter may add or remo
                                       # around one child, e.g. parenthesized_expression
 equivalent_kinds = []                 # kinds that are the same thing under a different
                                       # name, e.g. [["pattern_list", "tuple_pattern"]]
+layout_leaves = []                    # leaf kinds whose text is layout, not content
+whitespace_nodes = []                 # whitespace-only leaves the formatter may drop
+optional_tokens = []                  # anonymous tokens the reference may add or drop,
+                                      # e.g. a trailing "," — see manifest.py for the
+                                      # scope this does NOT have, and what it costs
+equivalent_tokens = []                # anonymous spellings that mean the same,
+                                      # e.g. [["'", "\""]]
 
 # Optional. Files the reference rewrites in a way linearity forbids, so they
 # cannot be scored as agreement. One excluded construct per file, required

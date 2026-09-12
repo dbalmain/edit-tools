@@ -56,10 +56,11 @@ equivalent_kinds = []
 
 # prettier rewrites that linearity forbids. One construct per file; they
 # still count for gates 0-3 and still get committed reference output.
-# quotes.html carries one prettier rule with two gate-3 outcomes: the delimiter
-# swap (`class='a'` -> `class="a"`) is an anonymous-token rewrite the generic
-# default accepts, so that half is incomparable for agreement only; escape
-# minimisation (`title="&quot;hi&quot;"` -> `title='"hi"'`) rewrites the named
+# quotes.html carries one prettier rule with two gate-3 outcomes. The delimiter
+# swap (`class='a'` -> `class="a"`) was an anonymous-token rewrite the generic
+# default accepted; it is now rejected, because anonymous tokens are compared
+# and html declares no `equivalent_tokens` (verified against the pinned
+# grammar). The file stays incomparable either way. Escape minimisation (`title="&quot;hi&quot;"` -> `title='"hi"'`) rewrites the named
 # attribute_value leaf and *does* fail gate 3. The void slash also fails gate 3:
 # `<br>` is a start_tag and `<br />` is a self_closing_tag.
 [incomparable]

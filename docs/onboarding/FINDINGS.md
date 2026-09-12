@@ -638,7 +638,26 @@ this entry was originally sized against.
 
 ## 5. Anonymous tokens are only compared when their parent has no named children
 
-**Status:** open · **Cost:** gate change, not IR · **Languages:** YAML
+**Status:** partly closed, 2026-09-13 · **Cost:** gate change, not IR ·
+**Languages:** YAML (reported), all (actual)
+
+> **What changed.** `_generic` now compares anonymous tokens and untokenised
+> gaps by default, and two manifest declarations — `optional_tokens` and
+> `equivalent_tokens` — name the transformations a reference legitimately makes.
+> Measured against the pre-fix gate over every reference output and every
+> generated mutation: **1,395 mutants newly rejected** across eleven languages,
+> and **ten verdict changes the other way, all of them a trailing `,` before a
+> closing bracket in YAML flow collections** — which is the declaration working,
+> not a regression.
+>
+> **What is still open, and it is the half this entry named first.** The
+> declarations are keyed on **spelling alone**, and this entry asked for *named
+> transformation classes* instead. The difference is measurable: `[1, 2]` vs
+> `[1, , 2]` (js/ts array hole), `g!(a, b)` vs `g!(a,, b)` (rust macro arm) and
+> `x = ",\n"` vs `x = "\n"` (python string content) are all accepted today. None
+> is a regression — the gate accepted all three before it compared anonymous
+> tokens at all — but a trailing-separator *class* would have closed them, and
+> the spelling list cannot. See REVIEW.md, 2026-09-13.
 
 Reported by YAML's builder, verified here. `_generic` recurses into **named**
 children only, so an anonymous token is compared at all only when its parent has

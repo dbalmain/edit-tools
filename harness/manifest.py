@@ -82,8 +82,26 @@ class Manifest:
     comment_kinds: tuple[str, ...] = ()  # non-extra node kinds that hold comments
     layout_leaves: frozenset[str] = frozenset()  # leaf kinds whose text is layout
     whitespace_nodes: frozenset[str] = frozenset()  # whitespace-only leaves that are gaps
-    optional_tokens: frozenset[str] = frozenset()  # anonymous tokens a reference may add or drop
-    equivalent_tokens: tuple[frozenset[str], ...] = ()  # anonymous spellings that mean the same
+    # Anonymous tokens a reference may add or drop, and anonymous spellings that
+    # mean the same. Both are keyed on **spelling alone**, with no parent kind,
+    # slot or cardinality, and both are holes in gate 3 for that language.
+    #
+    # The justification first written here -- that reparsing still catches a
+    # load-bearing separator, because dropping one either fails to parse or
+    # changes the named tree -- is true in most positions and FALSE in general.
+    # Measured counterexamples, all accepted by gate 3 today:
+    #
+    #     javascript/typescript  [1, 2]        vs  [1, , 2]     array hole
+    #     rust                   g!(a, b)      vs  g!(a,, b)    macro arm
+    #     python                 x = ",\n"     vs  x = "\n"     string content
+    #
+    # None is a regression: the gate accepted all three before anonymous tokens
+    # were compared at all. They are the part of FINDINGS.md entry 5 this
+    # mechanism does not close, and entry 5 named the reason in advance --
+    # it asked for *named transformation classes* (trailing separator, wrapper,
+    # explicit-key canonicalisation), not a per-language spelling list.
+    optional_tokens: frozenset[str] = frozenset()
+    equivalent_tokens: tuple[frozenset[str], ...] = ()
 
     @property
     def token_canon(self) -> dict[str, str]:

@@ -77,12 +77,12 @@ equivalent_kinds = []
 # Anonymous tokens are compared by default (gate3.py, `_generic`). A separator
 # the grammar makes optional is the formatter's to add or drop -- the same
 # permission `trail` has in the rule language -- so it is declared here and
-# elided from both signatures. Removing a *load-bearing* separator is still
-# caught, because gate 3 reparses: it either fails to parse or changes the
-# named tree. See FINDINGS.md entry 5.
+# elided from both signatures. Reparsing catches a load-bearing separator in
+# most positions but not all; the scope of the hole, with measured
+# counterexamples, is on `optional_tokens` in manifest.py. See
+# FINDINGS.md entry 5.
 # prettier adds a trailing `,` to a broken flow collection.
 # prettier also drops the explicit-key `?` where the key is short enough to
 # be implicit. FINDINGS entry 5's stage-B sweep named this as the fourth
 # member of the tail; the mapping pair keeps both its named children.
 optional_tokens = [",", "?"]
-

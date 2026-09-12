@@ -45,8 +45,9 @@ widths = [80, 40]
 
 # The generic default. No override: tree-sitter-typescript, like its
 # JavaScript sibling, represents both quote styles as one `string` node with
-# an anonymous quote token, so prettier's quote normalisation leaves the named
-# tree unchanged. A data-model loader would collapse the spellings a formatter
+# an anonymous quote token. That no longer means the gate accepts prettier's
+# quote normalisation: anonymous tokens are compared, so it is rejected, and
+# the corpus happens not to exercise it. See javascript.toml. A data-model loader would collapse the spellings a formatter
 # must preserve (1_000 vs 1000, "hello" vs 'hello' in string-literal types).
 gate3 = "default"
 
@@ -65,9 +66,9 @@ equivalent_kinds = []
 # Anonymous tokens are compared by default (gate3.py, `_generic`). A separator
 # the grammar makes optional is the formatter's to add or drop -- the same
 # permission `trail` has in the rule language -- so it is declared here and
-# elided from both signatures. Removing a *load-bearing* separator is still
-# caught, because gate 3 reparses: it either fails to parse or changes the
-# named tree. See FINDINGS.md entry 5.
+# elided from both signatures. Reparsing catches a load-bearing separator in
+# most positions but not all; the scope of the hole, with measured
+# counterexamples, is on `optional_tokens` in manifest.py. See
+# FINDINGS.md entry 5.
 # prettier adds a trailing `,` to a broken list and the optional final `;` to a member or statement.
 optional_tokens = [",", ";"]
-

@@ -37,8 +37,12 @@ widths = [80, 40]
 # The generic default. No override is needed, and the corpus report explains
 # why the data-model-loaders trap does not bite here: tree-sitter-javascript
 # represents both quote styles as one `string` node with an anonymous quote
-# token, so prettier's quote normalisation leaves the named tree unchanged and
-# the generic default already accepts it.
+# token. That used to mean the generic default accepted prettier's quote
+# normalisation; since anonymous tokens are compared it **rejects** it
+# (verified: `'hello'` vs `"hello"`). Nothing in the corpus exercises it --
+# prettier rewrites no quote in any committed reference output -- so the first
+# single-quoted string added here will fail gate 3 until this language declares
+# `equivalent_tokens = [["'", "\""]]` the way css.toml does.
 gate3 = "default"
 
 # Established by running prettier over the corpus, not by reading the grammar.
@@ -54,9 +58,9 @@ equivalent_kinds = []
 # Anonymous tokens are compared by default (gate3.py, `_generic`). A separator
 # the grammar makes optional is the formatter's to add or drop -- the same
 # permission `trail` has in the rule language -- so it is declared here and
-# elided from both signatures. Removing a *load-bearing* separator is still
-# caught, because gate 3 reparses: it either fails to parse or changes the
-# named tree. See FINDINGS.md entry 5.
+# elided from both signatures. Reparsing catches a load-bearing separator in
+# most positions but not all; the scope of the hole, with measured
+# counterexamples, is on `optional_tokens` in manifest.py. See
+# FINDINGS.md entry 5.
 # prettier adds a trailing `,` to a broken list and the optional final `;` to a statement.
 optional_tokens = [",", ";"]
-

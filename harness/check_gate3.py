@@ -38,10 +38,15 @@ and the generic signature changes. The useful count is reported per language.
 Zero useful mutations for a selected override is a failure, because it has
 tested no adversarial input at all.
 
-Not covered by any family: an untokenised *gap* that survives a valid parse. The
-generic signature compares those, but no reference output in the corpus contains
-one (measured: zero across every language), so there is nothing here to mutate
-and that branch stays defensive rather than generated.
+A sixth family reaches the untokenised *gaps* -- source between a node's
+children that the grammar declined to tokenise, which is neither a named node
+nor an anonymous token and so is invisible to every other family. An earlier
+version of this paragraph claimed the corpus held none, measured at zero. That
+measurement was wrong: the probe globbed `corpus/reference/<lang>/` and the
+directory is flat, so it swept nothing and reported the empty result as a
+finding. The true count is 2,219 across ten languages -- Markdown prose, the
+digits of a CSS number before its named `unit`, TOML and YAML string interiors,
+the body of a Rust line comment.
 
 **3. The gate must still reject destruction.** A gate that accepts everything
 passes checks 1 and 2 perfectly. So each language's reference output is mutated
@@ -160,6 +165,44 @@ for _group in _TOKEN_GROUPS:
         )
 
 
+def damage_a_gap(text: str, parser) -> str | None:
+    """Change one byte of source the grammar declined to tokenise.
+
+    A gap is neither a named node nor an anonymous token, so it is invisible to
+    every other mutation here, and it is not a rare shape: 2,219 of them survive
+    a valid parse across the committed reference corpus -- Markdown prose, the
+    digits of a CSS number before its named `unit`, YAML block-scalar bodies,
+    the body of a Rust line comment. `_generic` compares them; without this the
+    only proof of that was reading the code.
+    """
+    source = text.encode()
+    stack = [parser.parse(source).root_node]
+    while stack:
+        node = stack.pop()
+        stack.extend(reversed(node.children))
+        if not node.children:
+            continue
+        cursor = node.start_byte
+        for child in list(node.children) + [None]:
+            end = child.start_byte if child is not None else node.end_byte
+            for offset in range(cursor, end):
+                byte = source[offset : offset + 1]
+                if not byte.isalnum():
+                    continue
+                swapped = byte.swapcase() if byte.isalpha() else b"9"
+                if swapped == byte:
+                    swapped = b"0" if byte == b"9" else b"9"
+                changed = (
+                    source[:offset] + swapped + source[offset + 1 :]
+                ).decode()
+                if not parser.parse(changed.encode()).root_node.has_error:
+                    return changed
+            if child is None:
+                break
+            cursor = child.end_byte
+    return None
+
+
 def respell_a_token(text: str, parser, manifest) -> str | None:
     """Respell one anonymous token -- `+` into `-`, `and` into `or`.
 
@@ -172,9 +215,14 @@ def respell_a_token(text: str, parser, manifest) -> str | None:
     Tokens the manifest has declared free are skipped, both spellings of the
     pair. Declaring `,` optional or `'` equivalent to `"` is a statement that
     the gate deliberately does not compare them, so choosing one here would
-    manufacture a failure out of a declaration rather than out of a defect. No
-    declaration in the tree meets any group today; the guard is what keeps the
-    next one from breaking this check instead of being read as widening it.
+    manufacture a failure out of a declaration rather than out of a defect.
+    Markdown already meets a group -- it declares `|` optional, and `("&", "|")`
+    is one -- so this is live, not defensive.
+
+    The guard has a cost, and it is the reason a declaration audit cannot live
+    here: an unsound declaration silently suppresses the one probe that would
+    have exercised it. Proving a declaration is no wider than its evidence needs
+    a check that does not consult the declaration it is testing.
     """
     source = text.encode()
     canon = manifest.token_canon
@@ -343,6 +391,47 @@ def adversarial_mutations(text: str, parser):
                 f"{node.type} {_clip(old)} -> {_clip(replacement)}",
                 _splice(source, [(node.start_byte, node.end_byte, replacement)]),
             )
+
+    # Untokenised gaps. Neither a named node nor an anonymous token, so no other
+    # family here can reach one, and the signature compares them.
+    for node in nodes:
+        if not node.children:
+            continue
+        cursor = node.start_byte
+        for child in list(node.children) + [None]:
+            end = child.start_byte if child is not None else node.end_byte
+            gap = source[cursor:end]
+            stripped = gap.strip()
+            # Only a single-byte ASCII position may be spliced: a gap is raw
+            # source, and cutting a multi-byte character in half produces a
+            # candidate that is not text at all.
+            at = next(
+                (
+                    i
+                    for i, byte in enumerate(gap)
+                    if chr(byte).isalnum() and byte < 0x80
+                ),
+                None,
+            )
+            if stripped and at is not None:
+                offset = cursor + at
+                where = f"{node.type} gap {_clip(stripped.decode(errors='replace'))}"
+                add(
+                    "gap-shorten",
+                    where,
+                    _splice(source, [(offset, offset + 1, "")]),
+                )
+                add(
+                    "gap-rewrite",
+                    f"{where} first character",
+                    _splice(
+                        source,
+                        [(offset, offset + 1, "Q" if gap[at] != ord("Q") else "Z")],
+                    ),
+                )
+            if child is None:
+                break
+            cursor = child.end_byte
 
     # Anonymous tokens, by the slot they occupy under a parent kind. Grouping by
     # slot rather than by parent alone is what keeps the swaps plausible: the
@@ -635,6 +724,7 @@ def main() -> int:
                 ),
                 ("a dropped token", drop_a_token(formatted, parser)),
                 ("a respelled token", respell_a_token(formatted, parser, m)),
+                ("a damaged gap", damage_a_gap(formatted, parser)),
             ):
                 if broken is None or broken == formatted:
                     continue
@@ -642,7 +732,7 @@ def main() -> int:
                 destructive_counts[name][what] += 1
                 if (
                     gate3.signature(broken, m, parser, bootstrapped, parsers)
-                    == before
+                    == after
                 ):
                     failures.append(f"{label}: gate ACCEPTS {what}")
 
@@ -656,7 +746,8 @@ def main() -> int:
             f"  destructive {name}: "
             f"dropped-comment={destructive_for_language['a dropped comment']}, "
             f"dropped-token={destructive_for_language['a dropped token']}, "
-            f"respelled-token={destructive_for_language['a respelled token']}"
+            f"respelled-token={destructive_for_language['a respelled token']}, "
+            f"damaged-gap={destructive_for_language['a damaged gap']}"
         )
         counts = useful_counts[name]
         total = sum(counts.values())

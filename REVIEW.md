@@ -33,8 +33,83 @@ findings). Each should name the guard that will eventually retire it.
 - **Grep `docs/onboarding/FINDINGS.md` before writing an offload brief.** An
   agent briefed on a problem the repo has already analysed re-derives the
   analysis and bills for it. Search the finding, not just the code.
+- **A measured zero needs a positive control.** A sweep that finds nothing and a
+  sweep that runs on nothing are the same output. Before recording a zero, make
+  the probe report what it *visited* — files opened, nodes walked — and check
+  that number against something independent. Caught here when a reviewer
+  contradicted a figure marked VERIFIED: the probe globbed
+  `corpus/reference/<lang>/` and that directory is flat, so it opened zero files
+  and the true answer was 2,219. *Retired by:* nothing yet; the habit is to
+  print the denominator.
 
 ## Findings log
+
+### 2026-09-13 — a probe that swept nothing reported zero, and I believed it
+
+- **What:** I recorded "no reference output contains an untokenised gap that
+  survives a valid parse (measured: zero across every language)" in a commit
+  message, a module docstring and this file, marked VERIFIED, and used it to
+  justify *not* writing a mutation family. The probe globbed
+  `corpus/reference/<lang>/` as a directory; `corpus/reference/` is flat
+  (`<lang>__<stem>@<width>.txt`), so every language hit `continue` and the sweep
+  visited no files. True count: **2,219 gaps across ten languages** — Markdown
+  prose, the digits of a CSS number before its named `unit`, TOML and YAML
+  string interiors, Rust comment bodies.
+- **Why missed:** zero was the answer I expected, so it read as confirmation
+  rather than as the signature of an empty sweep. Worse, I discovered the flat
+  layout fifteen minutes later while fixing a *different* script, and did not go
+  back. An offloaded reviewer contradicted the figure; I re-ran it and the
+  reviewer was right.
+- **Guard:** promoted to a Standing check above. Concretely applied: the gap
+  families now exist (`gap-shorten`, `gap-rewrite`, and a `damaged-gap`
+  destructive mutation), and reverting `gate3.py` to the pre-fix signature
+  fails 24 of them — the check that "nothing to mutate" had made impossible.
+
+### 2026-09-13 — 50 destructive checks were vacuous by construction
+
+- **What:** the destruction arm mutates the *formatted* reference and compared
+  the mutant's signature against `before`, the **source's** signature. For a
+  file listed in `incomparable`, `before != after` by definition, so a mutant
+  the gate failed to reject still differed from `before` and the check passed
+  having tested nothing. 50 of 1,010 destructive mutations, exactly the
+  incomparable set across seven languages.
+- **Why missed:** the arm was written when `before == after` held for every
+  scored file, and `incomparable` was introduced later as an exemption from
+  check 1 only. Nothing re-read the destruction arm in that light.
+- **Guard:** compare against `after`. **Applied**; all 50 now run and pass, so
+  the vacuity hid no live defect. Found by an offloaded reviewer, not by a gate
+  — the general shape ("a gate that ran zero tests is not a gate") is in
+  `~/.claude/agent-playbook.md` and deserves a repo-local check that every
+  destruction mutation is compared against a signature it could actually equal.
+
+### 2026-09-13 — spelling-keyed token declarations cannot express a trailing separator
+
+- **What:** `optional_tokens` / `equivalent_tokens` are keyed on spelling alone,
+  with no parent kind, slot or cardinality. Declaring `,` free for a language's
+  trailing separators also frees it in positions where it is load-bearing.
+  Accepted today: `[1, 2]` vs `[1, , 2]` (js/ts array hole), `g!(a, b)` vs
+  `g!(a,, b)` (rust macro arm selection), `x = ",\n"` vs `x = "\n"` (python
+  `string_content`, via the gap path). Two independent reviewers found these
+  from different directions.
+- **Not a regression:** verified by replaying every generated mutation of every
+  reference output against both signatures — 1,395 mutants newly rejected,
+  10 verdict changes the other way, all of them a trailing `,` before a closing
+  bracket in YAML flow collections, which is the declaration doing its job. The
+  gate accepted all three counterexamples before it compared anonymous tokens
+  at all.
+- **Why missed:** `FINDINGS.md` entry 5 prescribed *named transformation
+  classes*; I implemented the compare-by-default half and then reached for a
+  per-language spelling list, which is the shape entry 5 argued against. The
+  justifying comment I wrote in ten manifests — that reparsing still catches a
+  load-bearing separator — is false in general, and I asserted it rather than
+  constructing the counterexample that would have shown it.
+- **Guard:** the false claim is corrected at its source (`manifest.py`, on the
+  field) and the ten manifests point there. The mechanism itself is an open
+  decision, on the board. Note that the destructive arm **cannot** find this
+  class: `respell_a_token` skips any token the manifest declares free, so an
+  unsound declaration suppresses the probe that would expose it. A declaration
+  audit has to be a separate check that does not consult the declaration it is
+  testing.
 
 ### 2026-09-13 — the non-destruction gate did not compare operators
 

@@ -246,7 +246,7 @@ def _significant_gap(gap: bytes, manifest) -> bool:
     """Is this untokenised source worth comparing?
 
     Whitespace is layout and always drops. A gap that holds nothing but
-    declared `optional_separators` drops for the same reason an anonymous
+    declared `optional_tokens` drops for the same reason an anonymous
     separator child does -- a grammar may leave a separator untokenised
     (Kotlin's `;` between two top-level declarations is a gap, not a child),
     and the declaration must not depend on which of the two shapes the
