@@ -21,7 +21,57 @@ findings). Each should name the guard that will eventually retire it.
 - **An offload's done-note is not a repo file.** Check for a stray `*.md` at the
   repo root addressed to the orchestrator rather than to the reader.
 
+- **A test generator can share the blind spot of the thing it tests.** Before
+  trusting a green mutation/fuzz count, check what the generator *enumerates*.
+  `check_gate3.py`'s `adversarial_mutations` walks `node.is_named` nodes only,
+  so it could never generate the anonymous-token or untokenised-gap mutations
+  that `_generic` was blind to — 804 destructive mutations stayed green over
+  `a + b` == `a - b` in four languages. A count is evidence about the generator
+  before it is evidence about the code.
+- **Grep `docs/onboarding/FINDINGS.md` before writing an offload brief.** An
+  agent briefed on a problem the repo has already analysed re-derives the
+  analysis and bills for it. Search the finding, not just the code.
+
 ## Findings log
+
+### 2026-09-13 — the non-destruction gate did not compare operators
+
+- **What:** `_generic` recursed into named children only, so every anonymous
+  token and every untokenised gap under a node with a named child was invisible
+  to gate 3. `a + b` == `a - b` in python, javascript, go and rust; `a and b`
+  == `a or b`; and in markdown a two-line list item's whole signature was
+  `('inline', (('block_continuation', '  '),))`, holding none of its prose, so a
+  deleted word on a continuation line passed.
+- **Why missed:** it was *not* missed — `FINDINGS.md` entry 5 recorded it, open,
+  reported by YAML's builder, and prescribed the fix that was eventually
+  implemented. It was missed by *me*, twice reported to Dave as a new finding,
+  because I briefed an agent before searching the findings log. What was new is
+  narrower: entry 5 sweeps deletions, so it never saw that respellings are the
+  larger class, and untokenised gaps are outside its framing entirely.
+- **Guard:** applied. Anonymous tokens and non-whitespace gaps are compared by
+  default; `optional_tokens` and `equivalent_tokens` declare the permitted
+  transformation classes per language, each derived from a sweep of what
+  actually differs rather than guessed. Still outstanding, and the reason this
+  can regress silently: `adversarial_mutations` cannot yet generate a mutation
+  in this class, so nothing here is locked in by a generated test. Promoted to a
+  Standing check above.
+
+### 2026-09-13 — a declaration reachable from only one branch
+
+- **What:** `layout_leaves` silently stopped applying. `_layout` was reached
+  only from `_generic`'s no-named-children branch, so once anonymous children
+  became visible `pipe_table_delimiter_cell` — which holds anonymous `-` tokens
+  — routed into the recurse branch and had the ruler dashes compared that
+  `_layout` exists to reduce. Self-inflicted, in the same change.
+- **Why missed:** the condition `if not kids` was doing two jobs — "is this a
+  leaf" and "should this use the layout reduction" — and only the first was
+  named. A declaration whose reachability depends on an unrelated branch test
+  will be dropped by the next edit to that test.
+- **Guard:** `layout_leaves` is now checked before the children test, with the
+  reason in a comment at the site. A stronger guard, not yet applied: a test
+  asserting every declared layout leaf in every manifest actually routes to
+  `_layout`, which would have failed loudly instead of silently widening the
+  gate.
 
 ### 2026-09-11 — rustfmt churn rides along with every Rust slice
 
