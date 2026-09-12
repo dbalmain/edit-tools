@@ -27,7 +27,9 @@ findings). Each should name the guard that will eventually retire it.
   so it could never generate the anonymous-token or untokenised-gap mutations
   that `_generic` was blind to — 804 destructive mutations stayed green over
   `a + b` == `a - b` in four languages. A count is evidence about the generator
-  before it is evidence about the code.
+  before it is evidence about the code. The cheap proof, once a generator is
+  extended: revert the thing under test and confirm the count *fails*. Zero →
+  95 is a guard; 8,428 useful mutations on its own is not.
 - **Grep `docs/onboarding/FINDINGS.md` before writing an offload brief.** An
   agent briefed on a problem the repo has already analysed re-derives the
   analysis and bills for it. Search the finding, not just the code.
@@ -51,10 +53,15 @@ findings). Each should name the guard that will eventually retire it.
 - **Guard:** applied. Anonymous tokens and non-whitespace gaps are compared by
   default; `optional_tokens` and `equivalent_tokens` declare the permitted
   transformation classes per language, each derived from a sweep of what
-  actually differs rather than guessed. Still outstanding, and the reason this
-  can regress silently: `adversarial_mutations` cannot yet generate a mutation
-  in this class, so nothing here is locked in by a generated test. Promoted to a
-  Standing check above.
+  actually differs rather than guessed. Closed the same day on the generator
+  side: three anonymous-token mutation families (`token-respell`, `token-swap`,
+  `token-drop`) and a third destructive mutation, `respell_a_token`, which the
+  gate must reject for every reference output. Mutation-tested by reverting
+  `gate3.py` to the pre-fix signature — 95 failures across 10 languages, exit 1,
+  where before the whole suite stayed green. Promoted to a Standing check above.
+  One branch stays defensive rather than generated: no reference output in the
+  corpus holds an untokenised gap that survives a valid parse (measured: zero,
+  every language), so there is nothing to mutate.
 
 ### 2026-09-13 — a declaration reachable from only one branch
 

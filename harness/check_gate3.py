@@ -26,17 +26,31 @@ that the generic default rejects form the oracle. A selected override must rejec
 every one too. It may reject more; it may never accept less.
 
 The mutations replace a named leaf from another leaf of the same kind, respell
-numbers and strings, swap same-kind siblings, and duplicate a subtree. They are
-candidate generators, not language semantics: a candidate counts only when the
-language parser accepts it and the generic signature changes. The useful count
-is reported per language. Zero useful mutations for a selected override is a
-failure, because it has tested no adversarial input at all.
+numbers and strings, swap same-kind siblings, and duplicate a subtree. Three
+further families work on the *anonymous* tokens a grammar does not name --
+respelling one into a lexically similar sibling from a fixed table (`+` -> `-`),
+swapping one for another seen in the same slot of the same parent kind, and
+dropping one. Without those three the generator shares the blind spot the
+signature had until it started comparing anonymous tokens: `a + b` -> `a - b`
+changed nothing anywhere, and no count moved. They are candidate generators, not
+language semantics: a candidate counts only when the language parser accepts it
+and the generic signature changes. The useful count is reported per language.
+Zero useful mutations for a selected override is a failure, because it has
+tested no adversarial input at all.
+
+Not covered by any family: an untokenised *gap* that survives a valid parse. The
+generic signature compares those, but no reference output in the corpus contains
+one (measured: zero across every language), so there is nothing here to mutate
+and that branch stays defensive rather than generated.
 
 **3. The gate must still reject destruction.** A gate that accepts everything
 passes checks 1 and 2 perfectly. So each language's reference output is mutated
-in two ways a real formatter bug would produce -- a comment dropped, a token
-dropped -- and the gate must reject both. Without this, gate 3 could rot into a
-no-op and every other check here would keep saying PASS.
+in three ways a real formatter bug would produce -- a comment dropped, a named
+token dropped, an anonymous token respelled -- and the gate must reject all
+three. The respelling is the one a named-nodes-only signature cannot see, so it
+is what stops that blind spot from being reintroduced silently. Without this,
+gate 3 could rot into a no-op and every other check here would keep saying
+PASS.
 
 The injection fixture adds the adversarial shape the single-language mutations
 cannot cover: valid guest-only reformatting must pass, while changed guest
@@ -114,6 +128,80 @@ def drop_a_token(text: str, parser) -> str | None:
     return (b[: last.start_byte] + b[last.end_byte :]).decode()
 
 
+# Anonymous tokens that mean different things and are spelled alike. Every group
+# is a pair a real formatter bug could produce and a reader would not notice --
+# the point of the family is that the members are interchangeable *lexically*
+# and never semantically, so a gate that accepts the swap has stopped looking at
+# the token. Language-independent by construction: a group applies wherever the
+# grammar happens to spell an operator that way, and simply never fires where it
+# does not.
+_TOKEN_GROUPS = (
+    ("+", "-"),
+    ("*", "/"),
+    ("%", "*"),
+    ("<", ">"),
+    ("<=", ">="),
+    ("==", "!="),
+    ("===", "!=="),
+    ("&&", "||"),
+    ("&", "|"),
+    ("and", "or"),
+    ("<<", ">>"),
+    ("+=", "-="),
+    ("++", "--"),
+    ("is", "is not"),
+    ("in", "not in"),
+)
+_TOKEN_RESPELL: dict[str, tuple[str, ...]] = {}
+for _group in _TOKEN_GROUPS:
+    for _token in _group:
+        _TOKEN_RESPELL[_token] = _TOKEN_RESPELL.get(_token, ()) + tuple(
+            other for other in _group if other != _token
+        )
+
+
+def respell_a_token(text: str, parser, manifest) -> str | None:
+    """Respell one anonymous token -- `+` into `-`, `and` into `or`.
+
+    A formatter that did this has changed what the document means while leaving
+    every named node in place, which is precisely what a signature comparing
+    named children only cannot see. The mutant must reparse without an error, or
+    the gate would reject it for being unparseable and the check would pass
+    having tested nothing.
+
+    Tokens the manifest has declared free are skipped, both spellings of the
+    pair. Declaring `,` optional or `'` equivalent to `"` is a statement that
+    the gate deliberately does not compare them, so choosing one here would
+    manufacture a failure out of a declaration rather than out of a defect. No
+    declaration in the tree meets any group today; the guard is what keeps the
+    next one from breaking this check instead of being read as widening it.
+    """
+    source = text.encode()
+    canon = manifest.token_canon
+    stack = [parser.parse(source).root_node]
+    while stack:
+        node = stack.pop()
+        stack.extend(reversed(node.children))
+        if node.is_named or node.is_extra:
+            continue
+        old = source[node.start_byte : node.end_byte].decode()
+        if old in manifest.optional_tokens:
+            continue
+        for replacement in _TOKEN_RESPELL.get(old, ()):
+            if replacement in manifest.optional_tokens:
+                continue
+            if canon.get(old, old) == canon.get(replacement, replacement):
+                continue
+            changed = (
+                source[: node.start_byte]
+                + replacement.encode()
+                + source[node.end_byte :]
+            ).decode()
+            if not parser.parse(changed.encode()).root_node.has_error:
+                return changed
+    return None
+
+
 # --------------------------------------------------------------------------
 # well-formed document mutations for the adversarial arm of check 2
 
@@ -126,7 +214,6 @@ _NUMBER = re.compile(
 _INTEGER = re.compile(r"^[+-]?[0-9][0-9_]*$")
 _RADIX = re.compile(r"^[+-]?0[xXoObB][0-9a-fA-F_]+$")
 _QUOTES = ('"""', "'''", '"', "'", "`")
-
 
 @dataclass(frozen=True)
 class Mutation:
@@ -255,6 +342,46 @@ def adversarial_mutations(text: str, parser):
                 "leaf-rewrite",
                 f"{node.type} {_clip(old)} -> {_clip(replacement)}",
                 _splice(source, [(node.start_byte, node.end_byte, replacement)]),
+            )
+
+    # Anonymous tokens, by the slot they occupy under a parent kind. Grouping by
+    # slot rather than by parent alone is what keeps the swaps plausible: the
+    # operator of a binary expression is always the same child index, so `+` is
+    # offered `-` and never the `(` of a call three kinds away.
+    anonymous_by_slot: dict[tuple[str, int], list] = {}
+    for node in nodes:
+        for index, child in enumerate(node.children):
+            if child.is_named or child.is_extra:
+                continue
+            if child.start_byte >= child.end_byte:
+                continue
+            anonymous_by_slot.setdefault((node.type, index), []).append(child)
+
+    for (kind, index), tokens in anonymous_by_slot.items():
+        spellings = [
+            source[token.start_byte : token.end_byte].decode() for token in tokens
+        ]
+        for token, old in zip(tokens, spellings):
+            span = (token.start_byte, token.end_byte)
+            for replacement in _TOKEN_RESPELL.get(old, ()):
+                add(
+                    "token-respell",
+                    f"{kind} {_clip(old)} -> {_clip(replacement)}",
+                    _splice(source, [(*span, replacement)]),
+                )
+            other = next(
+                (spelling for spelling in spellings if spelling != old), None
+            )
+            if other is not None:
+                add(
+                    "token-swap",
+                    f"{kind}[{index}] {_clip(old)} -> {_clip(other)}",
+                    _splice(source, [(*span, other)]),
+                )
+            add(
+                "token-drop",
+                f"{kind} drop {_clip(old)}",
+                _splice(source, [(*span, "")]),
             )
 
     for node in nodes:
@@ -501,12 +628,14 @@ def main() -> int:
                         )
 
             # --- 3. the gate must still reject destruction
-            for what, mutate in (("a dropped comment", drop_a_comment),
-                                 ("a dropped token", drop_a_token)):
-                if mutate is drop_a_comment:
-                    broken = mutate(formatted, parser, m.comment_kinds)
-                else:
-                    broken = mutate(formatted, parser)
+            for what, broken in (
+                (
+                    "a dropped comment",
+                    drop_a_comment(formatted, parser, m.comment_kinds),
+                ),
+                ("a dropped token", drop_a_token(formatted, parser)),
+                ("a respelled token", respell_a_token(formatted, parser, m)),
+            ):
                 if broken is None or broken == formatted:
                     continue
                 destructive += 1
@@ -526,7 +655,8 @@ def main() -> int:
         print(
             f"  destructive {name}: "
             f"dropped-comment={destructive_for_language['a dropped comment']}, "
-            f"dropped-token={destructive_for_language['a dropped token']}"
+            f"dropped-token={destructive_for_language['a dropped token']}, "
+            f"respelled-token={destructive_for_language['a respelled token']}"
         )
         counts = useful_counts[name]
         total = sum(counts.values())
