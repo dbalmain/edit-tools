@@ -14,6 +14,7 @@ findings). Each should name the guard that will eventually retire it.
   generator to `all_cases()` in `harness/parity_fuzz.py`. That tuple is
   hand-maintained, so a missing entry is invisible. *Retired by:* a test that
   asserts the generator count against the site count named in the docstring.
+  Still prose as of 2026-09-12; the count is now 13.
 - **A changed runtime rule must be mirrored, and the refusal text must match
   byte for byte.** Assert the exact message in both suites, not `contains`.
   *Retired by:* the shared-fixture table in `harness/fixtures/`.
@@ -37,11 +38,17 @@ findings). Each should name the guard that will eventually retire it.
 ### 2026-09-11 — a new top-level directory with no route to it
 
 - **What:** `testdata/source_partitions/` was added as an eleventh top-level
-  directory. `docs/onboarding/WORKFLOW.md:29-31` is the routing table builders
-  read, and `harness/fixtures/` already exists; neither mentions it.
-- **Guard:** a test in `harness/test_manifest.py` asserting the set of
-  top-level directories against a list in `WORKFLOW.md`, so adding one without
-  routing to it fails. Not applied.
+  directory. The repo already had a convention for hand-written non-corpus
+  trees — `corpus/trees-{dirty,injected,edited}/<lang>__<stem>.tree.json`,
+  read through `corpus_in()` / `readTreeIn()`, with the flat-naming rule at
+  `docs/onboarding/WORKFLOW.md:233`. Fixtures now live in
+  `corpus/trees-partition/`.
+- **Correction to this entry:** it first cited `WORKFLOW.md:29-31` as "the
+  routing table" and proposed `harness/test_manifest.py` as the guard's home.
+  Both were wrong — those lines are the A–C pipeline, not a directory
+  inventory, and `test_manifest.py` holds TOML injection-manifest tests.
+- **Guard:** `harness/test_repo_layout.py` pins the top-level directory set.
+  **Applied.**
 
 ### 2026-09-11 — source-byte checks added without a fuzz site
 
@@ -50,4 +57,29 @@ findings). Each should name the guard that will eventually retire it.
   `harness/parity_fuzz.py` exists precisely to sweep those, its docstring claims
   "the 12 format-path source-byte sites", and `all_cases()` gained nothing.
 - **Guard:** promoted to a Standing check above; the real fix is making the site
-  count checkable rather than prose. Not applied.
+  count checkable rather than prose. `partition_cases()` **applied**; the
+  count-vs-docstring assertion is not.
+
+### 2026-09-12 — `contains` hid a live twin-runtime parity split
+
+- **What:** applying the "assert refusal text byte-for-byte" standing check
+  uncovered a divergence that had shipped: the unknown-package-format refusal
+  read ``expected `et-doc-rules/1`…`` in Rust and `expected "et-doc-rules/1"…`
+  in JS. The tests asserted it with `contains` and a prefix regex, so neither
+  suite could see it. Unified on the Rust spelling.
+- **Why missed:** every earlier review read the two implementations as
+  mirrored because the *logic* mirrored. The message is part of the contract
+  and nothing compared it.
+- **Guard:** the standing check found this on its first application, which is
+  the evidence it should stay. The durable fix is the shared-fixture table in
+  `harness/fixtures/` covering refusal text, not just trees. Not applied.
+
+### 2026-09-12 — a gate that reads another tool's human output
+
+- **What:** `test_javascript_lexer_tests_pass` scrapes `ℹ pass N` from Node's
+  test reporter, so it fails whenever `FORCE_COLOR` is set in the environment.
+  `NO_COLOR=1` does not help — Node prefers `FORCE_COLOR`. Two separate agent
+  runs hit it and each worked around it, which is the reasonable move and also
+  how a broken gate survives.
+- **Guard:** parse `node --test`'s machine-readable output (`--test-reporter
+  tap` or `--test-reporter json`) instead of its human reporter. Not applied.
