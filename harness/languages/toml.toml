@@ -55,3 +55,13 @@ gate3 = "default"
 
 transparent_wrappers = []
 equivalent_kinds = []
+
+# Anonymous tokens are compared by default (gate3.py, `_generic`). A separator
+# the grammar makes optional is the formatter's to add or drop -- the same
+# permission `trail` has in the rule language -- so it is declared here and
+# elided from both signatures. Removing a *load-bearing* separator is still
+# caught, because gate 3 reparses: it either fails to parse or changes the
+# named tree. See FINDINGS.md entry 5.
+# the reference adds a trailing `,` to a broken array.
+optional_separators = [","]
+

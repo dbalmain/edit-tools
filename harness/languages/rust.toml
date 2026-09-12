@@ -38,5 +38,15 @@ equivalent_kinds = []
 # rejects the `| _` arm, because an `or_pattern` holding only anonymous tokens
 # cannot be declared transparent. Still outside the denominator, for a reason
 # that has moved from "no opcode" to "the gate cannot express the equivalence".
+
+# Anonymous tokens are compared by default (gate3.py, `_generic`). A separator
+# the grammar makes optional is the formatter's to add or drop -- the same
+# permission `trail` has in the rule language -- so it is declared here and
+# elided from both signatures. Removing a *load-bearing* separator is still
+# caught, because gate 3 reparses: it either fails to parse or changes the
+# named tree. See FINDINGS.md entry 5.
+# rustfmt adds a trailing `,` to a broken list.
+optional_separators = [","]
+
 [incomparable]
 "leading_pipes.rs" = "rustfmt deletes the leading `|` of each match arm (token deletion)"

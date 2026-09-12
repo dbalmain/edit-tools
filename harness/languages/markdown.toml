@@ -72,6 +72,15 @@ layout_leaves = ["pipe_table_cell", "pipe_table_delimiter_cell"]
 # may disappear. Meaningful sections still participate in the full tree check.
 whitespace_nodes = ["section"]
 
+# Anonymous tokens are compared by default (gate3.py, `_generic`). GFM makes a
+# pipe table's leading and trailing pipes optional, and prettier writes both
+# where the source may have written neither -- the same redraw `table`, the
+# third sanctioned mutation, performs on the ruler row. Declared here so the
+# gate compares the cells and their count, which it still does exactly, rather
+# than the row's outer punctuation.
+
+optional_separators = ["|"]
+
 # The block grammar has no extras. HTML comments are `html_block` nodes; they
 # remain structurally checked and also feed gate 3's universal comment layer.
 comment_kinds = ["html_block"]

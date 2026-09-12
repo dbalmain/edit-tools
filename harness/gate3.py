@@ -242,6 +242,25 @@ def _whitespace_node(node, source: bytes, manifest, aliases) -> bool:
     )
 
 
+def _significant_gap(gap: bytes, manifest) -> bool:
+    """Is this untokenised source worth comparing?
+
+    Whitespace is layout and always drops. A gap that holds nothing but
+    declared `optional_separators` drops for the same reason an anonymous
+    separator child does -- a grammar may leave a separator untokenised
+    (Kotlin's `;` between two top-level declarations is a gap, not a child),
+    and the declaration must not depend on which of the two shapes the
+    grammar happened to choose. Anything else is content the grammar declined
+    to tokenise and is compared byte-for-byte.
+    """
+    text = gap.strip()
+    if not text:
+        return False
+    for sep in manifest.optional_separators:
+        text = text.replace(sep.encode(), b"")
+    return bool(text.strip())
+
+
 def _generic(
     node,
     source: bytes,
@@ -267,15 +286,20 @@ def _generic(
         and _whitespace_node(child, source, manifest, aliases)
     ]
     kids = [child for child in kids if child not in ignored]
+    if node.type in layout:
+        # A declared layout leaf is layout whatever its children are. Checking
+        # this before `kids` matters now that anonymous children are visible:
+        # `pipe_table_delimiter_cell` holds anonymous `-` tokens, so a `kids`
+        # test alone would route it into the recurse branch and compare the
+        # ruler dashes that `_layout` exists to reduce.
+        return (kind, _layout(node, source))
     if not kids:
-        if node.type in layout:
-            return (kind, _layout(node, source))
         return (kind, _tokens(node, source, ignored))
     parts: list = []
     cursor = node.start_byte
     for child in node.children:
         gap = source[cursor:child.start_byte]
-        if gap.strip():
+        if _significant_gap(gap, manifest):
             parts.append(gap.decode())
         cursor = child.end_byte
         if child.is_extra or child in ignored:
@@ -287,28 +311,13 @@ def _generic(
                 _generic(child, source, manifest, aliases, wrappers, canon, layout)
             )
         else:
-            parts.append(source[child.start_byte:child.end_byte].decode())
+            text = source[child.start_byte:child.end_byte].decode()
+            if text not in manifest.optional_separators:
+                parts.append(text)
     tail = source[cursor:node.end_byte]
-    if tail.strip():
+    if _significant_gap(tail, manifest):
         parts.append(tail.decode())
-    return (kind, tuple(_drop_trailing_separator(parts)))
-
-
-_SEPARATORS = frozenset({",", ";"})
-_CLOSERS = frozenset({")", "]", "}", ">"})
-
-
-def _drop_trailing_separator(parts: list) -> list:
-    """EXPERIMENT: elide a separator that sits last, or just before a closer."""
-    out = []
-    for i, part in enumerate(parts):
-        if isinstance(part, str) and part in _SEPARATORS:
-            rest = parts[i + 1:]
-            if not rest or (isinstance(rest[0], str) and rest[0] in _CLOSERS
-                            and len(rest) == 1):
-                continue
-        out.append(part)
-    return out
+    return (kind, tuple(parts))
 
 
 def _canon_map(manifest) -> dict[str, str]:

@@ -61,3 +61,13 @@ gate3 = "default"
 # declaring the kind does not let a formatter drop `| B` from `A | B`.
 transparent_wrappers = ["parenthesized_expression", "union_type"]
 equivalent_kinds = []
+
+# Anonymous tokens are compared by default (gate3.py, `_generic`). A separator
+# the grammar makes optional is the formatter's to add or drop -- the same
+# permission `trail` has in the rule language -- so it is declared here and
+# elided from both signatures. Removing a *load-bearing* separator is still
+# caught, because gate 3 reparses: it either fails to parse or changes the
+# named tree. See FINDINGS.md entry 5.
+# prettier adds a trailing `,` to a broken list and the optional final `;` to a member or statement.
+optional_separators = [",", ";"]
+
