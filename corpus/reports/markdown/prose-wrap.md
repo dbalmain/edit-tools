@@ -7,6 +7,27 @@ limit before it could write this file itself; the measurements and diffs it had
 already produced were recovered from the working tree and are reproduced here
 unchanged, with the double-format check and gate run added afterward.
 
+## 2026-09-12 gate-equivalence design note
+
+The block grammar makes `inline`, rather than its parent `paragraph`, the
+declaration boundary gate 3 can use. A paragraph has one named `inline` child;
+the `inline` node has anonymous delimiter tokens and retains ordinary prose in
+the untokenized gaps between them. Consequently `_tokens` currently compares a
+soft line break byte-for-byte in the same tuple member that protects its words.
+
+The per-language declaration will canonicalize soft ASCII whitespace only in
+retained gaps of a declared `inline` node. It will not canonicalize token text,
+non-whitespace bytes, or Markdown hard-break events. The last restriction is
+load-bearing: a direct parser probe found that `alpha  \nbeta` (a two-space hard
+break) and `alpha\nbeta` (a soft break) both reparse to the same
+`paragraph/inline` block tree. A blanket whitespace collapse would therefore
+admit a semantic change that reparsing cannot detect. Gate 3's destructive arm
+will cover both a dropped prose word and this hard-break distinction.
+
+This is a gate declaration and reference-policy change only. It does not add
+the source projection or reflow described below, and it requires no package or
+runtime change.
+
 ## What was measured
 
 `harness/languages/markdown.toml` pins the reference at
