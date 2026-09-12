@@ -132,11 +132,10 @@ Repeat the source/range and total-coverage checks at the runtime boundary.
 Producer-only validation would not protect a frozen projection edited or made
 stale afterward. A `source_partitions: ["prose_run"]` package header requires
 these checks **before leaf dispatch, trivia consumption or Doc construction**.
-A childless
-declared node is accepted only when its range is empty; a childless non-empty
-node refuses. Other node types retain their existing validation behavior. Atom
-`verbatim` validation remains in place; this is an additional coverage
-condition, not a relaxation of it.
+A childless declared node is accepted only when its range is empty; a childless
+non-empty node refuses. Other node types retain their existing validation
+behavior. Atom `verbatim` validation remains in place; this is an additional
+coverage condition, not a relaxation of it.
 
 This header requires package format version 3: older loaders ignore unknown
 header fields, so version 2 plus a new field would silently omit the guarantee.

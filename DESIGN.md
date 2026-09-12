@@ -167,10 +167,11 @@ an explicit partition into source atoms and whitespace leaves. Existing `fill`,
 emphasis. A composition probe in both runtimes also exposed the missing
 guarantee: source validation checks existing children, not exhaustive coverage
 of their parent. The proposal therefore requires generic partition validation
-before consumption, with a versioned package declaration. The header that check needs, `source_partitions`, ships in package format 3.
-The projection parser does not; the opcode count and mutation policies above
-are unchanged. Safe break classification and an independent gate equivalence
-remain prerequisites, not consequences of preserving source bytes.
+before consumption, with a versioned package declaration. The header that
+check needs, `source_partitions`, ships in package format 3. The projection
+parser does not; the opcode count and mutation policies above are unchanged.
+Safe break classification and an independent gate equivalence remain
+prerequisites, not consequences of preserving source bytes.
 
 A language region may also be spliced **for readers only**. An injection site
 declaring `format = false` makes the harness stamp `opaque` beside `language`,

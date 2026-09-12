@@ -261,11 +261,7 @@ impl<'a> Ctx<'a> {
     fn new(node: &'a Node, f: &Fmt<'a>) -> Result<Ctx<'a>, Refusal> {
         // A declaration cannot hide stale text or overlapping ranges. Only
         // check the subtree where whitespace trivia is actually consumed.
-        if node
-            .children
-            .iter()
-            .any(|child| whitespace_node(child, f.pkg))
-        {
+        if node.children.iter().any(|child| whitespace_node(child, f.pkg)) {
             check_source(node, f.src, "whitespace_nodes")?;
         }
         let parts = split(node, f.src, f.pkg);
@@ -453,7 +449,10 @@ impl<'a> Ctx<'a> {
                 found = true;
                 break;
             }
-            node = current.children.last().filter(|last| last.end == prev.end);
+            node = current
+                .children
+                .last()
+                .filter(|last| last.end == prev.end);
         }
         if !found {
             return 0;
@@ -1451,9 +1450,7 @@ mod tests {
         });
         let error = run_on(&packages, "#> ", root, 80).expect_err("refuses");
         assert!(
-            error
-                .0
-                .contains("no comment on the marker a `prefix` consumes"),
+            error.0.contains("no comment on the marker a `prefix` consumes"),
             "{}",
             error.0
         );
@@ -3079,8 +3076,9 @@ try {{
                 "name": ["verbatim"]
             }
         });
-        let pkg =
-            || -> Package { serde_json::from_value(raw.clone()).expect("swallow package parses") };
+        let pkg = || -> Package {
+            serde_json::from_value(raw.clone()).expect("swallow package parses")
+        };
         let source = "a\n\nb";
         let tree = |first_end: usize, file_end: usize| {
             json!({
@@ -3176,18 +3174,20 @@ try {{
         // see one source blank. Ownership settles the sibling gap only -- the
         // trailing measure keeps the shallow bound, so the two never claim the
         // same newline.
-        let pkg: PackageMap = one(serde_json::from_value(json!({
-            "format": "et-doc-rules/1",
-            "indent": 2,
-            "tokens": [],
-            "gap_owner": { "file": ["item"] },
-            "rules": {
-                "file": ["seq", ["each", "named", ["seq", ["hard"], ["blank", 1]]], ["blank", 1]],
-                "item": ["child", "t:name"],
-                "name": ["verbatim"]
-            }
-        }))
-        .expect("package parses"));
+        let pkg: PackageMap = one(
+            serde_json::from_value(json!({
+                "format": "et-doc-rules/1",
+                "indent": 2,
+                "tokens": [],
+                "gap_owner": { "file": ["item"] },
+                "rules": {
+                    "file": ["seq", ["each", "named", ["seq", ["hard"], ["blank", 1]]], ["blank", 1]],
+                    "item": ["child", "t:name"],
+                    "name": ["verbatim"]
+                }
+            }))
+            .expect("package parses"),
+        );
         // `b\n\n` swallows its ending and the blank after it. Shallow peels one
         // terminator and stops; deep would reach `b` and count the blank twice.
         let root = json!({
@@ -3443,10 +3443,7 @@ try {{
     #[test]
     fn table_pads_to_the_widest_cell_and_redraws_the_ruler_to_match() {
         let out = run_on(&table_pkg(), WONKY, wonky_table(), 80).expect("formats");
-        assert_eq!(
-            out,
-            "| a      |  bb |\n| :----- | --: |\n| longer |   2 |\n"
-        );
+        assert_eq!(out, "| a      |  bb |\n| :----- | --: |\n| longer |   2 |\n");
     }
 
     #[test]
@@ -3514,6 +3511,7 @@ try {{
         let err = run_on(&pkg, WONKY, root, 80).expect_err("must refuse");
         assert!(err.0.contains("`table` takes every child"), "{}", err.0);
     }
+
 
     // --- blank_owner ------------------------------------------------------
 
@@ -3590,11 +3588,9 @@ try {{
             "blank_owner": "block",
             "rules": { "file": ["each", "named", ["blank", 1]] },
         });
-        assert!(
-            serde_json::from_value::<Package>(raw).is_err(),
-            "must refuse a bare string"
-        );
+        assert!(serde_json::from_value::<Package>(raw).is_err(), "must refuse a bare string");
     }
+
 
     #[test]
     fn table_refuses_an_error_where_a_cell_goes_rather_than_re_emitting_it() {
@@ -3619,7 +3615,11 @@ try {{
             ],
         });
         let err = run_on(&table_pkg(), source, root, 80).expect_err("must refuse");
-        assert!(err.0.contains("unparsed cell at byte 17"), "{}", err.0);
+        assert!(
+            err.0.contains("unparsed cell at byte 17"),
+            "{}",
+            err.0
+        );
     }
 
     // Toy kinds exercise whitespace attachment independently of Markdown.
@@ -3660,10 +3660,7 @@ try {{
             ("gap", "\n\n"),
         ]);
         let pkg = whitespace_pkg(json!({}));
-        assert_eq!(
-            run_on(&pkg, &source, root, 80).expect("formats"),
-            "a\n\nb\n"
-        );
+        assert_eq!(run_on(&pkg, &source, root, 80).expect("formats"), "a\n\nb\n");
         let (source, root) = trivia_file(&[("gap", "\n\n")]);
         assert_eq!(run_on(&pkg, &source, root, 80).expect("formats"), "\n");
     }
@@ -3673,22 +3670,12 @@ try {{
         let (source, root) = trivia_file(&[("a", "a\n"), ("gap", "\n"), ("b", "b\n")]);
         let rules = json!({"file": ["each", "named", ["hard"]]});
         let pkg = whitespace_pkg(json!({"rules": rules}));
-        assert_eq!(
-            run_on(&pkg, &source, root.clone(), 80).expect("formats"),
-            "a\n\nb\n"
-        );
+        assert_eq!(run_on(&pkg, &source, root.clone(), 80).expect("formats"), "a\n\nb\n");
         let pkg = whitespace_pkg(json!({"rules": rules, "whitespace_nodes": []}));
-        assert_eq!(
-            run_on(&pkg, &source, root, 80).expect("formats"),
-            "a\n\n\n\nb\n"
-        );
+        assert_eq!(run_on(&pkg, &source, root, 80).expect("formats"), "a\n\n\n\nb\n");
         let (source, root) = trivia_file(&[("a", "a\n"), ("gap", ""), ("b", "b\n")]);
-        let pkg =
-            whitespace_pkg(json!({"rules": {"file": ["each", "named", ["blank", 1, ["a"]]]}}));
-        assert_eq!(
-            run_on(&pkg, &source, root, 80).expect("formats"),
-            "a\n\nb\n"
-        );
+        let pkg = whitespace_pkg(json!({"rules": {"file": ["each", "named", ["blank", 1, ["a"]]]}}));
+        assert_eq!(run_on(&pkg, &source, root, 80).expect("formats"), "a\n\nb\n");
     }
 
     #[test]
@@ -3698,18 +3685,12 @@ try {{
         assert_eq!(run_on(&pkg, &source, root, 80).expect("formats"), source);
         let (source, mut root) = trivia_file(&[("gap", " \n")]);
         root["children"][0]["children"] = json!([span("content", 0, 2, " \n")]);
-        root["children"][0]
-            .as_object_mut()
-            .expect("object")
-            .remove("text");
+        root["children"][0].as_object_mut().expect("object").remove("text");
         assert_eq!(run_on(&pkg, &source, root, 80).expect("formats"), " \n");
         let (source, mut root) = trivia_file(&[("a", "a\n"), ("gap", "\n"), ("b", "b\n")]);
         root["children"][1]["language"] = json!("toy");
         let pkg = whitespace_pkg(json!({"rules": {"file": ["each", "named", ["hard"]]}}));
-        assert_eq!(
-            run_on(&pkg, &source, root, 80).expect("formats"),
-            "a\n\n\n\nb\n"
-        );
+        assert_eq!(run_on(&pkg, &source, root, 80).expect("formats"), "a\n\n\n\nb\n");
     }
 
     #[test]
