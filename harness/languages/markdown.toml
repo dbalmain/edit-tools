@@ -26,17 +26,17 @@ injection_aliases = ["markdown", "md"]
 # not an extra flag: parser-only, filepath-only, and x.md vs x.markdown are
 # byte-identical on dirty input, so --parser is omitted. --no-config is
 # load-bearing (below). --print-width honours {width}: established by diffing
-# 80 vs 40 on a 27-item JSON fence, not by reading --help. `--prose-wrap
-# always` is now the live policy: gate 3's declared `inline` prose equivalence
-# accepts soft-whitespace reflow while continuing to compare words, delimiters
-# and hard-break events. The package still emits paragraphs verbatim, so the
-# resulting agreement gap honestly measures the reflow work that remains.
+# 80 vs 40 on a 27-item JSON fence, not by reading --help. The original
+# onboarding reference used proseWrap=preserve. Roadmap step 2 measured always:
+# agreement fell 27/32 -> 8/32 on the same 20 files, but gate 3 rejected 20
+# reference outputs. Keep the live pin green until a prose equivalence exists;
+# the generated always diff is retained in the report below.
 #
 # embeddedLanguageFormatting = "auto" remains the unnamed default that formats
 # fence interiors. Prose wrapping is independent of that guest-formatting policy.
-# See corpus/reports/markdown/prose-wrap.md for the before/after measurement and
-# docs/prose-projection.md for the planned formatter-side implementation.
-reference = "npx --yes prettier@3.9.6 --no-config --stdin-filepath x.md --print-width {width} --prose-wrap always"
+# The package still emits paragraphs verbatim. Switching prose policy requires
+# more than a package rule: see corpus/reports/markdown/prose-wrap.md.
+reference = "npx --yes prettier@3.9.6 --no-config --stdin-filepath x.md --print-width {width}"
 reference_version = "3.9.6"
 reference_width = "flag"
 
@@ -71,15 +71,6 @@ layout_leaves = ["pipe_table_cell", "pipe_table_delimiter_cell"]
 # removes it; only a section with no children and only ASCII layout whitespace
 # may disappear. Meaningful sections still participate in the full tree check.
 whitespace_nodes = ["section"]
-
-# Prettier's prose policy may move soft line breaks inside an `inline` node.
-# Markdown renders those ASCII whitespace runs as word separation, so their
-# position and width are layout rather than content. This stops gate 3 catching
-# a formatter that changes spaces, tabs or soft line breaks between the same
-# prose bytes. It still compares every word and anonymous delimiter token, and
-# preserves two-space and backslash hard-break events that the block grammar's
-# reparse cannot distinguish on its own.
-prose_nodes = ["inline"]
 
 # The block grammar has no extras. HTML comments are `html_block` nodes; they
 # remain structurally checked and also feed gate 3's universal comment layer.

@@ -8,22 +8,19 @@ name: sections
 
 # Document title
 
-An opening paragraph, so the first
-section has a body and not just its
+An opening paragraph, so the first section has a body and not just its
 heading.
 
 ## First section
 
-A paragraph whose trailing blank line
-falls inside this section's byte range
-rather than between the two sections.
+A paragraph whose trailing blank line falls inside this section's byte
+range rather than between the two sections.
 
 ## Second section
 
 ### A deeper heading
 
-The blank before this one is swallowed
-by the paragraph's own section.
+The blank before this one is swallowed by the paragraph's own section.
 
 ## Third section, entered with no blank line above its body
 
@@ -31,8 +28,7 @@ Prose starting on the very next line.
 
 ## Fourth section
 
-A section that ends in a fenced block
-rather than a paragraph.
+A section that ends in a fenced block rather than a paragraph.
 
 ```sh
 echo done
@@ -40,14 +36,12 @@ echo done
 
 ## Fifth section
 
-- a list, which is the other thing a
-  section can end with
+- a list, which is the other thing a section can end with
 - second item
 
 ## Sixth section
 
-> and a block quote, whose continuation
-> marker also ends a section
+> and a block quote, whose continuation marker also ends a section
 
 ## Seventh section
 

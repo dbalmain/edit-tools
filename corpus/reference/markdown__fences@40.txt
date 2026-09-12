@@ -1,10 +1,8 @@
 <!-- Fenced guests, verbatim fallbacks, empty { }. -->
 
-A document with one unparseable snippet
-must still format.
+A document with one unparseable snippet must still format.
 
-A JSON fence prettier formats, including
-the empty object written with a space:
+A JSON fence prettier formats, including the empty object written with a space:
 
 ```json
 {}
@@ -18,8 +16,7 @@ the empty object written with a space:
 ]
 ```
 
-A JavaScript fence prettier also
-formats:
+A JavaScript fence prettier also formats:
 
 ```javascript
 const x = [
@@ -29,8 +26,7 @@ const x = [
 ];
 ```
 
-No info string, unknown info string, and
-unparseable JSON stay verbatim:
+No info string, unknown info string, and unparseable JSON stay verbatim:
 
 ```
 leave   this    spacing
@@ -44,8 +40,7 @@ leave   this    too
 {broken
 ```
 
-Nested markdown containing JSON — the
-host-in-host case:
+Nested markdown containing JSON — the host-in-host case:
 
 ````markdown
 ```json
@@ -62,10 +57,8 @@ host-in-host case:
 ```
 ````
 
-An info string that is not one bare
-word: the grammar gives it children, and
-a rule that walks into it has to have
-one for each of them.
+An info string that is not one bare word: the grammar gives it children, and a
+rule that walks into it has to have one for each of them.
 
 ```exercism/note
 A slash in the info string, which makes `language` an interior node.

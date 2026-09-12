@@ -6,8 +6,8 @@ A void element on its own line, which is a complete element with no end tag:
 
 <img src="diagram.png" alt="A diagram" width="640">
 
-A balanced block over several lines, with interior indentation prettier does not
-touch:
+A balanced block over several lines, with interior indentation prettier does
+not touch:
 
 <figure class="wide">
   <img src="chart.png" alt="A chart">
@@ -29,9 +29,9 @@ marker stay outside the region's extent.
 # Blocks that do not splice
 
 The wrapper idiom splits one element across two blocks. The opener carries an
-attribute, so tree-sitter-html accepts it as a complete element and it splices;
-the closer is an ERROR and stays with the host. Nothing notices that the two
-belong together, which is why `format = false`:
+attribute, so tree-sitter-html accepts it as a complete element and it
+splices; the closer is an ERROR and stays with the host. Nothing notices that
+the two belong together, which is why `format = false`:
 
 <div class="wrapper">
 
@@ -39,8 +39,8 @@ Markdown **inside** the wrapper stays markdown.
 
 </div>
 
-A bare opener carries no attribute, so it is an ERROR on its own and both halves
-stay with the host:
+A bare opener carries no attribute, so it is an ERROR on its own and both
+halves stay with the host:
 
 <section>
 
@@ -50,11 +50,11 @@ Still inside.
 
 # What never reaches the site
 
-An inline tag on its own line is a paragraph, not an `html_block`, so the site
-never sees it and the markdown package emits it verbatim as before:
+An inline tag on its own line is a paragraph, not an `html_block`, so the
+site never sees it and the markdown package emits it verbatim as before:
 
 <span class="badge">inline</span>
 
-Quoting a block needs the blank line above it: a `>` continuation directly after
-an open html block is an ERROR in the block grammar, so the corpus cannot write
-that form at all.
+Quoting a block needs the blank line above it: a `>` continuation directly
+after an open html block is an ERROR in the block grammar, so the corpus
+cannot write that form at all.

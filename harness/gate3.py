@@ -162,42 +162,7 @@ def _layout(node, source: bytes) -> str:
     return text
 
 
-ASCII_WHITESPACE = re.compile(r"[ \t\n\r\f]+")
-
-
-def _prose_gap(text: str, *, follows_backslash: bool = False) -> str:
-    """Canonical prose layout without erasing Markdown hard breaks.
-
-    The block grammar does not distinguish `a  \n b` from `a\n b`: both are
-    one `inline` node, although the former renders a hard break. Two spaces
-    before a newline therefore become a canonical hard-break marker (`\n`),
-    while other ASCII whitespace runs become one space. A backslash-newline is
-    the other Markdown hard-break spelling; the backslash remains an exact
-    anonymous token and its following newline remains distinct here.
-
-    Non-ASCII whitespace is deliberately absent from the regular expression.
-    A nonbreaking space is content, not a line-breaking opportunity.
-    """
-    out: list[str] = []
-    at = 0
-    for match in ASCII_WHITESPACE.finditer(text):
-        out.append(text[at:match.start()])
-        whitespace = match.group()
-        hard_breaks = len(re.findall(r" {2,}\r?\n", whitespace))
-        if (
-            follows_backslash
-            and match.start() == 0
-            and re.match(r"\r?\n", whitespace)
-        ):
-            hard_breaks += 1
-        out.append("\n" * hard_breaks if hard_breaks else " ")
-        at = match.end()
-        follows_backslash = False
-    out.append(text[at:])
-    return "".join(out)
-
-
-def _tokens(node, source: bytes, ignored=(), *, prose: bool = False) -> str | tuple[str, ...]:
+def _tokens(node, source: bytes, ignored=()) -> str | tuple[str, ...]:
     """The spelling of a node that has no named children, with the whitespace
     *between* its tokens dropped.
 
@@ -240,35 +205,21 @@ def _tokens(node, source: bytes, ignored=(), *, prose: bool = False) -> str | tu
     a block scalar is unmatchable rather than merely inconvenient.
     """
     if not node.children:
-        text = source[node.start_byte:node.end_byte].decode()
-        return _prose_gap(text).strip(" ") if prose else text
+        return source[node.start_byte:node.end_byte].decode()
 
     parts: list[str] = []
     cursor = node.start_byte
-    previous = ""
     for child in node.children:
         if child in ignored:
             continue
         gap = source[cursor:child.start_byte].decode()
-        if gap.strip(" \t\n\r\f") if prose else gap.strip():
-            parts.append(
-                _prose_gap(gap, follows_backslash=previous == "\\")
-                if prose
-                else gap
-            )
-        previous = source[child.start_byte:child.end_byte].decode()
-        parts.append(previous)
+        if gap.strip():
+            parts.append(gap)
+        parts.append(source[child.start_byte:child.end_byte].decode())
         cursor = child.end_byte
     tail = source[cursor:node.end_byte].decode()
-    if tail.strip(" \t\n\r\f") if prose else tail.strip():
-        parts.append(
-            _prose_gap(tail, follows_backslash=previous == "\\")
-            if prose
-            else tail
-        )
-    if prose and parts:
-        parts[0] = parts[0].lstrip(" ")
-        parts[-1] = parts[-1].rstrip(" ")
+    if tail.strip():
+        parts.append(tail)
     return tuple(parts) if parts else ""
 
 
@@ -299,7 +250,6 @@ def _generic(
     wrappers: frozenset[str],
     canon: dict[str, str],
     layout: frozenset[str] = frozenset(),
-    prose: frozenset[str] = frozenset(),
 ):
     while node.type in wrappers:
         inner = [c for c in node.children if c.is_named and not c.is_extra]
@@ -320,15 +270,13 @@ def _generic(
     if not kids:
         if node.type in layout:
             return (kind, _layout(node, source))
-        return (kind, _tokens(node, source, ignored, prose=node.type in prose))
+        return (kind, _tokens(node, source, ignored))
     return (
         kind,
         tuple(
             ("injection_region", "")
             if region is not None and child == region.content
-            else _generic(
-                child, source, manifest, aliases, wrappers, canon, layout, prose
-            )
+            else _generic(child, source, manifest, aliases, wrappers, canon, layout)
             for child in kids
         ),
     )
@@ -366,7 +314,6 @@ def generic_part_from_root(
         manifest.transparent_wrappers,
         _canon_map(manifest),
         manifest.layout_leaves,
-        manifest.prose_nodes,
     )
 
 
