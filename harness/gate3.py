@@ -271,15 +271,44 @@ def _generic(
         if node.type in layout:
             return (kind, _layout(node, source))
         return (kind, _tokens(node, source, ignored))
-    return (
-        kind,
-        tuple(
-            ("injection_region", "")
-            if region is not None and child == region.content
-            else _generic(child, source, manifest, aliases, wrappers, canon, layout)
-            for child in kids
-        ),
-    )
+    parts: list = []
+    cursor = node.start_byte
+    for child in node.children:
+        gap = source[cursor:child.start_byte]
+        if gap.strip():
+            parts.append(gap.decode())
+        cursor = child.end_byte
+        if child.is_extra or child in ignored:
+            continue
+        if region is not None and child == region.content:
+            parts.append(("injection_region", ""))
+        elif child.is_named:
+            parts.append(
+                _generic(child, source, manifest, aliases, wrappers, canon, layout)
+            )
+        else:
+            parts.append(source[child.start_byte:child.end_byte].decode())
+    tail = source[cursor:node.end_byte]
+    if tail.strip():
+        parts.append(tail.decode())
+    return (kind, tuple(_drop_trailing_separator(parts)))
+
+
+_SEPARATORS = frozenset({",", ";"})
+_CLOSERS = frozenset({")", "]", "}", ">"})
+
+
+def _drop_trailing_separator(parts: list) -> list:
+    """EXPERIMENT: elide a separator that sits last, or just before a closer."""
+    out = []
+    for i, part in enumerate(parts):
+        if isinstance(part, str) and part in _SEPARATORS:
+            rest = parts[i + 1:]
+            if not rest or (isinstance(rest[0], str) and rest[0] in _CLOSERS
+                            and len(rest) == 1):
+                continue
+        out.append(part)
+    return out
 
 
 def _canon_map(manifest) -> dict[str, str]:
