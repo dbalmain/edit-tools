@@ -81,6 +81,9 @@ impl<'a> Fmt<'a> {
     }
 
     fn node_current(&self, node: &'a Node) -> Result<Doc, Refusal> {
+        if self.pkg.source_partitions.contains(&node.kind) {
+            check_source_partition(node, self.src)?;
+        }
         if let Some(text) = &node.text {
             return Ok(Doc::text(text.as_str()));
         }
@@ -1086,6 +1089,36 @@ fn positional_left<'a>(node: &'a Node, pkg: &Package) -> Option<&'a Node> {
 /// same proof before removing a leaf from the item view.
 fn check_source(node: &Node, src: &[u8], operation: &str) -> Result<(), Refusal> {
     check_source_node(node, src, None, &node.kind, operation)
+}
+
+/// A declared source partition covers `[start, end)` with non-empty, abutting
+/// children. `check_source` still runs: the declaration cannot weaken it.
+fn check_source_partition(node: &Node, src: &[u8]) -> Result<(), Refusal> {
+    check_source(node, src, "source_partitions")?;
+    let fail = |why: &str| Refusal(format!("source_partitions `{}` {why}", node.kind));
+    if node.children.is_empty() {
+        if node.start != node.end {
+            return Err(fail("has no children but a non-empty range"));
+        }
+        return Ok(());
+    }
+    let mut expect = node.start;
+    for (i, child) in node.children.iter().enumerate() {
+        if child.start >= child.end {
+            return Err(fail("has a zero-width child"));
+        }
+        if child.start != expect {
+            if i == 0 {
+                return Err(fail("has a leading gap"));
+            }
+            return Err(fail("has an interior gap"));
+        }
+        expect = child.end;
+    }
+    if expect != node.end {
+        return Err(fail("has a trailing gap"));
+    }
+    Ok(())
 }
 
 fn check_source_node(
@@ -3719,4 +3752,166 @@ try {{
         assert!(err.to_string().contains("must not overlap"), "{err}");
     }
 
+    // Discriminating trees from the 889c3ac repro: a `prose_run` that claims
+    // `[0, 16)` over `alpha beta gamma` but may omit children inside it.
+    fn partition_pkg(fields: serde_json::Value) -> PackageMap {
+        let mut raw = json!({
+            "format": "et-doc-rules/3",
+            "indent": 2,
+            "tokens": [],
+            "whitespace_nodes": ["prose_gap"],
+            "source_partitions": ["prose_run"],
+            "rules": {
+                "prose_run": ["fill", "t:prose_atom", ["line"]],
+                "prose_atom": ["verbatim"],
+            },
+        });
+        raw.as_object_mut()
+            .expect("formats")
+            .extend(fields.as_object().expect("object").clone());
+        one(serde_json::from_value(raw).expect("partition package parses"))
+    }
+
+    fn corpus_in(directory: &str, name: &str) -> (String, serde_json::Value) {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../corpus")
+            .join(directory)
+            .join(name);
+        let raw = std::fs::read_to_string(&path)
+            .unwrap_or_else(|e| panic!("{}: {e}", path.display()));
+        let tree: serde_json::Value = serde_json::from_str(&raw)
+            .unwrap_or_else(|e| panic!("{}: {e}", path.display()));
+        (
+            tree["source"].as_str().expect("fixture source").to_owned(),
+            tree["root"].clone(),
+        )
+    }
+
+    fn partition_fixture(stem: &str) -> (String, serde_json::Value) {
+        corpus_in(
+            "trees-partition",
+            &format!("toy__partition_{stem}.tree.json"),
+        )
+    }
+
+    #[test]
+    fn source_partitions_cover_the_declared_range_or_refuse() {
+        let pkg = partition_pkg(json!({}));
+        for (stem, expect) in [
+            ("full", Ok("alpha beta gamma\n")),
+            (
+                "hole_lead",
+                Err("source_partitions `prose_run` has a leading gap"),
+            ),
+            (
+                "hole_mid",
+                Err("source_partitions `prose_run` has an interior gap"),
+            ),
+            (
+                "hole_trail",
+                Err("source_partitions `prose_run` has a trailing gap"),
+            ),
+            (
+                "zero_width",
+                Err("source_partitions `prose_run` has a zero-width child"),
+            ),
+            (
+                "childless_nonempty",
+                Err("source_partitions `prose_run` has no children but a non-empty range"),
+            ),
+            ("childless_empty", Ok("\n")),
+            ("one_child", Ok("alpha beta gamma\n")),
+        ] {
+            let (source, root) = partition_fixture(stem);
+            match expect {
+                Ok(want) => assert_eq!(
+                    run_on(&pkg, &source, root, 80).unwrap_or_else(|e| panic!("{stem}: {}", e.0)),
+                    want,
+                    "{stem}"
+                ),
+                Err(want) => {
+                    let err = run_on(&pkg, &source, root, 80)
+                        .expect_err(stem);
+                    assert_eq!(err.0, want, "{stem}");
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn an_undeclared_node_type_with_the_same_hole_still_formats() {
+        let (source, root) = partition_fixture("hole_lead");
+        assert_eq!(
+            run_on(
+                &partition_pkg(json!({"source_partitions": []})),
+                &source,
+                root,
+                80
+            )
+            .expect("opt-in"),
+            "beta gamma\n"
+        );
+    }
+
+    #[test]
+    fn whitespace_nodes_at_format_3_still_format() {
+        let (source, root) = trivia_file(&[("a", "a\n"), ("gap", "\n"), ("b", "b\n")]);
+        let pkg = whitespace_pkg(json!({"format": "et-doc-rules/3"}));
+        assert_eq!(
+            run_on(&pkg, &source, root, 80).expect("formats"),
+            "a\n\nb\n"
+        );
+    }
+
+    #[test]
+    fn both_runtimes_refuse_the_same_corrupt_source_partition() {
+        let pkg_json = json!({
+            "format": "et-doc-rules/3",
+            "indent": 2,
+            "tokens": [],
+            "whitespace_nodes": ["prose_gap"],
+            "source_partitions": ["prose_run"],
+            "rules": {
+                "prose_run": ["fill", "t:prose_atom", ["line"]],
+                "prose_atom": ["verbatim"],
+            },
+        });
+        let pkg: Package =
+            serde_json::from_value(pkg_json.clone()).expect("partition package parses");
+        let (source, root) = partition_fixture("hole_lead");
+        let rust_err = run_on(&one(pkg), &source, root.clone(), 80).expect_err("rust must refuse");
+        assert_eq!(
+            rust_err.0,
+            "source_partitions `prose_run` has a leading gap"
+        );
+
+        let bundle = concat!(env!("CARGO_MANIFEST_DIR"), "/../runtime-js/bundle.js");
+        let script = format!(
+            r#"
+const {{ format }} = require({bundle:?});
+const tree = {{ language: "toy", source: {source}, root: {root} }};
+const pkg = {pkg};
+try {{
+  format(tree, new Map([["toy", pkg]]), 80);
+  console.error("js accepted a corrupt source partition");
+  process.exit(2);
+}} catch (e) {{
+  if (e.message !== "source_partitions `prose_run` has a leading gap") {{
+    console.error(e.message);
+    process.exit(3);
+  }}
+}}
+"#,
+            bundle = bundle,
+            source = serde_json::to_string(&source).expect("source json"),
+            root = root,
+            pkg = pkg_json,
+        );
+        let status = std::process::Command::new("node")
+            .arg("-e")
+            .arg(script)
+            .status()
+            .expect("spawn node");
+        assert!(status.success(), "js runtime disagreed (exit {status})");
+    }
 }

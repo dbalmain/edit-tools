@@ -676,26 +676,39 @@ test("comment fields refuse invalid counts", () => {
   }
 });
 
+const UNKNOWN_FORMAT_EXPECTED =
+  "expected `et-doc-rules/1` or `et-doc-rules/2` or `et-doc-rules/3`";
+
 test("the current package format is required", () => {
   const pkg = toy({ list: listRule });
   delete pkg.format;
   assert.throws(
     () => run(pkg, list(["a"], false), 80),
     (e) =>
-      e instanceof Refusal &&
-      /unknown package format undefined; expected "et-doc-rules\/1"/.test(e.message),
+      e instanceof Refusal
+      && e.message === `unknown package format \`undefined\`; ${UNKNOWN_FORMAT_EXPECTED}`,
   );
 });
 
 test("an unknown package format names the value found and expected", () => {
   const pkg = toy({ list: listRule });
-  pkg.format = "et-doc-rules/99";
-  assert.throws(
-    () => run(pkg, list(["a"], false), 80),
-    (e) =>
-      e instanceof Refusal &&
-      /unknown package format "et-doc-rules\/99"; expected "et-doc-rules\/1"/.test(e.message),
-  );
+  for (const found of [
+    "et-doc-rules/99",
+    "et-doc-rules/01",
+    "et-doc-rules/1.0",
+    "et-doc-rules/ 1",
+    "et-doc-rules/+1",
+    "et-doc-rules/1x",
+  ]) {
+    pkg.format = found;
+    assert.throws(
+      () => run(pkg, list(["a"], false), 80),
+      (e) =>
+        e instanceof Refusal
+        && e.message === `unknown package format \`${found}\`; ${UNKNOWN_FORMAT_EXPECTED}`,
+      found,
+    );
+  }
 });
 
 test("defs expand recursively and accept arbitrary JSON arguments", () => {
@@ -2145,4 +2158,117 @@ test("whitespace declarations require v2, a list of kinds, and disjoint comments
   assert.throws(() => runTrivia(whitespacePkg({ format: "et-doc-rules/1" }), file), /requires package format/);
   assert.throws(() => runTrivia(whitespacePkg({ format: "et-doc-rules/1", whitespace_nodes: [] }), file), /requires package format/);
   assert.throws(() => runTrivia(whitespacePkg({ comments: ["gap"] }), file), /must not overlap/);
+});
+
+// Discriminating trees from the 889c3ac repro: a `prose_run` that claims
+// `[0, 16)` over `alpha beta gamma` but may omit children inside it.
+const fs = require("node:fs");
+const path = require("node:path");
+const partitionPkg = (fields = {}) => ({
+  format: "et-doc-rules/3",
+  indent: 2,
+  tokens: [],
+  whitespace_nodes: ["prose_gap"],
+  source_partitions: ["prose_run"],
+  rules: {
+    prose_run: ["fill", "t:prose_atom", ["line"]],
+    prose_atom: ["verbatim"],
+  },
+  ...fields,
+});
+const readTreeIn = (directory, name) =>
+  JSON.parse(fs.readFileSync(path.join(__dirname, "..", "corpus", directory, name), "utf8"));
+const partitionFixture = (stem) =>
+  readTreeIn("trees-partition", `toy__partition_${stem}.tree.json`);
+
+test("source partitions cover the declared range or refuse", () => {
+  const pkg = partitionPkg();
+  for (const [stem, expect] of [
+    ["full", { out: "alpha beta gamma\n" }],
+    ["hole_lead", { refuse: "source_partitions `prose_run` has a leading gap" }],
+    ["hole_mid", { refuse: "source_partitions `prose_run` has an interior gap" }],
+    ["hole_trail", { refuse: "source_partitions `prose_run` has a trailing gap" }],
+    ["zero_width", { refuse: "source_partitions `prose_run` has a zero-width child" }],
+    ["childless_nonempty", {
+      refuse: "source_partitions `prose_run` has no children but a non-empty range",
+    }],
+    ["childless_empty", { out: "\n" }],
+    ["one_child", { out: "alpha beta gamma\n" }],
+  ]) {
+    const { source, root } = partitionFixture(stem);
+    if (Object.hasOwn(expect, "out")) {
+      assert.equal(runOn(pkg, source, root, 80), expect.out, stem);
+    } else {
+      assert.throws(
+        () => runOn(pkg, source, root, 80),
+        (e) => e instanceof Refusal && e.message === expect.refuse,
+        stem,
+      );
+    }
+  }
+});
+
+test("an undeclared node type with the same hole still formats", () => {
+  const { source, root } = partitionFixture("hole_lead");
+  assert.equal(runOn(partitionPkg({ source_partitions: [] }), source, root, 80), "beta gamma\n");
+});
+
+test("whitespace nodes at format 3 still format", () => {
+  const file = triviaFile([["a", "a\n"], ["gap", "\n"], ["b", "b\n"]]);
+  assert.equal(runTrivia(whitespacePkg({ format: "et-doc-rules/3" }), file), "a\n\nb\n");
+});
+
+test("source_partitions require v3, a list of kinds, and disjoint roles", () => {
+  const file = partitionFixture("full");
+  for (const value of [null, "prose_run", {}, [1]]) {
+    assert.throws(() => runOn(partitionPkg({ source_partitions: value }), file.source, file.root, 80), Refusal);
+  }
+  for (const value of [[], ["prose_run"]]) {
+    assert.throws(
+      () => runOn(partitionPkg({
+        format: "et-doc-rules/1",
+        source_partitions: value,
+        whitespace_nodes: undefined,
+      }), file.source, file.root, 80),
+      /`source_partitions` requires package format et-doc-rules\/3/,
+    );
+    assert.throws(
+      () => runOn(partitionPkg({ format: "et-doc-rules/2", source_partitions: value }), file.source, file.root, 80),
+      /`source_partitions` requires package format et-doc-rules\/3/,
+    );
+  }
+  assert.throws(
+    () => runOn(partitionPkg({ comments: ["prose_run"] }), file.source, file.root, 80),
+    /`source_partitions` and `comments` must not overlap/,
+  );
+  assert.throws(
+    () => runOn(partitionPkg({ whitespace_nodes: ["prose_run"] }), file.source, file.root, 80),
+    /`source_partitions` and `whitespace_nodes` must not overlap/,
+  );
+  assert.equal(runOn(partitionPkg({ source_partitions: [] }), file.source, file.root, 80), "alpha beta gamma\n");
+});
+
+test("both runtimes refuse the same corrupt source partition", () => {
+  const { source, root } = partitionFixture("hole_lead");
+  const pkg = partitionPkg();
+  assert.throws(
+    () => runOn(pkg, source, root, 80),
+    (e) => e instanceof Refusal && e.message === "source_partitions `prose_run` has a leading gap",
+  );
+
+  const os = require("node:os");
+  const { spawnSync } = require("node:child_process");
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "source-partitions-"));
+  const treePath = path.join(dir, "tree.json");
+  const pkgDir = path.join(dir, "packages");
+  fs.mkdirSync(pkgDir);
+  fs.writeFileSync(treePath, JSON.stringify({ language: "toy", source, root }));
+  fs.writeFileSync(path.join(pkgDir, "toy.json"), JSON.stringify(pkg));
+  const rust = path.join(__dirname, "..", "rust", "target", "release", "docfmt");
+  const result = spawnSync(rust, [treePath, "80"], {
+    env: { ...process.env, FMT_PACKAGES: pkgDir },
+    encoding: "utf8",
+  });
+  assert.notEqual(result.status, 0, "rust must refuse");
+  assert.equal(result.stderr.trim(), "source_partitions `prose_run` has a leading gap");
 });

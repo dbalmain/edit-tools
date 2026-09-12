@@ -43,16 +43,51 @@ function validateNode(node, bytes) {
   for (const child of node.children ?? []) validateNode(child, bytes);
 }
 
-const PACKAGE_FORMAT = "et-doc-rules/1";
-const WHITESPACE_FORMAT = "et-doc-rules/2";
+const FORMAT_PREFIX = "et-doc-rules/";
+const MIN_FORMAT_VERSION = 1;
+const MAX_FORMAT_VERSION = 3;
 const MAX_MACRO_DEPTH = 32;
 
-function validatePackageFormat(pkg) {
-  if (pkg.format !== PACKAGE_FORMAT && pkg.format !== WHITESPACE_FORMAT) {
-    throw new Refusal(
-      `unknown package format ${JSON.stringify(pkg.format)}; expected ${JSON.stringify(PACKAGE_FORMAT)} or ${JSON.stringify(WHITESPACE_FORMAT)}`,
-    );
+function formatName(version) {
+  return `${FORMAT_PREFIX}${version}`;
+}
+
+function expectedFormats() {
+  const names = [];
+  for (let version = MIN_FORMAT_VERSION; version <= MAX_FORMAT_VERSION; version++) {
+    names.push(`\`${formatName(version)}\``);
   }
+  return names.join(" or ");
+}
+
+function unknownFormatMessage(found) {
+  return `unknown package format \`${found}\`; expected ${expectedFormats()}`;
+}
+
+function parsePackageFormat(format) {
+  if (typeof format !== "string" || !format.startsWith(FORMAT_PREFIX)) {
+    throw new Refusal(unknownFormatMessage(format));
+  }
+  const version = Number(format.slice(FORMAT_PREFIX.length));
+  // Canonical spelling only: `et-doc-rules/01` parses as 1 but must still
+  // refuse, or a future `>= 2` predicate would accept it.
+  if (
+    !Number.isSafeInteger(version)
+    || `${FORMAT_PREFIX}${version}` !== format
+    || version < MIN_FORMAT_VERSION
+    || version > MAX_FORMAT_VERSION
+  ) {
+    throw new Refusal(unknownFormatMessage(format));
+  }
+  return version;
+}
+
+function allowsWhitespaceNodes(version) {
+  return version >= 2;
+}
+
+function allowsSourcePartitions(version) {
+  return version >= 3;
 }
 
 const isObject = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
@@ -427,7 +462,7 @@ function blankOwnerField(pkg) {
 }
 
 function buildPackage(pkg) {
-  validatePackageFormat(pkg);
+  const version = parsePackageFormat(pkg.format);
   const comment_cells = commentCellsField(pkg);
   const tab_stop = tabStopField(pkg, comment_cells);
   const comment_gap = gapField(pkg, "comment_gap");
@@ -436,12 +471,24 @@ function buildPackage(pkg) {
   gapOwnerField(pkg);
   blankOwnerField(pkg);
   if (pkg.whitespace_nodes !== undefined) {
-    if (pkg.format !== WHITESPACE_FORMAT) {
-      throw new Refusal("`whitespace_nodes` requires package format et-doc-rules/2");
+    if (!allowsWhitespaceNodes(version)) {
+      throw new Refusal("`whitespace_nodes` requires package format et-doc-rules/2 or later");
     }
     nodeTypes(pkg.whitespace_nodes);
     if (pkg.whitespace_nodes.some((kind) => (pkg.comments ?? []).includes(kind))) {
       throw new Refusal("`whitespace_nodes` and `comments` must not overlap");
+    }
+  }
+  if (pkg.source_partitions !== undefined) {
+    if (!allowsSourcePartitions(version)) {
+      throw new Refusal("`source_partitions` requires package format et-doc-rules/3");
+    }
+    nodeTypes(pkg.source_partitions);
+    if (pkg.source_partitions.some((kind) => (pkg.comments ?? []).includes(kind))) {
+      throw new Refusal("`source_partitions` and `comments` must not overlap");
+    }
+    if (pkg.source_partitions.some((kind) => (pkg.whitespace_nodes ?? []).includes(kind))) {
+      throw new Refusal("`source_partitions` and `whitespace_nodes` must not overlap");
     }
   }
   const defs = pkg.defs === undefined ? {} : pkg.defs;
@@ -1769,6 +1816,30 @@ class Ctx {
   }
 }
 
+/** A declared source partition covers `[start, end)` with non-empty, abutting
+ *  children. `checkSource` still runs: the declaration cannot weaken it. */
+function checkSourcePartition(fmt, node) {
+  checkSource(fmt, node, "source_partitions");
+  const fail = (why) => {
+    throw new Refusal(`source_partitions \`${node.type}\` ${why}`);
+  };
+  const kids = node.children ?? [];
+  if (kids.length === 0) {
+    if (node.start !== node.end) fail("has no children but a non-empty range");
+    return;
+  }
+  let expect = node.start;
+  for (let i = 0; i < kids.length; i++) {
+    const child = kids[i];
+    if (child.start >= child.end) fail("has a zero-width child");
+    if (child.start !== expect) {
+      fail(i === 0 ? "has a leading gap" : "has an interior gap");
+    }
+    expect = child.end;
+  }
+  if (expect !== node.end) fail("has a trailing gap");
+}
+
 /** `verbatim` is the one opcode that emits source bytes nobody compared
  *  against the tree. Every other path reaches text through a real child, so
  *  the linearity invariant protects it; this walk is the equivalent for a
@@ -1823,6 +1894,7 @@ class Formatter {
     );
     this.blankOwner = new Set(this.pkg.blank_owner ?? []);
     this.whitespaceNodes = new Set(this.pkg.whitespace_nodes ?? []);
+    this.sourcePartitions = new Set(this.pkg.source_partitions ?? []);
     this.optionalParens = new Set(this.pkg.optional_parens ?? []);
     this.precedence = this.pkg.precedence ?? {};
     this.commentGap = this.pkg.comment_gap;
@@ -1863,6 +1935,7 @@ class Formatter {
   }
 
   nodeCurrent(node) {
+    if (this.sourcePartitions.has(node.type)) checkSourcePartition(this, node);
     if (node.text !== undefined) return text(node.text);
     const rule = this.pkg.rules[node.type];
     if (!rule) throw new Refusal(`package has no rule for node type \`${node.type}\``);

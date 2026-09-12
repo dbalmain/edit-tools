@@ -167,10 +167,11 @@ an explicit partition into source atoms and whitespace leaves. Existing `fill`,
 emphasis. A composition probe in both runtimes also exposed the missing
 guarantee: source validation checks existing children, not exhaustive coverage
 of their parent. The proposal therefore requires generic partition validation
-before consumption, with a versioned package declaration. Neither that header
-nor a projection parser ships yet; the opcode count and mutation policies above
-are unchanged. Safe break classification and an independent gate equivalence
-remain prerequisites, not consequences of preserving source bytes.
+before consumption, with a versioned package declaration. The header that
+check needs, `source_partitions`, ships in package format 3. The projection
+parser does not; the opcode count and mutation policies above are unchanged.
+Safe break classification and an independent gate equivalence remain
+prerequisites, not consequences of preserving source bytes.
 
 A language region may also be spliced **for readers only**. An injection site
 declaring `format = false` makes the harness stamp `opaque` beside `language`,
@@ -272,12 +273,15 @@ accidentally become block merely because a deeper nested element is block.
 }
 ```
 
-`format` is required. Both runtimes accept `et-doc-rules/1` and
-`et-doc-rules/2`, refusing other values by name. Version 2 adds the
-`whitespace_nodes` declaration below; the 29 opcodes are the same in both.
-Packages using that declaration must say version 2, including an empty list.
-The markdown package does; older runtimes refuse it at load instead of silently
-ignoring its layout policy. Existing version 1 packages keep their behaviour.
+`format` is required. Both runtimes accept `et-doc-rules/1`,
+`et-doc-rules/2` and `et-doc-rules/3`, refusing other values by name. Version 2
+adds the `whitespace_nodes` declaration below; version 3 adds
+`source_partitions`. The 29 opcodes are the same in all three. Packages using
+`whitespace_nodes` must say version 2 or later, including an empty list;
+packages using `source_partitions` must say version 3, including an empty list.
+The markdown package uses version 2; older runtimes refuse it at load instead of
+silently ignoring its layout policy. Existing version 1 packages keep their
+behaviour.
 
 That protection covers the format string and the opcode set -- an unknown
 opcode refuses by name. It does **not** cover header fields. Neither loader
@@ -322,6 +326,21 @@ not strings, because packages may choose whitespace quantities but may not emit
 arbitrary text. `blank_cap` applies only inside runtime-owned comment
 attachment; the `blank` opcode's operand still governs gaps between items
 visible to a rule.
+
+`source_partitions` is a version 3 package fact: a list of node types that are
+an exact partition of their own source range. Wherever a named type appears,
+the first child starts at the node's `start`, each subsequent child starts at
+the previous child's `end`, the last child ends at the node's `end`, and every
+child is non-empty. A childless declared node is allowed only when `start ==
+end`. The check runs on entry to the node, before the leaf return, before
+whitespace-trivia consumption, and before any Doc is built, and it is in
+addition to the existing source-range walk: a declaration cannot weaken a check
+that already exists. Ordinary CST nodes legitimately contain source their
+children do not cover, so this is never a global tree invariant. No shipped
+package declares it yet.
+
+The declaration must be a list of strings. It must not overlap `comments` or
+`whitespace_nodes`. Duplicates are set membership, as with those fields.
 
 `whitespace_nodes` is a version 2 package fact: a list of node types whose
 **whitespace-only leaves** are gap trivia. Markdown declares `["section"]`.
