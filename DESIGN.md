@@ -170,6 +170,11 @@ of their parent. The proposal therefore requires generic partition validation
 before consumption, with a versioned package declaration. The header that
 check needs, `source_partitions`, ships in package format 3. The projection
 parser does not; the opcode count and mutation policies above are unchanged.
+`harness/prose.py` and its JavaScript mirror now build that view for the **A1**
+subset -- plain top-level paragraphs, decided from the block grammar alone --
+and `harness/probe_prose.py` gates it. That is a harness capability, not a
+runtime or package one: no shipped package declares `source_partitions`, the
+markdown package is still format 2, and it still emits paragraphs `verbatim`.
 Safe break classification and an independent gate equivalence remain
 prerequisites, not consequences of preserving source bytes.
 

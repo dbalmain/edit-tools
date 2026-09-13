@@ -33,6 +33,25 @@ findings). Each should name the guard that will eventually retire it.
 - **Grep `docs/onboarding/FINDINGS.md` before writing an offload brief.** An
   agent briefed on a problem the repo has already analysed re-derives the
   analysis and bills for it. Search the finding, not just the code.
+- **A whitelist cannot be validated by sweeping real data.** Real inputs vary
+  on everything at once, so widening a predicate by one character usually
+  changes nothing measurable and the unsafe edit looks free. Measured here: of
+  ten deliberately unsafe edits to `harness/prose.py`, only four changed which
+  paragraphs were eligible across 209 real markdown files, and the sweep passed
+  for the other six. The guard is a **fixture of near misses** — one file whose
+  every entry is admissible except in the single respect it is named for, which
+  the probe requires to yield zero matches. `harness/fixtures/prose-refused.md`
+  took the same battery from 4/10 to 12/13. *Retired by:* nothing; a
+  corpus-derived predicate should ship with its refusal fixture in the same
+  commit.
+- **A reparse only detects damage its grammar models.** "Reparse and compare"
+  reads like a total check and is bounded by what the parser represents.
+  Markdown's block grammar makes a paragraph's contents one opaque `inline`
+  node, so a reflow sweep built on it caught 1 of 10 unsafe edits — emphasis,
+  code spans and links were mangled invisibly. Name the grammar a round-trip
+  check actually exercises, and reach for an independent oracle (here, the
+  package's separate *inline* grammar) for the layer it cannot see. *Retired
+  by:* nothing; the habit is to ask "what would this reparse NOT notice?"
 - **A measured zero needs a positive control.** A sweep that finds nothing and a
   sweep that runs on nothing are the same output. Before recording a zero, make
   the probe report what it *visited* — files opened, nodes walked — and check
@@ -43,6 +62,23 @@ findings). Each should name the guard that will eventually retire it.
   print the denominator.
 
 ## Findings log
+
+### 2026-09-13 — a mutation battery driven by `sed` reported zero survivors
+
+- **What:** the first mutation check of `harness/prose.py` ran its edits through
+  a shell `for`/`sed` loop and reported 0 failing tests for two of three
+  mutations — read at the time as "the tests do not catch this". The patterns
+  contained quotes and slashes that the shell mangled, so `sed` matched nothing
+  and the unmutated file was tested. Re-run from a Python mutator, all five
+  mutations failed tests as they should.
+- **Why missed:** a mutation that does not apply and a mutation that is not
+  caught produce the same output. This is "a measured zero needs a positive
+  control" one level up — the control belongs on the *mutator*, not only on the
+  thing being measured.
+- **Guard:** proposed, not applied — have the mutator assert the file changed
+  (`text != original`) before running the suite, and fail loudly on a
+  non-matching anchor. The Python mutator used afterwards does print
+  `ANCHOR MISSING`, which is the same idea done by hand.
 
 ### 2026-09-13 — the one producer-agreement gate reported success on zero files
 
