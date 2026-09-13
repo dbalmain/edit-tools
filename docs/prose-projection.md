@@ -83,7 +83,7 @@ are the stable half.
 The two figures answer different questions and neither is the other: eligible
 paragraphs are the short ones, so the count overstates the reach.
 
-Where the other 89% goes is the roadmap:
+Where the other 89% goes, as **first-match** refusal reasons:
 
 | Refused because | Share |
 | --- | --- |
@@ -92,10 +92,25 @@ Where the other 89% goes is the roadmap:
 | It holds a non-ASCII byte | 1.4% |
 | It would acquire a block, is one word, or has odd whitespace | 0.9% |
 
-A2 buys the first row. The second needs no new grammar at all -- only the
-retained-range map and continuation-prefix ownership this document defers -- so
-it is a separate slice that could be taken before A2 rather than after, and at
-a third of A2's cost.
+**Those shares are not what a slice buys, and reading them as though they were
+is the mistake this section has now made twice.** A container paragraph is
+refused before it is examined at all, so most of that 36.6% would simply be
+refused for inline syntax the moment containers were allowed. Measured by
+actually relaxing each rule:
+
+| | Eligible | Change |
+| --- | --- | --- |
+| A1 today | 536 (10.6%) | |
+| Containers allowed | 674 (13.4%) | **+138** |
+| Inline syntax allowed (A2's reach) | 1,084 (21.5%) | **+548** |
+| Both | 1,290 (25.6%) | **+754** |
+
+So A2 is worth about **four times** what the container slice is worth, which is
+the opposite of the ordering the refusal table suggests. The inline row is a
+lower bound on A2 besides, since a real inline grammar admits shapes this
+approximation cannot. And both together still leave three paragraphs in four
+refused, which is the number to weigh before any of this becomes a visible
+prose-wrap policy.
 
 Two corrections to earlier drafts of this section, both worth keeping because
 both were confidently stated:
@@ -103,11 +118,16 @@ both were confidently stated:
 - It first reported **2.2%** and **7.9%**, from a hand-written predicate over a
   different set of files. Neither figure describes the predicate that shipped.
 - It then reported containers as the *larger* half at 46.1% against 41.7%, and
-  drew the conclusion that the usual framing is inverted. That was measured
-  over a glob that swept untracked offload notes, which are unusually plain
-  prose. On the tracked set the ordering is the ordinary one. The probe now
-  reads `git ls-files`, so its input set is the commit's rather than whatever
-  is lying in the checkout.
+  concluded that the usual framing is inverted. That was measured over a glob
+  that swept untracked offload notes, which are unusually plain prose. On the
+  tracked set the ordering is the ordinary one. The probe now reads
+  `git ls-files`, so its input set is the commit's rather than whatever is
+  lying in the checkout.
+- Corrected again, and this is the interesting one: even with the right file
+  set, it read refusal *shares* as though they were what a slice would buy.
+  They are first-match counts. Relaxing the rules one at a time gives the table
+  above, and it says A2 is worth four times the container slice rather than a
+  third of it.
 
 ## Inputs and ownership
 
