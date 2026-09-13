@@ -33,12 +33,25 @@ findings). Each should name the guard that will eventually retire it.
 - **Grep `docs/onboarding/FINDINGS.md` before writing an offload brief.** An
   agent briefed on a problem the repo has already analysed re-derives the
   analysis and bills for it. Search the finding, not just the code.
+- **A positive control must fail for the reason it names.** A control that
+  accepts *any* failure only proves something is broken, not that the check
+  under test is what caught it. Measured here: `probe_prose.py`'s phase-B
+  control disabled both `project()` and `reasons()` in the JavaScript driver,
+  so phase B failed on the empty verdict list and never reached the document
+  comparison — deleting that comparison outright left the whole probe green.
+  The control now disables only `project`, and reads the failure message back
+  to confirm it failed at the document comparison. *Retired by:* nothing; write
+  the control's expected failure message into the control.
 - **A whitelist cannot be validated by sweeping real data.** Real inputs vary
   on everything at once, so widening a predicate by one character usually
   changes nothing measurable and the unsafe edit looks free. Measured here: of
   ten deliberately unsafe edits to `harness/prose.py`, only four changed which
-  paragraphs were eligible across 209 real markdown files, and the sweep passed
-  for the other six. The guard is a **fixture of near misses** — one file whose
+  paragraphs were eligible across the 101 tracked, cleanly-parsing markdown
+  files that are not the refusal fixture, and the sweep passed for the other
+  six. (This bullet first said "209 real markdown files": that was a glob,
+  which swept gitignored offload notes and other worktrees, so the sweep's
+  input set was not reproducible from the commit. The 4-of-10 result is the
+  same either way.) The guard is a **fixture of near misses** — one file whose
   every entry is admissible except in the single respect it is named for, which
   the probe requires to yield zero matches. `harness/fixtures/prose-refused.md`
   took the same battery from 4/10 to 12/13. *Retired by:* nothing; a
@@ -62,6 +75,37 @@ findings). Each should name the guard that will eventually retire it.
   print the denominator.
 
 ## Findings log
+
+### 2026-09-13 — the control that could not tell a deleted check from a working one
+
+- **What:** `probe_prose.py`'s phase-B positive control set `PROSE_NO_PROJECT=1`,
+  which made the JavaScript driver return *both* an empty verdict list and an
+  unprojected document. Phase B compares verdicts first, so the control always
+  failed there and never exercised the document comparison it exists to
+  validate. Deleting the document comparison entirely left `./test.sh` green —
+  verified by mutation, both before and after the fix.
+- **Why missed:** the control was written in response to an earlier vacuous
+  check, and was read as "does phase B fail?" rather than "does phase B fail
+  *here*?". Nothing in the probe asserted which check did the catching.
+- **Guard:** applied. The inert driver now computes verdicts normally, and
+  `phase_b_control` requires the failure message to name the projection
+  comparison. Promoted to a standing check.
+
+### 2026-09-13 — published figures whose definitions were never written down
+
+- **What:** the A1 relaxation table in `docs/prose-projection.md` published
+  674 / 1,084 / 1,290 eligible paragraphs for three relaxations of the
+  predicate. The scratch script that produced them recorded neither its
+  definitions nor its commit, and none of the obvious readings reproduces any
+  of the three numbers.
+- **Why missed:** the figures were checked for *internal* consistency (the
+  ordering they implied was the point being made) and never for
+  reproducibility. A number that supports the argument reads as verified.
+- **Guard:** the table now names its commit and spells out each relaxation in
+  prose, and the withdrawn figures are recorded rather than replaced. *Retired
+  by:* nothing yet; a measurement that appears in a doc should come from a
+  committed script, not a scratch one.
+
 
 ### 2026-09-13 — a reflow predicate admitted a GFM table delimiter row
 

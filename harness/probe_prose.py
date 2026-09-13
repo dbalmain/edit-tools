@@ -302,7 +302,7 @@ def phase_b(parser, docs, inert: bool = False) -> int:
         if other["doc"] != prose.project(doc):
             raise Failed(
                 f"{path.relative_to(ROOT)}: the two projections differ "
-                f"({other['count']} runs in JavaScript)"
+                f"over {len(verdicts)} paragraph(s)"
             )
         compared += len(verdicts)
     if compared == 0:
@@ -319,11 +319,25 @@ def phase_b_control(parser, docs) -> str:
     JavaScript projection replaced by a no-op passed. A gate that cannot tell a
     working producer from an absent one is the same failure as a sweep that
     runs on nothing.
+
+    **The control has to fail for the reason it names.** It was itself vacuous
+    a second time: the inert driver returned no verdicts either, so phase B
+    stopped at the verdict list and never reached the document comparison --
+    the control would have stayed green with that comparison deleted. So the
+    inert driver now computes verdicts normally, and the message is read back
+    here. A control that accepts *any* failure only proves something is broken,
+    not that the check under test is the thing doing the catching.
     """
+    want = "the two projections differ"
     try:
         phase_b(parser, docs, inert=True)
-    except Failed:
-        return "a no-op JavaScript projection fails phase B"
+    except Failed as failure:
+        if want not in str(failure):
+            raise Failed(
+                "phase B failed with the JavaScript projection disabled, but "
+                f"not at the projection comparison: {failure}"
+            ) from None
+        return "a no-op JavaScript projection fails phase B's document check"
     raise Failed(
         "the producer comparison PASSED with the JavaScript projection "
         "disabled -- it is not comparing what it claims to"

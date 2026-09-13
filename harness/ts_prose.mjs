@@ -16,10 +16,17 @@ const payload = JSON.parse(Buffer.concat(chunks).toString("utf8"));
 // returns the document untouched, and phase B must fail. A producer-agreement
 // check that passes when one producer does nothing is not a check, and that is
 // exactly the shape this probe had before the verdicts were compared.
+//
+// It disables **only** `project`. Disabling `reasons` too would make the
+// control fail on the verdict list and never reach the document comparison --
+// so the control would stay green with the document comparison deleted, which
+// is precisely the thing it exists to rule out. A control must fail for the
+// reason it names, and phase B checks that by reading the message back.
 const inert = process.env.PROSE_NO_PROJECT === "1";
-const out = payload.map(({ path, doc }) => {
-  const verdicts = inert ? [] : reasons(doc);
-  return { path, reasons: verdicts, doc: inert ? doc : project(doc) };
-});
+const out = payload.map(({ path, doc }) => ({
+  path,
+  reasons: reasons(doc),
+  doc: inert ? doc : project(doc),
+}));
 
 process.stdout.write(JSON.stringify(out));
