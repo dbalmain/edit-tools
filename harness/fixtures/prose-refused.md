@@ -108,3 +108,41 @@ alpha beta gamma # delta epsilon zeta eta theta
 ## Inside a list item, where every new line would need its own indent
 
 - alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi
+
+## The right-aligned spelling of the delimiter row
+
+alpha beta -: gamma delta epsilon zeta eta
+
+## The setext underline that a two-dash atom would become
+
+alpha beta -- gamma delta epsilon zeta eta
+
+## A pipe inside a word, where no other rule reaches it
+
+Every other entry that spells a pipe puts it at the start of an atom, where
+`_ACQUIRES` refuses it and the character check never has to. Admitting `|` to
+the whitelist therefore changed nothing measurable -- 536 eligible paragraphs
+before and after -- until this entry existed. A character the whitelist
+excludes needs an entry that fails for *that* reason, or the exclusion is
+untested.
+
+alpha beta|gamma delta epsilon zeta eta
+
+## A paragraph whose next line is a table delimiter row
+
+An exhaustive search over every two-character atom the whitelist admits found
+exactly three that change meaning when moved to their own line, and the two
+above plus `:-` are all of them. The remaining untested shape was the
+paragraph's **neighbour**: a reflow changes which words land on the last line,
+and the last line of a paragraph is the header row of the table that a
+following delimiter row creates. The pinned block grammar keeps that delimiter
+line inside the same paragraph, so the pipe refuses it here -- but the refusal
+is load-bearing and has no other guard.
+
+alpha beta gamma delta epsilon zeta eta theta
+| --- |
+
+## The same, with the pipeless delimiter row
+
+alpha beta gamma delta epsilon zeta eta theta
+:-

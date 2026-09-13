@@ -129,6 +129,19 @@ GAPS = (" ", "\n")
 # The pinned block grammar does not parse a pipeless table, so a reparse cannot
 # see this class at all and `probe_prose.py`'s phase A is blind to it. The guard
 # is the entry in `harness/fixtures/prose-refused.md`, not the sweep.
+#
+# Most of this pattern is unreachable and kept as documentation. `+ * > # = | ~`
+# and the two fence spellings are not admitted characters, so an atom can never
+# begin with one and the `byte` check refuses the paragraph first. Only three
+# clauses can actually fire on an admitted atom: the leading `-`, the ordered
+# marker, and the colon-leading delimiter row. Exhaustively: over every
+# two-character atom the whitelist admits (5,476 of them, 5,381 admitted),
+# rendered through micromark+GFM in six gap patterns at three positions,
+# **exactly three change meaning** -- `--`, `-:` and `:-`, all three refused
+# here. A 295,934-case sweep over delimiter-row spellings found none this
+# pattern misses, and 5,329 two-atom openers found no hit at all. Those three
+# searches are grok's, from the round-2 review; the fixture is what locks them
+# in, since none of them runs in `test.sh`.
 _ACQUIRES = re.compile(r"^(?:[-+*>#=|~]|\d+[.)]|```|~~~|:-+:?\Z)")
 
 # A paragraph inside one of these owns a per-line continuation prefix -- a `> `,
