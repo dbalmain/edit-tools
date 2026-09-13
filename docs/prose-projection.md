@@ -60,16 +60,35 @@ already known to agree.
 ### What A1 deliberately does not establish
 
 A1's eligible subset is narrow enough that it is not a prose-wrap feature and
-must not be reported as one. Two figures, measured across every paragraph in
-this repository's own markdown at width 80, and stated separately because they
-answer different questions:
+must not be reported as one. Measured with the shipped predicate over every
+paragraph in this repository's own markdown -- 8,674 paragraphs in 209 files:
 
-- **2.2%** (59 of 2,681) of paragraphs change at all.
-- **7.9%** of prose *bytes* live in eligible paragraphs — eligible paragraphs
-  are the short ones, so the count overstates the reach.
+| | |
+| --- | --- |
+| Eligible paragraphs | **858 (9.9%)** |
+| Share of prose *bytes* in them | **4.5%** (88,943 of 1,989,396) |
 
-Tightening the predicate moved the by-count figure only 17.6% -> 18.1%, so
-those are real paragraphs rather than an artifact of a strict predicate.
+The two figures answer different questions and neither is the other: eligible
+paragraphs are the short ones, so the count overstates the reach.
+
+Where the other 90% goes is the roadmap, and it is not evenly spread:
+
+| Refused because | Share |
+| --- | --- |
+| It is inside a list or a blockquote | 46.1% |
+| It holds a character that could open inline syntax | 41.7% |
+| It holds a non-ASCII byte | 1.5% |
+| It is one word, would acquire a block, or has odd whitespace | 0.7% |
+
+So **containers are the larger half of the remaining work, not emphasis** --
+which inverts the usual framing, in which the inline grammar is the headline
+cost. Container continuation prefixes need no new grammar at all; they need the
+retained-range map this document defers. A2 buys the 41.7%; the 46.1% is its
+own slice and could be taken first.
+
+An earlier draft of this section reported 2.2% and 7.9% from a hand-written
+predicate measured over a different set of files. Those figures are wrong for
+the predicate that shipped and are superseded by the table above.
 
 ## Inputs and ownership
 
