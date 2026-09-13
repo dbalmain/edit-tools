@@ -61,13 +61,15 @@ already known to agree.
 
 A1's eligible subset is narrow enough that it is not a prose-wrap feature and
 must not be reported as one. Measured with the shipped predicate over every
-*tracked* markdown file in this repository -- 5,035 paragraphs in 102 files,
-the same set `harness/probe_prose.py` gates on:
+*tracked* markdown file in this repository -- 5,037 paragraphs in 102 files at
+`83b87bc`, the same set `harness/probe_prose.py` gates on. That set includes
+this document, so writing plain prose here moves the numbers by a paragraph or
+two; the percentages are the stable half.
 
 | | |
 | --- | --- |
-| Eligible paragraphs | **535 (10.6%)** |
-| Share of prose *bytes* in them | **4.5%** (59,628 of 1,333,279) |
+| Eligible paragraphs | **536 (10.6%)** |
+| Share of prose *bytes* in them | **4.5%** (59,736 of 1,333,661) |
 
 The two figures answer different questions and neither is the other: eligible
 paragraphs are the short ones, so the count overstates the reach.
