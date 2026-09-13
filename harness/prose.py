@@ -156,12 +156,30 @@ def refusal(paragraph: dict, source: bytes) -> str | None:
         # construct as anonymous children of `inline`. A named child, or an
         # anonymous one outside the admitted set, means this paragraph holds
         # something A1 cannot reason about.
+        #
+        # On the pinned grammar this is **subsumed** by the byte check below:
+        # every character that produces a child outside the set is also a
+        # character outside the set, and a top-level paragraph never gets the
+        # one non-punctuation child (`block_continuation`) because that belongs
+        # to a container. Measured -- deleting this loop is the one edit of
+        # thirteen that `probe_prose.py` does not catch. It stays because it is
+        # the structural half of the question and the byte check is the lexical
+        # half: a grammar that started surfacing a named inline node would slip
+        # past the bytes and be caught here. `test_prose.py` covers it directly,
+        # since the token check is what fires first for emphasis, code spans and
+        # links.
         if child["type"] not in SAFE_PUNCTUATION:
             return "inline token"
     try:
         text = source[inline["start"] : inline["end"]].decode("ascii")
     except UnicodeDecodeError:
         return "non-ascii"
+    # A leading or trailing gap byte would make `partition` emit a zero-width
+    # atom, which both runtimes refuse as `source_partitions ... has a
+    # zero-width child`. Refusing the paragraph turns a format-time refusal
+    # into an ineligibility. The block grammar trims the edges of an `inline`
+    # node, so this has not been observed to fire; producing a tree the runtime
+    # rejects is not a thing to leave to the grammar's good behaviour.
     if not text or text[0] in GAPS or text[-1] in GAPS:
         return "edge whitespace"
     run = 0
