@@ -44,6 +44,29 @@ findings). Each should name the guard that will eventually retire it.
 
 ## Findings log
 
+### 2026-09-13 — the one producer-agreement gate reported success on zero files
+
+- **What:** `harness/probe_injection_parity.py` is the only check comparing the
+  Python parse path against the browser parse path — a *producer* surface, not
+  the runtime surface `fmt-rust`/`fmt-js` agreement covers. It returned `0`
+  after printing SKIP whenever a generated web blob was missing, and `test.sh`
+  runs it unconditionally. Agreement and absence were indistinguishable in the
+  output.
+- **Why missed:** it reports `24/24` today because the blobs happen to be
+  present, so the skip path had never been seen. This is the playbook's "a gate
+  that ran zero tests is not a gate" with the exit status, rather than the test
+  count, as the tell.
+- **Guard:** **applied.** Missing prerequisites now fail; `--allow-missing` is
+  an explicit opt-out for working without generated blobs, and `test.sh` uses
+  the required mode. Verified by removing `json.blob.json`: required mode exits
+  1, `--allow-missing` skips and exits 0.
+- **Still open, and it is the larger half:** the required blob set is derived
+  from `language` keys in the produced document, so a producer dependency that
+  is not an injected language is never required and never missed. Markdown's
+  inline grammar would be exactly that if the prose projection used it. A new
+  producer dependency has to be *declared* in this probe, not discovered.
+  Recorded at the top of the file.
+
 ### 2026-09-13 — a probe that swept nothing reported zero, and I believed it
 
 - **What:** I recorded "no reference output contains an untokenised gap that

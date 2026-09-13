@@ -3,7 +3,27 @@
 # requires-python = ">=3.11"
 # dependencies = ["tree-sitter"]
 # ///
-"""Compare Python and browser-path injection trees for every corpus host."""
+"""Compare Python and browser-path injection trees for every corpus host.
+
+    ./harness/probe_injection_parity.py [--allow-missing]
+
+This is a **producer** agreement check, not a runtime one. `fmt-rust` and
+`fmt-js` agree on a frozen tree; this asks whether the Python path that froze it
+and the browser path that parses the same source produce the same tree at all.
+Nothing else in `test.sh` covers that surface.
+
+`--allow-missing` skips when a generated web blob is absent and reports success.
+Without it, a missing prerequisite is a failure. That default is the whole point:
+the skip used to be unconditional, so the one gate over this surface reported
+success while comparing zero files, and `test.sh` could not tell the difference
+between agreement and absence.
+
+Its blind spot, which the flag does not fix: the required blob set is derived
+from `language` keys in the produced document, so a producer dependency that is
+not an injected language -- Markdown's inline grammar, were the prose projection
+to use it -- would never be required and never be missed. A new dependency has
+to be declared here, not discovered.
+"""
 
 from __future__ import annotations
 
@@ -53,7 +73,7 @@ def first_difference(want, got, at: str = "doc") -> str:
     return f"{at}: values differ"
 
 
-def main() -> int:
+def main(allow_missing: bool = False) -> int:
     manifests = mf.bootstrap()
     parsers = mf.parsers(manifests)
     hosts = [m for m in manifests.values() if m.injections]
@@ -88,10 +108,14 @@ def main() -> int:
         if not (BLOBS / f"{language}.blob.json").is_file()
     )
     if missing:
-        print(
-            f"SKIP injection tree parity: 0/{comparisons} corpus files compared; "
-            f"missing {len(missing)} generated web blob(s): {', '.join(missing)}"
+        what = (
+            f"0/{comparisons} corpus files compared; missing "
+            f"{len(missing)} generated web blob(s): {', '.join(missing)}"
         )
+        if not allow_missing:
+            raise Failed(f"{what} -- run harness/build_blobs.py, or pass "
+                         "--allow-missing to skip this check deliberately")
+        print(f"SKIP injection tree parity: {what}")
         return 0
 
     checked = 0
@@ -152,7 +176,7 @@ def main() -> int:
 
 if __name__ == "__main__":
     try:
-        raise SystemExit(main())
+        raise SystemExit(main("--allow-missing" in sys.argv[1:]))
     except Failed as exc:
         print(f"FAIL injection tree parity: {exc}", file=sys.stderr)
         raise SystemExit(1) from None
