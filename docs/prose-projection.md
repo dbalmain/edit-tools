@@ -49,6 +49,14 @@ the inline blob and scanner port to the browser path, and widens eligibility to
 emphasis and the rest of the safe inline subset. Prose wrap becomes a visible
 policy here, not in A1.
 
+A1 stops one line short of the browser. `web/js/lang.js` parses and splices but
+does not call the projection, because that call is the moment prose wrap becomes
+visible in an editor buffer. `harness/prose.mjs` is the browser path's
+implementation and is proven to agree with `harness/prose.py` on every tracked
+markdown file; it is simply not wired in. "The two producers agree" is a weaker
+claim about a function one producer never runs, and A1 should be read with that
+in mind.
+
 A1 is worth building alone because it is where the *expensive* uncertainty
 lives. The eligibility predicate, the atom/gap partition, the total-coverage
 refusal, the reflow-survives-reparse property and — above all — **whether the

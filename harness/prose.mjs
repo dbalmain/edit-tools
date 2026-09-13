@@ -8,6 +8,19 @@
 // `rust/src/eval.rs`: the same decisions in the same order, structured so the
 // two read side by side, rather than the same behaviour reached its own way.
 //
+// # Nothing in the browser calls this yet, deliberately
+//
+// `web/js/lang.js` parses with `ts_doc.mjs` and splices with `ts_inject.mjs`,
+// and does **not** project. Adding the call is one line, and that one line is
+// the moment prose wrap becomes visible to somebody editing a buffer -- which
+// is A2's boundary, not A1's. So this is the browser path's implementation,
+// proven to agree with Python's on every tracked markdown file in the
+// repository, sitting one line away from being used.
+//
+// That is worth stating rather than leaving as an apparent omission: "the two
+// producers agree" is a weaker claim about a function one of them never runs,
+// and the reader should know which kind of claim it is.
+//
 // It walks the document `ts_doc.mjs` produced, after `ts_inject.mjs` has
 // spliced, and rewrites it in place. Offsets are byte offsets into the UTF-8
 // encoding of `doc.source`, which is why the source is encoded here rather
