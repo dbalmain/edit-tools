@@ -108,6 +108,27 @@ export function partition(inline, source) {
   return out;
 }
 
+/**
+ * Every paragraph the walk reaches, in document order, with its verdict.
+ * See `prose.py`'s `reasons` for why the refusals are exposed at all: without
+ * them the producer comparison is vacuous on a document with no eligible
+ * paragraph, which is most documents.
+ */
+export function reasons(doc) {
+  const source = encoder.encode(doc.source);
+  const out = [];
+  const walk = (node) => {
+    if (CONTAINERS.has(node.type) || node.language !== undefined) return;
+    if (node.type === "paragraph") {
+      out.push([node.start, refusal(node, source) ?? "eligible"]);
+      return;
+    }
+    for (const child of node.children ?? []) walk(child);
+  };
+  walk(doc.root);
+  return out;
+}
+
 /** Rewrite every eligible paragraph in `doc`, in place. Returns how many. */
 export function project(doc) {
   const source = encoder.encode(doc.source);

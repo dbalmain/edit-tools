@@ -161,13 +161,16 @@ def refusal(paragraph: dict, source: bytes) -> str | None:
         # every character that produces a child outside the set is also a
         # character outside the set, and a top-level paragraph never gets the
         # one non-punctuation child (`block_continuation`) because that belongs
-        # to a container. Measured -- deleting this loop is the one edit of
-        # thirteen that `probe_prose.py` does not catch. It stays because it is
-        # the structural half of the question and the byte check is the lexical
-        # half: a grammar that started surfacing a named inline node would slip
-        # past the bytes and be caught here. `test_prose.py` covers it directly,
-        # since the token check is what fires first for emphasis, code spans and
-        # links.
+        # to a container. Measured: deleting it here *and* in `prose.mjs`
+        # changes one paragraph's verdict across the tracked corpus and
+        # `probe_prose.py` still passes. Deleting it on one side only is caught,
+        # but by producer disagreement rather than by the behaviour being wrong.
+        #
+        # It stays because it is the structural half of the question and the
+        # byte check is the lexical half: a grammar that began surfacing a named
+        # inline node would slip past the bytes and be caught here.
+        # `test_prose.py` covers it directly, since this is what fires first for
+        # emphasis, code spans and links.
         if child["type"] not in SAFE_PUNCTUATION:
             return "inline token"
     try:
@@ -241,6 +244,36 @@ def partition(inline: dict, source: bytes) -> list[dict]:
             }
         )
         at = stop + 1
+    return out
+
+
+def reasons(doc: dict) -> list[tuple[int, str]]:
+    """Every paragraph the walk reaches, in document order, with its verdict.
+
+    `project` compares documents, which says nothing about the paragraphs it
+    refused -- and it refuses about nine in ten. Two implementations that
+    disagreed about *why* a paragraph is ineligible would still produce
+    identical documents, so the agreement check would be vacuous exactly where
+    the logic is densest. This exposes the verdict itself, so
+    `probe_prose.py`'s producer comparison has something to compare on a
+    document with no eligible paragraph at all.
+
+    Document order, not the traversal order `project` happens to use, so the
+    two implementations cannot agree by accident of stack discipline.
+    """
+    source = doc["source"].encode("utf-8")
+    out: list[tuple[int, str]] = []
+
+    def walk(node: dict) -> None:
+        if node["type"] in CONTAINERS or "language" in node:
+            return
+        if node["type"] == "paragraph":
+            out.append((node["start"], refusal(node, source) or "eligible"))
+            return
+        for child in node.get("children", []):
+            walk(child)
+
+    walk(doc["root"])
     return out
 
 

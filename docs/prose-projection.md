@@ -61,34 +61,42 @@ already known to agree.
 
 A1's eligible subset is narrow enough that it is not a prose-wrap feature and
 must not be reported as one. Measured with the shipped predicate over every
-paragraph in this repository's own markdown -- 8,674 paragraphs in 209 files:
+*tracked* markdown file in this repository -- 5,035 paragraphs in 102 files,
+the same set `harness/probe_prose.py` gates on:
 
 | | |
 | --- | --- |
-| Eligible paragraphs | **858 (9.9%)** |
-| Share of prose *bytes* in them | **4.5%** (88,943 of 1,989,396) |
+| Eligible paragraphs | **535 (10.6%)** |
+| Share of prose *bytes* in them | **4.5%** (59,628 of 1,333,279) |
 
 The two figures answer different questions and neither is the other: eligible
 paragraphs are the short ones, so the count overstates the reach.
 
-Where the other 90% goes is the roadmap, and it is not evenly spread:
+Where the other 89% goes is the roadmap:
 
 | Refused because | Share |
 | --- | --- |
-| It is inside a list or a blockquote | 46.1% |
-| It holds a character that could open inline syntax | 41.7% |
-| It holds a non-ASCII byte | 1.5% |
-| It is one word, would acquire a block, or has odd whitespace | 0.7% |
+| It holds a character that could open inline syntax | 50.5% |
+| It is inside a list or a blockquote | 36.6% |
+| It holds a non-ASCII byte | 1.4% |
+| It would acquire a block, is one word, or has odd whitespace | 0.9% |
 
-So **containers are the larger half of the remaining work, not emphasis** --
-which inverts the usual framing, in which the inline grammar is the headline
-cost. Container continuation prefixes need no new grammar at all; they need the
-retained-range map this document defers. A2 buys the 41.7%; the 46.1% is its
-own slice and could be taken first.
+A2 buys the first row. The second needs no new grammar at all -- only the
+retained-range map and continuation-prefix ownership this document defers -- so
+it is a separate slice that could be taken before A2 rather than after, and at
+a third of A2's cost.
 
-An earlier draft of this section reported 2.2% and 7.9% from a hand-written
-predicate measured over a different set of files. Those figures are wrong for
-the predicate that shipped and are superseded by the table above.
+Two corrections to earlier drafts of this section, both worth keeping because
+both were confidently stated:
+
+- It first reported **2.2%** and **7.9%**, from a hand-written predicate over a
+  different set of files. Neither figure describes the predicate that shipped.
+- It then reported containers as the *larger* half at 46.1% against 41.7%, and
+  drew the conclusion that the usual framing is inverted. That was measured
+  over a glob that swept untracked offload notes, which are unusually plain
+  prose. On the tracked set the ordering is the ordinary one. The probe now
+  reads `git ls-files`, so its input set is the commit's rather than whatever
+  is lying in the checkout.
 
 ## Inputs and ownership
 

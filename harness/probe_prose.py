@@ -38,10 +38,14 @@ Because it is not a producer dependency it also does not belong in
 `probe_injection_parity.py`'s declared blob set.
 
 **B. The two producers agree.** `prose.py` and `prose.mjs` are handed the same
-documents and must return the same one. Parse agreement is not re-checked here
--- markdown is an injection host, so `probe_injection_parity.py` already
-compares the two parse paths on it -- which leaves the projection itself as the
-new surface, and this as the only check over it.
+documents and must return the same one -- *and* the same verdict for every
+paragraph, including the nine in ten they refuse. Comparing documents alone
+would be vacuous on a document with no eligible paragraph, which is most of
+them, and would let the two implementations disagree about why as long as the
+output happened to match. Parse agreement is not re-checked here -- markdown is
+an injection host, so `probe_injection_parity.py` already compares the two parse
+paths on it -- which leaves the projection itself as the new surface, and this
+as the only check over it.
 
 **C. The two runtimes agree, and formatting is idempotent.** The committed
 markdown corpus, projected, formatted by `fmt-rust` and `fmt-js` at both
@@ -90,19 +94,25 @@ class Failed(Exception):
 
 
 def markdown_files() -> list[Path]:
-    """Every markdown file in the repository, corpus first."""
-    corpus = sorted((ROOT / "corpus" / "src" / "markdown").glob("*.md"))
-    rest = sorted(
-        path
-        for path in ROOT.rglob("*.md")
-        # Worktrees and vendored trees are other checkouts of other branches;
-        # sweeping them would measure somebody else's work in progress.
-        if not any(
-            part in {".git", "node_modules", "target", "vendor", ".claude"}
-            for part in path.relative_to(ROOT).parts
-        )
-        and path not in set(corpus)
+    """Every **tracked** markdown file in the repository, corpus first.
+
+    Tracked, not globbed. A glob picks up gitignored offload notes, vendored
+    trees and other worktrees, so the set this gate runs on would depend on
+    what happened to be lying in the checkout -- and a probe whose input set is
+    not reproducible from the commit cannot be a gate. `git ls-files` makes the
+    input exactly the commit's, on every machine.
+    """
+    listed = subprocess.run(
+        ["git", "-C", str(ROOT), "ls-files", "-z", "*.md"],
+        capture_output=True,
+        check=True,
+    ).stdout.decode("utf-8")
+    tracked = sorted(
+        ROOT / name for name in listed.split("\0") if name
     )
+    corpus_dir = ROOT / "corpus" / "src" / "markdown"
+    corpus = [path for path in tracked if path.parent == corpus_dir]
+    rest = [path for path in tracked if path.parent != corpus_dir]
     return corpus + rest
 
 
@@ -238,10 +248,16 @@ def phase_a_inline(inline_parser, docs) -> int:
     return checked
 
 
-def phase_b(docs) -> int:
+def phase_b(parser, docs) -> int:
+    # Re-parse rather than reuse: `docs` holds already-projected documents, and
+    # a verdict computed from one of those would describe the projection's own
+    # output instead of the source. Both sides must be handed the same
+    # unprojected input.
+    fresh = [(path, parse(parser, source, path)) for path, source, _ in docs]
+    mine = [(path, prose.reasons(doc)) for path, doc in fresh]
     payload = [
         {"path": str(path.relative_to(ROOT)), "doc": doc}
-        for path, _, doc in docs
+        for path, doc in fresh
     ]
     proc = subprocess.run(
         ["node", str(HARNESS / "ts_prose.mjs")],
@@ -257,13 +273,28 @@ def phase_b(docs) -> int:
         raise Failed(
             f"JavaScript returned {len(theirs)} documents for {len(payload)}"
         )
-    for (path, _, mine), other in zip(docs, theirs, strict=True):
-        if other["doc"] != mine:
+    compared = 0
+    for (path, verdicts), (_, doc), other in zip(mine, fresh, theirs, strict=True):
+        got = [(start, reason) for start, reason in other["reasons"]]
+        if got != verdicts:
+            first = next(
+                (w for w, g in zip(verdicts, got) if w != g),
+                (verdicts + got)[min(len(verdicts), len(got))],
+            )
+            raise Failed(
+                f"{path.relative_to(ROOT)}: the two producers disagree on a "
+                f"paragraph verdict; first divergence at {first!r}"
+            )
+        prose.project(doc)
+        if other["doc"] != doc:
             raise Failed(
                 f"{path.relative_to(ROOT)}: the two projections differ "
                 f"({other['count']} runs in JavaScript)"
             )
-    return len(payload)
+        compared += len(verdicts)
+    if compared == 0:
+        raise Failed("the producer comparison saw no paragraphs at all")
+    return compared
 
 
 def phase_c(parser, packages: Path, docs) -> int:
@@ -364,7 +395,7 @@ def main(quiet: bool = False) -> int:
         )
         reflows = phase_a(parser, docs)
         inlines = phase_a_inline(inline_parser, docs)
-        projections = phase_b(docs)
+        projections = phase_b(parser, docs)
         formats = phase_c(parser, packages, docs)
 
     if not quiet:
@@ -373,7 +404,7 @@ def main(quiet: bool = False) -> int:
             f"{len(docs)} files ({skipped} unparseable); "
             f"{reflows} reflow-reparse checks, "
             f"{inlines} inline-oracle checks, "
-            f"{projections} producer comparisons, "
+            f"{projections} producer paragraph verdicts, "
             f"{formats} runtime/idempotence checks; "
             f"{REFUSED.name} still refuses every paragraph"
         )
