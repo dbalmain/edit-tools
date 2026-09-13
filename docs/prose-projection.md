@@ -24,6 +24,53 @@ schema for that check. The rest of this document remains a proposal.
 This chooses where syntax interpretation belongs. It does not yet settle the
 complete markdown break policy, container prefixes or gate-3 equivalence.
 
+## Two slices: A1 without the inline grammar, A2 with it
+
+Agreed with Astra, 2026-09-13, after this document was written. The four-step
+plan at the end of this file names step 2 as a "words-plus-emphasis"
+projection. Emphasis needs the inline grammar, and the inline grammar is not
+free: `gen_trees.py` links native tree-sitter and would only need to select
+`inline_language()`, but the browser parses through `ts_lr.mjs` and the scanner
+VM, where an inline grammar means **an inline blob and a separate inline
+scanner port**. Porting the block scanner does not supply it.
+
+That cost is real and it is not A1's to pay. The slice is therefore cut in two:
+
+**A1 — plain words only, block grammar alone.** Eligibility is decided from the
+block CST that both producers already have. A paragraph qualifies only if
+nothing in it can be inline syntax at all, so there is no emphasis, no code
+span, no link, and no delimiter whose meaning depends on what is adjacent to
+it. A1 establishes the projection, the partition, the two mirrored producer
+implementations and their agreement; it does not change any corpus reference
+and it does not make prose wrap visible to anyone.
+
+**A2 — grammar-backed inline.** Adds `inline_language()` to the native path,
+the inline blob and scanner port to the browser path, and widens eligibility to
+emphasis and the rest of the safe inline subset. Prose wrap becomes a visible
+policy here, not in A1.
+
+A1 is worth building alone because it is where the *expensive* uncertainty
+lives. The eligibility predicate, the atom/gap partition, the total-coverage
+refusal, the reflow-survives-reparse property and — above all — **whether the
+Python producer and the browser producer agree on a projection** are all
+exercised in full by plain words. None of them gets easier once emphasis is
+added; they simply get harder to debug. A2 inherits a projection that is
+already known to agree.
+
+### What A1 deliberately does not establish
+
+A1's eligible subset is narrow enough that it is not a prose-wrap feature and
+must not be reported as one. Two figures, measured across every paragraph in
+this repository's own markdown at width 80, and stated separately because they
+answer different questions:
+
+- **2.2%** (59 of 2,681) of paragraphs change at all.
+- **7.9%** of prose *bytes* live in eligible paragraphs — eligible paragraphs
+  are the short ones, so the count overstates the reach.
+
+Tightening the predicate moved the by-count figure only 17.6% -> 18.1%, so
+those are real paragraphs rather than an artifact of a strict predicate.
+
 ## Inputs and ownership
 
 The projection takes the original UTF-8 source, its clean block CST, a clean
