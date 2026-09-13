@@ -63,6 +63,32 @@ findings). Each should name the guard that will eventually retire it.
 
 ## Findings log
 
+### 2026-09-13 — a reflow predicate admitted a GFM table delimiter row
+
+- **What:** `harness/prose.py` decides which markdown paragraphs may have their
+  whitespace repacked, by admitting only characters that cannot open inline
+  syntax. `:` was admitted with a written argument about CommonMark inlines and
+  reference definitions. GFM needs a pipe only *between* table cells, so a
+  one-column delimiter row is just `:-`: `a :- b` is a paragraph, and reflowing
+  it to `a\n:-\nb` is a table with header `a` and body `b`. Confirmed against
+  prettier 3.9.6. That is destruction, not a formatting difference.
+- **Why missed:** the per-character argument reasoned entirely about **inline**
+  constructs, because that was the framing of the whole predicate — "no
+  character here can begin an inline construct". A GFM-only **block** construct
+  whose opener is neither `-` nor a digit was outside the frame. Neither the
+  reflow-and-reparse sweep nor the inline-grammar oracle could see it:
+  tree-sitter-markdown 0.5.1 does not parse a pipeless table at all.
+- **Guard:** **applied**, two of them. `_ACQUIRES` refuses `:-+:?\Z`, and
+  `harness/fixtures/prose-refused.md` carries three spellings so re-admitting
+  them fails the probe. The general lesson is promoted above: a CST oracle is
+  bounded by what its grammar models, and the only thing that found this was a
+  renderer.
+- **Found by:** an offload asked for exactly one thing — a paragraph the
+  predicate admits whose reflow changes meaning — with my five best guesses
+  listed *as guesses* and the dead ends marked eliminated. None of the five was
+  the answer. Worth repeating: the value was in asking for a counterexample
+  rather than for a review.
+
 ### 2026-09-13 — a mutation battery driven by `sed` reported zero survivors
 
 - **What:** the first mutation check of `harness/prose.py` ran its edits through
