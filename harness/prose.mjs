@@ -22,7 +22,9 @@
 // and the reader should know which kind of claim it is.
 //
 // It walks the document `ts_doc.mjs` produced, after `ts_inject.mjs` has
-// spliced, and rewrites it in place. Offsets are byte offsets into the UTF-8
+// spliced, and returns a rewritten **copy**; the input document is left alone,
+// so wiring this into the browser cannot destroy the inline CST that A2 is
+// going to need. Offsets are byte offsets into the UTF-8
 // encoding of `doc.source`, which is why the source is encoded here rather
 // than indexed as a string -- a JavaScript string index is a UTF-16 code unit
 // and would silently disagree with Python for any document holding a

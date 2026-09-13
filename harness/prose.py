@@ -17,8 +17,14 @@ input document; `harness/probe_prose.py` is the gate that says so.
 A1 has no inline grammar (see the design doc for why the browser path cannot
 cheaply have one yet), so it cannot be told whether a `*` opens emphasis or is
 a literal asterisk. It therefore admits only paragraphs in which **no character
-can begin any inline construct at all**, which makes the question moot rather
-than answered.
+can begin an inline construct whose meaning a gap flip could change**, which
+makes the question moot rather than answered.
+
+That is deliberately weaker than "no inline syntax at all", which this comment
+used to claim and which is false: a GFM extended autolink is inline syntax, and
+an eligible paragraph may hold one. It holds no space, so it lies inside a
+single atom and no gap flip reaches into it. `harness/probe_prose.py` carries
+that argument and the searches behind it.
 
 That has to be a whitelist. An incomplete blacklist does not merely refuse too
 much -- it *accepts* the case nobody thought of, and accepting wrongly is how a
@@ -135,14 +141,14 @@ CONTAINERS = frozenset(
 
 
 def package(base: dict) -> dict:
-    """`packages/markdown.json`, plus the four rules A1 needs. Derived, not
+    """`packages/markdown.json`, plus the two rules A1 needs. Derived, not
     committed, so it cannot drift from the package it extends.
 
     A1 ships no package change. The projection is off in the corpus, so the
     shipped `markdown.json` stays at format 2 with `paragraph: ["verbatim"]`
     and every committed reference and tree is untouched. These edits exist so
     the probes can format a projected document, and so the diff that turns the
-    projection on later is these four lines rather than a rewrite.
+    projection on later is these few lines rather than a rewrite.
 
     `paragraph` keeps `verbatim` for the paragraphs the projection refused,
     which is most of them, and takes the reflowing branch only when a

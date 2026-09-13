@@ -37,10 +37,15 @@ scanner port**. Porting the block scanner does not supply it.
 That cost is real and it is not A1's to pay. The slice is therefore cut in two:
 
 **A1 — plain words only, block grammar alone.** Eligibility is decided from the
-block CST that both producers already have. A paragraph qualifies only if
-nothing in it can be inline syntax at all, so there is no emphasis, no code
-span, no link, and no delimiter whose meaning depends on what is adjacent to
-it. A1 establishes the projection, the partition, the two mirrored producer
+block CST that both producers already have. A paragraph qualifies only if it
+holds no syntax whose meaning a gap flip could change, so there is no emphasis,
+no code span, no link, and no delimiter whose meaning depends on what is
+adjacent to it. That is weaker than "no inline syntax at all", and the
+difference has a name: a GFM extended autolink (`www.example.com`,
+`https://example.com`) *is* inline syntax and an eligible paragraph may contain
+one. It survives because it holds no space, so it lies inside a single atom and
+no gap flip can reach into it -- see `harness/probe_prose.py`, which is where
+that argument is made and tested. A1 establishes the projection, the partition, the two mirrored producer
 implementations and their agreement; it does not change any corpus reference
 and it does not make prose wrap visible to anyone.
 
@@ -68,17 +73,23 @@ already known to agree.
 ### What A1 deliberately does not establish
 
 A1's eligible subset is narrow enough that it is not a prose-wrap feature and
-must not be reported as one. Measured with the shipped predicate over every
-*tracked* markdown file in this repository -- 5,037 paragraphs in the 102 of
-103 tracked files that parse cleanly (`docs/parse-survey.md` does not), the
-same set `harness/probe_prose.py` gates on. That set includes this document, so
-writing plain prose here moves the count by a paragraph or two; the percentages
-are the stable half.
+must not be reported as one. Measured **at `3dbf9d3`** with the shipped
+predicate over every *tracked* markdown file in this repository -- 5,048
+paragraphs in the 102 of 103 tracked files that parse cleanly
+(`docs/parse-survey.md` does not), the same set `harness/probe_prose.py` gates
+on. That set includes this document, so writing plain prose here moves the count
+by a paragraph or two; the percentages are the stable half, and the commit is
+named because these figures have gone stale unannounced twice.
 
 | | |
 | --- | --- |
 | Eligible paragraphs | **536 (10.6%)** |
-| Share of prose *bytes* in them | **4.5%** (59,736 of 1,333,661) |
+| Share of prose *bytes* in them | **4.5%** (59,736 of 1,337,207) |
+
+The byte figure counts the **`paragraph` node's own source range**, summed over
+every paragraph the walk reaches, eligible over all. Counting the `inline`
+node's range instead moves both numbers by a few hundred bytes and neither
+percentage.
 
 The two figures answer different questions and neither is the other: eligible
 paragraphs are the short ones, so the count overstates the reach.
@@ -95,19 +106,29 @@ Where the other 89% goes, as **first-match** refusal reasons:
 **Those shares are not what a slice buys, and reading them as though they were
 is the mistake this section has now made twice.** A container paragraph is
 refused before it is examined at all, so most of that 36.6% would simply be
-refused for inline syntax the moment containers were allowed. Measured by
-actually relaxing each rule:
+refused for inline syntax the moment containers were allowed. Measured at
+`3dbf9d3` by actually relaxing each rule -- "containers allowed" means
+descending into `block_quote`/`list`/`list_item` and applying the same
+predicate to the paragraphs inside; "inline allowed" means treating the
+`inline token` verdict as eligible and changing nothing else, which is a
+**ceiling** rather than a reach, since A2 still has to handle each construct it
+admits:
 
 | | Eligible | Change |
 | --- | --- | --- |
 | A1 today | 536 (10.6%) | |
-| Containers allowed | 674 (13.4%) | **+138** |
-| Inline syntax allowed (A2's reach) | 1,084 (21.5%) | **+548** |
-| Both | 1,290 (25.6%) | **+754** |
+| Containers allowed | 616 (12.2%) | **+80** |
+| Inline allowed (A2's ceiling) | 3,083 (61.1%) | **+2,547** |
+| Both | 4,352 (86.2%) | **+3,816** |
 
-So A2 is worth about **four times** what the container slice is worth, which is
-the opposite of the ordering the refusal table suggests. The inline row is a
-lower bound on A2 besides, since a real inline grammar admits shapes this
+So A2 is worth **thirty times** what the container slice is worth, which is the
+opposite of the ordering the refusal table suggests.
+
+An earlier version of this table published 674 / 1,084 / 1,290 for these three
+rows. Those came from a scratch script whose relaxation definitions were never
+written down and could not be reproduced, so they are withdrawn rather than
+silently replaced -- which is the whole reason the definitions are spelled out
+above. The inline row is a ceiling besides, since a real inline grammar admits shapes this
 approximation cannot. And both together still leave three paragraphs in four
 refused, which is the number to weigh before any of this becomes a visible
 prose-wrap policy.
@@ -187,11 +208,17 @@ too. Links and images can initially be protected whole, trading some reference
 agreement for less mechanism. Emphasis is deliberately not protected whole.
 Escapes and entities must never be cut internally or decoded and re-encoded.
 
-Each atom is an interior `prose_atom` with an exact source-backed leaf child;
-each gap is a `prose_gap` leaf carrying its exact original whitespace. Even a
-one-word atom uses the interior wrapper: leaf `text` bypasses rule dispatch in
-both current runtimes, so putting a `verbatim` rule on a leaf would not invoke
-its validator. The wrapper provides that validation path.
+Each atom is a `prose_atom` **leaf** carrying its exact source text; each gap is
+a `prose_gap` leaf carrying its exact original whitespace.
+
+An earlier version of this document required an interior wrapper around every
+atom, reasoning that leaf `text` bypasses rule dispatch so a `verbatim` rule on
+a leaf would never invoke its validator. That reasoning is sound and the
+conclusion was still wrong, which a measurement settled: `source_partitions`
+runs its recursive source check on entering `prose_run`, *before* leaf dispatch,
+so a leaf atom whose `text` does not match its range is rejected anyway. The
+wrapper bought nothing, and A1 ships leaves. See the A1 implementation note
+below.
 
 The `prose_run` contains every atom and gap, in alternating order. Its extent
 starts at the first atom and ends at the last. Paragraph terminators and any
@@ -203,21 +230,23 @@ The layout portion is expressible today:
 
 ```json
 {
-  "format": "et-doc-rules/2",
+  "format": "et-doc-rules/3",
   "indent": 2,
   "tokens": [],
+  "source_partitions": ["prose_run"],
   "whitespace_nodes": ["prose_gap"],
   "rules": {
-    "prose_run": ["fill", "t:prose_atom", ["line"]],
-    "prose_atom": ["verbatim"]
+    "prose_run": ["fill", "t:prose_atom", ["line"]]
   }
 }
 ```
 
 This fragment is not a complete production package. `whitespace_nodes` consumes
-the declared gaps before `fill` sees its child sequence. It also validates the
-containing subtree against source before consuming trivia. The content atoms
-are consumed once by `fill`, and their source is emitted by `verbatim`.
+the declared gaps before `fill` sees its child sequence. `source_partitions`
+validates the run against source -- every descendant leaf, and the exactness of
+the partition -- before either happens. The content atoms are consumed once by
+`fill` and emitted as their own text; there is **no `prose_atom` rule**, because
+a leaf needs none.
 
 ## What source validation proves, and what it does not
 
