@@ -69,10 +69,11 @@ already known to agree.
 
 A1's eligible subset is narrow enough that it is not a prose-wrap feature and
 must not be reported as one. Measured with the shipped predicate over every
-*tracked* markdown file in this repository -- 5,037 paragraphs in 102 files at
-`83b87bc`, the same set `harness/probe_prose.py` gates on. That set includes
-this document, so writing plain prose here moves the numbers by a paragraph or
-two; the percentages are the stable half.
+*tracked* markdown file in this repository -- 5,037 paragraphs in the 102 of
+103 tracked files that parse cleanly (`docs/parse-survey.md` does not), the
+same set `harness/probe_prose.py` gates on. That set includes this document, so
+writing plain prose here moves the count by a paragraph or two; the percentages
+are the stable half.
 
 | | |
 | --- | --- |

@@ -1,7 +1,7 @@
 // The A1 prose projection, in JavaScript. `harness/prose.py` is the original
 // and carries the design: why the predicate is a whitelist, and the argument
 // for every character it admits. Read that file, not this one, to change the
-// policy -- and then change both, because `harness/probe_prose_parity.py`
+// policy -- and then change both, because `harness/probe_prose.py`
 // compares their output on the same documents and fails if they diverge.
 //
 // This is a mirror in the same sense `runtime-js/bundle.js` mirrors
@@ -15,7 +15,7 @@
 // the moment prose wrap becomes visible to somebody editing a buffer -- which
 // is A2's boundary, not A1's. So this is the browser path's implementation,
 // proven to agree with Python's on every tracked markdown file in the
-// repository, sitting one line away from being used.
+// repository that parses cleanly, sitting one line away from being used.
 //
 // That is worth stating rather than leaving as an apparent omission: "the two
 // producers agree" is a weaker claim about a function one of them never runs,
@@ -31,7 +31,6 @@
 export const RUN = "prose_run";
 export const ATOM = "prose_atom";
 export const GAP = "prose_gap";
-export const TEXT = "prose_text";
 
 const ALNUM = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 export const SAFE_PUNCTUATION = new Set(",;.'\"!?()-:/");
@@ -39,8 +38,11 @@ const SAFE = new Set([...ALNUM, ...SAFE_PUNCTUATION]);
 
 const GAPS = new Set([" ", "\n"]);
 
-// `prose.py`'s `_ACQUIRES`, character for character.
-const ACQUIRES = /^(?:[-+*>#=|~]|\d+[.)]|```|~~~)/;
+// `prose.py`'s `_ACQUIRES`, character for character. The `:-+:?$` alternative
+// is a GFM one-column table delimiter row, which needs no pipe; `prose.py`
+// carries the counterexample that put it there. `$` rather than Python's `\Z`
+// because this regex is not multiline, where the two are the same.
+const ACQUIRES = /^(?:[-+*>#=|~]|\d+[.)]|```|~~~|:-+:?$)/;
 
 const CONTAINERS = new Set([
   "block_quote",
@@ -96,18 +98,14 @@ export function partition(inline, source) {
   while (at < inline.end) {
     let stop = at;
     while (stop < inline.end && !GAPS.has(String.fromCharCode(source[stop]))) stop += 1;
+    // A leaf, not a wrapper: `source_partitions` on the enclosing run validates
+    // leaf text against the source, so the interior node the design doc asked
+    // for bought nothing. `prose.py` carries the measurement.
     out.push({
       type: ATOM,
       start: at,
       end: stop,
-      children: [
-        {
-          type: TEXT,
-          start: at,
-          end: stop,
-          text: decoder.decode(source.subarray(at, stop)),
-        },
-      ],
+      text: decoder.decode(source.subarray(at, stop)),
     });
     if (stop === inline.end) break;
     out.push({
@@ -142,10 +140,15 @@ export function reasons(doc) {
   return out;
 }
 
-/** Rewrite every eligible paragraph in `doc`, in place. Returns how many. */
+/**
+ * A copy of `doc` with every eligible paragraph projected. `doc` is untouched.
+ * See `prose.py`: the projection replaces a paragraph's `inline` child, and the
+ * syntax tree has to survive for highlighting, so this must never be the thing
+ * the browser's one `parse()` mutates.
+ */
 export function project(doc) {
+  doc = structuredClone(doc);
   const source = encoder.encode(doc.source);
-  let count = 0;
   const stack = [doc.root];
   while (stack.length > 0) {
     const node = stack.pop();
@@ -157,10 +160,9 @@ export function project(doc) {
       if (inline.field !== undefined) run.field = inline.field;
       run.children = partition(inline, source);
       node.children = [run];
-      count += 1;
       continue;
     }
     for (const child of node.children ?? []) stack.push(child);
   }
-  return count;
+  return doc;
 }

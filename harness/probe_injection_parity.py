@@ -13,6 +13,8 @@ and the browser path that parses the same source produce the same tree at all.
 Nothing else in `test.sh` covers that surface.
 
 `--allow-missing` skips when a generated web blob is absent and reports success.
+The blobs are gitignored -- `web/gen.py` transcodes them and they are 22.9 MB
+raw -- so a fresh checkout has none and needs either that command or this flag.
 Without it, a missing prerequisite is a failure. That default is the whole point:
 the skip used to be unconditional, so the one gate over this surface reported
 success while comparing zero files, and `test.sh` could not tell the difference
@@ -113,8 +115,8 @@ def main(allow_missing: bool = False) -> int:
             f"{len(missing)} generated web blob(s): {', '.join(missing)}"
         )
         if not allow_missing:
-            raise Failed(f"{what} -- run harness/build_blobs.py, or pass "
-                         "--allow-missing to skip this check deliberately")
+            raise Failed(f"{what} -- run ./web/gen.py to transcode them, or "
+                         "pass --allow-missing to skip this check deliberately")
         print(f"SKIP injection tree parity: {what}")
         return 0
 

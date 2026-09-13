@@ -22,14 +22,28 @@ patterns are adversarial rather than realistic: one word per line is the worst
 case for a word that could start a block, and no particular width need produce
 it.
 
-**A'. An eligible paragraph contains no inline syntax at all.** This is the
-whitelist's actual claim, checked against an oracle that knows nothing about
-the whitelist: the pinned Markdown package's *inline* grammar. Every eligible
-paragraph is parsed with it, and the result must be a bare `inline` node -- no
-`code_span`, no `emphasis`, no `inline_link`, nothing named. A1 cannot reason
-about inline constructs, so admitting a paragraph that holds one is the error
-this is looking for, and it is found directly rather than inferred from a
-reflow that happened not to break.
+**A'. An eligible paragraph holds nothing the pinned inline grammar calls
+syntax.** Every eligible paragraph is parsed with the package's *inline*
+grammar, and the result must be a bare `inline` node -- no `code_span`, no
+`emphasis`, no `inline_link`, nothing named. That is an oracle which knows
+nothing about the whitelist, so it finds an over-admission directly rather than
+inferring it from a reflow that happened not to break.
+
+**It is weaker than "contains no inline syntax", and the gap has a name.** GFM
+extended autolinks -- `www.example.com`, `https://example.com` -- *are* inline
+syntax, and a renderer makes them links, but tree-sitter-markdown 0.5.1 parses
+both as a bare `inline` node. So this check cannot speak for `.`, `:` or `/`,
+which are exactly the characters that spell them. What can be said for those
+rests on argument plus two independent searches with real renderers: neither
+prettier 3.9.6 nor micromark+GFM nor cmark-gfm produced a meaning change from
+any gap assignment near an autolink, across roughly 43,000 rendered variants.
+An autolink contains no space, so it lies inside one atom and cannot be split,
+and a space and a newline are the same flanking class on either side of it.
+
+The same blindness is what let a GFM table delimiter row through until a
+renderer-driven search found it -- see `_ACQUIRES` in `prose.py`. A CST oracle
+is bounded by what its grammar models, and this one models neither pipeless
+tables nor autolink literals.
 
 The inline grammar is a **test-time** dependency, not a producer one. That
 distinction is the whole A1/A2 split: `gen_trees.py` could load it today, the
@@ -143,7 +157,7 @@ def runs(doc: dict) -> list[dict]:
 
 def atoms(doc: dict) -> list[tuple[int, int, str]]:
     return [
-        (child["start"], child["end"], child["children"][0]["text"])
+        (child["start"], child["end"], child["text"])
         for run in runs(doc)
         for child in run["children"]
         if child["type"] == prose.ATOM
@@ -210,8 +224,7 @@ def phase_a(parser, docs) -> int:
                     f"({len(want)} nodes became {len(got)}); first divergence "
                     f"at {first!r}"
                 )
-            prose.project(again)
-            if atoms(again) != want_atoms:
+            if atoms(prose.project(again)) != want_atoms:
                 raise Failed(
                     f"{path}: reflowed with {name}, the projection no longer "
                     f"finds the same atoms"
@@ -248,7 +261,7 @@ def phase_a_inline(inline_parser, docs) -> int:
     return checked
 
 
-def phase_b(parser, docs) -> int:
+def phase_b(parser, docs, inert: bool = False) -> int:
     # Re-parse rather than reuse: `docs` holds already-projected documents, and
     # a verdict computed from one of those would describe the projection's own
     # output instead of the source. Both sides must be handed the same
@@ -265,6 +278,7 @@ def phase_b(parser, docs) -> int:
         capture_output=True,
         text=True,
         timeout=300,
+        env={**os.environ, "PROSE_NO_PROJECT": "1"} if inert else None,
     )
     if proc.returncode != 0:
         raise Failed(f"JavaScript projection failed: {proc.stderr.strip()}")
@@ -285,8 +299,7 @@ def phase_b(parser, docs) -> int:
                 f"{path.relative_to(ROOT)}: the two producers disagree on a "
                 f"paragraph verdict; first divergence at {first!r}"
             )
-        prose.project(doc)
-        if other["doc"] != doc:
+        if other["doc"] != prose.project(doc):
             raise Failed(
                 f"{path.relative_to(ROOT)}: the two projections differ "
                 f"({other['count']} runs in JavaScript)"
@@ -295,6 +308,26 @@ def phase_b(parser, docs) -> int:
     if compared == 0:
         raise Failed("the producer comparison saw no paragraphs at all")
     return compared
+
+
+def phase_b_control(parser, docs) -> str:
+    """Phase B must fail when the JavaScript side does nothing.
+
+    The positive control for the producer comparison, and it is here because
+    this check has already been vacuous once: it compared *projected*
+    documents that Python had projected before JavaScript ever saw them, so a
+    JavaScript projection replaced by a no-op passed. A gate that cannot tell a
+    working producer from an absent one is the same failure as a sweep that
+    runs on nothing.
+    """
+    try:
+        phase_b(parser, docs, inert=True)
+    except Failed:
+        return "a no-op JavaScript projection fails phase B"
+    raise Failed(
+        "the producer comparison PASSED with the JavaScript projection "
+        "disabled -- it is not comparing what it claims to"
+    )
 
 
 def phase_c(parser, packages: Path, docs) -> int:
@@ -338,17 +371,30 @@ def phase_c(parser, packages: Path, docs) -> int:
                         f"{path.name} at {width}: formatted output does not "
                         "parse cleanly"
                     )
-                prose.project(again)
-                tree_path.write_text(json.dumps(again), encoding="utf-8")
-                proc = subprocess.run(
-                    [str(ROOT / "fmt-rust"), str(tree_path), str(width)],
-                    capture_output=True,
-                    env=env,
-                    timeout=120,
+                # Both runtimes on the second pass, not just Rust. A JavaScript
+                # defect reachable only from a formatter-produced line
+                # distribution -- which is a different shape from any
+                # hand-written source -- would otherwise pass.
+                tree_path.write_text(
+                    json.dumps(prose.project(again)), encoding="utf-8"
                 )
-                if proc.returncode != 0 or proc.stdout != outputs["fmt-rust"]:
-                    raise Failed(f"{path.name} at {width}: not idempotent")
-                checked += 1
+                for exe in ("fmt-rust", "fmt-js"):
+                    proc = subprocess.run(
+                        [str(ROOT / exe), str(tree_path), str(width)],
+                        capture_output=True,
+                        env=env,
+                        timeout=120,
+                    )
+                    if proc.returncode != 0:
+                        raise Failed(
+                            f"{path.name} at {width}: {exe} refused its own "
+                            f"output: {proc.stderr.decode().strip()}"
+                        )
+                    if proc.stdout != outputs["fmt-rust"]:
+                        raise Failed(
+                            f"{path.name} at {width}: {exe} is not idempotent"
+                        )
+                    checked += 1
     return checked
 
 
@@ -363,8 +409,7 @@ def main(quiet: bool = False) -> int:
         if doc is None:
             skipped += 1
             continue
-        prose.project(doc)
-        docs.append((path, source, doc))
+        docs.append((path, source, prose.project(doc)))
 
     admitted = [
         (path, source, doc) for path, source, doc in docs if path == REFUSED
@@ -396,6 +441,7 @@ def main(quiet: bool = False) -> int:
         reflows = phase_a(parser, docs)
         inlines = phase_a_inline(inline_parser, docs)
         projections = phase_b(parser, docs)
+        control = phase_b_control(parser, docs)
         formats = phase_c(parser, packages, docs)
 
     if not quiet:
@@ -405,7 +451,7 @@ def main(quiet: bool = False) -> int:
             f"{reflows} reflow-reparse checks, "
             f"{inlines} inline-oracle checks, "
             f"{projections} producer paragraph verdicts, "
-            f"{formats} runtime/idempotence checks; "
+            f"{formats} runtime/idempotence checks; {control}; "
             f"{REFUSED.name} still refuses every paragraph"
         )
     return 0

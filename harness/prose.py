@@ -10,7 +10,7 @@ rather than during -- a node's type, its children's types and its byte range are
 all this needs, and none of the parser's internals are.
 
 `harness/prose.mjs` is the mirror. The two must agree byte for byte on the same
-input document; `harness/probe_prose_parity.py` is the gate that says so.
+input document; `harness/probe_prose.py` is the gate that says so.
 
 # Why the predicate is a whitelist
 
@@ -45,21 +45,23 @@ and a newline change how this character is read?**
     -            List marker, setext underline and thematic break, all only at
                  a line start; `_ACQUIRES` refuses a word that starts with one.
     :  /         Reference-definition and autolink punctuation. Both need a
-                 `[` or an unbroken scheme inside a single atom.
+                 `[` or an unbroken scheme inside a single atom. A leading `:`
+                 also spells a GFM table delimiter row, which needs no pipe when
+                 the table has one column -- see `_ACQUIRES`, which refuses it.
 
 Everything else -- backtick, asterisk, underscore, bracket, angle, pipe, hash,
 tilde, ampersand, backslash, plus, equals, and every non-ASCII byte -- refuses
 the paragraph. Emphasis and code spans are A2, and are the reason A2 exists.
 
-The argument above is reasoning, not evidence. The evidence is
-`harness/probe_prose_reflow.py`, which reflows every eligible paragraph in the
-repository at several widths, reparses, and requires the projection to come
-back identical. A character admitted here in error shows up there as a changed
-tree, not as a silent rewrite.
+The argument above is reasoning, not evidence, and one character in it was
+wrong: `:` also spells a GFM table delimiter row. The evidence is
+`harness/probe_prose.py`, and specifically its refusal fixture -- see
+`_ACQUIRES` for why a reflow-and-reparse sweep could not have found that one.
 """
 
 from __future__ import annotations
 
+import copy
 import re
 
 # The run, the content atom, and the whitespace between two atoms. `prose_run`
@@ -70,13 +72,19 @@ RUN = "prose_run"
 ATOM = "prose_atom"
 GAP = "prose_gap"
 
-# `prose_atom` is interior rather than a leaf on purpose. `node_current` in both
-# runtimes returns a leaf's `text` *before* it looks up a rule, so a `verbatim`
-# rule on a leaf would never run and its offsets would never be checked against
-# the source. Wrapping the bytes in a leaf child gives `verbatim` a subtree to
-# validate. A one-word atom gets the wrapper too; the exception would be the
-# only unvalidated path.
-TEXT = "prose_text"
+# An atom is a **leaf**, and the design doc's argument for wrapping it in an
+# interior node is wrong. That argument was: `node_current` returns a leaf's
+# `text` before it looks up a rule, so a `verbatim` rule on a leaf would never
+# run and the bytes would never be checked against the source. True in
+# isolation, and moot here -- `source_partitions` on the enclosing `prose_run`
+# runs `check_source` over the whole subtree, leaves included, before any Doc is
+# built. Measured: a leaf atom carrying `"XXXXX"` where the source says
+# `"alpha"` is refused by both runtimes with
+#
+#     source_partitions `prose_run` has a leaf whose text does not match the source
+#
+# So the wrapper bought nothing and cost a synthetic node type and a package
+# rule, both of which A2 would have inherited.
 
 ALNUM = frozenset(
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -91,9 +99,31 @@ SAFE = ALNUM | SAFE_PUNCTUATION
 GAPS = (" ", "\n")
 
 # An atom that would start a block construct if reflow moved it to a line start.
-# Most of these characters are already refused by `SAFE`; `-` and `\d+[.)]` are
-# not, and they are why this check exists rather than being folded into it.
-_ACQUIRES = re.compile(r"^(?:[-+*>#=|~]|\d+[.)]|```|~~~)")
+# Most of these characters are already refused by `SAFE`; `-`, `\d+[.)]` and the
+# GFM delimiter row are not, and they are why this check exists rather than
+# being folded into the byte whitelist.
+#
+# `:-+:?` is a **GFM one-column table delimiter row**, and it is the one entry
+# here found by a counterexample rather than by enumeration. GFM requires a pipe
+# only *between* cells, so a single-column delimiter row may be written with no
+# pipe at all -- `a :- b` is a paragraph, and moving `:-` onto its own line
+# makes it a table with header `a` and body `b`. Confirmed against prettier
+# 3.9.6 and micromark+GFM. `|` is not admitted, so the familiar `| --- |`
+# spelling never arises, and `-:` and `---` are caught by the leading `-`. Only
+# the colon-leading spelling slipped through, because the argument for admitting
+# `:` reasoned about CommonMark inlines and reference definitions and never
+# considered a GFM *block*.
+#
+# The general shape, worth naming because the next one will look like it: a
+# **GFM-only block construct whose opener is an admitted character that is
+# neither `-` nor a digit.** Tables are the only such construct today -- task
+# lists and footnotes both need `[`, which is refused -- but nothing here would
+# have caught a second one either.
+#
+# The pinned block grammar does not parse a pipeless table, so a reparse cannot
+# see this class at all and `probe_prose.py`'s phase A is blind to it. The guard
+# is the entry in `harness/fixtures/prose-refused.md`, not the sweep.
+_ACQUIRES = re.compile(r"^(?:[-+*>#=|~]|\d+[.)]|```|~~~|:-+:?\Z)")
 
 # A paragraph inside one of these owns a per-line continuation prefix -- a `> `,
 # a list indent -- that reflow would have to re-emit on every new line it
@@ -126,6 +156,8 @@ def package(base: dict) -> dict:
     # trivia the item view removes, the run is the node whose coverage is
     # proven before that removal happens.
     out["whitespace_nodes"] = [*base.get("whitespace_nodes", []), GAP]
+    # Two rules, not three: an atom is a leaf, and a leaf emits its own text
+    # before rule dispatch, so `prose_atom` needs no rule at all.
     out["rules"] = {
         **base["rules"],
         "paragraph": [
@@ -134,7 +166,6 @@ def package(base: dict) -> dict:
             ["verbatim"],
         ],
         RUN: ["fill", f"t:{ATOM}", ["line"]],
-        ATOM: ["verbatim"],
     }
     return out
 
@@ -216,21 +247,14 @@ def partition(inline: dict, source: bytes) -> list[dict]:
     at = start
     while at < end:
         stop = at
-        while stop < end and source[stop : stop + 1].decode("ascii") not in GAPS:
+        while stop < end and chr(source[stop]) not in GAPS:
             stop += 1
         out.append(
             {
                 "type": ATOM,
                 "start": at,
                 "end": stop,
-                "children": [
-                    {
-                        "type": TEXT,
-                        "start": at,
-                        "end": stop,
-                        "text": source[at:stop].decode("ascii"),
-                    }
-                ],
+                "text": source[at:stop].decode("utf-8"),
             }
         )
         if stop == end:
@@ -240,7 +264,7 @@ def partition(inline: dict, source: bytes) -> list[dict]:
                 "type": GAP,
                 "start": stop,
                 "end": stop + 1,
-                "text": source[stop : stop + 1].decode("ascii"),
+                "text": source[stop : stop + 1].decode("utf-8"),
             }
         )
         at = stop + 1
@@ -277,14 +301,22 @@ def reasons(doc: dict) -> list[tuple[int, str]]:
     return out
 
 
-def project(doc: dict) -> int:
-    """Rewrite every eligible paragraph in `doc`, in place. Returns how many.
+def project(doc: dict) -> dict:
+    """A copy of `doc` with every eligible paragraph projected. `doc` is untouched.
+
+    A copy rather than an in-place rewrite, because the projection **replaces**
+    a paragraph's `inline` child and `docs/prose-projection.md` requires the
+    syntax tree to survive for highlighting and syntax-aware editing. A pass
+    that mutated the shared document would, the moment it was wired into the
+    browser's one `parse()`, discard exactly the inline CST A2 exists to buy.
+    Returning a separate formatter view makes that impossible rather than
+    merely discouraged.
 
     Top-level only: the walk stops descending the moment it enters a container,
     so a paragraph inside a blockquote is never even offered to `refusal`.
     """
+    doc = copy.deepcopy(doc)
     source = doc["source"].encode("utf-8")
-    count = 0
     stack = [doc["root"]]
     while stack:
         node = stack.pop()
@@ -301,7 +333,6 @@ def project(doc: dict) -> int:
                 run["field"] = inline["field"]
             run["children"] = partition(inline, source)
             node["children"] = [run]
-            count += 1
             continue
         stack.extend(node.get("children", []))
-    return count
+    return doc

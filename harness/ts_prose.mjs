@@ -12,12 +12,14 @@ const chunks = [];
 for await (const chunk of process.stdin) chunks.push(chunk);
 const payload = JSON.parse(Buffer.concat(chunks).toString("utf8"));
 
-// The verdicts are read *before* the projection rewrites the paragraphs they
-// describe. Order matters: `project` replaces the `inline` child a refusal
-// would have been computed from.
+// `NO_PROJECT` is the probe's positive control: with it set this driver
+// returns the document untouched, and phase B must fail. A producer-agreement
+// check that passes when one producer does nothing is not a check, and that is
+// exactly the shape this probe had before the verdicts were compared.
+const inert = process.env.PROSE_NO_PROJECT === "1";
 const out = payload.map(({ path, doc }) => {
-  const verdicts = reasons(doc);
-  return { path, reasons: verdicts, count: project(doc), doc };
+  const verdicts = inert ? [] : reasons(doc);
+  return { path, reasons: verdicts, doc: inert ? doc : project(doc) };
 });
 
 process.stdout.write(JSON.stringify(out));

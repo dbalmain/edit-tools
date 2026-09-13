@@ -80,6 +80,23 @@ alpha beta gamma - delta epsilon zeta eta theta
 
 alpha beta gamma 1. delta epsilon zeta eta theta
 
+## A word that would become a GFM table delimiter row at a line start
+
+GFM needs a pipe only between cells, so a one-column delimiter row is just
+`:-`. Moving it to its own line turns this paragraph into a table. The pinned
+block grammar does not parse a pipeless table, so no reparse can catch this
+one; this fixture entry is its only guard.
+
+alpha beta :- gamma delta epsilon zeta eta
+
+## The centre-aligned spelling of the same row
+
+alpha beta :-: gamma delta epsilon zeta eta
+
+## The same row with more dashes
+
+alpha beta :--- gamma delta epsilon zeta eta
+
 ## A word that would become a heading at a line start
 
 alpha beta gamma # delta epsilon zeta eta theta

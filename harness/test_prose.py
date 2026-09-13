@@ -6,11 +6,13 @@ the same constraint `test_gate3.py` works under.
 
 Hand-built `inline` children are a *model* of what the block grammar emits, so
 these tests cannot prove the model right. That is what
-`harness/probe_prose_reflow.py` is for: it drives the real grammar over every
-markdown file in the repository and requires the projection to survive a
-reflow and a reparse. Logic here, reality there.
+`harness/probe_prose.py` is for: it drives the real grammar over every tracked
+markdown file in the repository, checks an independent inline-grammar oracle,
+and keeps a fixture of near misses that must stay refused. Logic here, reality
+there.
 """
 
+import json
 import unittest
 from pathlib import Path
 
@@ -84,6 +86,20 @@ class Refusal(unittest.TestCase):
         ("ordered list", "in version 1. Then it changed", (".",),
          "block acquisition"),
         ("ordered paren", "see 2) below now", (")",), "block acquisition"),
+        # A GFM one-column table delimiter row needs no pipe, so moving `:-` to
+        # a line start turns this paragraph into a table. prettier 3.9.6 and
+        # micromark+GFM both agree that it does; the pinned block grammar does
+        # not parse a pipeless table, so no reparse can stand in for this.
+        ("table delimiter row", "alpha :- beta", (":", "-"),
+         "block acquisition"),
+        ("centre-aligned delimiter", "alpha :-: beta", (":", "-", ":"),
+         "block acquisition"),
+        ("long delimiter", "alpha :--- beta", (":", "-", "-", "-"),
+         "block acquisition"),
+        # Not delimiter rows: the fix must not cost every paragraph with a
+        # colon in it.
+        ("colon then a word", "alpha :-beta gamma", (":", "-"), None),
+        ("a time of day", "alpha 10:30 beta gamma", (":",), None),
     )
 
     def test_cases(self):
@@ -114,50 +130,54 @@ class Partition(unittest.TestCase):
         self.assertEqual(at, node["end"], "total")
 
     def test_atoms_and_gaps_alternate_and_cover_the_range(self):
-        d = doc("alpha beta\ngamma")
-        self.assertEqual(prose.project(d), 1)
-        run = paragraph(d)["children"][0]
+        out = prose.project(doc("alpha beta\ngamma"))
+        run = paragraph(out)["children"][0]
         self.assertEqual(run["type"], prose.RUN)
         kinds = [child["type"] for child in run["children"]]
         self.assertEqual(
             kinds, [prose.ATOM, prose.GAP, prose.ATOM, prose.GAP, prose.ATOM]
         )
-        self.covers(run, d["source"].encode())
+        self.covers(run, out["source"].encode())
 
     def test_a_gap_keeps_the_byte_it_replaced(self):
-        d = doc("alpha beta\ngamma")
-        prose.project(d)
+        out = prose.project(doc("alpha beta\ngamma"))
         gaps = [
             child
-            for child in paragraph(d)["children"][0]["children"]
+            for child in paragraph(out)["children"][0]["children"]
             if child["type"] == prose.GAP
         ]
         self.assertEqual([gap["text"] for gap in gaps], [" ", "\n"])
 
-    def test_an_atom_wraps_its_bytes_in_a_leaf_child(self):
-        """Interior, so `verbatim` validates the range against the source."""
-        d = doc("alpha beta")
-        prose.project(d)
-        atom = paragraph(d)["children"][0]["children"][0]
-        self.assertNotIn("text", atom)
+    def test_an_atom_is_a_leaf(self):
+        """`source_partitions` on the run validates leaf text, so the design
+        doc's interior wrapper bought nothing. See `prose.py`."""
+        atom = prose.project(doc("alpha beta"))["root"]["children"][0][
+            "children"
+        ][0]["children"][0]
+        self.assertNotIn("children", atom)
         self.assertEqual(
-            atom["children"], [{"type": prose.TEXT, "start": 0, "end": 5,
-                                "text": "alpha"}]
+            atom, {"type": prose.ATOM, "start": 0, "end": 5, "text": "alpha"}
         )
 
     def test_offsets_are_absolute_not_paragraph_relative(self):
-        d = doc("alpha beta", base=17)
-        prose.project(d)
-        run = paragraph(d)["children"][0]
+        out = prose.project(doc("alpha beta", base=17))
+        run = paragraph(out)["children"][0]
         self.assertEqual((run["start"], run["end"]), (17, 27))
         self.assertEqual(run["children"][0]["start"], 17)
 
 
 class Project(unittest.TestCase):
     def test_an_ineligible_paragraph_keeps_its_inline_child(self):
-        d = doc("alpha")
-        self.assertEqual(prose.project(d), 0)
-        self.assertEqual(paragraph(d)["children"][0]["type"], "inline")
+        out = prose.project(doc("alpha"))
+        self.assertEqual(paragraph(out)["children"][0]["type"], "inline")
+
+    def test_the_input_document_is_not_mutated(self):
+        """The syntax tree has to survive for highlighting; see `project`."""
+        d = doc("alpha beta")
+        before = json.dumps(d, sort_keys=True)
+        out = prose.project(d)
+        self.assertEqual(json.dumps(d, sort_keys=True), before)
+        self.assertEqual(paragraph(out)["children"][0]["type"], prose.RUN)
 
     def test_a_paragraph_inside_a_container_is_never_offered(self):
         d = doc("alpha beta")
@@ -166,8 +186,11 @@ class Project(unittest.TestCase):
             {"type": "block_quote", "start": para["start"], "end": para["end"],
              "children": [para]}
         ]
-        self.assertEqual(prose.project(d), 0)
-        self.assertEqual(para["children"][0]["type"], "inline")
+        out = prose.project(d)
+        self.assertEqual(
+            out["root"]["children"][0]["children"][0]["children"][0]["type"],
+            "inline",
+        )
 
     def test_an_injected_region_is_never_offered(self):
         """A guest language owns its own subtree; markdown's policy stops here."""
@@ -177,20 +200,24 @@ class Project(unittest.TestCase):
             {"type": "fence", "start": para["start"], "end": para["end"],
              "language": "markdown", "children": [para]}
         ]
-        self.assertEqual(prose.project(d), 0)
+        out = prose.project(d)
+        self.assertEqual(
+            out["root"]["children"][0]["children"][0]["children"][0]["type"],
+            "inline",
+        )
 
     def test_the_field_of_the_replaced_inline_survives(self):
         d = doc("alpha beta")
         paragraph(d)["children"][0]["field"] = "body"
-        prose.project(d)
-        self.assertEqual(paragraph(d)["children"][0]["field"], "body")
+        self.assertEqual(
+            paragraph(prose.project(d))["children"][0]["field"], "body"
+        )
 
 
 class Package(unittest.TestCase):
     """The derived A1 package, against the shipped one it extends."""
 
     def setUp(self):
-        import json
         root = Path(__file__).resolve().parent.parent
         self.base = json.loads((root / "packages" / "markdown.json").read_text())
         self.out = prose.package(self.base)
