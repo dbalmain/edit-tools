@@ -104,6 +104,41 @@ CONTAINERS = frozenset(
 )
 
 
+def package(base: dict) -> dict:
+    """`packages/markdown.json`, plus the four rules A1 needs. Derived, not
+    committed, so it cannot drift from the package it extends.
+
+    A1 ships no package change. The projection is off in the corpus, so the
+    shipped `markdown.json` stays at format 2 with `paragraph: ["verbatim"]`
+    and every committed reference and tree is untouched. These edits exist so
+    the probes can format a projected document, and so the diff that turns the
+    projection on later is these four lines rather than a rewrite.
+
+    `paragraph` keeps `verbatim` for the paragraphs the projection refused,
+    which is most of them, and takes the reflowing branch only when a
+    `prose_run` is actually present. That guard is what lets one package format
+    a document in which some paragraphs are projected and some are not.
+    """
+    out = dict(base)
+    out["format"] = "et-doc-rules/3"
+    out["source_partitions"] = [RUN]
+    # Disjoint from `source_partitions`, which both runtimes check: the gap is
+    # trivia the item view removes, the run is the node whose coverage is
+    # proven before that removal happens.
+    out["whitespace_nodes"] = [*base.get("whitespace_nodes", []), GAP]
+    out["rules"] = {
+        **base["rules"],
+        "paragraph": [
+            "when", ["count", f"t:{RUN}", 1],
+            ["seq", ["child", f"t:{RUN}"], ["hard"]],
+            ["verbatim"],
+        ],
+        RUN: ["fill", f"t:{ATOM}", ["line"]],
+        ATOM: ["verbatim"],
+    }
+    return out
+
+
 def refusal(paragraph: dict, source: bytes) -> str | None:
     """Why this paragraph is not eligible, or `None` if it is.
 
@@ -206,16 +241,15 @@ def project(doc: dict) -> int:
             continue
         if node["type"] == "paragraph" and refusal(node, source) is None:
             inline = node["children"][0]
-            node["children"] = [
-                {
-                    "type": RUN,
-                    "start": inline["start"],
-                    "end": inline["end"],
-                    "children": partition(inline, source),
-                }
-            ]
+            # Key order is `type, start, end, field, children`, the order
+            # `convert()` inserts them in. Both producers write documents that
+            # are compared as bytes elsewhere in the tree corpus; a projection
+            # that reordered keys would be the one node shape that could not be.
+            run = {"type": RUN, "start": inline["start"], "end": inline["end"]}
             if "field" in inline:
-                node["children"][0]["field"] = inline["field"]
+                run["field"] = inline["field"]
+            run["children"] = partition(inline, source)
+            node["children"] = [run]
             count += 1
             continue
         stack.extend(node.get("children", []))

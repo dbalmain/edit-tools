@@ -12,6 +12,7 @@ reflow and a reparse. Logic here, reality there.
 """
 
 import unittest
+from pathlib import Path
 
 import prose
 
@@ -183,6 +184,38 @@ class Project(unittest.TestCase):
         paragraph(d)["children"][0]["field"] = "body"
         prose.project(d)
         self.assertEqual(paragraph(d)["children"][0]["field"], "body")
+
+
+class Package(unittest.TestCase):
+    """The derived A1 package, against the shipped one it extends."""
+
+    def setUp(self):
+        import json
+        root = Path(__file__).resolve().parent.parent
+        self.base = json.loads((root / "packages" / "markdown.json").read_text())
+        self.out = prose.package(self.base)
+
+    def test_the_shipped_package_is_not_mutated(self):
+        self.assertEqual(self.base["format"], "et-doc-rules/2")
+        self.assertNotIn("source_partitions", self.base)
+        self.assertEqual(self.base["rules"]["paragraph"], ["verbatim"])
+
+    def test_partitions_and_whitespace_nodes_stay_disjoint(self):
+        """Both runtimes refuse a package whose two lists overlap."""
+        self.assertEqual(
+            set(self.out["source_partitions"]) & set(self.out["whitespace_nodes"]),
+            set(),
+        )
+
+    def test_the_shipped_whitespace_nodes_survive(self):
+        self.assertEqual(
+            self.out["whitespace_nodes"], [*self.base["whitespace_nodes"], prose.GAP]
+        )
+
+    def test_an_unprojected_paragraph_still_reaches_verbatim(self):
+        branch = self.out["rules"]["paragraph"]
+        self.assertEqual(branch[0], "when")
+        self.assertEqual(branch[3], ["verbatim"])
 
 
 if __name__ == "__main__":
