@@ -76,12 +76,15 @@ def compile_probe(parser_c: Path, tmp: Path, has_keyword_lex: bool) -> Path:
             f"grammar's git tag (docs/parse-survey.md §1)"
         )
     binary = tmp / "probe"
+    scanner_c = parser_c.parent / "scanner.c"
     build = subprocess.run(
         [
             "cc", "-O0", "-w", "-I", str(include),
             f"-DTS_PARSER_C=\"{parser_c}\"",
             *(["-DTS_HAS_KEYWORD_LEX=1"] if has_keyword_lex else []),
-            str(HARNESS / "ts_probe_lex.c"), "-o", str(binary),
+            str(HARNESS / "ts_probe_lex.c"),
+            *([str(scanner_c)] if scanner_c.is_file() else []),
+            "-o", str(binary),
         ],
         capture_output=True, text=True,
     )

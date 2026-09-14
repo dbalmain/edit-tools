@@ -191,8 +191,12 @@ int main(void) {
   }
   printf("],\n");
   printf("\"reservedWords\":");
+#if MAX_RESERVED_WORD_SET_SIZE > 0
   emit_u16(&ts_reserved_words[0][0],
            COUNT(ts_reserved_words) * MAX_RESERVED_WORD_SET_SIZE);
+#else
+  printf("[]");
+#endif
   printf(",\n");
   printf("\"maxReservedWordSetSize\":%d,\n", MAX_RESERVED_WORD_SET_SIZE);
 #else

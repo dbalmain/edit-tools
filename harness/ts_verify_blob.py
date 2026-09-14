@@ -70,11 +70,13 @@ def dump(parser_c: Path, keep: bool) -> dict:
         )
     with tempfile.TemporaryDirectory() as tmp:
         binary = Path(tmp) / "dump"
+        scanner_c = parser_c.parent / "scanner.c"
         cmd = [
             "cc", "-O0", "-w",
             "-I", str(include),
             f"-DTS_PARSER_C=\"{parser_c}\"",
             str(HARNESS / "ts_dump_tables.c"),
+            *([str(scanner_c)] if scanner_c.is_file() else []),
             "-o", str(binary),
         ]
         build = subprocess.run(cmd, capture_output=True, text=True)

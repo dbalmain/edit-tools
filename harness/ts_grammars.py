@@ -509,7 +509,13 @@ def wanted(symbol: str, grammars: list[str]) -> str | None:
     """
     if len(grammars) == 1:
         return grammars[0]
-    if suffix := symbol.removeprefix("language").lstrip("_"):
+    # Most bindings spell a secondary export `language_<name>`, while
+    # tree-sitter-markdown's Python binding spells it `inline_language`.
+    # Both select the final component of the generated grammar directory.
+    suffix = symbol.removeprefix("language").lstrip("_")
+    if suffix == symbol and symbol.endswith("_language"):
+        suffix = symbol.removesuffix("_language").rstrip("_")
+    if suffix:
         matches = [g for g in grammars if g.split("-")[-1] == suffix]
         return matches[0] if len(matches) == 1 else None
     return min(grammars, key=len)

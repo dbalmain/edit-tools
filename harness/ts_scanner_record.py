@@ -52,6 +52,7 @@ import sys
 import tarfile
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import replace
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -193,11 +194,19 @@ def sources(language: str, m) -> list[Path]:
     return sorted(found)
 
 
-def record(language: str, out: Path, jobs: int) -> dict:
+def record(
+    language: str,
+    out: Path,
+    jobs: int,
+    *,
+    grammar_symbol: str | None = None,
+) -> dict:
     manifests = mf.load_all()
     if language not in manifests:
         raise RecordError(f"no manifest for {language!r}")
     m = manifests[language]
+    if grammar_symbol is not None:
+        m = replace(m, grammar_symbol=grammar_symbol)
     binary, externals = build(language, m)
     files = sources(language, m)
     if not files:
@@ -229,6 +238,10 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("language", nargs="?", help="omit to record every language with a scanner")
     ap.add_argument("--out", type=Path, help=f"default {TRACES.relative_to(ROOT)}/<language>")
+    ap.add_argument(
+        "--grammar-symbol",
+        help="experimental override for a second grammar in the manifest's source package",
+    )
     ap.add_argument("--keep", action="store_true", help="keep the build directory")
     ap.add_argument("--jobs", type=int, default=os.cpu_count() or 4)
     ap.add_argument("--json", action="store_true")
@@ -240,7 +253,9 @@ def main() -> int:
     for name in names:
         out = args.out or TRACES / name
         try:
-            results.append(record(name, out, args.jobs))
+            results.append(
+                record(name, out, args.jobs, grammar_symbol=args.grammar_symbol)
+            )
         except RecordError as e:
             # Sweeping every language, a grammar with no scanner is not a
             # failure -- it is the answer.

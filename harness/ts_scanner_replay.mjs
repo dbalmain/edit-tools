@@ -87,10 +87,10 @@ function sourceFor(language, stem) {
   return fs.readFileSync(path.join(dir, found[0]));
 }
 
-function replay(language) {
+function replay(language, { traceDir = null, sourceLanguage = language } = {}) {
   const svm = path.join(SCANNERS, `${language}.svm`);
   if (!fs.existsSync(svm)) return { language, skipped: 'no port yet' };
-  const traceDir = path.join(TRACES, language);
+  traceDir ??= path.join(TRACES, language);
   if (!fs.existsSync(traceDir)) return { language, skipped: 'no recorded traces' };
 
   const program = decode(new Uint8Array(fs.readFileSync(svm)));
@@ -102,7 +102,7 @@ function replay(language) {
 
   for (const name of fs.readdirSync(traceDir).filter((n) => n.endsWith('.jsonl')).sort()) {
     const stem = path.basename(name, '.jsonl');
-    const src = sourceFor(language, stem);
+    const src = sourceFor(sourceLanguage, stem);
     files++;
     // Scanner state is per-parse, and the trace is one parse: reset once per
     // file, then let serialize/deserialize drive it exactly as recorded.
@@ -190,9 +190,24 @@ function replay(language) {
 }
 
 const args = process.argv.slice(2);
+const valueOf = (name) => {
+  const i = args.indexOf(name);
+  if (i < 0) return null;
+  if (i + 1 >= args.length) throw new Error(`${name} needs a value`);
+  return args[i + 1];
+};
+const traceDir = valueOf('--trace-dir');
+const sourceLanguage = valueOf('--source-language');
+const positional = args.filter((a, i) =>
+  !a.startsWith('--') && args[i - 1] !== '--trace-dir' && args[i - 1] !== '--source-language'
+);
+if ((traceDir || sourceLanguage) && (args.includes('--all') || positional.length !== 1)) {
+  console.error('--trace-dir/--source-language require exactly one scanner language');
+  process.exit(2);
+}
 const languages = args.includes('--all')
   ? fs.readdirSync(SCANNERS).filter((n) => n.endsWith('.svm')).map((n) => n.slice(0, -4)).sort()
-  : args;
+  : positional;
 if (languages.length === 0) {
   console.error('usage: ts_scanner_replay.mjs <language>... | --all');
   process.exit(2);
@@ -200,7 +215,7 @@ if (languages.length === 0) {
 
 let failed = 0;
 for (const language of languages) {
-  const r = replay(language);
+  const r = replay(language, { traceDir, sourceLanguage: sourceLanguage ?? language });
   if (r.skipped) {
     console.log(`${language.padEnd(12)} skipped -- ${r.skipped}`);
     continue;
