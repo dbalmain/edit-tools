@@ -181,6 +181,41 @@ class ReviewLedgerScoreTests(unittest.TestCase):
             report["by_language"]["json"]["stale_divergences"][0]["why"],
         )
 
+    def test_a_present_package_that_refuses_is_a_scored_failure_not_pending(self):
+        """Only a missing file is pending. A refuse still enters the denominator."""
+        packages = self.root / "packages"
+        packages.mkdir()
+        (packages / "json.json").write_text("{}")
+
+        pending = score.awaiting_package(self.root, {"json": self.manifest()})
+        report = self.classify(
+            {
+                88: score.Run(ok=False, refused=True, error="no"),
+                60: score.Run(ok=False, refused=True, error="no"),
+            }
+        )
+        scored = score.Report(submission="submission")
+        scored.gates = {
+            "0-coverage": {
+                "pass": False,
+                "got": 0,
+                "of": 2,
+                "what": "formatted every corpus file at every width",
+            }
+        }
+        scored.measures = {"6-reference-agreement": report}
+        scored.pending = pending
+
+        self.assertEqual(pending, {})
+        self.assertEqual(report["unreviewed"], 2)
+        self.assertTrue(
+            all(
+                item.endswith("(refused)")
+                for item in report["by_language"]["json"]["unreviewed_divergences"]
+            )
+        )
+        self.assertTrue(scored.disqualified)
+
     def test_review_requires_a_reference(self):
         self.approve()
         (self.reference / "json__sample@60.txt").unlink()
@@ -235,6 +270,32 @@ class SizeScoreTests(unittest.TestCase):
         )
 
 
+def _parse_lang(
+    root: Path, name: str, extra: str = "", aliases: list[str] | None = None
+) -> manifest.Manifest:
+    path = root / f"{name}.toml"
+    alias_list = aliases if aliases is not None else [name]
+    alias_toml = "[" + ", ".join(f'"{a}"' for a in alias_list) + "]"
+    path.write_text(
+        "\n".join(
+            (
+                f'name = "{name}"',
+                f'extensions = [".{name}"]',
+                'grammar = "tree-sitter-x==1.0.0"',
+                'grammar_module = "tree_sitter_x"',
+                f"injection_aliases = {alias_toml}",
+                'reference = "fmt --width {width}"',
+                'reference_version = "1.0.0"',
+                'reference_width = "flag"',
+                "widths = [80]",
+                'gate3 = "default"',
+                extra,
+            )
+        )
+    )
+    return manifest.parse(path)
+
+
 class AwaitingPackageTests(unittest.TestCase):
     """Stage A lands a corpus; stage C lands the package. In between, a
     language must read as pending rather than as one refusal per tree."""
@@ -244,23 +305,191 @@ class AwaitingPackageTests(unittest.TestCase):
         self.addCleanup(tmp.cleanup)
         self.submission = Path(tmp.name)
         (self.submission / "packages").mkdir()
+        self.langs = self.submission / "langs"
+        self.langs.mkdir()
 
     def test_a_language_with_no_package_is_awaiting_it(self):
         (self.submission / "packages" / "json.json").write_text("{}")
+        manifests = {
+            "json": _parse_lang(self.langs, "json"),
+            "toml": _parse_lang(self.langs, "toml"),
+        }
 
-        pending = score.awaiting_package(
-            self.submission, {"json": object(), "toml": object()}
-        )
+        pending = score.awaiting_package(self.submission, manifests)
 
-        self.assertEqual(sorted(pending), ["toml"])
+        self.assertEqual(pending, {"toml": "corpus landed, not yet scored"})
 
     def test_a_package_that_exists_is_scored_however_it_behaves(self):
         """A refusing package is a failure. Only a missing file is pending."""
         (self.submission / "packages" / "toml.json").write_text("{}")
 
-        pending = score.awaiting_package(self.submission, {"toml": object()})
+        pending = score.awaiting_package(
+            self.submission, {"toml": _parse_lang(self.langs, "toml")}
+        )
 
         self.assertEqual(pending, {})
+
+
+class PendingGuestTests(unittest.TestCase):
+    """A host whose package exists still cannot be scored when a guest it
+    formats is awaiting one. Opaque guests do not count; refusals do not
+    propagate; cycles must not hang."""
+
+    INFO_SITE = (
+        "[[injections]]\n"
+        'node = "fenced_code_block"\n'
+        'info = "info_string"\n'
+        'content = "code_fence_content"\n'
+    )
+
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.submission = Path(tmp.name)
+        (self.submission / "packages").mkdir()
+        self.langs = self.submission / "langs"
+        self.langs.mkdir()
+
+    def _lang(self, name, extra="", aliases=None):
+        return _parse_lang(self.langs, name, extra, aliases)
+
+    def test_a_host_is_pending_when_an_info_guest_has_no_package(self):
+        (self.submission / "packages" / "markdown.json").write_text("{}")
+        manifests = {
+            "json": self._lang("json"),
+            "markdown": self._lang("markdown", extra=self.INFO_SITE),
+        }
+
+        pending = score.awaiting_package(self.submission, manifests)
+
+        self.assertEqual(
+            pending,
+            {
+                "json": "corpus landed, not yet scored",
+                "markdown": "json is pending",
+            },
+        )
+
+    def test_pending_propagates_transitively_and_names_the_missing_package(self):
+        (self.submission / "packages" / "a.json").write_text("{}")
+        (self.submission / "packages" / "b.json").write_text("{}")
+        manifests = {
+            "a": self._lang(
+                "a", extra='injections = [{ node = "wrap", guest = "b" }]\n'
+            ),
+            "b": self._lang(
+                "b", extra='injections = [{ node = "wrap", guest = "c" }]\n'
+            ),
+            "c": self._lang("c"),
+            "d": self._lang("d"),
+        }
+        (self.submission / "packages" / "d.json").write_text("{}")
+
+        pending = score.awaiting_package(self.submission, manifests)
+
+        self.assertEqual(
+            pending,
+            {
+                "a": "c is pending",
+                "b": "c is pending",
+                "c": "corpus landed, not yet scored",
+            },
+        )
+
+    def test_a_cycle_does_not_hang(self):
+        (self.submission / "packages" / "b.json").write_text("{}")
+        manifests = {
+            "a": self._lang(
+                "a", extra='injections = [{ node = "wrap", guest = "b" }]\n'
+            ),
+            "b": self._lang(
+                "b", extra='injections = [{ node = "wrap", guest = "a" }]\n'
+            ),
+        }
+
+        pending = score.awaiting_package(self.submission, manifests)
+
+        self.assertEqual(
+            pending,
+            {
+                "a": "corpus landed, not yet scored",
+                "b": "a is pending",
+            },
+        )
+
+    def test_an_opaque_guest_does_not_pending_the_host(self):
+        (self.submission / "packages" / "markdown.json").write_text("{}")
+        manifests = {
+            "html": self._lang("html"),
+            "markdown": self._lang(
+                "markdown",
+                extra=(
+                    "[[injections]]\n"
+                    'node = "html_block"\n'
+                    'guest = "html"\n'
+                    "format = false\n"
+                ),
+            ),
+        }
+
+        pending = score.awaiting_package(self.submission, manifests)
+
+        self.assertEqual(pending, {"html": "corpus landed, not yet scored"})
+
+    def test_a_selected_host_is_pending_when_an_unselected_guest_is(self):
+        (self.submission / "packages" / "markdown.json").write_text("{}")
+        manifests = {
+            "json": self._lang("json"),
+            "markdown": self._lang("markdown", extra=self.INFO_SITE),
+        }
+
+        pending = score.awaiting_package(
+            self.submission, {"markdown": manifests["markdown"]}, manifests
+        )
+
+        self.assertEqual(pending, {"markdown": "json is pending"})
+
+    def test_a_present_guest_package_does_not_pending_the_host(self):
+        """Only absence propagates. A file that exists is scored, refusals and all."""
+        (self.submission / "packages" / "json.json").write_text("{}")
+        (self.submission / "packages" / "markdown.json").write_text("{}")
+        manifests = {
+            "json": self._lang("json"),
+            "markdown": self._lang("markdown", extra=self.INFO_SITE),
+        }
+
+        pending = score.awaiting_package(self.submission, manifests)
+
+        self.assertEqual(pending, {})
+
+
+class LivePendingPropagationTests(unittest.TestCase):
+    """The json-aside repro, against the real roster.
+
+    Restored in `finally` so an assertion failure cannot leave the tree
+    missing a package.
+    """
+
+    def test_current_packages_pend_nobody(self):
+        pending = score.awaiting_package(score.ROOT, manifest.load_all())
+        self.assertEqual(pending, {})
+
+    def test_missing_json_pends_markdown_and_not_python(self):
+        pkg = score.ROOT / "packages" / "json.json"
+        aside = pkg.with_name("json.json.aside")
+        if aside.is_file() and not pkg.is_file():
+            aside.rename(pkg)
+        try:
+            pkg.rename(aside)
+            pending = score.awaiting_package(score.ROOT, manifest.load_all())
+        finally:
+            if aside.is_file() and not pkg.is_file():
+                aside.rename(pkg)
+
+        self.assertEqual(pending["json"], "corpus landed, not yet scored")
+        self.assertEqual(pending["markdown"], "json is pending")
+        self.assertNotIn("python", pending)
+        self.assertTrue(pkg.is_file())
 
 
 class PendingMainTests(unittest.TestCase):
@@ -269,7 +498,12 @@ class PendingMainTests(unittest.TestCase):
         self.addCleanup(tmp.cleanup)
         self.submission = Path(tmp.name)
         (self.submission / "packages").mkdir()
-        self.manifests = {"json": object(), "toml": object()}
+        langs = self.submission / "langs"
+        langs.mkdir()
+        self.manifests = {
+            "json": _parse_lang(langs, "json"),
+            "toml": _parse_lang(langs, "toml"),
+        }
 
     def run_main(self, selected, *extra):
         report = score.Report(submission="submission")
@@ -308,8 +542,82 @@ class PendingMainTests(unittest.TestCase):
         result, report, score_run = self.run_main(self.manifests)
 
         self.assertEqual(result, 0)
-        self.assertEqual(report.pending, ["toml"])
+        self.assertEqual(report.pending, {"toml": "corpus landed, not yet scored"})
         self.assertEqual(score_run.call_args.args[1], {"json": self.manifests["json"]})
+
+    def test_propagation_does_not_empty_a_roster_that_still_has_packages(self):
+        langs = self.submission / "langs"
+        host = _parse_lang(
+            langs,
+            "markdown",
+            extra=(
+                "[[injections]]\n"
+                'node = "fenced_code_block"\n'
+                'info = "info_string"\n'
+                'content = "code_fence_content"\n'
+            ),
+        )
+        self.manifests["markdown"] = host
+        (self.submission / "packages" / "json.json").write_text("{}")
+        (self.submission / "packages" / "toml.json").write_text("{}")
+        (self.submission / "packages" / "markdown.json").write_text("{}")
+        # json is present; toml missing would pending markdown via the info
+        # site, but json and toml both have packages here. Hide only json.
+        (self.submission / "packages" / "json.json").unlink()
+
+        result, report, score_run = self.run_main(self.manifests)
+
+        self.assertEqual(result, 0)
+        self.assertEqual(
+            report.pending,
+            {
+                "json": "corpus landed, not yet scored",
+                "markdown": "json is pending",
+            },
+        )
+        self.assertEqual(score_run.call_args.args[1], {"toml": self.manifests["toml"]})
+
+    def test_a_host_is_scored_when_its_guest_package_exists(self):
+        """A guest that exists and would refuse is still scored, host included."""
+        langs = self.submission / "langs"
+        self.manifests["markdown"] = _parse_lang(
+            langs,
+            "markdown",
+            extra=(
+                "[[injections]]\n"
+                'node = "fenced_code_block"\n'
+                'info = "info_string"\n'
+                'content = "code_fence_content"\n'
+            ),
+        )
+        for name in self.manifests:
+            (self.submission / "packages" / f"{name}.json").write_text("{}")
+        failed = score.Report(submission="submission")
+        failed.gates = {
+            "0-coverage": {
+                "pass": False,
+                "got": 0,
+                "of": 4,
+                "what": "formatted every corpus file at every width",
+            }
+        }
+
+        with (
+            mock.patch.object(score.mf, "bootstrap", return_value=self.manifests),
+            mock.patch.object(score.mf, "selected", return_value=self.manifests),
+            mock.patch.object(score, "score", return_value=failed) as score_run,
+            mock.patch.object(
+                score.sys,
+                "argv",
+                ["score.py", str(self.submission), "--json"],
+            ),
+            mock.patch("builtins.print"),
+        ):
+            result = score.main()
+
+        self.assertEqual(result, 1)
+        self.assertEqual(failed.pending, {})
+        self.assertEqual(set(score_run.call_args.args[1]), set(self.manifests))
 
 
 class IncomparableScoreTests(unittest.TestCase):
