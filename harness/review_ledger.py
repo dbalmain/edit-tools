@@ -126,7 +126,7 @@ def summary(states: list[str], threshold: float = 0.7) -> dict:
         for name in ("accepted", "stale", "unreviewed", "defect")
     }
     total = len(states)
-    accepted_fraction = counts["accepted"] / total if total else 1.0
+    accepted_fraction = counts["accepted"] / total if total else 0.0
     return {
         **counts,
         "of": total,

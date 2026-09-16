@@ -70,6 +70,12 @@ class ReviewLedgerTests(unittest.TestCase):
             review_ledger.summary(["accepted", "unreviewed"])["threshold_met"]
         )
 
+    def test_empty_review_set_does_not_meet_the_threshold(self):
+        # Regression: no reviewable goldens used to report 100% coverage.
+        summary = review_ledger.summary([])
+
+        self.assertEqual(summary["accepted_fraction"], 0.0)
+        self.assertFalse(summary["threshold_met"])
 
 
 class RetireTests(unittest.TestCase):

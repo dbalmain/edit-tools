@@ -127,7 +127,38 @@ class ScoreTests(unittest.TestCase):
             mock.patch.object(scorer, "REVIEWS", self.reviews),
         )
 
-    def test_missing_package_is_reported_without_failing(self):
+    def test_missing_package_is_reported_while_another_tree_is_scored(self):
+        ready = self.trees / "ready__sample.tree.json"
+        ready.write_text(
+            json.dumps(
+                {
+                    "language": "ready",
+                    "source": "x",
+                    "root": {"type": "identifier", "start": 0, "end": 1},
+                }
+            )
+        )
+        package = self.submission / "packages" / "ready.highlight.json"
+        package.write_text(json.dumps({"scopes": ["variable"]}))
+        output = b'[{"start":0,"end":1,"scope":"variable"}]\n'
+        run = scorer.Run(ok=True, output=output)
+        with (
+            self.globals[0],
+            self.globals[1],
+            self.globals[2],
+            mock.patch.object(scorer, "invoke", side_effect=[run, run]),
+        ):
+            report = scorer.score(self.submission, None, update=True, verbose=True)
+
+        self.assertFalse(report.failed)
+        self.assertEqual(report.trees["highlighted"], 1)
+        self.assertEqual(
+            report.trees["unhighlighted"],
+            [{"tree": self.tree.name, "language": "toy"}],
+        )
+
+    def test_no_highlight_packages_fails_every_gate_and_review_floor(self):
+        # Regression: hiding every package used to print three 0/0 passes.
         with (
             self.globals[0],
             self.globals[1],
@@ -137,12 +168,12 @@ class ScoreTests(unittest.TestCase):
             report = scorer.score(self.submission, None, update=False, verbose=True)
 
         invoke.assert_not_called()
-        self.assertFalse(report.failed)
+        self.assertTrue(report.failed)
         self.assertEqual(report.trees["highlighted"], 0)
-        self.assertEqual(
-            report.trees["unhighlighted"],
-            [{"tree": self.tree.name, "language": "toy"}],
-        )
+        self.assertTrue(report.trees["discovered"])
+        self.assertTrue(all(not gate["pass"] for gate in report.gates.values()))
+        self.assertEqual(report.reviews["accepted_fraction"], 0.0)
+        self.assertFalse(report.reviews["threshold_met"])
 
     def test_update_writes_only_an_identical_valid_stream(self):
         package = self.submission / "packages" / "toy.highlight.json"

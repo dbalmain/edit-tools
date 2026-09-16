@@ -9,8 +9,9 @@
         [--language NAME] [--update]
 
 Unlike the formatter scorer, this has no reference implementation and no
-idempotence or non-destruction gates. Trees with no available package in any
-language region are reported as unhighlighted and are not failures.
+idempotence or non-destruction gates. Individual trees with no available
+package in any language region are reported as unhighlighted and are not
+failures, but discovering trees without measuring any of them is.
 """
 
 import argparse
@@ -198,7 +199,7 @@ def spans_hash(spans: object) -> str:
 
 
 def _gate(got: int, total: int, what: str) -> dict:
-    return {"pass": got == total, "got": got, "of": total, "what": what}
+    return {"pass": total > 0 and got == total, "got": got, "of": total, "what": what}
 
 
 def package_sizes(submission: Path, only: str | None) -> dict:
