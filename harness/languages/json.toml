@@ -29,3 +29,10 @@ widths = [80, 60]
 # numeric (`42` -> `42.0`) and string (`"value"` -> `"\u0076alue"`) respellings
 # that the default rejected. A formatter may not rewrite either token spelling.
 gate3 = "default"
+
+# JSON has no comment syntax. Gate 3's comment layer is therefore inapplicable,
+# not under-exercised: there is no valid JSON corpus file that could raise this
+# count.
+[corpus_thresholds.comments]
+inapplicable = true
+reason = "JSON has no comment syntax, so no valid source file can exercise the comment layer"

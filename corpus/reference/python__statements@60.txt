@@ -22,7 +22,7 @@ for item in collection:
 
 for index, (first_element, second_element) in enumerate(
     zip(first_seq, second_seq)
-):
+):  # retain the source position
     combine(first_element, second_element, index)
 
 while (

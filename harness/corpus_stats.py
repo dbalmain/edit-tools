@@ -40,6 +40,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -51,6 +52,12 @@ from score import leaves, overflow_lines  # noqa: E402
 SRC = ROOT / "corpus/src"
 REFERENCE = ROOT / "corpus/reference"
 TREES = ROOT / "corpus/trees"
+
+
+@dataclass(frozen=True)
+class ThresholdResult:
+    passes: bool
+    description: str
 
 
 def comment_count(root, comment_kinds: tuple[str, ...]) -> int:
@@ -120,7 +127,42 @@ def stats_for(m: mf.Manifest) -> dict | None:
         "fixed": m.reference_width == "fixed",
         "widths": list(m.widths),
         "reference": m.reference_version,
+        "thresholds": m.corpus_thresholds,
     }
+
+
+def threshold_result(
+    metric: str, count: int, total: int, declaration: mf.CorpusThreshold | None
+) -> ThresholdResult:
+    if declaration is not None:
+        if declaration.minimum_files is None:
+            return ThresholdResult(True, f"n/a -- {declaration.reason}")
+        passes = count >= declaration.minimum_files
+        mark = (
+            ""
+            if passes
+            else f"   [BELOW minimum {declaration.minimum_files} -- "
+                 f"{declaration.reason}]"
+        )
+        return ThresholdResult(
+            passes,
+            f"{count}/{total} (minimum {declaration.minimum_files} -- "
+            f"{declaration.reason}){mark}",
+        )
+
+    if metric == "width_sensitive":
+        passes = count * 3 >= total
+        mark = "" if passes else "   [BELOW one third]"
+        return ThresholdResult(passes, f"{count}/{total}{mark}")
+    if metric == "comments":
+        passes = count * 2 > total
+        mark = (
+            ""
+            if passes
+            else "   [BELOW half -- gate 3's universal comment layer is inert there]"
+        )
+        return ThresholdResult(passes, f"{count}/{total}{mark}")
+    raise ValueError(f"unknown corpus threshold {metric!r}")
 
 
 def report(name: str, s: dict) -> bool:
@@ -139,18 +181,19 @@ def report(name: str, s: dict) -> bool:
         print(f"  differs by width     n/a -- fixed-width reference, one width")
         width_ok = True
     else:
-        share = s["width_sensitive"] / n
-        mark = "" if share >= 1 / 3 else "   [BELOW one third]"
-        print(f"  differs by width     {s['width_sensitive']}/{n}{mark}")
-        width_ok = share >= 1 / 3
+        width = threshold_result(
+            "width_sensitive",
+            s["width_sensitive"],
+            n,
+            s["thresholds"].get("width_sensitive"),
+        )
+        print(f"  differs by width     {width.description}")
+        width_ok = width.passes
 
-    share = s["commented"] / n
-    mark = (
-        ""
-        if share > 0.5
-        else "   [BELOW half -- gate 3's universal comment layer is inert there]"
+    comments = threshold_result(
+        "comments", s["commented"], n, s["thresholds"].get("comments")
     )
-    print(f"  carries a comment    {s['commented']}/{n}{mark}")
+    print(f"  carries a comment    {comments.description}")
 
     per_width = "  ".join(f"@{w} {s['overflow'][w]}" for w in s["widths"])
     print(f"  reference overflow   {per_width}")
@@ -160,7 +203,7 @@ def report(name: str, s: dict) -> bool:
         print(f"  NOTE {flat} file(s) byte-identical input to output at every "
               f"width -- those probe no normalisation")
     print()
-    return width_ok and share > 0.5
+    return width_ok and comments.passes
 
 
 def main(argv=None) -> int:
@@ -170,15 +213,17 @@ def main(argv=None) -> int:
 
     manifests = mf.selected(mf.bootstrap(), args.language)
     any_seen = False
+    all_passed = True
     for name, m in sorted(manifests.items()):
         s = stats_for(m)
         if s is None:
             continue
         any_seen = True
-        report(name, s)
+        all_passed = report(name, s) and all_passed
     if not any_seen:
         print("no corpus found")
-    return 0
+        return 1
+    return 0 if all_passed else 1
 
 
 if __name__ == "__main__":

@@ -8,7 +8,13 @@ long_list = [alpha, beta, gamma, delta, epsilon, zeta, eta, theta, iota, kappa, 
 
 nested_list = [[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12], [13, 14, 15], [16, 17]]
 
-config = {"host": "localhost", "port": 8080, "debug": True, "timeout": 30, "retry": 3}
+config = {
+    "host": "localhost",
+    "port": 8080,
+    "debug": True,
+    "timeout": 30,
+    "retry": 3,  # retry only transient connection failures
+}
 
 nested_dict = {"outer": {"inner": {"deep": [1, 2, 3], "other": "value"}}, "sibling": 2}
 

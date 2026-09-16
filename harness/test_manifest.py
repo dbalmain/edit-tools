@@ -219,5 +219,78 @@ class IncomparableManifestTests(unittest.TestCase):
             self.assertEqual(loaded[name].incomparable, {}, name)
 
 
+class CorpusThresholdManifestTests(unittest.TestCase):
+    def parse(self, extra: str = "") -> manifest.Manifest:
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        path = Path(tmp.name) / "json.toml"
+        path.write_text(BASE + extra)
+        return manifest.parse(path)
+
+    def test_omitted_table_keeps_universal_defaults(self):
+        self.assertEqual(self.parse().corpus_thresholds, {})
+
+    def test_floor_carries_its_reference_reason(self):
+        parsed = self.parse(
+            "\n[corpus_thresholds.width_sensitive]\n"
+            "minimum_files = 4\n"
+            'reason = "reference reflows arrays only"\n'
+        )
+
+        self.assertEqual(
+            parsed.corpus_thresholds["width_sensitive"],
+            manifest.CorpusThreshold(4, "reference reflows arrays only"),
+        )
+
+    def test_inapplicable_threshold_carries_its_reference_reason(self):
+        parsed = self.parse(
+            "\n[corpus_thresholds.comments]\n"
+            "inapplicable = true\n"
+            'reason = "the language has no comment syntax"\n'
+        )
+
+        self.assertEqual(
+            parsed.corpus_thresholds["comments"],
+            manifest.CorpusThreshold(None, "the language has no comment syntax"),
+        )
+
+    def test_bare_or_zero_waiver_is_rejected(self):
+        cases = (
+            '[corpus_thresholds.comments]\nreason = "why"\n',
+            '[corpus_thresholds.comments]\nminimum_files = 0\nreason = "why"\n',
+        )
+        for declaration in cases:
+            with self.subTest(declaration=declaration):
+                with self.assertRaises(manifest.ManifestError):
+                    self.parse("\n" + declaration)
+
+    def test_reason_is_required(self):
+        with self.assertRaisesRegex(manifest.ManifestError, "reason"):
+            self.parse(
+                "\n[corpus_thresholds.width_sensitive]\nminimum_files = 4\n"
+            )
+
+    def test_unknown_metric_is_rejected(self):
+        with self.assertRaisesRegex(manifest.ManifestError, "unknown metric"):
+            self.parse(
+                "\n[corpus_thresholds.reference_changes]\n"
+                "minimum_files = 1\n"
+                'reason = "why"\n'
+            )
+
+    def test_live_declarations_name_reference_limits(self):
+        loaded = manifest.load_all()
+
+        self.assertIsNone(
+            loaded["json"].corpus_thresholds["comments"].minimum_files
+        )
+        markdown = loaded["markdown"].corpus_thresholds["width_sensitive"]
+        self.assertEqual(markdown.minimum_files, 5)
+        self.assertIn("proseWrap=preserve", markdown.reason)
+        toml = loaded["toml"].corpus_thresholds["width_sensitive"]
+        self.assertEqual(toml.minimum_files, 4)
+        self.assertIn("arrays only", toml.reason)
+
+
 if __name__ == "__main__":
     unittest.main()

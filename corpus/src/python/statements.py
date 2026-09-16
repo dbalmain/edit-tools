@@ -11,7 +11,7 @@ else:
 for item in collection:
     process(item)
 
-for index, (first_element, second_element) in enumerate(zip(first_seq, second_seq)):
+for index, (first_element, second_element) in enumerate(zip(first_seq, second_seq)):  # retain the source position
     combine(first_element, second_element, index)
 
 while not finished and attempts < maximum_attempts and not should_abort_early():

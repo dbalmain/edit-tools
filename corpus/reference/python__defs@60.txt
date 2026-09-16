@@ -40,6 +40,7 @@ def decorated(a):
     return a
 
 
+# Register the specialised handler before applying the common wrapper.
 @decorator_with_arguments(
     option_one=True, option_two=False, option_three="value"
 )

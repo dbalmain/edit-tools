@@ -1,11 +1,11 @@
 {
  "language": "python",
  "source_file": "corpus/src/python/calls.py",
- "source": "result = compute(alpha, beta, gamma)\n\nvalue = compute_the_weighted_average(first_operand, second_operand, third_operand, fourth)\n\nnested = outer(inner(deeply_nested(a, b, c), other_argument), final_argument, last)\n\nkwargs_call = build_request(method=\"POST\", url=endpoint, headers=default_headers, timeout=30)\n\nmixed = transform(positional_one, positional_two, keyword_one=1, keyword_two=2, keyword_three=3)\n\nstarred = dispatch(*positional_arguments, **keyword_arguments)\n\nsingle_long_argument = wrap(this_is_one_very_long_identifier_that_will_not_fit_on_a_line)\n\ntrailing = configure(\n    host,\n    port,\n)\n\nno_args = reset()\n\nchained_call_args = merge(first(a, b), second(c, d), third(e, f), fourth(g, h), fifth(i))\n",
+ "source": "result = compute(alpha, beta, gamma)\n\nvalue = compute_the_weighted_average(first_operand, second_operand, third_operand, fourth)\n\nnested = outer(inner(deeply_nested(a, b, c), other_argument), final_argument, last)\n\nkwargs_call = build_request(method=\"POST\", url=endpoint, headers=default_headers, timeout=30)  # use the shared request deadline\n\nmixed = transform(positional_one, positional_two, keyword_one=1, keyword_two=2, keyword_three=3)\n\nstarred = dispatch(*positional_arguments, **keyword_arguments)\n\nsingle_long_argument = wrap(this_is_one_very_long_identifier_that_will_not_fit_on_a_line)\n\ntrailing = configure(\n    host,\n    port,\n)\n\nno_args = reset()\n\nchained_call_args = merge(first(a, b), second(c, d), third(e, f), fourth(g, h), fifth(i))\n",
  "root": {
   "type": "module",
   "start": 0,
-  "end": 717,
+  "end": 752,
   "children": [
    {
     "type": "expression_statement",
@@ -607,99 +607,105 @@
     ]
    },
    {
-    "type": "expression_statement",
+    "type": "comment",
     "start": 310,
-    "end": 406,
+    "end": 343,
+    "text": "# use the shared request deadline"
+   },
+   {
+    "type": "expression_statement",
+    "start": 345,
+    "end": 441,
     "children": [
      {
       "type": "assignment",
-      "start": 310,
-      "end": 406,
+      "start": 345,
+      "end": 441,
       "children": [
        {
         "type": "identifier",
-        "start": 310,
-        "end": 315,
+        "start": 345,
+        "end": 350,
         "field": "left",
         "text": "mixed"
        },
        {
         "type": "=",
-        "start": 316,
-        "end": 317,
+        "start": 351,
+        "end": 352,
         "text": "="
        },
        {
         "type": "call",
-        "start": 318,
-        "end": 406,
+        "start": 353,
+        "end": 441,
         "field": "right",
         "children": [
          {
           "type": "identifier",
-          "start": 318,
-          "end": 327,
+          "start": 353,
+          "end": 362,
           "field": "function",
           "text": "transform"
          },
          {
           "type": "argument_list",
-          "start": 327,
-          "end": 406,
+          "start": 362,
+          "end": 441,
           "field": "arguments",
           "children": [
            {
             "type": "(",
-            "start": 327,
-            "end": 328,
+            "start": 362,
+            "end": 363,
             "text": "("
            },
            {
             "type": "identifier",
-            "start": 328,
-            "end": 342,
+            "start": 363,
+            "end": 377,
             "text": "positional_one"
            },
            {
             "type": ",",
-            "start": 342,
-            "end": 343,
+            "start": 377,
+            "end": 378,
             "text": ","
            },
            {
             "type": "identifier",
-            "start": 344,
-            "end": 358,
+            "start": 379,
+            "end": 393,
             "text": "positional_two"
            },
            {
             "type": ",",
-            "start": 358,
-            "end": 359,
+            "start": 393,
+            "end": 394,
             "text": ","
            },
            {
             "type": "keyword_argument",
-            "start": 360,
-            "end": 373,
+            "start": 395,
+            "end": 408,
             "children": [
              {
               "type": "identifier",
-              "start": 360,
-              "end": 371,
+              "start": 395,
+              "end": 406,
               "field": "name",
               "text": "keyword_one"
              },
              {
               "type": "=",
-              "start": 371,
-              "end": 372,
+              "start": 406,
+              "end": 407,
               "text": "="
              },
              {
               "type": "integer",
-              "start": 372,
-              "end": 373,
+              "start": 407,
+              "end": 408,
               "field": "value",
               "text": "1"
              }
@@ -707,32 +713,32 @@
            },
            {
             "type": ",",
-            "start": 373,
-            "end": 374,
+            "start": 408,
+            "end": 409,
             "text": ","
            },
            {
             "type": "keyword_argument",
-            "start": 375,
-            "end": 388,
+            "start": 410,
+            "end": 423,
             "children": [
              {
               "type": "identifier",
-              "start": 375,
-              "end": 386,
+              "start": 410,
+              "end": 421,
               "field": "name",
               "text": "keyword_two"
              },
              {
               "type": "=",
-              "start": 386,
-              "end": 387,
+              "start": 421,
+              "end": 422,
               "text": "="
              },
              {
               "type": "integer",
-              "start": 387,
-              "end": 388,
+              "start": 422,
+              "end": 423,
               "field": "value",
               "text": "2"
              }
@@ -740,32 +746,32 @@
            },
            {
             "type": ",",
-            "start": 388,
-            "end": 389,
+            "start": 423,
+            "end": 424,
             "text": ","
            },
            {
             "type": "keyword_argument",
-            "start": 390,
-            "end": 405,
+            "start": 425,
+            "end": 440,
             "children": [
              {
               "type": "identifier",
-              "start": 390,
-              "end": 403,
+              "start": 425,
+              "end": 438,
               "field": "name",
               "text": "keyword_three"
              },
              {
               "type": "=",
-              "start": 403,
-              "end": 404,
+              "start": 438,
+              "end": 439,
               "text": "="
              },
              {
               "type": "integer",
-              "start": 404,
-              "end": 405,
+              "start": 439,
+              "end": 440,
               "field": "value",
               "text": "3"
              }
@@ -773,8 +779,8 @@
            },
            {
             "type": ")",
-            "start": 405,
-            "end": 406,
+            "start": 440,
+            "end": 441,
             "text": ")"
            }
           ]
@@ -787,100 +793,100 @@
    },
    {
     "type": "expression_statement",
-    "start": 408,
-    "end": 470,
+    "start": 443,
+    "end": 505,
     "children": [
      {
       "type": "assignment",
-      "start": 408,
-      "end": 470,
+      "start": 443,
+      "end": 505,
       "children": [
        {
         "type": "identifier",
-        "start": 408,
-        "end": 415,
+        "start": 443,
+        "end": 450,
         "field": "left",
         "text": "starred"
        },
        {
         "type": "=",
-        "start": 416,
-        "end": 417,
+        "start": 451,
+        "end": 452,
         "text": "="
        },
        {
         "type": "call",
-        "start": 418,
-        "end": 470,
+        "start": 453,
+        "end": 505,
         "field": "right",
         "children": [
          {
           "type": "identifier",
-          "start": 418,
-          "end": 426,
+          "start": 453,
+          "end": 461,
           "field": "function",
           "text": "dispatch"
          },
          {
           "type": "argument_list",
-          "start": 426,
-          "end": 470,
+          "start": 461,
+          "end": 505,
           "field": "arguments",
           "children": [
            {
             "type": "(",
-            "start": 426,
-            "end": 427,
+            "start": 461,
+            "end": 462,
             "text": "("
            },
            {
             "type": "list_splat",
-            "start": 427,
-            "end": 448,
+            "start": 462,
+            "end": 483,
             "children": [
              {
               "type": "*",
-              "start": 427,
-              "end": 428,
+              "start": 462,
+              "end": 463,
               "text": "*"
              },
              {
               "type": "identifier",
-              "start": 428,
-              "end": 448,
+              "start": 463,
+              "end": 483,
               "text": "positional_arguments"
              }
             ]
            },
            {
             "type": ",",
-            "start": 448,
-            "end": 449,
+            "start": 483,
+            "end": 484,
             "text": ","
            },
            {
             "type": "dictionary_splat",
-            "start": 450,
-            "end": 469,
+            "start": 485,
+            "end": 504,
             "children": [
              {
               "type": "**",
-              "start": 450,
-              "end": 452,
+              "start": 485,
+              "end": 487,
               "text": "**"
              },
              {
               "type": "identifier",
-              "start": 452,
-              "end": 469,
+              "start": 487,
+              "end": 504,
               "text": "keyword_arguments"
              }
             ]
            },
            {
             "type": ")",
-            "start": 469,
-            "end": 470,
+            "start": 504,
+            "end": 505,
             "text": ")"
            }
           ]
@@ -893,62 +899,62 @@
    },
    {
     "type": "expression_statement",
-    "start": 472,
-    "end": 561,
+    "start": 507,
+    "end": 596,
     "children": [
      {
       "type": "assignment",
-      "start": 472,
-      "end": 561,
+      "start": 507,
+      "end": 596,
       "children": [
        {
         "type": "identifier",
-        "start": 472,
-        "end": 492,
+        "start": 507,
+        "end": 527,
         "field": "left",
         "text": "single_long_argument"
        },
        {
         "type": "=",
-        "start": 493,
-        "end": 494,
+        "start": 528,
+        "end": 529,
         "text": "="
        },
        {
         "type": "call",
-        "start": 495,
-        "end": 561,
+        "start": 530,
+        "end": 596,
         "field": "right",
         "children": [
          {
           "type": "identifier",
-          "start": 495,
-          "end": 499,
+          "start": 530,
+          "end": 534,
           "field": "function",
           "text": "wrap"
          },
          {
           "type": "argument_list",
-          "start": 499,
-          "end": 561,
+          "start": 534,
+          "end": 596,
           "field": "arguments",
           "children": [
            {
             "type": "(",
-            "start": 499,
-            "end": 500,
+            "start": 534,
+            "end": 535,
             "text": "("
            },
            {
             "type": "identifier",
-            "start": 500,
-            "end": 560,
+            "start": 535,
+            "end": 595,
             "text": "this_is_one_very_long_identifier_that_will_not_fit_on_a_line"
            },
            {
             "type": ")",
-            "start": 560,
-            "end": 561,
+            "start": 595,
+            "end": 596,
             "text": ")"
            }
           ]
@@ -961,80 +967,80 @@
    },
    {
     "type": "expression_statement",
-    "start": 563,
-    "end": 606,
+    "start": 598,
+    "end": 641,
     "children": [
      {
       "type": "assignment",
-      "start": 563,
-      "end": 606,
+      "start": 598,
+      "end": 641,
       "children": [
        {
         "type": "identifier",
-        "start": 563,
-        "end": 571,
+        "start": 598,
+        "end": 606,
         "field": "left",
         "text": "trailing"
        },
        {
         "type": "=",
-        "start": 572,
-        "end": 573,
+        "start": 607,
+        "end": 608,
         "text": "="
        },
        {
         "type": "call",
-        "start": 574,
-        "end": 606,
+        "start": 609,
+        "end": 641,
         "field": "right",
         "children": [
          {
           "type": "identifier",
-          "start": 574,
-          "end": 583,
+          "start": 609,
+          "end": 618,
           "field": "function",
           "text": "configure"
          },
          {
           "type": "argument_list",
-          "start": 583,
-          "end": 606,
+          "start": 618,
+          "end": 641,
           "field": "arguments",
           "children": [
            {
             "type": "(",
-            "start": 583,
-            "end": 584,
+            "start": 618,
+            "end": 619,
             "text": "("
            },
            {
             "type": "identifier",
-            "start": 589,
-            "end": 593,
+            "start": 624,
+            "end": 628,
             "text": "host"
            },
            {
             "type": ",",
-            "start": 593,
-            "end": 594,
+            "start": 628,
+            "end": 629,
             "text": ","
            },
            {
             "type": "identifier",
-            "start": 599,
-            "end": 603,
+            "start": 634,
+            "end": 638,
             "text": "port"
            },
            {
             "type": ",",
-            "start": 603,
-            "end": 604,
+            "start": 638,
+            "end": 639,
             "text": ","
            },
            {
             "type": ")",
-            "start": 605,
-            "end": 606,
+            "start": 640,
+            "end": 641,
             "text": ")"
            }
           ]
@@ -1047,56 +1053,56 @@
    },
    {
     "type": "expression_statement",
-    "start": 608,
-    "end": 625,
+    "start": 643,
+    "end": 660,
     "children": [
      {
       "type": "assignment",
-      "start": 608,
-      "end": 625,
+      "start": 643,
+      "end": 660,
       "children": [
        {
         "type": "identifier",
-        "start": 608,
-        "end": 615,
+        "start": 643,
+        "end": 650,
         "field": "left",
         "text": "no_args"
        },
        {
         "type": "=",
-        "start": 616,
-        "end": 617,
+        "start": 651,
+        "end": 652,
         "text": "="
        },
        {
         "type": "call",
-        "start": 618,
-        "end": 625,
+        "start": 653,
+        "end": 660,
         "field": "right",
         "children": [
          {
           "type": "identifier",
-          "start": 618,
-          "end": 623,
+          "start": 653,
+          "end": 658,
           "field": "function",
           "text": "reset"
          },
          {
           "type": "argument_list",
-          "start": 623,
-          "end": 625,
+          "start": 658,
+          "end": 660,
           "field": "arguments",
           "children": [
            {
             "type": "(",
-            "start": 623,
-            "end": 624,
+            "start": 658,
+            "end": 659,
             "text": "("
            },
            {
             "type": ")",
-            "start": 624,
-            "end": 625,
+            "start": 659,
+            "end": 660,
             "text": ")"
            }
           ]
@@ -1109,98 +1115,98 @@
    },
    {
     "type": "expression_statement",
-    "start": 627,
-    "end": 716,
+    "start": 662,
+    "end": 751,
     "children": [
      {
       "type": "assignment",
-      "start": 627,
-      "end": 716,
+      "start": 662,
+      "end": 751,
       "children": [
        {
         "type": "identifier",
-        "start": 627,
-        "end": 644,
+        "start": 662,
+        "end": 679,
         "field": "left",
         "text": "chained_call_args"
        },
        {
         "type": "=",
-        "start": 645,
-        "end": 646,
+        "start": 680,
+        "end": 681,
         "text": "="
        },
        {
         "type": "call",
-        "start": 647,
-        "end": 716,
+        "start": 682,
+        "end": 751,
         "field": "right",
         "children": [
          {
           "type": "identifier",
-          "start": 647,
-          "end": 652,
+          "start": 682,
+          "end": 687,
           "field": "function",
           "text": "merge"
          },
          {
           "type": "argument_list",
-          "start": 652,
-          "end": 716,
+          "start": 687,
+          "end": 751,
           "field": "arguments",
           "children": [
            {
             "type": "(",
-            "start": 652,
-            "end": 653,
+            "start": 687,
+            "end": 688,
             "text": "("
            },
            {
             "type": "call",
-            "start": 653,
-            "end": 664,
+            "start": 688,
+            "end": 699,
             "children": [
              {
               "type": "identifier",
-              "start": 653,
-              "end": 658,
+              "start": 688,
+              "end": 693,
               "field": "function",
               "text": "first"
              },
              {
               "type": "argument_list",
-              "start": 658,
-              "end": 664,
+              "start": 693,
+              "end": 699,
               "field": "arguments",
               "children": [
                {
                 "type": "(",
-                "start": 658,
-                "end": 659,
+                "start": 693,
+                "end": 694,
                 "text": "("
                },
                {
                 "type": "identifier",
-                "start": 659,
-                "end": 660,
+                "start": 694,
+                "end": 695,
                 "text": "a"
                },
                {
                 "type": ",",
-                "start": 660,
-                "end": 661,
+                "start": 695,
+                "end": 696,
                 "text": ","
                },
                {
                 "type": "identifier",
-                "start": 662,
-                "end": 663,
+                "start": 697,
+                "end": 698,
                 "text": "b"
                },
                {
                 "type": ")",
-                "start": 663,
-                "end": 664,
+                "start": 698,
+                "end": 699,
                 "text": ")"
                }
               ]
@@ -1209,56 +1215,56 @@
            },
            {
             "type": ",",
-            "start": 664,
-            "end": 665,
+            "start": 699,
+            "end": 700,
             "text": ","
            },
            {
             "type": "call",
-            "start": 666,
-            "end": 678,
+            "start": 701,
+            "end": 713,
             "children": [
              {
               "type": "identifier",
-              "start": 666,
-              "end": 672,
+              "start": 701,
+              "end": 707,
               "field": "function",
               "text": "second"
              },
              {
               "type": "argument_list",
-              "start": 672,
-              "end": 678,
+              "start": 707,
+              "end": 713,
               "field": "arguments",
               "children": [
                {
                 "type": "(",
-                "start": 672,
-                "end": 673,
+                "start": 707,
+                "end": 708,
                 "text": "("
                },
                {
                 "type": "identifier",
-                "start": 673,
-                "end": 674,
+                "start": 708,
+                "end": 709,
                 "text": "c"
                },
                {
                 "type": ",",
-                "start": 674,
-                "end": 675,
+                "start": 709,
+                "end": 710,
                 "text": ","
                },
                {
                 "type": "identifier",
-                "start": 676,
-                "end": 677,
+                "start": 711,
+                "end": 712,
                 "text": "d"
                },
                {
                 "type": ")",
-                "start": 677,
-                "end": 678,
+                "start": 712,
+                "end": 713,
                 "text": ")"
                }
               ]
@@ -1267,56 +1273,56 @@
            },
            {
             "type": ",",
-            "start": 678,
-            "end": 679,
+            "start": 713,
+            "end": 714,
             "text": ","
            },
            {
             "type": "call",
-            "start": 680,
-            "end": 691,
+            "start": 715,
+            "end": 726,
             "children": [
              {
               "type": "identifier",
-              "start": 680,
-              "end": 685,
+              "start": 715,
+              "end": 720,
               "field": "function",
               "text": "third"
              },
              {
               "type": "argument_list",
-              "start": 685,
-              "end": 691,
+              "start": 720,
+              "end": 726,
               "field": "arguments",
               "children": [
                {
                 "type": "(",
-                "start": 685,
-                "end": 686,
+                "start": 720,
+                "end": 721,
                 "text": "("
                },
                {
                 "type": "identifier",
-                "start": 686,
-                "end": 687,
+                "start": 721,
+                "end": 722,
                 "text": "e"
                },
                {
                 "type": ",",
-                "start": 687,
-                "end": 688,
+                "start": 722,
+                "end": 723,
                 "text": ","
                },
                {
                 "type": "identifier",
-                "start": 689,
-                "end": 690,
+                "start": 724,
+                "end": 725,
                 "text": "f"
                },
                {
                 "type": ")",
-                "start": 690,
-                "end": 691,
+                "start": 725,
+                "end": 726,
                 "text": ")"
                }
               ]
@@ -1325,56 +1331,56 @@
            },
            {
             "type": ",",
-            "start": 691,
-            "end": 692,
+            "start": 726,
+            "end": 727,
             "text": ","
            },
            {
             "type": "call",
-            "start": 693,
-            "end": 705,
+            "start": 728,
+            "end": 740,
             "children": [
              {
               "type": "identifier",
-              "start": 693,
-              "end": 699,
+              "start": 728,
+              "end": 734,
               "field": "function",
               "text": "fourth"
              },
              {
               "type": "argument_list",
-              "start": 699,
-              "end": 705,
+              "start": 734,
+              "end": 740,
               "field": "arguments",
               "children": [
                {
                 "type": "(",
-                "start": 699,
-                "end": 700,
+                "start": 734,
+                "end": 735,
                 "text": "("
                },
                {
                 "type": "identifier",
-                "start": 700,
-                "end": 701,
+                "start": 735,
+                "end": 736,
                 "text": "g"
                },
                {
                 "type": ",",
-                "start": 701,
-                "end": 702,
+                "start": 736,
+                "end": 737,
                 "text": ","
                },
                {
                 "type": "identifier",
-                "start": 703,
-                "end": 704,
+                "start": 738,
+                "end": 739,
                 "text": "h"
                },
                {
                 "type": ")",
-                "start": 704,
-                "end": 705,
+                "start": 739,
+                "end": 740,
                 "text": ")"
                }
               ]
@@ -1383,44 +1389,44 @@
            },
            {
             "type": ",",
-            "start": 705,
-            "end": 706,
+            "start": 740,
+            "end": 741,
             "text": ","
            },
            {
             "type": "call",
-            "start": 707,
-            "end": 715,
+            "start": 742,
+            "end": 750,
             "children": [
              {
               "type": "identifier",
-              "start": 707,
-              "end": 712,
+              "start": 742,
+              "end": 747,
               "field": "function",
               "text": "fifth"
              },
              {
               "type": "argument_list",
-              "start": 712,
-              "end": 715,
+              "start": 747,
+              "end": 750,
               "field": "arguments",
               "children": [
                {
                 "type": "(",
-                "start": 712,
-                "end": 713,
+                "start": 747,
+                "end": 748,
                 "text": "("
                },
                {
                 "type": "identifier",
-                "start": 713,
-                "end": 714,
+                "start": 748,
+                "end": 749,
                 "text": "i"
                },
                {
                 "type": ")",
-                "start": 714,
-                "end": 715,
+                "start": 749,
+                "end": 750,
                 "text": ")"
                }
               ]
@@ -1429,8 +1435,8 @@
            },
            {
             "type": ")",
-            "start": 715,
-            "end": 716,
+            "start": 750,
+            "end": 751,
             "text": ")"
            }
           ]

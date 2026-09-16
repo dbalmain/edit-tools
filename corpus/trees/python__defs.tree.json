@@ -1,11 +1,11 @@
 {
  "language": "python",
  "source_file": "corpus/src/python/defs.py",
- "source": "def short(a, b):\n    return a\n\n\ndef with_long_parameter_list(first_param, second_param, third_param, fourth_param, fifth):\n    return first_param\n\n\ndef with_defaults(host=\"localhost\", port=8080, timeout=30.0, retries=3, verbose=False):\n    return host\n\n\ndef annotated(count: int, name: str, values: list[int], mapping: dict[str, int]) -> bool:\n    return True\n\n\ndef variadic(first, *args, keyword_only=None, **kwargs):\n    return first\n\n\n@decorator\ndef decorated(a):\n    return a\n\n\n@decorator_with_arguments(option_one=True, option_two=False, option_three=\"value\")\n@another_decorator\ndef multiply_decorated(a, b):\n    return a * b\n\n\ndef nested_defaults(callback=lambda x: x + 1, factory=dict, items=(1, 2, 3), flag=True):\n    return callback\n",
+ "source": "def short(a, b):\n    return a\n\n\ndef with_long_parameter_list(first_param, second_param, third_param, fourth_param, fifth):\n    return first_param\n\n\ndef with_defaults(host=\"localhost\", port=8080, timeout=30.0, retries=3, verbose=False):\n    return host\n\n\ndef annotated(count: int, name: str, values: list[int], mapping: dict[str, int]) -> bool:\n    return True\n\n\ndef variadic(first, *args, keyword_only=None, **kwargs):\n    return first\n\n\n@decorator\ndef decorated(a):\n    return a\n\n\n# Register the specialised handler before applying the common wrapper.\n@decorator_with_arguments(option_one=True, option_two=False, option_three=\"value\")\n@another_decorator\ndef multiply_decorated(a, b):\n    return a * b\n\n\ndef nested_defaults(callback=lambda x: x + 1, factory=dict, items=(1, 2, 3), flag=True):\n    return callback\n",
  "root": {
   "type": "module",
   "start": 0,
-  "end": 742,
+  "end": 813,
   "children": [
    {
     "type": "function_definition",
@@ -1085,67 +1085,73 @@
     ]
    },
    {
-    "type": "decorated_definition",
+    "type": "comment",
     "start": 482,
-    "end": 630,
+    "end": 552,
+    "text": "# Register the specialised handler before applying the common wrapper."
+   },
+   {
+    "type": "decorated_definition",
+    "start": 553,
+    "end": 701,
     "children": [
      {
       "type": "decorator",
-      "start": 482,
-      "end": 564,
+      "start": 553,
+      "end": 635,
       "children": [
        {
         "type": "@",
-        "start": 482,
-        "end": 483,
+        "start": 553,
+        "end": 554,
         "text": "@"
        },
        {
         "type": "call",
-        "start": 483,
-        "end": 564,
+        "start": 554,
+        "end": 635,
         "children": [
          {
           "type": "identifier",
-          "start": 483,
-          "end": 507,
+          "start": 554,
+          "end": 578,
           "field": "function",
           "text": "decorator_with_arguments"
          },
          {
           "type": "argument_list",
-          "start": 507,
-          "end": 564,
+          "start": 578,
+          "end": 635,
           "field": "arguments",
           "children": [
            {
             "type": "(",
-            "start": 507,
-            "end": 508,
+            "start": 578,
+            "end": 579,
             "text": "("
            },
            {
             "type": "keyword_argument",
-            "start": 508,
-            "end": 523,
+            "start": 579,
+            "end": 594,
             "children": [
              {
               "type": "identifier",
-              "start": 508,
-              "end": 518,
+              "start": 579,
+              "end": 589,
               "field": "name",
               "text": "option_one"
              },
              {
               "type": "=",
-              "start": 518,
-              "end": 519,
+              "start": 589,
+              "end": 590,
               "text": "="
              },
              {
               "type": "true",
-              "start": 519,
-              "end": 523,
+              "start": 590,
+              "end": 594,
               "field": "value",
               "text": "True"
              }
@@ -1153,32 +1159,32 @@
            },
            {
             "type": ",",
-            "start": 523,
-            "end": 524,
+            "start": 594,
+            "end": 595,
             "text": ","
            },
            {
             "type": "keyword_argument",
-            "start": 525,
-            "end": 541,
+            "start": 596,
+            "end": 612,
             "children": [
              {
               "type": "identifier",
-              "start": 525,
-              "end": 535,
+              "start": 596,
+              "end": 606,
               "field": "name",
               "text": "option_two"
              },
              {
               "type": "=",
-              "start": 535,
-              "end": 536,
+              "start": 606,
+              "end": 607,
               "text": "="
              },
              {
               "type": "false",
-              "start": 536,
-              "end": 541,
+              "start": 607,
+              "end": 612,
               "field": "value",
               "text": "False"
              }
@@ -1186,50 +1192,50 @@
            },
            {
             "type": ",",
-            "start": 541,
-            "end": 542,
+            "start": 612,
+            "end": 613,
             "text": ","
            },
            {
             "type": "keyword_argument",
-            "start": 543,
-            "end": 563,
+            "start": 614,
+            "end": 634,
             "children": [
              {
               "type": "identifier",
-              "start": 543,
-              "end": 555,
+              "start": 614,
+              "end": 626,
               "field": "name",
               "text": "option_three"
              },
              {
               "type": "=",
-              "start": 555,
-              "end": 556,
+              "start": 626,
+              "end": 627,
               "text": "="
              },
              {
               "type": "string",
-              "start": 556,
-              "end": 563,
+              "start": 627,
+              "end": 634,
               "field": "value",
               "children": [
                {
                 "type": "string_start",
-                "start": 556,
-                "end": 557,
+                "start": 627,
+                "end": 628,
                 "text": "\""
                },
                {
                 "type": "string_content",
-                "start": 557,
-                "end": 562,
+                "start": 628,
+                "end": 633,
                 "text": "value"
                },
                {
                 "type": "string_end",
-                "start": 562,
-                "end": 563,
+                "start": 633,
+                "end": 634,
                 "text": "\""
                }
               ]
@@ -1238,8 +1244,8 @@
            },
            {
             "type": ")",
-            "start": 563,
-            "end": 564,
+            "start": 634,
+            "end": 635,
             "text": ")"
            }
           ]
@@ -1250,126 +1256,126 @@
      },
      {
       "type": "decorator",
-      "start": 565,
-      "end": 583,
+      "start": 636,
+      "end": 654,
       "children": [
        {
         "type": "@",
-        "start": 565,
-        "end": 566,
+        "start": 636,
+        "end": 637,
         "text": "@"
        },
        {
         "type": "identifier",
-        "start": 566,
-        "end": 583,
+        "start": 637,
+        "end": 654,
         "text": "another_decorator"
        }
       ]
      },
      {
       "type": "function_definition",
-      "start": 584,
-      "end": 630,
+      "start": 655,
+      "end": 701,
       "field": "definition",
       "children": [
        {
         "type": "def",
-        "start": 584,
-        "end": 587,
+        "start": 655,
+        "end": 658,
         "text": "def"
        },
        {
         "type": "identifier",
-        "start": 588,
-        "end": 606,
+        "start": 659,
+        "end": 677,
         "field": "name",
         "text": "multiply_decorated"
        },
        {
         "type": "parameters",
-        "start": 606,
-        "end": 612,
+        "start": 677,
+        "end": 683,
         "field": "parameters",
         "children": [
          {
           "type": "(",
-          "start": 606,
-          "end": 607,
+          "start": 677,
+          "end": 678,
           "text": "("
          },
          {
           "type": "identifier",
-          "start": 607,
-          "end": 608,
+          "start": 678,
+          "end": 679,
           "text": "a"
          },
          {
           "type": ",",
-          "start": 608,
-          "end": 609,
+          "start": 679,
+          "end": 680,
           "text": ","
          },
          {
           "type": "identifier",
-          "start": 610,
-          "end": 611,
+          "start": 681,
+          "end": 682,
           "text": "b"
          },
          {
           "type": ")",
-          "start": 611,
-          "end": 612,
+          "start": 682,
+          "end": 683,
           "text": ")"
          }
         ]
        },
        {
         "type": ":",
-        "start": 612,
-        "end": 613,
+        "start": 683,
+        "end": 684,
         "text": ":"
        },
        {
         "type": "block",
-        "start": 618,
-        "end": 630,
+        "start": 689,
+        "end": 701,
         "field": "body",
         "children": [
          {
           "type": "return_statement",
-          "start": 618,
-          "end": 630,
+          "start": 689,
+          "end": 701,
           "children": [
            {
             "type": "return",
-            "start": 618,
-            "end": 624,
+            "start": 689,
+            "end": 695,
             "text": "return"
            },
            {
             "type": "binary_operator",
-            "start": 625,
-            "end": 630,
+            "start": 696,
+            "end": 701,
             "children": [
              {
               "type": "identifier",
-              "start": 625,
-              "end": 626,
+              "start": 696,
+              "end": 697,
               "field": "left",
               "text": "a"
              },
              {
               "type": "*",
-              "start": 627,
-              "end": 628,
+              "start": 698,
+              "end": 699,
               "field": "operator",
               "text": "*"
              },
              {
               "type": "identifier",
-              "start": 629,
-              "end": 630,
+              "start": 700,
+              "end": 701,
               "field": "right",
               "text": "b"
              }
@@ -1385,108 +1391,108 @@
    },
    {
     "type": "function_definition",
-    "start": 633,
-    "end": 741,
+    "start": 704,
+    "end": 812,
     "children": [
      {
       "type": "def",
-      "start": 633,
-      "end": 636,
+      "start": 704,
+      "end": 707,
       "text": "def"
      },
      {
       "type": "identifier",
-      "start": 637,
-      "end": 652,
+      "start": 708,
+      "end": 723,
       "field": "name",
       "text": "nested_defaults"
      },
      {
       "type": "parameters",
-      "start": 652,
-      "end": 720,
+      "start": 723,
+      "end": 791,
       "field": "parameters",
       "children": [
        {
         "type": "(",
-        "start": 652,
-        "end": 653,
+        "start": 723,
+        "end": 724,
         "text": "("
        },
        {
         "type": "default_parameter",
-        "start": 653,
-        "end": 677,
+        "start": 724,
+        "end": 748,
         "children": [
          {
           "type": "identifier",
-          "start": 653,
-          "end": 661,
+          "start": 724,
+          "end": 732,
           "field": "name",
           "text": "callback"
          },
          {
           "type": "=",
-          "start": 661,
-          "end": 662,
+          "start": 732,
+          "end": 733,
           "text": "="
          },
          {
           "type": "lambda",
-          "start": 662,
-          "end": 677,
+          "start": 733,
+          "end": 748,
           "field": "value",
           "children": [
            {
             "type": "lambda",
-            "start": 662,
-            "end": 668,
+            "start": 733,
+            "end": 739,
             "text": "lambda"
            },
            {
             "type": "lambda_parameters",
-            "start": 669,
-            "end": 670,
+            "start": 740,
+            "end": 741,
             "field": "parameters",
             "children": [
              {
               "type": "identifier",
-              "start": 669,
-              "end": 670,
+              "start": 740,
+              "end": 741,
               "text": "x"
              }
             ]
            },
            {
             "type": ":",
-            "start": 670,
-            "end": 671,
+            "start": 741,
+            "end": 742,
             "text": ":"
            },
            {
             "type": "binary_operator",
-            "start": 672,
-            "end": 677,
+            "start": 743,
+            "end": 748,
             "field": "body",
             "children": [
              {
               "type": "identifier",
-              "start": 672,
-              "end": 673,
+              "start": 743,
+              "end": 744,
               "field": "left",
               "text": "x"
              },
              {
               "type": "+",
-              "start": 674,
-              "end": 675,
+              "start": 745,
+              "end": 746,
               "field": "operator",
               "text": "+"
              },
              {
               "type": "integer",
-              "start": 676,
-              "end": 677,
+              "start": 747,
+              "end": 748,
               "field": "right",
               "text": "1"
              }
@@ -1498,32 +1504,32 @@
        },
        {
         "type": ",",
-        "start": 677,
-        "end": 678,
+        "start": 748,
+        "end": 749,
         "text": ","
        },
        {
         "type": "default_parameter",
-        "start": 679,
-        "end": 691,
+        "start": 750,
+        "end": 762,
         "children": [
          {
           "type": "identifier",
-          "start": 679,
-          "end": 686,
+          "start": 750,
+          "end": 757,
           "field": "name",
           "text": "factory"
          },
          {
           "type": "=",
-          "start": 686,
-          "end": 687,
+          "start": 757,
+          "end": 758,
           "text": "="
          },
          {
           "type": "identifier",
-          "start": 687,
-          "end": 691,
+          "start": 758,
+          "end": 762,
           "field": "value",
           "text": "dict"
          }
@@ -1531,74 +1537,74 @@
        },
        {
         "type": ",",
-        "start": 691,
-        "end": 692,
+        "start": 762,
+        "end": 763,
         "text": ","
        },
        {
         "type": "default_parameter",
-        "start": 693,
-        "end": 708,
+        "start": 764,
+        "end": 779,
         "children": [
          {
           "type": "identifier",
-          "start": 693,
-          "end": 698,
+          "start": 764,
+          "end": 769,
           "field": "name",
           "text": "items"
          },
          {
           "type": "=",
-          "start": 698,
-          "end": 699,
+          "start": 769,
+          "end": 770,
           "text": "="
          },
          {
           "type": "tuple",
-          "start": 699,
-          "end": 708,
+          "start": 770,
+          "end": 779,
           "field": "value",
           "children": [
            {
             "type": "(",
-            "start": 699,
-            "end": 700,
+            "start": 770,
+            "end": 771,
             "text": "("
            },
            {
             "type": "integer",
-            "start": 700,
-            "end": 701,
+            "start": 771,
+            "end": 772,
             "text": "1"
            },
            {
             "type": ",",
-            "start": 701,
-            "end": 702,
+            "start": 772,
+            "end": 773,
             "text": ","
            },
            {
             "type": "integer",
-            "start": 703,
-            "end": 704,
+            "start": 774,
+            "end": 775,
             "text": "2"
            },
            {
             "type": ",",
-            "start": 704,
-            "end": 705,
+            "start": 775,
+            "end": 776,
             "text": ","
            },
            {
             "type": "integer",
-            "start": 706,
-            "end": 707,
+            "start": 777,
+            "end": 778,
             "text": "3"
            },
            {
             "type": ")",
-            "start": 707,
-            "end": 708,
+            "start": 778,
+            "end": 779,
             "text": ")"
            }
           ]
@@ -1607,32 +1613,32 @@
        },
        {
         "type": ",",
-        "start": 708,
-        "end": 709,
+        "start": 779,
+        "end": 780,
         "text": ","
        },
        {
         "type": "default_parameter",
-        "start": 710,
-        "end": 719,
+        "start": 781,
+        "end": 790,
         "children": [
          {
           "type": "identifier",
-          "start": 710,
-          "end": 714,
+          "start": 781,
+          "end": 785,
           "field": "name",
           "text": "flag"
          },
          {
           "type": "=",
-          "start": 714,
-          "end": 715,
+          "start": 785,
+          "end": 786,
           "text": "="
          },
          {
           "type": "true",
-          "start": 715,
-          "end": 719,
+          "start": 786,
+          "end": 790,
           "field": "value",
           "text": "True"
          }
@@ -1640,39 +1646,39 @@
        },
        {
         "type": ")",
-        "start": 719,
-        "end": 720,
+        "start": 790,
+        "end": 791,
         "text": ")"
        }
       ]
      },
      {
       "type": ":",
-      "start": 720,
-      "end": 721,
+      "start": 791,
+      "end": 792,
       "text": ":"
      },
      {
       "type": "block",
-      "start": 726,
-      "end": 741,
+      "start": 797,
+      "end": 812,
       "field": "body",
       "children": [
        {
         "type": "return_statement",
-        "start": 726,
-        "end": 741,
+        "start": 797,
+        "end": 812,
         "children": [
          {
           "type": "return",
-          "start": 726,
-          "end": 732,
+          "start": 797,
+          "end": 803,
           "text": "return"
          },
          {
           "type": "identifier",
-          "start": 733,
-          "end": 741,
+          "start": 804,
+          "end": 812,
           "text": "callback"
          }
         ]

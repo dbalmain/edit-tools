@@ -4,7 +4,7 @@ value = compute_the_weighted_average(first_operand, second_operand, third_operan
 
 nested = outer(inner(deeply_nested(a, b, c), other_argument), final_argument, last)
 
-kwargs_call = build_request(method="POST", url=endpoint, headers=default_headers, timeout=30)
+kwargs_call = build_request(method="POST", url=endpoint, headers=default_headers, timeout=30)  # use the shared request deadline
 
 mixed = transform(positional_one, positional_two, keyword_one=1, keyword_two=2, keyword_three=3)
 

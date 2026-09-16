@@ -24,7 +24,7 @@ import os
 import subprocess
 import sys
 import tomllib
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -42,7 +42,7 @@ _KNOWN = set(_REQUIRED) | {"grammar_symbol", "gate3_requires",
                            "transparent_wrappers", "equivalent_kinds",
                            "comment_kinds", "layout_leaves", "whitespace_nodes", "optional_tokens", "equivalent_tokens",
                            "injections",
-                           "incomparable"}
+                           "incomparable", "corpus_thresholds"}
 
 
 class ManifestError(Exception):
@@ -58,6 +58,14 @@ class Injection:
     # False: splice the guest parse for readers, but leave the formatter the
     # host's original bytes. See docs/injection.md, "Structure without layout".
     format: bool = True
+
+
+@dataclass(frozen=True)
+class CorpusThreshold:
+    """A corpus floor narrowed by a stated property of the reference."""
+
+    minimum_files: int | None
+    reason: str
 
 
 @dataclass(frozen=True)
@@ -102,6 +110,7 @@ class Manifest:
     # explicit-key canonicalisation), not a per-language spelling list.
     optional_tokens: frozenset[str] = frozenset()
     equivalent_tokens: tuple[frozenset[str], ...] = ()
+    corpus_thresholds: dict[str, CorpusThreshold] = field(default_factory=dict)
 
     @property
     def token_canon(self) -> dict[str, str]:
@@ -249,6 +258,64 @@ def _incomparable(
     return out
 
 
+def _corpus_thresholds(
+    raw: dict[str, Any], path: Path
+) -> dict[str, CorpusThreshold]:
+    """Per-reference exceptions to the universal corpus-quality floors."""
+    table = raw.get("corpus_thresholds", {})
+    if not isinstance(table, dict):
+        raise ManifestError(f"{path.name}: `corpus_thresholds` must be a table")
+
+    metrics = {"width_sensitive", "comments"}
+    unknown = set(table) - metrics
+    if unknown:
+        raise ManifestError(
+            f"{path.name}: `corpus_thresholds` has unknown metric(s) "
+            f"{sorted(unknown)}"
+        )
+
+    out = {}
+    for metric, declaration in table.items():
+        key = f"corpus_thresholds.{metric}"
+        if not isinstance(declaration, dict):
+            raise ManifestError(f"{path.name}: `{key}` must be a table")
+        unknown_fields = set(declaration) - {
+            "minimum_files", "inapplicable", "reason"
+        }
+        if unknown_fields:
+            raise ManifestError(
+                f"{path.name}: `{key}` has unknown field(s) "
+                f"{sorted(unknown_fields)}"
+            )
+        reason = declaration.get("reason")
+        if not isinstance(reason, str) or not reason.strip():
+            raise ManifestError(
+                f"{path.name}: `{key}.reason` must be a non-empty string"
+            )
+
+        has_floor = "minimum_files" in declaration
+        inapplicable = declaration.get("inapplicable")
+        if has_floor == (inapplicable is True):
+            raise ManifestError(
+                f"{path.name}: `{key}` must declare exactly one of a positive "
+                "`minimum_files` or `inapplicable = true`"
+            )
+        if inapplicable is not None and inapplicable is not True:
+            raise ManifestError(
+                f"{path.name}: `{key}.inapplicable` must be true when present"
+            )
+
+        minimum = declaration.get("minimum_files")
+        if has_floor and (
+            not isinstance(minimum, int) or isinstance(minimum, bool) or minimum < 1
+        ):
+            raise ManifestError(
+                f"{path.name}: `{key}.minimum_files` must be a positive integer"
+            )
+        out[metric] = CorpusThreshold(minimum, reason.strip())
+    return out
+
+
 def parse(path: Path) -> Manifest:
     raw = tomllib.loads(path.read_text(encoding="utf-8"))
 
@@ -366,6 +433,7 @@ def parse(path: Path) -> Manifest:
         equivalent_tokens=tuple(tok_equiv),
         layout_leaves=frozenset(raw.get("layout_leaves", [])),
         whitespace_nodes=frozenset(whitespace_nodes),
+        corpus_thresholds=_corpus_thresholds(raw, path),
     )
 
 

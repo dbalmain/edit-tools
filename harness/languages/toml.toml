@@ -65,3 +65,11 @@ equivalent_kinds = []
 # FINDINGS.md entry 5.
 # the reference adds a trailing `,` to a broken array.
 optional_tokens = [","]
+
+# taplo's column_width setting only reflows arrays. These four files contain an
+# array whose layout crosses the two measured widths; strings, keys, comments,
+# inline tables without a nested array, and table headers cannot raise the
+# count.
+[corpus_thresholds.width_sensitive]
+minimum_files = 4
+reason = "taplo 0.10.0 honours column_width for arrays only"

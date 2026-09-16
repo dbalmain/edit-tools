@@ -85,6 +85,16 @@ optional_tokens = ["|"]
 # remain structurally checked and also feed gate 3's universal comment layer.
 comment_kinds = ["html_block"]
 
+# With proseWrap=preserve, print width affects Markdown only through formatted
+# guest code in fences. The current corpus has five such files. When the A2
+# inline-prose work permits the reference policy to change to proseWrap=always,
+# this floor must rise: prose will become width-sensitive without a corpus
+# change, so leaving five here would describe the old reference rather than the
+# new one.
+[corpus_thresholds.width_sensitive]
+minimum_files = 5
+reason = "prettier's pinned proseWrap=preserve policy makes only guest code in fences width-sensitive"
+
 # Measurement exclusions forced by the linearity invariant. prettier rewrites
 # that no package may match, so each lives in its own file:
 #   - `*em*` -> `_em_` (emphasis delimiter)

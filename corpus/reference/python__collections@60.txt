@@ -32,7 +32,7 @@ config = {
     "port": 8080,
     "debug": True,
     "timeout": 30,
-    "retry": 3,
+    "retry": 3,  # retry only transient connection failures
 }
 
 nested_dict = {

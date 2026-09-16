@@ -15,7 +15,7 @@ kwargs_call = build_request(
     url=endpoint,
     headers=default_headers,
     timeout=30,
-)
+)  # use the shared request deadline
 
 mixed = transform(
     positional_one,
