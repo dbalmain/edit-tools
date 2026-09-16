@@ -38,6 +38,12 @@ and the generic signature changes. The useful count is reported per language.
 Zero useful mutations for a selected override is a failure, because it has
 tested no adversarial input at all.
 
+YAML has one additional positive control for the semantic newline run after a
+`|+` or `>+` block scalar. It removes one kept line ending, requires the generic
+signature to stay unchanged, and requires the YAML override to reject the
+result specifically as a keep-chomping difference. The generic adversarial
+families cannot prove this half of the composed override is live.
+
 A sixth family reaches the untokenised *gaps* -- source between a node's
 children that the grammar declined to tokenise, which is neither a named node
 nor an anonymous token and so is invisible to every other family. An earlier
@@ -250,6 +256,30 @@ def respell_a_token(text: str, parser, manifest) -> str | None:
             ).decode()
             if not parser.parse(changed.encode()).root_node.has_error:
                 return changed
+    return None
+
+
+def yaml_keep_chomping_mutant(text: str, parser) -> str | None:
+    """Remove one semantic line ending the generic signature cannot see."""
+    source = text.encode()
+    stack = [parser.parse(source).root_node]
+    while stack:
+        node = stack.pop()
+        stack.extend(reversed(node.children))
+        if node.type != "block_scalar" or not any(
+            child.type in {"|", ">"}
+            and b"+" in source[child.start_byte : child.end_byte]
+            for child in node.children
+        ):
+            continue
+        layout = re.match(rb"[ \t\r\n]*", source[node.end_byte :]).group()
+        endings = list(re.finditer(rb"\r\n|\r|\n", layout))
+        if not endings:
+            continue
+        ending = endings[-1]
+        start = node.end_byte + ending.start()
+        end = node.end_byte + ending.end()
+        return (source[:start] + source[end:]).decode()
     return None
 
 
@@ -633,6 +663,8 @@ def main() -> int:
     seen_mutations: dict[str, set[tuple[str, str]]] = {
         name: set() for name in manifests
     }
+    keep_chomping_counts: Counter[str] = Counter()
+    seen_keep_chomping: set[tuple[str, str]] = set()
     blind: dict[tuple[str, str], list] = {}
 
     for name, m in manifests.items():
@@ -719,6 +751,39 @@ def main() -> int:
                             f"{label}: {mutation.change}"
                         )
 
+                if m.gate3 == "yaml":
+                    broken = yaml_keep_chomping_mutant(formatted, parser)
+                    identity = (formatted, broken) if broken is not None else None
+                    if identity is not None and identity not in seen_keep_chomping:
+                        seen_keep_chomping.add(identity)
+                        generic_broken = gate3.generic_signature(
+                            broken, m, parser, bootstrapped, parsers
+                        )
+                        if generic_broken != generic_reference:
+                            failures.append(
+                                f"{label}: keep-chomping control changed the "
+                                "generic signature -- mutant NOT ISOLATED"
+                            )
+                        else:
+                            keep_chomping_counts[name] += 1
+                            strong_broken = gate3.signature(
+                                broken, m, parser, bootstrapped, parsers
+                            )
+                            if strong_broken == after:
+                                failures.append(
+                                    f"{label}: gate ACCEPTS keep-chomping-only "
+                                    "mutation"
+                                )
+                            else:
+                                reason = gate3.describe(after, strong_broken, m)
+                                if reason != (
+                                    "keep-chomping trailing newline run differs"
+                                ):
+                                    failures.append(
+                                        f"{label}: keep-chomping control rejected "
+                                        f"for the wrong reason: {reason}"
+                                    )
+
             # --- 3. the gate must still reject destruction
             for what, broken in (
                 (
@@ -756,6 +821,16 @@ def main() -> int:
             failures.append(
                 f"{name}: ZERO destructive mutations -- gate 3 NOT TESTED"
             )
+        if m.gate3 == "yaml":
+            keep_count = keep_chomping_counts[name]
+            print(
+                f"  keep-chomping {name}: {keep_count} isolated mutation(s) checked"
+            )
+            if keep_count == 0:
+                failures.append(
+                    f"{name}: ZERO isolated keep-chomping mutations -- "
+                    "yaml override NOT TESTED"
+                )
         counts = useful_counts[name]
         total = sum(counts.values())
         families = ", ".join(

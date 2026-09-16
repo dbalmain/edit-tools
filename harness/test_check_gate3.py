@@ -52,6 +52,19 @@ class AssignmentParser:
         return SimpleNamespace(root_node=root)
 
 
+class YamlKeepParser:
+    def parse(self, source: bytes):
+        start = source.index(b"|+")
+        end = source.index(b"\n", source.index(b"keep blanks"))
+        scalar = Node(
+            "block_scalar",
+            start,
+            end,
+            (Node("|", start, start + 2, named=False),),
+        )
+        return SimpleNamespace(root_node=Node("stream", 0, len(source), (scalar,)))
+
+
 def make_manifest(path: Path, name: str, selected_gate: str) -> manifest.Manifest:
     return manifest.Manifest(
         name=name,
@@ -216,6 +229,37 @@ class DestructiveMutationTests(unittest.TestCase):
         self.assertEqual(result, 1)
         self.assertIn(
             "FAIL weak: ZERO destructive mutations -- gate 3 NOT TESTED",
+            report,
+        )
+
+
+class YamlKeepChompingMutationTests(unittest.TestCase):
+    def test_mutant_removes_only_one_kept_line_ending(self):
+        source = "keep: |+\n  keep blanks\n\n\nnext: 1\n"
+
+        mutant = check_gate3.yaml_keep_chomping_mutant(source, YamlKeepParser())
+
+        self.assertEqual(mutant, "keep: |+\n  keep blanks\n\nnext: 1\n")
+
+    def test_stubbed_chomp_signature_fails_at_the_named_control(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        yaml = make_manifest(Path(tmp.name) / "yaml.toml", "yaml", "yaml")
+        with (
+            mock.patch.object(
+                check_gate3, "yaml_keep_chomping_mutant", return_value="x=2"
+            ),
+            mock.patch.object(gate3, "signature", return_value=("same",)),
+            mock.patch.object(gate3, "generic_signature", return_value=("generic",)),
+        ):
+            result, report = _run_checker(
+                (("yaml__sample@80", "x=1", "x=1", False),),
+                yaml,
+            )
+
+        self.assertEqual(result, 1)
+        self.assertIn(
+            "FAIL yaml__sample@80: gate ACCEPTS keep-chomping-only mutation",
             report,
         )
 
