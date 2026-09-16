@@ -205,22 +205,28 @@ class LexRecoveryTest(unittest.TestCase):
 
 class InterpreterSuiteTest(unittest.TestCase):
     # A floor, not the exact count, so adding a test does not break this -- but
-    # dropping the suite does. `node --test` exits 0 on a file it collected no
-    # tests from, so the return code alone cannot tell a passing suite from a
-    # suite that stopped being run.
+    # dropping the suite does. TAP's `1..N` plan counts tests in this non-isolated
+    # process; the pass summary can collapse to one file. `node --test` also exits
+    # 0 on a file with no tests, so the return code alone cannot guard collection.
     MIN_INTERPRETER_TESTS = 19
 
     def test_javascript_lexer_tests_pass(self):
         result = subprocess.run(
-            ["node", "--test", str(HARNESS / "ts_lr.test.mjs")],
+            [
+                "node",
+                "--test",
+                "--test-isolation=none",
+                "--test-reporter=tap",
+                str(HARNESS / "ts_lr.test.mjs"),
+            ],
             capture_output=True,
             text=True,
         )
         report = result.stdout + result.stderr
         self.assertEqual(result.returncode, 0, report)
-        passed = re.search(r"^\u2139 pass (\d+)$", result.stdout, re.MULTILINE)
-        self.assertIsNotNone(passed, report)
-        self.assertGreaterEqual(int(passed.group(1)), self.MIN_INTERPRETER_TESTS, report)
+        plan = re.search(r"^1\.\.(\d+)$", result.stdout, re.MULTILINE)
+        self.assertIsNotNone(plan, report)
+        self.assertGreaterEqual(int(plan.group(1)), self.MIN_INTERPRETER_TESTS, report)
 
 
 class ScannerPortTest(unittest.TestCase):
