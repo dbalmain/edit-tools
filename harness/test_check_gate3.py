@@ -192,5 +192,33 @@ class IncomparableReferenceTests(unittest.TestCase):
         self.assertIn("the *source* does not pass its own gate", report)
 
 
+class DestructiveMutationTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.manifest = make_manifest(
+            Path(self.tmp.name) / "weak.toml", "weak", "default"
+        )
+
+    def test_zero_destructive_mutations_fails_at_the_named_floor(self):
+        # Regression: a language could reject none and still pass gate 3.
+        with (
+            mock.patch.object(check_gate3, "drop_a_comment", return_value=None),
+            mock.patch.object(check_gate3, "drop_a_token", return_value=None),
+            mock.patch.object(check_gate3, "respell_a_token", return_value=None),
+            mock.patch.object(check_gate3, "damage_a_gap", return_value=None),
+        ):
+            result, report = _run_checker(
+                (("weak__sample@80", "x=1", "x=1", False),),
+                self.manifest,
+            )
+
+        self.assertEqual(result, 1)
+        self.assertIn(
+            "FAIL weak: ZERO destructive mutations -- gate 3 NOT TESTED",
+            report,
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

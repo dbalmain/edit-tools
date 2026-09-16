@@ -63,6 +63,9 @@ meaning, guest parse failure, lost guest extras, and any change to an unroutable
 verbatim region must fail. A nested Markdown-in-Markdown fence proves the check
 recurses rather than special-casing one host/guest pair.
 
+Every selected language must produce at least one destructive mutation. A zero
+total means this arm tested no claim for that language and is a failure.
+
 Run after changing anything in `gate3.py` or a `*_gate3.py` override.
 """
 
@@ -749,6 +752,10 @@ def main() -> int:
             f"respelled-token={destructive_for_language['a respelled token']}, "
             f"damaged-gap={destructive_for_language['a damaged gap']}"
         )
+        if sum(destructive_for_language.values()) == 0:
+            failures.append(
+                f"{name}: ZERO destructive mutations -- gate 3 NOT TESTED"
+            )
         counts = useful_counts[name]
         total = sum(counts.values())
         families = ", ".join(
