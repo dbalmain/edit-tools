@@ -39,6 +39,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import gen_trees  # noqa: E402
 import manifest as mf  # noqa: E402
 import ts_injections as tj  # noqa: E402
+import ts_secondaries as secondary  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 HARNESS = ROOT / "harness"
@@ -81,6 +82,11 @@ def main(allow_missing: bool = False) -> int:
     hosts = [m for m in manifests.values() if m.injections]
     expected: dict[str, list[tuple[Path, dict]]] = {}
     required = {host.name for host in hosts}
+    required.update(
+        grammar.name
+        for host in hosts
+        for grammar in host.secondary_grammars
+    )
 
     for host in hosts:
         records = []
@@ -132,6 +138,11 @@ def main(allow_missing: bool = False) -> int:
             json.dumps(tj.config(manifests, temp), indent=1) + "\n",
             encoding="utf-8",
         )
+        secondaries = temp / "secondaries.json"
+        secondaries.write_text(
+            json.dumps(secondary.config(manifests), indent=1) + "\n",
+            encoding="utf-8",
+        )
 
         for host in hosts:
             records = expected[host.name]
@@ -145,6 +156,8 @@ def main(allow_missing: bool = False) -> int:
                     "--emit",
                     "--inject",
                     config,
+                    "--secondary",
+                    secondaries,
                 ],
                 input=paths,
                 capture_output=True,

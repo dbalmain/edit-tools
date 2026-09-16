@@ -1,4 +1,3 @@
-// EXPERIMENTAL feasibility port; not wired into any manifest or shipped path.
 // tree-sitter-markdown 0.5.1's inline scanner
 // (`tree-sitter-markdown-inline/src/scanner.c`) hand-compiled to scanner-VM
 // bytecode. The source is 397 physical lines / 276 executable-body lines.
@@ -6,7 +5,9 @@
 // External-token order is the upstream enum and is load-bearing. The four
 // uint8_t Scanner fields are the first four registers and are persistent. All
 // uint8_t increments are explicitly masked so delimiter runs over 255 bytes
-// retain C's wraparound behavior.
+// retain C's wraparound behavior. `harness/fixtures/scanner/markdown_inline`
+// exercises malformed spans, every ASCII punctuation flank, whitespace/line
+// flanks and delimiter runs; the recorded C oracle covers 20,629 scan calls.
 'use strict';
 const { Asm } = require('../../spike/scanner-vm/asm.js');
 

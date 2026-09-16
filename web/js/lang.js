@@ -11,6 +11,7 @@
 
 import { parseDoc } from "../vendor/ts_doc.mjs";
 import { injectAll } from "../vendor/ts_inject.mjs";
+import { attachSecondaries } from "../vendor/ts_secondary.mjs";
 import { format, Refusal } from "../vendor/runtime.mjs";
 
 const DATA = new URL("../data/", import.meta.url);
@@ -19,6 +20,7 @@ const encoder = new TextEncoder();
 
 let index = null;
 let injections = null;
+let secondaries = null;
 const blobs = new Map();
 const packages = new Map();
 const divergences = new Map();
@@ -64,6 +66,12 @@ export async function injectionConfig() {
   return injections;
 }
 
+/** Required parallel grammars and the host nodes whose ranges they parse. */
+export async function secondaryConfig() {
+  if (secondaries === null) secondaries = await json("secondaries.json");
+  return secondaries;
+}
+
 /** One formatting package. */
 export async function packageFor(name) {
   if (!packages.has(name)) packages.set(name, await json(`packages/${name}.json`));
@@ -81,6 +89,8 @@ export async function parse(text, name) {
   const blob = await blobFor(name);
   const source = encoder.encode(text);
   const doc = parseDoc(blob, name, source, `<${name} buffer>`);
+  const secondary = await secondaryConfig();
+  await attachSecondaries(doc, source, secondary, (grammar) => blobFor(grammar));
   const config = await injectionConfig();
   if (!config.sites[name]) return doc;
   // The second pass: reparse each fenced region with its guest grammar and

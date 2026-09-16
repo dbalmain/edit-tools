@@ -64,3 +64,57 @@ refusal check in both producers.
 
 Untouched by rule: `harness/score.py`, corpus sources/references, packages, and
 the A1 eligibility implementations.
+
+## 2026-09-17: manifest, scanner and dual-parse implementation
+
+Implemented `[[secondary_grammars]]` with three required fields: globally
+unique artifact `name`, native binding `grammar_symbol`, and contiguous host
+node `within`. Markdown declares `markdown_inline` / `inline_language` /
+`inline`. Primary and secondary parser construction, grammar-source selection,
+scanner recording/replay, transcoding and web generation now all derive their
+identities from that declaration; the spike-only grammar-symbol, trace-dir and
+source-language overrides are gone.
+
+The native producer and browser producer attach rebased inline CSTs in a
+top-level `secondary` array. They do not replace or become children of the block
+CST. Every entry names its grammar and host kind and repeats the exact host byte
+range, which leaves the block tree directly available to A2.1. The browser blob
+is generated/fetched as `markdown_inline.blob.json`, separate from the block
+blob; `secondaries.json` is the configuration switch that makes the asset
+required, so lazy-load, eager-load and browser-disabled policies do not require
+changing the parser or blob format.
+
+Dirty inline roots are hard refusals. Native uses `root_node.has_error`; the
+table interpreter uses root `errorCost`, which includes ERROR and invisible
+MISSING descendants. Both emit the exact message `<file>: secondary grammar
+markdown_inline refused dirty inline range <start>..<end>`. The committed
+`secondary-dirty.md` fixture contains a missing latex delimiter and reaches
+this branch in both producers; the clean control reaches attachment.
+
+Scanner review against upstream 0.5.1 found the hand translation faithful: the
+token ordering, four persistent uint8 fields, leaf-delimiter lookahead,
+close-before-open emphasis precedence, mark-end placement, and punctuation
+class all correspond. Adversarial recording did expose a defect in the oracle
+rather than the port: `trace_scanner.c` silently truncated lexer-operation logs
+at 65,535 bytes. Its buffer now grows instead of truncating, so long lookahead
+cannot manufacture a replay mismatch or a false pass.
+
+Committed scanner inputs cover every ASCII punctuation byte on both emphasis
+flanks, space/tab/newline flanks, mixed delimiters, run lengths through 31, and
+dedicated unclosed/mismatched code and latex spans. Native recording now sees
+43,283 records across 29 files; VM replay covers 20,629 scan calls and 2,025
+state observations with zero mismatches. The `.program.js` remains 9,130 bytes
+and packed `.svm` remains 462 bytes: no new VM opcode was needed.
+
+Regenerated/verified inline blob facts exactly match the spike: 450,325 bytes
+raw, 43,110 deterministic gzip; 2,247 lexer states x 117 codepoint classes =
+790,944 runs with zero disagreement; 83,595 compiled table entries agree. The
+ABI-15 zero-reserved-word and sibling-scanner verifier fixes from the spike are
+retained because the actual inline oracles require them.
+
+`probe_secondary_grammar.py` reconstructs the immutable A1 target set from
+commit `f2819822fa033987e86db79143ab8ffecb900a35` instead of committing the
+spike's 60k-line classification JSON. It proves 2,553/2,553 complete rebased
+inline CSTs are byte-identical across native and browser production paths, then
+checks the clean and identically-refused dirty controls. This independently
+reproduces the spike's 2,553 count.

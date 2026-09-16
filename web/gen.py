@@ -46,6 +46,7 @@ import score  # noqa: E402
 import ts_grammars as tg  # noqa: E402
 import ts_injections as tj  # noqa: E402
 import ts_scanner_record as rec  # noqa: E402
+import ts_secondaries as secondary  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 WEB = ROOT / "web"
@@ -85,7 +86,7 @@ LINE_COMMENT = {
 # The parse layer, already ESM and already free of node imports. Copied rather
 # than imported across `../../harness/` so that `web/` is a directory a static
 # host can serve on its own -- which is the whole content of Q1's answer.
-PARSE_LAYER = ("ts_lr.mjs", "ts_doc.mjs", "ts_inject.mjs",
+PARSE_LAYER = ("ts_lr.mjs", "ts_doc.mjs", "ts_inject.mjs", "ts_secondary.mjs",
                "ts_scanner_vm.mjs", "ts_scanner_pack.mjs")
 
 
@@ -120,8 +121,9 @@ def blobs(manifests: dict[str, mf.Manifest]) -> set[str]:
     out = DATA / "blobs"
     out.mkdir(parents=True, exist_ok=True)
     done = set()
-    for name, m in sorted(manifests.items()):
-        src = rec.grammar_src(name, m)
+    for name, target in sorted(mf.grammar_targets(manifests).items()):
+        m = manifests[target.source_language]
+        src = rec.grammar_src(target.source_language, m, target.grammar_symbol)
         cmd = [str(ROOT / "harness" / "ts_transcode.py"), str(src / "parser.c"),
                "-o", str(out / f"{name}.blob.json")]
         scanner = ROOT / "harness" / "scanners" / f"{name}.svm"
@@ -226,6 +228,14 @@ def main() -> int:
     )
     print(f"  {len(injections['sites'])} host(s), "
           f"{len(injections['aliases'])} aliases, {len(injections['blobs'])} tables")
+
+    print("secondaries")
+    secondaries = secondary.config(known)
+    (DATA / "secondaries.json").write_text(
+        json.dumps(secondaries, indent=1) + "\n", encoding="utf-8"
+    )
+    print(f"  {len(secondaries['sites'])} host(s), "
+          f"{sum(len(v) for v in secondaries['sites'].values())} grammar(s)")
 
     print("divergences")
     by_language = cases(ROOT, selected)

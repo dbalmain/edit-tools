@@ -552,5 +552,321 @@
     ]
    }
   ]
- }
+ },
+ "secondary": [
+  {
+   "language": "markdown_inline",
+   "within": "inline",
+   "start": 49,
+   "end": 123,
+   "root": {
+    "type": "inline",
+    "start": 49,
+    "end": 123,
+    "children": [
+     {
+      "type": "inline_link",
+      "start": 51,
+      "end": 99,
+      "children": [
+       {
+        "type": "[",
+        "start": 51,
+        "end": 52,
+        "text": "["
+       },
+       {
+        "type": "link_text",
+        "start": 52,
+        "end": 84,
+        "children": [
+         {
+          "type": "-",
+          "start": 58,
+          "end": 59,
+          "text": "-"
+         }
+        ]
+       },
+       {
+        "type": "]",
+        "start": 84,
+        "end": 85,
+        "text": "]"
+       },
+       {
+        "type": "(",
+        "start": 85,
+        "end": 86,
+        "text": "("
+       },
+       {
+        "type": "link_destination",
+        "start": 86,
+        "end": 90,
+        "children": [
+         {
+          "type": "/",
+          "start": 86,
+          "end": 87,
+          "text": "/"
+         }
+        ]
+       },
+       {
+        "type": "link_title",
+        "start": 91,
+        "end": 98,
+        "children": [
+         {
+          "type": "\"",
+          "start": 91,
+          "end": 92,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 97,
+          "end": 98,
+          "text": "\""
+         }
+        ]
+       },
+       {
+        "type": ")",
+        "start": 98,
+        "end": 99,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": ".",
+      "start": 104,
+      "end": 105,
+      "text": "."
+     },
+     {
+      "type": "html_tag",
+      "start": 106,
+      "end": 123,
+      "children": [
+       {
+        "type": "<!--",
+        "start": 106,
+        "end": 110,
+        "text": "<!--"
+       },
+       {
+        "type": "-->",
+        "start": 120,
+        "end": 123,
+        "text": "-->"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "language": "markdown_inline",
+   "within": "inline",
+   "start": 125,
+   "end": 168,
+   "root": {
+    "type": "inline",
+    "start": 125,
+    "end": 168,
+    "children": [
+     {
+      "type": "image",
+      "start": 128,
+      "end": 154,
+      "children": [
+       {
+        "type": "!",
+        "start": 128,
+        "end": 129,
+        "text": "!"
+       },
+       {
+        "type": "[",
+        "start": 129,
+        "end": 130,
+        "text": "["
+       },
+       {
+        "type": "image_description",
+        "start": 130,
+        "end": 135,
+        "text": "image"
+       },
+       {
+        "type": "]",
+        "start": 135,
+        "end": 136,
+        "text": "]"
+       },
+       {
+        "type": "(",
+        "start": 136,
+        "end": 137,
+        "text": "("
+       },
+       {
+        "type": "link_destination",
+        "start": 137,
+        "end": 145,
+        "children": [
+         {
+          "type": "/",
+          "start": 137,
+          "end": 138,
+          "text": "/"
+         },
+         {
+          "type": ".",
+          "start": 141,
+          "end": 142,
+          "text": "."
+         }
+        ]
+       },
+       {
+        "type": "link_title",
+        "start": 146,
+        "end": 153,
+        "children": [
+         {
+          "type": "\"",
+          "start": 146,
+          "end": 147,
+          "text": "\""
+         },
+         {
+          "type": "\"",
+          "start": 152,
+          "end": 153,
+          "text": "\""
+         }
+        ]
+       },
+       {
+        "type": ")",
+        "start": 153,
+        "end": 154,
+        "text": ")"
+       }
+      ]
+     },
+     {
+      "type": ".",
+      "start": 167,
+      "end": 168,
+      "text": "."
+     }
+    ]
+   }
+  },
+  {
+   "language": "markdown_inline",
+   "within": "inline",
+   "start": 170,
+   "end": 307,
+   "root": {
+    "type": "inline",
+    "start": 170,
+    "end": 307,
+    "children": [
+     {
+      "type": ":",
+      "start": 178,
+      "end": 179,
+      "text": ":"
+     },
+     {
+      "type": "uri_autolink",
+      "start": 180,
+      "end": 306,
+      "text": "<https://example.com/this/is/a/very/long/path/that-will-overflow-forty-and-eighty-columns-because-prettier-does-not-wrap-urls>"
+     },
+     {
+      "type": ".",
+      "start": 306,
+      "end": 307,
+      "text": "."
+     }
+    ]
+   }
+  },
+  {
+   "language": "markdown_inline",
+   "within": "inline",
+   "start": 309,
+   "end": 347,
+   "root": {
+    "type": "inline",
+    "start": 309,
+    "end": 347,
+    "children": [
+     {
+      "type": ":",
+      "start": 318,
+      "end": 319,
+      "text": ":"
+     },
+     {
+      "type": "full_reference_link",
+      "start": 320,
+      "end": 346,
+      "children": [
+       {
+        "type": "[",
+        "start": 320,
+        "end": 321,
+        "text": "["
+       },
+       {
+        "type": "link_text",
+        "start": 321,
+        "end": 333,
+        "text": "see the spec"
+       },
+       {
+        "type": "]",
+        "start": 333,
+        "end": 334,
+        "text": "]"
+       },
+       {
+        "type": "link_label",
+        "start": 334,
+        "end": 346,
+        "children": [
+         {
+          "type": "[",
+          "start": 334,
+          "end": 335,
+          "text": "["
+         },
+         {
+          "type": "]",
+          "start": 345,
+          "end": 346,
+          "text": "]"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": ".",
+      "start": 346,
+      "end": 347,
+      "text": "."
+     }
+    ]
+   }
+  }
+ ]
 }

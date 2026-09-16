@@ -19,6 +19,7 @@ import { readFileSync, readdirSync, writeFileSync, mkdirSync } from "node:fs";
 import { basename, dirname, extname, join, relative, resolve } from "node:path";
 import { parseDoc as buildDoc, parseRoot } from "./ts_doc.mjs";
 import { inject } from "./ts_inject.mjs";
+import { attachSecondaries } from "./ts_secondary.mjs";
 
 const ROOT = resolve(import.meta.dirname, "..");
 
@@ -46,9 +47,31 @@ function loadInjection(configPath) {
   return { config, blobs };
 }
 
-function parseDoc(blob, language, sourcePath, injection) {
+function loadSecondaries(configPath) {
+  const config = JSON.parse(readFileSync(configPath, "utf8"));
+  const dir = dirname(configPath);
+  const blobs = new Map();
+  for (const sites of Object.values(config.sites)) {
+    for (const site of sites) {
+      if (!blobs.has(site.name)) {
+        blobs.set(site.name, JSON.parse(readFileSync(join(dir, site.blob), "utf8")));
+      }
+    }
+  }
+  return { config, blobs };
+}
+
+async function parseDoc(blob, language, sourcePath, injection, secondaries) {
   const source = readFileSync(sourcePath);
   const doc = buildDoc(blob, language, source, relative(ROOT, sourcePath));
+  if (secondaries) {
+    await attachSecondaries(
+      doc,
+      source,
+      secondaries.config,
+      async (name) => secondaries.blobs.get(name) ?? null,
+    );
+  }
   if (injection) inject(doc, source, injection.config, injection.blobs);
   return doc;
 }
@@ -100,14 +123,14 @@ function checkEdited(blobPath, language) {
 // --emit: parse the newline-separated paths on stdin and write one JSON
 // document per line. `harness/ts_differential.py` compares those against real
 // tree-sitter over a corpus far larger than the frozen one.
-function emit(blobPath, language, injection) {
+async function emit(blobPath, language, injection, secondaries) {
   const blob = JSON.parse(readFileSync(blobPath, "utf8"));
   const paths = readFileSync(0, "utf8").split("\n").filter(Boolean);
   const out = [];
   for (const path of paths) {
     let record;
     try {
-      record = { path, doc: parseDoc(blob, language, path, injection) };
+      record = { path, doc: await parseDoc(blob, language, path, injection, secondaries) };
     } catch (err) {
       record = { path, error: err.message };
     }
@@ -121,18 +144,23 @@ function emit(blobPath, language, injection) {
   return 0;
 }
 
-function main(argv) {
+async function main(argv) {
   const [blobPath, language, ...rest] = argv;
   if (!blobPath || !language) {
     console.error(
       "usage: ts_check_trees.mjs <blob.json> <language> " +
-        "[--write-dir DIR|--emit|--edited] [--inject injections.json]",
+        "[--write-dir DIR|--emit|--edited] [--inject injections.json] " +
+        "[--secondary secondaries.json]",
     );
     return 2;
   }
   const injectIndex = rest.indexOf("--inject");
   const injection = injectIndex >= 0 ? loadInjection(rest[injectIndex + 1]) : null;
-  if (rest.includes("--emit")) return emit(blobPath, language, injection);
+  const secondaryIndex = rest.indexOf("--secondary");
+  const secondaries = secondaryIndex >= 0
+    ? loadSecondaries(rest[secondaryIndex + 1])
+    : null;
+  if (rest.includes("--emit")) return emit(blobPath, language, injection, secondaries);
   if (rest.includes("--edited")) return checkEdited(blobPath, language);
   const writeIndex = rest.indexOf("--write-dir");
   const writeDir = writeIndex >= 0 ? rest[writeIndex + 1] : null;
@@ -157,7 +185,9 @@ function main(argv) {
     let actual;
     const started = process.hrtime.bigint();
     try {
-      const doc = parseDoc(blob, language, join(srcDir, file), injection);
+      const doc = await parseDoc(
+        blob, language, join(srcDir, file), injection, secondaries,
+      );
       actual = JSON.stringify(doc, null, 1) + "\n";
     } catch (err) {
       failures.push(`${file}: ${err.message}`);
@@ -196,4 +226,4 @@ function firstDiff(expected, actual) {
 // `process.exitCode`, not `process.exit()`: writes to a pipe are async, and
 // exiting drops whatever is still buffered -- which truncates --emit output at
 // the 64 KB pipe buffer.
-process.exitCode = main(process.argv.slice(2));
+process.exitCode = await main(process.argv.slice(2));

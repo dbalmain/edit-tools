@@ -212,6 +212,58 @@ def sources(m: mf.Manifest) -> list[Path]:
     return sorted(found)
 
 
+def _host_nodes(root: dict, kind: str):
+    """Host nodes of `kind`, excluding CSTs already spliced as injections."""
+    stack = [root]
+    while stack:
+        node = stack.pop()
+        if node.get("language") is not None:
+            continue
+        if node["type"] == kind:
+            yield node
+        stack.extend(reversed(node.get("children", [])))
+
+
+def secondary_trees(
+    m: mf.Manifest,
+    source: bytes,
+    block_root: dict,
+    parsers: dict,
+    source_file: str,
+) -> tuple[list[dict], list[str]]:
+    """Parse each manifest-declared contiguous range into a parallel CST."""
+    out: list[dict] = []
+    problems: list[str] = []
+    for grammar in m.secondary_grammars:
+        parser = parsers[grammar.name]
+        for node in _host_nodes(block_root, grammar.within):
+            start, end = node["start"], node["end"]
+            tree = parser.parse(source[start:end])
+            if tree.root_node.has_error:
+                problems.append(
+                    f"{Path(source_file).name}: secondary grammar "
+                    f"{grammar.name} refused dirty {grammar.within} range "
+                    f"{start}..{end}"
+                )
+                continue
+            out.append(
+                {
+                    "language": grammar.name,
+                    "within": grammar.within,
+                    "start": start,
+                    "end": end,
+                    "root": convert(
+                        tree.root_node,
+                        source[start:end],
+                        None,
+                        base=start,
+                        outer_source=source,
+                    ),
+                }
+            )
+    return out, problems
+
+
 def parse_doc(
     m: mf.Manifest,
     source: bytes,
@@ -221,6 +273,18 @@ def parse_doc(
 ) -> tuple[dict, list[str]]:
     tree = parsers[m.name].parse(source)
     problems = check_clean(tree.root_node, Path(source_file))
+    block_root = convert(
+        tree.root_node,
+        source,
+        None,
+        manifest=m,
+        aliases=mf.injection_map(manifests),
+        parsers=parsers,
+    )
+    secondary, secondary_problems = secondary_trees(
+        m, source, block_root, parsers, source_file
+    )
+    problems.extend(secondary_problems)
     doc = {
         "language": m.name,
         "source_file": source_file,
@@ -229,15 +293,10 @@ def parse_doc(
         # without it. The idempotence pass re-emits this field, so a design that
         # reads it behaves the same in round 2.
         "source": source.decode("utf-8"),
-        "root": convert(
-            tree.root_node,
-            source,
-            None,
-            manifest=m,
-            aliases=mf.injection_map(manifests),
-            parsers=parsers,
-        ),
+        "root": block_root,
     }
+    if secondary:
+        doc["secondary"] = secondary
     return doc, problems
 
 

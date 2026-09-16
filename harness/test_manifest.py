@@ -118,6 +118,57 @@ class InjectionManifestTests(unittest.TestCase):
             manifest.injection_map({"json": first, "other": second})
 
 
+class SecondaryGrammarManifestTests(unittest.TestCase):
+    def parse(self, extra: str = "") -> manifest.Manifest:
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        path = Path(tmp.name) / "json.toml"
+        path.write_text(BASE + extra)
+        return manifest.parse(path)
+
+    def test_omitted_declaration_is_empty(self):
+        self.assertEqual(self.parse().secondary_grammars, ())
+
+    def test_declaration_preserves_artifact_symbol_and_host_node(self):
+        parsed = self.parse(
+            'secondary_grammars = [{ name = "json_strings", '
+            'grammar_symbol = "strings_language", within = "string" }]\n'
+        )
+        self.assertEqual(
+            parsed.secondary_grammars,
+            (manifest.SecondaryGrammar("json_strings", "strings_language", "string"),),
+        )
+
+    def test_declaration_requires_exact_nonempty_fields(self):
+        cases = (
+            'secondary_grammars = [{ name = "json_strings", within = "string" }]\n',
+            'secondary_grammars = [{ name = "json_strings", '
+            'grammar_symbol = "strings_language", within = "" }]\n',
+            'secondary_grammars = [{ name = "json_strings", '
+            'grammar_symbol = "strings_language", within = "string", extra = 1 }]\n',
+            'secondary_grammars = [{ name = "JSON-strings", '
+            'grammar_symbol = "strings_language", within = "string" }]\n',
+        )
+        for declaration in cases:
+            with self.subTest(declaration=declaration):
+                with self.assertRaises(manifest.ManifestError):
+                    self.parse(declaration)
+
+    def test_names_and_host_nodes_are_unique_per_manifest(self):
+        declarations = (
+            'secondary_grammars = ['
+            '{ name = "json_strings", grammar_symbol = "a", within = "string" }, '
+            '{ name = "json_strings", grammar_symbol = "b", within = "number" }]\n',
+            'secondary_grammars = ['
+            '{ name = "json_strings", grammar_symbol = "a", within = "string" }, '
+            '{ name = "json_numbers", grammar_symbol = "b", within = "string" }]\n',
+        )
+        for declaration in declarations:
+            with self.subTest(declaration=declaration):
+                with self.assertRaises(manifest.ManifestError):
+                    self.parse(declaration)
+
+
 class TriviaKindsManifestTests(unittest.TestCase):
     def parse(self, extra: str = "") -> manifest.Manifest:
         tmp = tempfile.TemporaryDirectory()

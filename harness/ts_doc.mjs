@@ -44,6 +44,18 @@ export function parseRoot(blob, source) {
   return convert(lang, { subtree: root, alias: 0, start: startByte, field: null }, source);
 }
 
+// A secondary grammar is required to refuse dirty roots rather than attach a
+// plausible-looking partial CST. `errorCost` includes ERROR and MISSING
+// descendants even when a missing symbol is invisible, so it is the browser
+// equivalent of native tree-sitter's `root_node.has_error`.
+export function parseRootWithStatus(blob, source) {
+  const { lang, root, startByte } = parse(blob, source);
+  return {
+    root: convert(lang, { subtree: root, alias: 0, start: startByte, field: null }, source),
+    dirty: root.errorCost !== 0,
+  };
+}
+
 // A whole document, in the shape `runtime-js`'s `format(tree, packages, width)`
 // takes: the language, the source it was parsed from, and the root.
 //

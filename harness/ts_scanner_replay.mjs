@@ -56,6 +56,7 @@
 // as a known bound rather than a silent assumption.
 import fs from 'node:fs';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { ScannerVM } from './ts_scanner_vm.mjs';
 import { decode } from './ts_scanner_pack.mjs';
@@ -65,6 +66,14 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, '..');
 const TRACES = path.join(ROOT, 'corpus', 'scanner-traces');
 const SCANNERS = path.join(HERE, 'scanners');
+
+const manifestRun = spawnSync(
+  'python3', [path.join(HERE, 'ts_secondaries.py')], { encoding: 'utf8' },
+);
+if (manifestRun.status !== 0) {
+  throw new Error(`cannot read grammar declarations: ${manifestRun.stderr.trim()}`);
+}
+const grammarConfig = JSON.parse(manifestRun.stdout).grammars;
 
 // The recorder writes the valid-symbols vector as a bit string; yaml has 113
 // external tokens and an array of ints per call outweighs the file it came
@@ -76,21 +85,31 @@ const hex = (bytes) =>
 
 const unhex = (s) => Uint8Array.from(s.match(/../g) ?? [], (h) => parseInt(h, 16));
 
-function sourceFor(language, stem) {
+function sourceFor(grammar, language, stem) {
   // `gen_trees.py` refuses two corpus files that share a stem, so the glob is
-  // unambiguous by construction.
-  const dir = path.join(ROOT, 'corpus', 'src', language);
-  const found = fs.readdirSync(dir).filter((n) => n.slice(0, n.lastIndexOf('.')) === stem);
+  // unambiguous by construction. The recorder enforces the same rule across
+  // scanner-specific adversarial fixtures and the language corpus.
+  const dirs = [
+    path.join(ROOT, 'corpus', 'src', language),
+    path.join(HERE, 'fixtures', 'scanner', grammar),
+  ];
+  const found = dirs.flatMap((dir) =>
+    fs.existsSync(dir)
+      ? fs.readdirSync(dir)
+        .filter((n) => n.slice(0, n.lastIndexOf('.')) === stem)
+        .map((n) => path.join(dir, n))
+      : [],
+  );
   if (found.length !== 1) {
     throw new Error(`${language}/${stem}: ${found.length} source files match`);
   }
-  return fs.readFileSync(path.join(dir, found[0]));
+  return fs.readFileSync(found[0]);
 }
 
-function replay(language, { traceDir = null, sourceLanguage = language } = {}) {
+function replay(language) {
   const svm = path.join(SCANNERS, `${language}.svm`);
   if (!fs.existsSync(svm)) return { language, skipped: 'no port yet' };
-  traceDir ??= path.join(TRACES, language);
+  const traceDir = path.join(TRACES, language);
   if (!fs.existsSync(traceDir)) return { language, skipped: 'no recorded traces' };
 
   const program = decode(new Uint8Array(fs.readFileSync(svm)));
@@ -102,7 +121,11 @@ function replay(language, { traceDir = null, sourceLanguage = language } = {}) {
 
   for (const name of fs.readdirSync(traceDir).filter((n) => n.endsWith('.jsonl')).sort()) {
     const stem = path.basename(name, '.jsonl');
-    const src = sourceFor(sourceLanguage, stem);
+    const sourceLanguage = grammarConfig[language]?.source_language;
+    if (sourceLanguage === undefined) {
+      throw new Error(`${language}: no manifest grammar declaration`);
+    }
+    const src = sourceFor(language, sourceLanguage, stem);
     files++;
     // Scanner state is per-parse, and the trace is one parse: reset once per
     // file, then let serialize/deserialize drive it exactly as recorded.
@@ -190,24 +213,9 @@ function replay(language, { traceDir = null, sourceLanguage = language } = {}) {
 }
 
 const args = process.argv.slice(2);
-const valueOf = (name) => {
-  const i = args.indexOf(name);
-  if (i < 0) return null;
-  if (i + 1 >= args.length) throw new Error(`${name} needs a value`);
-  return args[i + 1];
-};
-const traceDir = valueOf('--trace-dir');
-const sourceLanguage = valueOf('--source-language');
-const positional = args.filter((a, i) =>
-  !a.startsWith('--') && args[i - 1] !== '--trace-dir' && args[i - 1] !== '--source-language'
-);
-if ((traceDir || sourceLanguage) && (args.includes('--all') || positional.length !== 1)) {
-  console.error('--trace-dir/--source-language require exactly one scanner language');
-  process.exit(2);
-}
 const languages = args.includes('--all')
   ? fs.readdirSync(SCANNERS).filter((n) => n.endsWith('.svm')).map((n) => n.slice(0, -4)).sort()
-  : positional;
+  : args;
 if (languages.length === 0) {
   console.error('usage: ts_scanner_replay.mjs <language>... | --all');
   process.exit(2);
@@ -215,7 +223,7 @@ if (languages.length === 0) {
 
 let failed = 0;
 for (const language of languages) {
-  const r = replay(language, { traceDir, sourceLanguage: sourceLanguage ?? language });
+  const r = replay(language);
   if (r.skipped) {
     console.log(`${language.padEnd(12)} skipped -- ${r.skipped}`);
     continue;

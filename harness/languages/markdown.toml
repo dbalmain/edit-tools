@@ -9,7 +9,8 @@ extensions = [".md"]
 # inline_language() (inline). Fences, info_string and code_fence_content live
 # in the block tree, so the host selects language() — the same choice
 # docs/injection.md recorded, and the one gen_trees.py's region splice needs.
-# inline_language() is not used: the harness has no included-range second pass.
+# inline_language() is a separately loaded grammar below. It parses contiguous
+# `inline` slices and retains a parallel CST; it never replaces this block CST.
 grammar = "tree-sitter-markdown==0.5.1"
 grammar_module = "tree_sitter_markdown"
 grammar_symbol = "language"
@@ -136,3 +137,11 @@ content = "code_fence_content"
 node = "html_block"
 guest = "html"
 format = false
+
+# Parallel syntax, not an injection: each block `inline` node is a contiguous
+# range parsed by a separately loadable asset. Keep array tables after root
+# keys; TOML assigns later keys to the most recent table.
+[[secondary_grammars]]
+name = "markdown_inline"
+grammar_symbol = "inline_language"
+within = "inline"

@@ -5,7 +5,7 @@
 # ///
 """Record every call a grammar's real external scanner makes, per corpus file.
 
-    ./harness/ts_scanner_record.py <language> [--out DIR] [--keep] [--jobs N]
+    ./harness/ts_scanner_record.py <grammar> [--out DIR] [--keep] [--jobs N]
 
 Twelve of the sixteen languages still need their external scanner, and however
 those scanners get produced -- hand-compiled to VM bytecode, compiled from C,
@@ -52,7 +52,6 @@ import sys
 import tarfile
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import replace
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -61,6 +60,7 @@ import ts_grammars as tg  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "corpus" / "src"
+ADVERSARIAL = Path(__file__).resolve().parent / "fixtures" / "scanner"
 TRACES = ROOT / "corpus" / "scanner-traces"
 BUILD = tg.CACHE / ".build"
 CORE_CACHE = tg.CACHE / ".core"
@@ -97,17 +97,18 @@ def core_for(abi: int) -> Path:
     return lib
 
 
-def grammar_src(language: str, m) -> Path:
-    """The `src/` of the one grammar this language's manifest actually uses."""
-    root = tg.fetch(language, m.grammar)
+def grammar_src(source_language: str, m, grammar_symbol: str | None = None) -> Path:
+    """The `src/` selected by one primary or secondary grammar target."""
+    root = tg.fetch(source_language, m.grammar)
     found = tg.parsers_in(root)
     names = [str(p.parent.parent.relative_to(root)) or "." for p in found]
-    required = tg.wanted(m.grammar_symbol, names)
+    symbol = m.grammar_symbol if grammar_symbol is None else grammar_symbol
+    required = tg.wanted(symbol, names)
     for parser, name in zip(found, names):
         if name == required:
             return parser.parent
     raise RecordError(
-        f"{language}: grammar_symbol {m.grammar_symbol!r} names none of {names}"
+        f"{source_language}: grammar_symbol {symbol!r} names none of {names}"
     )
 
 
@@ -138,9 +139,10 @@ def entry_points(src: Path, language: str) -> str:
     raise RecordError(f"{language}: no external_scanner_scan definition found")
 
 
-def build(language: str, m) -> tuple[Path, int]:
+def build(target: mf.GrammarTarget, m) -> tuple[Path, int]:
     """Compile the instrumented parser. Returns `(binary, external_token_count)`."""
-    src = grammar_src(language, m)
+    language = target.name
+    src = grammar_src(target.source_language, m, target.grammar_symbol)
     abi, externals = facts(src)
     if externals == 0:
         raise RecordError(f"{language} declares no external tokens; nothing to record")
@@ -187,30 +189,33 @@ def build(language: str, m) -> tuple[Path, int]:
     return binary, externals
 
 
-def sources(language: str, m) -> list[Path]:
+def sources(target: mf.GrammarTarget, m) -> list[Path]:
     found: list[Path] = []
     for extension in m.extensions:
-        found.extend((SRC / language).glob(f"*{extension}"))
+        found.extend((SRC / target.source_language).glob(f"*{extension}"))
+        found.extend((ADVERSARIAL / target.name).glob(f"*{extension}"))
+    stems = [path.stem for path in found]
+    if len(stems) != len(set(stems)):
+        raise RecordError(
+            f"{target.name}: scanner sources have duplicate stems; trace names "
+            "would overwrite"
+        )
     return sorted(found)
 
 
-def record(
-    language: str,
-    out: Path,
-    jobs: int,
-    *,
-    grammar_symbol: str | None = None,
-) -> dict:
+def record(language: str, out: Path, jobs: int) -> dict:
     manifests = mf.load_all()
-    if language not in manifests:
-        raise RecordError(f"no manifest for {language!r}")
-    m = manifests[language]
-    if grammar_symbol is not None:
-        m = replace(m, grammar_symbol=grammar_symbol)
-    binary, externals = build(language, m)
-    files = sources(language, m)
+    targets = mf.grammar_targets(manifests)
+    if language not in targets:
+        raise RecordError(f"no manifest grammar for {language!r}")
+    target = targets[language]
+    m = manifests[target.source_language]
+    binary, externals = build(target, m)
+    files = sources(target, m)
     if not files:
-        raise RecordError(f"{language}: no corpus sources in {SRC / language}")
+        raise RecordError(
+            f"{language}: no corpus sources in {SRC / target.source_language}"
+        )
 
     out.mkdir(parents=True, exist_ok=True)
 
@@ -238,24 +243,22 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("language", nargs="?", help="omit to record every language with a scanner")
     ap.add_argument("--out", type=Path, help=f"default {TRACES.relative_to(ROOT)}/<language>")
-    ap.add_argument(
-        "--grammar-symbol",
-        help="experimental override for a second grammar in the manifest's source package",
-    )
     ap.add_argument("--keep", action="store_true", help="keep the build directory")
     ap.add_argument("--jobs", type=int, default=os.cpu_count() or 4)
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
 
     manifests = mf.load_all()
-    names = [args.language] if args.language else sorted(manifests)
+    names = (
+        [args.language]
+        if args.language
+        else sorted(mf.grammar_targets(manifests))
+    )
     results, failures = [], []
     for name in names:
         out = args.out or TRACES / name
         try:
-            results.append(
-                record(name, out, args.jobs, grammar_symbol=args.grammar_symbol)
-            )
+            results.append(record(name, out, args.jobs))
         except RecordError as e:
             # Sweeping every language, a grammar with no scanner is not a
             # failure -- it is the answer.

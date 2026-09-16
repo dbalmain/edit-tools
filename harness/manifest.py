@@ -21,6 +21,7 @@ from __future__ import annotations
 import importlib
 import importlib.util
 import os
+import re
 import subprocess
 import sys
 import tomllib
@@ -42,7 +43,8 @@ _KNOWN = set(_REQUIRED) | {"grammar_symbol", "gate3_requires",
                            "transparent_wrappers", "equivalent_kinds",
                            "comment_kinds", "layout_leaves", "whitespace_nodes", "optional_tokens", "equivalent_tokens",
                            "injections",
-                           "incomparable", "corpus_thresholds"}
+                           "incomparable", "corpus_thresholds",
+                           "secondary_grammars"}
 
 
 class ManifestError(Exception):
@@ -58,6 +60,25 @@ class Injection:
     # False: splice the guest parse for readers, but leave the formatter the
     # host's original bytes. See docs/injection.md, "Structure without layout".
     format: bool = True
+
+
+@dataclass(frozen=True)
+class SecondaryGrammar:
+    """A separately loadable grammar over contiguous nodes in the host CST."""
+
+    name: str
+    grammar_symbol: str
+    within: str
+
+
+@dataclass(frozen=True)
+class GrammarTarget:
+    """One loadable grammar artifact, primary or secondary."""
+
+    name: str
+    source_language: str
+    grammar_symbol: str
+    within: str | None = None
 
 
 @dataclass(frozen=True)
@@ -77,6 +98,7 @@ class Manifest:
     grammar_symbol: str     # callable on that module returning the Language
     injection_aliases: tuple[str, ...]  # info-string names for this language
     injections: tuple[Injection, ...]   # host node shapes containing regions
+    secondary_grammars: tuple[SecondaryGrammar, ...]  # parallel CSTs, not splices
     reference: str          # shell command, source on stdin, result on stdout
     reference_version: str  # the version string actually observed
     widths: tuple[int, ...]
@@ -194,6 +216,51 @@ def _injections(raw: dict[str, Any], path: Path) -> tuple[Injection, ...]:
                 guest=entry.get("guest"),
                 format=entry.get("format", True),
             )
+        )
+    return tuple(out)
+
+
+def _secondary_grammars(
+    raw: dict[str, Any], path: Path
+) -> tuple[SecondaryGrammar, ...]:
+    entries = raw.get("secondary_grammars", [])
+    if not isinstance(entries, list):
+        raise ManifestError(f"{path.name}: `secondary_grammars` must be a list")
+    fields = {"name", "grammar_symbol", "within"}
+    out = []
+    for i, entry in enumerate(entries):
+        key = f"secondary_grammars[{i}]"
+        if not isinstance(entry, dict):
+            raise ManifestError(f"{path.name}: `{key}` must be a table")
+        unknown = set(entry) - fields
+        missing = fields - set(entry)
+        if unknown:
+            raise ManifestError(
+                f"{path.name}: `{key}` has unknown field(s) {sorted(unknown)}"
+            )
+        if missing:
+            raise ManifestError(
+                f"{path.name}: `{key}` missing required field(s) {sorted(missing)}"
+            )
+        for field in sorted(fields):
+            value = entry[field]
+            if not isinstance(value, str) or not value:
+                raise ManifestError(
+                    f"{path.name}: `{key}.{field}` must be a non-empty string"
+                )
+        if re.fullmatch(r"[a-z][a-z0-9_]*", entry["name"]) is None:
+            raise ManifestError(
+                f"{path.name}: `{key}.name` must contain lowercase letters, "
+                "digits and underscores and start with a letter"
+            )
+        out.append(SecondaryGrammar(**entry))
+    names = [grammar.name for grammar in out]
+    within = [grammar.within for grammar in out]
+    if len(set(names)) != len(names):
+        raise ManifestError(f"{path.name}: `secondary_grammars` contains duplicate names")
+    if len(set(within)) != len(within):
+        raise ManifestError(
+            f"{path.name}: `secondary_grammars` contains duplicate `within` nodes"
         )
     return tuple(out)
 
@@ -418,6 +485,7 @@ def parse(path: Path) -> Manifest:
         grammar_symbol=raw.get("grammar_symbol", "language"),
         injection_aliases=_injection_aliases(raw, path),
         injections=_injections(raw, path),
+        secondary_grammars=_secondary_grammars(raw, path),
         reference=reference,
         reference_version=_need(raw, "reference_version", str, path),
         widths=widths,
@@ -447,6 +515,15 @@ def load_all() -> dict[str, Manifest]:
     if not out:
         raise ManifestError(f"no manifests in {LANG_DIR}")
     injection_map(out)
+    grammar_names = set(out)
+    for manifest in out.values():
+        for grammar in manifest.secondary_grammars:
+            if grammar.name in grammar_names:
+                raise ManifestError(
+                    f"{manifest.path.name}: secondary grammar name "
+                    f"{grammar.name!r} is already declared"
+                )
+            grammar_names.add(grammar.name)
     return out
 
 
@@ -462,6 +539,23 @@ def injection_map(manifests: dict[str, Manifest]) -> dict[str, Manifest]:
                     f"declared by {other.path.name}"
                 )
             out[alias] = manifest
+    return out
+
+
+def grammar_targets(manifests: dict[str, Manifest]) -> dict[str, GrammarTarget]:
+    """Artifact name -> manifest-selected binding and source-corpus identity."""
+    out = {}
+    for manifest in manifests.values():
+        out[manifest.name] = GrammarTarget(
+            manifest.name, manifest.name, manifest.grammar_symbol
+        )
+        for grammar in manifest.secondary_grammars:
+            out[grammar.name] = GrammarTarget(
+                grammar.name,
+                manifest.name,
+                grammar.grammar_symbol,
+                grammar.within,
+            )
     return out
 
 
@@ -512,7 +606,7 @@ def bootstrap(manifests: dict[str, Manifest] | None = None) -> dict[str, Manifes
     raise SystemExit(proc.returncode)
 
 
-def parser_for(m: Manifest):
+def parser_for(m: Manifest, grammar_symbol: str | None = None):
     """tree_sitter.Parser for a manifest. Grammars must already be importable."""
     from tree_sitter import Language, Parser
 
@@ -523,18 +617,22 @@ def parser_for(m: Manifest):
             f"{m.path.name}: cannot import `{m.grammar_module}` ({exc}). "
             f"Is `grammar_module` right for distribution `{m.grammar}`?"
         ) from exc
-    fn = getattr(mod, m.grammar_symbol, None)
+    symbol = m.grammar_symbol if grammar_symbol is None else grammar_symbol
+    fn = getattr(mod, symbol, None)
     if fn is None:
         exported = sorted(n for n in dir(mod) if n.startswith("language"))
         raise ManifestError(
-            f"{m.path.name}: `{m.grammar_module}` has no `{m.grammar_symbol}()`; "
+            f"{m.path.name}: `{m.grammar_module}` has no `{symbol}()`; "
             f"it exports {exported}. Set `grammar_symbol` to one of those."
         )
     return Parser(Language(fn()))
 
 
 def parsers(manifests: dict[str, Manifest]) -> dict[str, Any]:
-    return {name: parser_for(m) for name, m in manifests.items()}
+    return {
+        name: parser_for(manifests[target.source_language], target.grammar_symbol)
+        for name, target in grammar_targets(manifests).items()
+    }
 
 
 def cli(main) -> None:

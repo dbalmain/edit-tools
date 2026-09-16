@@ -528,7 +528,13 @@ def survey_one(name: str, m, root: Path) -> list[dict]:
                  "abi": None, "externals": None, "scanner": None}]
 
     names = [str(p.parent.parent.relative_to(root)) or "." for p in found]
-    required = wanted(m.grammar_symbol, names)
+    required = {
+        wanted(symbol, names)
+        for symbol in (
+            m.grammar_symbol,
+            *(grammar.grammar_symbol for grammar in m.secondary_grammars),
+        )
+    }
     rows = []
     for parser, grammar in zip(found, names):
         text = parser.read_text(encoding="utf-8", errors="replace")
@@ -541,7 +547,7 @@ def survey_one(name: str, m, root: Path) -> list[dict]:
         rows.append({
             "language": name,
             "grammar": grammar,
-            "required": grammar == required,
+            "required": grammar in required,
             "parser_c": parser.stat().st_size,
             "abi": int(abi.group(1)) if abi else None,
             "externals": int(ext.group(1)) if ext else 0,

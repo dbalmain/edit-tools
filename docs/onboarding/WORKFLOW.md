@@ -150,6 +150,14 @@ grammar = "tree-sitter-toml==0.7.0"
 grammar_module = "tree_sitter_toml"   # importable module — NOT derived from the above
 grammar_symbol = "language"           # optional, defaults to "language"
 
+# Optional independently loadable grammar over each contiguous host-node range.
+# It inherits the pinned distribution/module above; `name` is the blob/scanner
+# artifact identity and must be globally unique.
+# [[secondary_grammars]]
+# name = "markdown_inline"
+# grammar_symbol = "inline_language"
+# within = "inline"
+
 # Exact fenced-info names that may select this language as an embedded region.
 # Empty opts out; aliases are unique across all language manifests.
 injection_aliases = ["toml"]

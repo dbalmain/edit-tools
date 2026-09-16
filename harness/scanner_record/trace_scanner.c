@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "lexer.h"
@@ -33,11 +34,22 @@ FILE *trace_out = NULL;
 static void (*orig_advance)(TSLexer *, bool);
 static void (*orig_mark_end)(TSLexer *);
 static uint32_t (*orig_get_column)(TSLexer *);
-static char opbuf[65536];
-static int oplen;
+static char *opbuf;
+static size_t opcap;
+static size_t oplen;
 
 static void emit_op(const char *s) {
-    while (*s && oplen < (int)sizeof(opbuf) - 1) opbuf[oplen++] = *s++;
+    size_t add = strlen(s);
+    if (oplen + add + 1 > opcap) {
+        size_t next = opcap ? opcap : 4096;
+        while (next < oplen + add + 1) next *= 2;
+        char *grown = realloc(opbuf, next);
+        if (!grown) abort();
+        opbuf = grown;
+        opcap = next;
+    }
+    memcpy(opbuf + oplen, s, add);
+    oplen += add;
     opbuf[oplen] = 0;
 }
 
@@ -80,7 +92,7 @@ bool TS_SCAN_FN(void *payload, TSLexer *lexer, const bool *valid_symbols) {
     int32_t entry_la = lexer->lookahead;
 
     oplen = 0;
-    opbuf[0] = 0;
+    emit_op("");
     orig_advance = lexer->advance;
     orig_mark_end = lexer->mark_end;
     orig_get_column = lexer->get_column;

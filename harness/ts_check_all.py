@@ -49,6 +49,7 @@ import manifest as mf  # noqa: E402
 import ts_grammars as tg  # noqa: E402
 import ts_injections as tj  # noqa: E402
 import ts_scanner_record as rec  # noqa: E402
+import ts_secondaries as secondary  # noqa: E402
 
 HARNESS = Path(__file__).resolve().parent
 ROOT = HARNESS.parent
@@ -60,9 +61,10 @@ def run(*cmd: str) -> tuple[int, str]:
     return p.returncode, (p.stdout + p.stderr).strip()
 
 
-def transcode(language: str, m, out: Path) -> list[str]:
+def transcode(target: mf.GrammarTarget, m, out: Path) -> list[str]:
     """Write `<out>/<language>.blob.json`, or say why it could not be written."""
-    src = rec.grammar_src(language, m)
+    language = target.name
+    src = rec.grammar_src(target.source_language, m, target.grammar_symbol)
     cmd = [HARNESS / "ts_transcode.py", src / "parser.c",
            "-o", out / f"{language}.blob.json"]
     svm = SCANNERS / f"{language}.svm"
@@ -74,10 +76,15 @@ def transcode(language: str, m, out: Path) -> list[str]:
     return [] if code == 0 else [f"{language}: transcode failed\n{text}"]
 
 
-def check(language: str, out: Path, injections: Path) -> list[str]:
+def check(
+    language: str, out: Path, injections: Path, secondaries: Path
+) -> list[str]:
     blob = out / f"{language}.blob.json"
     problems = []
-    for label, extra in (("clean", ["--inject", injections]), ("edited", ["--edited"])):
+    for label, extra in (
+        ("clean", ["--inject", injections, "--secondary", secondaries]),
+        ("edited", ["--edited"]),
+    ):
         code, text = run(HARNESS / "ts_check_trees.mjs", blob, language, *extra)
         line = text.splitlines()[-1] if text else "(no output)"
         print(f"  {language:<12} {label:<7} {line}")
@@ -114,14 +121,20 @@ def main() -> int:
     with tempfile.TemporaryDirectory() as tmp:
         out = ctx or Path(tmp)
         problems: list[str] = []
-        for name, m in {**manifests, **extra}.items():
-            problems += transcode(name, m, out)
+        participating = {**manifests, **extra}
+        for target in mf.grammar_targets(participating).values():
+            problems += transcode(target, participating[target.source_language], out)
         injections = out / "injections.json"
         injections.write_text(
             json.dumps(tj.config(known, out), indent=1) + "\n", encoding="utf-8")
+        secondaries = out / "secondaries.json"
+        secondaries.write_text(
+            json.dumps(secondary.config(participating), indent=1) + "\n",
+            encoding="utf-8",
+        )
         if not problems:
             for name in manifests:
-                problems += check(name, out, injections)
+                problems += check(name, out, injections, secondaries)
 
     if problems:
         print("\nFAILURES:", file=sys.stderr)
