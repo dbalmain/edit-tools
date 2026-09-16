@@ -595,7 +595,7 @@ def main() -> int:
     if not scored:
         names = ", ".join(sorted(pending))
         print(f"no package yet for {names}; nothing to score")
-        return 0
+        return 0 if args.language else 1
     rep = score(submission, scored, args.verbose, known)
     rep.pending = sorted(pending)
 

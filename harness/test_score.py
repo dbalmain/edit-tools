@@ -263,6 +263,55 @@ class AwaitingPackageTests(unittest.TestCase):
         self.assertEqual(pending, {})
 
 
+class PendingMainTests(unittest.TestCase):
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.submission = Path(tmp.name)
+        (self.submission / "packages").mkdir()
+        self.manifests = {"json": object(), "toml": object()}
+
+    def run_main(self, selected, *extra):
+        report = score.Report(submission="submission")
+        with (
+            mock.patch.object(score.mf, "bootstrap", return_value=self.manifests),
+            mock.patch.object(score.mf, "selected", return_value=selected),
+            mock.patch.object(score, "score", return_value=report) as score_run,
+            mock.patch.object(
+                score.sys,
+                "argv",
+                ["score.py", str(self.submission), "--json", *extra],
+            ),
+            mock.patch("builtins.print"),
+        ):
+            result = score.main()
+        return result, report, score_run
+
+    def test_full_roster_with_no_packages_fails_instead_of_scoring_nothing(self):
+        # Regression: hiding every package used to make the whole gate pass.
+        result, _, score_run = self.run_main(self.manifests)
+
+        self.assertEqual(result, 1)
+        score_run.assert_not_called()
+
+    def test_single_pending_language_remains_a_successful_onboarding_state(self):
+        result, _, score_run = self.run_main(
+            {"toml": self.manifests["toml"]}, "--language", "toml"
+        )
+
+        self.assertEqual(result, 0)
+        score_run.assert_not_called()
+
+    def test_full_roster_scores_available_packages_while_others_are_pending(self):
+        (self.submission / "packages" / "json.json").write_text("{}")
+
+        result, report, score_run = self.run_main(self.manifests)
+
+        self.assertEqual(result, 0)
+        self.assertEqual(report.pending, ["toml"])
+        self.assertEqual(score_run.call_args.args[1], {"json": self.manifests["json"]})
+
+
 class IncomparableScoreTests(unittest.TestCase):
     """Incomparable files stay gated, but they are not agreement."""
 
