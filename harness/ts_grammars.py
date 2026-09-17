@@ -168,8 +168,29 @@ def _tar_filter(archive) -> bool:
     return isinstance(archive, tarfile.TarFile)
 
 
+# Never prompt. `repo_urls` deliberately tries a URL it expects to miss --
+# tree-sitter-xml's PKG-INFO names an org the grammar has left -- and GitHub
+# answers an anonymous 404 the same way it answers a private repository, so git
+# asks for a username. Under a desktop session that question goes to an X11
+# askpass dialog and waits for a human forever: the clone neither succeeds nor
+# raises, the `except CalledProcessError` fallback below never runs, and
+# `./web/gen.py` hangs with an empty log and no CPU. Clearing the three prompt
+# hooks turns that wait back into the failure the fallback is written for.
+_NO_PROMPT = {
+    "GIT_TERMINAL_PROMPT": "0",
+    "GIT_ASKPASS": "",
+    "SSH_ASKPASS": "",
+    "GIT_SSH_COMMAND": "ssh -oBatchMode=yes",
+}
+
+
 def git(*args: str) -> None:
-    subprocess.run(["git", *args], check=True, capture_output=True)
+    subprocess.run(
+        ["git", *args],
+        check=True,
+        capture_output=True,
+        env={**os.environ, **_NO_PROMPT},
+    )
 
 
 def fetch_git(url: str, ref: str, dest: Path) -> None:
