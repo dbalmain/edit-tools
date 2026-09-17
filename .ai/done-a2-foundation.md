@@ -170,3 +170,43 @@ Still open, and deliberately not decided here: whether the 43 KB inline blob
 ships to the browser (board question 20). A2.0 keeps that configuration rather
 than architecture -- `secondaries.json` is the switch -- so it is A2.0's exit
 criterion, not a blocker to A2.1.
+
+## 2026-09-18: the two board questions, answered
+
+**Question 20 -- does the inline blob ship?** Yes, as a separate asset, fetched
+on demand. Measured rather than quoted: `markdown_inline.blob.json` is 450,325 B
+raw / 43,556 B gzipped; `markdown.blob.json` is 469,172 B / 50,464 B; the
+runtime itself is 19,780 B gzipped. Bundling the two tables would take a
+markdown page from 50 KB to 94 KB gzipped for a grammar nothing reads yet.
+
+Separate was already the shape, and the slice is what made it a decision rather
+than an accident. Lazy was *not* the shape: `attachSecondaries` awaited `load`
+per declared site before walking for a node to apply it to, so every markdown
+parse fetched the table -- including a buffer holding nothing but a fenced
+block, which has no `inline` node at all. `web/README.md` had stated the
+opposite rule for guest tables since the injection track; the secondary track
+arrived without it.
+
+That is invisible to `probe_secondary_grammar.py` by construction: both
+producers return the same `secondary` array whichever way the table arrived, so
+the probe compares the output of a fetch it cannot count. `ts_secondary.test.mjs`
+counts the loader instead, hermetically -- no blob needed, since the interesting
+cases either never call it or call it and get null. Mutation-tested: dropping
+the guard fails two of the five, and the other three still pass.
+
+**Question 21 -- does A2 admit non-ASCII?** Yes, as its own slice, last.
+Recorded in `docs/prose-projection.md` as the A2 ladder, from the E2 spike's
+figures at `f2819822fa033987e86db79143ab8ffecb900a35`: A2.1 protected syntax
+(1,372 / 27.1%), A2.2 emphasis (2,163 / 42.7%), A2.3 Unicode (3,068 / 60.6%),
+A2.4 deferred constructs. Unicode is 900 paragraphs -- 18 points, more than the
+whole of A1 -- and the refusal table earlier in that document rates it at 1.4%,
+because that table counts first-match refusals and nearly every Unicode-bearing
+paragraph is refused for inline syntax before Unicode is examined. Third
+appearance of that misreading in one document, so it is named there explicitly.
+
+**Found while checking merge-readiness:** `ScannerPortTest`'s floors were set
+for thirteen ports and never raised when this slice added the fourteenth. The
+replay now walks 46,576 calls; the floor asked for 22,617. `markdown_inline`
+alone is 20,629 of them, and markdown's own count more than doubled when
+`trace_scanner.c` stopped truncating at 65,535 bytes -- so either could have
+stopped being replayed with the gate still green. Raised to the current totals.

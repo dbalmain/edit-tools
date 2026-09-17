@@ -150,6 +150,73 @@ both were confidently stated:
   above, and it says A2 is worth four times the container slice rather than a
   third of it.
 
+### A2 is five slices, and Unicode is the last of them
+
+Agreed 2026-09-18. The figures are the A2 pricing spike's, measured at
+`f2819822fa033987e86db79143ab8ffecb900a35` -- the same commit
+`harness/probe_secondary_grammar.py` audits, so the two sets are the same 102
+files and the same 5,065 paragraphs. That denominator is not the 5,048 above,
+which was measured at `3dbf9d3`; the percentages are the comparable half. The
+spike's own write-up is `E2-REPORT.md` on branch `spike/a2-price`, with the
+per-paragraph classifications beside it as `E2-COVERAGE.json`; everything this
+section relies on is restated here, so it does not have to be read to use the
+table.
+
+The ceiling in the table above held. Of the 2,553 first-match `inline token`
+refusals, **2,532 hold nothing outside the safe inline subset**, so a real
+inline grammar reaches 3,068 paragraphs where treating every `inline token`
+verdict as eligible predicted 3,089 -- an approximation that overshot by 21.
+
+| Slice | Scope | Total eligible |
+| --- | --- | --- |
+| A1 today | plain words, block grammar alone | 536 (10.6%) |
+| **A2.0** | parse and retain an inline CST beside the block tree; nothing reads it | 536, deliberately unchanged |
+| **A2.1** | code spans, links and autolinks, each protected whole; ASCII only | 1,372 (27.1%) |
+| **A2.2** | emphasis and strong, delimiters attached to adjacent atoms; ASCII only | 2,163 (42.7%) |
+| **A2.3** | non-ASCII atom content; ASCII space and newline stay the only gaps | 3,068 (60.6%) |
+| A2.4 | escapes, entities, images, reference links, strikethrough | +17, and it should not delay the others |
+
+**A2.3 is the decision this ladder records.** 900 of the 2,532 safe-only
+paragraphs contain non-ASCII text, and five more have no isolated ASCII gap
+outside a protected range. So Unicode is not a detail inside "add the inline
+grammar": it is 18 percentage points, more than the whole of A1, and it is the
+single largest step on the ladder.
+
+Nothing in the refusal table earlier in this document says so -- non-ASCII is a
+1.4% first-match share there. That is the same misreading this section has
+already made twice, wearing its third hat: a paragraph that holds both a
+non-ASCII byte and an emphasis delimiter is counted against inline syntax and
+never examined for Unicode, so the share is a measure of what is refused
+*first*, not of what admitting Unicode would buy.
+
+It goes last anyway, and that is a judgement rather than a measurement. A2.3 is
+the only rung that adds no new syntax: it widens what an atom may contain while
+the gaps stay exactly the ASCII space and newline A1 already recognises. Taking
+it earlier would mean proving UTF-8 atom boundaries agree across both runtimes
+before there is a single emphasis delimiter to prove them against, and the 900
+paragraphs are a uniform tax on the eventual reach rather than a blocker to
+anything A2.1 or A2.2 has to demonstrate. **The fact that would change it is a
+corpus whose prose is mostly not ASCII** -- this repository's is not, but a
+consumer's may be, and for them A2.3 is the slice that decides whether any of
+this is usable at all.
+
+### A2.0 is built
+
+`harness/languages/markdown.toml` declares it, `gen_trees.secondary_trees` and
+`harness/ts_secondary.mjs` implement it for the two producers, and
+`harness/probe_secondary_grammar.py` gates their agreement on all 2,553 audited
+ranges. It is invisible by construction: every reference output and every frozen
+block tree is byte-identical across it, and the only change to a committed tree
+is the added `secondary` field.
+
+Its exit criterion was the browser payload, and the answer is that the inline
+table ships as its own asset, fetched only by a document that holds an `inline`
+node -- 43 KB gzipped against the 50 KB of markdown's own block table, so
+bundling them would have very nearly doubled what every markdown page loads.
+`web/README.md` records the measurement and `harness/ts_secondary.test.mjs`
+holds the loader to it, because the probe compares the CSTs the two producers
+build and cannot see a fetch that does not happen.
+
 ## Inputs and ownership
 
 The projection takes the original UTF-8 source, its clean block CST, a clean
