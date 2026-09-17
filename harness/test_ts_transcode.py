@@ -251,13 +251,20 @@ class ScannerPortTest(unittest.TestCase):
     replay could stop performing while still walking every call.
     """
 
-    # toml 230 scan calls, css 450, xml 803, html 1102, python 2194, rust 925,
-    # javascript 2439, typescript 2808, kotlin 2519, ruby 1855, yaml 1480,
-    # markdown 3127, haskell 2685. All thirteen external scanners are ported,
-    # so this floor stops being a ratchet and becomes a regression check.
-    MIN_SCANNER_CALLS = 22617
-    MIN_SCANNER_STATES = 5288
-    MIN_PORTED_LANGUAGES = 13
+    # toml 230 scan calls, css 450, xml 803, html 1102, rust 925, yaml 1480,
+    # ruby 1855, python 2199, javascript 2439, kotlin 2519, haskell 2685,
+    # typescript 2808, markdown 6452, markdown_inline 20629. Every external
+    # scanner is ported, so these are regression checks rather than a ratchet
+    # -- and they only work if they are raised when one is added. Set against
+    # the totals `ts_scanner_replay.mjs --all` reports, so a scanner that stops
+    # being replayed takes the sum below the floor instead of hiding under a
+    # number left over from a smaller set. A2.0's inline port is 44% of the
+    # calls on its own, and the previous floor of 22617 would not have noticed
+    # losing all of it; markdown's own count more than doubled at the same
+    # time, when `trace_scanner.c` stopped truncating its log at 65,535 bytes.
+    MIN_SCANNER_CALLS = 46576
+    MIN_SCANNER_STATES = 7986
+    MIN_PORTED_LANGUAGES = 14
 
     def _run(self, script: str, *args: str) -> str:
         result = subprocess.run(
