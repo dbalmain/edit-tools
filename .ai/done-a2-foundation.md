@@ -118,3 +118,55 @@ spike's 60k-line classification JSON. It proves 2,553/2,553 complete rebased
 inline CSTs are byte-identical across native and browser production paths, then
 checks the clean and identically-refused dirty controls. This independently
 reproduces the spike's 2,553 count.
+
+## 2026-09-18: completed in the main thread
+
+codex-Sol hit its usage limit mid-slice; the orchestrator preserved the work as
+`3b1ad39` and finished it in-thread rather than spend more of the codex budget.
+The section above is the author's own and was written before any gate ran.
+
+`./test.sh` had never been run against the slice. It exits 0 now. Four things
+were wrong or missing:
+
+1. **The third serialiser did not know the field.** `rust/src/ts/doc.rs` owns
+   the Rust half of the frozen-tree byte contract, and `TreeDoc` is
+   `deny_unknown_fields`. All 21 markdown trees now carry a top-level
+   `secondary`, so `every_frozen_tree_round_trips_byte_for_byte` panicked on
+   the first one. `TreeSecondary` models it; `ts_check_trees.rs` writes `None`,
+   the same way it already writes `language: None` -- that binary runs one pass
+   and no more runs a secondary grammar than it runs an injection.
+2. **A required Manifest field broke a literal constructor.** The gate-3 test
+   helper does not use `**__dict__`, so 22 tests errored.
+3. **The probe reported a number it had not measured.** It printed
+   `{audited}/{audited}`: the count of ranges the *block* parse found, not the
+   count of CSTs the secondary parse produced. Every equality in its comparison
+   loop holds when both producers attach nothing.
+4. **The probe's browser half hardcoded the routing** rather than consuming
+   `ts_secondaries.config()`, so the two halves could agree while both drifted
+   from markdown.toml.
+
+Independently, `./web/gen.py` -- which `probe_injection_parity.py` names as the
+way to generate the blobs it needs -- hung for eleven minutes with an empty log
+and one second of CPU. Not a network stall: `git clone` was blocked on an X11
+askpass dialog asking for a GitHub username, because `repo_urls` deliberately
+tries a URL it expects to miss and an anonymous 404 is indistinguishable from a
+private repository. The documented `except CalledProcessError` fallback was
+therefore unreachable. Fixed in `harness/ts_grammars.py`; verified the wrong URL
+now exits 128 rather than waiting.
+
+Verification beyond the gates, since A2.0 is by design invisible:
+
+- All 21 changed trees differ from the parent `1e405ad` by the addition of
+  `secondary` **alone**; the block CSTs are byte-identical.
+- Gate 1 reads 423/423, highlight identity 29/29 -- both unchanged.
+- No formatter-visible path changed: no package, no `corpus/src`, no
+  `corpus/references`, no runtime file.
+- The new floor is mutation-tested. Setting `within = "paragraph"` leaves the
+  dirty-fixture control firing normally and every comparison agreeing; only the
+  floor rejects it. Before the floor, that mutation printed
+  "2553/2553 audited ranges agree" and exited 0.
+
+Still open, and deliberately not decided here: whether the 43 KB inline blob
+ships to the browser (board question 20). A2.0 keeps that configuration rather
+than architecture -- `secondaries.json` is the switch -- so it is A2.0's exit
+criterion, not a blocker to A2.1.
