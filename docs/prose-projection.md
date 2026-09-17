@@ -157,10 +157,11 @@ Agreed 2026-09-18. The figures are the A2 pricing spike's, measured at
 `harness/probe_secondary_grammar.py` audits, so the two sets are the same 102
 files and the same 5,065 paragraphs. That denominator is not the 5,048 above,
 which was measured at `3dbf9d3`; the percentages are the comparable half. The
-spike's own write-up is `E2-REPORT.md` on branch `spike/a2-price`, with the
-per-paragraph classifications beside it as `E2-COVERAGE.json`; everything this
-section relies on is restated here, so it does not have to be read to use the
-table.
+spike's own write-up is `docs/a2-inline-price.md`, which carries the histogram,
+the bucket definitions and the block-safety diagnostic this table compresses;
+the per-paragraph classifications stay on `spike/a2-price` as
+`E2-COVERAGE.json`, being 1.2 MB of generated measurement. Everything this
+section relies on is restated here, so neither has to be read to use the table.
 
 The ceiling in the table above held. Of the 2,553 first-match `inline token`
 refusals, **2,532 hold nothing outside the safe inline subset**, so a real
