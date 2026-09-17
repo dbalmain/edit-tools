@@ -1,9 +1,10 @@
 """Unit tests for the ts_lex recoverer and the interval algebra under it.
 
 `python3 -m unittest discover -s harness` picks these up, so `./test.sh` runs
-them. The last test shells out to `node --test harness/ts_lr.test.mjs`, which is
-how the JavaScript half reaches the same suite without editing `test.sh` -- a
-shared file that four other tracks are also touching.
+them. `InterpreterSuiteTest` shells out to `node --test harness/ts_lr.test.mjs`
+through `node_suite`, which is how the JavaScript half reaches the same gate
+without editing `test.sh` -- a shared file that four other tracks are also
+touching.
 
 Everything here covers behaviour the frozen corpus cannot reach. The corpus is
 3 JSON files and 16 Go files; `docs/parse-tables-spike.md` measures how little
@@ -15,6 +16,7 @@ import subprocess
 import unittest
 from pathlib import Path
 
+import node_suite
 import ts_transcode as tt
 
 HARNESS = Path(__file__).resolve().parent
@@ -204,29 +206,8 @@ class LexRecoveryTest(unittest.TestCase):
 
 
 class InterpreterSuiteTest(unittest.TestCase):
-    # A floor, not the exact count, so adding a test does not break this -- but
-    # dropping the suite does. TAP's `1..N` plan counts tests in this non-isolated
-    # process; the pass summary can collapse to one file. `node --test` also exits
-    # 0 on a file with no tests, so the return code alone cannot guard collection.
-    MIN_INTERPRETER_TESTS = 19
-
     def test_javascript_lexer_tests_pass(self):
-        result = subprocess.run(
-            [
-                "node",
-                "--test",
-                "--test-isolation=none",
-                "--test-reporter=tap",
-                str(HARNESS / "ts_lr.test.mjs"),
-            ],
-            capture_output=True,
-            text=True,
-        )
-        report = result.stdout + result.stderr
-        self.assertEqual(result.returncode, 0, report)
-        plan = re.search(r"^1\.\.(\d+)$", result.stdout, re.MULTILINE)
-        self.assertIsNotNone(plan, report)
-        self.assertGreaterEqual(int(plan.group(1)), self.MIN_INTERPRETER_TESTS, report)
+        node_suite.assert_passed(self, "ts_lr.test.mjs", 19)
 
 
 class ScannerPortTest(unittest.TestCase):

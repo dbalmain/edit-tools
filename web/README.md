@@ -79,6 +79,26 @@ Two things follow, and both are visible:
 Guest tables are fetched only when a document routes to them, so a markdown
 page with no fences never pays for one.
 
+## The inline grammar is a second table, fetched the same way
+
+Markdown is parsed twice: once by the block grammar, which produces the tree the
+formatter reads, and once by `markdown_inline` over each `inline` range, whose
+roots are retained *beside* that tree rather than spliced into it. Nothing reads
+the second parse yet -- it is the foundation the prose projection will check
+candidate line breaks against. `docs/prose-projection.md` is where that goes.
+
+It is a separate asset on purpose: `data/blobs/markdown_inline.blob.json` is
+440 KB raw and 43 KB gzipped, against 50 KB gzipped for markdown's own block
+table. Bundling the two would very nearly double what every markdown page loads,
+to carry a grammar that page may never reach. Kept apart, `js/lang.js` asks for
+it on the same terms as a guest table -- only once the document is known to hold
+an `inline` node -- so a buffer that is empty, or is nothing but a fenced block,
+never fetches it at all.
+
+Which grammars exist and which host node each one reparses come from
+`data/secondaries.json`, generated from the manifests, so shipping policy stays
+configuration rather than a decision baked into the loader.
+
 ## A table is edited cell by cell
 
 Every block goes raw whole when the cursor enters it. A table does not, and the

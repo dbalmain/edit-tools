@@ -30,17 +30,27 @@ function rebase(node, by) {
 /**
  * Parse and attach every required secondary range.
  *
- * `load(name, blob)` may fetch lazily. Missing tables and dirty roots are hard
- * refusals: the declaration promises syntax, not an optional enhancement.
+ * `load(name, blob)` is called at most once per site, and only for a site the
+ * document actually reaches -- so in a browser it is a fetch this document
+ * needed. Missing tables and dirty roots are then hard refusals: where the
+ * declaration applies it promises syntax, not an optional enhancement.
  */
 export async function attachSecondaries(doc, source, config, load) {
   const entries = [];
   for (const site of config.sites[doc.language] ?? []) {
+    // Demand decides the fetch, not the declaration. A markdown buffer with no
+    // `inline` node -- an empty one, or one that is nothing but a fenced block
+    // -- never pays for the inline table, the same rule a document with no
+    // fence gets from `injectAll`. So the walk comes first and `load` is
+    // reached only if it found something; a table is required where it is
+    // needed rather than wherever it is declared.
+    const nodes = [...hostNodes(doc.root, site.within)];
+    if (nodes.length === 0) continue;
     const blob = await load(site.name, site.blob);
     if (blob == null) {
       throw new Error(`secondary grammar ${site.name} has no parse table`);
     }
-    for (const node of hostNodes(doc.root, site.within)) {
+    for (const node of nodes) {
       const slice = source.subarray(node.start, node.end);
       const parsed = parseRootWithStatus(blob, slice);
       if (parsed.dirty) {

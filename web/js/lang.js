@@ -90,6 +90,12 @@ export async function parse(text, name) {
   const source = encoder.encode(text);
   const doc = parseDoc(blob, name, source, `<${name} buffer>`);
   const secondary = await secondaryConfig();
+  // A parallel parse, not a splice: the block CST stays the formatter's tree
+  // and each inline root is retained beside it. Its table is a separate asset
+  // -- 43 KB gzipped, on top of markdown's own -- and `attachSecondaries` asks
+  // for one only when the document holds a node the declaration covers, so a
+  // buffer of nothing but a fenced block never fetches it. Same rule the fenced
+  // block itself gets below.
   await attachSecondaries(doc, source, secondary, (grammar) => blobFor(grammar));
   const config = await injectionConfig();
   if (!config.sites[name]) return doc;
