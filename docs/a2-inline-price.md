@@ -35,6 +35,11 @@ The payload decision the report asks for as A2.0's exit criterion was taken: the
 table is a separate lazily-fetched asset, not bundled. See
 `web/README.md`.
 
+One figure is **corrected in place** rather than moved: A2.1's block-hazard count
+in section 5 read forty and is thirty-five. That is an arithmetic correction
+against the report's own `E2-COVERAGE.json` -- a count quoted against the wrong
+denominator -- not a remeasurement, and it is marked where it occurs.
+
 ## Executive summary: price and shape
 
 - Scanner-port price: **9,130 B source / 462 B packed**, with no new VM opcode
@@ -465,9 +470,18 @@ the block parse, coalescing across hazardous ones.
 
 Payoff ceiling under the measured definitions: 839 construct-safe candidates, or
 **836 with at least one useful candidate gap**, taking total eligibility from
-536 to **1,372 / 27.1%**. Forty paragraphs in this subset fail the deliberately
-naive all-gap block diagnostic, so block-safe coalescing is already required
-here.
+536 to **1,372 / 27.1%**. Thirty-five paragraphs in this subset fail the
+deliberately naive all-gap block diagnostic, so block-safe coalescing is already
+required here.
+
+> **Corrected 18 September**, against this report's own `E2-COVERAGE.json`
+> rather than by remeasuring anything. The sentence above read *forty*. Forty is
+> the count over the construct-safe set with the **ASCII filter dropped** —
+> 1,099 paragraphs rather than 836 — and this slice keeps the ASCII policy, as
+> its own scope line says. On the 836 the figure is **35**, on all three ways of
+> counting the subset the section actually defines. It is the same mistake
+> `docs/prose-projection.md` records twice about itself: a numerator quoted
+> against a denominator from a different filter.
 
 Exit criterion: source partition is total, six inline stress patterns preserve
 inline structure, a whole-document block gate preserves block structure,
