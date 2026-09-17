@@ -74,6 +74,7 @@ def make_manifest(path: Path, name: str, selected_gate: str) -> manifest.Manifes
         grammar_symbol="language",
         injection_aliases=(),
         injections=(),
+        secondary_grammars=(),
         reference="weakfmt --width {width}",
         reference_version="1.0.0",
         widths=(80,),

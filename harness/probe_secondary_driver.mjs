@@ -14,19 +14,13 @@ if (!blockPath || !inlinePath) {
 
 const block = JSON.parse(fs.readFileSync(blockPath, "utf8"));
 const inline = JSON.parse(fs.readFileSync(inlinePath, "utf8"));
-const payload = JSON.parse(fs.readFileSync(0, "utf8"));
-const config = {
-  sites: {
-    markdown: [{
-      name: "markdown_inline",
-      within: "inline",
-      blob: "markdown_inline.blob.json",
-    }],
-  },
-};
+// The routing comes from `ts_secondaries.config()` over the real manifests,
+// not from a copy written here: a second spelling of the same declaration
+// would agree with itself while both halves drifted from markdown.toml.
+const { config, cases } = JSON.parse(fs.readFileSync(0, "utf8"));
 const out = [];
 
-for (const item of payload) {
+for (const item of cases) {
   const source = Buffer.from(item.source, "base64");
   const doc = parseDoc(block, "markdown", source, item.source_file);
   try {

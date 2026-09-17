@@ -55,6 +55,26 @@ fn is_false(flag: &bool) -> bool {
     !*flag
 }
 
+/// One manifest-declared parallel parse of a contiguous host range.
+///
+/// A secondary grammar never replaces host nodes: the block CST stays the
+/// formatter's tree and each rebased root is retained *beside* it, so a later
+/// projection can consult both grammars at one gap. See
+/// `harness/ts_secondary.mjs`, which writes this shape, and `gen_trees.py`,
+/// which froze it. Field order here is the serialised key order, as above.
+#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TreeSecondary {
+    /// The secondary grammar's manifest name -- `markdown_inline`, not the
+    /// host's `markdown`.
+    pub language: String,
+    /// The host node kind whose byte range was reparsed.
+    pub within: String,
+    pub start: usize,
+    pub end: usize,
+    pub root: TreeNode,
+}
+
 /// The whole document: one frozen `.tree.json` file.
 #[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -63,6 +83,13 @@ pub struct TreeDoc {
     pub source_file: String,
     pub source: String,
     pub root: TreeNode,
+    /// Set only by the secondary-grammar track: 21 markdown trees carry one.
+    /// The interpreter never emits it, for the same reason it never emits a
+    /// node `language` -- it runs one pass -- and it is modelled here so the
+    /// round-trip test below keeps covering every frozen tree rather than the
+    /// subset that predates the field.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub secondary: Option<Vec<TreeSecondary>>,
 }
 
 /// Serialise to the exact bytes of a frozen `.tree.json`, trailing newline and
@@ -165,6 +192,11 @@ mod tests {
                 language: None,
                 opaque: false,
             },
+            // Omitted, and `skip_serializing_if` therefore keeps `want` the
+            // same 479 bytes it was before the field existed. The frozen-tree
+            // test above is what covers a populated one: Python wrote the 21
+            // that carry it, and Rust reproduces those bytes.
+            secondary: None,
         };
         let want = format!(
             "{{\n \"language\": \"t\",\n \"source_file\": \"t\",\n \"source\": \"{escaped}\",\n \"root\": {{\n  \"type\": \"leaf\",\n  \"start\": 0,\n  \"end\": 1,\n  \"text\": \"{escaped}\"\n }}\n}}\n"

@@ -134,6 +134,9 @@ fn parse_doc(lang: &Language, language: &str, source_path: &Path) -> Result<Tree
         source_file: relative,
         source: text.to_string(),
         root: root_node,
+        // One pass only: the secondary-grammar track is a second parse over
+        // host ranges, and this binary no more runs it than it runs injection.
+        secondary: None,
     })
 }
 

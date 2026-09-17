@@ -20,6 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import gen_trees  # noqa: E402
 import manifest as mf  # noqa: E402
 import prose  # noqa: E402
+import ts_secondaries  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 HARNESS = ROOT / "harness"
@@ -142,7 +143,9 @@ def main() -> int:
     proc = subprocess.run(
         ["node", str(HARNESS / "probe_secondary_driver.mjs"),
          str(BLOCK_BLOB), str(INLINE_BLOB)],
-        input=json.dumps(payload),
+        input=json.dumps(
+            {"config": ts_secondaries.config(manifests), "cases": payload}
+        ),
         capture_output=True,
         text=True,
         timeout=300,
@@ -152,6 +155,7 @@ def main() -> int:
     got = json.loads(proc.stdout)
     if len(got) != len(expected):
         raise Failed(f"browser returned {len(got)} cases, expected {len(expected)}")
+    compared = 0
     for item, (want_secondary, want_error), case in zip(
         got, expected, payload, strict=True
     ):
@@ -162,12 +166,25 @@ def main() -> int:
             )
         if item["secondary"] != want_secondary:
             raise Failed(f"{case['source_file']}: rebased secondary CST differs")
+        if case["ranges"] is not None:
+            compared += len(item["secondary"])
+
+    # Agreement between two empty lists is agreement about nothing, and every
+    # equality above holds if both producers silently stop attaching. `audited`
+    # counts ranges the *block* parse found, so it stays at 2553 through that
+    # failure; only this counts CSTs the secondary parse actually produced and
+    # the two paths actually compared.
+    if compared != audited:
+        raise Failed(
+            f"compared {compared} rebased CSTs for {audited} audited ranges; "
+            "each range must produce exactly one"
+        )
 
     dirty_error = expected[-1][1]
     if dirty_error is None:
         raise Failed("dirty fixture did not reach the secondary-root refusal")
     print(
-        f"secondary grammar: {audited}/{audited} audited ranges agree; "
+        f"secondary grammar: {compared}/{audited} audited ranges agree; "
         f"clean fixture agrees; dirty fixture refuses identically: {dirty_error}"
     )
     return 0
