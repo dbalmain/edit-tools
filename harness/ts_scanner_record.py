@@ -97,21 +97,6 @@ def core_for(abi: int) -> Path:
     return lib
 
 
-def grammar_src(source_language: str, m, grammar_symbol: str | None = None) -> Path:
-    """The `src/` selected by one primary or secondary grammar target."""
-    root = tg.fetch(source_language, m.grammar)
-    found = tg.parsers_in(root)
-    names = [str(p.parent.parent.relative_to(root)) or "." for p in found]
-    symbol = m.grammar_symbol if grammar_symbol is None else grammar_symbol
-    required = tg.wanted(symbol, names)
-    for parser, name in zip(found, names):
-        if name == required:
-            return parser.parent
-    raise RecordError(
-        f"{source_language}: grammar_symbol {symbol!r} names none of {names}"
-    )
-
-
 def facts(src: Path) -> tuple[int, int]:
     """`(abi, external_token_count)` from the grammar's own generated tables."""
     text = (src / "parser.c").read_text(encoding="utf-8", errors="replace")
@@ -142,7 +127,7 @@ def entry_points(src: Path, language: str) -> str:
 def build(target: mf.GrammarTarget, m) -> tuple[Path, int]:
     """Compile the instrumented parser. Returns `(binary, external_token_count)`."""
     language = target.name
-    src = grammar_src(target.source_language, m, target.grammar_symbol)
+    src = tg.src_of(target.source_language, m, target.grammar_symbol)
     abi, externals = facts(src)
     if externals == 0:
         raise RecordError(f"{language} declares no external tokens; nothing to record")

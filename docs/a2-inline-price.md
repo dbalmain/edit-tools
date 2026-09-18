@@ -14,14 +14,30 @@ agree with today.
 
 ## What has moved since
 
-A2.0 has been built, so three of the report's figures now have a shipped
-counterpart:
+A2.0 has been built. **None of the report's shipping figures moved**, and the
+one number that looks like it moved was never a measurement of this stack.
 
-| Figure | Measured here | Shipped today | Why it moved |
+| Figure | Measured here | Measured today | |
 | --- | ---: | ---: | --- |
-| Inline blob, gzip | 43,110 B | 43,556 B | The spike transcoded to `/tmp`; the shipped blob is `web/data/blobs/markdown_inline.blob.json`, generated through `web/gen.py` with the reviewed scanner. |
-| Block blob, gzip | 48,893 B | 50,464 B | Same: a like-for-like spike transcode versus the generated artifact. |
-| Scanner replay, markdown | 3,127 calls | 6,452 calls | Not a new corpus. A2.0 fixed `harness/ts_dump_tables.c`'s oracle truncating lexer traces at 65,535 bytes, so the block scanner's own replay had been measuring less than half of itself. |
+| Inline blob, gzip | 43,110 B | 43,110 B | Unchanged. `web/data/blobs/markdown_inline.blob.json` is 450,325 B raw, and 43,110 B under this report's own metric, `gzip.compress(data, 9)`. |
+| Block blob, gzip | 48,893 B | 48,893 B | Unchanged. `web/data/blobs/markdown.blob.json`, 469,172 B raw, same metric. |
+| Scanner replay, markdown | 3,127 calls | 6,452 calls | **Not this stack.** The committed traces under `corpus/scanner-traces/markdown/` contain 6,452 `"op":"scan"` records and are byte-identical before and after A2.0. |
+
+> **Corrected 19 September**, after a review counted the artifacts rather than
+> reading this table. Every row above previously asserted a change. Two of them
+> quoted shipped sizes -- 43,556 B and 50,464 B -- that the generated blobs do
+> not reproduce under the metric this report defines; they are not a measurement
+> of anything in the tree. The third named a cause that is false in both halves:
+> it said "not a new corpus", and a new corpus is the entire explanation. The
+> 3,127 was a **stale comment** in `harness/test_ts_transcode.py`'s scanner
+> floor, written when it was true and never updated as the markdown corpus grew
+> underneath it -- 3,127 at `cf34120`, then 5,347 at `dcb790a`, 5,714 at
+> `168945e`, 6,452 at `1d4a2db`, all of them before this stack begins. `f076d9a`
+> corrected the comment to match the traces it had always been describing.
+> `harness/scanner_record/trace_scanner.c`'s 65,535-byte truncation fix is real
+> and is in this stack, but it is not what changed this number: markdown's
+> traces did not change here at all, and the fix is load-bearing only for
+> `markdown_inline`, whose traces are new.
 
 Two of the report's own qualifications have also been answered. The
 `MIN_INTERPRETER_TESTS` failure it leaves visible in Appendix A is fixed --

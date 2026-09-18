@@ -248,13 +248,28 @@ common enough to design against instead of discovering later.
 | `inline_link` | 21 | 56 | 102 | 118 | 5 |
 | `uri_autolink` | 1 | 126 | 126 | 126 | 1 |
 
+**What the hazard counts are, and are not.** Every figure in this subsection
+comes from the pricing spike's *diagnostic*, not from a predicate. It reflows
+each candidate paragraph on its own under six gap patterns, reparses it
+standalone, and records whether the block CST changed. So it counts **observed
+standalone block-shape hazards**, and it has the GFM blind spots
+`docs/a2-inline-price.md` names: a paragraph is judged outside the document that
+contains it, and only against shapes tree-sitter models. It is a sound lower
+bound on where reflow is dangerous and a fair basis for comparing rungs to each
+other, which is all it is used for below. It is **not** the set an implemented
+A2.1 `refusal()` rejects -- nobody has written that predicate yet, and its
+refused set will be measured, not predicted. Read every count here as pricing a
+decision, not as a commitment about eligibility.
+
 **Block safety stays in `refusal()`, not in `partition()`.** A1 already answers
 this question: `_ACQUIRES` refuses a paragraph when any atom could open a block,
 and that costs 30 paragraphs. The alternative is to bind a hazardous atom to its
-predecessor inside `partition()`, which would buy those 30 back along with the
-35 A2.1 refuses -- at the price of giving the one function that reads nothing
-but bytes a dependency on block-parse knowledge, mirrored byte-exactly in two
-runtimes.
+predecessor inside `partition()`, which would buy those 30 back along with
+something close to the 35 hazards A2.1 carries -- at the price of giving the one
+function that reads nothing but bytes a dependency on block-parse knowledge,
+mirrored byte-exactly in two runtimes. The decision stays **provisional in one
+respect**: it is right if A2.1's real refused set is near 35, and the first
+thing the slice should do is measure that set and say so here.
 
 The fact that would have changed it was A2.2's hazard rate: if emphasis pushed
 it to roughly a fifth of the slice, a predicate rule would be one written to be
@@ -266,7 +281,7 @@ with the same count, not earlier.
 
 **The corpus cannot gate this, and adding files to it would not help.** This is
 the one that inverted completely. The recommendation was to harvest real hazard
-paragraphs into `corpus/src/markdown` so the 35 would acquire a prettier
+paragraphs into `corpus/src/markdown` so those 35 would acquire a prettier
 reference, since only 11 of the 836 candidates are in the gated corpus at all
 and none of the 35 is.
 

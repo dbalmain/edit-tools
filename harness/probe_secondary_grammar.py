@@ -30,6 +30,19 @@ INLINE_BLOB = ROOT / "web" / "data" / "blobs" / "markdown_inline.blob.json"
 CLEAN = HARNESS / "fixtures" / "secondary-clean.md"
 DIRTY = HARNESS / "fixtures" / "secondary-dirty.md"
 
+# Both fixtures are one paragraph, so each has exactly one `inline` host range
+# spanning the whole line. Naming the outcome here rather than deriving it is
+# the point: a control that accepts whatever the producers agree on proves they
+# agree, not that either did the thing the control is named for. `secondary-
+# clean.md` must *attach*, and `secondary-dirty.md` must refuse with this exact
+# sentence -- so a refusal that starts firing on the clean fixture, or a
+# reworded diagnostic, fails here instead of quietly still matching itself.
+CLEAN_RANGES = [(0, 24)]
+DIRTY_MESSAGE = (
+    "secondary-dirty.md: secondary grammar markdown_inline "
+    "refused dirty inline range 0..28"
+)
+
 
 class Failed(Exception):
     pass
@@ -167,6 +180,16 @@ def main() -> int:
         if item["secondary"] != want_secondary:
             raise Failed(f"{case['source_file']}: rebased secondary CST differs")
         if case["ranges"] is not None:
+            # Not just the count: the *set*, per document. Equal totals across
+            # the corpus would survive one file attaching a range another file
+            # dropped, and the audited ranges are exactly the ones A2.1 will
+            # ask about, so a bijection is the claim worth making.
+            want = [tuple(pair) for pair in case["ranges"]]
+            got = sorted((e["start"], e["end"]) for e in item["secondary"])
+            if got != want:
+                raise Failed(
+                    f"{case['source_file']}: attached ranges {got} != audited {want}"
+                )
             compared += len(item["secondary"])
 
     # Agreement between two empty lists is agreement about nothing, and every
@@ -180,9 +203,24 @@ def main() -> int:
             "each range must produce exactly one"
         )
 
+    clean_secondary, clean_error = expected[-2]
+    if clean_error is not None:
+        raise Failed(f"clean fixture refused: {clean_error}")
+    got_ranges = [(entry["start"], entry["end"]) for entry in clean_secondary]
+    if got_ranges != CLEAN_RANGES:
+        raise Failed(
+            f"clean fixture attached {got_ranges}, expected {CLEAN_RANGES}"
+        )
+    # An `inline` root with no children parses anything and proves nothing; the
+    # fixture's emphasis span is what makes the attachment a syntax tree.
+    if not clean_secondary[0]["root"].get("children"):
+        raise Failed("clean fixture attached a childless inline root")
+
     dirty_error = expected[-1][1]
-    if dirty_error is None:
-        raise Failed("dirty fixture did not reach the secondary-root refusal")
+    if dirty_error != DIRTY_MESSAGE:
+        raise Failed(
+            f"dirty fixture said {dirty_error!r}, expected {DIRTY_MESSAGE!r}"
+        )
     print(
         f"secondary grammar: {compared}/{audited} audited ranges agree; "
         f"clean fixture agrees; dirty fixture refuses identically: {dirty_error}"

@@ -9,6 +9,14 @@ The floor is the whole point of the function. `node --test` exits 0 on a file
 containing no tests, so a return code alone cannot tell a passing suite from a
 suite that stopped being collected -- the failure this repo has already had in
 another runner, where the count went to zero and read as success forever after.
+
+The floor counts **assertions that passed**, not tests that were planned. TAP's
+`1..N` plan includes skipped and TODO tests, so a suite whose every body became
+`it.skip` keeps its plan, exits 0, and clears a plan-based floor while running
+nothing -- the same vacuous gate one level down. So this reads the `ok` lines,
+subtracts the ones carrying a `# SKIP` or `# TODO` directive, and refuses any
+skip outright: a suite that means to skip a case should delete it or fix it,
+and this repo has nowhere that a silently skipped JavaScript test is correct.
 """
 
 from __future__ import annotations
@@ -21,11 +29,17 @@ from pathlib import Path
 HARNESS = Path(__file__).resolve().parent
 
 
+# `ok 3 - name` / `not ok 3 - name`, with an optional trailing TAP directive.
+# Node indents subtests, hence the leading whitespace.
+_RESULT = re.compile(r"^\s*(not )?ok \d+(?: - .*)?$", re.MULTILINE)
+_DIRECTIVE = re.compile(r"#\s*(SKIP|TODO)\b", re.IGNORECASE)
+
+
 def assert_passed(case: unittest.TestCase, suite: str, minimum: int) -> None:
-    """Run `harness/<suite>` under `node --test`; fail unless it planned `minimum`.
+    """Run `harness/<suite>` under `node --test`; fail unless `minimum` passed.
 
     `minimum` is a floor rather than the exact count, so adding a test does not
-    break the caller -- but dropping the suite does.
+    break the caller -- but dropping the suite, or skipping its bodies, does.
     """
     result = subprocess.run(
         [
@@ -40,8 +54,14 @@ def assert_passed(case: unittest.TestCase, suite: str, minimum: int) -> None:
     )
     report = result.stdout + result.stderr
     case.assertEqual(result.returncode, 0, report)
-    # TAP's `1..N` plan counts the tests this non-isolated process actually
-    # collected; the pass summary can collapse to one line per file.
-    plan = re.search(r"^1\.\.(\d+)$", result.stdout, re.MULTILINE)
+    # The plan proves the file was collected at all; the `ok` lines prove its
+    # bodies ran. Both, because a missing plan and an empty plan differ.
+    plan = re.search(r"^\s*1\.\.(\d+)$", result.stdout, re.MULTILINE)
     case.assertIsNotNone(plan, report)
-    case.assertGreaterEqual(int(plan.group(1)), minimum, report)
+    lines = [m.group(0) for m in _RESULT.finditer(result.stdout)]
+    skipped = [line for line in lines if _DIRECTIVE.search(line)]
+    case.assertEqual(skipped, [], f"{suite}: skipped or TODO tests\n{report}")
+    passed = sum(1 for line in lines if not line.lstrip().startswith("not "))
+    case.assertGreaterEqual(
+        passed, minimum, f"{suite}: {passed} passed, floor is {minimum}\n{report}"
+    )

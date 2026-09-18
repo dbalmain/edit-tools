@@ -542,6 +542,29 @@ def wanted(symbol: str, grammars: list[str]) -> str | None:
     return min(grammars, key=len)
 
 
+def src_of(source_language: str, m, grammar_symbol: str | None = None) -> Path:
+    """The `src/` a primary or secondary grammar target resolves to.
+
+    This is target resolution, not recording: it answers "which of this
+    repository's grammars does that declaration name" using nothing but the
+    three primitives above. It lives here because three callers need it --
+    the scanner recorder, `web/gen.py` and `ts_check_all.py` -- and the other
+    two reaching through the *recorder* for it made web generation and
+    transcoding depend on a module that compiles C.
+    """
+    root = fetch(source_language, m.grammar)
+    found = parsers_in(root)
+    names = [str(p.parent.parent.relative_to(root)) or "." for p in found]
+    symbol = m.grammar_symbol if grammar_symbol is None else grammar_symbol
+    required = wanted(symbol, names)
+    for parser, name in zip(found, names):
+        if name == required:
+            return parser.parent
+    raise GrammarError(
+        f"{source_language}: grammar_symbol {symbol!r} names none of {names}"
+    )
+
+
 def survey_one(name: str, m, root: Path) -> list[dict]:
     found = parsers_in(root)
     if not found:

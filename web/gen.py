@@ -45,7 +45,6 @@ import review_ledger  # noqa: E402
 import score  # noqa: E402
 import ts_grammars as tg  # noqa: E402
 import ts_injections as tj  # noqa: E402
-import ts_scanner_record as rec  # noqa: E402
 import ts_secondaries as secondary  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -123,7 +122,7 @@ def blobs(manifests: dict[str, mf.Manifest]) -> set[str]:
     done = set()
     for name, target in sorted(mf.grammar_targets(manifests).items()):
         m = manifests[target.source_language]
-        src = rec.grammar_src(target.source_language, m, target.grammar_symbol)
+        src = tg.src_of(target.source_language, m, target.grammar_symbol)
         cmd = [str(ROOT / "harness" / "ts_transcode.py"), str(src / "parser.c"),
                "-o", str(out / f"{name}.blob.json")]
         scanner = ROOT / "harness" / "scanners" / f"{name}.svm"

@@ -48,7 +48,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import manifest as mf  # noqa: E402
 import ts_grammars as tg  # noqa: E402
 import ts_injections as tj  # noqa: E402
-import ts_scanner_record as rec  # noqa: E402
 import ts_secondaries as secondary  # noqa: E402
 
 HARNESS = Path(__file__).resolve().parent
@@ -64,7 +63,7 @@ def run(*cmd: str) -> tuple[int, str]:
 def transcode(target: mf.GrammarTarget, m, out: Path) -> list[str]:
     """Write `<out>/<language>.blob.json`, or say why it could not be written."""
     language = target.name
-    src = rec.grammar_src(target.source_language, m, target.grammar_symbol)
+    src = tg.src_of(target.source_language, m, target.grammar_symbol)
     cmd = [HARNESS / "ts_transcode.py", src / "parser.c",
            "-o", out / f"{language}.blob.json"]
     svm = SCANNERS / f"{language}.svm"
