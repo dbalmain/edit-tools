@@ -218,6 +218,78 @@ bundling them would have very nearly doubled what every markdown page loads.
 holds the loader to it, because the probe compares the CSTs the two producers
 build and cannot see a fetch that does not happen.
 
+### A2.1's three decisions, and the two checks that overturned them
+
+Agreed 18 September, after counting rather than reasoning. Each question was put
+with a recommendation and a named fact that would change it; two of the three
+facts held, and changed it.
+
+**Code spans and links go in together.** The argument for deferring links was
+that a link has interior structure -- `link_label`, `link_destination`,
+`link_title` -- and a destination that must never break at a gap. That argument
+is wrong: protecting a link whole is the *identical* operation to protecting a
+code span whole. One contiguous range from the secondary CST becomes one atom
+and the walk does not descend, which is the same line of code for both. Links
+are 22 of the 836 candidates, so the payoff was never the question.
+
+What the measurement did find is a capability A2.1 needs regardless. A1's
+widest atom across the whole repository is **24 bytes**, and not one exceeds
+40, so an unbreakable atom wider than the wrap has never occurred. Code spans
+introduce it -- 5 of 2,352 exceed 80 columns, the widest 111 bytes -- and links
+introduce it at a hundred times the rate: **5 of 21, with a median width of 56
+against a code span's 12**. So the over-width atom is forced by code spans
+whether or not links are admitted, and admitting links is what makes the case
+common enough to design against instead of discovering later.
+
+| Protected range | Count | Median | p90 | Max | Over 80 cols |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| A1 atom (today) | 10,216 | 5 | 9 | 24 | 0 |
+| `code_span` | 2,352 | 12 | 26 | 111 | 5 |
+| `inline_link` | 21 | 56 | 102 | 118 | 5 |
+| `uri_autolink` | 1 | 126 | 126 | 126 | 1 |
+
+**Block safety stays in `refusal()`, not in `partition()`.** A1 already answers
+this question: `_ACQUIRES` refuses a paragraph when any atom could open a block,
+and that costs 30 paragraphs. The alternative is to bind a hazardous atom to its
+predecessor inside `partition()`, which would buy those 30 back along with the
+35 A2.1 refuses -- at the price of giving the one function that reads nothing
+but bytes a dependency on block-parse knowledge, mirrored byte-exactly in two
+runtimes.
+
+The fact that would have changed it was A2.2's hazard rate: if emphasis pushed
+it to roughly a fifth of the slice, a predicate rule would be one written to be
+deleted. It does not. Emphasis is **10.5% hazardous** on its own increment (83
+of 791) and **7.3%** cumulatively (118 of 1,627), and the rate then *falls* to
+5.5% once A2.3 admits non-ASCII. Two and a half times A2.1's rate is a real
+rise and not a reason to build the harder mechanism first. Revisit it at A2.2
+with the same count, not earlier.
+
+**The corpus cannot gate this, and adding files to it would not help.** This is
+the one that inverted completely. The recommendation was to harvest real hazard
+paragraphs into `corpus/src/markdown` so the 35 would acquire a prettier
+reference, since only 11 of the 836 candidates are in the gated corpus at all
+and none of the 35 is.
+
+The reference does not exist to acquire. `harness/languages/markdown.toml` pins
+`prettier@3.9.6` with no `--prose-wrap` flag, so the reference is generated at
+prettier's default `proseWrap=preserve` -- and the generated
+`markdown__prose_wrap@40.txt` is byte-identical to its source, as is
+`markdown__links@40.txt`. A reference
+that reproduces its input cannot say whether a reflow is correct. Worse, every
+paragraph A2.1 reflows would register against it as a divergence needing a
+ledger entry, so harvesting hazards into the corpus manufactures exactly the
+accepted-divergence rows the manifest already carries one of. Flipping the pin
+to `always` is not the escape: roadmap step 2 measured it at 27/32 agreement
+falling to 8/32, with gate 3 rejecting 20 reference outputs.
+
+So A2.1 is proved the way A1 was, by the repository sweep in
+`harness/probe_prose.py` -- which is where 98.7% of the evidence lives anyway.
+Corpus files would still earn gates 0 through 3, which are reference-free and
+compare the two runtimes to each other rather than to prettier; what they cannot
+earn is an agreement number. That distinction is worth stating because the
+scoreboard everyone reads is the agreement one, and for prose it is structurally
+silent.
+
 ## Inputs and ownership
 
 The projection takes the original UTF-8 source, its clean block CST, a clean
