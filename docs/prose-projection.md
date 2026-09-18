@@ -168,7 +168,7 @@ refusals, **2,532 hold nothing outside the safe inline subset**, so a real
 inline grammar reaches 3,068 paragraphs where treating every `inline token`
 verdict as eligible predicted 3,089 -- an approximation that overshot by 21.
 
-| Slice | Scope | Total eligible |
+| Slice | Scope | Eligibility ceiling |
 | --- | --- | --- |
 | A1 today | plain words, block grammar alone | 536 (10.6%) |
 | **A2.0** | parse and retain an inline CST beside the block tree; nothing reads it | 536, deliberately unchanged |
@@ -206,9 +206,30 @@ this is usable at all.
 `harness/languages/markdown.toml` declares it, `gen_trees.secondary_trees` and
 `harness/ts_secondary.mjs` implement it for the two producers, and
 `harness/probe_secondary_grammar.py` gates their agreement on all 2,553 audited
-ranges. It is invisible by construction: every reference output and every frozen
-block tree is byte-identical across it, and the only change to a committed tree
-is the added `secondary` field.
+ranges. Every reference output and every frozen block tree is byte-identical
+across it, and the only change to a committed tree is the added `secondary`
+field.
+
+**It is not yet invisible, and that is a known defect.** A secondary parse that
+finds an ERROR or MISSING currently *throws*, and `web/js/lang.js` calls the
+attachment on the browser format path -- so a document whose block parse is
+clean but whose paragraph text the inline grammar refuses stops formatting,
+where before A2.0 it formatted. That contradicts this section's own claim and
+contradicts the policy `harness/ts_inject.mjs` already states for guest
+languages, where a region that will not parse stays verbatim and the document is
+unaffected. The fix is scheduled ahead of A2.1: a dirty range must cost that
+range and nothing more.
+
+How reachable is it? **Once in 459,888.** Sweeping every `inline` range of every
+markdown file under `~/w` that parses cleanly as a block -- 10,346 files -- the
+inline grammar refuses exactly one, and it is
+`harness/fixtures/secondary-dirty.md`, which was hand-built to be refused. Nor
+is the half-typed buffer a route: every one of the 137 prefixes of a
+construct-dense test paragraph parses clean, the inline grammar having no
+required closers. So this is a correctness defect on a path that real input
+appears never to take -- which is an argument about urgency and none at all
+about whether to fix it. A state that occurs once in 459,888 is precisely the
+one that will be untested and wrong when it does occur.
 
 Its exit criterion was the browser payload, and the answer is that the inline
 table ships as its own asset, fetched only by a document that holds an `inline`
@@ -261,15 +282,36 @@ A2.1 `refusal()` rejects -- nobody has written that predicate yet, and its
 refused set will be measured, not predicted. Read every count here as pricing a
 decision, not as a commitment about eligibility.
 
-**Block safety stays in `refusal()`, not in `partition()`.** A1 already answers
+**Block safety stays in `refusal()`, not in `partition()` -- but see the
+contradiction below, which is not yet resolved.** A1 already answers
 this question: `_ACQUIRES` refuses a paragraph when any atom could open a block,
 and that costs 30 paragraphs. The alternative is to bind a hazardous atom to its
 predecessor inside `partition()`, which would buy those 30 back along with
 something close to the 35 hazards A2.1 carries -- at the price of giving the one
 function that reads nothing but bytes a dependency on block-parse knowledge,
-mirrored byte-exactly in two runtimes. The decision stays **provisional in one
-respect**: it is right if A2.1's real refused set is near 35, and the first
-thing the slice should do is measure that set and say so here.
+mirrored byte-exactly in two runtimes.
+
+> **Contradicted, 19 September, and left open rather than papered over.** This
+> heading and `docs/a2-inline-price.md` specify *opposite* mechanisms for the
+> same slice. The pricing report scopes A2.1 as "select only gaps which also
+> preserve the block parse, **coalescing across hazardous ones**", and calls
+> block-safe coalescing "already required here". This section says block safety
+> stays in `refusal()` and defers coalescing to A2.2. Both statements landed in
+> the same thirteen commits, and a review reading them against each other is how
+> it was found.
+>
+> It is load-bearing, not cosmetic: the ceiling above -- A2.1 at 1,372 / 27.1%
+> -- keeps the 35 hazardous paragraphs under coalescing and loses them under
+> refusal. That is why the column is headed *ceiling* and not *total eligible*.
+>
+> **The honest state is undecided.** The measurement that appeared to settle it
+> does not discriminate between the two mechanisms: the diagnostic counts
+> standalone block-shape hazards, and both refusing a paragraph and coalescing
+> its gap remove exactly the same hazards from the output. A2.1 should build the
+> predicate first, measure what it actually refuses, and settle this against
+> that number. If it lands near 35, refusal is right and cheap; if it lands much
+> larger, `partition()`'s lexical purity is being bought at a price nobody has
+> priced.
 
 The fact that would have changed it was A2.2's hazard rate: if emphasis pushed
 it to roughly a fifth of the slice, a predicate rule would be one written to be

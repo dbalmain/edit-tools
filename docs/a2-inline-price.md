@@ -484,6 +484,17 @@ including internal spaces/delimiters; admit grammar-confirmed literal
 punctuation; retain the ASCII-only policy. Select only gaps which also preserve
 the block parse, coalescing across hazardous ones.
 
+> **Contradicted, 19 September.** `docs/prose-projection.md` specifies the
+> opposite mechanism for this slice -- refuse the hazardous paragraph, and
+> defer coalescing to A2.2 -- and says so in a bolded heading. Both documents
+> landed in the same thirteen commits. The sentence above is left as the spike
+> wrote it, because this report is a dated record of what was recommended and
+> not a live specification; the live one is `docs/prose-projection.md`, where
+> the question is now recorded as open. Neither mechanism is chosen yet, and
+> the measurement below does not choose between them: refusing the paragraph
+> and coalescing its gap remove the same hazards from the output, so the
+> hazard count prices both equally.
+
 Payoff ceiling under the measured definitions: 839 construct-safe candidates, or
 **836 with at least one useful candidate gap**, taking total eligibility from
 536 to **1,372 / 27.1%**. Thirty-five paragraphs in this subset fail the

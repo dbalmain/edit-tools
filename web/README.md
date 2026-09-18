@@ -87,6 +87,13 @@ roots are retained *beside* that tree rather than spliced into it. Nothing reads
 the second parse yet -- it is the foundation the prose projection will check
 candidate line breaks against. `docs/prose-projection.md` is where that goes.
 
+One caveat, until it is fixed: nothing reads the second parse, but the second
+parse can still *refuse*. A dirty inline range throws rather than being recorded
+and skipped, so it can stop a document formatting that formatted before. That is
+a known defect scheduled ahead of A2.1, and it is not what a fenced code block
+does -- a guest language that will not parse leaves its fence verbatim and the
+page formats normally.
+
 It is a separate asset on purpose: `data/blobs/markdown_inline.blob.json` is
 440 KB raw and 43 KB gzipped, against 50 KB gzipped for markdown's own block
 table. Bundling the two would very nearly double what every markdown page loads,
