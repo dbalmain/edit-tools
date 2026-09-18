@@ -244,6 +244,23 @@ appears never to take -- which is an argument about urgency and none at all
 about whether to fix it. A state that occurs once in 459,888 is precisely the
 one that will be untested and wrong when it does occur.
 
+**What is not established is what it costs to run.** Secondary attachment sits
+on the browser's *general* parse path: `web/js/lang.js:99` is reached from
+`web/js/markdown.js`, which schedules a reparse when the editor opens and again
+after 150 ms of editing quiet. So every inline range in the buffer is parsed on
+every reparse, while the rendering caller still consumes only the block tree --
+work with no consumer, repeated as the user types. The pricing spike measured
+80-300 ms for the candidate ranges of larger files and says in terms that this
+is **not** evidence about per-keystroke reparsing; the shipped path is wider
+still, covering every matching range rather than the candidates.
+
+No regression has been measured, so this is not a defect yet -- it is the one
+claim in A2.0 with nothing behind it. The measurement that would settle it is
+incremental main-thread time and input delay with attachment on versus off
+during real editing, not another agreement sweep. Worth taking before A2.1
+adds a consumer, because after that the cost stops being optional and the
+baseline is gone.
+
 Its exit criterion was the browser payload, and the answer is that the inline
 table ships as its own asset, fetched only by a document that holds an `inline`
 node -- 43 KB gzipped against the 50 KB of markdown's own block table, so
@@ -305,16 +322,25 @@ function that reads nothing but bytes a dependency on block-parse knowledge,
 mirrored byte-exactly in two runtimes.
 
 > **That cost was overstated, and the correction is recorded here rather than
-> quietly applied.** Coalescing needs no block-parse knowledge that A1 does not
-> already have. The knowledge is `_ACQUIRES`, a pure byte regex over
-> whitespace-split atoms, already used by `refusal()` and already mirrored
-> character-for-character at `harness/prose.mjs:47`. Both options read the same
-> rule; they differ only in what they do with it -- refuse the paragraph, or
-> bind the atom to its predecessor. What coalescing *does* cost is a
-> representation: `partition()` emits strictly alternating atom/gap children and
-> the runtime checks they abut, so a gap that must never break needs a shape
-> neither the package format nor either runtime has today. That is real work,
-> and it is a different objection from the one this paragraph made.
+> quietly applied.** Coalescing needs no *parse* knowledge A1 does not already
+> have. The knowledge is `_ACQUIRES`, a lexical check over whitespace-split
+> atoms, already used by `refusal()` and already mirrored at
+> `harness/prose.mjs:47`. It reads no CST. Both options consult the same rule
+> and differ only in what they do with it -- refuse the paragraph, or bind the
+> atom to its predecessor. What coalescing *does* cost is a representation:
+> `partition()` emits strictly alternating atom/gap children and the runtime
+> checks they abut, so a gap that must never break has no shape in the package
+> format or either runtime. That is real work, and a different objection from
+> the one this paragraph made.
+>
+> An earlier wording here called `_ACQUIRES` a *byte* regex. It is not: it is
+> compiled from a `str` with `re.UNICODE`, raises `TypeError` on a `bytes`
+> input, and its `\d` matches Unicode `Nd`, so `١.` matches. That is
+> unreachable today only because the ASCII decode and the `SAFE` walk run
+> first. It is also **prefix-matching**, not anchored: `1.2`, `-foo` and
+> `0.5.1,` all match, so version numbers and ordinary sentence-final figures
+> count as block-openers. Neither fact changes the argument above -- the check
+> is still lexical -- but both inflate any count taken from it.
 
 > **Contradicted, 19 September, and left open rather than papered over.** This
 > heading and `docs/a2-inline-price.md` specify *opposite* mechanisms for the
