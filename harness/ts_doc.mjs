@@ -44,10 +44,12 @@ export function parseRoot(blob, source) {
   return convert(lang, { subtree: root, alias: 0, start: startByte, field: null }, source);
 }
 
-// A secondary grammar is required to refuse dirty roots rather than attach a
-// plausible-looking partial CST. `errorCost` includes ERROR and MISSING
-// descendants even when a missing symbol is invisible, so it is the browser
-// equivalent of native tree-sitter's `root_node.has_error`.
+// A secondary grammar must never attach a plausible-looking partial CST, so
+// this *detects* dirtiness and leaves the caller to record it: `ts_secondary`
+// writes an `outcome: "dirty"` entry with no tree, rather than refusing the
+// document. `errorCost` includes ERROR and MISSING descendants even when a
+// missing symbol is invisible, so it is the browser equivalent of native
+// tree-sitter's `root_node.has_error`.
 export function parseRootWithStatus(blob, source) {
   const { lang, root, startByte } = parse(blob, source);
   return {

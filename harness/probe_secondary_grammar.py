@@ -231,11 +231,31 @@ def main() -> int:
     # an unparseable range indistinguishable from a range that was never there.
     if "root" in dirty_secondary[0]:
         raise Failed("dirty fixture attached a tree it could not parse")
-    if gen_trees.dirty_ranges(dirty_secondary, DIRTY.name) != [
+    want_policy = [
         f"{DIRTY.name}: secondary grammar markdown_inline "
         f"refused dirty inline range {DIRTY_RANGES[0][0]}..{DIRTY_RANGES[0][1]}"
-    ]:
+    ]
+    if gen_trees.dirty_ranges(dirty_secondary, DIRTY.name) != want_policy:
         raise Failed("the corpus dirty-range policy did not name the dirty range")
+
+    # The other half, and the one that matters more: the *general* parse API
+    # must not apply that policy. `parse_doc` is what gate 2's re-parse and the
+    # review page call, and a `problems` entry is a document failure to both --
+    # so a dirty range reaching `problems` would put back exactly the asymmetry
+    # the outcome table removed, with the browser tolerating a range the native
+    # consumers refuse. Asserted on the fixture that actually is dirty.
+    parsed, parse_problems = gen_trees.parse_doc(
+        markdown, DIRTY.read_bytes(), DIRTY.name, manifests, parsers
+    )
+    if parse_problems:
+        raise Failed(
+            f"parse_doc refused a dirty secondary range: {parse_problems}"
+        )
+    if outcomes(parsed.get("secondary", [])) != want_dirty:
+        raise Failed(
+            "parse_doc dropped the dirty outcome instead of reporting it: "
+            f"{outcomes(parsed.get('secondary', []))}"
+        )
 
     if outcomes(mixed_secondary) != MIXED_OUTCOMES:
         raise Failed(

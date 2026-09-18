@@ -314,8 +314,14 @@ def parse_doc(
         aliases=mf.injection_map(manifests),
         parsers=parsers,
     )
+    # No `dirty_ranges` here. `parse_doc` is the general parse API -- gate 2's
+    # re-parse and the review page both call it -- and a `problems` entry is a
+    # document failure to every one of them. Adding the artifact rule here would
+    # keep exactly the defect this outcome table removed, moved one level up:
+    # the browser tolerating a dirty range while the native consumers refuse the
+    # document. The rule belongs to whoever writes a committed artifact, and
+    # `main` applies it there.
     secondary = secondary_trees(m, source, block_root, parsers, source_file)
-    problems.extend(dirty_ranges(secondary, source_file))
     doc = {
         "language": m.name,
         "source_file": source_file,
@@ -358,9 +364,13 @@ def main() -> int:
             seen[key] = path
 
             source = path.read_bytes()
-            doc, problems = parse_doc(
-                m, source, str(path.relative_to(ROOT)), known, parsers
-            )
+            rel = str(path.relative_to(ROOT))
+            doc, problems = parse_doc(m, source, rel, known, parsers)
+            # The artifact rule, applied where artifacts are written and nowhere
+            # else: a frozen tree is a reference, and a reference built from
+            # syntax nobody could parse is not one. A live editor buffer is
+            # under no such obligation.
+            problems = problems + dirty_ranges(doc.get("secondary", []), rel)
             if problems:
                 failures.extend(problems)
                 continue

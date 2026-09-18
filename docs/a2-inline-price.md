@@ -462,6 +462,16 @@ and the block-safe-gap work behind one verb. Cut it this way:
 
 ### A2.0 — secondary grammar foundation, invisible
 
+> **Corrected 19 September.** "Reject dirty roots" was implemented literally
+> and was wrong. A dirty secondary parse threw, which let A2.0 stop a document
+> formatting that formatted before it existed -- the opposite of the word
+> *invisible* in this heading. What ships instead is a total outcome table:
+> the dirty root is detected exactly as described and then *recorded*,
+> `outcome: "dirty"` with no tree, costing that range and nothing more.
+> Refusing a whole artifact over one is a corpus policy and lives with the
+> corpus writer. The scope line above is left as the spike wrote it, this
+> report being a dated record; `docs/prose-projection.md` is the live one.
+
 Scope: formalise a secondary-grammar declaration; retain the experimental inline
 scanner after review/fuzz; generate/load the inline blob; add cached
 native/browser second-pass orchestration over contiguous `inline` slices; reject

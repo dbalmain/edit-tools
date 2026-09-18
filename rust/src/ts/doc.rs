@@ -62,8 +62,38 @@ fn is_false(flag: &bool) -> bool {
 /// projection can consult both grammars at one gap. See
 /// `harness/ts_secondary.mjs`, which writes this shape, and `gen_trees.py`,
 /// which froze it. Field order here is the serialised key order, as above.
+/// Whether a host range's parse produced a tree worth trusting.
+///
+/// Two states, and only two. The array is total -- every host range the
+/// declaration matches gets a record -- so this is what separates "parsed and
+/// trustworthy" from "parsed and not". A host range with *no* record is a
+/// producer bug, and must never be read as ordinary dirtiness.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Outcome {
+    Clean,
+    Dirty,
+}
+
+/// The deserialisation shadow of [`TreeSecondary`]: the same fields, with no
+/// invariant. It exists only because serde cannot express "root is present
+/// exactly when clean" on a struct, and a tagged enum would reorder the keys
+/// away from the frozen files' byte order. Nothing constructs it directly --
+/// `try_from` turns one into a `TreeSecondary` or rejects it.
 #[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
+struct TreeSecondaryWire {
+    language: String,
+    within: String,
+    start: usize,
+    end: usize,
+    outcome: Outcome,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    root: Option<TreeNode>,
+}
+
+#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(try_from = "TreeSecondaryWire")]
 pub struct TreeSecondary {
     /// The secondary grammar's manifest name -- `markdown_inline`, not the
     /// host's `markdown`.
@@ -72,17 +102,45 @@ pub struct TreeSecondary {
     pub within: String,
     pub start: usize,
     pub end: usize,
-    /// `"clean"` or `"dirty"`. The array is total -- every host range the
-    /// declaration matches gets a record -- so this is what separates "parsed
-    /// and trustworthy" from "parsed and not". A host range with no record at
-    /// all is a producer bug, and must never be read as ordinary dirtiness.
-    pub outcome: String,
-    /// Present exactly when `outcome` is `"clean"`. A dirty range is recorded
-    /// without a tree rather than omitted, because omitting it would make it
-    /// indistinguishable from a range that was never a host range.
+    pub outcome: Outcome,
+    /// Present exactly when `outcome` is [`Outcome::Clean`] -- enforced on the
+    /// way in, not merely documented. A dirty range is recorded without a tree
+    /// rather than omitted, because omitting it would make it indistinguishable
+    /// from a range that was never a host range.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub root: Option<TreeNode>,
 }
+
+impl TryFrom<TreeSecondaryWire> for TreeSecondary {
+    type Error = String;
+
+    fn try_from(wire: TreeSecondaryWire) -> Result<Self, Self::Error> {
+        match (wire.outcome, &wire.root) {
+            (Outcome::Clean, None) => {
+                return Err(format!(
+                    "{}:{}..{}: clean outcome with no root",
+                    wire.language, wire.start, wire.end
+                ))
+            }
+            (Outcome::Dirty, Some(_)) => {
+                return Err(format!(
+                    "{}:{}..{}: dirty outcome carrying a root",
+                    wire.language, wire.start, wire.end
+                ))
+            }
+            _ => {}
+        }
+        Ok(Self {
+            language: wire.language,
+            within: wire.within,
+            start: wire.start,
+            end: wire.end,
+            outcome: wire.outcome,
+            root: wire.root,
+        })
+    }
+}
+
 
 /// The whole document: one frozen `.tree.json` file.
 #[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -122,6 +180,42 @@ mod tests {
             .parent()
             .expect("rust/ has a parent")
             .to_path_buf()
+    }
+
+    /// The clean/dirty invariant is enforced, not merely documented.
+    ///
+    /// `outcome` is an enum, so `"banana"` cannot deserialise; the two
+    /// half-states can, as far as serde is concerned, which is why they go
+    /// through `try_from`. Round three of the review found this struct
+    /// accepting all three, and "Rust only round-trips the field today" is a
+    /// reason to fix it before something reads it, not a reason to wait.
+    #[test]
+    fn a_secondary_record_must_carry_a_tree_exactly_when_clean() {
+        let base = r#"{"language":"markdown_inline","within":"inline","start":0,"end":2"#;
+        let leaf = r#","root":{"type":"inline","start":0,"end":2,"text":"ab"}"#;
+
+        let clean: TreeSecondary =
+            serde_json::from_str(&format!(r#"{base},"outcome":"clean"{leaf}}}"#))
+                .expect("clean with a root is the whole point");
+        assert_eq!(clean.outcome, Outcome::Clean);
+        assert!(clean.root.is_some());
+
+        let dirty: TreeSecondary =
+            serde_json::from_str(&format!(r#"{base},"outcome":"dirty"}}"#))
+                .expect("dirty without a root is the other point");
+        assert_eq!(dirty.outcome, Outcome::Dirty);
+        assert!(dirty.root.is_none());
+
+        for (json, why) in [
+            (format!(r#"{base},"outcome":"clean"}}"#), "clean with no root"),
+            (format!(r#"{base},"outcome":"dirty"{leaf}}}"#), "dirty with a root"),
+            (format!(r#"{base},"outcome":"banana"{leaf}}}"#), "an outcome that is neither"),
+        ] {
+            assert!(
+                serde_json::from_str::<TreeSecondary>(&json).is_err(),
+                "{why} deserialised, and must not"
+            );
+        }
     }
 
     /// Every frozen tree in the corpus, round-tripped through the Rust
