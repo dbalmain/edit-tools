@@ -33,6 +33,9 @@ for (const item of cases) {
         wanted === null || wanted.has(`${entry.start}:${entry.end}`)),
       error: null,
     });
+    // A dirty range is an outcome now, so nothing below throws for one. What
+    // still reaches the catch is infrastructure failure -- a missing table --
+    // which the Python side never produces, so any catch here is a divergence.
   } catch (error) {
     out.push({ secondary: [], error: error.message });
   }

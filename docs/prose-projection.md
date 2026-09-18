@@ -210,15 +210,28 @@ ranges. Every reference output and every frozen block tree is byte-identical
 across it, and the only change to a committed tree is the added `secondary`
 field.
 
-**It is not yet invisible, and that is a known defect.** A secondary parse that
-finds an ERROR or MISSING currently *throws*, and `web/js/lang.js` calls the
-attachment on the browser format path -- so a document whose block parse is
-clean but whose paragraph text the inline grammar refuses stops formatting,
-where before A2.0 it formatted. That contradicts this section's own claim and
-contradicts the policy `harness/ts_inject.mjs` already states for guest
-languages, where a region that will not parse stays verbatim and the document is
-unaffected. The fix is scheduled ahead of A2.1: a dirty range must cost that
-range and nothing more.
+**It is invisible now. It was not when this section first claimed it.** A
+secondary parse that found an ERROR or MISSING used to *throw*, and
+`web/js/lang.js` calls the attachment on the browser format path -- so a
+document whose block parse was clean but whose paragraph text the inline grammar
+refused stopped formatting, where before A2.0 it formatted. That contradicted
+this section's own claim, and it contradicted the policy
+`harness/ts_inject.mjs` has always stated for guest languages: a region that
+will not parse stays verbatim and the document is unaffected.
+
+Paragraph text now gets the same treatment, through a **total outcome table**.
+Every host range the declaration matches gets exactly one record --
+`outcome: "clean"` carrying a rebased tree, or `outcome: "dirty"` carrying none
+-- so a dirty range costs that range and nothing else. Totality is the part
+worth keeping: it lets a reader tell *no host range here* from *a range I could
+not parse* from *a range with no record at all*, and only the third is a
+producer bug. Omitting dirty ranges instead would have collapsed the first two,
+and A2.1's whole question is per-paragraph. Infrastructure still throws -- a
+missing parse table means the declared pipeline could not run, which is a
+different claim from one untrustworthy paragraph -- and both producers publish
+the complete array or nothing. `harness/fixtures/secondary-mixed.md` holds a
+clean-dirty-clean document proving the middle range neither erases the outcome
+before it nor stops the walk reaching the one after.
 
 How reachable is it? **Once in 459,888.** Sweeping every `inline` range of every
 markdown file under `~/w` that parses cleanly as a block -- 10,346 files -- the
@@ -290,6 +303,18 @@ predecessor inside `partition()`, which would buy those 30 back along with
 something close to the 35 hazards A2.1 carries -- at the price of giving the one
 function that reads nothing but bytes a dependency on block-parse knowledge,
 mirrored byte-exactly in two runtimes.
+
+> **That cost was overstated, and the correction is recorded here rather than
+> quietly applied.** Coalescing needs no block-parse knowledge that A1 does not
+> already have. The knowledge is `_ACQUIRES`, a pure byte regex over
+> whitespace-split atoms, already used by `refusal()` and already mirrored
+> character-for-character at `harness/prose.mjs:47`. Both options read the same
+> rule; they differ only in what they do with it -- refuse the paragraph, or
+> bind the atom to its predecessor. What coalescing *does* cost is a
+> representation: `partition()` emits strictly alternating atom/gap children and
+> the runtime checks they abut, so a gap that must never break needs a shape
+> neither the package format nor either runtime has today. That is real work,
+> and it is a different objection from the one this paragraph made.
 
 > **Contradicted, 19 September, and left open rather than papered over.** This
 > heading and `docs/a2-inline-price.md` specify *opposite* mechanisms for the

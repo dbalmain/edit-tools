@@ -11,6 +11,12 @@
 // Both producers return the same `secondary` array whether the table was
 // loaded once, eagerly, or not at all, and the probe compares only the array.
 // So the loader is counted here instead.
+//
+// The dirty-range policy is deliberately *not* unit-tested here. Deciding it
+// requires a real parse, and a stub blob cannot produce one -- the probe's
+// `secondary-mixed.md` covers it instead, clean-dirty-clean through both
+// producers with the real tables, which is a stronger claim than this file
+// could make with a fake.
 
 import test from "node:test";
 import assert from "node:assert/strict";

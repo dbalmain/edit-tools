@@ -72,7 +72,16 @@ pub struct TreeSecondary {
     pub within: String,
     pub start: usize,
     pub end: usize,
-    pub root: TreeNode,
+    /// `"clean"` or `"dirty"`. The array is total -- every host range the
+    /// declaration matches gets a record -- so this is what separates "parsed
+    /// and trustworthy" from "parsed and not". A host range with no record at
+    /// all is a producer bug, and must never be read as ordinary dirtiness.
+    pub outcome: String,
+    /// Present exactly when `outcome` is `"clean"`. A dirty range is recorded
+    /// without a tree rather than omitted, because omitting it would make it
+    /// indistinguishable from a range that was never a host range.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub root: Option<TreeNode>,
 }
 
 /// The whole document: one frozen `.tree.json` file.

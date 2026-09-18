@@ -230,38 +230,71 @@ def secondary_trees(
     block_root: dict,
     parsers: dict,
     source_file: str,
-) -> tuple[list[dict], list[str]]:
-    """Parse each manifest-declared contiguous range into a parallel CST."""
+) -> list[dict]:
+    """One outcome per manifest-declared contiguous range.
+
+    **Total, and that is the point.** Every host range the declaration matches
+    gets exactly one record, `outcome: "clean"` carrying a `root` or
+    `outcome: "dirty"` carrying none. So a reader can tell three things apart
+    that a list of successes collapses into two: there is no host range here;
+    there is one and its tree is trustworthy; there is one and it is not. A
+    host range with *no* record is then a producer bug rather than an ordinary
+    dirty parse, which is the distinction A2.1 needs when it asks whether it
+    may reflow a given paragraph.
+
+    A dirty parse is an outcome, not an error. It costs that range and nothing
+    else -- the same policy `ts_inject.mjs` has always applied to a guest
+    language that will not parse, where the region stays verbatim and the
+    document formats normally. Refusing the whole document instead would mean
+    A2.0 could stop a buffer formatting that formatted before it existed.
+
+    What still raises is infrastructure: a missing parser, an undeclared
+    grammar, a routing error. Those mean the declared pipeline could not run at
+    all, which is not the same claim as "this paragraph is untrustworthy".
+    Artifact-quality policy -- whether a *corpus* file is allowed to contain a
+    dirty range -- belongs to the caller, not here; `parse_doc` applies it.
+    """
     out: list[dict] = []
-    problems: list[str] = []
     for grammar in m.secondary_grammars:
         parser = parsers[grammar.name]
         for node in _host_nodes(block_root, grammar.within):
             start, end = node["start"], node["end"]
             tree = parser.parse(source[start:end])
+            entry = {
+                "language": grammar.name,
+                "within": grammar.within,
+                "start": start,
+                "end": end,
+            }
             if tree.root_node.has_error:
-                problems.append(
-                    f"{Path(source_file).name}: secondary grammar "
-                    f"{grammar.name} refused dirty {grammar.within} range "
-                    f"{start}..{end}"
+                entry["outcome"] = "dirty"
+            else:
+                entry["outcome"] = "clean"
+                entry["root"] = convert(
+                    tree.root_node,
+                    source[start:end],
+                    None,
+                    base=start,
+                    outer_source=source,
                 )
-                continue
-            out.append(
-                {
-                    "language": grammar.name,
-                    "within": grammar.within,
-                    "start": start,
-                    "end": end,
-                    "root": convert(
-                        tree.root_node,
-                        source[start:end],
-                        None,
-                        base=start,
-                        outer_source=source,
-                    ),
-                }
-            )
-    return out, problems
+            out.append(entry)
+    return out
+
+
+def dirty_ranges(secondary: list[dict], source_file: str) -> list[str]:
+    """The corpus's artifact-quality policy, stated where it is applied.
+
+    A committed tree may not carry a dirty range: the frozen corpus is a
+    reference, and a reference built from syntax nobody could parse is not one.
+    A live editor buffer is under no such obligation, which is why this is a
+    caller's rule and not `secondary_trees`'.
+    """
+    return [
+        f"{Path(source_file).name}: secondary grammar {entry['language']} "
+        f"refused dirty {entry['within']} range {entry['start']}..{entry['end']}"
+        for entry in secondary
+        if entry["outcome"] == "dirty"
+    ]
 
 
 def parse_doc(
@@ -281,10 +314,8 @@ def parse_doc(
         aliases=mf.injection_map(manifests),
         parsers=parsers,
     )
-    secondary, secondary_problems = secondary_trees(
-        m, source, block_root, parsers, source_file
-    )
-    problems.extend(secondary_problems)
+    secondary = secondary_trees(m, source, block_root, parsers, source_file)
+    problems.extend(dirty_ranges(secondary, source_file))
     doc = {
         "language": m.name,
         "source_file": source_file,

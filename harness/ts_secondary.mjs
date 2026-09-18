@@ -28,12 +28,26 @@ function rebase(node, by) {
 }
 
 /**
- * Parse and attach every required secondary range.
+ * Parse every required secondary range and attach one outcome for each.
  *
  * `load(name, blob)` is called at most once per site, and only for a site the
  * document actually reaches -- so in a browser it is a fetch this document
- * needed. Missing tables and dirty roots are then hard refusals: where the
- * declaration applies it promises syntax, not an optional enhancement.
+ * needed. A missing table is still a hard refusal: where the declaration
+ * applies, the table is mandatory and its absence means the declared pipeline
+ * could not run at all.
+ *
+ * A **dirty parse is not**. It is recorded as `outcome: "dirty"` and costs that
+ * range alone, mirroring the rule `ts_inject.mjs` states for a guest language
+ * that will not parse: the region stays verbatim and the document formats. The
+ * alternative -- throwing -- would let A2.0 stop a buffer formatting that
+ * formatted before it existed, which no amount of extra syntax is worth.
+ *
+ * The array is **total**: one record per host range, always. That is what lets
+ * a reader distinguish "no host range here" from "a range I could not parse"
+ * from "a range with no record at all", the last being a producer bug. It is
+ * also published all-or-nothing, so an unexpected failure mid-walk leaves the
+ * document exactly as it found it rather than half-annotated. Must stay
+ * byte-identical to `gen_trees.secondary_trees`.
  */
 export async function attachSecondaries(doc, source, config, load) {
   const entries = [];
@@ -53,19 +67,15 @@ export async function attachSecondaries(doc, source, config, load) {
     for (const node of nodes) {
       const slice = source.subarray(node.start, node.end);
       const parsed = parseRootWithStatus(blob, slice);
-      if (parsed.dirty) {
-        throw new Error(
-          `${doc.source_file.split("/").at(-1)}: secondary grammar ${site.name} ` +
-          `refused dirty ${site.within} range ${node.start}..${node.end}`,
-        );
-      }
-      entries.push({
+      const entry = {
         language: site.name,
         within: site.within,
         start: node.start,
         end: node.end,
-        root: rebase(parsed.root, node.start),
-      });
+        outcome: parsed.dirty ? "dirty" : "clean",
+      };
+      if (!parsed.dirty) entry.root = rebase(parsed.root, node.start);
+      entries.push(entry);
     }
   }
   if (entries.length > 0) doc.secondary = entries;

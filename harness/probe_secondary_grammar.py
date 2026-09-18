@@ -29,19 +29,23 @@ BLOCK_BLOB = ROOT / "web" / "data" / "blobs" / "markdown.blob.json"
 INLINE_BLOB = ROOT / "web" / "data" / "blobs" / "markdown_inline.blob.json"
 CLEAN = HARNESS / "fixtures" / "secondary-clean.md"
 DIRTY = HARNESS / "fixtures" / "secondary-dirty.md"
+MIXED = HARNESS / "fixtures" / "secondary-mixed.md"
 
 # Both fixtures are one paragraph, so each has exactly one `inline` host range
 # spanning the whole line. Naming the outcome here rather than deriving it is
 # the point: a control that accepts whatever the producers agree on proves they
-# agree, not that either did the thing the control is named for. `secondary-
-# clean.md` must *attach*, and `secondary-dirty.md` must refuse with this exact
-# sentence -- so a refusal that starts firing on the clean fixture, or a
-# reworded diagnostic, fails here instead of quietly still matching itself.
+# agree, not that either did the thing the control is named for. The clean
+# fixture must attach a *clean* outcome with a tree; the dirty fixture must
+# attach a *dirty* one, in the same total array, at the same range -- so a
+# refusal that starts firing on clean input, or a dirty range that goes missing
+# instead of being recorded, fails here rather than agreeing with itself.
 CLEAN_RANGES = [(0, 24)]
-DIRTY_MESSAGE = (
-    "secondary-dirty.md: secondary grammar markdown_inline "
-    "refused dirty inline range 0..28"
-)
+DIRTY_RANGES = [(0, 28)]
+# Clean, dirty, clean -- in that order, in one document. The point is the
+# middle one: a dirty range must not erase the outcome recorded before it, and
+# must not stop the walk reaching the one after it. An all-or-nothing producer
+# and a correct one are indistinguishable on a single-paragraph fixture.
+MIXED_OUTCOMES = [(0, 24, "clean"), (26, 54, "dirty"), (56, 80, "clean")]
 
 
 class Failed(Exception):
@@ -78,23 +82,21 @@ def native_case(
     ranges: set[tuple[int, int]] | None,
     manifest: mf.Manifest,
     parsers: dict,
-) -> tuple[list[dict], str | None]:
+) -> list[dict]:
     tree = parsers[manifest.name].parse(source)
     if tree.root_node.has_error:
         raise Failed(f"{source_file}: block root is dirty")
     root = gen_trees.convert(tree.root_node, source, None)
-    secondary, problems = gen_trees.secondary_trees(
+    secondary = gen_trees.secondary_trees(
         manifest, source, root, parsers, source_file
     )
-    if problems:
-        return [], problems[0]
     if ranges is not None:
         secondary = [
             entry
             for entry in secondary
             if (entry["start"], entry["end"]) in ranges
         ]
-    return secondary, None
+    return secondary
 
 
 def main() -> int:
@@ -124,8 +126,7 @@ def main() -> int:
                 ranges.add((inline["start"], inline["end"]))
         if not ranges:
             continue
-        secondary, error = native_case(path, source, ranges, markdown, parsers)
-        expected.append((secondary, error))
+        expected.append(native_case(path, source, ranges, markdown, parsers))
         payload.append(
             {
                 "source_file": path,
@@ -140,7 +141,7 @@ def main() -> int:
             f"audited range set changed: expected 2553 at {AUDIT_COMMIT}, got {audited}"
         )
 
-    for fixture in (CLEAN, DIRTY):
+    for fixture in (CLEAN, DIRTY, MIXED):
         source = fixture.read_bytes()
         expected.append(
             native_case(fixture.name, source, None, markdown, parsers)
@@ -169,28 +170,29 @@ def main() -> int:
     if len(got) != len(expected):
         raise Failed(f"browser returned {len(got)} cases, expected {len(expected)}")
     compared = 0
-    for item, (want_secondary, want_error), case in zip(
-        got, expected, payload, strict=True
-    ):
-        if item["error"] != want_error:
-            raise Failed(
-                f"{case['source_file']}: refusal differs: native={want_error!r}, "
-                f"browser={item['error']!r}"
-            )
+    for item, want_secondary, case in zip(got, expected, payload, strict=True):
+        if item["error"] is not None:
+            raise Failed(f"{case['source_file']}: browser threw {item['error']!r}")
         if item["secondary"] != want_secondary:
-            raise Failed(f"{case['source_file']}: rebased secondary CST differs")
+            raise Failed(f"{case['source_file']}: secondary outcomes differ")
         if case["ranges"] is not None:
             # Not just the count: the *set*, per document. Equal totals across
             # the corpus would survive one file attaching a range another file
             # dropped, and the audited ranges are exactly the ones A2.1 will
             # ask about, so a bijection is the claim worth making.
             want = [tuple(pair) for pair in case["ranges"]]
-            got = sorted((e["start"], e["end"]) for e in item["secondary"])
-            if got != want:
+            ranges_got = sorted((e["start"], e["end"]) for e in item["secondary"])
+            if ranges_got != want:
                 raise Failed(
-                    f"{case['source_file']}: attached ranges {got} != audited {want}"
+                    f"{case['source_file']}: attached ranges {ranges_got} "
+                    f"!= audited {want}"
                 )
-            compared += len(item["secondary"])
+            # Counting *clean* outcomes, not records. The array is total now, so
+            # the bijection above survives every range turning dirty -- which is
+            # exactly how this gate would go vacuous if the secondary parse
+            # silently stopped working. A tree compared is the only evidence the
+            # two grammars agreed about anything.
+            compared += sum(1 for e in item["secondary"] if e["outcome"] == "clean")
 
     # Agreement between two empty lists is agreement about nothing, and every
     # equality above holds if both producers silently stop attaching. `audited`
@@ -199,31 +201,52 @@ def main() -> int:
     # the two paths actually compared.
     if compared != audited:
         raise Failed(
-            f"compared {compared} rebased CSTs for {audited} audited ranges; "
-            "each range must produce exactly one"
+            f"compared {compared} clean rebased CSTs for {audited} audited "
+            "ranges; each range must parse cleanly and produce exactly one"
         )
 
-    clean_secondary, clean_error = expected[-2]
-    if clean_error is not None:
-        raise Failed(f"clean fixture refused: {clean_error}")
-    got_ranges = [(entry["start"], entry["end"]) for entry in clean_secondary]
-    if got_ranges != CLEAN_RANGES:
+    clean_secondary, dirty_secondary, mixed_secondary = expected[-3:]
+
+    def outcomes(entries):
+        return [(e["start"], e["end"], e["outcome"]) for e in entries]
+
+    want_clean = [(a, b, "clean") for a, b in CLEAN_RANGES]
+    if outcomes(clean_secondary) != want_clean:
         raise Failed(
-            f"clean fixture attached {got_ranges}, expected {CLEAN_RANGES}"
+            f"clean fixture recorded {outcomes(clean_secondary)}, "
+            f"expected {want_clean}"
         )
     # An `inline` root with no children parses anything and proves nothing; the
     # fixture's emphasis span is what makes the attachment a syntax tree.
     if not clean_secondary[0]["root"].get("children"):
         raise Failed("clean fixture attached a childless inline root")
 
-    dirty_error = expected[-1][1]
-    if dirty_error != DIRTY_MESSAGE:
+    want_dirty = [(a, b, "dirty") for a, b in DIRTY_RANGES]
+    if outcomes(dirty_secondary) != want_dirty:
         raise Failed(
-            f"dirty fixture said {dirty_error!r}, expected {DIRTY_MESSAGE!r}"
+            f"dirty fixture recorded {outcomes(dirty_secondary)}, "
+            f"expected {want_dirty}"
         )
+    # Recorded, not omitted, and recorded without a tree. Omitting it would make
+    # an unparseable range indistinguishable from a range that was never there.
+    if "root" in dirty_secondary[0]:
+        raise Failed("dirty fixture attached a tree it could not parse")
+    if gen_trees.dirty_ranges(dirty_secondary, DIRTY.name) != [
+        f"{DIRTY.name}: secondary grammar markdown_inline "
+        f"refused dirty inline range {DIRTY_RANGES[0][0]}..{DIRTY_RANGES[0][1]}"
+    ]:
+        raise Failed("the corpus dirty-range policy did not name the dirty range")
+
+    if outcomes(mixed_secondary) != MIXED_OUTCOMES:
+        raise Failed(
+            f"mixed fixture recorded {outcomes(mixed_secondary)}, "
+            f"expected {MIXED_OUTCOMES}"
+        )
+
     print(
         f"secondary grammar: {compared}/{audited} audited ranges agree; "
-        f"clean fixture agrees; dirty fixture refuses identically: {dirty_error}"
+        f"clean fixture parses, dirty fixture is recorded dirty without a tree, "
+        f"mixed fixture keeps clean outcomes either side of a dirty one"
     )
     return 0
 
