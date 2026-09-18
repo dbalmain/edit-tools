@@ -74,6 +74,27 @@ findings). Each should name the guard that will eventually retire it.
   and the true answer was 2,219. *Retired by:* nothing yet; the habit is to
   print the denominator.
 
+- **A policy moved out of a function has to land on the *artifact writer*, not
+  the next function up.** A dirty-secondary-range rule was moved off the
+  attachment operation and onto `gen_trees.parse_doc` -- which is the general
+  parse API that gate 2's re-parse and the review page both call, and to both a
+  `problems` entry is a document failure. The browser tolerated a range every
+  native consumer refused, which is the asymmetry the move was meant to end.
+  Ask of any relocated policy: *who else calls this, and do they want the
+  rule?* *Retired by:* a control asserting the general API returns
+  `problems == []` on the input the policy rejects -- added here as the
+  `parse_doc` arm of `probe_secondary_grammar.py`.
+- **Ask what invokes the new work, not just what it returns.** Four review
+  rounds examined what one parse produces, what it refuses, and whether its
+  asset loads lazily, and none asked how often the application runs it.
+  Secondary attachment went onto the browser's general parse path, which fires
+  on open and 150 ms after editing quiet, so every inline range is parsed on
+  every reparse for a consumer that does not exist yet. A caching asymmetry was
+  seen and dismissed as "performance-only", which retired the category instead
+  of assessing it. *Retired by:* nothing; the measurement is incremental
+  main-thread time with the work on versus off, and it must be taken before a
+  consumer lands and erases the baseline.
+
 ## Findings log
 
 ### 2026-09-13 — the control that could not tell a deleted check from a working one
