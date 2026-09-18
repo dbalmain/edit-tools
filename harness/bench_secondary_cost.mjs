@@ -22,11 +22,11 @@ function fail(message) {
   process.exit(1)
 }
 
-function blobFor(blobs, name) {
-  if (blobs.has(name)) return blobs.get(name)
-  const path = join(blobs.dir, `${name}.blob.json`)
+function blobFor(cache, dir, name) {
+  if (cache.has(name)) return cache.get(name)
+  const path = join(dir, `${name}.blob.json`)
   const blob = existsSync(path) ? JSON.parse(readFileSync(path, "utf8")) : null
-  blobs.set(name, blob)
+  cache.set(name, blob)
   return blob
 }
 
@@ -62,14 +62,14 @@ function secondarySpan(entries) {
   return { count: entries.length, bytes, dirty }
 }
 
-async function parseOff(text, blobs, injections) {
-  const blob = blobFor(blobs, "markdown")
+async function parseOff(text, blobs, dir, injections) {
+  const blob = blobFor(blobs, dir, "markdown")
   const t0 = process.hrtime.bigint()
   const source = encoder.encode(text)
   const doc = parseDoc(blob, "markdown", source, "<markdown buffer>")
   const tBlock = process.hrtime.bigint()
   if (injections.sites.markdown) {
-    const load = async (guest) => (injections.blobs[guest] ? blobFor(blobs, guest) : null)
+    const load = async (guest) => (injections.blobs[guest] ? blobFor(blobs, dir, guest) : null)
     await injectAll(doc, source, injections, load, new Map([["markdown", blob]]))
   }
   const t1 = process.hrtime.bigint()
@@ -81,8 +81,8 @@ async function parseOff(text, blobs, injections) {
   }
 }
 
-async function parseOn(text, blobs, injections, secondaries) {
-  const blob = blobFor(blobs, "markdown")
+async function parseOn(text, blobs, dir, injections, secondaries) {
+  const blob = blobFor(blobs, dir, "markdown")
   const t0 = process.hrtime.bigint()
   const source = encoder.encode(text)
   const doc = parseDoc(blob, "markdown", source, "<markdown buffer>")
@@ -90,11 +90,11 @@ async function parseOn(text, blobs, injections, secondaries) {
   let loadAt = 0n
   await attachSecondaries(doc, source, secondaries, (name) => {
     loadAt = process.hrtime.bigint()
-    return blobFor(blobs, name)
+    return blobFor(blobs, dir, name)
   })
   const tSec = process.hrtime.bigint()
   if (injections.sites.markdown) {
-    const load = async (guest) => (injections.blobs[guest] ? blobFor(blobs, guest) : null)
+    const load = async (guest) => (injections.blobs[guest] ? blobFor(blobs, dir, guest) : null)
     await injectAll(doc, source, injections, load, new Map([["markdown", blob]]))
   }
   const t1 = process.hrtime.bigint()
@@ -115,9 +115,9 @@ async function parseOn(text, blobs, injections, secondaries) {
   }
 }
 
-function ctorCost(text, blobs) {
+function ctorCost(text, blobs, dir) {
   const source = encoder.encode(text)
-  const doc = parseDoc(blobFor(blobs, "markdown"), "markdown", source, "<markdown buffer>")
+  const doc = parseDoc(blobFor(blobs, dir, "markdown"), "markdown", source, "<markdown buffer>")
   const ranges = []
   const stack = [doc.root]
   while (stack.length > 0) {
@@ -127,22 +127,22 @@ function ctorCost(text, blobs) {
     const children = node.children ?? []
     for (let i = children.length - 1; i >= 0; i--) stack.push(children[i])
   }
-  const inlineBlob = blobFor(blobs, "markdown_inline")
+  const inlineBlob = blobFor(blobs, dir, "markdown_inline")
   const t0 = process.hrtime.bigint()
   for (const _ of ranges) new Language(inlineBlob)
   const ctorNs = Number(process.hrtime.bigint() - t0)
   return { ranges: ranges.length, ctorNs }
 }
 
-async function measureFile(item, blobs, injections, secondaries, warmup, iterations) {
+async function measureFile(item, blobs, dir, injections, secondaries, warmup, iterations) {
   const text = readFileSync(item.path, "utf8")
   const source = encoder.encode(text)
-  const probe = parseDoc(blobFor(blobs, "markdown"), "markdown", source, item.id)
+  const probe = parseDoc(blobFor(blobs, dir, "markdown"), "markdown", source, item.id)
   const expected = hostInlines(probe.root)
 
   for (let i = 0; i < warmup; i++) {
-    await parseOn(text, blobs, injections, secondaries)
-    await parseOff(text, blobs, injections)
+    await parseOn(text, blobs, dir, injections, secondaries)
+    await parseOff(text, blobs, dir, injections)
   }
 
   const onTotals = []
@@ -157,11 +157,11 @@ async function measureFile(item, blobs, injections, secondaries, warmup, iterati
   for (let i = 0; i < iterations; i++) {
     const onFirst = i % 2 === 0
     const first = onFirst
-      ? await parseOn(text, blobs, injections, secondaries)
-      : await parseOff(text, blobs, injections)
+      ? await parseOn(text, blobs, dir, injections, secondaries)
+      : await parseOff(text, blobs, dir, injections)
     const second = onFirst
-      ? await parseOff(text, blobs, injections)
-      : await parseOn(text, blobs, injections, secondaries)
+      ? await parseOff(text, blobs, dir, injections)
+      : await parseOn(text, blobs, dir, injections, secondaries)
     const on = onFirst ? first : second
     const off = onFirst ? second : first
     onDoc = on.doc
@@ -220,17 +220,17 @@ async function measureFile(item, blobs, injections, secondaries, warmup, iterati
 async function main() {
   const job = JSON.parse(readFileSync(0, "utf8"))
   const blobs = new Map()
-  blobs.dir = job.blobDir
-  if (!blobFor(blobs, "markdown") || !blobFor(blobs, "markdown_inline")) {
-    fail(`missing markdown or markdown_inline blob in ${job.blobDir}`)
+  const dir = job.blobDir
+  if (!blobFor(blobs, dir, "markdown") || !blobFor(blobs, dir, "markdown_inline")) {
+    fail(`missing markdown or markdown_inline blob in ${dir}`)
   }
   const results = []
   for (const item of job.files) {
-    process.stderr.write(`${item.role}\t${item.id}\n`)
+    process.stderr.write(`${item.role} ${item.id}\n`)
     const row = await measureFile(
-      item, blobs, job.injections, job.secondaries, job.warmup, job.iterations,
+      item, blobs, dir, job.injections, job.secondaries, job.warmup, job.iterations,
     )
-    if (item.ctor) row.ctor = ctorCost(readFileSync(item.path, "utf8"), blobs)
+    if (item.ctor) row.ctor = ctorCost(readFileSync(item.path, "utf8"), blobs, dir)
     results.push(row)
   }
   process.stdout.write(JSON.stringify({ warmup: job.warmup, iterations: job.iterations, results }) + "\n")
