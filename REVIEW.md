@@ -20,6 +20,19 @@ findings). Each should name the guard that will eventually retire it.
   *Retired by:* the shared-fixture table in `harness/fixtures/`.
 - **An offload's done-note is not a repo file.** Check for a stray `*.md` at the
   repo root addressed to the orchestrator rather than to the reader.
+- **Every gate dependency must be tracked, or produced by an earlier gate
+  step.** Verify by trackedness, not by whether it passed in your worktree. A
+  new test that reads a gitignored, generated path is green for whoever
+  generated it and red for everyone else, and the author's `./test.sh` report
+  is truthful and useless. Trace the chain — `test.sh` to discovery to the
+  suite to every top-level `existsSync`/`readFileSync`/import — and for each
+  file ask `git ls-files`, `git check-ignore`, and which earlier step writes
+  it. Measured here: `lang_parse.test.mjs` reached through `web/vendor/`,
+  written only by `./web/gen.py`, which `test.sh` never runs; the convention it
+  broke was stated two lines above the only other web entry in `test.sh`. Read
+  a "needs `./web/gen.py`" comment as a contradiction of the script's
+  hermeticity claim, not as reassurance. *Retired by:* a check that enumerates
+  gate inputs and fails on an ignored one.
 
 - **A test generator can share the blind spot of the thing it tests.** Before
   trusting a green mutation/fuzz count, check what the generator *enumerates*.
