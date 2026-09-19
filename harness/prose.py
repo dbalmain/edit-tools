@@ -1,4 +1,4 @@
-"""The A1 prose projection: a paragraph's words, as a source-backed partition.
+"""The A2.1 prose projection: a paragraph's words, as a source-backed partition.
 
 `docs/prose-projection.md` is the design. This is its first slice: turn an
 eligible markdown paragraph's `inline` node into a `prose_run` whose children
@@ -12,23 +12,43 @@ all this needs, and none of the parser's internals are.
 `harness/prose.mjs` is the mirror. The two must agree byte for byte on the same
 input document; `harness/probe_prose.py` is the gate that says so.
 
-# Why the predicate is a whitelist
+# What A2.1 added to A1
 
-A1 has no inline grammar (see the design doc for why the browser path cannot
-cheaply have one yet), so it cannot be told whether a `*` opens emphasis or is
-a literal asterisk. It therefore admits only paragraphs in which **no character
-can begin an inline construct whose meaning a gap flip could change**, which
-makes the question moot rather than answered.
+A1 had no inline grammar, so it could not be told whether a `*` opened emphasis
+or was a literal asterisk, and it admitted only paragraphs in which **no
+character can begin an inline construct whose meaning a gap flip could change**.
 
-That is deliberately weaker than "no inline syntax at all", which this comment
-used to claim and which is false: a GFM extended autolink is inline syntax, and
-an eligible paragraph may hold one. It holds no space, so it lies inside a
-single atom and no gap flip reaches into it. `harness/probe_prose.py` carries
-that argument and the searches behind it.
+A2.0 built a secondary inline CST beside the block tree. A2.1 reads it, and
+that changes the shape of the answer in two places:
 
-That has to be a whitelist. An incomplete blacklist does not merely refuse too
-much -- it *accepts* the case nobody thought of, and accepting wrongly is how a
-formatter loses someone's text.
+- **`code_span`, `inline_link` and `uri_autolink` are admitted, each protected
+  whole.** The construct's whole source range lands inside one atom, so no gap
+  inside it is ever layout and its interior bytes are emitted verbatim. A double
+  space inside a code span is therefore not a "whitespace run", and a `~` inside
+  one is not a refused byte -- neither ever becomes a gap. Every other named
+  node the inline grammar produces still refuses the paragraph.
+- **Block safety moved from `refusal()` into the partition.** A1 refused a
+  paragraph when any atom could open a block. A2.1 instead marks the gaps on
+  **both** sides of such an atom non-breakable, so the atom cannot reach a line
+  start alone. `_ACQUIRES` is still the classifier; what changed is what is done
+  with its verdict.
+
+Refusal did not go away: `_DELIMITER_ROW` and `_FENCE` below are the two hazards
+gap protection provably cannot repair, and each carries the case that found it.
+
+# Why the bytes outside a protected range are still a whitelist
+
+The whitelist governs every byte **outside** a protected range, for the same
+reason it governed every byte under A1: nothing out there has been parsed. It
+has to be a whitelist rather than a blacklist, because an incomplete blacklist
+does not merely refuse too much -- it *accepts* the case nobody thought of, and
+accepting wrongly is how a formatter loses someone's text.
+
+It is deliberately weaker than "admits no unparsed inline syntax", which this
+comment once claimed and which is false: a GFM extended autolink is inline
+syntax, and an eligible paragraph may hold one. It holds no space, so it lies
+inside a single atom and no gap flip reaches into it. `harness/probe_prose.py`
+carries that argument and the searches behind it.
 
 # What reflow is allowed to do, and the argument for each admitted character
 
@@ -45,8 +65,10 @@ and a newline change how this character is read?**
                  split; its left flank must be whitespace, and a space and a
                  newline are both whitespace, so flipping does not change it.
     '  "         Link-title delimiters, but only inside a `(...)` destination
-                 that follows a `]`. `[` and `]` are not admitted.
-    !            Image marker, but only as `![`. `[` is not admitted.
+                 that follows a `]`. A bare `]` out here is refused, and one
+                 inside an `inline_link` is inside the atom.
+    !            Image marker, but only as `![`. An `image` is a named node the
+                 inline grammar reports, and it refuses the paragraph.
     (  )         Link destination delimiters, but only after a `]`. Same.
     -            List marker, setext underline and thematic break, all only at
                  a line start; `_ACQUIRES` refuses a word that starts with one.
@@ -55,9 +77,12 @@ and a newline change how this character is read?**
                  also spells a GFM table delimiter row, which needs no pipe when
                  the table has one column -- see `_ACQUIRES`, which refuses it.
 
-Everything else -- backtick, asterisk, underscore, bracket, angle, pipe, hash,
-tilde, ampersand, backslash, plus, equals, and every non-ASCII byte -- refuses
-the paragraph. Emphasis and code spans are A2, and are the reason A2 exists.
+Everything else -- asterisk, underscore, pipe, hash, tilde, ampersand,
+backslash, plus, equals, and every non-ASCII byte -- refuses the paragraph when
+it appears outside a protected range. Backtick, bracket and angle are no longer
+in that list at the *construct* level: they are admitted when the inline grammar
+says they open a `code_span`, `inline_link` or `uri_autolink`, and refused when
+it does not. Emphasis is A2.2; non-ASCII atom content is A2.3.
 
 The argument above is reasoning, not evidence, and one character in it was
 wrong: `:` also spells a GFM table delimiter row. The evidence is

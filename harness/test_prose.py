@@ -188,6 +188,33 @@ class Refusal(unittest.TestCase):
          (":", "-", ":"), ((":", ":"), ("-", "-"), (":", ":")),
          "delimiter row"),
 
+        # A fence opener at a line start the output can produce. The atom is
+        # emitted verbatim, so the newline inside the code span survives and
+        # puts ```` at a line start; the source line continued with a backtick
+        # that stopped it being a fence, and reflow can end the line before it.
+        # This is the shape found live in corpus/reports/markdown/report.md.
+        ("fence opener after a newline inside a code span",
+         "a ```` ```json\n```` fence in `x` y",
+         (), (("code_span", "```` ```json\n````"), ("code_span", "`x`")),
+         "fence opener"),
+        # Bare backticks outside a construct never reach the fence rule: the
+        # byte whitelist refuses them first. Asserted so the ordering is a
+        # decision rather than an accident.
+        ("bare backticks are refused by the byte check first",
+         "```json is nice y", (), (), "byte"),
+        # A code span that *is* the first atom and spells a fence opener is
+        # refused, conservatively. Its info string holds backticks, so it
+        # would not in fact fence -- but `_FENCE` does not model info-string
+        # validity, and over-refusing costs reach where under-refusing costs
+        # someone's text.
+        ("a fence-spelled code span as the first atom",
+         "```x``` beta gamma", (), (("code_span", "```x```"),),
+         "fence opener"),
+        # A backtick run that is too short to fence is not refused: the rule
+        # must not cost every paragraph holding a code span.
+        ("a two-backtick span is not a fence", "a ``json`` b `x` y", (),
+         (("code_span", "``json``"), ("code_span", "`x`")), None),
+
         # Not delimiter rows: the fix must not cost every paragraph with a
         # colon in it.
         ("colon then a word", "alpha :-beta gamma", (":", "-"),
@@ -224,6 +251,52 @@ class Refusal(unittest.TestCase):
         d = doc("alpha beta")
         d["secondary"][0]["within"] = "fenced_code_block"
         self.assertEqual(verdict(d), "no inline parse")
+
+
+class FenceAndDelimiterRow(unittest.TestCase):
+    """The two hazards gap protection cannot repair, and their discriminators.
+
+    Both were found during A2.1 rather than derived: the delimiter row by
+    running the refusal fixture under the new predicate, the fence opener by
+    `probe_prose.py`'s phase A on a real corpus file. Each gets a case that
+    fires and a neighbouring case that must not, because a rule that refuses
+    everything would pass a one-sided test.
+    """
+
+    def test_a_delimiter_row_is_only_terminal_when_it_is_the_last_atom(self):
+        last = doc("alpha beta gamma\n:-", inline=())
+        self.assertEqual(verdict(last), "delimiter row")
+        middle = doc("alpha :- beta gamma", inline=())
+        self.assertIsNone(verdict(middle))
+        self.assertEqual(
+            atom_texts(middle), ["alpha :- beta", "gamma"]
+        )
+
+    def test_a_trailing_word_that_merely_starts_with_a_dash_is_not_a_row(self):
+        """The discriminating case: `-beta` is not a delimiter row spelling."""
+        d = doc("alpha beta gamma\n-beta", inline=())
+        self.assertIsNone(verdict(d))
+
+    def test_the_fence_rule_reaches_a_line_start_only_reflow_creates(self):
+        """The live shape, and the reason a reparse of the *source* is blind.
+
+        The source line is ``` ```` fence in `x` ```, which is not a fence
+        because its info string holds a backtick. Nothing about the source says
+        this paragraph is dangerous; only the truncated output does.
+        """
+        text = "a ```` ```json\n```` fence in `x` y"
+        d = doc(text, inline=(("code_span", "```` ```json\n````"),
+                              ("code_span", "`x`")))
+        self.assertEqual(verdict(d), "fence opener")
+
+    def test_a_fence_opener_after_a_breakable_gap_cannot_arise(self):
+        """`_fence_hazard` skips that position; `_ACQUIRES` is why it may.
+
+        If this ever stops holding, the skip in `_fence_hazard` is unsound, so
+        the assertion is on the mechanism rather than on the verdict.
+        """
+        self.assertTrue(prose._ACQUIRES.match("```json"))
+        self.assertTrue(prose._ACQUIRES.match("~~~json"))
 
 
 class ProtectedWhole(unittest.TestCase):

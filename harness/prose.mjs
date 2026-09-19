@@ -1,6 +1,7 @@
-// The A1 prose projection, in JavaScript. `harness/prose.py` is the original
-// and carries the design: why the predicate is a whitelist, and the argument
-// for every character it admits. Read that file, not this one, to change the
+// The A2.1 prose projection, in JavaScript. `harness/prose.py` is the original
+// and carries the design: what A2.1 added to A1, why the predicate outside a
+// protected range is still a whitelist, and the argument for every character
+// it admits. Read that file, not this one, to change the
 // policy -- and then change both, because `harness/probe_prose.py`
 // compares their output on the same documents and fails if they diverge.
 //

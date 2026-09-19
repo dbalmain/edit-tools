@@ -172,10 +172,29 @@ verdict as eligible predicted 3,089 -- an approximation that overshot by 21.
 | --- | --- | --- |
 | A1 today | plain words, block grammar alone | 536 (10.6%) |
 | **A2.0** | parse and retain an inline CST beside the block tree; nothing reads it | 536, deliberately unchanged |
-| **A2.1** | code spans, links and autolinks, each protected whole; ASCII only | 1,372 (27.1%) |
+| **A2.1** | code spans, links and autolinks, each protected whole; ASCII only | 1,372 (27.1%); **measured 1,440 (42.1%)**, see below |
 | **A2.2** | emphasis and strong, delimiters attached to adjacent atoms; ASCII only | 2,163 (42.7%) |
 | **A2.3** | non-ASCII atom content; ASCII space and newline stay the only gaps | 3,068 (60.6%) |
 | A2.4 | escapes, entities, images, reference links, strikethrough | +17, and it should not delay the others |
+
+**A2.1's measured eligibility does not sit on this table's scale, and the
+number is not a vindication of the ceiling.** The implemented predicate admits
+**1,440** of **3,421** top-level paragraphs across the 119 tracked,
+cleanly-parsing markdown files at `43aa3b9` -- 42.1%, against a published
+ceiling of 27.1%. Both halves of that comparison moved:
+
+- **The denominator is not the same corpus.** These percentages imply about
+  5,060 paragraphs; this repository now has 3,421 reaching the walk. A1 measures
+  566 here against the table's 536.
+- **The ceiling was a ceiling for refusal-based block safety.** It kept the 35
+  hazardous paragraphs "under coalescing and lost them under refusal", and
+  coalescing is what shipped -- so exceeding it is the coalescing decision
+  showing up, not an over-admission.
+
+Read the absolute figures as this repository's, at that commit. The refusal
+histogram behind the 1,440 is in the A2.1 done-note, and the counts that matter
+for safety are the two hazards that still refuse: `delimiter row` 3, `fence
+opener` 1.
 
 **A2.3 is the decision this ladder records.** 900 of the 2,532 safe-only
 paragraphs contain non-ASCII text, and five more have no isolated ASCII gap
@@ -328,14 +347,66 @@ A2.1 `refusal()` rejects -- nobody has written that predicate yet, and its
 refused set will be measured, not predicted. Read every count here as pricing a
 decision, not as a commitment about eligibility.
 
-**Block safety stays in `refusal()`, not in `partition()` -- but see the
-contradiction below, which is not yet resolved.** A1 already answers
-this question: `_ACQUIRES` refuses a paragraph when any atom could open a block,
-and that costs 30 paragraphs. The alternative is to bind a hazardous atom to its
-predecessor inside `partition()`, which would buy those 30 back along with
-something close to the 35 hazards A2.1 carries -- at the price of giving the one
-function that reads nothing but bytes a dependency on block-parse knowledge,
-mirrored byte-exactly in two runtimes.
+**Block safety moved into `partition()`, and the heading that said otherwise
+is corrected in place below.** A1 answered this question by refusing: `_ACQUIRES`
+refuses a paragraph when any atom could open a block, and that cost 30
+paragraphs. The alternative was to bind a hazardous atom to its predecessor
+inside `partition()`, which would buy those 30 back along with something close
+to the 35 hazards A2.1 carries -- at the price of giving the one function that
+reads nothing but bytes a dependency on block-parse knowledge, mirrored
+byte-exactly in two runtimes.
+
+**A2.1 took the second option, in a stronger form, and the original wording of
+this heading -- "Block safety stays in `refusal()`, not in `partition()`" -- was
+wrong.** It is left visible rather than deleted because the paragraphs under it
+are the record of how the cost was priced, and because the same question will be
+asked again at A2.2. What shipped:
+
+- `partition(inline, source, breakable_gaps)` emits maximal source spans
+  **between the breakable gaps**, so a gap nobody proved safe stays exact text
+  inside an atom. The polarity matters: under a `protected_gaps` argument a
+  hazard nobody classified becomes layout by default.
+- Two policies, one partition. The **inline** policy marks every gap inside a
+  `code_span`, `inline_link` or `uri_autolink` non-breakable, from the secondary
+  CST. The **block** policy marks the gaps flanking an `_ACQUIRES` hit, from the
+  atom text alone. They are separate functions feeding one set union; the union
+  is what makes adjacent hazards a single connected component rather than
+  overlapping pairwise merges.
+- Refusal did not go away. It is now the fallback for the two hazards gap
+  protection provably cannot repair, both recorded below.
+
+**Predecessor-only binding is not enough, and this is the counterexample that
+settled it.** At width 80, a paragraph whose protected code span is itself
+over-width, followed by a source newline and `--`:
+
+```
+source                          merged atom (predecessor-only)   output
+`xxx...90 chars...xxx`          "`xxx...xxx`\n--"  " "  "beta"   `xxx...xxx`
+-- beta                                                          --
+                                                                 beta
+```
+
+One paragraph in; a **setext h2 plus a paragraph** out. Binding the source
+newline does not move the opener off a line start, it *preserves* it there; the
+merged item is indivisible but is not one physical line, and because its first
+physical line is over width, `fill` decides the following separator must break
+-- which isolates the marker and completes the construct. Reproduced through
+both runtimes at `43aa3b9`.
+
+**Bilateral protection repairs it**: both gaps around a hazardous atom, giving
+`` `xxx...xxx`\n-- beta ``. The formatter may still break after `beta`, but the
+marker line keeps its trailing word and cannot become a setext underline. A
+hazardous **first** atom has no preceding gap and fails independently -- `---`
+and an over-width word format as a thematic break plus a paragraph -- so the
+rule is "both flanking gaps, where they exist", and there is no first-atom
+exception. Measured: the right-gap half alone restores the source tree.
+
+**The first-atom policy, stated because nothing stated it.** A hazardous first
+atom is *not* refused. `refusal()` has always refused a match in any atom
+including the first, so there was no exception to preserve; A2.1 replaces that
+with the right-gap half of the bilateral rule, and the paragraph stays eligible
+whenever a breakable gap survives elsewhere. Where none does, the verdict is
+`single atom`.
 
 > **That cost was overstated, and the correction is recorded here rather than
 > quietly applied.** Coalescing needs no *parse* knowledge A1 does not already
@@ -379,6 +450,20 @@ mirrored byte-exactly in two runtimes.
 > that number. If it lands near 35, refusal is right and cheap; if it lands much
 > larger, `partition()`'s lexical purity is being bought at a price nobody has
 > priced.
+>
+> **Resolved, 19 September, in favour of coalescing -- the pricing report was
+> right and this section was wrong.** The predicate exists now, and the number
+> it was to be settled against was never the deciding one. What decided it was
+> a counterexample: refusal and coalescing do *not* remove the same hazards,
+> because refusing is unconditional while coalescing has cases it cannot repair,
+> and finding them is what the slice was. See the corrected heading above for
+> the mechanism, and the two subsections below for the two hazards that still
+> refuse.
+>
+> The measured refusals, over 3,421 top-level paragraphs in 119 tracked files at
+> `43aa3b9`: `delimiter row` 3, `fence opener` 1. Not 35, and not 30 either --
+> the hazard the pricing diagnostic counted is now mostly *coalesced* rather
+> than refused, which is exactly the outcome the ceiling column was hedging.
 
 The fact that would have changed it was A2.2's hazard rate: if emphasis pushed
 it to roughly a fifth of the slice, a predicate rule would be one written to be
@@ -564,8 +649,30 @@ entire source as a semantic classifier.
 Each candidate newline must also preserve block syntax: a line beginning with
 `#`, `>`, a list marker, a fence or a setext/thematic-break sequence may change
 the parse. A boundary that would require inserting an escape is not eligible.
-Coalesce the adjacent atoms where sufficient; otherwise preserve the paragraph.
 Do not synthesize backslashes to make a greedy break legal.
+
+**"Coalesce the adjacent atoms where sufficient; otherwise preserve the
+paragraph" stood here, and was too vague to implement.** It is replaced rather
+than deleted, because it was broad enough to be true and an implementer
+following it could not derive the answer. What "sufficient" means, as shipped:
+
+- Coalesce **both** gaps flanking the hazardous atom, never only the preceding
+  one. Predecessor-only binding preserves the opener at a line start instead of
+  moving it off one; the counterexample is above.
+- Coalesce by removing gaps from **one set**, so adjacent hazards become one
+  connected component.
+- "Otherwise preserve the paragraph" is the right fallback, and it is reached in
+  exactly two cases, neither of which coalescing can repair:
+  - a **last atom** spelling a GFM one-column delimiter row, which makes the
+    *preceding line* a table header -- a line still set by gaps further left;
+  - a **fence opener** at any line start the output can produce, because a
+    fence's validity depends on the rest of its line, so truncating a line can
+    turn a non-opener into an opener.
+
+The second was found by `probe_prose.py`'s phase A on a real corpus file, not by
+this list, and it is the counterexample to the tempting argument that a line
+start inside a verbatim atom is safe because it was a line start in the source.
+Its prefix is safe. Its line is not.
 
 Gap eligibility must survive reflow. Changing only the eligible soft whitespace
 must reproduce the same atom texts and the same eligible boundaries on reparse.

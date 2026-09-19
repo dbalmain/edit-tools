@@ -3,7 +3,7 @@
 # requires-python = ">=3.11"
 # dependencies = ["tree-sitter", "tree-sitter-markdown==0.5.1"]
 # ///
-"""The three things the A1 prose projection has to be true for.
+"""The three things the A2.1 prose projection has to be true for.
 
     ./harness/probe_prose.py [--quiet]
 
@@ -22,12 +22,19 @@ patterns are adversarial rather than realistic: one word per line is the worst
 case for a word that could start a block, and no particular width need produce
 it.
 
-**A'. An eligible paragraph holds nothing the pinned inline grammar calls
-syntax.** Every eligible paragraph is parsed with the package's *inline*
-grammar, and the result must be a bare `inline` node -- no `code_span`, no
-`emphasis`, no `inline_link`, nothing named. That is an oracle which knows
-nothing about the whitelist, so it finds an over-admission directly rather than
-inferring it from a reflow that happened not to break.
+**A'. An eligible paragraph holds only inline syntax A2.1 admits, and holds
+each piece of it whole.** Every eligible paragraph is re-parsed with the
+package's *inline* grammar -- from its own bytes, not from the secondary table
+the producer attached, so a dropped or misranged record cannot hide here. Two
+things must hold: every named node is a `code_span`, `inline_link` or
+`uri_autolink`, and every one of those lies wholly **inside a single atom**.
+
+Under A1 this check demanded no named node at all. A2.1 admits three, so the
+oracle moves rather than retires -- `emphasis`, `image`, `shortcut_link` and
+`full_reference_link` all occur in this corpus and must still refuse. The
+protected-whole half is new, and it is the half a reflow-and-reparse sweep
+cannot do: the block grammar sees a paragraph's interior as one opaque node, so
+only the inline grammar can say whether a gap landed inside a code span.
 
 **It is weaker than "contains no inline syntax", and the gap has a name.** GFM
 extended autolinks -- `www.example.com`, `https://example.com` -- *are* inline
@@ -45,11 +52,18 @@ renderer-driven search found it -- see `_ACQUIRES` in `prose.py`. A CST oracle
 is bounded by what its grammar models, and this one models neither pipeless
 tables nor autolink literals.
 
-The inline grammar is a **test-time** dependency, not a producer one. That
-distinction is the whole A1/A2 split: `gen_trees.py` could load it today, the
-browser could not, and a check that runs here costs the browser nothing.
-Because it is not a producer dependency it also does not belong in
-`probe_injection_parity.py`'s declared blob set.
+**The inline grammar stopped being a test-time dependency at A2.1.** Under A1
+it was an oracle this probe consulted and the producers did not, which was the
+whole A1/A2 split. A2.1's predicate reads the secondary table, so the grammar is
+now a **producer** dependency on both sides: `markdown_inline.blob.json` is
+required for the browser path to reach the same verdicts, and `test.sh` fails in
+its first second without it.
+
+It still does not appear in `probe_injection_parity.py`'s declared blob set,
+because that set is derived from the *injected* languages in a produced document
+and a secondary grammar is never one -- the open half of the 2026-09-13 finding,
+recorded at the top of that file. `markdown_manifest()` below declares it here
+instead, and fails loudly if the manifest stops carrying it.
 
 **B. The two producers agree.** `prose.py` and `prose.mjs` are handed the same
 documents and must return the same one -- *and* the same verdict for every
@@ -74,6 +88,14 @@ edits to `prose.py`, only four changed the eligible set on this repository's
 own markdown at all. `harness/fixtures/prose-refused.md` is the control --
 paragraphs that are near misses in exactly one respect each, which must yield
 zero eligible paragraphs.
+
+A2.1 retargeted that fixture, because a near miss is only a near miss for one
+predicate. Terminated code spans and inline links are now *inside* the
+boundary, so the entries moved one character out (an unterminated backtick, a
+shortcut link), and the entries A2.1 deliberately admits left -- this file can
+only detect a change in eligibility, and those are eligible either way. What
+guards them now is `harness/test_prose.py`, which asserts the emitted partition
+and carries a mutation control that restores predecessor-only protection.
 
 A, A' and B sweep every markdown file in the repository, not just the corpus,
 so adding a document adds test material for free. A failure that names a file
