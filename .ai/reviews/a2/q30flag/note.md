@@ -1,7 +1,5 @@
 # Q30: gate browser secondary attachment
 
-Running done-note. Commit at each green boundary. Do not push.
-
 ## Mechanism
 
 Per-call option on `parse(text, name, options)`, default off.
@@ -20,12 +18,15 @@ A module setter and a build-time constant were the other two shapes. The
 setter leaks across tests. A constant requires a rebuild to flip, which
 breaks the Q29 baseline.
 
+A flag is the right mechanism. Removing the call until A2.1 would also
+stop the stall, but Q29 could not turn it back on without editing source.
+
 ## What the brief got right / wrong
 
 - `web/js/lang.js` `parse()` is the only browser parse wrapper. Its two
   callers are `formatText` (lang.js) and `markdown.js` `scheduleReparse`.
-  Line numbers in the brief match this tree (`parse` 88, attach 99,
-  `formatText` 122, reparse delay 150 / call 307).
+  Line numbers in the brief matched this tree at `406cf85` (`parse` 88,
+  attach 99, `formatText` 122, reparse delay 150 / call 307).
 - **Guess that the browser is the only path paying this: mostly right.**
   Harness producers (`gen_trees.py`, `ts_check_trees.mjs`,
   `probe_secondary_driver.mjs`) call `attachSecondaries` directly and never
@@ -42,9 +43,10 @@ breaks the Q29 baseline.
 
 Unchanged path: they do not call `parse()`. The new gate is
 `harness/lang_parse.test.mjs`, reached via `harness/test_lang_parse.py` so
-`test.sh` does not have to list it. It asserts attach+fetch when on, and
-neither when off. Floor is the assertion count, so a suite that stops
-collecting cannot read as green.
+`test.sh` does not have to list it. Five tests: helper matrix, flag off
+(no field, no fetch), flag on (clean tree + fetch), flag on + fence-only
+(lazy intact), URL opt-in with explicit false still winning. Floor is 5,
+so a suite that stops collecting cannot read as green.
 
 ## Flag-off fetch
 
@@ -73,4 +75,14 @@ cost 354 ms median on FINDINGS.md.
 
 ## `test.sh`
 
-(not run yet)
+Green, ~79 s on a warm tree.
+
+```
+secondary grammar: 2553/2553 audited ranges agree; clean fixture parses, dirty fixture is recorded dirty without a tree, mixed fixture keeps clean outcomes either side of a dirty one
+```
+
+Did not drop to 0/0. `injection tree parity: 24/24`. Prose projection
+still 564 eligible / 114 files.
+
+Commits: `e41875d` (flag + gate), `5a781d5` (docs). Detached at those,
+parent `406cf85`. Not pushed.
