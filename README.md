@@ -19,6 +19,12 @@ either runtime. The highlighter is not started.
 ./fmt-js   corpus/trees/python__calls.tree.json 88
 ```
 
+`./test.sh` is not fully hermetic. Two probes read gitignored parse tables under
+`web/data/blobs/`, written by `./web/gen.py` (sixteen grammars, 22.9 MB raw, so
+they are not committed; `gen.py` needs a vici checkout next to this repo). The
+script fails at the start if they are missing rather than ten minutes later
+inside a probe.
+
 - [DESIGN.md](DESIGN.md) — how the formatter works, what it cannot do, and the
   measured scores. Start here.
 - [docs/house-style.md](docs/house-style.md) — what we optimise for when we

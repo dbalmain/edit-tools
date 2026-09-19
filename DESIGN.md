@@ -24,6 +24,11 @@ here are the evidence: their rules use the same small Doc language.
 ./fmt-js   corpus/trees/python__calls.tree.json 88
 ```
 
+`./test.sh` is not fully hermetic. Two probes read gitignored parse tables
+under `web/data/blobs/`, written by `./web/gen.py` (sixteen grammars, 22.9 MB
+raw; `gen.py` needs a vici checkout next to this repo). The script fails at
+the start if they are missing.
+
 ## The rule language
 
 An expression is a JSON array whose first element is the opcode. The set is
