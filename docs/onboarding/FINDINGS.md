@@ -1653,8 +1653,9 @@ on this register — `fill` was +365 B and alignment +2,627 B. Rust 17/32 → 19
 every other language byte-identical, verified by re-scoring at 91/138 unchanged
 rather than by reading the code.
 
-The spike is `spike/rust-subwidth`, its report
-`corpus/reports/rust/subwidth-spike.md`. Three things it corrected in the
+The spike is `spike/rust-subwidth`; its report is
+`corpus/reports/rust/subwidth-spike.md`, which is now in this tree -- it was
+named here for weeks while living only on the branch. Three things it corrected in the
 account below, all of which had been stated too confidently here:
 
 - **The thresholds are fractions of `max_width` only at or above 100.**

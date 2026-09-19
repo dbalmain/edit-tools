@@ -678,7 +678,8 @@ for name in (
     print(name, len(data), len(gzip.compress(data, 9)))
 PY
 
-# Coverage and the actual browser slice/rebase path
+# Coverage and the actual browser slice/rebase path.
+# Both scripts live on `spike/a2-price` only -- see Appendix B.
 ./harness/probe_a2_coverage.py \
   --commit f2819822fa033987e86db79143ab8ffecb900a35 \
   -o E2-COVERAGE.json
@@ -705,17 +706,32 @@ Final regression status:
 
 ## Appendix B: generated/experimental files
 
-- `E2-REPORT.md` (tracked): this deliverable, landed here as
-  `docs/a2-inline-price.md`.
-- `E2-COVERAGE.json` (tracked): 2,553 auditable paragraph classifications at
-  immutable commit `f281982`; generated measurement, not a corpus reference.
-- `harness/probe_a2_coverage.py` (tracked): regenerates classifications and
-  six-pattern diagnostics; it never edits corpus files.
-- `harness/probe_a2_driver.mjs` (tracked): browser/native classification/rebase
-  parity and one-run timing probe.
-- `harness/scanners/markdown_inline.program.js` and `.svm` (tracked):
-  experimental full scanner port and generated artifact; **not wired into a
-  manifest/package/web build**.
+**Read "tracked" below as "tracked on `spike/a2-price`".** This report was
+written on that branch and landed on `main` by itself; three of the files it
+lists stayed behind, deliberately, and this list is marked accordingly. The
+commands in Appendix A therefore do **not** run on a `main` checkout -- check
+out the spike branch to reproduce them.
+
+- `E2-REPORT.md` -> **landed on `main`** as `docs/a2-inline-price.md`, this
+  file.
+- `E2-COVERAGE.json` -- **spike branch only**: 2,553 auditable paragraph
+  classifications at immutable commit `f281982`; 1.2 MB of generated
+  measurement, not a corpus reference, and excluded from `main` for that
+  reason. `docs/prose-projection.md` states the same policy where it cites
+  these figures.
+- `harness/probe_a2_coverage.py` -- **spike branch only**: regenerates
+  classifications and six-pattern diagnostics; it never edits corpus files.
+  **Do not port it forward.** It calls `prose.refusal(paragraph, source)` with
+  two arguments and selects on the verdict `"inline token"`; on `main`,
+  A2.1 made `refusal` take a third `secondary` argument and retired that
+  verdict, so the script is pinned to the predicate it measured. Running a
+  ported version at `HEAD` would measure a different program and report the
+  difference as a change in the corpus.
+- `harness/probe_a2_driver.mjs` -- **spike branch only**: browser/native
+  classification/rebase parity and one-run timing probe.
+- `harness/scanners/markdown_inline.program.js` and `.svm` -- **landed on
+  `main`**: experimental full scanner port and generated artifact; **not wired
+  into a manifest/package/web build**.
 - `harness/ts_scanner_record.py` (tracked change): experimental
   `--grammar-symbol` override so one manifest's secondary grammar can be
   recorded.
@@ -734,7 +750,9 @@ Final regression status:
 
 The verifier/selection changes were required to make existing checks apply to
 the second external-scanner grammar; they are measurement infrastructure, not A2
-production integration. All tracked changes are committed on the spike branch.
+production integration. Every `(tracked change)` entry above **did** land on
+`main`; the three files marked "spike branch only" did not, and nothing on
+`main` should be read as able to regenerate them.
 
 ## Appendix C: raw classifications
 
