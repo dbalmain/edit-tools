@@ -517,6 +517,15 @@ wrong by the next merge rather than by the next quarter. Re-measure with
 `./harness/probe_prose.py`, whose summary line carries the eligible count and
 the file count; the full histogram is the same walk over `prose.reasons`.
 
+**This file is itself in the corpus, so the table cannot report the tree that
+contains it.** Writing these rows added three eligible paragraphs: the stamped
+figures are `80c7c9d`, the parent of the commit that wrote them, and the probe
+at that commit's child reads 1,546 in the same 127 files. There is no fixed
+point to chase here -- any edit correcting the number changes it again -- so the
+stamp names a parent and the reader is expected to run the probe rather than
+trust the row. Treat a discrepancy of a few paragraphs as this effect, and a
+discrepancy in the file count as a real corpus change.
+
 | Verdict | Paragraphs |
 | --- | ---: |
 | `inline construct` -- A2.2 and A2.4 shapes | 1,680 |
