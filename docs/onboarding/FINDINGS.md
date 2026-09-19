@@ -1916,10 +1916,10 @@ little; it is that it costs and buys nothing.
 
 ### A Rust mode, prototyped and priced
 
-`spike/rust-alignment` adds `alignment: "rust"` to `runtime-js/bundle.js` only.
-The JS gzip is the budget number (entry 1), so a JS-only prototype prices the
-feature without paying for a parity the decision may never need. It is **not**
-merged and nothing declares the mode.
+`archive/spike/rust-alignment` adds `alignment: "rust"` to
+`runtime-js/bundle.js` only. The JS gzip is the budget number (entry 1), so a
+JS-only prototype prices the feature without paying for a parity the decision
+may never need. It is **not** merged and nothing declares the mode.
 
 | piece                                     |   gzip |
 | ----------------------------------------- | -----: |

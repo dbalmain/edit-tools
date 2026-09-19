@@ -15,7 +15,7 @@ findings). Each should name the guard that will eventually retire it.
   words silently retarget, and nothing but a reader following the path finds
   out. Three instances in one week: a report named in `FINDINGS.md` that lived
   only on `spike/rust-subwidth`; `docs/a2-inline-price.md`'s Appendix B calling
-  seven files "(tracked)" when three stayed on `spike/a2-price`; and
+  seven files "(tracked)" when three stayed on `archive/spike/a2-price`; and
   `docs/parse-all-languages.md` naming `spike/scanner-vm/toml.program.js` after
   the file moved to `harness/scanners/`. *Retired by:*
   `ProseRoutesResolveTests` in `harness/test_repo_layout.py`, which resolves

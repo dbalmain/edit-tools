@@ -159,7 +159,7 @@ files and the same 5,065 paragraphs. That denominator is not the 5,048 above,
 which was measured at `3dbf9d3`; the percentages are the comparable half. The
 spike's own write-up is `docs/a2-inline-price.md`, which carries the histogram,
 the bucket definitions and the block-safety diagnostic this table compresses;
-the per-paragraph classifications stay on `spike/a2-price` as
+the per-paragraph classifications stay on `archive/spike/a2-price` as
 `E2-COVERAGE.json`, being 1.2 MB of generated measurement. Everything this
 section relies on is restated here, so neither has to be read to use the table.
 

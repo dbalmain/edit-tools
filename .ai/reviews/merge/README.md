@@ -34,3 +34,17 @@ notes was invisible to `./test.sh`, which was green throughout except once:
 The last of those is the one worth remembering. `REVIEW.md`'s first standing
 check is that a gate must not be green only for whoever wrote it, and I read
 that file the same day I broke it.
+
+**The sixteen are now `archive/`.** On 2026-09-20 every branch the campaign
+declined was renamed under an `archive/` prefix, keeping its original name
+beneath it -- `spike/a2-price` became `archive/spike/a2-price`, and so on. They
+were kept rather than deleted because tracked prose routes readers to three of
+them by name, and this campaign spent two commits repairing routes that
+dead-ended for exactly that reason.
+
+The prompts and notes in this directory were written before the rename and
+still spell the old names. That is deliberate: they are a record of what was
+claimed at the time, and rewriting them would make the record agree with a
+present it did not see. The tracked documents that route a live reader --
+`docs/a2-inline-price.md`, `docs/prose-projection.md`, `docs/onboarding/*.md`,
+`REVIEW.md` -- were updated instead.

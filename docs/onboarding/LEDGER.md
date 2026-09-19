@@ -542,9 +542,9 @@ Two process notes worth more than the number:
   only if it could have gone red.
 
 **Third seat, third nothing (2026-08-19).** Round 3 gave agy the `cell` doc-node
-spike — a self-contained brief in `spike/cell-node-agy`, deliberately written to
-need no prior project context, run manually by Dave so the permission problem
-could not bite. It hit a usage limit that resets in 109 hours, so the
+spike — a self-contained brief in `archive/spike/cell-node-agy`, deliberately
+written to need no prior project context, run manually by Dave so the permission
+problem could not bite. It hit a usage limit that resets in 109 hours, so the
 head-to-head with grok never ran.
 
 Note what this does and does not say. Three allocations have produced no

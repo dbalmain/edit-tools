@@ -48,7 +48,10 @@ class RepoLayoutTests(unittest.TestCase):
 # from `refs/heads/`, because a fresh clone has only `main` locally and a gate
 # that consults the author's refs is green for its author and red for everyone
 # else. Whether these branches still exist is a maintenance question, not a
-# question for the default suite.
+# question for the default suite -- and on 2026-09-20 three of these were
+# renamed under `archive/`, which changed nothing here: the frozen notes in
+# `.ai/` still spell the pre-rename names, and a set read from refs would have
+# gone red on prose that was never wrong.
 BRANCH_REFERENCES = frozenset({
     "spike/a2-price",
     "spike/alignment",
@@ -87,9 +90,9 @@ UNRESOLVED_BY_DESIGN = {
     # involve. No such package is planned to exist here.
     ("docs/highlight-design.md", "packages/aven.json"),
     ("docs/tree-interface-probe.md", "packages/aven.json"),
-    # Retained on `spike/a2-price` on purpose -- `E2-COVERAGE.json` is 1.2 MB of
-    # generated measurement and these regenerate it against the predicate it
-    # measured. Appendix B of that file says so at each entry.
+    # Retained on `archive/spike/a2-price` on purpose -- `E2-COVERAGE.json`
+    # is 1.2 MB of generated measurement and these regenerate it against the
+    # predicate it measured. Appendix B of that file says so at each entry.
     ("docs/a2-inline-price.md", "harness/probe_a2_coverage.py"),
     ("docs/a2-inline-price.md", "harness/probe_a2_driver.mjs"),
     # Frozen-note spellings: a typo for `corpus/reference`, and a corpus case id
