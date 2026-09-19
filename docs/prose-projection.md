@@ -172,29 +172,25 @@ verdict as eligible predicted 3,089 -- an approximation that overshot by 21.
 | --- | --- | --- |
 | A1 today | plain words, block grammar alone | 536 (10.6%) |
 | **A2.0** | parse and retain an inline CST beside the block tree; nothing reads it | 536, deliberately unchanged |
-| **A2.1** | code spans, links and autolinks, each protected whole; ASCII only | 1,372 (27.1%); **measured 1,440 (42.1%)**, see below |
+| **A2.1** | code spans, links and autolinks, each protected whole; ASCII only | 1,372 (27.1%) |
 | **A2.2** | emphasis and strong, delimiters attached to adjacent atoms; ASCII only | 2,163 (42.7%) |
 | **A2.3** | non-ASCII atom content; ASCII space and newline stay the only gaps | 3,068 (60.6%) |
 | A2.4 | escapes, entities, images, reference links, strikethrough | +17, and it should not delay the others |
 
-**A2.1's measured eligibility does not sit on this table's scale, and the
-number is not a vindication of the ceiling.** The implemented predicate admits
-**1,440** of **3,421** top-level paragraphs across the 119 tracked,
-cleanly-parsing markdown files at `43aa3b9` -- 42.1%, against a published
-ceiling of 27.1%. Both halves of that comparison moved:
+**This table is the pricing spike's, and no implemented measurement belongs in
+it.** Every figure above came from one diagnostic, over one corpus, under one
+definition of the walk, and its value is that the rungs are comparable *to each
+other*. A number produced by a different program over a different corpus is not
+a better version of a cell here; it is a different quantity. Putting the two in
+one cell invites exactly the comparison that warning is trying to prevent, so
+A2.1's measured eligibility is recorded separately under **What A2.1 actually
+admits**, further down, and these cells are left as the historical record they
+are.
 
-- **The denominator is not the same corpus.** These percentages imply about
-  5,060 paragraphs; this repository now has 3,421 reaching the walk. A1 measures
-  566 here against the table's 536.
-- **The ceiling was a ceiling for refusal-based block safety.** It kept the 35
-  hazardous paragraphs "under coalescing and lost them under refusal", and
-  coalescing is what shipped -- so exceeding it is the coalescing decision
-  showing up, not an over-admission.
-
-Read the absolute figures as this repository's, at that commit. The refusal
-histogram behind the 1,440 is in the A2.1 done-note, and the counts that matter
-for safety are the two hazards that still refuse: `delimiter row` 3, `fence
-opener` 1.
+Making the two genuinely comparable would take a rerun of **both** policies over
+one frozen corpus with one walk definition. Nobody has done that, and this slice
+did not need it -- what A2.1 had to establish was that what it admits is safe,
+which is a property of the implementation and not of the ceiling.
 
 **A2.3 is the decision this ladder records.** 900 of the 2,532 safe-only
 paragraphs contain non-ASCII text, and five more have no isolated ASCII gap
@@ -507,6 +503,79 @@ ledger entry, so harvesting hazards into the corpus manufactures exactly the
 accepted-divergence rows the manifest already carries one of. Flipping the pin
 to `always` is not the escape: roadmap step 2 measured it at 27/32 agreement
 falling to 8/32, with gate 3 rejecting 20 reference outputs.
+
+## What A2.1 actually admits
+
+Measured by `harness/probe_prose.py` over the tracked, cleanly-parsing markdown
+files in this repository. **Not comparable to the ceiling table above**, for the
+reasons given there: different corpus, different program, different walk.
+
+| Verdict | Paragraphs |
+| --- | ---: |
+| eligible | 1,442 |
+| `inline construct` -- A2.2 and A2.4 shapes | 1,603 |
+| `non-ascii` -- A2.3 | 330 |
+| `byte` | 23 |
+| `single atom` | 21 |
+| `whitespace run` | 4 |
+| `delimiter row` | 3 |
+| `dirty inline parse` | 2 |
+| `fence opener` | 1 |
+| `edge whitespace` | 1 |
+| **total reaching the walk** | **3,430** |
+
+A1's predicate measures **566** on this same corpus and walk, against the
+table's 536. That gap, on the one rung where both numbers purport to describe
+the same shipped thing, is the cleanest illustration of why the two scales are
+not one scale.
+
+The figure that matters for safety is not 1,442 but **4**: the paragraphs
+refused by the two hazards coalescing cannot repair, `delimiter row` and `fence
+opener`. Everything admitted survives phase A's reflow-and-reparse invariant.
+
+### Is the non-prefix hazard class closed?
+
+The two refusals above are both instances of one class: a block construct whose
+interpretation depends on something other than the line's **prefix**, so that
+protecting the gaps around an atom cannot control it. Bilateral protection is
+sound exactly against prefix hazards. The question A2.1 has to answer is whether
+any member of that class is left unhandled.
+
+**For A2.1's admitted set, yes -- closed.** Enumerated against CommonMark and
+GFM, a block opener can depend on:
+
+- **The preceding line.** Setext headings and GFM tables. Setext is modelled by
+  the pinned block parser, so such source never arrives as a paragraph. GFM
+  tables are the real blind spot -- the delimiter row converts its predecessor
+  into a header -- and the pipeless one-column case is `_DELIMITER_ROW`.
+- **The remainder of its own line.** Fences, thematic breaks, ATX headings, list
+  markers, HTML block starts, link reference definitions. Thematic breaks are
+  neutralised by coalescing or already parsed in the source. `#`, `>`, `+`, `*`
+  and `_` are refused or disjoint from the three admitted constructs. Lists are
+  caught conservatively through their marker. Link definitions cannot interrupt
+  a paragraph, and their `[` shape is disjoint from an admitted `inline_link`.
+  **Fences are the only admitted shape whose invalidating suffix can be
+  removed**, and they are `_FENCE`.
+- **Later lines or parser state.** HTML block termination, fence closing, list
+  continuation and tightness. None can newly *start* from A2.1's boundary set.
+- **Blank lines and indented code.** One space/newline flip cannot manufacture a
+  blank line, and whitespace runs are refused outright.
+
+**This is not a theorem, and it expires.** It is a closure argument over *the
+shapes A2.1 admits*, and it must be re-audited the moment A2.2 admits new
+protected shapes -- emphasis and strong delimiters change which characters can
+reach a line start, and the enumeration above assumes they cannot. Treat the
+list as a checklist to re-walk, not as a result to cite.
+
+The fence entry is worth one further note, because it is the one the argument
+got wrong first. `_FENCE` was originally anchored at column zero on the
+reasoning that a line start inside a verbatim atom was a line start in the
+source. That is true of the prefix and false of the line: an indented fence
+opener is still a fence. The fix is not CommonMark's three-space bound either
+-- measured against the pinned grammar, four or more spaces corrupts as an
+`indented_code_block` instead -- so the rule refuses the run at any indent, and
+`prose-admitted.md` carries the discriminating case that keeps it from becoming
+a rule about whitespace.
 
 So A2.1 is proved the way A1 was, by the repository sweep in
 `harness/probe_prose.py` -- which is where 98.7% of the evidence lives anyway.
