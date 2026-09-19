@@ -1,22 +1,34 @@
 # Q30 done-note
 
-**Status.** Harness sketched; corpus numbers not yet in.
+**Headline.** The second format pass does not sink option C. It is noise.
 
-Sibling `harness/bench_format_pass.{py,mjs}`, not an extension of the Q29
-files: the clock is `format()`, the arms are shipped vs A1-projected, and the
-second term is a counterfactual postcheck. Q29's corpus listing, warmup /
-median / max, and control-fails-the-run discipline are reused.
+**Term 1.** One projected `format()` on FINDINGS.md is **19.107 ms** median
+/ 25.482 ms max (shipped 14.975 ms). Q29's block parse of that file was
+433 ms; attach stretch 354 ms. Format is the cheap half (~23×). Corpus
+median 0.763 ms. Warmup 5, timed 11, interleaved, `process.hrtime.bigint()`.
 
-**Already verified, before any timed run.**
+**Term 2.** Document-level postcheck at width 80: **0/114 genuine, 0/114
+lexical**. Same at width 40. The precheck's 32 `"block acquisition"`
+paragraphs (brief said 31; extra is `corpus/reports/html/report.md` `1.`)
+do not wrap their opener onto a new line under `fill`.
 
-- `refusal()` is `harness/prose.py:192`.
-- Tracked-corpus `"block acquisition"` count is **32, not 31**. The extra
-  paragraph is `corpus/reports/html/report.md` (`1.` — a genuine interruptor).
-  8 are in `harness/fixtures/prose-refused.md`. 7 real-document `--` atoms
-  match the brief's 7. Prefix-hit paragraphs: 16, as stated.
-- Format is on-demand (`markdown.js:536`, width 80, `:w` / `\F`). It is not
-  on the 150 ms parse debounce.
+**Combined.** `0/114 × 19 ms = 0 ms`. Sensitivity if every genuine-potential
+paragraph's document retried: six files, **8.056 ms** sum.
 
-**Chosen shape.** Sibling. Q29 times `attachSecondaries` inside `parse()`.
-This times `format()` of an already-parsed tree and asks a different question
-of the same files.
+**Subtree.** Layout of a top-level paragraph is independent (`hard` resets
+column; markdown `comment_cells` is off). The public `format()` still
+prints from `tree.root` with no node-to-output map, so a retry against
+today's contract is a whole-document pass. Mini-doc format of one
+paragraph is 0.03–0.3 ms; that API does not exist. Moot either way at
+P=0.
+
+**Cost model.** Format is on-demand (`:w` / `\F` at width 80), not on the
+150 ms parse debounce. `P(trip) × one pass` is extra latency on an
+explicit format, not a frame drop while typing. Re-entering via
+`formatText` would re-parse and pay the attach stretch; that would sink
+option C. The specified retry (re-project, `format()` again) does not.
+
+Sibling `harness/bench_format_pass.{py,mjs}`, not an extension of Q29:
+different clock, same corpus and controls discipline. Negative control
+did not trip. Positive-trip control genuine-trips at 40, not at 80.
+Synthetic format scales with size (Pearson r=0.9995).

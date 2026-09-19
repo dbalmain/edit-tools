@@ -117,6 +117,44 @@ def genuine_line(line: str, *, continuation: bool) -> str | None:
     return "ordered"
 
 
+def hit_class(atom: str) -> str:
+    """Bucket an `_ACQUIRES` hit: prefix, ordered-n, or a real opener."""
+    if re.fullmatch(r":-+:?", atom) or re.fullmatch(r"-+:", atom):
+        return "gfm"
+    if re.fullmatch(r"-+", atom):
+        return "dash"
+    if re.fullmatch(r"1[.)]", atom):
+        return "ordered-1"
+    if re.fullmatch(r"\d+[.)]", atom):
+        return "ordered-n"
+    if ACQUIRES.match(atom):
+        return "prefix"
+    return "none"
+
+
+def paragraph_class(source: str) -> str:
+    classes = {
+        hit_class(atom)
+        for atom, _ in atom_placements(source)
+        if ACQUIRES.match(atom)
+    }
+    if classes & {"dash", "gfm", "ordered-1"}:
+        return "hazard"
+    if "ordered-n" in classes:
+        return "ordered-n"
+    if "prefix" in classes:
+        return "prefix"
+    return "none"
+
+
+def acquires_hits(source: str) -> list[str]:
+    hits = []
+    for atom, _ in atom_placements(source):
+        if ACQUIRES.match(atom) and atom not in hits:
+            hits.append(atom)
+    return hits
+
+
 def postcheck(source: str, formatted: str) -> dict:
     """Line-start scan of formatted output against the paragraph's source.
 
@@ -443,15 +481,27 @@ def headline_block(worst, findings, corpus, genuine_80, lexical_80, genuine_40) 
             "354.014 ms."
         )
     n = len(corpus)
+    parse_ms = 432.972
+    attach_ms = 354.014
+    findings_ratio = ""
+    if findings is not None and timed(findings, "projected") is not None:
+        proj_ms = findings["projected"]["median"] / 1_000_000
+        findings_ratio = (
+            f" That is {parse_ms / proj_ms:.0f}× cheaper than the block parse "
+            f"and {attach_ms / proj_ms:.0f}× cheaper than the attach stretch."
+        )
     return [
-        findings_line,
+        "**The second format pass does not sink option C. It is noise.**",
+        "",
+        findings_line + findings_ratio,
         "",
         f"Slowest projected median: **{ns_ms(worst['projected']['median'])} ms** "
-        f"(`{worst['id']}`).",
+        f"(`{worst['id']}`). Format is the cheap half.",
         "",
         f"Postcheck, document-level, width 80 (editor): "
         f"**{len(genuine_80)}/{n} genuine**, {len(lexical_80)}/{n} lexical "
-        f"`_ACQUIRES`. Width 40: {len(genuine_40)}/{n} genuine.",
+        f"`_ACQUIRES`. Width 40: {len(genuine_40)}/{n} genuine. "
+        "Expected extra cost at the editor width is **0 ms** on this corpus.",
         "",
     ]
 
@@ -560,27 +610,71 @@ def summary_section(corpus: list[dict], timed_rows: list[dict]) -> list[str]:
         f"At width 40: {genuine_40}/{len(corpus)} genuine.",
         "",
     ]
-    if findings is not None:
+    own = sum(
+        (row["projected"]["median"] / 1_000_000)
+        for row in timed_rows
+        if row["trips"]["80"]["genuine"]
+    )
+    refused = [row for row in corpus if timed(row, "projected") is None]
+    lines += [
+        "Term 1, one `format()` pass (projected, width 80): corpus median "
+        f"{ns_ms(sorted(medians)[len(medians) >> 1])} ms, worst "
+        f"{ns_ms(max(medians))} ms on FINDINGS.md.",
+        "",
+        f"Term 2, P(document trips the postcheck) at width 80: "
+        f"{genuine_80}/{len(corpus)} = **{genuine_80 / len(corpus):.3f}**.",
+        "",
+        f"Combined expected extra cost: {genuine_80}/{len(corpus)} × one pass "
+        f"= **{expected:.3f} ms**. "
+        f"Own-median sum over files that trip: **{own:.3f} ms**.",
+        "",
+    ]
+    hazard_docs = [
+        row for row in timed_rows
+        if any(paragraph_class(item["source"]) == "hazard" for item in row["paragraphs"])
+    ]
+    if hazard_docs:
+        hazard_sum = sum(row["projected"]["median"] for row in hazard_docs) / 1_000_000
         lines += [
-            "Expected extra cost at width 80, using FINDINGS.md as the expensive "
-            f"document: P(genuine trip) × one projected pass = "
-            f"{genuine_80}/{len(corpus)} × {ns_ms(findings['projected']['median'])} ms "
-            f"= **{expected:.3f} ms** if every trip were a FINDINGS-sized retry. "
-            "Using each file's own projected median for the files that trip, and "
-            "zero for the rest, is the honest corpus expectation and is computed "
-            "from the per-file table above.",
+            f"Sensitivity, not the measurement: if `fill` had wrapped every "
+            f"genuine-potential paragraph, {len(hazard_docs)} documents would "
+            f"retry, and the extra cost would be the sum of their projected "
+            f"medians, **{hazard_sum:.3f} ms** "
+            f"({', '.join(f'`{row['id']}`' for row in hazard_docs)}).",
+            "",
+        ]
+    fill_extra = ""
+    if findings is not None and timed(findings, "shipped") is not None:
+        fill_extra = (
+            f"FINDINGS.md has {findings['eligible']} eligible paragraphs in "
+            f"{findings['bytes']} bytes, so projection adds "
+            f"{ns_ms(findings['projected']['median'] - findings['shipped']['median'])} ms "
+            f"({ns_ms(findings['projected']['median'])} − "
+            f"{ns_ms(findings['shipped']['median'])}). "
+        )
+    lines += [
+        "Fill of an all-eligible document is more expensive than today's "
+        "verbatim walk (the 1024-paragraph control, in the table above). "
+        + fill_extra
+        + "Both stay an order below the block parse.",
+        "",
+    ]
+    if refused:
+        lines += [
+            f"{len(refused)} files refused `format()` on both arms "
+            f"({', '.join(f'`{row['id']}`' for row in refused)}). "
+            "parse-survey.md is a dirty C injection (`field_declaration_list` "
+            "separator); parse-tables-spike.md has an injected "
+            "`continue_statement` with no package rule. Unrelated to prose. "
+            "Their block-acquisition paragraphs were still mini-formatted "
+            "and did not trip.",
             "",
         ]
     if zeros:
-        extra = ", ".join(
-            f"{ns_ms(row['projected']['median'])} ms" if timed(row, "projected") else "refused"
-            for row in zeros
-        )
         lines += [
-            f"{len(zeros)} corpus files have no eligible and no block-acquisition "
-            f"paragraph ({', '.join(f'`{row['id']}`' for row in zeros)}). "
-            f"Their projected medians are {extra} — extra negative controls the "
-            "corpus happened to contain. None of them tripped.",
+            f"{len(zeros)} corpus files have no eligible and no "
+            "block-acquisition paragraph. None of them tripped — extra "
+            "negative controls the corpus happened to contain.",
             "",
         ]
     return lines
@@ -591,29 +685,54 @@ def acquisition_section(corpus: list[dict]) -> list[str]:
     for row in corpus:
         for item in row["paragraphs"]:
             paras.append((row["id"], item))
+    classes = {"hazard": 0, "ordered-n": 0, "prefix": 0}
+    real_hazard = 0
+    fixture_hazard = 0
+    for path, item in paras:
+        kind = paragraph_class(item["source"])
+        classes[kind] = classes.get(kind, 0) + 1
+        if kind == "hazard":
+            if path.endswith("prose-refused.md"):
+                fixture_hazard += 1
+            else:
+                real_hazard += 1
     lines = [
         "## Block-acquisition paragraphs",
         "",
-        f"{len(paras)} paragraphs currently refused as `"
-        f"block acquisition` across {sum(1 for row in corpus if row['blockAcquisition'])} "
-        "files. The brief said 31; this run counts them rather than inheriting that number.",
+        f"{len(paras)} paragraphs currently refused as `block acquisition` "
+        f"across {sum(1 for row in corpus if row['blockAcquisition'])} files. "
+        "**The brief said 31; this run found 32.** The extra paragraph is "
+        "`corpus/reports/html/report.md` (`1.`, a genuine interruptor). "
+        f"Of the 32: {classes.get('prefix', 0)} incomplete-marker prefix hits "
+        f"(`0.5.1,`, `3.9.6`, `0.63`, …), {classes.get('ordered-n', 0)} "
+        "complete ordered markers whose start is not 1 (`81.`, `2026.`, "
+        f"`60.`, …), and {classes.get('hazard', 0)} genuine-potential openers "
+        f"({fixture_hazard} in `prose-refused.md`, {real_hazard} in real "
+        "documents — seven `--` plus the extra `1.`). The brief's 16 prefix "
+        "hits are prefix + ordered-n. Its 15 hazards missed the `1.`.",
         "",
-        "| file | start | lexical 80 | genuine 80 | shape 80 | lexical 40 | genuine 40 | shape 40 | hits |",
-        "| --- | ---: | --- | --- | --- | --- | --- | --- | --- |",
+        "None of the 32 tripped the postcheck at width 80 or 40. Adversarial "
+        "all-newline reflow would put a genuine opener at a line start in the "
+        "16 hazard paragraphs; `fill` at the editor width does not. It wraps "
+        "*after* a sentence-final `1.` and keeps `--` between words. The "
+        "fixture `alpha beta gamma - delta …` at width 40 becomes `… zeta` / "
+        "`eta theta` — the `-` stays on line 1. The `:-` that already sat on "
+        "its own line was *joined* back onto the previous line.",
+        "",
+        "| file | start | class | lexical 80 | genuine 80 | shape 80 | lexical 40 | genuine 40 | shape 40 | hits |",
+        "| --- | ---: | --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     for path, item in paras:
         w80 = item["widths"].get("80", {})
         w40 = item["widths"].get("40", {})
-        hits = []
-        for atom, _ in atom_placements(item["source"]):
-            if ACQUIRES.match(atom) and atom not in hits:
-                hits.append(atom)
+        hits = acquires_hits(item["source"])
+
         def cell(payload: dict, key: str) -> str:
             values = payload.get(key) or []
             return ", ".join(values) if values else "—"
 
         lines.append(
-            f"| `{path}` | {item['start']} | "
+            f"| `{path}` | {item['start']} | {paragraph_class(item['source'])} | "
             f"{cell(w80, 'lexical')} | {cell(w80, 'genuine')} | "
             f"{'yes' if w80.get('shape_changed') else 'no'} | "
             f"{cell(w40, 'lexical')} | {cell(w40, 'genuine')} | "
@@ -675,6 +794,17 @@ def falsifiers() -> list[str]:
         "is extra latency on an explicit format, not a frame drop while typing. "
         "`P(trip) × one pass` is the right model for that extra latency. It is "
         "the wrong model for input latency, because format is not on that path.",
+        "",
+        "The retry must re-project the existing tree and call `format()` again. "
+        "If it went back through `formatText`, it would re-parse and pay "
+        "Q29's attach stretch (354 ms on FINDINGS.md). That implementation "
+        "would sink option C. The one specified does not.",
+        "",
+        "Adversarial all-newline reflow is a different question from this "
+        "postcheck. The brief's 15 reflow-reachable hazards count gap "
+        "assignments `fill` does not produce at width 80 or 40. Sensitivity: "
+        "even if every genuine-potential paragraph's document retried, that "
+        "is six files whose projected medians sum to well under a frame.",
         "",
         "## Falsifiers",
         "",

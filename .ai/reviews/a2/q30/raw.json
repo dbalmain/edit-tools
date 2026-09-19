@@ -1,0 +1,3488 @@
+{
+ "warmup": 5,
+ "iterations": 11,
+ "widths": [
+  80,
+  40
+ ],
+ "results": [
+  {
+   "id": "__control__/negative.md",
+   "role": "negative",
+   "bytes": 10,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 0,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 59242,
+    "max": 101902,
+    "min": 49223
+   },
+   "projected": {
+    "median": 54413,
+    "max": 66335,
+    "min": 49263
+   },
+   "admittedFormat": {
+    "bytes": 10
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "__control__/trip.md",
+   "role": "positive-trip",
+   "bytes": 46,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 0,
+   "blockAcquisition": 1,
+   "shipped": {
+    "median": 17944,
+    "max": 37341,
+    "min": 15510
+   },
+   "projected": {
+    "median": 18014,
+    "max": 24917,
+    "min": 16642
+   },
+   "admittedFormat": {
+    "bytes": 46
+   },
+   "paragraphs": [
+    {
+     "start": 0,
+     "source": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - yyy\n",
+     "formatted": {
+      "40": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n- yyy\n",
+      "80": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - yyy\n"
+     },
+     "shapeChanged": {
+      "40": true,
+      "80": false
+     },
+     "subtree": {
+      "median": 63269,
+      "max": 92104,
+      "min": 60073,
+      "warmup": 5,
+      "iterations": 11
+     },
+     "projected": true
+    }
+   ]
+  },
+  {
+   "id": "__control__/synth-1.md",
+   "role": "positive-size",
+   "bytes": 116,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 1,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 19327,
+    "max": 108715,
+    "min": 16411
+   },
+   "projected": {
+    "median": 250332,
+    "max": 276170,
+    "min": 211819
+   },
+   "admittedFormat": {
+    "bytes": 115
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "__control__/synth-4.md",
+   "role": "positive-size",
+   "bytes": 464,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 4,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 42780,
+    "max": 50445,
+    "min": 33533
+   },
+   "projected": {
+    "median": 545639,
+    "max": 808534,
+    "min": 324171
+   },
+   "admittedFormat": {
+    "bytes": 463
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "__control__/synth-16.md",
+   "role": "positive-size",
+   "bytes": 1856,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 16,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 107583,
+    "max": 261282,
+    "min": 95270
+   },
+   "projected": {
+    "median": 1103190,
+    "max": 1520125,
+    "min": 1064416
+   },
+   "admittedFormat": {
+    "bytes": 1855
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "__control__/synth-64.md",
+   "role": "positive-size",
+   "bytes": 7424,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 64,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 317869,
+    "max": 511404,
+    "min": 293804
+   },
+   "projected": {
+    "median": 4445420,
+    "max": 6099648,
+    "min": 3743287
+   },
+   "admittedFormat": {
+    "bytes": 7423
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "__control__/synth-256.md",
+   "role": "positive-size",
+   "bytes": 29696,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 256,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 1590698,
+    "max": 2728373,
+    "min": 1108439
+   },
+   "projected": {
+    "median": 16018797,
+    "max": 18662882,
+    "min": 14488161
+   },
+   "admittedFormat": {
+    "bytes": 29695
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "__control__/synth-1024.md",
+   "role": "positive-size",
+   "bytes": 118784,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 1024,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 4783698,
+    "max": 5252271,
+    "min": 4316367
+   },
+   "projected": {
+    "median": 72266641,
+    "max": 80118282,
+    "min": 67583132
+   },
+   "admittedFormat": {
+    "bytes": 118783
+   },
+   "paragraphs": []
+  },
+  {
+   "id": ".ai/done-a2-foundation.md",
+   "role": "corpus",
+   "bytes": 12276,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 3,
+   "blockAcquisition": 1,
+   "shipped": {
+    "median": 718194,
+    "max": 1137915,
+    "min": 704318
+   },
+   "projected": {
+    "median": 920455,
+    "max": 1346379,
+    "min": 903693
+   },
+   "admittedFormat": {
+    "bytes": 12276
+   },
+   "paragraphs": [
+    {
+     "start": 2763,
+     "source": "Hardening plan: review the hand port line by line against upstream 0.5.1,\ngenerate committed adversarial scanner inputs that cover malformed/unclosed\nspans, delimiter flanking, delimiter runs including uint8 wrap boundaries, CR,\nLF, tabs, punctuation and serialized-state continuation, then run the real C\nrecorder/replay plus lexer/table oracles through manifest selection. A positive\ncontrol must establish that malformed secondary roots actually reach the new\nrefusal check in both producers.\n",
+     "formatted": {
+      "40": "Hardening plan: review the hand port\nline by line against upstream 0.5.1,\ngenerate committed adversarial scanner\ninputs that cover malformed/unclosed\nspans, delimiter flanking, delimiter\nruns including uint8 wrap boundaries,\nCR, LF, tabs, punctuation and\nserialized-state continuation, then run\nthe real C recorder/replay plus\nlexer/table oracles through manifest\nselection. A positive control must\nestablish that malformed secondary roots\nactually reach the new refusal check in\nboth producers.\n",
+      "80": "Hardening plan: review the hand port line by line against upstream 0.5.1,\ngenerate committed adversarial scanner inputs that cover malformed/unclosed\nspans, delimiter flanking, delimiter runs including uint8 wrap boundaries, CR,\nLF, tabs, punctuation and serialized-state continuation, then run the real C\nrecorder/replay plus lexer/table oracles through manifest selection. A positive\ncontrol must establish that malformed secondary roots actually reach the new\nrefusal check in both producers.\n"
+     },
+     "shapeChanged": {
+      "40": false,
+      "80": false
+     },
+     "subtree": {
+      "median": 245092,
+      "max": 317909,
+      "min": 241625,
+      "warmup": 5,
+      "iterations": 11
+     },
+     "projected": true
+    }
+   ]
+  },
+  {
+   "id": ".ai/done-corpus-thresholds.md",
+   "role": "corpus",
+   "bytes": 5438,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 7,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 477831,
+    "max": 515251,
+    "min": 455097
+   },
+   "projected": {
+    "median": 859630,
+    "max": 1038979,
+    "min": 829714
+   },
+   "admittedFormat": {
+    "bytes": 5594
+   },
+   "paragraphs": []
+  },
+  {
+   "id": ".ai/done-loader.md",
+   "role": "corpus",
+   "bytes": 5242,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 4,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 482289,
+    "max": 1036824,
+    "min": 462432
+   },
+   "projected": {
+    "median": 692936,
+    "max": 1611648,
+    "min": 630769
+   },
+   "admittedFormat": {
+    "bytes": 5597
+   },
+   "paragraphs": []
+  },
+  {
+   "id": ".ai/done-resign.md",
+   "role": "corpus",
+   "bytes": 9129,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 0,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 701653,
+    "max": 1385432,
+    "min": 652581
+   },
+   "projected": {
+    "median": 692125,
+    "max": 1452628,
+    "min": 667538
+   },
+   "admittedFormat": {
+    "bytes": 9129
+   },
+   "paragraphs": []
+  },
+  {
+   "id": ".ai/parse/length.md",
+   "role": "corpus",
+   "bytes": 8280,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 4,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 583971,
+    "max": 1416350,
+    "min": 567800
+   },
+   "projected": {
+    "median": 933429,
+    "max": 2259239,
+    "min": 913242
+   },
+   "admittedFormat": {
+    "bytes": 8565
+   },
+   "paragraphs": []
+  },
+  {
+   "id": ".ai/parse/merge-scanner-into-main.md",
+   "role": "corpus",
+   "bytes": 5510,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 3,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 404122,
+    "max": 1240408,
+    "min": 390326
+   },
+   "projected": {
+    "median": 533516,
+    "max": 809746,
+    "min": 523738
+   },
+   "admittedFormat": {
+    "bytes": 6627
+   },
+   "paragraphs": []
+  },
+  {
+   "id": ".ai/parse/recover.md",
+   "role": "corpus",
+   "bytes": 15226,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 5,
+   "blockAcquisition": 1,
+   "shipped": {
+    "median": 915476,
+    "max": 1081759,
+    "min": 887593
+   },
+   "projected": {
+    "median": 1149447,
+    "max": 1540324,
+    "min": 1128177
+   },
+   "admittedFormat": {
+    "bytes": 16155
+   },
+   "paragraphs": [
+    {
+     "start": 12955,
+     "source": "Stated plainly, because \"44/44 byte-identical\" is exactly the kind of number\nthat gets quoted without its scope -- and this document's own predecessor was\nwritten to make that mistake hard.\n",
+     "formatted": {
+      "40": "Stated plainly, because \"44/44\nbyte-identical\" is exactly the kind of\nnumber that gets quoted without its\nscope -- and this document's own\npredecessor was written to make that\nmistake hard.\n",
+      "80": "Stated plainly, because \"44/44 byte-identical\" is exactly the kind of number\nthat gets quoted without its scope -- and this document's own predecessor was\nwritten to make that mistake hard.\n"
+     },
+     "shapeChanged": {
+      "40": false,
+      "80": false
+     },
+     "subtree": {
+      "median": 95239,
+      "max": 101101,
+      "min": 94278,
+      "warmup": 5,
+      "iterations": 11
+     },
+     "projected": true
+    }
+   ]
+  },
+  {
+   "id": ".ai/parse/scanner.md",
+   "role": "corpus",
+   "bytes": 12121,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 3,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 765954,
+    "max": 2534328,
+    "min": 747870
+   },
+   "projected": {
+    "median": 857086,
+    "max": 948979,
+    "min": 841516
+   },
+   "admittedFormat": {
+    "bytes": 12115
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "DESIGN.md",
+   "role": "corpus",
+   "bytes": 45396,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 6,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 2578891,
+    "max": 4932608,
+    "min": 2486427
+   },
+   "projected": {
+    "median": 2890419,
+    "max": 6999735,
+    "min": 2771224
+   },
+   "admittedFormat": {
+    "bytes": 45396
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "README.md",
+   "role": "corpus",
+   "bytes": 1859,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 1,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 171413,
+    "max": 248128,
+    "min": 165603
+   },
+   "projected": {
+    "median": 237477,
+    "max": 365429,
+    "min": 231827
+   },
+   "admittedFormat": {
+    "bytes": 1859
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "REVIEW.md",
+   "role": "corpus",
+   "bytes": 23452,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 1,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 1565972,
+    "max": 2616282,
+    "min": 1554340
+   },
+   "projected": {
+    "median": 1670529,
+    "max": 3434895,
+    "min": 1637637
+   },
+   "admittedFormat": {
+    "bytes": 23452
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/contrib/README.md",
+   "role": "corpus",
+   "bytes": 2053,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 2,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 213082,
+    "max": 230454,
+    "min": 206600
+   },
+   "projected": {
+    "median": 320394,
+    "max": 331836,
+    "min": 316827
+   },
+   "admittedFormat": {
+    "bytes": 2141
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/reports/css/corpus-report.md",
+   "role": "corpus",
+   "bytes": 23198,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 7,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 1606619,
+    "max": 1770257,
+    "min": 1579668
+   },
+   "projected": {
+    "median": 1854045,
+    "max": 4208774,
+    "min": 1799482
+   },
+   "admittedFormat": {
+    "bytes": 23080
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/reports/css/report.md",
+   "role": "corpus",
+   "bytes": 6281,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 4,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 425903,
+    "max": 447503,
+    "min": 418049
+   },
+   "projected": {
+    "median": 542452,
+    "max": 579763,
+    "min": 533666
+   },
+   "admittedFormat": {
+    "bytes": 7574
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/reports/go/corpus-report.md",
+   "role": "corpus",
+   "bytes": 18756,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 4,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 1095455,
+    "max": 1112066,
+    "min": 1079986
+   },
+   "projected": {
+    "median": 1260847,
+    "max": 1308807,
+    "min": 1239486
+   },
+   "admittedFormat": {
+    "bytes": 18845
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/reports/go/report.md",
+   "role": "corpus",
+   "bytes": 8855,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 1,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 606674,
+    "max": 637421,
+    "min": 600502
+   },
+   "projected": {
+    "median": 649865,
+    "max": 656648,
+    "min": 644965
+   },
+   "admittedFormat": {
+    "bytes": 12341
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/reports/haskell/corpus-report.md",
+   "role": "corpus",
+   "bytes": 34732,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 13,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 2287944,
+    "max": 4494463,
+    "min": 2251845
+   },
+   "projected": {
+    "median": 2820046,
+    "max": 3991515,
+    "min": 2770913
+   },
+   "admittedFormat": {
+    "bytes": 34732
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/reports/haskell/report.md",
+   "role": "corpus",
+   "bytes": 8028,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 6,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 441762,
+    "max": 1088232,
+    "min": 422867
+   },
+   "projected": {
+    "median": 1021395,
+    "max": 2174679,
+    "min": 981340
+   },
+   "admittedFormat": {
+    "bytes": 8991
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/reports/html/corpus-report.md",
+   "role": "corpus",
+   "bytes": 36088,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 14,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 2791552,
+    "max": 5185045,
+    "min": 2609178
+   },
+   "projected": {
+    "median": 3192729,
+    "max": 4282793,
+    "min": 2955702
+   },
+   "admittedFormat": {
+    "bytes": 36088
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/reports/html/report.md",
+   "role": "corpus",
+   "bytes": 12508,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 1,
+   "blockAcquisition": 1,
+   "shipped": {
+    "median": 621531,
+    "max": 628825,
+    "min": 613136
+   },
+   "projected": {
+    "median": 714587,
+    "max": 741758,
+    "min": 707945
+   },
+   "admittedFormat": {
+    "bytes": 13315
+   },
+   "paragraphs": [
+    {
+     "start": 5147,
+     "source": "The package-level alternatives above were also exercised at width 1. The final\npackage remained Rust/JS-identical for every width from 1 through 120\n(1920/1920 runs). No second house-style constant was found. The two named\ncomment fields are package-controlled; HTML's decision not to attach markup\ncomments is structural, not another hidden whitespace constant.\n",
+     "formatted": {
+      "40": "The package-level alternatives above\nwere also exercised at width 1. The\nfinal package remained Rust/JS-identical\nfor every width from 1 through 120\n(1920/1920 runs). No second house-style\nconstant was found. The two named\ncomment fields are package-controlled;\nHTML's decision not to attach markup\ncomments is structural, not another\nhidden whitespace constant.\n",
+      "80": "The package-level alternatives above were also exercised at width 1. The final\npackage remained Rust/JS-identical for every width from 1 through 120 (1920/1920\nruns). No second house-style constant was found. The two named comment fields\nare package-controlled; HTML's decision not to attach markup comments is\nstructural, not another hidden whitespace constant.\n"
+     },
+     "shapeChanged": {
+      "40": false,
+      "80": false
+     },
+     "subtree": {
+      "median": 158229,
+      "max": 243479,
+      "min": 156425,
+      "warmup": 5,
+      "iterations": 11
+     },
+     "projected": true
+    }
+   ]
+  },
+  {
+   "id": "corpus/reports/javascript/corpus-report.md",
+   "role": "corpus",
+   "bytes": 35201,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 5,
+   "blockAcquisition": 1,
+   "shipped": {
+    "median": 2087715,
+    "max": 4952195,
+    "min": 2046648
+   },
+   "projected": {
+    "median": 2247066,
+    "max": 4499402,
+    "min": 2226177
+   },
+   "admittedFormat": {
+    "bytes": 35201
+   },
+   "paragraphs": [
+    {
+     "start": 17382,
+     "source": "The facts, each probed against the pinned grammar and prettier 3.9.6:\n",
+     "formatted": {
+      "40": "The facts, each probed against the\npinned grammar and prettier 3.9.6:\n",
+      "80": "The facts, each probed against the pinned grammar and prettier 3.9.6:\n"
+     },
+     "shapeChanged": {
+      "40": false,
+      "80": false
+     },
+     "subtree": {
+      "median": 38552,
+      "max": 40346,
+      "min": 37621,
+      "warmup": 5,
+      "iterations": 11
+     },
+     "projected": true
+    }
+   ]
+  },
+  {
+   "id": "corpus/reports/javascript/report.md",
+   "role": "corpus",
+   "bytes": 8688,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 1,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 652169,
+    "max": 1331280,
+    "min": 644746
+   },
+   "projected": {
+    "median": 684000,
+    "max": 719837,
+    "min": 676536
+   },
+   "admittedFormat": {
+    "bytes": 8688
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/reports/kotlin/corpus-report.md",
+   "role": "corpus",
+   "bytes": 27982,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 2,
+   "blockAcquisition": 1,
+   "shipped": {
+    "median": 1758344,
+    "max": 4120377,
+    "min": 1733327
+   },
+   "projected": {
+    "median": 1782751,
+    "max": 2118163,
+    "min": 1752755
+   },
+   "admittedFormat": {
+    "bytes": 27982
+   },
+   "paragraphs": [
+    {
+     "start": 4534,
+     "source": "ktfmt 0.63 ships three styles. They are different formatters. Diffed on the same\ninput:\n",
+     "formatted": {
+      "40": "ktfmt 0.63 ships three styles. They are\ndifferent formatters. Diffed on the same\ninput:\n",
+      "80": "ktfmt 0.63 ships three styles. They are different formatters. Diffed on the same\ninput:\n"
+     },
+     "shapeChanged": {
+      "40": false,
+      "80": false
+     },
+     "subtree": {
+      "median": 47029,
+      "max": 52249,
+      "min": 46688,
+      "warmup": 5,
+      "iterations": 11
+     },
+     "projected": true
+    }
+   ]
+  },
+  {
+   "id": "corpus/reports/kotlin/report.md",
+   "role": "corpus",
+   "bytes": 4755,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 2,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 338578,
+    "max": 701753,
+    "min": 334200
+   },
+   "projected": {
+    "median": 436442,
+    "max": 1373829,
+    "min": 427846
+   },
+   "admittedFormat": {
+    "bytes": 5950
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/reports/markdown/corpus-report.md",
+   "role": "corpus",
+   "bytes": 35609,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 5,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 2174659,
+    "max": 4157407,
+    "min": 2154742
+   },
+   "projected": {
+    "median": 2334120,
+    "max": 3562065,
+    "min": 2276842
+   },
+   "admittedFormat": {
+    "bytes": 35609
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/reports/markdown/prose-wrap.md",
+   "role": "corpus",
+   "bytes": 8643,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 1,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 388312,
+    "max": 494602,
+    "min": 382591
+   },
+   "projected": {
+    "median": 423428,
+    "max": 441542,
+    "min": 413880
+   },
+   "admittedFormat": {
+    "bytes": 8840
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/reports/markdown/report.md",
+   "role": "corpus",
+   "bytes": 5514,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 1,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 377281,
+    "max": 732150,
+    "min": 370548
+   },
+   "projected": {
+    "median": 399653,
+    "max": 1221773,
+    "min": 392991
+   },
+   "admittedFormat": {
+    "bytes": 5514
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/reports/ruby/corpus-report.md",
+   "role": "corpus",
+   "bytes": 33186,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 3,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 2241335,
+    "max": 4089609,
+    "min": 2193646
+   },
+   "projected": {
+    "median": 2401026,
+    "max": 4462833,
+    "min": 2341564
+   },
+   "admittedFormat": {
+    "bytes": 33392
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/reports/ruby/report.md",
+   "role": "corpus",
+   "bytes": 12719,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 1,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 782976,
+    "max": 808064,
+    "min": 774219
+   },
+   "projected": {
+    "median": 829123,
+    "max": 900378,
+    "min": 814426
+   },
+   "admittedFormat": {
+    "bytes": 13037
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/reports/rust/corpus-report.md",
+   "role": "corpus",
+   "bytes": 30196,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 7,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 1879634,
+    "max": 1953232,
+    "min": 1860628
+   },
+   "projected": {
+    "median": 2083217,
+    "max": 2197623,
+    "min": 2058420
+   },
+   "admittedFormat": {
+    "bytes": 30196
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/reports/rust/report.md",
+   "role": "corpus",
+   "bytes": 17575,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 6,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 1236411,
+    "max": 3056522,
+    "min": 1223446
+   },
+   "projected": {
+    "median": 1478287,
+    "max": 3195895,
+    "min": 1445375
+   },
+   "admittedFormat": {
+    "bytes": 18876
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/reports/scheme/corpus-report.md",
+   "role": "corpus",
+   "bytes": 41636,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 8,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 2331064,
+    "max": 2950412,
+    "min": 2280880
+   },
+   "projected": {
+    "median": 2574042,
+    "max": 4749023,
+    "min": 2502267
+   },
+   "admittedFormat": {
+    "bytes": 41636
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/reports/scheme/report.md",
+   "role": "corpus",
+   "bytes": 13296,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 4,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 658121,
+    "max": 2504862,
+    "min": 654564
+   },
+   "projected": {
+    "median": 794197,
+    "max": 993724,
+    "min": 788105
+   },
+   "admittedFormat": {
+    "bytes": 13881
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/reports/toml/corpus-report.md",
+   "role": "corpus",
+   "bytes": 15955,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 5,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 972493,
+    "max": 990097,
+    "min": 941144
+   },
+   "projected": {
+    "median": 1184413,
+    "max": 1549962,
+    "min": 1143485
+   },
+   "admittedFormat": {
+    "bytes": 15955
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/reports/toml/report.md",
+   "role": "corpus",
+   "bytes": 8185,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 2,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 501987,
+    "max": 576226,
+    "min": 495244
+   },
+   "projected": {
+    "median": 580484,
+    "max": 598228,
+    "min": 570916
+   },
+   "admittedFormat": {
+    "bytes": 8185
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/reports/typescript/corpus-report.md",
+   "role": "corpus",
+   "bytes": 36989,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 9,
+   "blockAcquisition": 1,
+   "shipped": {
+    "median": 2004368,
+    "max": 2189998,
+    "min": 1963512
+   },
+   "projected": {
+    "median": 2333609,
+    "max": 5113600,
+    "min": 2313571
+   },
+   "admittedFormat": {
+    "bytes": 36772
+   },
+   "paragraphs": [
+    {
+     "start": 12725,
+     "source": "Each row was established by running prettier 3.9.6 on a probe and diffing, then\nwhere it matters running the result through the generic signature. \"gate3\" is\nwhether the generic default (with the two wrappers above) accepts the rewrite.\n",
+     "formatted": {
+      "40": "Each row was established by running\nprettier 3.9.6 on a probe and diffing,\nthen where it matters running the result\nthrough the generic signature. \"gate3\"\nis whether the generic default (with the\ntwo wrappers above) accepts the rewrite.\n",
+      "80": "Each row was established by running prettier 3.9.6 on a probe and diffing, then\nwhere it matters running the result through the generic signature. \"gate3\" is\nwhether the generic default (with the two wrappers above) accepts the rewrite.\n"
+     },
+     "shapeChanged": {
+      "40": false,
+      "80": false
+     },
+     "subtree": {
+      "median": 117502,
+      "max": 1051873,
+      "min": 115498,
+      "warmup": 5,
+      "iterations": 11
+     },
+     "projected": true
+    }
+   ]
+  },
+  {
+   "id": "corpus/reports/typescript/report.md",
+   "role": "corpus",
+   "bytes": 16333,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 1,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 1009824,
+    "max": 1080808,
+    "min": 1001659
+   },
+   "projected": {
+    "median": 1042014,
+    "max": 1616878,
+    "min": 1035372
+   },
+   "admittedFormat": {
+    "bytes": 20094
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/reports/xml/corpus-report.md",
+   "role": "corpus",
+   "bytes": 27622,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 8,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 1715433,
+    "max": 3165077,
+    "min": 1683563
+   },
+   "projected": {
+    "median": 1921182,
+    "max": 3319077,
+    "min": 1879172
+   },
+   "admittedFormat": {
+    "bytes": 27622
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/reports/xml/report.md",
+   "role": "corpus",
+   "bytes": 9201,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 2,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 603688,
+    "max": 619779,
+    "min": 596634
+   },
+   "projected": {
+    "median": 710990,
+    "max": 804286,
+    "min": 697915
+   },
+   "admittedFormat": {
+    "bytes": 9201
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/reports/yaml/corpus-report.md",
+   "role": "corpus",
+   "bytes": 26395,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 6,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 1856580,
+    "max": 7459101,
+    "min": 1716206
+   },
+   "projected": {
+    "median": 2135396,
+    "max": 2842939,
+    "min": 1969042
+   },
+   "admittedFormat": {
+    "bytes": 24767
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/reports/yaml/report.md",
+   "role": "corpus",
+   "bytes": 10686,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 3,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 700981,
+    "max": 762678,
+    "min": 693227
+   },
+   "projected": {
+    "median": 870361,
+    "max": 939631,
+    "min": 857045
+   },
+   "admittedFormat": {
+    "bytes": 10686
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/src/markdown/blockquotes.md",
+   "role": "corpus",
+   "bytes": 888,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 3,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 186462,
+    "max": 219594,
+    "min": 183045
+   },
+   "projected": {
+    "median": 300186,
+    "max": 911017,
+    "min": 294254
+   },
+   "admittedFormat": {
+    "bytes": 888
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/src/markdown/comments.md",
+   "role": "corpus",
+   "bytes": 748,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 0,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 272153,
+    "max": 342275,
+    "min": 242247
+   },
+   "projected": {
+    "median": 256724,
+    "max": 381539,
+    "min": 238520
+   },
+   "admittedFormat": {
+    "bytes": 754
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/src/markdown/emphasis.md",
+   "role": "corpus",
+   "bytes": 95,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 0,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 15139,
+    "max": 27171,
+    "min": 14668
+   },
+   "projected": {
+    "median": 14868,
+    "max": 16131,
+    "min": 14467
+   },
+   "admittedFormat": {
+    "bytes": 95
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/src/markdown/fence_delimiters.md",
+   "role": "corpus",
+   "bytes": 352,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 0,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 77286,
+    "max": 86984,
+    "min": 75612
+   },
+   "projected": {
+    "median": 77897,
+    "max": 104447,
+    "min": 76434
+   },
+   "admittedFormat": {
+    "bytes": 355
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/src/markdown/fences.md",
+   "role": "corpus",
+   "bytes": 1045,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 5,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 430612,
+    "max": 881382,
+    "min": 409792
+   },
+   "projected": {
+    "median": 670714,
+    "max": 1874183,
+    "min": 625119
+   },
+   "admittedFormat": {
+    "bytes": 1075
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/src/markdown/headings.md",
+   "role": "corpus",
+   "bytes": 227,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 2,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 75642,
+    "max": 101742,
+    "min": 74100
+   },
+   "projected": {
+    "median": 89639,
+    "max": 93967,
+    "min": 88016
+   },
+   "admittedFormat": {
+    "bytes": 227
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/src/markdown/html_blocks.md",
+   "role": "corpus",
+   "bytes": 1726,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 6,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 207301,
+    "max": 215817,
+    "min": 202682
+   },
+   "projected": {
+    "median": 464836,
+    "max": 492298,
+    "min": 459496
+   },
+   "admittedFormat": {
+    "bytes": 1726
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/src/markdown/indented_code.md",
+   "role": "corpus",
+   "bytes": 460,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 1,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 58961,
+    "max": 65444,
+    "min": 57608
+   },
+   "projected": {
+    "median": 78217,
+    "max": 82977,
+    "min": 76415
+   },
+   "admittedFormat": {
+    "bytes": 460
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/src/markdown/indented_code_heading.md",
+   "role": "corpus",
+   "bytes": 14,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 0,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 11001,
+    "max": 18144,
+    "min": 10660
+   },
+   "projected": {
+    "median": 10760,
+    "max": 11462,
+    "min": 10380
+   },
+   "admittedFormat": {
+    "bytes": 14
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/src/markdown/json_comment_containers.md",
+   "role": "corpus",
+   "bytes": 57,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 0,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 59983,
+    "max": 70413,
+    "min": 58290
+   },
+   "projected": {
+    "median": 59632,
+    "max": 65353,
+    "min": 58130
+   },
+   "admittedFormat": {
+    "bytes": 69
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/src/markdown/kitchen.md",
+   "role": "corpus",
+   "bytes": 520,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 0,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 195699,
+    "max": 215556,
+    "min": 184888
+   },
+   "projected": {
+    "median": 201680,
+    "max": 979015,
+    "min": 189177
+   },
+   "admittedFormat": {
+    "bytes": 526
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/src/markdown/leading_sections.md",
+   "role": "corpus",
+   "bytes": 192,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 2,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 41038,
+    "max": 43222,
+    "min": 33744
+   },
+   "projected": {
+    "median": 200137,
+    "max": 300306,
+    "min": 161454
+   },
+   "admittedFormat": {
+    "bytes": 187
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/src/markdown/links.md",
+   "role": "corpus",
+   "bytes": 412,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 0,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 74000,
+    "max": 94719,
+    "min": 72316
+   },
+   "projected": {
+    "median": 74370,
+    "max": 98816,
+    "min": 73178
+   },
+   "admittedFormat": {
+    "bytes": 412
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/src/markdown/list_markers.md",
+   "role": "corpus",
+   "bytes": 99,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 0,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 40607,
+    "max": 50485,
+    "min": 39985
+   },
+   "projected": {
+    "median": 41258,
+    "max": 42631,
+    "min": 40687
+   },
+   "admittedFormat": {
+    "bytes": 99
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/src/markdown/lists.md",
+   "role": "corpus",
+   "bytes": 574,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 0,
+   "blockAcquisition": 1,
+   "shipped": {
+    "median": 182243,
+    "max": 188445,
+    "min": 177906
+   },
+   "projected": {
+    "median": 184077,
+    "max": 190118,
+    "min": 181973
+   },
+   "admittedFormat": {
+    "bytes": 574
+   },
+   "paragraphs": [
+    {
+     "start": 401,
+     "source": "An empty item, which carries no line ending of its own -- so without one the\nmarker joins the item below it and two items become one:\n",
+     "formatted": {
+      "40": "An empty item, which carries no line\nending of its own -- so without one the\nmarker joins the item below it and two\nitems become one:\n",
+      "80": "An empty item, which carries no line ending of its own -- so without one the\nmarker joins the item below it and two items become one:\n"
+     },
+     "shapeChanged": {
+      "40": false,
+      "80": false
+     },
+     "subtree": {
+      "median": 92695,
+      "max": 159441,
+      "min": 90341,
+      "warmup": 5,
+      "iterations": 11
+     },
+     "projected": true
+    }
+   ]
+  },
+  {
+   "id": "corpus/src/markdown/long_sequences.md",
+   "role": "corpus",
+   "bytes": 412,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 0,
+   "blockAcquisition": 1,
+   "shipped": {
+    "median": 143601,
+    "max": 151576,
+    "min": 139363
+   },
+   "projected": {
+    "median": 142719,
+    "max": 147097,
+    "min": 140014
+   },
+   "admittedFormat": {
+    "bytes": 418
+   },
+   "paragraphs": [
+    {
+     "start": 51,
+     "source": "A 27-item array of ones is 81 characters, so it breaks at prettier's default\n80 and stays flat at 81. The 26-item neighbour (78 characters) stays flat at\nboth scored widths.\n",
+     "formatted": {
+      "40": "A 27-item array of ones is 81\ncharacters, so it breaks at prettier's\ndefault 80 and stays flat at 81. The\n26-item neighbour (78 characters) stays\nflat at both scored widths.\n",
+      "80": "A 27-item array of ones is 81 characters, so it breaks at prettier's default 80\nand stays flat at 81. The 26-item neighbour (78 characters) stays flat at both\nscored widths.\n"
+     },
+     "shapeChanged": {
+      "40": false,
+      "80": false
+     },
+     "subtree": {
+      "median": 106230,
+      "max": 110709,
+      "min": 104347,
+      "warmup": 5,
+      "iterations": 11
+     },
+     "projected": true
+    }
+   ]
+  },
+  {
+   "id": "corpus/src/markdown/nesting.md",
+   "role": "corpus",
+   "bytes": 424,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 0,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 228180,
+    "max": 763279,
+    "min": 208803
+   },
+   "projected": {
+    "median": 231576,
+    "max": 878315,
+    "min": 209475
+   },
+   "admittedFormat": {
+    "bytes": 526
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/src/markdown/normalisation.md",
+   "role": "corpus",
+   "bytes": 456,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 0,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 95249,
+    "max": 114395,
+    "min": 93476
+   },
+   "projected": {
+    "median": 95179,
+    "max": 100259,
+    "min": 93035
+   },
+   "admittedFormat": {
+    "bytes": 451
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/src/markdown/prose_wrap.md",
+   "role": "corpus",
+   "bytes": 1019,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 1,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 53721,
+    "max": 60955,
+    "min": 51838
+   },
+   "projected": {
+    "median": 145144,
+    "max": 153509,
+    "min": 143491
+   },
+   "admittedFormat": {
+    "bytes": 1019
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/src/markdown/sections.md",
+   "role": "corpus",
+   "bytes": 1024,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 6,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 169439,
+    "max": 175241,
+    "min": 162427
+   },
+   "projected": {
+    "median": 435140,
+    "max": 459486,
+    "min": 429550
+   },
+   "admittedFormat": {
+    "bytes": 1025
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/src/markdown/strings.md",
+   "role": "corpus",
+   "bytes": 467,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 0,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 53721,
+    "max": 60324,
+    "min": 53131
+   },
+   "projected": {
+    "median": 55014,
+    "max": 55895,
+    "min": 54333
+   },
+   "admittedFormat": {
+    "bytes": 467
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/src/markdown/tables.md",
+   "role": "corpus",
+   "bytes": 1384,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 5,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 122611,
+    "max": 376520,
+    "min": 111030
+   },
+   "projected": {
+    "median": 464165,
+    "max": 1392184,
+    "min": 455629
+   },
+   "admittedFormat": {
+    "bytes": 1577
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/src/markdown/tables_nested.md",
+   "role": "corpus",
+   "bytes": 533,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 0,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 114406,
+    "max": 164811,
+    "min": 112111
+   },
+   "projected": {
+    "median": 113053,
+    "max": 141327,
+    "min": 110949
+   },
+   "admittedFormat": {
+    "bytes": 590
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "corpus/src/markdown/thematic.md",
+   "role": "corpus",
+   "bytes": 64,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 0,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 12203,
+    "max": 12694,
+    "min": 11602
+   },
+   "projected": {
+    "median": 12013,
+    "max": 12794,
+    "min": 11542
+   },
+   "admittedFormat": {
+    "bytes": 64
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "docs/a2-inline-price.md",
+   "role": "corpus",
+   "bytes": 40684,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 13,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 2755204,
+    "max": 3939387,
+    "min": 2711391
+   },
+   "projected": {
+    "median": 3820061,
+    "max": 6894066,
+    "min": 3729060
+   },
+   "admittedFormat": {
+    "bytes": 46282
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "docs/competition.md",
+   "role": "corpus",
+   "bytes": 14346,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 11,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 1054708,
+    "max": 1108991,
+    "min": 1041723
+   },
+   "projected": {
+    "median": 1669367,
+    "max": 1779244,
+    "min": 1662454
+   },
+   "admittedFormat": {
+    "bytes": 14346
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "docs/cst-contract.md",
+   "role": "corpus",
+   "bytes": 18637,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 8,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 1104793,
+    "max": 2834674,
+    "min": 1082150
+   },
+   "projected": {
+    "median": 1344805,
+    "max": 1506780,
+    "min": 1325088
+   },
+   "admittedFormat": {
+    "bytes": 18637
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "docs/design.md",
+   "role": "corpus",
+   "bytes": 16408,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 10,
+   "blockAcquisition": 1,
+   "shipped": {
+    "median": 927608,
+    "max": 1048036,
+    "min": 906078
+   },
+   "projected": {
+    "median": 1333424,
+    "max": 1442028,
+    "min": 1313967
+   },
+   "admittedFormat": {
+    "bytes": 16408
+   },
+   "paragraphs": [
+    {
+     "start": 2425,
+     "source": "Researched August 2026. The quadrant this project targets is empty, but the near\nmisses are instructive.\n",
+     "formatted": {
+      "40": "Researched August 2026. The quadrant\nthis project targets is empty, but the\nnear misses are instructive.\n",
+      "80": "Researched August 2026. The quadrant this project targets is empty, but the near\nmisses are instructive.\n"
+     },
+     "shapeChanged": {
+      "40": false,
+      "80": false
+     },
+     "subtree": {
+      "median": 54853,
+      "max": 60364,
+      "min": 54362,
+      "warmup": 5,
+      "iterations": 11
+     },
+     "projected": true
+    }
+   ]
+  },
+  {
+   "id": "docs/gate-narrowing.md",
+   "role": "corpus",
+   "bytes": 46664,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 14,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 2074421,
+    "max": 2317108,
+    "min": 2003868
+   },
+   "projected": {
+    "median": 4002125,
+    "max": 6926096,
+    "min": 3877810
+   },
+   "admittedFormat": {
+    "bytes": 46667
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "docs/highlight-design.md",
+   "role": "corpus",
+   "bytes": 66221,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 30,
+   "blockAcquisition": 1,
+   "shipped": {
+    "median": 7135871,
+    "max": 11070619,
+    "min": 7022298
+   },
+   "projected": {
+    "median": 9103712,
+    "max": 13854317,
+    "min": 8394235
+   },
+   "admittedFormat": {
+    "bytes": 66317
+   },
+   "paragraphs": [
+    {
+     "start": 15574,
+     "source": "The 2026-08-16 follow-up keeps that context decision and adds the separate\nbackground table recorded in Key Decision 10.\n",
+     "formatted": {
+      "40": "The 2026-08-16 follow-up keeps that\ncontext decision and adds the separate\nbackground table recorded in Key\nDecision 10.\n",
+      "80": "The 2026-08-16 follow-up keeps that context decision and adds the separate\nbackground table recorded in Key Decision 10.\n"
+     },
+     "shapeChanged": {
+      "40": false,
+      "80": false
+     },
+     "subtree": {
+      "median": 62127,
+      "max": 68529,
+      "min": 61717,
+      "warmup": 5,
+      "iterations": 11
+     },
+     "projected": true
+    }
+   ]
+  },
+  {
+   "id": "docs/host-ctype-divergence.md",
+   "role": "corpus",
+   "bytes": 8453,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 1,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 497178,
+    "max": 1753515,
+    "min": 484614
+   },
+   "projected": {
+    "median": 579863,
+    "max": 1579468,
+    "min": 561128
+   },
+   "admittedFormat": {
+    "bytes": 8453
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "docs/house-style.md",
+   "role": "corpus",
+   "bytes": 6531,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 3,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 317128,
+    "max": 331726,
+    "min": 309674
+   },
+   "projected": {
+    "median": 424129,
+    "max": 587688,
+    "min": 418739
+   },
+   "admittedFormat": {
+    "bytes": 6531
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "docs/injection.md",
+   "role": "corpus",
+   "bytes": 23466,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 8,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 1198719,
+    "max": 3148385,
+    "min": 1181567
+   },
+   "projected": {
+    "median": 2090541,
+    "max": 2191371,
+    "min": 2074641
+   },
+   "admittedFormat": {
+    "bytes": 23466
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "docs/markdown-idempotence.md",
+   "role": "corpus",
+   "bytes": 5721,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 8,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 316587,
+    "max": 1066270,
+    "min": 299745
+   },
+   "projected": {
+    "median": 846255,
+    "max": 1730031,
+    "min": 815888
+   },
+   "admittedFormat": {
+    "bytes": 6269
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "docs/onboarding/FINDINGS.md",
+   "role": "corpus",
+   "bytes": 199173,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 52,
+   "blockAcquisition": 3,
+   "shipped": {
+    "median": 14974799,
+    "max": 21591863,
+    "min": 14292062
+   },
+   "projected": {
+    "median": 19107470,
+    "max": 25481726,
+    "min": 18029548
+   },
+   "admittedFormat": {
+    "bytes": 199664
+   },
+   "paragraphs": [
+    {
+     "start": 36604,
+     "source": "Stage D confirmed the refutation against prettier 3.9.6 directly. So YAML never\nhad this problem; stage B misread its own evidence.\n",
+     "formatted": {
+      "40": "Stage D confirmed the refutation against\nprettier 3.9.6 directly. So YAML never\nhad this problem; stage B misread its\nown evidence.\n",
+      "80": "Stage D confirmed the refutation against prettier 3.9.6 directly. So YAML never\nhad this problem; stage B misread its own evidence.\n"
+     },
+     "shapeChanged": {
+      "40": false,
+      "80": false
+     },
+     "subtree": {
+      "median": 74060,
+      "max": 79851,
+      "min": 72557,
+      "warmup": 5,
+      "iterations": 11
+     },
+     "projected": true
+    },
+    {
+     "start": 42251,
+     "source": "Checked against the other merged languages before recording this, so the\ntwo-language count is not inflated: python's four divergences are\noperator-precedence breaking, a different gap, and TOML's seven are entries 1, 2\nand 3.\n",
+     "formatted": {
+      "40": "Checked against the other merged\nlanguages before recording this, so the\ntwo-language count is not inflated:\npython's four divergences are\noperator-precedence breaking, a\ndifferent gap, and TOML's seven are\nentries 1, 2 and 3.\n",
+      "80": "Checked against the other merged languages before recording this, so the\ntwo-language count is not inflated: python's four divergences are\noperator-precedence breaking, a different gap, and TOML's seven are entries 1, 2\nand 3.\n"
+     },
+     "shapeChanged": {
+      "40": false,
+      "80": false
+     },
+     "subtree": {
+      "median": 115388,
+      "max": 124795,
+      "min": 113474,
+      "warmup": 5,
+      "iterations": 11
+     },
+     "projected": true
+    },
+    {
+     "start": 86571,
+     "source": "Three probes, each isolating one knob against rustfmt 1.9.0:\n",
+     "formatted": {
+      "40": "Three probes, each isolating one knob\nagainst rustfmt 1.9.0:\n",
+      "80": "Three probes, each isolating one knob against rustfmt 1.9.0:\n"
+     },
+     "shapeChanged": {
+      "40": false,
+      "80": false
+     },
+     "subtree": {
+      "median": 35066,
+      "max": 40597,
+      "min": 34404,
+      "warmup": 5,
+      "iterations": 11
+     },
+     "projected": true
+    }
+   ]
+  },
+  {
+   "id": "docs/onboarding/LANGUAGES.md",
+   "role": "corpus",
+   "bytes": 54453,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 12,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 2742069,
+    "max": 6139584,
+    "min": 2628065
+   },
+   "projected": {
+    "median": 3533451,
+    "max": 8653533,
+    "min": 3497694
+   },
+   "admittedFormat": {
+    "bytes": 55733
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "docs/onboarding/LEDGER.md",
+   "role": "corpus",
+   "bytes": 112808,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 15,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 4737320,
+    "max": 11928046,
+    "min": 4605642
+   },
+   "projected": {
+    "median": 5442490,
+    "max": 6080953,
+    "min": 5292577
+   },
+   "admittedFormat": {
+    "bytes": 112808
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "docs/onboarding/WORKFLOW.md",
+   "role": "corpus",
+   "bytes": 29335,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 13,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 1891235,
+    "max": 2034165,
+    "min": 1810372
+   },
+   "projected": {
+    "median": 2545789,
+    "max": 5789584,
+    "min": 2426695
+   },
+   "admittedFormat": {
+    "bytes": 28952
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "docs/onboarding/cell-spike.md",
+   "role": "corpus",
+   "bytes": 12332,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 2,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 1050450,
+    "max": 1952230,
+    "min": 1039199
+   },
+   "projected": {
+    "median": 1124851,
+    "max": 2024837,
+    "min": 1106797
+   },
+   "admittedFormat": {
+    "bytes": 14076
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "docs/onboarding/templates/corpus-brief.md",
+   "role": "corpus",
+   "bytes": 29230,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 6,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 1757994,
+    "max": 4040026,
+    "min": 1721776
+   },
+   "projected": {
+    "median": 2108665,
+    "max": 4832139,
+    "min": 2090170
+   },
+   "admittedFormat": {
+    "bytes": 29230
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "docs/onboarding/templates/package-brief.md",
+   "role": "corpus",
+   "bytes": 9614,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 5,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 602215,
+    "max": 748601,
+    "min": 588529
+   },
+   "projected": {
+    "median": 824374,
+    "max": 922429,
+    "min": 810097
+   },
+   "admittedFormat": {
+    "bytes": 9614
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "docs/onboarding/templates/review-brief.md",
+   "role": "corpus",
+   "bytes": 23673,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 2,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 1231081,
+    "max": 1303628,
+    "min": 1215421
+   },
+   "projected": {
+    "median": 1338744,
+    "max": 1442619,
+    "min": 1314207
+   },
+   "admittedFormat": {
+    "bytes": 23673
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "docs/parse-all-languages.md",
+   "role": "corpus",
+   "bytes": 41578,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 10,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 2178246,
+    "max": 4522055,
+    "min": 2150314
+   },
+   "projected": {
+    "median": 2708837,
+    "max": 4193355,
+    "min": 2690742
+   },
+   "admittedFormat": {
+    "bytes": 41840
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "docs/parse-layer.md",
+   "role": "corpus",
+   "bytes": 27996,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 10,
+   "blockAcquisition": 1,
+   "shipped": {
+    "median": 1531537,
+    "max": 2190750,
+    "min": 1497182
+   },
+   "projected": {
+    "median": 2095680,
+    "max": 4028003,
+    "min": 2049915
+   },
+   "admittedFormat": {
+    "bytes": 27999
+   },
+   "paragraphs": [
+    {
+     "start": 3125,
+     "source": "That is the cost of postponing: each merged package is a bet on one grammar's\nvocabulary, and it is 6 packages today, 17 at the end of round 5. \"We can swap\nthe parse layer later\" is true of the runtime and false of the packages.\n",
+     "formatted": {
+      "40": "That is the cost of postponing: each\nmerged package is a bet on one grammar's\nvocabulary, and it is 6 packages today,\n17 at the end of round 5. \"We can swap\nthe parse layer later\" is true of the\nruntime and false of the packages.\n",
+      "80": "That is the cost of postponing: each merged package is a bet on one grammar's\nvocabulary, and it is 6 packages today, 17 at the end of round 5. \"We can swap\nthe parse layer later\" is true of the runtime and false of the packages.\n"
+     },
+     "shapeChanged": {
+      "40": false,
+      "80": false
+     },
+     "subtree": {
+      "median": 139643,
+      "max": 209185,
+      "min": 137580,
+      "warmup": 5,
+      "iterations": 11
+     },
+     "projected": true
+    }
+   ]
+  },
+  {
+   "id": "docs/parse-measurements.md",
+   "role": "corpus",
+   "bytes": 28476,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 7,
+   "blockAcquisition": 1,
+   "shipped": {
+    "median": 1771379,
+    "max": 3992336,
+    "min": 1745481
+   },
+   "projected": {
+    "median": 2098436,
+    "max": 2163729,
+    "min": 2060164
+   },
+   "admittedFormat": {
+    "bytes": 28476
+   },
+   "paragraphs": [
+    {
+     "start": 22540,
+     "source": "Every language parses its largest corpus file in under 0.4 ms and reparses in\nunder 0.23 ms. On this evidence route A is comfortably fast, and that conclusion\nis an artifact of the corpus size.\n",
+     "formatted": {
+      "40": "Every language parses its largest corpus\nfile in under 0.4 ms and reparses in\nunder 0.23 ms. On this evidence route A\nis comfortably fast, and that conclusion\nis an artifact of the corpus size.\n",
+      "80": "Every language parses its largest corpus file in under 0.4 ms and reparses in\nunder 0.23 ms. On this evidence route A is comfortably fast, and that conclusion\nis an artifact of the corpus size.\n"
+     },
+     "shapeChanged": {
+      "40": false,
+      "80": false
+     },
+     "subtree": {
+      "median": 109837,
+      "max": 113404,
+      "min": 107873,
+      "warmup": 5,
+      "iterations": 11
+     },
+     "projected": true
+    }
+   ]
+  },
+  {
+   "id": "docs/parse-survey.md",
+   "role": "corpus",
+   "bytes": 60655,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 9,
+   "blockAcquisition": 0,
+   "shipped": {
+    "refused": "rule for `field_declaration_list` wants its separator to take the children between items but found `;`"
+   },
+   "projected": {
+    "refused": "rule for `field_declaration_list` wants its separator to take the children between items but found `;`"
+   },
+   "admittedFormat": {
+    "refused": "rule for `field_declaration_list` wants its separator to take the children between items but found `;`"
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "docs/parse-tables-spike.md",
+   "role": "corpus",
+   "bytes": 37899,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 12,
+   "blockAcquisition": 2,
+   "shipped": {
+    "refused": "package has no rule for node type `continue_statement`"
+   },
+   "projected": {
+    "refused": "package has no rule for node type `continue_statement`"
+   },
+   "admittedFormat": {
+    "refused": "package has no rule for node type `continue_statement`"
+   },
+   "paragraphs": [
+    {
+     "start": 10638,
+     "source": "Treat 6.3 KB as a floor, not a quote. It buys clean full parses only. Lezer's\n17.5 KB includes error recovery and incremental reparse, and adding those here\nwould move the number toward Lezer's, not away from it.\n",
+     "formatted": {
+      "40": "Treat 6.3 KB as a floor, not a quote. It\nbuys clean full parses only. Lezer's\n17.5 KB includes error recovery and\nincremental reparse, and adding those\nhere would move the number toward\nLezer's, not away from it.\n",
+      "80": "Treat 6.3 KB as a floor, not a quote. It buys clean full parses only. Lezer's\n17.5 KB includes error recovery and incremental reparse, and adding those here\nwould move the number toward Lezer's, not away from it.\n"
+     },
+     "shapeChanged": {
+      "40": false,
+      "80": false
+     },
+     "subtree": {
+      "median": 118073,
+      "max": 122060,
+      "min": 116230,
+      "warmup": 5,
+      "iterations": 11
+     },
+     "projected": true
+    },
+    {
+     "start": 19368,
+     "source": "Results, all against tree-sitter 0.26.0 with the pinned grammars:\n",
+     "formatted": {
+      "40": "Results, all against tree-sitter 0.26.0\nwith the pinned grammars:\n",
+      "80": "Results, all against tree-sitter 0.26.0 with the pinned grammars:\n"
+     },
+     "shapeChanged": {
+      "40": false,
+      "80": false
+     },
+     "subtree": {
+      "median": 33623,
+      "max": 57048,
+      "min": 32851,
+      "warmup": 5,
+      "iterations": 11
+     },
+     "projected": true
+    }
+   ]
+  },
+  {
+   "id": "docs/phase2-selection.md",
+   "role": "corpus",
+   "bytes": 4788,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 4,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 222129,
+    "max": 237478,
+    "min": 217450
+   },
+   "projected": {
+    "median": 454867,
+    "max": 570485,
+    "min": 440280
+   },
+   "admittedFormat": {
+    "bytes": 4788
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "docs/prose-projection.md",
+   "role": "corpus",
+   "bytes": 39072,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 18,
+   "blockAcquisition": 2,
+   "shipped": {
+    "median": 1683013,
+    "max": 2815006,
+    "min": 1603372
+   },
+   "projected": {
+    "median": 4008186,
+    "max": 7400671,
+    "min": 3878582
+   },
+   "admittedFormat": {
+    "bytes": 40073
+   },
+   "paragraphs": [
+    {
+     "start": 6719,
+     "source": "An earlier version of this table published 674 / 1,084 / 1,290 for these three\nrows. Those came from a scratch script whose relaxation definitions were never\nwritten down and could not be reproduced, so they are withdrawn rather than\nsilently replaced -- which is the whole reason the definitions are spelled out\nabove. The inline row is a ceiling besides, since a real inline grammar admits shapes this\napproximation cannot. And both together still leave three paragraphs in four\nrefused, which is the number to weigh before any of this becomes a visible\nprose-wrap policy.\n",
+     "formatted": {
+      "40": "An earlier version of this table\npublished 674 / 1,084 / 1,290 for these\nthree rows. Those came from a scratch\nscript whose relaxation definitions were\nnever written down and could not be\nreproduced, so they are withdrawn rather\nthan silently replaced -- which is the\nwhole reason the definitions are spelled\nout above. The inline row is a ceiling\nbesides, since a real inline grammar\nadmits shapes this approximation cannot.\nAnd both together still leave three\nparagraphs in four refused, which is the\nnumber to weigh before any of this\nbecomes a visible prose-wrap policy.\n",
+      "80": "An earlier version of this table published 674 / 1,084 / 1,290 for these three\nrows. Those came from a scratch script whose relaxation definitions were never\nwritten down and could not be reproduced, so they are withdrawn rather than\nsilently replaced -- which is the whole reason the definitions are spelled out\nabove. The inline row is a ceiling besides, since a real inline grammar admits\nshapes this approximation cannot. And both together still leave three paragraphs\nin four refused, which is the number to weigh before any of this becomes a\nvisible prose-wrap policy.\n"
+     },
+     "shapeChanged": {
+      "40": false,
+      "80": false
+     },
+     "subtree": {
+      "median": 292782,
+      "max": 835014,
+      "min": 287903,
+      "warmup": 5,
+      "iterations": 11
+     },
+     "projected": true
+    },
+    {
+     "start": 14910,
+     "source": "No regression has been measured, so this is not a defect yet -- it is the one\nclaim in A2.0 with nothing behind it. The measurement that would settle it is\nincremental main-thread time and input delay with attachment on versus off\nduring real editing, not another agreement sweep. Worth taking before A2.1\nadds a consumer, because after that the cost stops being optional and the\nbaseline is gone.\n",
+     "formatted": {
+      "40": "No regression has been measured, so this\nis not a defect yet -- it is the one\nclaim in A2.0 with nothing behind it.\nThe measurement that would settle it is\nincremental main-thread time and input\ndelay with attachment on versus off\nduring real editing, not another\nagreement sweep. Worth taking before\nA2.1 adds a consumer, because after that\nthe cost stops being optional and the\nbaseline is gone.\n",
+      "80": "No regression has been measured, so this is not a defect yet -- it is the one\nclaim in A2.0 with nothing behind it. The measurement that would settle it is\nincremental main-thread time and input delay with attachment on versus off\nduring real editing, not another agreement sweep. Worth taking before A2.1 adds\na consumer, because after that the cost stops being optional and the baseline is\ngone.\n"
+     },
+     "shapeChanged": {
+      "40": false,
+      "80": false
+     },
+     "subtree": {
+      "median": 221547,
+      "max": 228090,
+      "min": 214104,
+      "warmup": 5,
+      "iterations": 11
+     },
+     "projected": true
+    }
+   ]
+  },
+  {
+   "id": "docs/roadmap.md",
+   "role": "corpus",
+   "bytes": 37011,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 16,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 1801676,
+    "max": 3672363,
+    "min": 1768564
+   },
+   "projected": {
+    "median": 2878998,
+    "max": 4322418,
+    "min": 2837699
+   },
+   "admittedFormat": {
+    "bytes": 37011
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "docs/scanner-vm.md",
+   "role": "corpus",
+   "bytes": 48400,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 16,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 2384686,
+    "max": 9388388,
+    "min": 2338999
+   },
+   "projected": {
+    "median": 3302115,
+    "max": 4939532,
+    "min": 3268682
+   },
+   "admittedFormat": {
+    "bytes": 48400
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "docs/tree-interface-probe.md",
+   "role": "corpus",
+   "bytes": 18159,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 8,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 1041884,
+    "max": 1056682,
+    "min": 1032697
+   },
+   "projected": {
+    "median": 1489458,
+    "max": 1517340,
+    "min": 1469050
+   },
+   "admittedFormat": {
+    "bytes": 18159
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "docs/web-editor.md",
+   "role": "corpus",
+   "bytes": 20473,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 6,
+   "blockAcquisition": 3,
+   "shipped": {
+    "median": 1229909,
+    "max": 2985889,
+    "min": 1207807
+   },
+   "projected": {
+    "median": 1627317,
+    "max": 2806220,
+    "min": 1605396
+   },
+   "admittedFormat": {
+    "bytes": 24861
+   },
+   "paragraphs": [
+    {
+     "start": 3903,
+     "source": "Q1 to Q3 were the questions the survey raised. Q4 is Dave's, and arrived after\nthe first build shipped -- it is here rather than in a changelog because it\nchanged what the parse layer does.\n",
+     "formatted": {
+      "40": "Q1 to Q3 were the questions the survey\nraised. Q4 is Dave's, and arrived after\nthe first build shipped -- it is here\nrather than in a changelog because it\nchanged what the parse layer does.\n",
+      "80": "Q1 to Q3 were the questions the survey raised. Q4 is Dave's, and arrived after\nthe first build shipped -- it is here rather than in a changelog because it\nchanged what the parse layer does.\n"
+     },
+     "shapeChanged": {
+      "40": false,
+      "80": false
+     },
+     "subtree": {
+      "median": 110558,
+      "max": 116891,
+      "min": 110017,
+      "warmup": 5,
+      "iterations": 11
+     },
+     "projected": true
+    },
+    {
+     "start": 14202,
+     "source": "It arrived as a clarification of D6 on the parse-layer board, which had asked a\nnarrower question -- which oracle should judge markdown's port -- and none of\nwhose three options changed what the parse layer does. Dave's framing was the\nbetter one, and answering it dissolved D6 rather than settling it.\n",
+     "formatted": {
+      "40": "It arrived as a clarification of D6 on\nthe parse-layer board, which had asked a\nnarrower question -- which oracle should\njudge markdown's port -- and none of\nwhose three options changed what the\nparse layer does. Dave's framing was the\nbetter one, and answering it dissolved\nD6 rather than settling it.\n",
+      "80": "It arrived as a clarification of D6 on the parse-layer board, which had asked a\nnarrower question -- which oracle should judge markdown's port -- and none of\nwhose three options changed what the parse layer does. Dave's framing was the\nbetter one, and answering it dissolved D6 rather than settling it.\n"
+     },
+     "shapeChanged": {
+      "40": false,
+      "80": false
+     },
+     "subtree": {
+      "median": 159971,
+      "max": 163708,
+      "min": 158609,
+      "warmup": 5,
+      "iterations": 11
+     },
+     "projected": true
+    },
+    {
+     "start": 16157,
+     "source": "Innermost wins, so a json fence inside a markdown fence answers json. The fence\nlines themselves stay markdown, which is right -- that is where the info string\nis edited.\n",
+     "formatted": {
+      "40": "Innermost wins, so a json fence inside a\nmarkdown fence answers json. The fence\nlines themselves stay markdown, which is\nright -- that is where the info string\nis edited.\n",
+      "80": "Innermost wins, so a json fence inside a markdown fence answers json. The fence\nlines themselves stay markdown, which is right -- that is where the info string\nis edited.\n"
+     },
+     "shapeChanged": {
+      "40": false,
+      "80": false
+     },
+     "subtree": {
+      "median": 94919,
+      "max": 127641,
+      "min": 93096,
+      "warmup": 5,
+      "iterations": 11
+     },
+     "projected": true
+    }
+   ]
+  },
+  {
+   "id": "harness/bench_break_propagation.md",
+   "role": "corpus",
+   "bytes": 3590,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 0,
+   "blockAcquisition": 1,
+   "shipped": {
+    "median": 205367,
+    "max": 213933,
+    "min": 202412
+   },
+   "projected": {
+    "median": 201360,
+    "max": 208693,
+    "min": 198344
+   },
+   "admittedFormat": {
+    "bytes": 4034
+   },
+   "paragraphs": [
+    {
+     "start": 1984,
+     "source": "Flat-size scaling is approximately linear in both runtimes. Depth is different:\nfrom 16 to 56 groups (3.5x), Rust time grows 20.4x while JavaScript grows 8.2x.\nRust overtakes JavaScript by depth 32 and is 1.8x slower at depth 56, despite\nremaining substantially faster on every flat-size case. This supports fixing\nthe extra recursive break-propagation scans in Rust; it does not establish that\nthe JavaScript printer as a whole is linear in nesting depth.\n",
+     "formatted": {
+      "40": "Flat-size scaling is approximately\nlinear in both runtimes. Depth is\ndifferent: from 16 to 56 groups (3.5x),\nRust time grows 20.4x while JavaScript\ngrows 8.2x. Rust overtakes JavaScript by\ndepth 32 and is 1.8x slower at depth 56,\ndespite remaining substantially faster\non every flat-size case. This supports\nfixing the extra recursive\nbreak-propagation scans in Rust; it does\nnot establish that the JavaScript\nprinter as a whole is linear in nesting\ndepth.\n",
+      "80": "Flat-size scaling is approximately linear in both runtimes. Depth is different:\nfrom 16 to 56 groups (3.5x), Rust time grows 20.4x while JavaScript grows 8.2x.\nRust overtakes JavaScript by depth 32 and is 1.8x slower at depth 56, despite\nremaining substantially faster on every flat-size case. This supports fixing the\nextra recursive break-propagation scans in Rust; it does not establish that the\nJavaScript printer as a whole is linear in nesting depth.\n"
+     },
+     "shapeChanged": {
+      "40": false,
+      "80": false
+     },
+     "subtree": {
+      "median": 254490,
+      "max": 366581,
+      "min": 206510,
+      "warmup": 5,
+      "iterations": 11
+     },
+     "projected": true
+    }
+   ]
+  },
+  {
+   "id": "harness/fixtures/injection/regions.md",
+   "role": "corpus",
+   "bytes": 118,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 0,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 73969,
+    "max": 79370,
+    "min": 72086
+   },
+   "projected": {
+    "median": 73228,
+    "max": 75182,
+    "min": 71875
+   },
+   "admittedFormat": {
+    "bytes": 125
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "harness/fixtures/prose-refused.md",
+   "role": "corpus",
+   "bytes": 4628,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 0,
+   "blockAcquisition": 8,
+   "shipped": {
+    "median": 368905,
+    "max": 499992,
+    "min": 365309
+   },
+   "projected": {
+    "median": 372783,
+    "max": 815888,
+    "min": 361421
+   },
+   "admittedFormat": {
+    "bytes": 4628
+   },
+   "paragraphs": [
+    {
+     "start": 2037,
+     "source": "alpha beta gamma - delta epsilon zeta eta theta\n",
+     "formatted": {
+      "40": "alpha beta gamma - delta epsilon zeta\neta theta\n",
+      "80": "alpha beta gamma - delta epsilon zeta eta theta\n"
+     },
+     "shapeChanged": {
+      "40": false,
+      "80": false
+     },
+     "subtree": {
+      "median": 33794,
+      "max": 34916,
+      "min": 32722,
+      "warmup": 5,
+      "iterations": 11
+     },
+     "projected": true
+    },
+    {
+     "start": 2152,
+     "source": "alpha beta gamma 1. delta epsilon zeta eta theta\n",
+     "formatted": {
+      "40": "alpha beta gamma 1. delta epsilon zeta\neta theta\n",
+      "80": "alpha beta gamma 1. delta epsilon zeta eta theta\n"
+     },
+     "shapeChanged": {
+      "40": false,
+      "80": false
+     },
+     "subtree": {
+      "median": 33934,
+      "max": 38262,
+      "min": 32992,
+      "warmup": 5,
+      "iterations": 11
+     },
+     "projected": true
+    },
+    {
+     "start": 2546,
+     "source": "alpha beta :- gamma delta epsilon zeta eta\n",
+     "formatted": {
+      "40": "alpha beta :- gamma delta epsilon zeta\neta\n",
+      "80": "alpha beta :- gamma delta epsilon zeta eta\n"
+     },
+     "shapeChanged": {
+      "40": false,
+      "80": false
+     },
+     "subtree": {
+      "median": 30347,
+      "max": 31390,
+      "min": 29907,
+      "warmup": 5,
+      "iterations": 11
+     },
+     "projected": true
+    },
+    {
+     "start": 2638,
+     "source": "alpha beta :-: gamma delta epsilon zeta eta\n",
+     "formatted": {
+      "40": "alpha beta :-: gamma delta epsilon zeta\neta\n",
+      "80": "alpha beta :-: gamma delta epsilon zeta eta\n"
+     },
+     "shapeChanged": {
+      "40": false,
+      "80": false
+     },
+     "subtree": {
+      "median": 30267,
+      "max": 31890,
+      "min": 29716,
+      "warmup": 5,
+      "iterations": 11
+     },
+     "projected": true
+    },
+    {
+     "start": 2717,
+     "source": "alpha beta :--- gamma delta epsilon zeta eta\n",
+     "formatted": {
+      "40": "alpha beta :--- gamma delta epsilon zeta\neta\n",
+      "80": "alpha beta :--- gamma delta epsilon zeta eta\n"
+     },
+     "shapeChanged": {
+      "40": false,
+      "80": false
+     },
+     "subtree": {
+      "median": 30037,
+      "max": 36499,
+      "min": 29545,
+      "warmup": 5,
+      "iterations": 11
+     },
+     "projected": true
+    },
+    {
+     "start": 3214,
+     "source": "alpha beta -: gamma delta epsilon zeta eta\n",
+     "formatted": {
+      "40": "alpha beta -: gamma delta epsilon zeta\neta\n",
+      "80": "alpha beta -: gamma delta epsilon zeta eta\n"
+     },
+     "shapeChanged": {
+      "40": false,
+      "80": false
+     },
+     "subtree": {
+      "median": 30237,
+      "max": 31209,
+      "min": 29385,
+      "warmup": 5,
+      "iterations": 11
+     },
+     "projected": true
+    },
+    {
+     "start": 3317,
+     "source": "alpha beta -- gamma delta epsilon zeta eta\n",
+     "formatted": {
+      "40": "alpha beta -- gamma delta epsilon zeta\neta\n",
+      "80": "alpha beta -- gamma delta epsilon zeta eta\n"
+     },
+     "shapeChanged": {
+      "40": false,
+      "80": false
+     },
+     "subtree": {
+      "median": 30047,
+      "max": 30828,
+      "min": 29235,
+      "warmup": 5,
+      "iterations": 11
+     },
+     "projected": true
+    },
+    {
+     "start": 4579,
+     "source": "alpha beta gamma delta epsilon zeta eta theta\n:-\n",
+     "formatted": {
+      "40": "alpha beta gamma delta epsilon zeta eta\ntheta :-\n",
+      "80": "alpha beta gamma delta epsilon zeta eta theta :-\n"
+     },
+     "shapeChanged": {
+      "40": false,
+      "80": false
+     },
+     "subtree": {
+      "median": 33383,
+      "max": 37741,
+      "min": 32101,
+      "warmup": 5,
+      "iterations": 11
+     },
+     "projected": true
+    }
+   ]
+  },
+  {
+   "id": "harness/fixtures/scanner/markdown_inline/adversarial.md",
+   "role": "corpus",
+   "bytes": 5858,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 0,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 886942,
+    "max": 1234828,
+    "min": 881261
+   },
+   "projected": {
+    "median": 878676,
+    "max": 891059,
+    "min": 872615
+   },
+   "admittedFormat": {
+    "bytes": 5858
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "harness/fixtures/scanner/markdown_inline/mismatched_backtick.md",
+   "role": "corpus",
+   "bytes": 12,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 0,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 7193,
+    "max": 7985,
+    "min": 6953
+   },
+   "projected": {
+    "median": 7344,
+    "max": 8847,
+    "min": 7063
+   },
+   "admittedFormat": {
+    "bytes": 12
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "harness/fixtures/scanner/markdown_inline/mismatched_dollar.md",
+   "role": "corpus",
+   "bytes": 12,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 0,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 7304,
+    "max": 7714,
+    "min": 6923
+   },
+   "projected": {
+    "median": 7324,
+    "max": 8857,
+    "min": 7013
+   },
+   "admittedFormat": {
+    "bytes": 12
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "harness/fixtures/scanner/markdown_inline/unclosed_backtick.md",
+   "role": "corpus",
+   "bytes": 48,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 0,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 6803,
+    "max": 8366,
+    "min": 6472
+   },
+   "projected": {
+    "median": 6903,
+    "max": 8997,
+    "min": 6672
+   },
+   "admittedFormat": {
+    "bytes": 48
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "harness/fixtures/scanner/markdown_inline/unclosed_dollar.md",
+   "role": "corpus",
+   "bytes": 49,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 0,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 6643,
+    "max": 7494,
+    "min": 6482
+   },
+   "projected": {
+    "median": 6763,
+    "max": 7164,
+    "min": 6572
+   },
+   "admittedFormat": {
+    "bytes": 49
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "harness/fixtures/secondary-clean.md",
+   "role": "corpus",
+   "bytes": 25,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 0,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 6592,
+    "max": 7564,
+    "min": 6472
+   },
+   "projected": {
+    "median": 6783,
+    "max": 7114,
+    "min": 6633
+   },
+   "admittedFormat": {
+    "bytes": 25
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "harness/fixtures/secondary-dirty.md",
+   "role": "corpus",
+   "bytes": 29,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 0,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 12323,
+    "max": 12754,
+    "min": 11962
+   },
+   "projected": {
+    "median": 12304,
+    "max": 19336,
+    "min": 11792
+   },
+   "admittedFormat": {
+    "bytes": 29
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "harness/fixtures/secondary-mixed.md",
+   "role": "corpus",
+   "bytes": 81,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 0,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 20278,
+    "max": 21039,
+    "min": 20038
+   },
+   "projected": {
+    "median": 20639,
+    "max": 22473,
+    "min": 20358
+   },
+   "admittedFormat": {
+    "bytes": 81
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "harness/reviews/README.md",
+   "role": "corpus",
+   "bytes": 3053,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 3,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 261012,
+    "max": 597898,
+    "min": 246705
+   },
+   "projected": {
+    "median": 415744,
+    "max": 848810,
+    "min": 400615
+   },
+   "admittedFormat": {
+    "bytes": 3053
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "proposals/claude-1.md",
+   "role": "corpus",
+   "bytes": 7683,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 5,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 836917,
+    "max": 1879423,
+    "min": 814896
+   },
+   "projected": {
+    "median": 1101186,
+    "max": 2016091,
+    "min": 1049077
+   },
+   "admittedFormat": {
+    "bytes": 7670
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "proposals/codex-1.md",
+   "role": "corpus",
+   "bytes": 23525,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 8,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 2045737,
+    "max": 4355901,
+    "min": 1992807
+   },
+   "projected": {
+    "median": 3043708,
+    "max": 4404253,
+    "min": 2986200
+   },
+   "admittedFormat": {
+    "bytes": 24637
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "proposals/grok-1.md",
+   "role": "corpus",
+   "bytes": 40998,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 14,
+   "blockAcquisition": 1,
+   "shipped": {
+    "median": 4824935,
+    "max": 4960982,
+    "min": 4730007
+   },
+   "projected": {
+    "median": 5435527,
+    "max": 9082552,
+    "min": 5288530
+   },
+   "admittedFormat": {
+    "bytes": 43983
+   },
+   "paragraphs": [
+    {
+     "start": 6654,
+     "source": "That line is 90 columns. It must wrap at both 88 and 60.\n",
+     "formatted": {
+      "40": "That line is 90 columns. It must wrap at\nboth 88 and 60.\n",
+      "80": "That line is 90 columns. It must wrap at both 88 and 60.\n"
+     },
+     "shapeChanged": {
+      "40": false,
+      "80": false
+     },
+     "subtree": {
+      "median": 44083,
+      "max": 71555,
+      "min": 43151,
+      "warmup": 5,
+      "iterations": 11
+     },
+     "projected": true
+    }
+   ]
+  },
+  {
+   "id": "reference/README.md",
+   "role": "corpus",
+   "bytes": 831,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 3,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 75292,
+    "max": 618205,
+    "min": 74641
+   },
+   "projected": {
+    "median": 176934,
+    "max": 303722,
+    "min": 172135
+   },
+   "admittedFormat": {
+    "bytes": 831
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "spike/scanner-vm/locale/README.md",
+   "role": "corpus",
+   "bytes": 620,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 1,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 57599,
+    "max": 63520,
+    "min": 57028
+   },
+   "projected": {
+    "median": 102043,
+    "max": 104978,
+    "min": 101331
+   },
+   "admittedFormat": {
+    "bytes": 620
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "spike/scanner-vm/record/README.md",
+   "role": "corpus",
+   "bytes": 787,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 0,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 90190,
+    "max": 92565,
+    "min": 88097
+   },
+   "projected": {
+    "median": 89238,
+    "max": 92774,
+    "min": 88367
+   },
+   "admittedFormat": {
+    "bytes": 787
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "spike/scanner-vm/rust/README.md",
+   "role": "corpus",
+   "bytes": 1710,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 0,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 124705,
+    "max": 127641,
+    "min": 121759
+   },
+   "projected": {
+    "median": 122411,
+    "max": 123904,
+    "min": 121159
+   },
+   "admittedFormat": {
+    "bytes": 1710
+   },
+   "paragraphs": []
+  },
+  {
+   "id": "web/README.md",
+   "role": "corpus",
+   "bytes": 7329,
+   "warmup": 5,
+   "iterations": 11,
+   "eligible": 4,
+   "blockAcquisition": 0,
+   "shipped": {
+    "median": 483651,
+    "max": 1254685,
+    "min": 471429
+   },
+   "projected": {
+    "median": 763128,
+    "max": 1199010,
+    "min": 747299
+   },
+   "admittedFormat": {
+    "bytes": 8030
+   },
+   "paragraphs": []
+  }
+ ]
+}

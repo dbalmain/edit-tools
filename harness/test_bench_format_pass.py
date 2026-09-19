@@ -13,6 +13,21 @@ class AcquiresAgreementTests(unittest.TestCase):
         self.assertEqual(bench.ACQUIRES.pattern, prose._ACQUIRES.pattern)
 
 
+class HitClassTests(unittest.TestCase):
+    def test_buckets(self):
+        self.assertEqual(bench.hit_class("0.5.1,"), "prefix")
+        self.assertEqual(bench.hit_class("81."), "ordered-n")
+        self.assertEqual(bench.hit_class("1."), "ordered-1")
+        self.assertEqual(bench.hit_class("--"), "dash")
+        self.assertEqual(bench.hit_class(":-"), "gfm")
+
+    def test_paragraph_class_uses_the_strongest_hit(self):
+        self.assertEqual(bench.paragraph_class("alpha - beta"), "hazard")
+        self.assertEqual(bench.paragraph_class("scope -- and this"), "hazard")
+        self.assertEqual(bench.paragraph_class("see 81. then"), "ordered-n")
+        self.assertEqual(bench.paragraph_class("version 0.5.1, then"), "prefix")
+
+
 class GenuineLineTests(unittest.TestCase):
     def test_prefix_version_is_not_genuine(self):
         self.assertIsNone(bench.genuine_line("0.5.1, then more", continuation=True))
