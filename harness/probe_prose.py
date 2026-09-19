@@ -95,16 +95,38 @@ import tree_sitter_markdown as tsmd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import gen_trees  # noqa: E402
+import manifest as mf  # noqa: E402
 import prose  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 HARNESS = ROOT / "harness"
 REFUSED = HARNESS / "fixtures" / "prose-refused.md"
 WIDTHS = (80, 40)
+# The secondary grammar A2.1 reads. Named here rather than hardcoded at the
+# call site so that a manifest rename fails loudly in `markdown_manifest`.
+INLINE = "markdown_inline"
 
 
 class Failed(Exception):
     """A property the projection is supposed to have does not hold."""
+
+
+def markdown_manifest() -> mf.Manifest:
+    """Markdown's manifest, with its inline secondary declaration checked.
+
+    `probe_injection_parity.py` derives its required blob set from the injected
+    languages in a produced document, so a *secondary* grammar is never in it --
+    the open half of the 2026-09-13 finding. A2.1 makes the inline grammar a
+    hard dependency of the projection, so this probe declares it itself.
+    """
+    manifest = mf.load_all()["markdown"]
+    names = [grammar.name for grammar in manifest.secondary_grammars]
+    if INLINE not in names:
+        raise Failed(
+            f"markdown declares secondary grammars {names}, not {INLINE!r}; "
+            "the prose projection reads that tree and cannot run without it"
+        )
+    return manifest
 
 
 def markdown_files() -> list[Path]:
@@ -130,17 +152,31 @@ def markdown_files() -> list[Path]:
     return corpus + rest
 
 
-def parse(parser, source: bytes, path: Path) -> dict | None:
-    """The document `gen_trees.py` would freeze for this source, or None."""
+def parse(parser, source: bytes, path: Path, inline_parser=None) -> dict | None:
+    """The document `gen_trees.py` would freeze for this source, or None.
+
+    The secondary table is attached through `gen_trees.secondary_trees` -- the
+    same function `parse_doc` calls -- rather than rebuilt here. A2.1 reads
+    that table, so a probe that synthesised its own would be testing the probe.
+    """
     tree = parser.parse(source)
     if tree.root_node.has_error:
         return None
-    return {
+    rel = str(path.relative_to(ROOT))
+    root = gen_trees.convert(tree.root_node, source, None)
+    doc = {
         "language": "markdown",
-        "source_file": str(path.relative_to(ROOT)),
+        "source_file": rel,
         "source": source.decode("utf-8"),
-        "root": gen_trees.convert(tree.root_node, source, None),
+        "root": root,
     }
+    if inline_parser is not None:
+        secondary = gen_trees.secondary_trees(
+            markdown_manifest(), source, root, {INLINE: inline_parser}, rel
+        )
+        if secondary:
+            doc["secondary"] = secondary
+    return doc
 
 
 def runs(doc: dict) -> list[dict]:
@@ -195,7 +231,7 @@ def shape(node: dict) -> list[tuple[str, int, int]]:
     return out
 
 
-def phase_a(parser, docs) -> int:
+def phase_a(parser, inline_parser, docs) -> int:
     checked = 0
     for path, source, doc in docs:
         want_atoms = atoms(doc)
@@ -207,7 +243,7 @@ def phase_a(parser, docs) -> int:
             moved = reflow(source, doc, pattern)
             if len(moved) != len(source):
                 raise Failed(f"{path}: {name} changed the source length")
-            again = parse(parser, moved, path)
+            again = parse(parser, moved, path, inline_parser)
             if again is None:
                 raise Failed(
                     f"{path}: reflowed with {name}, the document no longer "
@@ -234,11 +270,27 @@ def phase_a(parser, docs) -> int:
 
 
 def phase_a_inline(inline_parser, docs) -> int:
-    """Every eligible paragraph, read by the grammar A1 refuses to depend on."""
+    """Every eligible paragraph, re-read by the inline grammar from scratch.
+
+    Independent of the projection, and that is the point: `prose.py` reads the
+    secondary table the *producer* attached, so a bug that dropped or misranged
+    a record would be invisible to a check that read the same table. This
+    reparses the run's own bytes and asserts two things the projection claims.
+
+    **Every named node is an admitted construct.** A1 required *no* named node;
+    A2.1 admits three and still refuses the rest, so the oracle moves rather
+    than retires -- `emphasis`, `image`, `shortcut_link` and
+    `full_reference_link` all occur in this corpus and must still refuse.
+
+    **Every admitted construct lies wholly inside one atom.** This is the
+    "protected whole" claim stated as a property of the emitted partition, and
+    it is what a reflow-and-reparse sweep cannot check on its own, since
+    tree-sitter's block grammar sees a paragraph's interior as one opaque node.
+    """
     checked = 0
     for path, source, doc in docs:
         for run in runs(doc):
-            text = source[run["start"] : run["end"]]
+            start, text = run["start"], source[run["start"] : run["end"]]
             tree = inline_parser.parse(text)
             root = tree.root_node
             if root.has_error:
@@ -249,24 +301,43 @@ def phase_a_inline(inline_parser, docs) -> int:
             found = [
                 child.type
                 for child in root.children
-                if child.is_named or child.type not in prose.SAFE_PUNCTUATION
+                if child.type not in prose.CONSTRUCTS
+                and (child.is_named or child.type not in prose.SAFE_PUNCTUATION)
             ]
             if found:
                 raise Failed(
                     f"{path}: an eligible paragraph holds inline syntax "
-                    f"({', '.join(sorted(set(found)))}) that A1 cannot reason "
+                    f"({', '.join(sorted(set(found)))}) that A2.1 cannot reason "
                     f"about: {text[:60]!r}"
                 )
+            spans = [
+                (child["start"], child["end"])
+                for child in run["children"]
+                if child["type"] == prose.ATOM
+            ]
+            for child in root.children:
+                if child.type not in prose.CONSTRUCTS:
+                    continue
+                first, last = start + child.start_byte, start + child.end_byte
+                if not any(a <= first and last <= b for a, b in spans):
+                    raise Failed(
+                        f"{path}: a {child.type} at {first}..{last} is split "
+                        f"across atoms {spans}, so it is not protected whole: "
+                        f"{text[:60]!r}"
+                    )
             checked += 1
     return checked
 
 
-def phase_b(parser, docs, inert: bool = False) -> int:
+def phase_b(parser, inline_parser, docs, inert: bool = False) -> int:
     # Re-parse rather than reuse: `docs` holds already-projected documents, and
     # a verdict computed from one of those would describe the projection's own
     # output instead of the source. Both sides must be handed the same
     # unprojected input.
-    fresh = [(path, parse(parser, source, path)) for path, source, _ in docs]
+    fresh = [
+        (path, parse(parser, source, path, inline_parser))
+        for path, source, _ in docs
+    ]
     mine = [(path, prose.reasons(doc)) for path, doc in fresh]
     payload = [
         {"path": str(path.relative_to(ROOT)), "doc": doc}
@@ -310,7 +381,7 @@ def phase_b(parser, docs, inert: bool = False) -> int:
     return compared
 
 
-def phase_b_control(parser, docs) -> str:
+def phase_b_control(parser, inline_parser, docs) -> str:
     """Phase B must fail when the JavaScript side does nothing.
 
     The positive control for the producer comparison, and it is here because
@@ -330,7 +401,7 @@ def phase_b_control(parser, docs) -> str:
     """
     want = "the two projections differ"
     try:
-        phase_b(parser, docs, inert=True)
+        phase_b(parser, inline_parser, docs, inert=True)
     except Failed as failure:
         if want not in str(failure):
             raise Failed(
@@ -344,7 +415,7 @@ def phase_b_control(parser, docs) -> str:
     )
 
 
-def phase_c(parser, packages: Path, docs) -> int:
+def phase_c(parser, inline_parser, packages: Path, docs) -> int:
     corpus = [
         (path, source, doc)
         for path, source, doc in docs
@@ -379,7 +450,7 @@ def phase_c(parser, packages: Path, docs) -> int:
                 # Idempotence: the formatter's own output, parsed and projected
                 # again, must format to itself. This is where a projection that
                 # is stable only on hand-written source would come apart.
-                again = parse(parser, outputs["fmt-rust"], path)
+                again = parse(parser, outputs["fmt-rust"], path, inline_parser)
                 if again is None:
                     raise Failed(
                         f"{path.name} at {width}: formatted output does not "
@@ -419,7 +490,7 @@ def main(quiet: bool = False) -> int:
     skipped = 0
     for path in markdown_files():
         source = path.read_bytes()
-        doc = parse(parser, source, path)
+        doc = parse(parser, source, path, inline_parser)
         if doc is None:
             skipped += 1
             continue
@@ -452,11 +523,11 @@ def main(quiet: bool = False) -> int:
         (packages / "markdown.json").write_text(
             json.dumps(prose.package(base)), encoding="utf-8"
         )
-        reflows = phase_a(parser, docs)
+        reflows = phase_a(parser, inline_parser, docs)
         inlines = phase_a_inline(inline_parser, docs)
-        projections = phase_b(parser, docs)
-        control = phase_b_control(parser, docs)
-        formats = phase_c(parser, packages, docs)
+        projections = phase_b(parser, inline_parser, docs)
+        control = phase_b_control(parser, inline_parser, docs)
+        formats = phase_c(parser, inline_parser, packages, docs)
 
     if not quiet:
         print(

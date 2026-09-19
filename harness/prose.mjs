@@ -46,6 +46,11 @@ const GAPS = new Set([" ", "\n"]);
 // because this regex is not multiline, where the two are the same.
 const ACQUIRES = /^(?:[-+*>#=|~]|\d+[.)]|```|~~~|:-+:?$)/;
 
+// `prose.py`'s `CONSTRUCTS`: the three inline constructs A2.1 admits, each
+// protected whole. `prose.py` carries the argument for why `<` and `[` are
+// deliberately not also block-acquisition hazards.
+export const CONSTRUCTS = new Set(["code_span", "inline_link", "uri_autolink"]);
+
 const CONTAINERS = new Set([
   "block_quote",
   "list_item",
@@ -57,67 +62,135 @@ const CONTAINERS = new Set([
 const decoder = new TextDecoder("utf-8", { fatal: true });
 const encoder = new TextEncoder();
 
-/** Why this paragraph is not eligible, or null if it is. */
-export function refusal(paragraph, source) {
-  const children = paragraph.children ?? [];
-  if (children.length !== 1 || children[0].type !== "inline") return "paragraph shape";
-  const inline = children[0];
-  for (const child of inline.children ?? []) {
-    if (!SAFE_PUNCTUATION.has(child.type)) return "inline token";
+/**
+ * `doc.secondary`'s inline records, keyed by the host range they cover.
+ * See `prose.py`: the table is total, so a missing key is a producer bug and
+ * not an ordinary dirty parse, and the two get different refusals.
+ */
+export function secondaryIndex(doc) {
+  const out = new Map();
+  for (const entry of doc.secondary ?? []) {
+    if (entry.within === "inline") out.set(`${entry.start},${entry.end}`, entry);
   }
+  return out;
+}
+
+/** The A2.1 construct ranges over `inline`, or the reason it is refused. */
+function protectedRanges(inline, record) {
+  if (record === undefined) return [null, "no inline parse"];
+  if (record.outcome !== "clean") return [null, "dirty inline parse"];
+  const out = [];
+  for (const child of record.root.children ?? []) {
+    if (CONSTRUCTS.has(child.type)) out.push([child.start, child.end]);
+    else if (!SAFE_PUNCTUATION.has(child.type)) return [null, "inline construct"];
+  }
+  return [out, null];
+}
+
+const inside = (ranges, at) =>
+  ranges.some(([start, end]) => start <= at && at < end);
+
+/**
+ * `candidates`, less every gap flanking an atom that could open a block.
+ * Bilateral, not predecessor-only; `prose.py` carries the counterexample and
+ * the reason removing from one set is what unions the merges into connected
+ * components.
+ */
+function blockSafe(start, end, text, candidates) {
+  const drop = new Set();
+  const edges = [start, ...candidates.map((gap) => gap + 1)];
+  const stops = [...candidates, end];
+  for (let index = 0; index < edges.length; index += 1) {
+    const atom = text.slice(edges[index] - start, stops[index] - start);
+    if (!ACQUIRES.test(atom)) continue;
+    if (index > 0) drop.add(candidates[index - 1]);
+    if (index < candidates.length) drop.add(candidates[index]);
+  }
+  return candidates.filter((gap) => !drop.has(gap));
+}
+
+/**
+ * The verdict for this paragraph, and its breakable gap offsets.
+ * One function, so `refusal` and `project` cannot disagree about which gaps
+ * are breakable. `prose.py`'s `analyse` is the original.
+ */
+export function analyse(paragraph, source, secondary) {
+  const children = paragraph.children ?? [];
+  if (children.length !== 1 || children[0].type !== "inline") {
+    return ["paragraph shape", []];
+  }
+  const inline = children[0];
+  const { start, end } = inline;
+
+  const [ranges, why] = protectedRanges(
+    inline,
+    secondary.get(`${start},${end}`),
+  );
+  if (ranges === null) return [why, []];
+
   let text;
   try {
-    text = decoder.decode(source.subarray(inline.start, inline.end));
+    text = decoder.decode(source.subarray(start, end));
   } catch {
-    return "non-ascii";
+    return ["non-ascii", []];
   }
   // `decode` only rejects invalid UTF-8. Python asked for ASCII, so a valid
   // multi-byte character has to refuse here too or the two disagree.
-  if (/[^\x00-\x7f]/.test(text)) return "non-ascii";
+  if (/[^\x00-\x7f]/.test(text)) return ["non-ascii", []];
   if (text.length === 0 || GAPS.has(text[0]) || GAPS.has(text[text.length - 1])) {
-    return "edge whitespace";
+    return ["edge whitespace", []];
   }
-  let run = 0;
-  for (const char of text) {
-    if (GAPS.has(char)) {
-      run += 1;
-      if (run > 1) return "whitespace run";
-      continue;
-    }
-    run = 0;
-    if (!SAFE.has(char)) return "byte";
+
+  const candidates = [];
+  for (let offset = start; offset < end; offset += 1) {
+    if (inside(ranges, offset)) continue;
+    const char = text[offset - start];
+    if (GAPS.has(char)) candidates.push(offset);
+    else if (!SAFE.has(char)) return ["byte", []];
   }
-  const atoms = text.split(/[ \n]/);
-  if (atoms.length < 2) return "single atom";
-  if (atoms.some((atom) => ACQUIRES.test(atom))) return "block acquisition";
-  return null;
+  for (let i = 1; i < candidates.length; i += 1) {
+    if (candidates[i] - candidates[i - 1] === 1) return ["whitespace run", []];
+  }
+
+  const breakable = blockSafe(start, end, text, candidates);
+  if (breakable.length === 0) return ["single atom", []];
+  return [null, breakable];
 }
 
-/** The alternating atom/gap children covering `inline`'s whole range. */
-export function partition(inline, source) {
+/** Why this paragraph is not eligible, or null if it is. */
+export function refusal(paragraph, source, secondary) {
+  return analyse(paragraph, source, secondary)[0];
+}
+
+/**
+ * The alternating atom/gap children covering `inline`'s whole range: the
+ * maximal source spans **between the breakable gaps**, so every gap not proved
+ * safe stays exact text inside an atom. `prose.py` carries the polarity
+ * argument.
+ */
+export function partition(inline, source, breakable) {
+  // A leaf, not a wrapper: `source_partitions` on the enclosing run validates
+  // leaf text against the source, so the interior node the design doc asked
+  // for bought nothing. `prose.py` carries the measurement.
+  const atom = (first, last) => ({
+    type: ATOM,
+    start: first,
+    end: last,
+    text: decoder.decode(source.subarray(first, last)),
+  });
   const out = [];
   let at = inline.start;
-  while (at < inline.end) {
-    let stop = at;
-    while (stop < inline.end && !GAPS.has(String.fromCharCode(source[stop]))) stop += 1;
-    // A leaf, not a wrapper: `source_partitions` on the enclosing run validates
-    // leaf text against the source, so the interior node the design doc asked
-    // for bought nothing. `prose.py` carries the measurement.
-    out.push({
-      type: ATOM,
-      start: at,
-      end: stop,
-      text: decoder.decode(source.subarray(at, stop)),
-    });
-    if (stop === inline.end) break;
+  for (const gap of breakable) {
+    out.push(atom(at, gap));
     out.push({
       type: GAP,
-      start: stop,
-      end: stop + 1,
-      text: decoder.decode(source.subarray(stop, stop + 1)),
+      start: gap,
+      end: gap + 1,
+      text: decoder.decode(source.subarray(gap, gap + 1)),
     });
-    at = stop + 1;
+    at = gap + 1;
   }
+  out.push(atom(at, inline.end));
   return out;
 }
 
@@ -129,11 +202,12 @@ export function partition(inline, source) {
  */
 export function reasons(doc) {
   const source = encoder.encode(doc.source);
+  const secondary = secondaryIndex(doc);
   const out = [];
   const walk = (node) => {
     if (CONTAINERS.has(node.type) || node.language !== undefined) return;
     if (node.type === "paragraph") {
-      out.push([node.start, refusal(node, source) ?? "eligible"]);
+      out.push([node.start, refusal(node, source, secondary) ?? "eligible"]);
       return;
     }
     for (const child of node.children ?? []) walk(child);
@@ -151,16 +225,21 @@ export function reasons(doc) {
 export function project(doc) {
   doc = structuredClone(doc);
   const source = encoder.encode(doc.source);
+  const secondary = secondaryIndex(doc);
   const stack = [doc.root];
   while (stack.length > 0) {
     const node = stack.pop();
     if (CONTAINERS.has(node.type) || node.language !== undefined) continue;
-    if (node.type === "paragraph" && refusal(node, source) === null) {
+    const [verdict, breakable] =
+      node.type === "paragraph"
+        ? analyse(node, source, secondary)
+        : ["not a paragraph", []];
+    if (verdict === null) {
       const inline = node.children[0];
       // Key order is `type, start, end, field, children`; see prose.py.
       const run = { type: RUN, start: inline.start, end: inline.end };
       if (inline.field !== undefined) run.field = inline.field;
-      run.children = partition(inline, source);
+      run.children = partition(inline, source, breakable);
       node.children = [run];
       continue;
     }

@@ -144,6 +144,25 @@ GAPS = (" ", "\n")
 # in, since none of them runs in `test.sh`.
 _ACQUIRES = re.compile(r"^(?:[-+*>#=|~]|\d+[.)]|```|~~~|:-+:?\Z)")
 
+# The inline constructs A2.1 admits, each **protected whole**: the construct's
+# whole source range becomes part of one atom, so no gap inside it is ever
+# layout and its interior bytes are emitted verbatim.
+#
+# `<` and `[` are deliberately **not** added to `_ACQUIRES`, though an atom may
+# now begin with either. The argument is the classification itself: the only
+# `[`-initial block is a link reference definition, which needs `]:` -- and a
+# range the inline grammar called an `inline_link` is, by construction, not
+# that. The only `<`-initial block is HTML, whose opener must be a tag, and a
+# `uri_autolink` is disjoint from tag syntax. Checked against the pinned block
+# grammar as well: neither construct changes the block tree when moved to a
+# line start or isolated on one.
+#
+# Everything else the inline grammar names -- `emphasis` and `strong_emphasis`
+# (A2.2), `image`, `shortcut_link`, `full_reference_link`, `backslash_escape`
+# (A2.4) -- refuses the paragraph. All four of the latter occur in this
+# corpus's secondary trees, so this is a live refusal and not a hypothetical.
+CONSTRUCTS = frozenset({"code_span", "inline_link", "uri_autolink"})
+
 # A paragraph inside one of these owns a per-line continuation prefix -- a `> `,
 # a list indent -- that reflow would have to re-emit on every new line it
 # creates. `docs/prose-projection.md` defers that to a later slice, so A1 takes
@@ -189,7 +208,178 @@ def package(base: dict) -> dict:
     return out
 
 
-def refusal(paragraph: dict, source: bytes) -> str | None:
+def secondary_index(doc: dict) -> dict[tuple[int, int], dict]:
+    """`doc["secondary"]`'s inline records, keyed by the host range they cover.
+
+    A2.0 made that table **total**: one record per matching host range, clean or
+    dirty. So a missing key is a producer bug and not an ordinary dirty parse,
+    and the two get different refusals below. Only `within == "inline"` records
+    are indexed; a future secondary grammar over some other host node must not
+    silently answer for a paragraph.
+    """
+    return {
+        (entry["start"], entry["end"]): entry
+        for entry in doc.get("secondary", [])
+        if entry.get("within") == "inline"
+    }
+
+
+def _protected(inline: dict, record: dict | None) -> tuple[list[tuple[int, int]] | None, str | None]:
+    """The A2.1 construct ranges over `inline`, or the reason it is refused.
+
+    The inline CST is the oracle A1 did not have. A1 asked the *block* grammar
+    which punctuation appeared under `inline` and refused anything it could not
+    name; that question is subsumed here by a grammar that actually parses the
+    inline layer, so a named node is classified rather than guessed at.
+
+    The walk is over the root's **direct children only**, and deliberately does
+    not descend. An admitted construct is protected whole -- it becomes source
+    bytes inside one atom -- so whatever it contains is emitted verbatim and
+    cannot be reached by a gap flip. Emphasis inside a link's text is A2.2's
+    problem only when the emphasis is *outside* a protected range.
+    """
+    if record is None:
+        return None, "no inline parse"
+    if record.get("outcome") != "clean":
+        return None, "dirty inline parse"
+    out: list[tuple[int, int]] = []
+    for child in record["root"].get("children", []):
+        kind = child["type"]
+        if kind in CONSTRUCTS:
+            out.append((child["start"], child["end"]))
+        elif kind not in SAFE_PUNCTUATION:
+            # A named node A2.1 does not admit -- `emphasis`, `image`,
+            # `shortcut_link`, `full_reference_link`, `backslash_escape` -- or
+            # an anonymous token spelling a character the whitelist refuses.
+            return None, "inline construct"
+    return out, None
+
+
+def _inside(ranges: list[tuple[int, int]], at: int) -> bool:
+    return any(start <= at < end for start, end in ranges)
+
+
+def _hazardous(text: str) -> bool:
+    """Could this atom open a block if reflow put it at a line start?
+
+    `_ACQUIRES` over the atom's own text, which is lexical and reads no CST --
+    so the block policy needs no secondary tree even though the inline policy
+    is built from one. Applied to the atom stream **before** any merging: the
+    pattern is either prefix-matching (a merged atom keeps its leftmost
+    constituent's prefix) or `\\Z`-anchored (merging can only stop it matching),
+    so a hazard found here cannot be created by the merge it triggers. That is
+    what makes one pass enough.
+    """
+    return _ACQUIRES.match(text) is not None
+
+
+def analyse(
+    paragraph: dict, source: bytes, secondary: dict[tuple[int, int], dict]
+) -> tuple[str | None, list[int]]:
+    """The verdict for this paragraph, and its breakable gap offsets.
+
+    One function, because `refusal()` and `project()` must not be able to
+    disagree about which gaps are breakable. It is **pure** -- dicts, bytes and
+    a table in, a verdict and a list of offsets out -- so a test can drive the
+    real decision instead of restating it.
+    """
+    children = paragraph.get("children", [])
+    if len(children) != 1 or children[0]["type"] != "inline":
+        return "paragraph shape", []
+    inline = children[0]
+    start, end = inline["start"], inline["end"]
+
+    ranges, why = _protected(inline, secondary.get((start, end)))
+    if ranges is None:
+        return why, []
+
+    try:
+        text = source[start:end].decode("ascii")
+    except UnicodeDecodeError:
+        # A2.3's rung, not this one. The gaps stay ASCII space and newline
+        # either way; what is deferred is non-ASCII *atom content*.
+        return "non-ascii", []
+
+    # A leading or trailing gap byte would make `partition` emit a zero-width
+    # atom, which both runtimes refuse as `source_partitions ... has a
+    # zero-width child`. Refusing the paragraph turns a format-time refusal
+    # into an ineligibility.
+    if not text or text[0] in GAPS or text[-1] in GAPS:
+        return "edge whitespace", []
+
+    # Outside a protected range the A1 whitelist still governs, for exactly the
+    # A1 reason: nothing out here has been parsed, so a character that could
+    # open an inline construct makes the gap question unanswerable. Inside one,
+    # any ASCII byte is fine -- the construct is one atom and is emitted
+    # verbatim, so its interior is not a layout question at all. That is also
+    # why a double space inside a code span is not a "whitespace run": it never
+    # becomes a gap.
+    candidates: list[int] = []
+    for offset in range(start, end):
+        if _inside(ranges, offset):
+            continue
+        char = text[offset - start]
+        if char in GAPS:
+            candidates.append(offset)
+        elif char not in SAFE:
+            return "byte", []
+
+    # `partition` splits on these, so two abutting ones -- or one abutting a
+    # protected range's edge in a way that leaves nothing between -- would emit
+    # a zero-width atom. Check the invariant the runtime checks, rather than a
+    # lexical proxy for it.
+    if any(b - a == 1 for a, b in zip(candidates, candidates[1:])):
+        return "whitespace run", []
+
+    breakable = _block_safe(start, end, text, candidates)
+    if not breakable:
+        # Every gap is protected, so the run would hold a single atom and
+        # reflow to its own source. See the done-note: this is reachable in a
+        # way it was not under A1, where the check was lexical.
+        return "single atom", []
+    return None, breakable
+
+
+def _block_safe(start: int, end: int, text: str, candidates: list[int]) -> list[int]:
+    """`candidates`, less every gap flanking an atom that could open a block.
+
+    **Bilateral, not predecessor-only, and that is the whole of this slice's
+    block policy.** Binding a hazardous atom only to the gap *before* it does
+    not move the atom off a line start -- when that gap was a source newline it
+    *keeps* it there -- and if the resulting item is over-width, `fill` must
+    break the separator after it, isolating the marker on its own line and
+    completing the construct. Measured at width 80 through both runtimes: an
+    over-width code span, a source newline and `--` yields a setext h2 plus a
+    paragraph where the source had one paragraph. Protecting the following gap
+    too leaves the marker line its trailing word, which no setext underline or
+    thematic break may have.
+
+    A hazardous **first** atom has no preceding gap and fails on its own --
+    `---` and an over-width word format as a thematic break plus a paragraph.
+    The right-gap half of the same rule repairs it, so there is no first-atom
+    exception: the rule is "both flanking gaps, where they exist".
+
+    Removing gaps from one **set** is what unions the merges into connected
+    components. Adjacent hazards (`alpha -- :- beta`) drop three gaps between
+    them and coalesce into one atom; pairwise merging would have produced two
+    overlapping pairs and no definition of what they mean together.
+    """
+    drop: set[int] = set()
+    edges = [start, *[g + 1 for g in candidates]]
+    stops = [*candidates, end]
+    for index, (first, last) in enumerate(zip(edges, stops)):
+        if not _hazardous(text[first - start : last - start]):
+            continue
+        if index > 0:
+            drop.add(candidates[index - 1])
+        if index < len(candidates):
+            drop.add(candidates[index])
+    return [gap for gap in candidates if gap not in drop]
+
+
+def refusal(
+    paragraph: dict, source: bytes, secondary: dict[tuple[int, int], dict]
+) -> str | None:
     """Why this paragraph is not eligible, or `None` if it is.
 
     A reason rather than a bool so that a sweep can report *which* rule does the
@@ -197,96 +387,45 @@ def refusal(paragraph: dict, source: bytes) -> str | None:
     this function, and a change to the set that moves them should be visible the
     same way.
     """
-    children = paragraph.get("children", [])
-    if len(children) != 1 or children[0]["type"] != "inline":
-        return "paragraph shape"
-    inline = children[0]
-    for child in inline.get("children", []):
-        # The block grammar surfaces the punctuation that *could* open an inline
-        # construct as anonymous children of `inline`. A named child, or an
-        # anonymous one outside the admitted set, means this paragraph holds
-        # something A1 cannot reason about.
-        #
-        # On the pinned grammar this is **subsumed** by the byte check below:
-        # every character that produces a child outside the set is also a
-        # character outside the set, and a top-level paragraph never gets the
-        # one non-punctuation child (`block_continuation`) because that belongs
-        # to a container. Measured: deleting it here *and* in `prose.mjs`
-        # changes one paragraph's verdict across the tracked corpus and
-        # `probe_prose.py` still passes. Deleting it on one side only is caught,
-        # but by producer disagreement rather than by the behaviour being wrong.
-        #
-        # It stays because it is the structural half of the question and the
-        # byte check is the lexical half: a grammar that began surfacing a named
-        # inline node would slip past the bytes and be caught here.
-        # `test_prose.py` covers it directly, since this is what fires first for
-        # emphasis, code spans and links.
-        if child["type"] not in SAFE_PUNCTUATION:
-            return "inline token"
-    try:
-        text = source[inline["start"] : inline["end"]].decode("ascii")
-    except UnicodeDecodeError:
-        return "non-ascii"
-    # A leading or trailing gap byte would make `partition` emit a zero-width
-    # atom, which both runtimes refuse as `source_partitions ... has a
-    # zero-width child`. Refusing the paragraph turns a format-time refusal
-    # into an ineligibility. The block grammar trims the edges of an `inline`
-    # node, so this has not been observed to fire; producing a tree the runtime
-    # rejects is not a thing to leave to the grammar's good behaviour.
-    if not text or text[0] in GAPS or text[-1] in GAPS:
-        return "edge whitespace"
-    run = 0
-    for char in text:
-        if char in GAPS:
-            run += 1
-            if run > 1:
-                return "whitespace run"
-            continue
-        run = 0
-        if char not in SAFE:
-            return "byte"
-    atoms = re.split(r"[ \n]", text)
-    if len(atoms) < 2:
-        return "single atom"
-    if any(_ACQUIRES.match(atom) for atom in atoms):
-        return "block acquisition"
-    return None
+    return analyse(paragraph, source, secondary)[0]
 
 
-def partition(inline: dict, source: bytes) -> list[dict]:
+def partition(inline: dict, source: bytes, breakable: list[int]) -> list[dict]:
     """The alternating atom/gap children covering `inline`'s whole range.
+
+    The atoms are the maximal source spans **between the breakable gaps**, so
+    every gap not proved safe stays exact text inside an atom. The polarity is
+    the point: under a `protected_gaps` argument a hazard nobody classified
+    would become layout by default, and under this one it stays text.
 
     Abutting and non-empty by construction, which is what `source_partitions`
     checks at format time. The two facts are kept separate deliberately: this
     builds the partition, the runtime proves it, and a bug here is meant to
     surface as a refusal rather than as a silent hole.
     """
-    start, end = inline["start"], inline["end"]
+
+    def atom(first: int, last: int) -> dict:
+        return {
+            "type": ATOM,
+            "start": first,
+            "end": last,
+            "text": source[first:last].decode("utf-8"),
+        }
+
     out: list[dict] = []
-    at = start
-    while at < end:
-        stop = at
-        while stop < end and chr(source[stop]) not in GAPS:
-            stop += 1
-        out.append(
-            {
-                "type": ATOM,
-                "start": at,
-                "end": stop,
-                "text": source[at:stop].decode("utf-8"),
-            }
-        )
-        if stop == end:
-            break
+    at = inline["start"]
+    for gap in breakable:
+        out.append(atom(at, gap))
         out.append(
             {
                 "type": GAP,
-                "start": stop,
-                "end": stop + 1,
-                "text": source[stop : stop + 1].decode("utf-8"),
+                "start": gap,
+                "end": gap + 1,
+                "text": source[gap : gap + 1].decode("utf-8"),
             }
         )
-        at = stop + 1
+        at = gap + 1
+    out.append(atom(at, inline["end"]))
     return out
 
 
@@ -305,13 +444,14 @@ def reasons(doc: dict) -> list[tuple[int, str]]:
     two implementations cannot agree by accident of stack discipline.
     """
     source = doc["source"].encode("utf-8")
+    secondary = secondary_index(doc)
     out: list[tuple[int, str]] = []
 
     def walk(node: dict) -> None:
         if node["type"] in CONTAINERS or "language" in node:
             return
         if node["type"] == "paragraph":
-            out.append((node["start"], refusal(node, source) or "eligible"))
+            out.append((node["start"], refusal(node, source, secondary) or "eligible"))
             return
         for child in node.get("children", []):
             walk(child)
@@ -336,12 +476,18 @@ def project(doc: dict) -> dict:
     """
     doc = copy.deepcopy(doc)
     source = doc["source"].encode("utf-8")
+    secondary = secondary_index(doc)
     stack = [doc["root"]]
     while stack:
         node = stack.pop()
         if node["type"] in CONTAINERS or "language" in node:
             continue
-        if node["type"] == "paragraph" and refusal(node, source) is None:
+        verdict, breakable = (
+            analyse(node, source, secondary)
+            if node["type"] == "paragraph"
+            else ("not a paragraph", [])
+        )
+        if verdict is None:
             inline = node["children"][0]
             # Key order is `type, start, end, field, children`, the order
             # `convert()` inserts them in. Both producers write documents that
@@ -350,7 +496,7 @@ def project(doc: dict) -> dict:
             run = {"type": RUN, "start": inline["start"], "end": inline["end"]}
             if "field" in inline:
                 run["field"] = inline["field"]
-            run["children"] = partition(inline, source)
+            run["children"] = partition(inline, source, breakable)
             node["children"] = [run]
             continue
         stack.extend(node.get("children", []))
