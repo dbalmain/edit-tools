@@ -261,6 +261,22 @@ during real editing, not another agreement sweep. Worth taking before A2.1
 adds a consumer, because after that the cost stops being optional and the
 baseline is gone.
 
+> **Corrected, 19 September.** It has been measured, and it is a defect.
+> On `docs/onboarding/FINDINGS.md` (199 KB, 594 ranges) `attachSecondaries`
+> holds the main thread for **354 ms median / 399 ms max** in one
+> uninterrupted synchronous stretch; `parse()` goes 448 ms → 807 ms. 58 of
+> 114 tracked markdown files have an attach stretch over one frame. Nothing
+> reads the result, and the editor reparses after 150 ms of typing quiet, so
+> this is a third-of-a-second stall after every pause for a consumer that
+> does not exist. The browser's `parse()` now defaults attachment off.
+> `{ secondaries: true }` or `?secondaries=1` opts in, so the attached
+> baseline stays reproducible for the measurement. The harness producers
+> still attach unconditionally -- that is what keeps
+> `secondary grammar: 2553/2553` a measurement of agreement rather than of
+> a flag that defaulted into them. `harness/lang_parse.test.mjs` is the gate
+> that would fail if the flag stopped working in either direction. A2.1
+> turns the flag on when it has a consumer.
+
 Its exit criterion was the browser payload, and the answer is that the inline
 table ships as its own asset, fetched only by a document that holds an `inline`
 node -- 43 KB gzipped against the 50 KB of markdown's own block table, so

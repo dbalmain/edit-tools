@@ -63,6 +63,14 @@ hold an `inline` node (`hello **world**`):
 So the visible half of the win is real: flag off means the 43 KB table is
 not asked for at all, even on a document that would have needed it.
 
+## Docs
+
+Dated corrections in `docs/prose-projection.md`, `docs/a2-inline-price.md`,
+and `docs/web-editor.md` (the 81 ms figure was the block parse; that path
+now has a 354 ms attach unless the flag is off). `web/README.md` is the
+live guide: the flag exists because nothing reads the second parse and it
+cost 354 ms median on FINDINGS.md.
+
 ## `test.sh`
 
 (not run yet)

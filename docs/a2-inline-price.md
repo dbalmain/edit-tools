@@ -51,6 +51,17 @@ The payload decision the report asks for as A2.0's exit criterion was taken: the
 table is a separate lazily-fetched asset, not bundled. See
 `web/README.md`.
 
+> **Corrected, 19 September.** A2.0 attached on the browser's general parse
+> path, as the slice below described. That is no longer the default. The
+> attach stretch was measured at **354 ms median / 399 ms max** on
+> `docs/onboarding/FINDINGS.md` (199 KB, 594 ranges), with `parse()` going
+> 448 ms → 807 ms, and nothing reads the result. `web/js/lang.js` `parse()`
+> now gates attachment behind `{ secondaries: true }` / `?secondaries=1`,
+> default off. The harness producers are unchanged, so the 2,553-range
+> agreement gate still measures attachment. This report remains a dated
+> record of what A2.0 was built to do; `docs/prose-projection.md` and
+> `web/README.md` are the live ones.
+
 One figure is **corrected in place** rather than moved: A2.1's block-hazard count
 in section 5 read forty and is thirty-five. That is an arithmetic correction
 against the report's own `E2-COVERAGE.json` -- a count quoted against the wrong

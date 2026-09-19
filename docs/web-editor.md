@@ -173,6 +173,13 @@ consequences, and they point the same way:
   keystroke. Felt, but not in the way that would buy a server: the fix, if it
   ever becomes one, is a worker or a debounce.
 
+> **Corrected, 19 September.** The 81 ms was the block parse. A2.0 then put
+> secondary attachment on the same `parse()` the markdown surface runs 150 ms
+> after typing quiet, which on `docs/onboarding/FINDINGS.md` added **354 ms
+> median / 399 ms max**. Nothing read the result, so attachment is now
+> opt-in (`?secondaries=1` or `{ secondaries: true }`), default off. The
+> 81 ms figure is the default path again. See `web/README.md`.
+
 So the fact that would have flipped it back did not occur, and **the answer is
 option 2**. Both figures were measured on this machine on 2026-09-07, by
 `ts_check_all.py --keep` for the sizes and a five-run harness around
