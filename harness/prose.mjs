@@ -51,6 +51,13 @@ const ACQUIRES = /^(?:[-+*>#=|~]|\d+[.)]|```|~~~|:-+:?$)/;
 // deliberately not also block-acquisition hazards.
 export const CONSTRUCTS = new Set(["code_span", "inline_link", "uri_autolink"]);
 
+// `prose.py`'s `_DELIMITER_ROW`: a **last** atom spelling a GFM one-column
+// delimiter row refuses the whole paragraph, because it turns the *preceding
+// line* into a table header and the preceding line is decided by gaps that are
+// still breakable. `prose.py` carries the argument for why this is the one
+// hazard bilateral protection cannot repair.
+const DELIMITER_ROW = /^:?-+:?$/;
+
 const CONTAINERS = new Set([
   "block_quote",
   "list_item",
@@ -150,6 +157,14 @@ export function analyse(paragraph, source, secondary) {
   }
   for (let i = 1; i < candidates.length; i += 1) {
     if (candidates[i] - candidates[i - 1] === 1) return ["whitespace run", []];
+  }
+
+  // The one hazard bilateral protection cannot repair; see DELIMITER_ROW.
+  if (
+    candidates.length > 0 &&
+    DELIMITER_ROW.test(text.slice(candidates[candidates.length - 1] + 1 - start))
+  ) {
+    return ["delimiter row", []];
   }
 
   const breakable = blockSafe(start, end, text, candidates);

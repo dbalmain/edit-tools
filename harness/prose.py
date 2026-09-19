@@ -163,6 +163,30 @@ _ACQUIRES = re.compile(r"^(?:[-+*>#=|~]|\d+[.)]|```|~~~|:-+:?\Z)")
 # corpus's secondary trees, so this is a live refusal and not a hypothetical.
 CONSTRUCTS = frozenset({"code_span", "inline_link", "uri_autolink"})
 
+# A **last** atom spelling a GFM one-column delimiter row refuses the whole
+# paragraph. Bilateral protection cannot repair this one, and the reason is
+# worth stating because it is the boundary of the whole mechanism.
+#
+# Protecting the gaps either side of a hazardous atom works because it keeps
+# that atom's *line context* byte-identical to the source's, and the source
+# parsed as a paragraph. A delimiter row does not depend on its own line. It
+# turns the **preceding line** into a table header -- and the preceding line's
+# content is decided by gaps further left, which are still breakable. So
+# `alpha beta gamma\n:-` is a one-column table whose header is the whole first
+# line, and reflowing it to `alpha beta\ngamma\n:-` is a table whose header is
+# `gamma`. Bilateral protection keeps the `\n:-` and changes the header anyway.
+#
+# It leaks here and nowhere else because the pinned block grammar **cannot see
+# it**: tree-sitter-markdown 0.5.1 does not parse a pipeless table, so this
+# input arrives as an ordinary paragraph. Every construct the grammar *does*
+# model is ruled out by the precondition instead -- `alpha\n---` is already a
+# setext heading in the source and so is never offered as a paragraph.
+#
+# `-+` with no colon is included, though a bare `---` would have been a setext
+# heading and never reached here. Refusing a paragraph whose last atom is all
+# dashes costs almost nothing and does not depend on that argument holding.
+_DELIMITER_ROW = re.compile(r"^:?-+:?\Z")
+
 # A paragraph inside one of these owns a per-line continuation prefix -- a `> `,
 # a list indent -- that reflow would have to re-emit on every new line it
 # creates. `docs/prose-projection.md` defers that to a later slice, so A1 takes
@@ -330,6 +354,10 @@ def analyse(
     # lexical proxy for it.
     if any(b - a == 1 for a, b in zip(candidates, candidates[1:])):
         return "whitespace run", []
+
+    # The one hazard bilateral protection cannot repair; see `_DELIMITER_ROW`.
+    if candidates and _DELIMITER_ROW.match(text[candidates[-1] + 1 - start :]):
+        return "delimiter row", []
 
     breakable = _block_safe(start, end, text, candidates)
     if not breakable:

@@ -11,7 +11,7 @@ import { join } from "node:path"
 import { parseDoc } from "./ts_doc.mjs"
 import { injectAll } from "./ts_inject.mjs"
 import { attachSecondaries } from "./ts_secondary.mjs"
-import { partition, project, reasons, refusal, RUN } from "./prose.mjs"
+import { project, reasons, RUN } from "./prose.mjs"
 
 const require = createRequire(import.meta.url)
 const { format, Refusal } = require("../runtime-js/bundle.js")
@@ -96,27 +96,20 @@ function findParagraph(root, start) {
   return null
 }
 
+// A2.1 **superseded this helper**, and it is left delegating rather than
+// deleted so the bench's two arms keep their names and its recorded numbers
+// stay readable against the commit that produced them.
+//
+// It used to widen `project` by also admitting the `block acquisition`
+// verdict, to price "Option C": admit the hazardous paragraphs, format, then
+// rescan line starts and re-project whatever moved. A2.1 settled that question
+// the other way -- a hazardous atom now has both flanking gaps protected
+// inside `partition`, so such a paragraph is admitted *and* safe with no
+// format-then-inspect pass, and the `block acquisition` verdict no longer
+// exists to widen by. Keeping the old arm would have left a branch that can
+// never fire, which reads as coverage and is not.
 function projectAdmittingBlockAcquisition(doc) {
-  doc = structuredClone(doc)
-  const source = encoder.encode(doc.source)
-  const stack = [doc.root]
-  while (stack.length > 0) {
-    const node = stack.pop()
-    if (CONTAINERS.has(node.type) || node.language !== undefined) continue
-    if (node.type === "paragraph") {
-      const why = refusal(node, source)
-      if (why === null || why === "block acquisition") {
-        const inline = node.children[0]
-        const run = { type: RUN, start: inline.start, end: inline.end }
-        if (inline.field !== undefined) run.field = inline.field
-        run.children = partition(inline, source)
-        node.children = [run]
-      }
-      continue
-    }
-    for (const child of node.children ?? []) stack.push(child)
-  }
-  return doc
+  return project(doc)
 }
 
 function runFormat(tree, packages, width) {

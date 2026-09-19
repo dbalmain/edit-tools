@@ -66,6 +66,32 @@ def tracked_markdown() -> list[str]:
     )
 
 
+def holds_inline_syntax(paragraph: dict) -> bool:
+    """Does the block grammar surface anything under `inline` but safe punctuation?
+
+    This **was** `prose.refusal(...) == "inline token"`, which is where the
+    pinned 2553 came from. It is written out here now because that coupling was
+    incidental and a liability: the audited set is meant to be a fixed sample of
+    interesting inline ranges at `AUDIT_COMMIT`, and reading it off the prose
+    predicate silently re-measured it whenever a rung of A2 moved that
+    predicate. A2.1 retires the `inline token` verdict outright -- the secondary
+    CST answers that question properly now -- so the old selector would simply
+    have stopped matching, and the probe would have failed with a changed count
+    that said nothing about the producers it exists to compare.
+
+    Character for character the old condition: the paragraph shape check, then
+    any `inline` child whose type is outside the safe punctuation set. Nothing
+    else could preempt it, because it ran first.
+    """
+    children = paragraph.get("children", [])
+    if len(children) != 1 or children[0]["type"] != "inline":
+        return False
+    return any(
+        child["type"] not in prose.SAFE_PUNCTUATION
+        for child in children[0].get("children", [])
+    )
+
+
 def reached_paragraphs(node: dict):
     if node["type"] in prose.CONTAINERS or "language" in node:
         return
@@ -121,7 +147,7 @@ def main() -> int:
         root = gen_trees.convert(tree.root_node, source, None)
         ranges = set()
         for paragraph in reached_paragraphs(root):
-            if prose.refusal(paragraph, source) == "inline token":
+            if holds_inline_syntax(paragraph):
                 inline = paragraph["children"][0]
                 ranges.add((inline["start"], inline["end"]))
         if not ranges:
