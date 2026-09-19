@@ -39,7 +39,9 @@ and there is nothing for a server to do. See `docs/web-editor.md`, Q1.
 Two measurements decided it, and both are recorded there: the worst single
 page load is kotlin's parse table at 339 KB gzipped, and `ts_lr.mjs` parses at
 roughly 1 MB/s -- sub-millisecond for a corpus file, 81 ms for a 40 KB
-markdown document, on `:w` rather than per keystroke.
+markdown document. The markdown surface reparses 150 ms after typing quiet,
+not per keystroke; secondary attachment is off on that path unless
+`?secondaries=1`.
 
 ## What is generated
 
@@ -87,6 +89,22 @@ roots are retained *beside* that tree rather than spliced into it. Nothing reads
 the second parse yet -- it is the foundation the prose projection will check
 candidate line breaks against. `docs/prose-projection.md` is where that goes.
 
+That is why the second parse is **off by default** in the browser. On
+`docs/onboarding/FINDINGS.md` (199 KB, 594 ranges) `attachSecondaries` held the
+main thread for **354 ms median / 399 ms max** in one uninterrupted synchronous
+stretch; `parse()` went 448 ms → 807 ms. 58 of 114 tracked markdown files have
+an attach stretch over one frame. The editor reparses after 150 ms of typing
+quiet (`js/markdown.js`), so this was a third-of-a-second stall after every
+pause, for work nothing consumes. A2.1 turns it on when it has a consumer.
+
+Opt in with `{ secondaries: true }` on `parse()`, or load the page with
+`?secondaries=1`. The harness producers (`gen_trees.py`, `ts_check_trees.mjs`,
+`probe_secondary_driver.mjs`) do not go through `parse()` and still attach
+unconditionally -- that is what keeps `secondary grammar: 2553/2553` a
+measurement of agreement rather than of a flag that defaulted into them.
+`harness/lang_parse.test.mjs` is the gate that would fail if the flag stopped
+working in either direction.
+
 A dirty inline range cannot stop a page formatting. It is recorded as
 `outcome: "dirty"` and costs that range alone -- the same rule a fenced code
 block has always had, where a guest language that will not parse leaves its
@@ -100,7 +118,8 @@ table. Bundling the two would very nearly double what every markdown page loads,
 to carry a grammar that page may never reach. Kept apart, `js/lang.js` asks for
 it on the same terms as a guest table -- only once the document is known to hold
 an `inline` node -- so a buffer that is empty, or is nothing but a fenced block,
-never fetches it at all.
+never fetches it at all. With the flag off (the default) it is not fetched even
+when the document *does* hold one.
 
 Which grammars exist and which host node each one reparses come from
 `data/secondaries.json`, generated from the manifests, so shipping policy stays
