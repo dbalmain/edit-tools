@@ -71,6 +71,12 @@ UNRESOLVED_BY_DESIGN = {
     # A corpus case id written without its extension, in a done-note frozen at
     # its own commit. `rust/leading_pipes.rs` resolves; this spelling does not.
     "rust/leading_pipes",
+    # The findings log names this path *as the defect* -- it moved to
+    # `harness/scanners/` in `45c76a1` and `docs/parse-all-languages.md` did not
+    # follow. Quoting a dead path to explain why it was dead is the one case
+    # where prose should name something that is not here. It fired on the commit
+    # that introduced it, which is the check proving it is not vacuous.
+    "spike/scanner-vm/toml.program.js",
 }
 
 _PATH_IN_PROSE = re.compile(r"`([A-Za-z0-9_./-]+)`")

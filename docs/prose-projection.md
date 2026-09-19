@@ -517,14 +517,23 @@ wrong by the next merge rather than by the next quarter. Re-measure with
 `./harness/probe_prose.py`, whose summary line carries the eligible count and
 the file count; the full histogram is the same walk over `prose.reasons`.
 
-**This file is itself in the corpus, so the table cannot report the tree that
-contains it.** Writing these rows added three eligible paragraphs: the stamped
-figures are `80c7c9d`, the parent of the commit that wrote them, and the probe
-at that commit's child reads 1,546 in the same 127 files. There is no fixed
-point to chase here -- any edit correcting the number changes it again -- so the
-stamp names a parent and the reader is expected to run the probe rather than
-trust the row. Treat a discrepancy of a few paragraphs as this effect, and a
-discrepancy in the file count as a real corpus change.
+**This file is itself in the corpus, so the stamp names the commit the figures
+were taken at rather than the commit that carries them.** Writing the prose
+around these rows added three eligible paragraphs -- the stamped figures are
+`80c7c9d`, the parent, and the probe at its child read 1,546 in the same 127
+files.
+
+An earlier version of this paragraph claimed there was no fixed point to reach,
+which is **false** and was corrected on 2026-09-20. Only *structural* edits
+move the count; correcting a digit does not. Measured: replacing `1,543` with
+`9,999` in this file and reparsing leaves its own histogram at 43 eligible and
+52 `inline construct` exactly. So the numbers here can be brought current
+whenever someone runs the probe, and the stamp is a record of when that last
+happened rather than an admission of impossibility.
+
+Any discrepancy against a fresh run is therefore a real measurement, and it
+wants explaining rather than excusing -- most often by markdown files landing
+since the stamp, which the file count will show.
 
 | Verdict | Paragraphs |
 | --- | ---: |
