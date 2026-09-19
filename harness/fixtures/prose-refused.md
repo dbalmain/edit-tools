@@ -129,6 +129,45 @@ alpha beta|gamma delta epsilon zeta eta
 alpha beta gamma delta epsilon zeta eta theta
 :-
 
+## A fence opener at a line start only reflow creates
+
+> A code span delimited by four backticks spans a source newline, so one atom
+> holds a line beginning with a backtick run. In the source that line continues
+> `` fence in `x` y ``, and the backtick in the prospective info string is the
+> only thing stopping it being a fence. Reflow can end the line before that
+> backtick, and then it is one. This is the shape found live in
+> `corpus/reports/markdown/report.md`.
+
+a ```` ```json
+```` fence in `x` y
+
+## The same, indented one space
+
+> CommonMark permits a fence opener after up to three spaces, so the check
+> cannot anchor at column zero. These four entries are 1, 2, 3 and 4 spaces:
+> the first three corrupt into a `fenced_code_block`, the fourth into an
+> `indented_code_block`, which is why the rule allows any indent rather than
+> CommonMark's three. Measured through the real parser and both runtimes at
+> widths 10 to 60.
+
+a ```` ```json
+ ```` fence in `x` y
+
+## The same, indented two spaces
+
+a ```` ```json
+  ```` fence in `x` y
+
+## The same, indented three spaces, CommonMark's limit
+
+a ```` ```json
+   ```` fence in `x` y
+
+## The same, indented four spaces, past the limit and still not safe
+
+a ```` ```json
+    ```` fence in `x` y
+
 ## The same, with a pipe, which the character check reaches first
 
 alpha beta gamma delta epsilon zeta eta theta

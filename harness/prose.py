@@ -239,7 +239,24 @@ _DELIMITER_ROW = re.compile(r"^:?-+:?\Z")
 # *with* trailing content -- `#`, `>`, a list marker -- would have made the
 # source something other than a paragraph, so they never reach here. The fence
 # is the one that is neither, so it is refused rather than protected.
-_FENCE = re.compile(r"^(?:```|~~~)")
+#
+# **Leading whitespace is allowed before the run, and the bound is not three.**
+# CommonMark permits a fence opener after up to three spaces, which alone would
+# argue for `^ {0,3}`. Measured against the pinned grammar, four or more spaces
+# corrupts too, by a different route: the same paragraph indented four spaces
+# reflows into an `indented_code_block` rather than into a fence. So the refusal
+# is on the **backtick or tilde run at an indented line start**, at any indent.
+#
+# Indentation on its own is *not* the hazard, and the discriminating case says
+# so: `a ``qq\n    ww`` rr ss tt uu` has an embedded line start with four
+# spaces, is admitted, and holds under all six of phase A's reflow patterns. It
+# is the run that matters and not the indent, which is why this is not `^[ \t]`.
+#
+# Measured indent by indent through the real parser and both runtimes, widths
+# 10..60: 0 was already refused; 1, 2 and 3 became `fenced_code_block`; 4, 5
+# and 6 became `indented_code_block`. Found by review, not by this corpus -- no
+# tracked file holds the shape, which is why phase A stayed green over it.
+_FENCE = re.compile(r"^[ \t]*(?:```|~~~)")
 
 # A paragraph inside one of these owns a per-line continuation prefix -- a `> `,
 # a list indent -- that reflow would have to re-emit on every new line it
@@ -284,6 +301,35 @@ def package(base: dict) -> dict:
         RUN: ["fill", f"t:{ATOM}", ["line"]],
     }
     return out
+
+
+def legacy_inline_token(paragraph: dict) -> bool:
+    """A1's retired `inline token` test, frozen. **Not part of A2.1's predicate.**
+
+    Nothing in this module calls it and nothing should. It exists for
+    `harness/probe_secondary_grammar.py`, whose audited range set is a fixed
+    sample of 2,553 interesting inline ranges pinned at a fixed commit. That
+    probe used to select them with `prose.refusal(...) == "inline token"`,
+    which coupled a frozen sample to a predicate that moves on every rung of
+    A2 -- so the sample silently re-measured itself, and at A2.1 the verdict
+    ceased to exist at all.
+
+    It lives here rather than in the probe only because the probe imports
+    tree-sitter at module scope and the harness suites run under a plain
+    `python3` that has none, so a test could not otherwise drive the real
+    function. The dependency is on this *name*, never on A2.1's policy.
+
+    Character for character the old condition: the paragraph shape check, then
+    any `inline` child whose type is outside the safe punctuation set. Nothing
+    could preempt it, because it ran first.
+    """
+    children = paragraph.get("children", [])
+    if len(children) != 1 or children[0]["type"] != "inline":
+        return False
+    return any(
+        child["type"] not in SAFE_PUNCTUATION
+        for child in children[0].get("children", [])
+    )
 
 
 def secondary_index(doc: dict) -> dict[tuple[int, int], dict]:

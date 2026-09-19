@@ -123,6 +123,7 @@ import prose  # noqa: E402
 ROOT = Path(__file__).resolve().parent.parent
 HARNESS = ROOT / "harness"
 REFUSED = HARNESS / "fixtures" / "prose-refused.md"
+ADMITTED = HARNESS / "fixtures" / "prose-admitted.md"
 WIDTHS = (80, 40)
 # The secondary grammar A2.1 reads. Named here rather than hardcoded at the
 # call site so that a manifest rename fails loudly in `markdown_manifest`.
@@ -438,10 +439,15 @@ def phase_b_control(parser, inline_parser, docs) -> str:
 
 
 def phase_c(parser, inline_parser, packages: Path, docs) -> int:
+    # The admitted fixture joins the corpus here deliberately. Phase A proves
+    # its shapes survive reflow; this proves the two runtimes agree on them and
+    # that formatting them is idempotent, which is the half a reparse cannot
+    # see. Without it the coalesced shapes would reach neither runtime, since
+    # none of them occurs in `corpus/src/markdown`.
     corpus = [
         (path, source, doc)
         for path, source, doc in docs
-        if path.parent == ROOT / "corpus" / "src" / "markdown"
+        if path.parent == ROOT / "corpus" / "src" / "markdown" or path == ADMITTED
     ]
     env = {**os.environ, "FMT_PACKAGES": str(packages)}
     checked = 0
@@ -532,6 +538,31 @@ def main(quiet: bool = False) -> int:
                 f"paragraphs are eligible, starting with {text[:60]!r}"
             )
 
+    # The mirror invariant: `prose-refused.md` must yield nothing, and
+    # `prose-admitted.md` must refuse nothing. A refusal fixture can only
+    # detect a change in eligibility, so it cannot guard the shapes A2.1
+    # deliberately admits -- those are eligible before and after any mutation
+    # worth worrying about, and what changes is the partition. This file is
+    # where the real parser, the real secondary grammar and both runtimes get
+    # to see them.
+    admitted = [entry for entry in docs if entry[0] == ADMITTED]
+    if not admitted:
+        raise Failed(f"the admitted fixture {ADMITTED.name} was not swept")
+    for path, source, doc in admitted:
+        fresh = parse(parser, source, path, inline_parser)
+        refused = [
+            (start, why)
+            for start, why in prose.reasons(fresh)
+            if why != "eligible"
+        ]
+        if refused:
+            start, why = refused[0]
+            text = source[start : start + 60].decode(errors="replace")
+            raise Failed(
+                f"{path.name} exists to be admitted, but {len(refused)} of its "
+                f"paragraphs are refused, starting with {why!r} at {text!r}"
+            )
+
     eligible = sum(len(runs(doc)) for _, _, doc in docs)
     if eligible == 0:
         raise Failed(
@@ -559,7 +590,8 @@ def main(quiet: bool = False) -> int:
             f"{inlines} inline-oracle checks, "
             f"{projections} producer paragraph verdicts, "
             f"{formats} runtime/idempotence checks; {control}; "
-            f"{REFUSED.name} still refuses every paragraph"
+            f"{REFUSED.name} still refuses every paragraph and "
+            f"{ADMITTED.name} still admits every paragraph"
         )
     return 0
 

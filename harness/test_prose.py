@@ -202,6 +202,30 @@ class Refusal(unittest.TestCase):
         # decision rather than an accident.
         ("bare backticks are refused by the byte check first",
          "```json is nice y", (), (), "byte"),
+        # An indented fence opener. CommonMark allows up to three spaces, but
+        # the pinned grammar corrupts at four or more too -- as an
+        # `indented_code_block` rather than a fence -- so the rule allows any
+        # indent. Each of these was measured through the real parser and both
+        # runtimes; see `prose.py`'s `_FENCE`.
+        ("fence opener indented one space",
+         "a ```` ```json\n ```` fence in `x` y", (),
+         (("code_span", "```` ```json\n ````"), ("code_span", "`x`")),
+         "fence opener"),
+        ("fence opener indented three spaces, CommonMark's limit",
+         "a ```` ```json\n   ```` fence in `x` y", (),
+         (("code_span", "```` ```json\n   ````"), ("code_span", "`x`")),
+         "fence opener"),
+        ("fence opener indented four spaces, past the limit",
+         "a ```` ```json\n    ```` fence in `x` y", (),
+         (("code_span", "```` ```json\n    ````"), ("code_span", "`x`")),
+         "fence opener"),
+        # The discriminator. An indented embedded line start that is *not* a
+        # backtick run stays eligible -- the hazard is the run, not the indent.
+        # If this ever refuses, `_FENCE` has widened into a whitespace rule.
+        ("an indented embedded line start that is not a fence",
+         "alpha ``beta gamma\n    delta`` epsilon zeta", (),
+         (("code_span", "``beta gamma\n    delta``"),), None),
+
         # A code span that *is* the first atom and spells a fence opener is
         # refused, conservatively. Its info string holds backticks, so it
         # would not in fact fence -- but `_FENCE` does not model info-string
@@ -454,18 +478,25 @@ class MutationControl(unittest.TestCase):
     # regression suite rather than a collection. Named individually rather than
     # derived from `BILATERAL`, so a case added without a thought about whether
     # it discriminates fails here instead of being absorbed silently.
+    # Name -> the fragment its failure message must contain. Pinning the
+    # message, not just the fact of an `AssertionError`, is the standing check
+    # "a positive control must fail for the reason it names" applied literally:
+    # a case that started failing because the fixture stopped building, or
+    # because the verdict changed rather than the partition, would otherwise
+    # still be counted as the control working.
     MUST_FAIL = {
-        "over-width code span then newline and --",
-        "over-width link then newline and :-",
-        "over-width code span then newline and -:",
-        "over-width link then newline and -:",
-        "adjacent hazards cascade",
-        "three adjacent hazards cascade",
-        "first atom, three atoms",
-        # This one fails for its own reason: predecessor-only binding has no
-        # left gap to drop for atom 0, so `---` keeps a breakable gap after it
-        # and reaches a line start alone.
-        "first atom, nothing left to break",
+        "over-width code span then newline and --": "atoms",
+        "over-width link then newline and :-": "atoms",
+        "over-width code span then newline and -:": "atoms",
+        "over-width link then newline and -:": "atoms",
+        "adjacent hazards cascade": "atoms",
+        "three adjacent hazards cascade": "atoms",
+        "first atom, three atoms": "atoms",
+        # This one fails differently, and the difference is the point:
+        # predecessor-only binding has no left gap to drop for atom 0, so `---`
+        # keeps a breakable gap after it, the paragraph stops being a single
+        # atom, and the verdict changes rather than the partition.
+        "first atom, nothing left to break": "expected refusal",
     }
 
     @staticmethod
@@ -483,21 +514,27 @@ class MutationControl(unittest.TestCase):
 
     def test_left_only_protection_fails_the_cases_it_should(self):
         real = prose._block_safe
-        failed = set()
+        failed = {}
         prose._block_safe = self._left_only
         try:
             for name, text, inline, want in BILATERAL:
                 try:
                     bilateral_case(name, text, inline, want)
-                except AssertionError:
-                    failed.add(name)
+                except AssertionError as why:
+                    failed[name] = str(why)
         finally:
             prose._block_safe = real
         self.assertEqual(
-            failed, self.MUST_FAIL,
+            set(failed), set(self.MUST_FAIL),
             "predecessor-only protection must fail exactly the cases "
             "bilateral protection exists for",
         )
+        for name, fragment in self.MUST_FAIL.items():
+            with self.subTest(name):
+                self.assertIn(
+                    fragment, failed[name],
+                    f"{name} failed, but not for the reason the control names",
+                )
 
     def test_the_real_implementation_passes_all_of_them(self):
         """The other half of the control: the mutation was what failed."""
@@ -625,6 +662,59 @@ class Project(unittest.TestCase):
                 self.assertEqual(
                     projected == prose.RUN, verdict(d) is None, name
                 )
+
+
+class FrozenSelector(unittest.TestCase):
+    """`prose.legacy_inline_token` is a frozen A1 predicate.
+
+    It replaced `prose.refusal(...) == "inline token"`, which A2.1 retires, and
+    the probe's pinned 2,553 is read through it. A total is weak evidence for a
+    selector -- two different selections can have the same size -- so the
+    behaviour is pinned directly here, and the probe additionally pins a digest
+    of the selected ranges rather than only their count.
+    """
+
+    def setUp(self):
+        self.holds = prose.legacy_inline_token
+
+    def shape(self, kinds):
+        node = {"type": "inline", "start": 0, "end": 10}
+        if kinds is not None:
+            node["children"] = [
+                {"type": kind, "start": i, "end": i + 1}
+                for i, kind in enumerate(kinds)
+            ]
+        return {"type": "paragraph", "start": 0, "end": 10, "children": [node]}
+
+    def test_the_old_condition_character_for_character(self):
+        cases = (
+            ("no children at all", None, False),
+            ("only safe punctuation", (",", ";", "."), False),
+            ("one child outside the set", ("`",), True),
+            ("safe punctuation and one outside", (",", "*"), True),
+            ("a named child", ("emphasis",), True),
+            ("empty child list", (), False),
+        )
+        for name, kinds, want in cases:
+            with self.subTest(name):
+                self.assertEqual(self.holds(self.shape(kinds)), want)
+
+    def test_a_paragraph_that_is_not_one_inline_child_is_not_selected(self):
+        self.assertFalse(self.holds({"type": "paragraph", "children": []}))
+        self.assertFalse(self.holds({
+            "type": "paragraph",
+            "children": [{"type": "inline", "start": 0, "end": 1},
+                         {"type": "inline", "start": 1, "end": 2}],
+        }))
+
+    def test_it_does_not_consult_the_a21_predicate(self):
+        """The whole point of freezing it: A2.2 must not move this count."""
+        source = Path(__file__).resolve().parent / "prose.py"
+        body = source.read_text()
+        start = body.index("def legacy_inline_token")
+        end = body.index("def secondary_index")
+        self.assertNotIn("refusal(", body[start:end])
+        self.assertNotIn("analyse(", body[start:end])
 
 
 class Mirror(unittest.TestCase):

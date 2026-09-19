@@ -465,6 +465,23 @@ whenever a breakable gap survives elsewhere. Where none does, the verdict is
 > the hazard the pricing diagnostic counted is now mostly *coalesced* rather
 > than refused, which is exactly the outcome the ceiling column was hedging.
 
+**The format-pass benchmark that priced Option C was retired with A2.1.**
+`harness/bench_format_pass.{py,mjs}` measured a counterfactual postcheck --
+admit the hazardous paragraphs, format, rescan line starts, re-project and
+format again -- and found the document-level trip rate to be 0/114 at width 80
+and 0/114 at width 40. A2.1 settled that question a different way: bilateral
+gap protection makes the hazardous paragraph safe *before* layout, so there is
+no second pass to price. The harness went with it, because its positive-trip
+control depended on the `block acquisition` verdict A2.1 retires -- the control
+source now classifies as `single atom`, so the benchmark could no longer reach
+its own report, and a benchmark whose control cannot pass reads as coverage it
+does not provide.
+
+The measurements are not lost: `.ai/reviews/a2/q30/report.md` carries the full
+write-up, the controls and the raw numbers, and it is tracked. Rebuild rather
+than resurrect if A2.2 needs a format-pass clock; its arms would be different
+ones.
+
 The fact that would have changed it was A2.2's hazard rate: if emphasis pushed
 it to roughly a fifth of the slice, a predicate rule would be one written to be
 deleted. It does not. Emphasis is **10.5% hazardous** on its own increment (83

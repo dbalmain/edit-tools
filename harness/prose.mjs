@@ -63,8 +63,11 @@ const DELIMITER_ROW = /^:?-+:?$/;
 // produce. The second hazard gap protection cannot repair, because a fence
 // opener's validity depends on the **rest of its line** -- a backtick fence's
 // info string may not contain a backtick -- so truncating a line can turn a
-// non-opener into an opener. `prose.py` carries the live case that found it.
-const FENCE = /^(?:```|~~~)/;
+// non-opener into an opener. `prose.py` carries the live case that found it,
+// and the measurement behind the leading `[ \t]*`: CommonMark's three-space
+// bound is not the right one here, because four or more spaces corrupts too,
+// as an `indented_code_block` rather than as a fence.
+const FENCE = /^[ \t]*(?:```|~~~)/;
 
 const CONTAINERS = new Set([
   "block_quote",
