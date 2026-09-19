@@ -9,6 +9,26 @@ log** when a review uncovers a durable lesson. Keep entries terse.
 Mandatory extra criteria every review applies here (promoted from recurring
 findings). Each should name the guard that will eventually retire it.
 
+- **A document that lands on `main` alone brings its branch's frame of
+  reference with it.** Prose written on a branch says "tracked", "here" and
+  "this file" about that branch's tree. When only the document lands, those
+  words silently retarget, and nothing but a reader following the path finds
+  out. Three instances in one week: a report named in `FINDINGS.md` that lived
+  only on `spike/rust-subwidth`; `docs/a2-inline-price.md`'s Appendix B calling
+  seven files "(tracked)" when three stayed on `spike/a2-price`; and
+  `docs/parse-all-languages.md` naming `spike/scanner-vm/toml.program.js` after
+  the file moved to `harness/scanners/`. *Retired by:*
+  `ProseRoutesResolveTests` in `harness/test_repo_layout.py`, which resolves
+  every backticked repo path in tracked prose and carries an allowlist of
+  deliberate absences with a reason each. **Applied.**
+- **A merged note is evidence, and it may disprove the canonical record.** The
+  campaign that merged `.ai/done-share-line.md` also inherited its argument:
+  the note's whole subject is that `FINDINGS.md` entry 9 was wrong in three
+  particulars. Read a newly tracked note against the docs it touches before
+  treating it as history. *Retired by:* nothing automatic — a note's claims are
+  prose about prose. The cheap discipline is to grep the canonical docs for the
+  note's subject at merge time.
+
 - **A new source-byte read is a new `parity_fuzz.py` site.** Any change that
   reads `node.start`/`node.end` or a child's range in either runtime must add a
   generator to `all_cases()` in `harness/parity_fuzz.py`. That tuple is
@@ -109,6 +129,36 @@ findings). Each should name the guard that will eventually retire it.
   consumer lands and erases the baseline.
 
 ## Findings log
+
+### 2026-09-20 — a document landed without the tree it describes
+
+- **What:** three tracked documents named repository paths that are not in this
+  tree. Two were reports retained on spike branches on purpose, described as
+  though they were here; one was a file that had moved between directories.
+  Every gate was green throughout, because prose is valid whatever it names.
+- **Why missed:** no review was looking at *paths inside prose* as routes. The
+  documentation principle was read as "is the claim true", and "does the path
+  resolve" is a different and mechanically checkable question.
+- **Guard:** `ProseRoutesResolveTests` in `harness/test_repo_layout.py`.
+  Applied, and it found the third instance on its first run. It discriminates
+  branch names from paths by asking git, so renaming a branch that prose cites
+  now fails the suite — which is the right moment to learn it.
+
+### 2026-09-20 — a test renamed a tracked package file to make its case
+
+- **What:** `test_score.py` moved `packages/json.json` aside and restored it in
+  `finally`, to exercise the pending-package closure against the real roster.
+  A SIGKILL in that window leaves a checkout missing a language, and the test
+  could not run against a read-only tree.
+- **Why missed:** the `finally` reads as careful, and the suite is green either
+  way. Nothing in the repo distinguishes a test that *reads* the tree from one
+  that *writes* it.
+- **Guard:** the closure now takes an `available(name)` predicate rather than a
+  submission path, so the test passes a set and touches nothing. Proposed but
+  not applied: a check that no `harness/test_*.py` writes outside `tempfile` —
+  grep for `rename`, `unlink`, `write_text` and `mkdir` whose receiver is not a
+  temp root.
+
 
 ### 2026-09-13 — the control that could not tell a deleted check from a working one
 

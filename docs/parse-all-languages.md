@@ -403,7 +403,7 @@ hand-porting meets it twice.
 
 How the twelve scanners get produced. `docs/scanner-vm.md`'s route is
 hand-compilation to VM bytecode: toml's 82 C lines became 153 lines of assembler
-in `spike/scanner-vm/toml.program.js`, a 1.9x expansion, with the upstream C
+in `harness/scanners/toml.program.js`, a 1.9x expansion, with the upstream C
 reproduced in comments because "that is the only review this port gets".
 
 At that ratio the remaining twelve are **roughly 19,000 lines of hand-written
