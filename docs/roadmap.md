@@ -155,7 +155,7 @@ majority-case construct needs it. Two Python files at one width is not that.
 each entry. The reclassification is the deliverable — pile A entries are then a
 normal backlog item rather than a documented limitation.
 
-## 6. Markdown, and languages that contain languages — **next**
+## 6. Markdown, and languages that contain languages — **onboarded; prose reflow is what remains**
 
 Markdown was missing from the roster and is now the most important language on
 it, because of the requirement that JavaScript inside a ` ```javascript ` fence
@@ -199,8 +199,25 @@ splicer uses; an unroutable region falls back to exact bytes, because that is
 what `verbatim` promised. Gate 2's second pass calls `gen_trees.parse_doc()`
 instead of a private reparse, so idempotence across a boundary is idempotence.
 
-Remaining for this point: the ordinary markdown onboarding round—its real
-manifest, package and corpus—landing on gates that can now see what it does.
+**The ordinary onboarding round has landed.** `packages/markdown.json` ships at
+`et-doc-rules/2`, and markdown is scored like every other language: at commit
+`80c7c9d` it reads **33 agreement, 7 accepted, 0 stale, 0 unreviewed, 0
+defect** of 40 cases, against Prettier 3.9.6. The seven accepted are reviewed
+ledger rows in `harness/reviews/formatter/markdown.jsonl`, each naming a design
+limit or a house rule rather than a defect — pipe-table padding, one blank
+before a nested fence's closer, two spaces after a block-quote marker.
+
+What remains for markdown is **not** onboarding but **prose reflow**, and it is
+a different problem with its own ladder. The live reference is pinned at
+`proseWrap=preserve` because `fill` cannot see word-sized children inside an
+`inline` leaf; DESIGN.md's "Prose needs source atoms before it can use `fill`"
+states the limit, and [`docs/prose-projection.md`](prose-projection.md) holds
+the plan. A1 (block grammar only) and A2.0 (secondary inline grammars) and A2.1
+(inline constructs protected whole, with bilateral gap protection) have landed
+as a **harness** capability — no shipped package declares `source_partitions`
+and markdown still emits paragraphs `verbatim`, so nothing in the runtime path
+has changed yet. A2.2 (emphasis), A2.3 (non-ASCII) and A2.4 are open, and so is
+the gate-3 equivalence that switching the live reference would need.
 
 ## 7. Is the tree interface actually independent of tree-sitter? — **closed, yes**
 

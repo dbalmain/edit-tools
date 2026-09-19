@@ -507,31 +507,48 @@ falling to 8/32, with gate 3 rejecting 20 reference outputs.
 ## What A2.1 actually admits
 
 Measured by `harness/probe_prose.py` over the tracked, cleanly-parsing markdown
-files in this repository. **Not comparable to the ceiling table above**, for the
-reasons given there: different corpus, different program, different walk.
+files in this repository, **at commit `80c7c9d`** -- 128 tracked files, 127 of
+them parsing. **Not comparable to the ceiling table above**, for the reasons
+given there: different corpus, different program, different walk.
+
+The commit stamp is load-bearing. The corpus is `git ls-files '*.md'`, so every
+commit that lands a markdown file moves every row, and an undated table here is
+wrong by the next merge rather than by the next quarter. Re-measure with
+`./harness/probe_prose.py`, whose summary line carries the eligible count and
+the file count; the full histogram is the same walk over `prose.reasons`.
 
 | Verdict | Paragraphs |
 | --- | ---: |
-| eligible | 1,442 |
-| `inline construct` -- A2.2 and A2.4 shapes | 1,603 |
-| `non-ascii` -- A2.3 | 330 |
-| `byte` | 23 |
-| `single atom` | 21 |
+| `inline construct` -- A2.2 and A2.4 shapes | 1,680 |
+| eligible | 1,543 |
+| `non-ascii` -- A2.3 | 342 |
+| `byte` | 24 |
+| `single atom` | 23 |
+| `fence opener` | 6 |
 | `whitespace run` | 4 |
 | `delimiter row` | 3 |
+| `edge whitespace` | 2 |
 | `dirty inline parse` | 2 |
-| `fence opener` | 1 |
-| `edge whitespace` | 1 |
-| **total reaching the walk** | **3,430** |
+| **total reaching the walk** | **3,629** |
 
-A1's predicate measures **566** on this same corpus and walk, against the
-table's 536. That gap, on the one rung where both numbers purport to describe
-the same shipped thing, is the cleanest illustration of why the two scales are
-not one scale.
+The figure that matters for safety is not 1,543 but **9**: the paragraphs
+refused by the two hazards coalescing cannot repair, `fence opener` and
+`delimiter row`. Everything admitted survives phase A's reflow-and-reparse
+invariant.
 
-The figure that matters for safety is not 1,442 but **4**: the paragraphs
-refused by the two hazards coalescing cannot repair, `delimiter row` and `fence
-opener`. Everything admitted survives phase A's reflow-and-reparse invariant.
+**`fence opener` moved 1 -> 6 when seven done-notes joined the corpus**, which
+is the most useful thing this re-measurement says. The refusal was found on a
+single real paragraph and could have been read as a curiosity of one file; five
+more arrived in the next seven markdown files to land, all of them prose about
+fenced code. It is a shape that ordinary technical writing produces, not an
+adversarial one.
+
+At the previous stamp (`a14f19c`'s corpus, 119 files, before A2.1's own fixture
+and these notes) the same walk read 1,442 eligible of 3,430, with `fence
+opener` at 1 and `single atom` at 21. A1's predicate measured **566** there
+against the ceiling table's 536 -- that gap, on the one rung where both numbers
+purport to describe the same shipped thing, is the cleanest illustration of why
+the two scales are not one scale.
 
 ### Is the non-prefix hazard class closed?
 
