@@ -219,6 +219,19 @@ and markdown still emits paragraphs `verbatim`, so nothing in the runtime path
 has changed yet. A2.2 (emphasis), A2.3 (non-ASCII) and A2.4 are open, and so is
 the gate-3 equivalence that switching the live reference would need.
 
+That equivalence is smaller than this document used to imply.
+`harness/probe_prose_equivalence.py` re-wraps only what the projection admits
+and asks the live gate about the result: at `8747b24`, 186 changed re-wraps
+across 139 tracked files at two widths, 183 rejected, **every rejection
+soft-wrap only and none structural**. Container prefixes and HTML-comment
+reclassification -- the two reasons `docs/prose-projection.md` gave for needing
+a range-aware redesign first -- cannot arise while the projection stays
+top-level, the second because a bare inline HTML comment refuses the paragraph
+outright. The hard break is the one cause that survives. Note the separation
+this exposes: shipping reflow for the A2.1 subset and moving markdown's live
+reference to `proseWrap=always` are different questions, and only the second
+needs to agree with Prettier inside containers.
+
 ## 7. Is the tree interface actually independent of tree-sitter? — **closed, yes**
 
 The plan of record for Aven (no tree-sitter grammar, round 6) is to have its own

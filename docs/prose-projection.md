@@ -862,6 +862,57 @@ checks before changing either the generic path or override comparison. HTML
 comment movement among the 20 rejected references is outside the first subset;
 no promise is made that every Prettier rewrite will be accepted.
 
+### Scoped to what A2.1 admits, 2026-09-20
+
+The paragraph above reads as a prerequisite on the whole of step 3, and it is
+not one. It was measured against Prettier's `--prose-wrap always`, which
+reflows inside lists and blockquotes -- and A2.1's projection does not.
+`prose.project` stops descending the moment it enters a container, so a
+paragraph inside a quote is never offered to `refusal` at all. Re-measured at
+`8747b24` by `harness/probe_prose_equivalence.py`, which re-wraps **only what
+the projection admits** and asks the live gate whether the result still means
+the same thing:
+
+| | |
+| --- | ---: |
+| tracked markdown files parsed | 139 (1 unparseable) |
+| re-wraps that changed bytes, at widths 80 and 40 | 186 of 278 |
+| gate 3 accepts unchanged | 3 |
+| rejected, and the disagreement is soft-wrap only | **183** |
+| rejected, and the disagreement is structural | **0** |
+
+So each of the three causes, against the A2.1 subset rather than against
+Prettier:
+
+1. **Container prefixes cannot arise.** The projection is top-level only. A
+   control that reflows across a `>` prefix is still classified structural, so
+   this is the check declining to see a case the walk never produces, not the
+   check failing to notice one.
+2. **Comment reclassification cannot arise either**, and for a sharper reason
+   than the sweep: a paragraph holding a bare inline HTML comment is *refused*,
+   with the verdict `inline construct`. The only admitted spelling is one
+   inside a code span, and a backtick at a line start opens no block. That is a
+   property of the predicate, so it does not depend on the corpus or on which
+   widths were tried.
+3. **The hard break is real**, and is the one cause that survives. A two-space
+   hard break flattened to a soft one classifies structural, which is what the
+   prototype's `_prose_gap` was written to preserve.
+
+The measurement is only worth its controls, so the probe runs them every time
+and exits non-zero if the classifier stops discriminating: a deleted word, a
+flattened hard break and a quote-prefix reflow must all come out structural,
+and a plain soft re-wrap must not. A classifier that called everything soft
+would otherwise produce this table unchanged.
+
+**What this does and does not license.** It says the first equivalence slice is
+a declaration over top-level paragraphs, preserving hard breaks, plus its
+adversarial checks -- not a range-aware logical-prose redesign. It does **not**
+say markdown's live reference can move from `proseWrap=preserve`: that means
+agreeing with Prettier, which reflows containers, and those remain two separate
+questions. Container-prefix ownership becomes an entry condition when the
+projection starts descending into containers, which is after A2.2 and A2.3
+rather than before them.
+
 ## Evidence and stopping point
 
 A scratch **Doc-composition probe**, not an end-to-end parser prototype, built
