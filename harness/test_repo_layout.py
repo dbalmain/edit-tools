@@ -103,6 +103,14 @@ UNRESOLVED_BY_DESIGN = {
     # REVIEW.md means restoring the wrong path in the document it broke still
     # fails -- which a global exception did not.
     ("REVIEW.md", "spike/scanner-vm/toml.program.js"),
+    # Same path, same reason, in the review record that found it. Enumerating
+    # these rather than exempting `.ai/reviews/**` wholesale is deliberate: a
+    # blanket rule would let a genuinely wrong route hide in a review note, and
+    # the reviewer who asked for document scoping also said that generating
+    # exemptions automatically would undermine the check.
+    (".ai/reviews/merge/astra/note-01.md", "spike/scanner-vm/toml.program.js"),
+    (".ai/reviews/merge/astra/note-02.md", "spike/scanner-vm/toml.program.js"),
+    (".ai/reviews/merge/astra/prompt-03.md", "spike/scanner-vm/toml.program.js"),
 }
 
 _PATH_IN_PROSE = re.compile(r"`([A-Za-z0-9_./-]+)`")
