@@ -43,7 +43,10 @@ node --test runtime-js/highlight.test.js
 # The web apps' host-side policy. `web/js/host.js` has no imports on purpose,
 # so this runs on a clean checkout, before `web/gen.py` has written vendor/.
 node --test web/js/host.test.js
-python3 -m unittest discover -s harness
+# Same discovery as `python3 -m unittest discover -s harness`, with writes
+# into the checkout made fatal. See the module docstring for why a grep cannot
+# do this job.
+./harness/check_test_writes.py
 ./harness/check_gate3.py
 ./harness/score.py .
 ./harness/corpus_stats.py

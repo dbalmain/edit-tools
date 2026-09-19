@@ -154,10 +154,21 @@ findings). Each should name the guard that will eventually retire it.
   way. Nothing in the repo distinguishes a test that *reads* the tree from one
   that *writes* it.
 - **Guard:** the closure now takes an `available(name)` predicate rather than a
-  submission path, so the test passes a set and touches nothing. Proposed but
-  not applied: a check that no `harness/test_*.py` writes outside `tempfile` —
-  grep for `rename`, `unlink`, `write_text` and `mkdir` whose receiver is not a
-  temp root.
+  submission path, so the test passes a set and touches nothing. The general
+  check is now **applied**, as `harness/check_test_writes.py`: `./test.sh`
+  reaches the Python suite through it, and it installs a `sys.addaudithook`
+  that makes any write under the repository raise at the syscall.
+  - The grep originally proposed here would not have worked. It has to decide
+    whether each receiver is a temporary path, which is dataflow a grep cannot
+    do — all twenty test modules write legitimately into `tempfile` dirs — and
+    it would have missed the shape that bit, a rename aside and back, which
+    leaves no trace for anything inspecting the tree afterwards to find.
+  - Proven by mutation: ten mutations of the guard, ten caught, against a
+    zero-failure baseline. Its own positive control runs on every invocation —
+    it attempts one write into the checkout after arming and fails the run if
+    that write is allowed, so a renamed audit event cannot silently disarm it.
+  - Known blind spots, stated in the module: writes by a child process, and
+    `dir_fd`-relative names, which are only judged when absolute.
 
 
 ### 2026-09-13 — the control that could not tell a deleted check from a working one
@@ -229,10 +240,19 @@ findings). Each should name the guard that will eventually retire it.
   caught produce the same output. This is "a measured zero needs a positive
   control" one level up — the control belongs on the *mutator*, not only on the
   thing being measured.
-- **Guard:** proposed, not applied — have the mutator assert the file changed
-  (`text != original`) before running the suite, and fail loudly on a
-  non-matching anchor. The Python mutator used afterwards does print
-  `ANCHOR MISSING`, which is the same idea done by hand.
+- **Guard:** **applied** as `harness/mutate.py`. `mutated(text, old, new)`
+  replaces and then raises `AnchorMissing` unless something actually changed —
+  anchor absent, replacement equal to the original, or fewer occurrences than
+  the requested `count`. `harness/check_gate3.py`'s injection cases and
+  `harness/test_ts_transcode.py`'s four lexer mutations now go through it.
+  - Note which half of the defect is the dangerous one. A control expecting a
+    **rejection** fails loudly when its mutation no-ops, because nothing was
+    broken; one expecting an **acceptance** passes, having proved only that the
+    check accepts the text it was already handed. Both call sites here have
+    cases of the second kind.
+  - Its own tests are the discriminating ones: a membership-only
+    implementation (`if old not in text: raise`) passes four of the six and
+    fails exactly the two that matter.
 
 ### 2026-09-13 — the one producer-agreement gate reported success on zero files
 

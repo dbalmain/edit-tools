@@ -18,6 +18,7 @@ from pathlib import Path
 
 import node_suite
 import ts_transcode as tt
+from mutate import mutated
 
 HARNESS = Path(__file__).resolve().parent
 
@@ -150,7 +151,7 @@ class LexRecoveryTest(unittest.TestCase):
     def test_character_set_is_found_without_const(self):
         # 0.23/0.24-era generators emit `static TSCharacterRange`, not
         # `static const`. haskell, kotlin, typescript and xml all do.
-        source = SOURCE.replace("static const TSCharacterRange", "static TSCharacterRange")
+        source = mutated(SOURCE, "static const TSCharacterRange", "static TSCharacterRange")
         sets = tt.parse_charsets(source)
         self.assertEqual(sets["sym_word_character_set_1"], [(65, 90), (97, 122)])
 
@@ -190,17 +191,19 @@ class LexRecoveryTest(unittest.TestCase):
         self.assertEqual(self.states[2]["o"], [[3, 0, 1]])
 
     def test_unknown_construct_raises_rather_than_being_skipped(self):
-        broken = SOURCE.replace("if (eof) ADVANCE(4);", "lexer->mark_end(lexer);")
+        broken = mutated(SOURCE, "if (eof) ADVANCE(4);", "lexer->mark_end(lexer);")
         with self.assertRaises(tt.Unrecognised):
             tt.parse_lex_fn(broken, "ts_lex", self.syms, self.sets)
 
     def test_unknown_character_set_raises(self):
-        broken = SOURCE.replace("sym_word_character_set_1, 2,", "nonexistent_set, 2,")
+        broken = mutated(SOURCE, "sym_word_character_set_1, 2,", "nonexistent_set, 2,")
         with self.assertRaises(tt.Unrecognised):
             tt.parse_lex_fn(broken, "ts_lex", self.syms, self.sets)
 
     def test_wrong_character_set_length_raises(self):
-        broken = SOURCE.replace("sym_word_character_set_1, 2,", "sym_word_character_set_1, 3,")
+        broken = mutated(
+            SOURCE, "sym_word_character_set_1, 2,", "sym_word_character_set_1, 3,"
+        )
         with self.assertRaises(tt.Unrecognised):
             tt.parse_lex_fn(broken, "ts_lex", self.syms, self.sets)
 

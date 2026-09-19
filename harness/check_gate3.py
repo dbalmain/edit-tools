@@ -86,6 +86,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import gate3  # noqa: E402
 import manifest as mf  # noqa: E402
 import package_status  # noqa: E402
+from mutate import mutated  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "corpus" / "src"
@@ -599,7 +600,7 @@ def check_injection_mutations(
         ),
     )
     for label, original, replacement, should_pass in cases:
-        changed = source.replace(original, replacement, 1)
+        changed = mutated(source, original, replacement, 1)
         passed = (
             gate3.signature(changed, markdown, parser, manifests, parsers) == before
         )
@@ -629,7 +630,7 @@ def check_injection_mutations(
         ("nested guest reformat", '{ "a": 1 }', True),
         ("nested guest meaning change", '{"a":2}', False),
     ):
-        changed = nested.replace('{"a":1}', replacement)
+        changed = mutated(nested, '{"a":1}', replacement)
         passed = (
             gate3.signature(changed, markdown, parser, manifests, parsers)
             == nested_sig

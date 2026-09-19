@@ -3,14 +3,21 @@
 
 Two arms, same document, same Node process, interleaved:
 
-    ON  -- `parse(text, "markdown")` as `web/js/lang.js` ships it
+    ON  -- `parseDoc` then `attachSecondaries`, the path `web/js/lang.js` takes
+           when secondaries are asked for
     OFF -- the same path with `attachSecondaries` skipped, not parsed-and-discarded
 
-The driver is `harness/bench_secondary_cost.mjs`. This file lists the corpus,
-builds the controls, invokes the driver once, and writes the report. One process
-for the whole corpus, not one per file: the parse tables are JSON-parsed once,
-matching a warm editor tab. That is the departure from `bench_format_js.js`,
-which times a already-loaded formatter and so can afford a process per tree.
+The driver is `harness/bench_secondary_cost.mjs`, and it calls those two
+functions directly rather than going through `web/js/lang.js`. Note which way
+round the arms sit: this measurement is *why* `lang.js` ships secondaries off
+by default -- 354 ms median on a 199 KB buffer -- so the ON arm is the path it
+takes only when asked, not the one it ships.
+
+This file lists the corpus, builds the controls, invokes the driver once, and
+writes the report. One process for the whole corpus, not one per file: the parse
+tables are JSON-parsed once, matching a warm editor tab. That is the departure
+from `bench_format_js.js`, which times an already-loaded formatter and so can
+afford a process per tree.
 
 Run from the repository root after `./web/gen.py` has written `web/data/blobs/`:
 
