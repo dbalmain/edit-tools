@@ -1,19 +1,25 @@
-<!-- Every paragraph below must be refused by the A1 prose projection. -->
+<!-- Every top-level paragraph below must be refused by the prose projection. -->
 
 # Paragraphs the projection must refuse
 
-`harness/probe_prose.py` requires this file to yield **zero** eligible
-paragraphs. Each one is a near miss: everything about it is admissible except
-the single thing named in its heading, so widening the predicate by one
-character or dropping one rule makes it eligible and fails the probe.
-
-Real prose cannot play this role. A document that happens to contain a `\`
-almost always also contains a backtick or a link, so admitting the `\`
-changes nothing and the mutation that admits it looks safe. These paragraphs
-exist to be the case where it is the only thing standing.
-
-Every paragraph in this file, this one included, has to stay ineligible, so
-the prose is written with `code spans` on purpose.
+> `harness/probe_prose.py` requires this file to yield **zero** eligible
+> paragraphs. Each entry is a near miss: everything about it is admissible
+> except the single thing named in its heading, so widening the predicate by one
+> character or dropping one rule makes it eligible and fails the probe.
+>
+> Real prose cannot play this role. A document that happens to contain a `\`
+> almost always also contains a backtick or a link, so admitting the `\` changes
+> nothing and the mutation that admits it looks safe. These paragraphs exist to
+> be the case where it is the only thing standing.
+>
+> **Every explanatory paragraph in this file is a block quote, and that is
+> load-bearing.** A paragraph inside a container is never offered to the
+> predicate at all, so this prose cannot become an entry by accident. It used to
+> rely on being written with code spans instead -- which worked until A2.1
+> admitted code spans, and would have quietly turned this commentary into a
+> dozen eligible paragraphs the probe then failed on. A device that depends on
+> the predicate refusing something is not a device, because the predicate is the
+> thing under test.
 
 ## An asterisk
 
@@ -23,23 +29,35 @@ alpha b*eta gamma*d epsilon zeta eta theta
 
 alpha beta _gamma delta_ epsilon zeta eta theta
 
-A leading gap byte, which would make the first atom zero-width and be
-refused by `source_partitions` rather than by the predicate, cannot be
-written here: the block grammar trims it before the `inline` node starts.
+## An unterminated code span
 
-## A backtick
+> A2.1 admits `code_span`, so a _terminated_ one is no longer a near miss -- it
+> is an ordinary eligible paragraph now. The near miss moved one character to
+> the left: a lone backtick the inline grammar cannot close.
 
-alpha beta `gamma delta` epsilon zeta eta theta
+alpha beta `gamma delta epsilon zeta eta theta
 
-## A square bracket
+## A shortcut link
 
-alpha beta [gamma delta](epsilon) zeta eta theta
+> Also one character from admissible. A2.1 admits `inline_link`, which carries
+> its own destination; a `shortcut_link` resolves through a reference definition
+> elsewhere in the document, which this layer never reads.
 
-## An angle bracket
+alpha beta [gamma delta] epsilon zeta eta theta
+
+## A full reference link
+
+alpha beta [gamma][delta] epsilon zeta eta theta
+
+## An image
+
+alpha beta ![gamma](delta) epsilon zeta eta theta
+
+## An angle bracket that is not a URI autolink
 
 alpha beta <gamma> delta epsilon zeta eta theta
 
-## A backslash
+## A backslash escape
 
 alpha beta gamma\delta epsilon zeta eta theta
 
@@ -72,34 +90,19 @@ alpha beta gámma delta epsilon zeta eta theta
 
 alpha beta gamma delta epsilon zeta eta theta
 
-## A word that would become a list item at a line start
-
-alpha beta gamma - delta epsilon zeta eta theta
-
-## A word that would become an ordered list item at a line start
-
-alpha beta gamma 1. delta epsilon zeta eta theta
-
-## A word that would become a GFM table delimiter row at a line start
-
-GFM needs a pipe only between cells, so a one-column delimiter row is just
-`:-`. Moving it to its own line turns this paragraph into a table. The pinned
-block grammar does not parse a pipeless table, so no reparse can catch this
-one; this fixture entry is its only guard.
-
-alpha beta :- gamma delta epsilon zeta eta
-
-## The centre-aligned spelling of the same row
-
-alpha beta :-: gamma delta epsilon zeta eta
-
-## The same row with more dashes
-
-alpha beta :--- gamma delta epsilon zeta eta
-
 ## A word that would become a heading at a line start
 
 alpha beta gamma # delta epsilon zeta eta theta
+
+## A pipe inside a word, where no other rule reaches it
+
+> Every other entry that spells a pipe puts it at the start of an atom, where
+> `_ACQUIRES` refuses it and the character check never has to. Admitting `|` to
+> the whitelist therefore changed nothing measurable until this entry existed. A
+> character the whitelist excludes needs an entry that fails for _that_ reason,
+> or the exclusion is untested.
+
+alpha beta|gamma delta epsilon zeta eta
 
 ## Inside a blockquote, where every new line would need its own marker
 
@@ -109,40 +112,50 @@ alpha beta gamma # delta epsilon zeta eta theta
 
 - alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi
 
-## The right-aligned spelling of the delimiter row
+## A paragraph whose last line is a table delimiter row
 
-alpha beta -: gamma delta epsilon zeta eta
+> **This is the entry A2.1 was caught by, and it is the boundary of the whole
+> coalescing mechanism.** Bilateral gap protection works by keeping a hazardous
+> atom's line context identical to the source's. A delimiter row does not depend
+> on its own line: it makes the **preceding** line a table header, and that line
+> is decided by gaps further left which are still breakable. So protection keeps
+> the newline and the row, and reflows the header anyway.
+>
+> It leaks here and nowhere else because the pinned block grammar cannot parse a
+> pipeless table, so this arrives as an ordinary paragraph. `_DELIMITER_ROW` in
+> `prose.py` refuses it outright, and this entry is that rule's only guard -- no
+> reparse can stand in for it.
 
-## The setext underline that a two-dash atom would become
+alpha beta gamma delta epsilon zeta eta theta
+:-
 
-alpha beta -- gamma delta epsilon zeta eta
-
-## A pipe inside a word, where no other rule reaches it
-
-Every other entry that spells a pipe puts it at the start of an atom, where
-`_ACQUIRES` refuses it and the character check never has to. Admitting `|` to
-the whitelist therefore changed nothing measurable -- 536 eligible paragraphs
-before and after -- until this entry existed. A character the whitelist
-excludes needs an entry that fails for *that* reason, or the exclusion is
-untested.
-
-alpha beta|gamma delta epsilon zeta eta
-
-## A paragraph whose next line is a table delimiter row
-
-An exhaustive search over every two-character atom the whitelist admits found
-exactly three that change meaning when moved to their own line, and the two
-above plus `:-` are all of them. The remaining untested shape was the
-paragraph's **neighbour**: a reflow changes which words land on the last line,
-and the last line of a paragraph is the header row of the table that a
-following delimiter row creates. The pinned block grammar keeps that delimiter
-line inside the same paragraph, so the pipe refuses it here -- but the refusal
-is load-bearing and has no other guard.
+## The same, with a pipe, which the character check reaches first
 
 alpha beta gamma delta epsilon zeta eta theta
 | --- |
 
-## The same, with the pipeless delimiter row
+## The right-aligned spelling of the same trailing row
 
 alpha beta gamma delta epsilon zeta eta theta
-:-
+-:
+
+## The centre-aligned spelling of the same trailing row
+
+alpha beta gamma delta epsilon zeta eta theta
+:-:
+
+<!--
+The entries below left this file deliberately when A2.1 landed, and the note
+stays so the next reader does not restore them.
+
+`- delta`, `1. delta`, and the mid-paragraph spellings of `:-`, `:-:`, `:---`,
+`-:` and `--` were all A1 refusals ("block acquisition"). A2.1 admits them:
+partition() protects the gap on *both* sides of a hazardous atom, so the atom
+cannot be isolated on a line of its own and the paragraph is safe to reflow.
+
+They cannot be guarded here any more, because this file can only detect a
+change in **eligibility** and they are eligible either way. What has to be
+guarded is now the *partition* -- which gaps came back breakable -- and that
+lives in harness/test_prose.py, together with a mutation control that restores
+predecessor-only protection and requires those cases to fail.
+-->
