@@ -85,9 +85,9 @@ The first landing of the gate imported `web/js/lang.js` directly.
 `../vendor/runtime.mjs`, and `web/vendor/` is gitignored output of
 `./web/gen.py`. `test.sh` never runs `gen.py` — the comment two lines
 above `node --test web/js/host.test.js` says so. The suite was green here
-only because this worktree was already dirty with generated output.
-Verified on a tree with `web/vendor/` and `web/data/` moved aside: the
-old gate failed with `missing .../web/vendor/ts_secondary.mjs`.
+only because this worktree was already dirty with generated output. The
+reviewer reproduced the old gate on a fresh worktree: `missing
+.../web/vendor/ts_secondary.mjs`.
 
 `./web/gen.py` is not a portable fix. `vendor()` exits if vici is not
 cloned at `~/w/vici/js/src`. Putting that in `test.sh` would make the
@@ -119,5 +119,23 @@ flag, that call is the OFF path. Not edited here.
 
 ## `test.sh`
 
-Must be green from a tree where `web/vendor/` does not exist, not from
-this one.
+Verified from a fresh `git worktree add --detach` at `91928f1`, with
+`web/vendor/` absent for the whole run. `lang_parse` was also run first
+with `web/data/` absent; that gate does not need blobs. The rest of the
+suite still needs `web/data/blobs/` for `probe_secondary_grammar.py` —
+pre-existing, not this gate — so `web/data/` was copied in and vendor
+was left missing.
+
+```
+Ran 184 tests in 1.546s
+OK
+injection tree parity: 24/24 corpus files identical
+secondary grammar: 2553/2553 audited ranges agree; clean fixture parses, dirty fixture is recorded dirty without a tree, mixed fixture keeps clean outcomes either side of a dirty one
+prose projection: 562 eligible paragraphs in 114 files (1 unparseable)
+```
+
+Vendor did not appear.
+
+Commits: `e41875d` (flag + gate), `5a781d5` (docs), `18772a3` (first
+note), `91928f1` (clean-checkout gate). Detached at those, parent
+`406cf85`. Not pushed.
