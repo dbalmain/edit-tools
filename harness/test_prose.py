@@ -709,12 +709,24 @@ class FrozenSelector(unittest.TestCase):
 
     def test_it_does_not_consult_the_a21_predicate(self):
         """The whole point of freezing it: A2.2 must not move this count."""
+        import ast
         source = Path(__file__).resolve().parent / "prose.py"
-        body = source.read_text()
-        start = body.index("def legacy_inline_token")
-        end = body.index("def secondary_index")
-        self.assertNotIn("refusal(", body[start:end])
-        self.assertNotIn("analyse(", body[start:end])
+        tree = ast.parse(source.read_text())
+        found = next(
+            node for node in tree.body
+            if isinstance(node, ast.FunctionDef)
+            and node.name == "legacy_inline_token"
+        )
+        # The docstring names the predicate it was decoupled *from*, so match
+        # on calls in the parsed body rather than on the source text.
+        called = {
+            node.func.id
+            for node in ast.walk(found)
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+        }
+        self.assertNotIn("refusal", called)
+        self.assertNotIn("analyse", called)
+        self.assertEqual(called, {"any", "len"})
 
 
 class Mirror(unittest.TestCase):

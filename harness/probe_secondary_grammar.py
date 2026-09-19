@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import base64
+import hashlib
 import json
 import subprocess
 import sys
@@ -25,6 +26,9 @@ import ts_secondaries  # noqa: E402
 ROOT = Path(__file__).resolve().parent.parent
 HARNESS = ROOT / "harness"
 AUDIT_COMMIT = "f2819822fa033987e86db79143ab8ffecb900a35"
+# sha256 over `path\0` then each `start,end\0` of the selected ranges, in
+# file order. See the check in `main` for why the count is not enough.
+AUDIT_DIGEST = "c756cc332abfb15b63d8e7f3891f81e022e08bacc354f722bfd6d818a1688548"
 BLOCK_BLOB = ROOT / "web" / "data" / "blobs" / "markdown.blob.json"
 INLINE_BLOB = ROOT / "web" / "data" / "blobs" / "markdown_inline.blob.json"
 CLEAN = HARNESS / "fixtures" / "secondary-clean.md"
@@ -112,6 +116,7 @@ def main() -> int:
     payload = []
     expected = []
     audited = 0
+    digest = hashlib.sha256()
 
     for path in tracked_markdown():
         source = git("show", f"{AUDIT_COMMIT}:{path}")
@@ -135,10 +140,25 @@ def main() -> int:
             }
         )
         audited += len(ranges)
+        digest.update(f"{path}\0".encode())
+        for first, last in sorted(ranges):
+            digest.update(f"{first},{last}\0".encode())
 
     if audited != 2553:
         raise Failed(
             f"audited range set changed: expected 2553 at {AUDIT_COMMIT}, got {audited}"
+        )
+    # The count alone is weak evidence about a *selection*: two different sets
+    # of ranges can have the same size, so a selector that swapped which
+    # paragraphs it picked would keep 2,553 and say nothing. The digest pins
+    # the ranges themselves. Both are checked because they fail differently --
+    # a changed count names how many, a changed digest names that the same
+    # number of different ranges was chosen.
+    if digest.hexdigest() != AUDIT_DIGEST:
+        raise Failed(
+            f"audited range set changed at {AUDIT_COMMIT}: {audited} ranges as "
+            f"expected, but their digest is {digest.hexdigest()}, not "
+            f"{AUDIT_DIGEST} -- the same number of different ranges"
         )
 
     for fixture in (CLEAN, DIRTY, MIXED):
