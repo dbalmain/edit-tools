@@ -507,7 +507,7 @@ falling to 8/32, with gate 3 rejecting 20 reference outputs.
 ## What A2.1 actually admits
 
 Measured by `harness/probe_prose.py` over the tracked, cleanly-parsing markdown
-files in this repository, **at commit `80c7c9d`** -- 128 tracked files, 127 of
+files in this repository, **at commit `019b79b`** -- 140 tracked files, 139 of
 them parsing. **Not comparable to the ceiling table above**, for the reasons
 given there: different corpus, different program, different walk.
 
@@ -518,14 +518,14 @@ wrong by the next merge rather than by the next quarter. Re-measure with
 the file count; the full histogram is the same walk over `prose.reasons`.
 
 **This file is itself in the corpus, so the stamp names the commit the figures
-were taken at rather than the commit that carries them.** Writing the prose
-around these rows added three eligible paragraphs -- the stamped figures are
-`80c7c9d`, the parent, and the probe at its child read 1,546 in the same 127
-files.
+were taken at rather than the commit that carries them.** Restamped at
+`019b79b`, where eleven tracked review notes joined the corpus: the file count
+moving 128 to 140 is the kind of discrepancy the last paragraph says to
+explain rather than excuse, and that is the explanation.
 
 An earlier version of this paragraph claimed there was no fixed point to
 reach, which is **false** and was corrected on 2026-09-20. Measured: replacing
-`1,543` with `9,999` in this file and reparsing leaves its own histogram at 43
+`1,543` with `9,999` in this file and reparsing left its own histogram at 43
 eligible and 52 `inline construct` exactly -- **replacing the numeric cells of
 this table preserves its histogram.** That is the narrow claim and the only one
 the measurement supports; editing the prose around the table can and did change
@@ -539,9 +539,9 @@ since the stamp, which the file count will show.
 
 | Verdict | Paragraphs |
 | --- | ---: |
-| `inline construct` -- A2.2 and A2.4 shapes | 1,680 |
-| eligible | 1,543 |
-| `non-ascii` -- A2.3 | 342 |
+| `inline construct` -- A2.2 and A2.4 shapes | 1,775 |
+| eligible | 1,601 |
+| `non-ascii` -- A2.3 | 360 |
 | `byte` | 24 |
 | `single atom` | 23 |
 | `fence opener` | 6 |
@@ -549,9 +549,9 @@ since the stamp, which the file count will show.
 | `delimiter row` | 3 |
 | `edge whitespace` | 2 |
 | `dirty inline parse` | 2 |
-| **total reaching the walk** | **3,629** |
+| **total reaching the walk** | **3,800** |
 
-The figure that matters for safety is not 1,543 but **9**: the paragraphs
+The figure that matters for safety is not 1,601 but **9**: the paragraphs
 refused by the two hazards coalescing cannot repair, `fence opener` and
 `delimiter row`. Everything admitted survives phase A's reflow-and-reparse
 invariant.
