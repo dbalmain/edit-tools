@@ -58,6 +58,13 @@ export const CONSTRUCTS = new Set(["code_span", "inline_link", "uri_autolink"]);
 // hazard bilateral protection cannot repair.
 const DELIMITER_ROW = /^:?-+:?$/;
 
+// `prose.py`'s `_FENCE`: a fence opener at a line start the output can
+// produce. The second hazard gap protection cannot repair, because a fence
+// opener's validity depends on the **rest of its line** -- a backtick fence's
+// info string may not contain a backtick -- so truncating a line can turn a
+// non-opener into an opener. `prose.py` carries the live case that found it.
+const FENCE = /^(?:```|~~~)/;
+
 const CONTAINERS = new Set([
   "block_quote",
   "list_item",
@@ -117,6 +124,26 @@ function blockSafe(start, end, text, candidates) {
 }
 
 /**
+ * Can any line start the output produces begin a fence? See FENCE.
+ * `prose.py`'s `_fence_hazard` carries the argument, including why an atom
+ * after a breakable gap needs no check.
+ */
+function fenceHazard(start, end, text, breakable) {
+  const edges = [start, ...breakable.map((gap) => gap + 1)];
+  const stops = [...breakable, end];
+  for (let index = 0; index < edges.length; index += 1) {
+    const lines = text
+      .slice(edges[index] - start, stops[index] - start)
+      .split("\n");
+    for (let offset = 0; offset < lines.length; offset += 1) {
+      if (offset === 0 && index > 0) continue;
+      if (FENCE.test(lines[offset])) return true;
+    }
+  }
+  return false;
+}
+
+/**
  * The verdict for this paragraph, and its breakable gap offsets.
  * One function, so `refusal` and `project` cannot disagree about which gaps
  * are breakable. `prose.py`'s `analyse` is the original.
@@ -168,6 +195,7 @@ export function analyse(paragraph, source, secondary) {
   }
 
   const breakable = blockSafe(start, end, text, candidates);
+  if (fenceHazard(start, end, text, breakable)) return ["fence opener", []];
   if (breakable.length === 0) return ["single atom", []];
   return [null, breakable];
 }

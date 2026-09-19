@@ -187,6 +187,35 @@ CONSTRUCTS = frozenset({"code_span", "inline_link", "uri_autolink"})
 # dashes costs almost nothing and does not depend on that argument holding.
 _DELIMITER_ROW = re.compile(r"^:?-+:?\Z")
 
+# A fence opener at a line start the output can produce. This is the second
+# hazard gap protection cannot repair, and it was found by `probe_prose.py`'s
+# phase A rather than by argument -- the argument was wrong.
+#
+# The reasoning that failed: an atom is emitted verbatim, so a line start
+# *inside* one was a line start in the source too, and the source parsed as a
+# paragraph; therefore the line's prefix is safe. The prefix is. The line is
+# not, because **a fence opener's validity depends on the rest of its line**: a
+# backtick fence's info string may not contain a backtick. Truncating a line
+# can therefore turn a non-opener into an opener, which is the opposite
+# direction from every other block construct.
+#
+# Live, in `corpus/reports/markdown/report.md`: a code span delimited by four
+# backticks spans a source newline, so one atom holds
+#
+#     a ```` ```json\n```` fence
+#
+# whose second line began, in the source, ```` fence in `comments.md` -- the
+# backtick in the info string is what stopped it being a fence. Reflow ends the
+# line after `fence`, and it becomes one. Phase A saw 543 nodes become 592.
+#
+# Every other opener truncation can create -- a setext underline, a thematic
+# break, a delimiter row -- needs the line to be *only* the marker, and
+# bilateral protection keeps a trailing word on it. The ones that are dangerous
+# *with* trailing content -- `#`, `>`, a list marker -- would have made the
+# source something other than a paragraph, so they never reach here. The fence
+# is the one that is neither, so it is refused rather than protected.
+_FENCE = re.compile(r"^(?:```|~~~)")
+
 # A paragraph inside one of these owns a per-line continuation prefix -- a `> `,
 # a list indent -- that reflow would have to re-emit on every new line it
 # creates. `docs/prose-projection.md` defers that to a later slice, so A1 takes
@@ -360,6 +389,8 @@ def analyse(
         return "delimiter row", []
 
     breakable = _block_safe(start, end, text, candidates)
+    if _fence_hazard(start, end, text, breakable):
+        return "fence opener", []
     if not breakable:
         # Every gap is protected, so the run would hold a single atom and
         # reflow to its own source. See the done-note: this is reachable in a
@@ -403,6 +434,36 @@ def _block_safe(start: int, end: int, text: str, candidates: list[int]) -> list[
         if index < len(candidates):
             drop.add(candidates[index])
     return [gap for gap in candidates if gap not in drop]
+
+
+def _fence_hazard(start: int, end: int, text: str, breakable: list[int]) -> bool:
+    """Can any line start the output produces begin a fence? See `_FENCE`.
+
+    The line starts an output can have are exactly: the first atom's first
+    line; every line inside an atom that follows an embedded newline; and an
+    atom that follows a breakable gap the formatter chose to break.
+
+    The third needs no check here, and that is worth stating rather than
+    leaving as an omission. A final atom after a breakable gap begins with a
+    provisional atom `_ACQUIRES` did **not** match -- if it had, `_block_safe`
+    would have dropped the gap before it and the two would be one atom -- and
+    ```` and `~~~` are both `_ACQUIRES` alternatives. So such an atom cannot
+    begin a fence.
+
+    The text checked is the atom-internal line, which is the **shortest** the
+    output can make it. That is the conservative direction for a fence: adding
+    more of the line can only introduce a backtick and stop it being one.
+    """
+    edges = [start, *[gap + 1 for gap in breakable]]
+    stops = [*breakable, end]
+    for index, (first, last) in enumerate(zip(edges, stops)):
+        lines = text[first - start : last - start].split("\n")
+        for offset, line in enumerate(lines):
+            if offset == 0 and index > 0:
+                continue
+            if _FENCE.match(line):
+                return True
+    return False
 
 
 def refusal(
