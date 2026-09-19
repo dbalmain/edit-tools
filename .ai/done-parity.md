@@ -1,7 +1,7 @@
 # Byte-range parity sweep
 
-**Snapshot.** Written on `wt/parity-sweep` at `79ab059`, and merged into
-`main` for its record only -- `harness/parity_fuzz.py` reached `main` by a
+**Snapshot.** Written on `wt/parity-sweep` at `79ab059`, 2026-08-28, and merged
+into `main` for its record only -- `harness/parity_fuzz.py` reached `main` by a
 later path and has grown since. Read every count here as of that commit.
 Superseded in at least two particulars: the sweep covered **12** format-path
 source-byte sites and `main` now covers **13** (`partition_cases()`, the

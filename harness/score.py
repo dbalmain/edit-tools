@@ -34,6 +34,7 @@ import formatter_divergence as fd  # noqa: E402
 import gate3  # noqa: E402
 import gen_trees  # noqa: E402
 import manifest as mf  # noqa: E402
+import package_status  # noqa: E402
 import review_ledger  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -207,88 +208,6 @@ def corpus(manifests: dict[str, mf.Manifest]) -> list[tuple[Path, mf.Manifest]]:
         names = ", ".join(f"{n} ({lang})" for n, lang in orphans[:5])
         sys.exit(f"trees with no manifest: {names}")
     return out
-
-
-def awaiting_package(
-    submission: Path,
-    manifests: dict[str, mf.Manifest],
-    all_manifests: dict[str, mf.Manifest] | None = None,
-) -> dict[str, str]:
-    """Languages that cannot be scored yet, mapped to why.
-
-    Onboarding lands stage A (corpus, manifest, trees, reference output) before
-    stage C writes the package, and without this the scorer reports a stage-A
-    language as one refusal per tree per width and DISQUALIFIED -- which reads
-    exactly like a broken package. Four reviewed TOML corpora sat unmerged for
-    weeks because of it, and the stage-A brief asks for a green `./test.sh` from
-    a stage that could not produce one.
-
-    A language is awaiting its package only when no `packages/<name>.json`
-    exists at all. A package that is present and refuses is a real failure and
-    is still scored as one. That stays true transitively: only absence
-    propagates, never a refusal.
-
-    The formatter recurses into guest regions, so a host whose package exists
-    still cannot be scored when a guest it formats is awaiting one -- otherwise
-    the host scores as one refusal per tree that embeds the guest, the same
-    false DISQUALIFIED the direct case was written to prevent. The relationship
-    is the manifest injection graph (`mf.formatted_guests`): `guest` is an
-    alias, an `info` site can resolve to any alias, and opaque sites do not
-    load a package. The wait is transitive; a cycle does not hang.
-
-    `all_manifests` is the roster the graph is built from. `--language` still
-    has to see a guest that was not selected, because the host's score depends
-    on that guest's package whether or not we asked to score the guest.
-    """
-    all_manifests = all_manifests if all_manifests is not None else manifests
-    missing = {
-        name
-        for name in all_manifests
-        if not (submission / "packages" / f"{name}.json").is_file()
-    }
-    aliases = mf.injection_map(all_manifests)
-    direct = {
-        name: mf.formatted_guests(m, aliases) for name, m in all_manifests.items()
-    }
-    hosts_of: dict[str, set[str]] = {}
-    for host, guests in direct.items():
-        for guest in guests:
-            hosts_of.setdefault(guest, set()).add(host)
-
-    pending = set(missing)
-    stack = list(missing)
-    while stack:
-        guest = stack.pop()
-        for host in hosts_of.get(guest, ()):
-            if host not in pending:
-                pending.add(host)
-                stack.append(host)
-
-    def missing_in_closure(host: str) -> list[str]:
-        seen: set[str] = set()
-        found: set[str] = set()
-        walk = list(direct.get(host, ()))
-        while walk:
-            guest = walk.pop()
-            if guest in seen:
-                continue
-            seen.add(guest)
-            if guest in missing:
-                found.add(guest)
-            walk.extend(direct.get(guest, ()))
-        return sorted(found)
-
-    reasons = {}
-    for name in pending:
-        if name in missing:
-            reasons[name] = "corpus landed, not yet scored"
-        else:
-            roots = missing_in_closure(name)
-            if len(roots) == 1:
-                reasons[name] = f"{roots[0]} is pending"
-            else:
-                reasons[name] = f"{', '.join(roots)} are pending"
-    return {name: reasons[name] for name in manifests if name in pending}
 
 
 def score(
@@ -650,7 +569,9 @@ def main() -> int:
     known = mf.bootstrap()
     submission = args.submission.resolve()
     manifests = mf.selected(known, args.language)
-    pending = awaiting_package(submission, manifests, known)
+    pending = package_status.awaiting_package(
+        package_status.roster_on_disk(submission), manifests, known
+    )
     scored = {n: m for n, m in manifests.items() if n not in pending}
     if not scored:
         names = ", ".join(

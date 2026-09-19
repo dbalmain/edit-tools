@@ -420,3 +420,67 @@ class CorpusThresholdManifestTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class DuplicateInjectionNodeTests(unittest.TestCase):
+    """One injection per host node, because the two readers would disagree.
+
+    `injection.region_for` takes the first declaration for a node;
+    `manifest.formatted_guests` accumulates every one. A duplicate is therefore
+    a host that `awaiting_package` believes depends on a guest the formatter
+    can never route to.
+    """
+
+    def parse(self, extra: str) -> manifest.Manifest:
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        path = Path(tmp.name) / "markdown.toml"
+        path.write_text(
+            "\n".join(
+                (
+                    'name = "markdown"',
+                    'extensions = [".md"]',
+                    'grammar = "tree-sitter-x==1.0.0"',
+                    'grammar_module = "tree_sitter_x"',
+                    'injection_aliases = ["markdown"]',
+                    'reference = "fmt --width {width}"',
+                    'reference_version = "1.0.0"',
+                    'reference_width = "flag"',
+                    "widths = [80]",
+                    'gate3 = "default"',
+                    extra,
+                )
+            )
+        )
+        return manifest.parse(path)
+
+    SITE = (
+        "[[injections]]\n"
+        'node = "fenced_code_block"\n'
+        '{route}\n'
+        'content = "code_fence_content"\n'
+    )
+
+    def test_two_declarations_for_one_node_are_refused(self):
+        with self.assertRaises(manifest.ManifestError) as caught:
+            self.parse(
+                self.SITE.format(route='info = "info_string"')
+                + self.SITE.format(route='guest = "json"')
+            )
+
+        self.assertIn("fenced_code_block", str(caught.exception))
+        self.assertIn("already", str(caught.exception))
+
+    def test_two_declarations_for_different_nodes_are_fine(self):
+        """The discriminating case: the rule is per node, not per manifest."""
+        parsed = self.parse(
+            self.SITE.format(route='info = "info_string"')
+            + self.SITE.format(route='guest = "yaml"').replace(
+                "fenced_code_block", "minus_metadata"
+            )
+        )
+
+        self.assertEqual(
+            [site.node for site in parsed.injections],
+            ["fenced_code_block", "minus_metadata"],
+        )

@@ -1,8 +1,9 @@
 # Ledger reason-vs-diff audit
 
-**Snapshot.** Written on `wt/ledger-audit` at `bff4071`, against the 142
-records the ledger held then. It holds 140 now and the flagged reasons have
-been re-signed. Check any row against the live `*.jsonl` before acting on it.
+**Snapshot.** Written on `wt/ledger-audit` at `bff4071`, 2026-08-28, against
+the 142 records the ledger held then. It holds 140 now and the flagged reasons
+have been re-signed. Check any row against the live `*.jsonl` before acting on
+it.
 
 142 records in `harness/reviews/formatter/*.jsonl`. Input is
 `./harness/review_formatter.py . --json` against a freshly built

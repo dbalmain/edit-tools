@@ -177,6 +177,17 @@ def _injection_aliases(raw: dict[str, Any], path: Path) -> tuple[str, ...]:
 
 
 def _injections(raw: dict[str, Any], path: Path) -> tuple[Injection, ...]:
+    """Host node shapes that contain a region of another language.
+
+    Two declarations for the same `node` are rejected, because the readers
+    disagree about what that would mean: `injection.region_for` takes the
+    **first** match and formats through it, while
+    `manifest.formatted_guests` accumulates **all** of them and so treats every
+    one as a capability edge. A manifest that declared two would score a host
+    as depending on a guest it can never route to. No shipped manifest does;
+    this is the schema saying so rather than the two readers drifting until one
+    of them is wrong in production.
+    """
     out = []
     fields = {"node", "info", "content", "guest", "format"}
     entries = raw.get("injections", [])
@@ -207,6 +218,11 @@ def _injections(raw: dict[str, Any], path: Path) -> tuple[Injection, ...]:
         if len(routes) != 1:
             raise ManifestError(
                 f"{path.name}: `{name}` must declare exactly one of `info` or `guest`"
+            )
+        if any(existing.node == entry["node"] for existing in out):
+            raise ManifestError(
+                f"{path.name}: `{name}.node` {entry['node']!r} is already "
+                "declared; one injection per host node"
             )
         out.append(
             Injection(

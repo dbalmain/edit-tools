@@ -1,11 +1,11 @@
 # Reason-rot detector
 
-**Snapshot.** Written on `wt/reason-rot` at `6ff5a17`; `harness/reason_rot.py`
-reached `main` by a later path and `harness/test_reason_rot.py` has grown by
-seventy lines since. The live scan reported here is **9 hits in 142 records**;
-running the shipped detector at this commit reports **0 hits in 140 records**.
-That is the detector working, not the detector broken -- the reasons it flagged
-were re-signed.
+**Snapshot.** Written on `wt/reason-rot` at `6ff5a17`, 2026-08-28;
+`harness/reason_rot.py` reached `main` by a later path and
+`harness/test_reason_rot.py` has grown by seventy lines since. The live scan
+reported here is **9 hits in 142 records**; running the shipped detector at
+this commit reports **0 hits in 140 records**. That is the detector working,
+not the detector broken -- the reasons it flagged were re-signed.
 
 `./harness/reason_rot.py` is a worklist, not a gate. It does not edit
 `harness/reviews/` and is not wired into `score.py`.

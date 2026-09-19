@@ -193,8 +193,13 @@ That is still a harness capability, not a runtime or package one: no shipped
 package declares `source_partitions`, the markdown package is still format 2,
 and it still emits paragraphs `verbatim`.
 
-Safe break classification and an independent gate equivalence remain
-prerequisites, not consequences of preserving source bytes.
+Safe break classification is **done for the set A2.1 admits** -- the non-prefix
+hazard class is enumerated against CommonMark and GFM and closed in
+[`docs/prose-projection.md`](docs/prose-projection.md), with `_DELIMITER_ROW`
+and `_FENCE` covering the two members bilateral protection cannot repair. What
+remains a prerequisite is extending that classification to the shapes A2.2
+through A2.4 admit, and an independent gate-3 equivalence. Neither is a
+consequence of preserving source bytes; each has to be established on its own.
 
 A language region may also be spliced **for readers only**. An injection site
 declaring `format = false` makes the harness stamp `opaque` beside `language`,

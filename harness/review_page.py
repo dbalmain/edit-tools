@@ -37,6 +37,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import gen_trees  # noqa: E402
 import manifest as mf  # noqa: E402
+import package_status  # noqa: E402
 import review_formatter  # noqa: E402
 import review_ledger  # noqa: E402
 import score  # noqa: E402
@@ -435,7 +436,9 @@ def status_section(
     states: dict,
     all_manifests: dict | None = None,
 ) -> str:
-    pending = score.awaiting_package(submission, manifests, all_manifests)
+    pending = package_status.awaiting_package(
+        package_status.roster_on_disk(submission), manifests, all_manifests
+    )
     rows = []
     for name in sorted(manifests):
         mine = [r for r in records if r.language == name]
@@ -489,7 +492,9 @@ def main() -> int:
     scored = {
         name: m
         for name, m in selected.items()
-        if name not in score.awaiting_package(submission, selected, known)
+        if name not in package_status.awaiting_package(
+            package_status.roster_on_disk(submission), selected, known
+        )
     }
     records, problems = review_formatter.divergences(submission, score.corpus(scored))
     states = review_formatter._states(records)

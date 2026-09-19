@@ -85,7 +85,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import gate3  # noqa: E402
 import manifest as mf  # noqa: E402
-import score  # noqa: E402  (for `awaiting_package`; no module-level work)
+import package_status  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "corpus" / "src"
@@ -641,6 +641,34 @@ def check_injection_mutations(
     return len(cases) + 4
 
 
+def adversarial_state(
+    name: str, gate3_arm: str, pending: dict[str, str]
+) -> str:
+    """What the adversarial line says about a language, beside its counts.
+
+    A function rather than two lines inside `main` so the pending branch can be
+    tested: `main` runs the whole gate, and the only way to reach this branch
+    through it would be to make a real language pending.
+
+    The oracle *is* the generic default, so for a language that selects it
+    there is nothing to compare and the count proves nothing. Say that rather
+    than print a reassuring number: a check that reports activity while testing
+    nothing is the shape of defect this arm exists to fix.
+
+    `pending` comes from `package_status.awaiting_package`, the same answer the
+    scorer uses. Labelling only a *directly* missing package here made this
+    line and `score.py` disagree about a host whose guest is pending.
+    """
+    state = (
+        f"{gate3_arm} override"
+        if gate3_arm != "default"
+        else "generic default -- arm inert, nothing to compare against"
+    )
+    if name in pending:
+        state += f"; not scored ({pending[name]})"
+    return state
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--language")
@@ -656,7 +684,9 @@ def main() -> int:
     # case here made this line and `score.py` disagree about the same
     # language. The audit still runs either way -- gate 3 checks the
     # reference, which exists whether or not a package does.
-    pending = score.awaiting_package(ROOT, manifests, known)
+    pending = package_status.awaiting_package(
+        package_status.roster_on_disk(ROOT), manifests, known
+    )
     parsers = mf.parsers(bootstrapped)
     failures: list[str] = []
     checked = disagreements = destructive = uncompared = 0
@@ -842,19 +872,8 @@ def main() -> int:
         families = ", ".join(
             f"{family}={count}" for family, count in sorted(counts.items())
         ) or "none"
-        # The oracle *is* the generic default, so for a language that selects
-        # it there is nothing to compare and the count proves nothing. Say that
-        # rather than print a reassuring number: a check that reports activity
-        # while testing nothing is the shape of defect this arm exists to fix.
-        state = (
-            f"{m.gate3} override"
-            if m.gate3 != "default"
-            else "generic default -- arm inert, nothing to compare against"
-        )
-        if name in pending:
-            state += f"; not scored ({pending[name]})"
         print(f"  adversarial {name}: {total} useful mutation(s) "
-              f"({families}); {state}")
+              f"({families}); {adversarial_state(name, m.gate3, pending)}")
         if m.gate3 != "default":
             missed = sum(
                 value[0]

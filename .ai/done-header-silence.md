@@ -1,10 +1,10 @@
 # Header fields fail silently. Opcodes do not.
 
-**Snapshot.** Written on `wt/header-silence` at `27c30fa`. The central claim
--- that an unknown *header field* is ignored where an unknown *opcode* refuses
--- still holds. The version list does not: this note describes `et-doc-rules/1`
-and `/2` as the accepted formats, and both runtimes now accept **1 through 3**,
-`/3` being the one that declares `source_partitions`.
+**Snapshot.** Written on `wt/header-silence` at `27c30fa`, 2026-08-28. The
+central claim -- that an unknown *header field* is ignored where an unknown
+*opcode* refuses -- still holds. The version list does not: this note describes
+`et-doc-rules/1` and `/2` as the accepted formats, and both runtimes now accept
+**1 through 3**, `/3` being the one that declares `source_partitions`.
 
 The reviewer's premise is **true**, for both runtimes, and it is not a
 `gap_owner` special case. It is how `et-doc-rules/1` (and
