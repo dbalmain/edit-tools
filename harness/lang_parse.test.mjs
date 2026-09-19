@@ -5,72 +5,147 @@
 // `harness/test_lang_parse.py` shells out to this, so `python3 -m unittest
 // discover -s harness` -- and therefore `./test.sh` -- runs it too.
 //
-// `harness/probe_secondary_grammar.py` proves the two *producers* agree on
-// 2,553 rebased inline CSTs. It never calls `web/js/lang.js`, so a flag that
-// defaulted into those producers would drop that line to 0/0 and still pass.
-// This file is the other half: it calls `parse()` both ways and fails if
-// either direction stops working. The fetch log is the visible half of the
-// win -- the 43 KB inline blob must not be asked for when the flag is off.
+// The corpus probe never calls `web/js/lang.js`. These tests cover what
+// nothing else does: the browser default is off, an explicit option wins
+// over `?secondaries=1`, and the 43 KB inline blob is not fetched when the
+// flag is off.
 //
-// Needs `./web/gen.py` the same way the secondary-grammar probe does: the
-// wrapper loads real tables through `fetch`.
+// `web/js/lang.js` imports `../vendor/` at module level, and that directory
+// is written by `./web/gen.py` (which also needs a vici checkout). A clean
+// checkout has neither, so this file remaps those four imports to stubs
+// before loading `lang.js`. Flag resolution and which URLs `fetch` is asked
+// for are the claims; CST agreement is the corpus probe, and the real
+// loader's laziness is `ts_secondary.test.mjs`.
 
 import test from "node:test";
 import assert from "node:assert/strict";
-import { existsSync, readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { registerHooks } from "node:module";
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const VENDOR = join(ROOT, "web", "vendor", "ts_secondary.mjs");
-const MARKDOWN = join(ROOT, "web", "data", "blobs", "markdown.blob.json");
-const INLINE = join(ROOT, "web", "data", "blobs", "markdown_inline.blob.json");
+const STUBS = {
+  "../vendor/ts_doc.mjs": `
+    export function parseDoc(blob, name, source, sourceFile) {
+      const text = new TextDecoder().decode(source);
+      const end = source.length;
+      const root = { type: "document", start: 0, end, children: [] };
+      if (text.trimStart().startsWith("\`\`\`")) {
+        root.children.push({
+          type: "fenced_code_block",
+          start: 0,
+          end,
+          children: [{ type: "code_fence_content", start: 0, end, text: "" }],
+        });
+      } else {
+        root.children.push({
+          type: "paragraph",
+          start: 0,
+          end,
+          children: [{ type: "inline", start: 0, end, text }],
+        });
+      }
+      return { language: name, source_file: sourceFile, source: "", root };
+    }
+  `,
+  "../vendor/ts_secondary.mjs": `
+    function* hostNodes(root, kind) {
+      const stack = [root];
+      while (stack.length > 0) {
+        const node = stack.pop();
+        if (node.language !== undefined) continue;
+        if (node.type === kind) yield node;
+        const children = node.children ?? [];
+        for (let i = children.length - 1; i >= 0; i--) stack.push(children[i]);
+      }
+    }
+    export async function attachSecondaries(doc, source, config, load) {
+      const entries = [];
+      for (const site of config.sites[doc.language] ?? []) {
+        const nodes = [...hostNodes(doc.root, site.within)];
+        if (nodes.length === 0) continue;
+        const blob = await load(site.name, site.blob);
+        if (blob == null) {
+          throw new Error(\`secondary grammar \${site.name} has no parse table\`);
+        }
+        for (const node of nodes) {
+          entries.push({
+            language: site.name,
+            within: site.within,
+            start: node.start,
+            end: node.end,
+            outcome: "clean",
+            root: { type: "inline", start: node.start, end: node.end, children: [{}] },
+          });
+        }
+      }
+      if (entries.length > 0) doc.secondary = entries;
+    }
+  `,
+  "../vendor/ts_inject.mjs": `
+    export async function injectAll(doc) { return doc; }
+  `,
+  "../vendor/runtime.mjs": `
+    export function format() {}
+    export class Refusal extends Error {}
+  `,
+};
+
+registerHooks({
+  resolve(specifier, context, nextResolve) {
+    if (STUBS[specifier] && context.parentURL?.endsWith("/web/js/lang.js")) {
+      return {
+        url: "data:text/javascript," + encodeURIComponent(STUBS[specifier]),
+        shortCircuit: true,
+      };
+    }
+    return nextResolve(specifier, context);
+  },
+});
+
+const lang = await import("../web/js/lang.js");
 
 const WITH_INLINE = "hello **world**\n";
 const FENCE_ONLY = "```\ncode\n```\n";
 
+const FIXTURES = {
+  "markdown.blob.json": {},
+  "markdown_inline.blob.json": {},
+  "secondaries.json": {
+    grammars: { markdown_inline: { source_language: "markdown" } },
+    sites: {
+      markdown: [
+        {
+          name: "markdown_inline",
+          within: "inline",
+          blob: "markdown_inline.blob.json",
+        },
+      ],
+    },
+  },
+  "injections.json": { sites: {}, aliases: {}, blobs: {} },
+};
+
 const fetches = [];
 
-function requireGenerated() {
-  for (const path of [VENDOR, MARKDOWN, INLINE]) {
-    if (!existsSync(path)) {
-      throw new Error(`missing ${path}; run ./web/gen.py`);
-    }
+globalThis.fetch = async (url) => {
+  const href = String(url);
+  fetches.push(href);
+  const name = href.split("/").pop();
+  if (!Object.hasOwn(FIXTURES, name)) {
+    return {
+      ok: false,
+      status: 404,
+      statusText: "Not Found",
+      json: async () => {
+        throw new Error(`${href}: 404`);
+      },
+    };
   }
-}
-
-function installFetch() {
-  globalThis.fetch = async (url) => {
-    const href = String(url);
-    fetches.push(href);
-    let body;
-    try {
-      body = readFileSync(new URL(href), "utf8");
-    } catch {
-      return {
-        ok: false,
-        status: 404,
-        statusText: "Not Found",
-        json: async () => {
-          throw new Error(`${href}: 404`);
-        },
-      };
-    }
-    return { ok: true, status: 200, json: async () => JSON.parse(body) };
-  };
-}
+  const body = FIXTURES[name];
+  return { ok: true, status: 200, json: async () => structuredClone(body) };
+};
 
 function askedFor(name) {
   return fetches.some((href) => href.endsWith(name));
 }
-
-async function load() {
-  requireGenerated();
-  installFetch();
-  return import("../web/js/lang.js");
-}
-
-const lang = await load();
 
 function prepare() {
   fetches.length = 0;

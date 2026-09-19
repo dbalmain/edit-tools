@@ -19,6 +19,12 @@ Three things, sharing one editor component and one parse layer:
 gitignored. `--skip-blobs` reuses the parse tables when only the divergence
 data has changed, which is the common case.
 
+`./test.sh` also needs the blobs: `probe_injection_parity.py` and
+`probe_secondary_grammar.py` read `data/blobs/`, and the suite fails at the
+start if `markdown.blob.json` or `markdown_inline.blob.json` is missing.
+It does not run `gen.py` itself, and does not need `vendor/` -- that copy is
+only for the apps.
+
 <details>
 <summary>fish</summary>
 
