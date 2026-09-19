@@ -1,5 +1,11 @@
 # `share_line` / `content_end` investigation
 
+**Snapshot, and still load-bearing.** Written on `wt/share-line` at
+`8c75e00`. Nothing here has been superseded: `share_line` still measures from
+the last child's `end` and the bug is still open. This note is the evidence
+that `docs/onboarding/FINDINGS.md` entry 9 was wrong in three particulars, and
+that entry now carries the correction and cites this file.
+
 ## Outcome
 
 I stopped without changing either runtime. The proposed `content_end` unification

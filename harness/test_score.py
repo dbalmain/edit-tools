@@ -7,6 +7,7 @@ from unittest import mock
 import formatter_divergence
 import manifest
 import review_ledger
+import review_page
 import score
 
 
@@ -464,32 +465,65 @@ class PendingGuestTests(unittest.TestCase):
 
 
 class LivePendingPropagationTests(unittest.TestCase):
-    """The json-aside repro, against the real roster.
+    """The json-absent repro, against the real roster and the real injections.
 
-    Restored in `finally` so an assertion failure cannot leave the tree
-    missing a package.
+    The synthetic tests above build their own two-language manifests, so they
+    prove the closure but not that *this* repository's injection graph has the
+    shape the closure needs. These drive `manifest.load_all()` -- the real
+    sixteen languages, the real `injections` tables -- and differ from it only
+    in which package files exist.
+
+    `awaiting_package` reads the package roster by `is_file()` alone, so a
+    directory of empty placeholders is a faithful stand-in and **nothing in the
+    working tree is touched**. An earlier version renamed the real
+    `packages/json.json` aside and restored it in `finally`; a SIGKILL in that
+    window left a checkout with a language missing, and the test could not run
+    against a read-only tree at all.
     """
 
-    def test_current_packages_pend_nobody(self):
-        pending = score.awaiting_package(score.ROOT, manifest.load_all())
-        self.assertEqual(pending, {})
+    def roster(self, *absent: str) -> Path:
+        """A submission whose packages are the real roster minus `absent`."""
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        root = Path(tmp.name)
+        (root / "packages").mkdir()
+        for name in self.manifests:
+            if name not in absent:
+                (root / "packages" / f"{name}.json").write_text("{}")
+        return root
+
+    def setUp(self):
+        self.manifests = manifest.load_all()
+
+    def test_the_real_roster_is_complete_so_it_pends_nobody(self):
+        """Also the honest statement of why the feature is inert here."""
+        self.assertEqual(score.awaiting_package(score.ROOT, self.manifests), {})
+        self.assertEqual(
+            score.awaiting_package(self.roster(), self.manifests), {}
+        )
 
     def test_missing_json_pends_markdown_and_not_python(self):
-        pkg = score.ROOT / "packages" / "json.json"
-        aside = pkg.with_name("json.json.aside")
-        if aside.is_file() and not pkg.is_file():
-            aside.rename(pkg)
-        try:
-            pkg.rename(aside)
-            pending = score.awaiting_package(score.ROOT, manifest.load_all())
-        finally:
-            if aside.is_file() and not pkg.is_file():
-                aside.rename(pkg)
+        pending = score.awaiting_package(self.roster("json"), self.manifests)
 
         self.assertEqual(pending["json"], "corpus landed, not yet scored")
         self.assertEqual(pending["markdown"], "json is pending")
         self.assertNotIn("python", pending)
-        self.assertTrue(pkg.is_file())
+
+    def test_the_reason_reaches_the_review_page_row(self):
+        """The consumer, not just the predicate.
+
+        `awaiting_package` returning the right dict is worth nothing if the one
+        thing that reads it drops the reason. `review_page` puts it in the
+        language row's note cell, where a direct call cannot see it.
+        """
+        submission = self.roster("json")
+        markdown = {"markdown": self.manifests["markdown"]}
+
+        section = review_page.status_section(
+            submission, markdown, [], {}, all_manifests=self.manifests
+        )
+
+        self.assertIn("json is pending", section)
 
 
 class PendingMainTests(unittest.TestCase):

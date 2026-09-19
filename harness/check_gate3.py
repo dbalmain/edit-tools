@@ -85,11 +85,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import gate3  # noqa: E402
 import manifest as mf  # noqa: E402
+import score  # noqa: E402  (for `awaiting_package`; no module-level work)
 
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "corpus" / "src"
 REFERENCE = ROOT / "corpus" / "reference"
-PACKAGES = ROOT / "packages"
 INJECTION = ROOT / "harness" / "fixtures" / "injection"
 
 
@@ -651,6 +651,12 @@ def main() -> int:
     markdown = mf.parse(INJECTION / "markdown.toml")
     bootstrapped = mf.bootstrap({**known, markdown.name: markdown})
     manifests = mf.selected(known, args.language)
+    # One source of truth with the scorer. A host whose guest has no
+    # package is pending too, and labelling only the directly-missing
+    # case here made this line and `score.py` disagree about the same
+    # language. The audit still runs either way -- gate 3 checks the
+    # reference, which exists whether or not a package does.
+    pending = score.awaiting_package(ROOT, manifests, known)
     parsers = mf.parsers(bootstrapped)
     failures: list[str] = []
     checked = disagreements = destructive = uncompared = 0
@@ -836,7 +842,6 @@ def main() -> int:
         families = ", ".join(
             f"{family}={count}" for family, count in sorted(counts.items())
         ) or "none"
-        package = PACKAGES / f"{name}.json"
         # The oracle *is* the generic default, so for a language that selects
         # it there is nothing to compare and the count proves nothing. Say that
         # rather than print a reassuring number: a check that reports activity
@@ -846,8 +851,8 @@ def main() -> int:
             if m.gate3 != "default"
             else "generic default -- arm inert, nothing to compare against"
         )
-        if not package.is_file():
-            state += "; package pending, not scored"
+        if name in pending:
+            state += f"; not scored ({pending[name]})"
         print(f"  adversarial {name}: {total} useful mutation(s) "
               f"({families}); {state}")
         if m.gate3 != "default":

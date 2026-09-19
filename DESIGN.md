@@ -150,13 +150,16 @@ grammar adds `emphasis`, `inline_link` and `code_span`, but still hides words;
 an included-range second pass alone is insufficient. Emphasis can itself wrap,
 so treating every markup subtree as an indivisible atom is insufficient too.
 
-No new opcode or header field is added here: the count stays 29 and the three
-sanctioned mutations stay unchanged. A future source-range projection could
-expose words and protected spans while keeping `fill`'s contract. Slicing
-validated source bytes does not inherently invent tokens, so this need not be
-a fourth token mutation, but it is a new capability requiring an explicit
-provenance and break-safety contract. A delimiter heuristic inside the runtime
-would make the runtime a partial markdown parser; that shape is declined.
+No new opcode is added here: the count stays 29 and the three sanctioned
+mutations stay unchanged. The source-range projection that exposes words and
+protected spans while keeping `fill`'s contract is **no longer hypothetical** --
+it is built, in the harness, and described below and in
+[`docs/prose-projection.md`](docs/prose-projection.md). Slicing validated source
+bytes does not invent tokens, so it is not a fourth token mutation; it is a new
+capability with an explicit provenance and break-safety contract, and one new
+**header field**, `source_partitions`, at package format 3. A delimiter
+heuristic inside the runtime would make the runtime a partial markdown parser;
+that shape is still declined.
 
 The measurement also exposed a prerequisite in the harness: gate 3 rejects 20
 of the reflowing reference outputs. Prose gaps, continuation markers and HTML

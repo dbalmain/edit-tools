@@ -1,5 +1,9 @@
 # Byte-range parity: reachability
 
+**Snapshot.** Written on `wt/parity-sweep` at `79ab059`. The headline below
+is **12 of 12**; `main` now has **13** sites. Re-derive from
+`harness/parity_fuzz.py` rather than citing this page's totals.
+
 **12 of 12 format-path source-byte sites are reachable from `./fmt-rust` /
 `./fmt-js` by a hand-written tree.** None of them sit behind a range
 validator. The sweep is worth its wall-clock: the known `prefix` instance is

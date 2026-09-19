@@ -1,5 +1,10 @@
 # Done: ledger reason-vs-diff audit
 
+**Snapshot.** Written on `wt/ledger-audit` at `bff4071`. The ledger held
+**142** records then and holds **140** now, and the reasons this audit called
+bad have since been re-signed. The findings are the durable part; the counts
+are not current.
+
 Worktree `ledger-audit` on `wt/ledger-audit`. Report:
 `.ai/ledger-audit.md` (force-added; `.ai/` is gitignored). Ledger,
 runtime, packages, and corpus were not edited.

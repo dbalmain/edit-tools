@@ -993,7 +993,7 @@ one is contextual and the other global.
 **Decide when:** a second language hits it. TOML's comment divergences are entry
 1, not this.
 
-### A leaf that swallows its own newline takes the next comment as a suffix
+### A leaf that swallows its own newline misplaces the next comment
 
 Found by FINDINGS 30's stage D, 2026-08-23. Suffix-versus-own-line is decided by
 `share_line` in `attach.rs`, which measures from the previous item's **last
@@ -1004,17 +1004,50 @@ includes its own line ending therefore looks adjacent to whatever follows:
 ```
 source   a
          # c
-output   a # c        the comment became a suffix
+output   a
+          # c        a stray leading space, not a suffix
 ```
 
-The fix is to measure from `content_end`, the same function FINDINGS 30 built,
-which peels at most one terminator. It can only ever flip a *false* suffix to an
-own-line comment — it moves the counted range left and cannot invent a
-zero-newline span — so the direction is safe. It is still a behaviour change for
-any language whose last item is such a leaf followed by a comment, so it wants a
-Go and Rust rescore rather than being folded into an unrelated merge. Recorded
-here rather than under 30 because it is comment *placement*, which is this
-entry's subject.
+**Corrected 2026-09-20, against `.ai/done-share-line.md`**, which investigated
+the proposed fix and stopped without changing either runtime. Three things in
+the original entry were wrong, and the third is the one that matters:
+
+- **The output was `a # c`.** It is `a\n # c\n` — a stray leading space from
+  the default one-column comment gap, not a suffix. `a # c` is reproducible
+  only from a hand-authored leaf whose `text` is `"a"` while its range still
+  ends at 2, and that text/range pair is not a shape `gen_trees.py` produces.
+  The Python package emits two spaces, because it declares `comment_gap: 2`.
+- **Measuring from `content_end` does not fix it.** Attachment correctly flips
+  from suffix to own-line, but the leaf has already emitted its swallowed
+  newline and the own-line comment then emits its own hard break, so both
+  runtimes produce `a\n\n# c\n` — an invented blank line in place of a stray
+  space. Correct output is `a\n# c\n` and the boundary change does not reach
+  it. A complete repair has to settle ownership between a line terminator
+  emitted by leaf content and the structural break before an own-line comment.
+- **"It can only ever flip a false suffix to an own-line comment" is false**,
+  and so is the safety argument built on it. `content_end(parent)` can exceed
+  the last child's end whenever source belonging to an interior node is not
+  represented by its children, and then the measured range *narrows*. Live in
+  a shipped grammar, not a synthetic tree: with pinned
+  `tree-sitter-toml==0.7.0`, `x = """a\nb""" # c` gives a `pair` whose
+  `string` child spans the whole literal but has only the opening `"""` as a
+  child. Today's boundary counts the literal's internal newline and both
+  runtimes put `# c` on its own line, wrongly; the unified boundary renders it
+  as a suffix, correctly. The own-line-to-suffix direction is real, and there
+  it is the right answer.
+
+So the general argument is not monotonicity. It is that **attachment must
+measure from the previous node's own content boundary, and the last-child
+heuristic can be wrong on either side of it.** A corpus scan over every frozen
+tree with each shipped package's comment kinds found `content_end(previous
+item)` equal to the current boundary at every actual attachment — which
+explains the zero-file corpus delta, and is also why neither edge case is
+covered by anything we run. The Go `statement_list` case that motivated the
+last-child heuristic is unchanged under unification.
+
+The slice is therefore still **open**, and larger than a boundary substitution.
+Recorded here rather than under 30 because it is comment *placement*, which is
+this entry's subject.
 
 ## 10. A rule cannot vary by where its node appears
 
@@ -3436,15 +3469,16 @@ every depth is worse than none. Both errors were the same shape: **reasoning
 about where a bound should sit, when the question was who owns the thing being
 bounded.**
 
-**`share_line` is entry 9, not this entry.** It still decides suffix-versus-own-line
-from the last child's `end`, a second spelling of "where does this item's content
-actually end". Unifying it onto `content_end` is the right spelling and can only
-ever flip a *false* suffix to an own-line comment, but it is a comment-attachment
-change and was deliberately left out so the "every language but Markdown is
-identical" measurement above stays true. Stage D found the leaf that heuristic
-misses: a leaf whose `end` includes its newline, followed by an own-line comment,
-prints `a # c` where the source had `a` and `# c` on separate lines. That is a
-live bug wanting its own slice and a Go/Rust rescore.
+**`share_line` is entry 9, not this entry.** It still decides
+suffix-versus-own-line from the last child's `end`, a second spelling of "where
+does this item's content actually end". Unifying it onto `content_end` is the
+right spelling, but it is a comment-attachment change and was deliberately left
+out so the "every language but Markdown is identical" measurement above stays
+true. Stage D found the leaf that heuristic misses, and a later investigation
+(`.ai/done-share-line.md`) found that the substitution does not fix it and that
+the direction claim made here was wrong in both particulars — see entry 9, which
+carries the correction. It is a live bug wanting its own slice, and a larger one
+than a boundary substitution.
 
 ### The entry as written before it was built
 
