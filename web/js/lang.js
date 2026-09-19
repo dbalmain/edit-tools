@@ -79,24 +79,73 @@ export async function packageFor(name) {
 }
 
 /**
+ * Whether this parse attaches secondary grammars.
+ *
+ * Default off: nothing in the editor reads `doc.secondary` yet, and attaching
+ * it held the main thread for 354 ms median (399 ms max) on a 199 KB markdown
+ * buffer -- a third-of-a-second stall after every 150 ms typing quiet, for a
+ * consumer that does not exist. A2.1 turns this on when it has one.
+ *
+ * An explicit `{ secondaries: true | false }` wins. Otherwise the browser
+ * honors `?secondaries=1` on `location.search`, so the attached baseline is
+ * reproducible without editing source. Node has no `location`, so omitted is
+ * off there too.
+ *
+ * This flag does not reach the harness producers. They call
+ * `attachSecondaries` directly and unconditionally; the corpus gate is not
+ * this switch.
+ */
+export function secondariesWanted(options = {}, search = locationSearch()) {
+  if (Object.hasOwn(options, "secondaries")) return Boolean(options.secondaries);
+  return new URLSearchParams(search).get("secondaries") === "1";
+}
+
+function locationSearch() {
+  try {
+    return globalThis.location?.search ?? "";
+  } catch {
+    return "";
+  }
+}
+
+/**
+ * Drop memoised assets. The flag-off fetch check is untestable without this:
+ * `blobFor` caches, so a prior on-parse would hide a later off-parse that
+ * still asked for the inline table.
+ */
+export function resetAssets() {
+  index = null;
+  injections = null;
+  secondaries = null;
+  blobs.clear();
+  packages.clear();
+  divergences.clear();
+}
+
+/**
  * Parse text with the C3 table interpreter.
  *
  * Bytes, not characters: the tables index UTF-8, and every offset in the
  * resulting tree is a byte offset. Encoding here rather than inside the parser
  * keeps that visible at the call site.
+ *
+ * Secondary attachment is off unless `secondariesWanted` says otherwise.
  */
-export async function parse(text, name) {
+export async function parse(text, name, options = {}) {
   const blob = await blobFor(name);
   const source = encoder.encode(text);
   const doc = parseDoc(blob, name, source, `<${name} buffer>`);
-  const secondary = await secondaryConfig();
-  // A parallel parse, not a splice: the block CST stays the formatter's tree
-  // and each inline root is retained beside it. Its table is a separate asset
-  // -- 43 KB gzipped, on top of markdown's own -- and `attachSecondaries` asks
-  // for one only when the document holds a node the declaration covers, so a
-  // buffer of nothing but a fenced block never fetches it. Same rule the fenced
-  // block itself gets below.
-  await attachSecondaries(doc, source, secondary, (grammar) => blobFor(grammar));
+  if (secondariesWanted(options)) {
+    const secondary = await secondaryConfig();
+    // A parallel parse, not a splice: the block CST stays the formatter's tree
+    // and each inline root is retained beside it. Its table is a separate asset
+    // -- 43 KB gzipped, on top of markdown's own -- and `attachSecondaries` asks
+    // for one only when the document holds a node the declaration covers, so a
+    // buffer of nothing but a fenced block never fetches it. Same rule the fenced
+    // block itself gets below. With the flag off, none of this runs and the
+    // table is not fetched at all.
+    await attachSecondaries(doc, source, secondary, (grammar) => blobFor(grammar));
+  }
   const config = await injectionConfig();
   if (!config.sites[name]) return doc;
   // The second pass: reparse each fenced region with its guest grammar and
@@ -118,8 +167,8 @@ export async function parse(text, name) {
  * rethrown rather than swallowed so the caller can say so instead of silently
  * leaving the buffer alone.
  */
-export async function formatText(text, name, width) {
-  const tree = await parse(text, name);
+export async function formatText(text, name, width, options) {
+  const tree = await parse(text, name, options);
   const pkgs = new Map();
   for (const lang of treeLanguages(tree)) pkgs.set(lang, await packageFor(lang));
   return format(tree, pkgs, width);

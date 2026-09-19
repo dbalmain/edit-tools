@@ -104,7 +104,10 @@ function select(item) {
   state.editor.options.indent = state.entry.indent ?? 4;
   showRight();
   showVerdict();
-  history.replaceState(null, "", `?lang=${encodeURIComponent(NAME)}&case=${encodeURIComponent(item.id)}`);
+  const qs = new URLSearchParams(location.search);
+  qs.set("lang", NAME);
+  qs.set("case", item.id);
+  history.replaceState(null, "", `?${qs}`);
 }
 
 function renderList() {
