@@ -169,6 +169,81 @@ class SecondaryGrammarManifestTests(unittest.TestCase):
                     self.parse(declaration)
 
 
+class FormattedGuestsTests(unittest.TestCase):
+    """The scoring graph uses the same alias lookup as `injection.region_for`."""
+
+    def parse(
+        self, name: str, extra: str = "", aliases: str | None = None
+    ) -> manifest.Manifest:
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        path = Path(tmp.name) / f"{name}.toml"
+        text = BASE.replace('name = "json"', f'name = "{name}"').replace(
+            'injection_aliases = ["json"]',
+            f"injection_aliases = {aliases or f'[{name!r}]'}",
+        )
+        path.write_text(text + extra)
+        return manifest.parse(path)
+
+    def test_an_info_site_can_resolve_to_any_alias(self):
+        host = self.parse(
+            "markdown",
+            extra=(
+                'injections = [{ node = "fenced_code_block", '
+                'info = "info_string", content = "code_fence_content" }]\n'
+            ),
+            aliases='["markdown", "md"]',
+        )
+        json_m = self.parse("json")
+        aliases = manifest.injection_map({"markdown": host, "json": json_m})
+
+        self.assertEqual(
+            manifest.formatted_guests(host, aliases), frozenset({"markdown", "json"})
+        )
+
+    def test_a_guest_field_is_looked_up_as_an_alias(self):
+        host = self.parse(
+            "markdown",
+            extra='injections = [{ node = "minus_metadata", guest = "yml" }]\n',
+        )
+        yaml_m = self.parse("yaml", aliases='["yaml", "yml"]')
+        aliases = manifest.injection_map({"markdown": host, "yaml": yaml_m})
+
+        self.assertEqual(manifest.formatted_guests(host, aliases), frozenset({"yaml"}))
+
+    def test_an_opaque_site_is_not_a_formatted_guest(self):
+        host = self.parse(
+            "markdown",
+            extra=(
+                'injections = [{ node = "html_block", guest = "html", '
+                "format = false }]\n"
+            ),
+        )
+        html = self.parse("html")
+        aliases = manifest.injection_map({"markdown": host, "html": html})
+
+        self.assertEqual(manifest.formatted_guests(host, aliases), frozenset())
+
+    def test_an_unknown_guest_alias_is_not_a_guest(self):
+        host = self.parse(
+            "markdown",
+            extra='injections = [{ node = "minus_metadata", guest = "yaml" }]\n',
+        )
+        aliases = manifest.injection_map({"markdown": host})
+
+        self.assertEqual(manifest.formatted_guests(host, aliases), frozenset())
+
+    def test_roster_markdown_formats_every_aliased_language(self):
+        """An info site is a capability edge, not a corpus-content edge."""
+        manifests = manifest.load_all()
+        aliases = manifest.injection_map(manifests)
+
+        self.assertEqual(
+            manifest.formatted_guests(manifests["markdown"], aliases),
+            frozenset(manifests),
+        )
+
+
 class TriviaKindsManifestTests(unittest.TestCase):
     def parse(self, extra: str = "") -> manifest.Manifest:
         tmp = tempfile.TemporaryDirectory()

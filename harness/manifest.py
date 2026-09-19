@@ -559,6 +559,29 @@ def grammar_targets(manifests: dict[str, Manifest]) -> dict[str, GrammarTarget]:
     return out
 
 
+def formatted_guests(
+    host: Manifest, aliases: dict[str, Manifest]
+) -> frozenset[str]:
+    """Languages this host may format inside an embedded region.
+
+    Same routing `injection.region_for` uses: a `guest` field is looked up in
+    the alias map, and an `info` site can resolve to any alias. Opaque sites
+    (`format = false`) splice a parse for readers but emit the host's bytes,
+    so their package is never loaded.
+    """
+    names: set[str] = set()
+    for site in host.injections:
+        if not site.format:
+            continue
+        if site.guest is not None:
+            guest = aliases.get(site.guest)
+            if guest is not None:
+                names.add(guest.name)
+            continue
+        names.update(m.name for m in aliases.values())
+    return frozenset(names)
+
+
 # --------------------------------------------------------------------------
 # grammar bootstrap
 

@@ -428,8 +428,14 @@ def highlight_section(submission: Path, only: str | None) -> str:
     )
 
 
-def status_section(submission: Path, manifests: dict, records: list, states: dict) -> str:
-    pending = score.awaiting_package(submission, manifests)
+def status_section(
+    submission: Path,
+    manifests: dict,
+    records: list,
+    states: dict,
+    all_manifests: dict | None = None,
+) -> str:
+    pending = score.awaiting_package(submission, manifests, all_manifests)
     rows = []
     for name in sorted(manifests):
         mine = [r for r in records if r.language == name]
@@ -439,7 +445,7 @@ def status_section(submission: Path, manifests: dict, records: list, states: dic
         cases = len(manifests[name].widths) * len(
             score.corpus({name: manifests[name]})
         )
-        note = "awaiting package" if name in pending else f"{cases - len(mine)} agree"
+        note = pending[name] if name in pending else f"{cases - len(mine)} agree"
         rows.append(
             f"<tr><td><strong>{html.escape(name)}</strong></td>"
             f"<td class='meta'>{html.escape(note)}</td>"
@@ -483,7 +489,7 @@ def main() -> int:
     scored = {
         name: m
         for name, m in selected.items()
-        if name not in score.awaiting_package(submission, selected)
+        if name not in score.awaiting_package(submission, selected, known)
     }
     records, problems = review_formatter.divergences(submission, score.corpus(scored))
     states = review_formatter._states(records)
@@ -491,7 +497,7 @@ def main() -> int:
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp = Path(tmpdir)
         sections = [
-            status_section(submission, selected, records, states),
+            status_section(submission, selected, records, states, known),
             formatter_section(
                 submission, records, states, known, parsers, packages, tmp
             ),
