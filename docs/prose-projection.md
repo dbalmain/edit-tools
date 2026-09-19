@@ -523,13 +523,15 @@ around these rows added three eligible paragraphs -- the stamped figures are
 `80c7c9d`, the parent, and the probe at its child read 1,546 in the same 127
 files.
 
-An earlier version of this paragraph claimed there was no fixed point to reach,
-which is **false** and was corrected on 2026-09-20. Only *structural* edits
-move the count; correcting a digit does not. Measured: replacing `1,543` with
-`9,999` in this file and reparsing leaves its own histogram at 43 eligible and
-52 `inline construct` exactly. So the numbers here can be brought current
-whenever someone runs the probe, and the stamp is a record of when that last
-happened rather than an admission of impossibility.
+An earlier version of this paragraph claimed there was no fixed point to
+reach, which is **false** and was corrected on 2026-09-20. Measured: replacing
+`1,543` with `9,999` in this file and reparsing leaves its own histogram at 43
+eligible and 52 `inline construct` exactly -- **replacing the numeric cells of
+this table preserves its histogram.** That is the narrow claim and the only one
+the measurement supports; editing the prose around the table can and did change
+eligibility. So the numbers here can be brought current whenever someone runs
+the probe, and the stamp records when that last happened rather than an
+impossibility.
 
 Any discrepancy against a fresh run is therefore a real measurement, and it
 wants explaining rather than excusing -- most often by markdown files landing
