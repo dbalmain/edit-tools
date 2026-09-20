@@ -611,17 +611,11 @@ def main(quiet: bool = False) -> int:
             "ran on nothing, which is not the same as finding nothing"
         )
 
-    with tempfile.TemporaryDirectory(prefix="prose-pkg-") as tmp:
-        packages = Path(tmp)
-        base = json.loads((ROOT / "packages" / "markdown.json").read_text())
-        (packages / "markdown.json").write_text(
-            json.dumps(prose.package(base)), encoding="utf-8"
-        )
-        reflows = phase_a(parser, inline_parser, docs)
-        inlines = phase_a_inline(inline_parser, docs)
-        projections = phase_b(parser, inline_parser, docs)
-        control = phase_b_control(parser, inline_parser, docs)
-        formats = phase_c(parser, inline_parser, packages, docs)
+    reflows = phase_a(parser, inline_parser, docs)
+    inlines = phase_a_inline(inline_parser, docs)
+    projections = phase_b(parser, inline_parser, docs)
+    control = phase_b_control(parser, inline_parser, docs)
+    formats = phase_c(parser, inline_parser, ROOT / "packages", docs)
 
     if not quiet:
         print(

@@ -438,8 +438,8 @@ class CorpusThresholdManifestTests(unittest.TestCase):
             loaded["json"].corpus_thresholds["comments"].minimum_files
         )
         markdown = loaded["markdown"].corpus_thresholds["width_sensitive"]
-        self.assertEqual(markdown.minimum_files, 5)
-        self.assertIn("proseWrap=preserve", markdown.reason)
+        self.assertEqual(markdown.minimum_files, 18)
+        self.assertIn("proseWrap=always", markdown.reason)
         toml = loaded["toml"].corpus_thresholds["width_sensitive"]
         self.assertEqual(toml.minimum_files, 4)
         self.assertIn("arrays only", toml.reason)

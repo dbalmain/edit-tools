@@ -295,42 +295,6 @@ CONTAINERS = frozenset(
 )
 
 
-def package(base: dict) -> dict:
-    """`packages/markdown.json`, plus the two rules A1 needs. Derived, not
-    committed, so it cannot drift from the package it extends.
-
-    A1 ships no package change. The projection is off in the corpus, so the
-    shipped `markdown.json` stays at format 2 with `paragraph: ["verbatim"]`
-    and every committed reference and tree is untouched. These edits exist so
-    the probes can format a projected document, and so the diff that turns the
-    projection on later is these few lines rather than a rewrite.
-
-    `paragraph` keeps `verbatim` for the paragraphs the projection refused,
-    which is most of them, and takes the reflowing branch only when a
-    `prose_run` is actually present. That guard is what lets one package format
-    a document in which some paragraphs are projected and some are not.
-    """
-    out = dict(base)
-    out["format"] = "et-doc-rules/3"
-    out["source_partitions"] = [RUN]
-    # Disjoint from `source_partitions`, which both runtimes check: the gap is
-    # trivia the item view removes, the run is the node whose coverage is
-    # proven before that removal happens.
-    out["whitespace_nodes"] = [*base.get("whitespace_nodes", []), GAP]
-    # Two rules, not three: an atom is a leaf, and a leaf emits its own text
-    # before rule dispatch, so `prose_atom` needs no rule at all.
-    out["rules"] = {
-        **base["rules"],
-        "paragraph": [
-            "when", ["count", f"t:{RUN}", 1],
-            ["seq", ["child", f"t:{RUN}"], ["hard"]],
-            ["verbatim"],
-        ],
-        RUN: ["fill", f"t:{ATOM}", ["line"]],
-    }
-    return out
-
-
 def legacy_inline_token(paragraph: dict) -> bool:
     """A1's retired `inline token` test, frozen. **Not part of A2.1's predicate.**
 

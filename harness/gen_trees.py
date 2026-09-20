@@ -34,10 +34,27 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import injection  # noqa: E402
 import manifest as mf  # noqa: E402
+import prose  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "corpus" / "src"
 OUT = ROOT / "corpus" / "trees"
+PACKAGES = ROOT / "packages"
+
+
+def package_for(name: str) -> dict:
+    """The shipped package controlling a produced formatter view."""
+    return json.loads((PACKAGES / f"{name}.json").read_text(encoding="utf-8"))
+
+
+def formatter_view(doc: dict, package: dict) -> dict:
+    """Project a parse only when its package opts into source partitions.
+
+    `parse_doc` remains the syntax view used by highlighting and parse-parity
+    probes. Frozen trees and gate 2 call this boundary to obtain the separate
+    formatter view, keyed to a package capability rather than a language name.
+    """
+    return prose.project(doc) if package.get("source_partitions") else doc
 
 
 def pin_ctype() -> None:
@@ -353,6 +370,7 @@ def main() -> int:
     seen: dict[str, Path] = {}
 
     for name, m in manifests.items():
+        package = package_for(name)
         for path in sources(m):
             # Two extensions can share a stem (`app.ts` / `app.tsx`); the tree
             # name has no room for both, so say so rather than overwrite.
@@ -374,6 +392,7 @@ def main() -> int:
             if problems:
                 failures.extend(problems)
                 continue
+            doc = formatter_view(doc, package)
             dest = OUT / f"{key}.tree.json"
             dest.write_text(json.dumps(doc, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
             written += 1

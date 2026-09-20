@@ -13,7 +13,7 @@ import node_suite
 
 class LangParseFlagTest(unittest.TestCase):
     def test_lang_parse_secondaries_flag(self):
-        node_suite.assert_passed(self, "lang_parse.test.mjs", 5)
+        node_suite.assert_passed(self, "lang_parse.test.mjs", 7)
 
 
 if __name__ == "__main__":

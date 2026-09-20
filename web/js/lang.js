@@ -12,6 +12,7 @@
 import { parseDoc } from "../vendor/ts_doc.mjs";
 import { injectAll } from "../vendor/ts_inject.mjs";
 import { attachSecondaries } from "../vendor/ts_secondary.mjs";
+import { project } from "../vendor/prose.mjs";
 import { format, Refusal } from "../vendor/runtime.mjs";
 
 const DATA = new URL("../data/", import.meta.url);
@@ -168,8 +169,14 @@ export async function parse(text, name, options = {}) {
  * leaving the buffer alone.
  */
 export async function formatText(text, name, width, options) {
-  const tree = await parse(text, name, options);
-  const pkgs = new Map();
+  const rootPackage = await packageFor(name);
+  const projects = (rootPackage.source_partitions?.length ?? 0) > 0;
+  // Projection reads the parallel inline CST. A caller may disable it for the
+  // shared syntax view, but a package that requests source partitions makes it
+  // mandatory for the separate formatter view.
+  const parsed = await parse(text, name, projects ? { ...options, secondaries: true } : options);
+  const tree = projects ? project(parsed) : parsed;
+  const pkgs = new Map([[name, rootPackage]]);
   for (const lang of treeLanguages(tree)) pkgs.set(lang, await packageFor(lang));
   return format(tree, pkgs, width);
 }
