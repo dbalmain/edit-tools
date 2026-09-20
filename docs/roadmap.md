@@ -233,6 +233,15 @@ this exposes: shipping reflow for the A2.1 subset and moving markdown's live
 reference to `proseWrap=always` are different questions, and only the second
 needs to agree with Prettier inside containers.
 
+**A2.2 and A2.3 have landed, and the ladder is effectively complete.**
+Eligibility on the repo's own markdown went 42.1% (A2.1) to 65.6% (A2.2,
+emphasis and strong) to **89.8%** (A2.3, non-ASCII atom content), 3,500 of
+3,897 top-level paragraphs at `f3406cd`. What remains refused is 280
+`inline construct` (images, reference links, escapes -- A2.4's shapes), 72
+`byte`, and a tail of 40. A2.3 was much larger than the ladder said: its 360
+was a first-match figure, and A2.2 unmasked 607 more that had been refusing as
+emphasis first.
+
 **The gate half has landed.** `manifest.prose_nodes` declares, per language, the
 node kinds whose text may be re-wrapped; inside one gate 3 canonicalises ASCII
 whitespace runs and keeps two-space hard breaks. Nothing declares it, so

@@ -1063,6 +1063,23 @@ Nothing declares the field yet, so reference agreement is unmoved at 269/400 and
 all sixteen languages keep a byte-identical gate. A test asserts that emptiness
 and says to delete itself when the first language opts in.
 
+**It generalised to two rungs it was not measured against.** The table above
+was taken at A2.1. Re-running `harness/probe_prose_equivalence.py` unchanged
+after each subsequent rung landed:
+
+| measured at | eligible | re-wraps that changed bytes | rejected, soft only | rejected, structural |
+| --- | ---: | ---: | ---: | ---: |
+| A2.1, `8747b24` | 1,604 | 186 | 183 | **0** |
+| A2.2, `238992f` | 2,538 | 204 | 201 | **0** |
+| A2.3, `f3406cd` | 3,500 | 215 | 212 | **0** |
+
+The four controls still discriminate at each. So admitting emphasis and then
+non-ASCII introduced no disagreement the narrowing does not already cover,
+which is the useful negative result: the equivalence was scoped against the
+narrowest rung and did not need widening as the projection grew. It is
+evidence that the whitespace rule is the *right* rule rather than one tuned to
+A2.1's particular subset.
+
 **A second consumer, found while scoping this.** The equivalence is not a
 markdown feature. `corpus/src/html/prose.html` has been listed `incomparable`
 since stage B because Prettier reflows HTML prose by inserting newlines into
