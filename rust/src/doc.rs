@@ -92,11 +92,7 @@ impl Doc {
 
     pub fn prefix_unit(unit: &str, blank: Option<&str>, d: Doc) -> Doc {
         Doc::Concat(vec![
-            Doc::Indent(
-                unit.to_owned(),
-                blank.map(str::to_owned),
-                Box::new(d),
-            ),
+            Doc::Indent(unit.to_owned(), blank.map(str::to_owned), Box::new(d)),
             Doc::ResetIndent,
         ])
     }
@@ -142,12 +138,9 @@ fn collect_forced(doc: &Doc, forced: &mut Forced) -> bool {
             collect_forced(inner, forced);
             false
         }
-        Doc::Text(_)
-        | Doc::Line
-        | Doc::Soft
-        | Doc::ResetIndent
-        | Doc::Cell
-        | Doc::CellBreak => false,
+        Doc::Text(_) | Doc::Line | Doc::Soft | Doc::ResetIndent | Doc::Cell | Doc::CellBreak => {
+            false
+        }
     }
 }
 
