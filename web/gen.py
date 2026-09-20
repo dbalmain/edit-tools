@@ -86,7 +86,7 @@ LINE_COMMENT = {
 # than imported across `../../harness/` so that `web/` is a directory a static
 # host can serve on its own -- which is the whole content of Q1's answer.
 PARSE_LAYER = ("ts_lr.mjs", "ts_doc.mjs", "ts_inject.mjs", "ts_secondary.mjs",
-               "ts_scanner_vm.mjs", "ts_scanner_pack.mjs")
+               "ts_scanner_vm.mjs", "ts_scanner_pack.mjs", "prose.mjs")
 
 
 def vendor() -> None:

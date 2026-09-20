@@ -893,17 +893,15 @@ class Mirror(unittest.TestCase):
 
 
 class Package(unittest.TestCase):
-    """The derived package, against the shipped one it extends."""
+    """The shipped package that consumes this projection."""
 
     def setUp(self):
         root = Path(__file__).resolve().parent.parent
-        self.base = json.loads((root / "packages" / "markdown.json").read_text())
-        self.out = prose.package(self.base)
+        self.out = json.loads((root / "packages" / "markdown.json").read_text())
 
-    def test_the_shipped_package_is_not_mutated(self):
-        self.assertEqual(self.base["format"], "et-doc-rules/2")
-        self.assertNotIn("source_partitions", self.base)
-        self.assertEqual(self.base["rules"]["paragraph"], ["verbatim"])
+    def test_the_shipped_package_opts_in(self):
+        self.assertEqual(self.out["format"], "et-doc-rules/3")
+        self.assertEqual(self.out["source_partitions"], [prose.RUN])
 
     def test_partitions_and_whitespace_nodes_stay_disjoint(self):
         """Both runtimes refuse a package whose two lists overlap."""
@@ -913,9 +911,8 @@ class Package(unittest.TestCase):
         )
 
     def test_the_shipped_whitespace_nodes_survive(self):
-        self.assertEqual(
-            self.out["whitespace_nodes"], [*self.base["whitespace_nodes"], prose.GAP]
-        )
+        self.assertIn("section", self.out["whitespace_nodes"])
+        self.assertIn(prose.GAP, self.out["whitespace_nodes"])
 
     def test_an_unprojected_paragraph_still_reaches_verbatim(self):
         branch = self.out["rules"]["paragraph"]

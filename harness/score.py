@@ -106,7 +106,9 @@ def as_tree_doc(
         manifests,
         parsers,
     )
-    return None if problems else doc
+    if problems:
+        return None
+    return gen_trees.formatter_view(doc, gen_trees.package_for(manifest.name))
 
 
 # --------------------------------------------------------------------------

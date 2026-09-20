@@ -82,8 +82,16 @@ const STUBS = {
   "../vendor/ts_inject.mjs": `
     export async function injectAll(doc) { return doc; }
   `,
+  "../vendor/prose.mjs": `
+    export function project(doc) { return { ...doc, projected: true }; }
+  `,
   "../vendor/runtime.mjs": `
-    export function format() {}
+    export function format(tree) {
+      return JSON.stringify({
+        projected: tree.projected === true,
+        secondary: Array.isArray(tree.secondary) && tree.secondary.length > 0,
+      });
+    }
     export class Refusal extends Error {}
   `,
 };
@@ -108,6 +116,7 @@ const FENCE_ONLY = "```\ncode\n```\n";
 const FIXTURES = {
   "markdown.blob.json": {},
   "markdown_inline.blob.json": {},
+  "markdown.json": { source_partitions: ["prose_run"] },
   "secondaries.json": {
     grammars: { markdown_inline: { source_language: "markdown" } },
     sites: {
@@ -205,4 +214,15 @@ test("?secondaries=1 attaches; an explicit false still wins", async () => {
   const off = await lang.parse(WITH_INLINE, "markdown", { secondaries: false });
   assert.equal(off.secondary, undefined);
   assert.equal(askedFor("markdown_inline.blob.json"), false);
+});
+
+test("formatting follows the package opt-in and projects a secondary-backed view", async () => {
+  prepare();
+  const output = JSON.parse(
+    await lang.formatText(WITH_INLINE, "markdown", 40, { secondaries: false }),
+  );
+  assert.deepEqual(output, { projected: true, secondary: true });
+  assert.equal(askedFor("markdown.json"), true);
+  assert.equal(askedFor("secondaries.json"), true);
+  assert.equal(askedFor("markdown_inline.blob.json"), true);
 });
