@@ -10,7 +10,7 @@ use std::collections::HashMap;
 
 use crate::attach::{split, whitespace_node, Comment, Item};
 use crate::doc::Doc;
-use crate::pkg::{CommentCells, Expr, Package, Pred, Sel};
+use crate::pkg::{CommentCells, Expr, Package, Pred, PrefixMode, Sel};
 use crate::tree::{Node, TreeDoc};
 use crate::Refusal;
 
@@ -261,7 +261,11 @@ impl<'a> Ctx<'a> {
     fn new(node: &'a Node, f: &Fmt<'a>) -> Result<Ctx<'a>, Refusal> {
         // A declaration cannot hide stale text or overlapping ranges. Only
         // check the subtree where whitespace trivia is actually consumed.
-        if node.children.iter().any(|child| whitespace_node(child, f.pkg)) {
+        if node
+            .children
+            .iter()
+            .any(|child| whitespace_node(child, f.pkg))
+        {
             check_source(node, f.src, "whitespace_nodes")?;
         }
         let parts = split(node, f.src, f.pkg);
@@ -336,7 +340,8 @@ impl<'a> Ctx<'a> {
             Expr::SrcBreak => Ok(self.src_break(Doc::Line)),
             Expr::SrcTrail(sep) => self.srctrail(sep, f),
             Expr::Drop(want) => self.drop_token(want, f),
-            Expr::Prefix(sel, es) => self.prefix(sel, es, f),
+            Expr::Discard(sel) => self.discard(sel, f),
+            Expr::Prefix(sel, mode, es) => self.prefix(sel, *mode, es, f),
             Expr::Cell => Ok(Doc::Cell),
             Expr::CellBlock(es) => {
                 let mut parts = vec![Doc::CellBreak];
@@ -449,10 +454,7 @@ impl<'a> Ctx<'a> {
                 found = true;
                 break;
             }
-            node = current
-                .children
-                .last()
-                .filter(|last| last.end == prev.end);
+            node = current.children.last().filter(|last| last.end == prev.end);
         }
         if !found {
             return 0;
@@ -574,6 +576,15 @@ impl<'a> Ctx<'a> {
         Ok(Doc::nil())
     }
 
+    fn discard(&mut self, sel: &Sel, f: &Fmt<'a>) -> Result<Doc, Refusal> {
+        let at = self.take(sel, f)?;
+        if self.items[at].decorated() {
+            return Err(self.refuse("no comment on a child `discard` consumes"));
+        }
+        check_source(self.items[at].node, f.src, "discard")?;
+        Ok(Doc::nil())
+    }
+
     /// Indent the body by the selected child's own source text, consuming it.
     /// The prefix is a string rather than a column count, which is what lets a
     /// host continuation marker (`> `, or a list's spaces) survive onto lines
@@ -582,8 +593,14 @@ impl<'a> Ctx<'a> {
     ///
     /// Zero matches is an empty prefix consuming nothing, so a fence at the top
     /// of a document and a fence four levels into a list take the same rule.
-    fn prefix(&mut self, sel: &Sel, es: &[Expr], f: &Fmt<'a>) -> Result<Doc, Refusal> {
-        let unit = if self.matches(self.cursor, sel, f.pkg) {
+    fn prefix(
+        &mut self,
+        sel: &Sel,
+        mode: PrefixMode,
+        es: &[Expr],
+        f: &Fmt<'a>,
+    ) -> Result<Doc, Refusal> {
+        let source_unit = if self.matches(self.cursor, sel, f.pkg) {
             let at = self.cursor;
             if self.items[at].decorated() {
                 return Err(self.refuse("no comment on the marker a `prefix` consumes"));
@@ -607,9 +624,23 @@ impl<'a> Ctx<'a> {
         } else {
             String::new()
         };
+        let unit = match mode {
+            PrefixMode::Source | PrefixMode::Marker => source_unit.clone(),
+            PrefixMode::Spaces => " ".repeat(source_unit.chars().count()),
+        };
+        let blank = match mode {
+            PrefixMode::Marker => Some(source_unit.trim_end_matches(char::is_whitespace)),
+            PrefixMode::Source | PrefixMode::Spaces => None,
+        };
         let mut parts = self.eval_all(es, f)?;
         parts.push(self.flush_after(f));
-        Ok(Doc::indent_unit(&unit, Doc::Concat(parts)))
+        let body = Doc::prefix_unit(&unit, blank, Doc::Concat(parts));
+        Ok(match mode {
+            PrefixMode::Source => body,
+            PrefixMode::Spaces | PrefixMode::Marker => {
+                Doc::Concat(vec![Doc::text(source_unit), body])
+            }
+        })
     }
 
     fn child(&mut self, sel: &Sel, f: &Fmt<'a>) -> Result<Doc, Refusal> {
@@ -716,12 +747,15 @@ impl<'a> Ctx<'a> {
         }
 
         let mut parts = Vec::new();
-        for (r, (row_lead, cells)) in rows.iter().enumerate() {
+        // A row lead is the host container's own per-line continuation, and it
+        // is collected only to be checked: inside a `prefix` scope the Doc
+        // indent already supplies that text on every line the table emits, and
+        // re-emitting it here doubles the marker (`> >` for a quoted table).
+        // Outside a container a table has no continuation children at all, so
+        // there is never a lead to lose.
+        for (r, (_lead, cells)) in rows.iter().enumerate() {
             if r > 0 {
                 parts.push(Doc::Hard);
-            }
-            if !row_lead.is_empty() {
-                parts.push(Doc::text(row_lead.as_str()));
             }
             let mut line = String::from("|");
             for (c, cell) in cells.iter().enumerate() {
@@ -738,9 +772,6 @@ impl<'a> Ctx<'a> {
             parts.push(Doc::text(line));
         }
         parts.push(Doc::Hard);
-        if !lead.is_empty() {
-            parts.push(Doc::text(lead));
-        }
         Ok(Doc::Concat(parts))
     }
 
@@ -1405,6 +1436,79 @@ mod tests {
         );
     }
 
+    #[test]
+    fn marker_prefix_reflows_more_lines_and_marks_a_blank_line() {
+        let packages = prefix_pkg(json!({
+            "block": [
+                "prefix", "t:marker", "marker",
+                ["child", "t:word"], ["hard"], ["hard"],
+                ["child", "t:word"]
+            ]
+        }));
+        let root = json!({
+            "type": "block", "start": 0, "end": 2,
+            "children": [
+                { "type": "marker", "start": 0, "end": 2 },
+                leaf("word", "alpha"),
+                leaf("word", "beta"),
+            ]
+        });
+        assert_eq!(
+            run_on(&packages, "> ", root, 80).expect("formats"),
+            "> alpha\n>\n> beta\n"
+        );
+    }
+
+    #[test]
+    fn marker_prefixes_nest_while_a_two_digit_list_hangs_by_width() {
+        let packages = prefix_pkg(json!({
+            "block": [
+                "prefix", "t:quote", "marker",
+                [
+                    "prefix", "t:list", "spaces",
+                    ["child", "t:word"], ["hard"], ["hard"],
+                    ["child", "t:word"]
+                ]
+            ]
+        }));
+        let root = json!({
+            "type": "block", "start": 0, "end": 6,
+            "children": [
+                { "type": "quote", "start": 0, "end": 2 },
+                { "type": "list", "start": 2, "end": 6 },
+                leaf("word", "alpha"),
+                leaf("word", "beta"),
+            ]
+        });
+        assert_eq!(
+            run_on(&packages, "> 10. ", root, 80).expect("formats"),
+            "> 10. alpha\n>\n>     beta\n"
+        );
+    }
+
+    #[test]
+    fn discard_consumes_a_source_backed_continuation_range() {
+        let packages = prefix_pkg(json!({
+            "block": [
+                "seq", ["child", "t:word"],
+                ["discard", "t:gap"], ["hard"],
+                ["child", "t:word"]
+            ]
+        }));
+        let root = json!({
+            "type": "block", "start": 0, "end": 6,
+            "children": [
+                { "type": "word", "start": 0, "end": 1, "text": "a" },
+                { "type": "gap", "start": 1, "end": 4, "text": "\n> " },
+                { "type": "word", "start": 4, "end": 5, "text": "b" },
+            ]
+        });
+        assert_eq!(
+            run_on(&packages, "a\n> b\n", root, 80).expect("formats"),
+            "a\nb\n"
+        );
+    }
+
     /// A marker spanning a line ending would write a newline the printer never
     /// accounted for, so it is refused rather than silently mis-measured.
     #[test]
@@ -1450,7 +1554,9 @@ mod tests {
         });
         let error = run_on(&packages, "#> ", root, 80).expect_err("refuses");
         assert!(
-            error.0.contains("no comment on the marker a `prefix` consumes"),
+            error
+                .0
+                .contains("no comment on the marker a `prefix` consumes"),
             "{}",
             error.0
         );
@@ -3076,9 +3182,8 @@ try {{
                 "name": ["verbatim"]
             }
         });
-        let pkg = || -> Package {
-            serde_json::from_value(raw.clone()).expect("swallow package parses")
-        };
+        let pkg =
+            || -> Package { serde_json::from_value(raw.clone()).expect("swallow package parses") };
         let source = "a\n\nb";
         let tree = |first_end: usize, file_end: usize| {
             json!({
@@ -3174,20 +3279,18 @@ try {{
         // see one source blank. Ownership settles the sibling gap only -- the
         // trailing measure keeps the shallow bound, so the two never claim the
         // same newline.
-        let pkg: PackageMap = one(
-            serde_json::from_value(json!({
-                "format": "et-doc-rules/1",
-                "indent": 2,
-                "tokens": [],
-                "gap_owner": { "file": ["item"] },
-                "rules": {
-                    "file": ["seq", ["each", "named", ["seq", ["hard"], ["blank", 1]]], ["blank", 1]],
-                    "item": ["child", "t:name"],
-                    "name": ["verbatim"]
-                }
-            }))
-            .expect("package parses"),
-        );
+        let pkg: PackageMap = one(serde_json::from_value(json!({
+            "format": "et-doc-rules/1",
+            "indent": 2,
+            "tokens": [],
+            "gap_owner": { "file": ["item"] },
+            "rules": {
+                "file": ["seq", ["each", "named", ["seq", ["hard"], ["blank", 1]]], ["blank", 1]],
+                "item": ["child", "t:name"],
+                "name": ["verbatim"]
+            }
+        }))
+        .expect("package parses"));
         // `b\n\n` swallows its ending and the blank after it. Shallow peels one
         // terminator and stops; deep would reach `b` and count the blank twice.
         let root = json!({
@@ -3443,7 +3546,10 @@ try {{
     #[test]
     fn table_pads_to_the_widest_cell_and_redraws_the_ruler_to_match() {
         let out = run_on(&table_pkg(), WONKY, wonky_table(), 80).expect("formats");
-        assert_eq!(out, "| a      |  bb |\n| :----- | --: |\n| longer |   2 |\n");
+        assert_eq!(
+            out,
+            "| a      |  bb |\n| :----- | --: |\n| longer |   2 |\n"
+        );
     }
 
     #[test]
@@ -3463,9 +3569,12 @@ try {{
     }
 
     #[test]
-    fn table_keeps_a_containers_per_line_marker_in_front_of_its_row() {
+    fn table_leaves_its_hosts_per_line_marker_to_the_host() {
         // What a table inside a block quote looks like: the host's `> ` arrives
-        // as a token child of the table, between the rows it prefixes.
+        // as a token child of the table, between the rows it prefixes. The
+        // table consumes those tokens without emitting them, because a host
+        // that owns its prefix re-supplies the marker on every line the table
+        // breaks onto. Emitting both is how a quoted table grows a second `>`.
         let source = "| a |\n> |-|\n> | bb |\n";
         let root = json!({
             "type": "table", "start": 0, "end": 21,
@@ -3478,7 +3587,42 @@ try {{
             ],
         });
         let out = run_on(&table_pkg(), source, root, 80).expect("formats");
-        assert_eq!(out, "| a   |\n> | --- |\n> | bb  |\n");
+        assert_eq!(out, "| a   |\n| --- |\n| bb  |\n");
+    }
+
+    /// The other half of the rule above, and the case that would still pass if
+    /// the lead were simply deleted: a host owning the prefix must put the
+    /// marker in front of **every** row, including ones the table invents.
+    #[test]
+    fn a_prefix_owning_host_marks_every_row_of_the_table_it_contains() {
+        let source = "> | a |\n> |-|\n> | bb |\n";
+        let packages = one(
+            serde_json::from_value(json!({
+                "format": "et-doc-rules/1",
+                "indent": 2,
+                "tokens": ["|", "cont", "marker"],
+                "rules": {
+                    "quote": ["prefix", "t:marker", "marker", ["child", "t:table"]],
+                    "table": ["table"],
+                },
+            }))
+            .expect("quoted-table package parses"),
+        );
+        let root = json!({
+            "type": "quote", "start": 0, "end": 23,
+            "children": [
+                span("marker", 0, 2, "> "),
+                { "type": "table", "start": 2, "end": 23, "children": [
+                    trow("head", 2, 7, vec![tcell("cell", 4, 6)]),
+                    span("cont", 8, 10, "> "),
+                    trow("ruler", 10, 13, vec![tcell("rule", 11, 12)]),
+                    span("cont", 14, 16, "> "),
+                    trow("body", 16, 22, vec![tcell("cell", 18, 21)]),
+                ]},
+            ],
+        });
+        let out = run_on(&packages, source, root, 80).expect("formats");
+        assert_eq!(out, "> | a   |\n> | --- |\n> | bb  |\n");
     }
 
     #[test]
@@ -3511,7 +3655,6 @@ try {{
         let err = run_on(&pkg, WONKY, root, 80).expect_err("must refuse");
         assert!(err.0.contains("`table` takes every child"), "{}", err.0);
     }
-
 
     // --- blank_owner ------------------------------------------------------
 
@@ -3588,9 +3731,11 @@ try {{
             "blank_owner": "block",
             "rules": { "file": ["each", "named", ["blank", 1]] },
         });
-        assert!(serde_json::from_value::<Package>(raw).is_err(), "must refuse a bare string");
+        assert!(
+            serde_json::from_value::<Package>(raw).is_err(),
+            "must refuse a bare string"
+        );
     }
-
 
     #[test]
     fn table_refuses_an_error_where_a_cell_goes_rather_than_re_emitting_it() {
@@ -3615,11 +3760,7 @@ try {{
             ],
         });
         let err = run_on(&table_pkg(), source, root, 80).expect_err("must refuse");
-        assert!(
-            err.0.contains("unparsed cell at byte 17"),
-            "{}",
-            err.0
-        );
+        assert!(err.0.contains("unparsed cell at byte 17"), "{}", err.0);
     }
 
     // Toy kinds exercise whitespace attachment independently of Markdown.
@@ -3660,7 +3801,10 @@ try {{
             ("gap", "\n\n"),
         ]);
         let pkg = whitespace_pkg(json!({}));
-        assert_eq!(run_on(&pkg, &source, root, 80).expect("formats"), "a\n\nb\n");
+        assert_eq!(
+            run_on(&pkg, &source, root, 80).expect("formats"),
+            "a\n\nb\n"
+        );
         let (source, root) = trivia_file(&[("gap", "\n\n")]);
         assert_eq!(run_on(&pkg, &source, root, 80).expect("formats"), "\n");
     }
@@ -3670,12 +3814,22 @@ try {{
         let (source, root) = trivia_file(&[("a", "a\n"), ("gap", "\n"), ("b", "b\n")]);
         let rules = json!({"file": ["each", "named", ["hard"]]});
         let pkg = whitespace_pkg(json!({"rules": rules}));
-        assert_eq!(run_on(&pkg, &source, root.clone(), 80).expect("formats"), "a\n\nb\n");
+        assert_eq!(
+            run_on(&pkg, &source, root.clone(), 80).expect("formats"),
+            "a\n\nb\n"
+        );
         let pkg = whitespace_pkg(json!({"rules": rules, "whitespace_nodes": []}));
-        assert_eq!(run_on(&pkg, &source, root, 80).expect("formats"), "a\n\n\n\nb\n");
+        assert_eq!(
+            run_on(&pkg, &source, root, 80).expect("formats"),
+            "a\n\n\n\nb\n"
+        );
         let (source, root) = trivia_file(&[("a", "a\n"), ("gap", ""), ("b", "b\n")]);
-        let pkg = whitespace_pkg(json!({"rules": {"file": ["each", "named", ["blank", 1, ["a"]]]}}));
-        assert_eq!(run_on(&pkg, &source, root, 80).expect("formats"), "a\n\nb\n");
+        let pkg =
+            whitespace_pkg(json!({"rules": {"file": ["each", "named", ["blank", 1, ["a"]]]}}));
+        assert_eq!(
+            run_on(&pkg, &source, root, 80).expect("formats"),
+            "a\n\nb\n"
+        );
     }
 
     #[test]
@@ -3685,12 +3839,18 @@ try {{
         assert_eq!(run_on(&pkg, &source, root, 80).expect("formats"), source);
         let (source, mut root) = trivia_file(&[("gap", " \n")]);
         root["children"][0]["children"] = json!([span("content", 0, 2, " \n")]);
-        root["children"][0].as_object_mut().expect("object").remove("text");
+        root["children"][0]
+            .as_object_mut()
+            .expect("object")
+            .remove("text");
         assert_eq!(run_on(&pkg, &source, root, 80).expect("formats"), " \n");
         let (source, mut root) = trivia_file(&[("a", "a\n"), ("gap", "\n"), ("b", "b\n")]);
         root["children"][1]["language"] = json!("toy");
         let pkg = whitespace_pkg(json!({"rules": {"file": ["each", "named", ["hard"]]}}));
-        assert_eq!(run_on(&pkg, &source, root, 80).expect("formats"), "a\n\n\n\nb\n");
+        assert_eq!(
+            run_on(&pkg, &source, root, 80).expect("formats"),
+            "a\n\n\n\nb\n"
+        );
     }
 
     #[test]
@@ -3777,10 +3937,10 @@ try {{
             .join("../corpus")
             .join(directory)
             .join(name);
-        let raw = std::fs::read_to_string(&path)
-            .unwrap_or_else(|e| panic!("{}: {e}", path.display()));
-        let tree: serde_json::Value = serde_json::from_str(&raw)
-            .unwrap_or_else(|e| panic!("{}: {e}", path.display()));
+        let raw =
+            std::fs::read_to_string(&path).unwrap_or_else(|e| panic!("{}: {e}", path.display()));
+        let tree: serde_json::Value =
+            serde_json::from_str(&raw).unwrap_or_else(|e| panic!("{}: {e}", path.display()));
         (
             tree["source"].as_str().expect("fixture source").to_owned(),
             tree["root"].clone(),
@@ -3830,8 +3990,7 @@ try {{
                     "{stem}"
                 ),
                 Err(want) => {
-                    let err = run_on(&pkg, &source, root, 80)
-                        .expect_err(stem);
+                    let err = run_on(&pkg, &source, root, 80).expect_err(stem);
                     assert_eq!(err.0, want, "{stem}");
                 }
             }

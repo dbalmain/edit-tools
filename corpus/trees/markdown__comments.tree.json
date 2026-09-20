@@ -250,10 +250,17 @@
           "end": 209,
           "children": [
            {
-            "type": "inline",
+            "type": "container_inline",
             "start": 202,
             "end": 206,
-            "text": "next"
+            "children": [
+             {
+              "type": "prose_segment",
+              "start": 202,
+              "end": 206,
+              "text": "next"
+             }
+            ]
            },
            {
             "type": "block_continuation",
@@ -300,10 +307,17 @@
               "end": 282,
               "children": [
                {
-                "type": "inline",
+                "type": "container_inline",
                 "start": 275,
                 "end": 281,
-                "text": "nested"
+                "children": [
+                 {
+                  "type": "prose_segment",
+                  "start": 275,
+                  "end": 281,
+                  "text": "nested"
+                 }
+                ]
                },
                {
                 "type": "block_continuation",
@@ -338,51 +352,15 @@
         "end": 332,
         "children": [
          {
-          "type": "inline",
+          "type": "container_inline",
           "start": 285,
           "end": 330,
           "children": [
            {
-            "type": "<",
-            "start": 296,
-            "end": 297,
-            "text": "<"
-           },
-           {
-            "type": "!",
-            "start": 297,
-            "end": 298,
-            "text": "!"
-           },
-           {
-            "type": "-",
-            "start": 298,
-            "end": 299,
-            "text": "-"
-           },
-           {
-            "type": "-",
-            "start": 299,
-            "end": 300,
-            "text": "-"
-           },
-           {
-            "type": "-",
-            "start": 327,
-            "end": 328,
-            "text": "-"
-           },
-           {
-            "type": "-",
-            "start": 328,
-            "end": 329,
-            "text": "-"
-           },
-           {
-            "type": ">",
-            "start": 329,
+            "type": "prose_segment",
+            "start": 285,
             "end": 330,
-            "text": ">"
+            "text": "quote line <!-- trailing in a block quote -->"
            }
           ]
          },
@@ -437,10 +415,43 @@
         "end": 393,
         "children": [
          {
-          "type": "inline",
+          "type": "prose_run",
           "start": 380,
           "end": 392,
-          "text": "still quoted"
+          "children": [
+           {
+            "type": "prose_atom",
+            "start": 380,
+            "end": 385,
+            "children": [
+             {
+              "type": "prose_segment",
+              "start": 380,
+              "end": 385,
+              "text": "still"
+             }
+            ]
+           },
+           {
+            "type": "prose_gap",
+            "start": 385,
+            "end": 386,
+            "text": " "
+           },
+           {
+            "type": "prose_atom",
+            "start": 386,
+            "end": 392,
+            "children": [
+             {
+              "type": "prose_segment",
+              "start": 386,
+              "end": 392,
+              "text": "quoted"
+             }
+            ]
+           }
+          ]
          }
         ]
        }

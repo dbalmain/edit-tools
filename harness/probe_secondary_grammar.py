@@ -28,7 +28,15 @@ HARNESS = ROOT / "harness"
 AUDIT_COMMIT = "f2819822fa033987e86db79143ab8ffecb900a35"
 # sha256 over `path\0` then each `start,end\0` of the selected ranges, in
 # file order. See the check in `main` for why the count is not enough.
-AUDIT_DIGEST = "c756cc332abfb15b63d8e7f3891f81e022e08bacc354f722bfd6d818a1688548"
+#
+# Re-pinned from 2,553 ranges when container-prefix ownership let the
+# projection descend into block quotes and list items: `reached_paragraphs`
+# stops at `prose.CONTAINERS`, which shrank to the two kinds that still refuse.
+# The corpus is frozen at AUDIT_COMMIT, so the set could only grow, and it was
+# checked to have done exactly that -- every one of the 2,553 earlier ranges is
+# still selected and 1,194 container paragraphs joined them across 74 files.
+# A digest the probe itself printed is not evidence; that subset check is.
+AUDIT_DIGEST = "565ac52daf598505b2d81caf41a12d898696b49ad64bad2d8ef6cadb1ed5cba0"
 BLOCK_BLOB = ROOT / "web" / "data" / "blobs" / "markdown.blob.json"
 INLINE_BLOB = ROOT / "web" / "data" / "blobs" / "markdown_inline.blob.json"
 CLEAN = HARNESS / "fixtures" / "secondary-clean.md"
@@ -144,9 +152,9 @@ def main() -> int:
         for first, last in sorted(ranges):
             digest.update(f"{first},{last}\0".encode())
 
-    if audited != 2553:
+    if audited != 3747:
         raise Failed(
-            f"audited range set changed: expected 2553 at {AUDIT_COMMIT}, got {audited}"
+            f"audited range set changed: expected 3747 at {AUDIT_COMMIT}, got {audited}"
         )
     # The count alone is weak evidence about a *selection*: two different sets
     # of ranges can have the same size, so a selector that swapped which
@@ -216,7 +224,7 @@ def main() -> int:
 
     # Agreement between two empty lists is agreement about nothing, and every
     # equality above holds if both producers silently stop attaching. `audited`
-    # counts ranges the *block* parse found, so it stays at 2553 through that
+    # counts ranges the *block* parse found, so it stays at 3747 through that
     # failure; only this counts CSTs the secondary parse actually produced and
     # the two paths actually compared.
     if compared != audited:

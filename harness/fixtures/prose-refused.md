@@ -12,14 +12,9 @@
 > nothing and the mutation that admits it looks safe. These paragraphs exist to
 > be the case where it is the only thing standing.
 >
-> **Every explanatory paragraph in this file is a block quote, and that is
-> load-bearing.** A paragraph inside a container is never offered to the
-> predicate at all, so this prose cannot become an entry by accident. It used to
-> rely on being written with code spans instead -- which worked until A2.1
-> admitted code spans, and would have quietly turned this commentary into a
-> dozen eligible paragraphs the probe then failed on. A device that depends on
-> the predicate refusing something is not a device, because the predicate is the
-> thing under test.
+> The refusal-fixture assertion selects top-level paragraphs. Explanatory block
+> quotes are still projected in production; they are outside this fixture's
+> refusal inventory rather than relying on the old container boundary.
 
 ## An unpaired asterisk
 
@@ -111,14 +106,6 @@ alpha beta gamma # delta epsilon zeta eta theta
 > or the exclusion is untested.
 
 alpha beta|gamma delta epsilon zeta eta
-
-## Inside a blockquote, where every new line would need its own marker
-
-> alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi
-
-## Inside a list item, where every new line would need its own indent
-
-- alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi
 
 ## A paragraph whose last line is a table delimiter row
 

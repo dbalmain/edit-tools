@@ -931,19 +931,28 @@ Projection and partition validation are nevertheless new capabilities and must
 be reviewed as such. Preserving non-whitespace bytes alone would not justify
 changing rendering-significant whitespace.
 
-## Containers and gate 3 are separate work
+## Container ownership
 
-Start with a contiguous top-level paragraph. Existing fence injection parses
-slices; it is not an included-range parser. Lists and quotes require a retained-
-range map and explicit ownership of removed continuation prefixes. An atom
-spanning disjoint retained ranges cannot be represented as one truthful leaf
-with a contiguous source span. Initially, reject that shape for projection.
+Lists and quotes require a retained-range map and explicit ownership of
+continuation prefixes. A continuation **between ordinary atoms** is part of the
+logical line-break gap: its exact source range can be consumed with that gap
+before `line` chooses a space or a newly prefixed newline. It is not attachment
+whitespace -- the range contains syntax -- but it has exactly gap semantics in
+that position.
 
-New quote lines also need new `>` prefixes. Existing `prefix` may contribute,
-but emitting the first marker and reusing it as continuation indentation must
-be reconciled with single consumption. List marker width, nested containers,
-blank quoted lines and multiline protected spans need their own examples.
-Do not claim ordinary `indent` or rebased offsets solve these cases.
+The warning about disjoint ranges remains correct for a protected atom that
+straddles a continuation. Treating that prefix as an ordinary fill gap would
+split a code span or link that the inline grammar said was one opaque atom. The
+landed representation therefore makes `prose_atom` an exact source partition:
+`prose_segment` leaves alternate with owned `prose_continuation` ranges, whose
+rule emits a hard break inside the same fill item. Every leaf remains truthful
+and contiguous while the logical atom does not expose a wrap opportunity.
+
+The enclosing rules emit the first marker and declare how subsequent lines are
+prefixed. Quote markers retain their trimmed `>` spelling on blank lines; list
+markers instead derive a space-only hanging indent from the marker's display
+width. Prefix units compose, so nested quotes and lists need no absolute
+continuation token.
 
 Gate 3 must independently parse the output using the block and inline grammars.
 For eligible paragraphs, compare inline structure, delimiter spelling, ordered
@@ -961,8 +970,9 @@ reduced `--prose-wrap always` structural signature mismatches from 32/48 to
 failed on 12/40 comparisons:
 
 - list and quote wrapping changes the number of named `block_continuation`
-  children inside `inline`; these prefixes must be removed by a range-aware
-  logical-prose projection, not treated as ordinary gaps;
+  children inside `inline`; a range-aware logical-prose projection must own
+  them. Between atoms they join the logical gap; inside a protected atom they
+  remain an unbreakable interior continuation;
 - Prettier can move an inline HTML comment to the start of a continuation line,
   where the block grammar reclassifies the line as `html_block`. The equivalent
   content then spans paragraph / HTML-block / paragraph boundaries and changes
@@ -984,6 +994,10 @@ comment movement among the 20 rejected references is outside the first subset;
 no promise is made that every Prettier rewrite will be accepted.
 
 ### Scoped to what A2.1 admits, 2026-09-20
+
+This section records the pre-container measurement. The container slice later
+removed the walk boundary described here; its numbers remain evidence for the
+then-landed top-level narrowing, not a statement of the current projection.
 
 The paragraph above reads as a prerequisite on the whole of step 3, and it is
 not one. It was measured against Prettier's `--prose-wrap always`, which

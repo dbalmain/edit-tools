@@ -19,8 +19,10 @@
 > became eligible at A2.1. They moved here rather than being deleted, so the
 > transition cases keep a hand-written real-parser fixture.
 >
-> As in the refusal fixture, every explanatory paragraph is a block quote, so
-> this commentary can never itself become an entry.
+> The admitted-fixture assertion selects top-level paragraphs. Explanatory
+> block quotes are still projected in production; they are outside this
+> fixture's eligibility inventory rather than relying on the old container
+> boundary.
 
 ## A code span, protected whole
 

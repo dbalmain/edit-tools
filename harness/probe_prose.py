@@ -202,11 +202,15 @@ def parse(parser, source: bytes, path: Path, inline_parser=None) -> dict | None:
     return doc
 
 
-def runs(doc: dict) -> list[dict]:
+def runs(doc: dict, *, include_containers: bool = True) -> list[dict]:
     out = []
     stack = [doc["root"]]
     while stack:
         node = stack.pop()
+        if not include_containers and node["type"] in {
+            "block_quote", "list", "list_item"
+        }:
+            continue
         if node["type"] == prose.RUN:
             out.append(node)
             continue
@@ -214,19 +218,26 @@ def runs(doc: dict) -> list[dict]:
     return sorted(out, key=lambda run: run["start"])
 
 
-def atoms(doc: dict) -> list[tuple[int, int, str]]:
+def atoms(doc: dict, *, include_containers: bool = True) -> list[tuple[int, int, str]]:
     return [
-        (child["start"], child["end"], child["text"])
-        for run in runs(doc)
+        (
+            child["start"],
+            child["end"],
+            "".join(
+                "\n" if part["type"] == prose.CONTINUATION else part["text"]
+                for part in child["children"]
+            ),
+        )
+        for run in runs(doc, include_containers=include_containers)
         for child in run["children"]
         if child["type"] == prose.ATOM
     ]
 
 
-def reflow(source: bytes, doc: dict, pattern) -> bytes:
+def reflow(source: bytes, doc: dict, pattern, *, include_containers: bool = True) -> bytes:
     """Rewrite every gap in every run, keeping the byte length identical."""
     out = bytearray(source)
-    for run in runs(doc):
+    for run in runs(doc, include_containers=include_containers):
         gaps = [c for c in run["children"] if c["type"] == prose.GAP]
         for index, gap in enumerate(gaps):
             out[gap["start"]] = ord(pattern(index, len(gaps)))
@@ -257,13 +268,13 @@ def shape(node: dict) -> list[tuple[str, int, int]]:
 def phase_a(parser, inline_parser, docs) -> int:
     checked = 0
     for path, source, doc in docs:
-        want_atoms = atoms(doc)
+        want_atoms = atoms(doc, include_containers=False)
         if not want_atoms:
             continue
         # The unprojected tree: what the reflowed source has to reproduce.
         want = shape(parse(parser, source, path)["root"])
         for name, pattern in PATTERNS.items():
-            moved = reflow(source, doc, pattern)
+            moved = reflow(source, doc, pattern, include_containers=False)
             if len(moved) != len(source):
                 raise Failed(f"{path}: {name} changed the source length")
             again = parse(parser, moved, path, inline_parser)
@@ -283,7 +294,7 @@ def phase_a(parser, inline_parser, docs) -> int:
                     f"({len(want)} nodes became {len(got)}); first divergence "
                     f"at {first!r}"
                 )
-            if atoms(prose.project(again)) != want_atoms:
+            if atoms(prose.project(again), include_containers=False) != want_atoms:
                 raise Failed(
                     f"{path}: reflowed with {name}, the projection no longer "
                     f"finds the same atoms"
@@ -310,7 +321,10 @@ def phase_a_inline(inline_parser, docs) -> int:
     """
     checked = 0
     for path, source, doc in docs:
-        for run in runs(doc):
+        # This oracle reparses one contiguous source slice and has no retained-
+        # range API. Container runs are checked by producer parity and both
+        # formatters; their owned prefixes are not inline syntax to reparse.
+        for run in runs(doc, include_containers=False):
             start, text = run["start"], source[run["start"] : run["end"]]
             tree = inline_parser.parse(text)
             root = tree.root_node
@@ -571,7 +585,7 @@ def main(quiet: bool = False) -> int:
     if not admitted:
         raise Failed(f"the refusal fixture {REFUSED.name} was not swept")
     for path, source, doc in admitted:
-        found = runs(doc)
+        found = runs(doc, include_containers=False)
         if found:
             text = source[found[0]["start"] : found[0]["end"]].decode()
             raise Failed(
@@ -591,10 +605,22 @@ def main(quiet: bool = False) -> int:
         raise Failed(f"the admitted fixture {ADMITTED.name} was not swept")
     for path, source, doc in admitted:
         fresh = parse(parser, source, path, inline_parser)
+        top_level = set()
+
+        def collect(node):
+            if node["type"] in {"block_quote", "list", "list_item"}:
+                return
+            if node["type"] == "paragraph":
+                top_level.add(node["start"])
+                return
+            for child in node.get("children", []):
+                collect(child)
+
+        collect(fresh["root"])
         refused = [
             (start, why)
             for start, why in prose.reasons(fresh)
-            if why != "eligible"
+            if start in top_level and why != "eligible"
         ]
         if refused:
             start, why = refused[0]

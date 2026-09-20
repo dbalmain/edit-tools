@@ -42,7 +42,7 @@ _REQUIRED = ("name", "extensions", "grammar", "grammar_module", "reference",
 _KNOWN = set(_REQUIRED) | {"grammar_symbol", "gate3_requires",
                            "transparent_wrappers", "equivalent_kinds",
                            "comment_kinds", "layout_leaves", "whitespace_nodes", "optional_tokens", "equivalent_tokens",
-                           "prose_nodes",
+                           "prose_nodes", "prose_prefix_nodes",
                            "injections",
                            "incomparable", "corpus_thresholds",
                            "secondary_grammars"}
@@ -150,6 +150,10 @@ class Manifest:
     # notice. `harness/test_gate3_prose.py` keeps that case as a live
     # counterexample rather than a comment.
     prose_nodes: frozenset[str] = frozenset()
+    # Syntax leaves removed before a prose node's logical whitespace is
+    # compared. Markdown continuation markers are the first use: the enclosing
+    # quote/list owns them, so they are neither prose content nor whitespace.
+    prose_prefix_nodes: frozenset[str] = frozenset()
     corpus_thresholds: dict[str, CorpusThreshold] = field(default_factory=dict)
 
     @property
@@ -512,6 +516,13 @@ def parse(path: Path) -> Manifest:
         isinstance(kind, str) and kind for kind in prose_nodes
     ):
         raise ManifestError(f"{path.name}: `prose_nodes` must be a list of node kinds")
+    prose_prefix_nodes = raw.get("prose_prefix_nodes", [])
+    if not isinstance(prose_prefix_nodes, list) or not all(
+        isinstance(kind, str) and kind for kind in prose_prefix_nodes
+    ):
+        raise ManifestError(
+            f"{path.name}: `prose_prefix_nodes` must be a list of node kinds"
+        )
     comment_kinds = _comment_kinds(raw, path)
     if set(prose_nodes).intersection(comment_kinds):
         # Comments are compared verbatim by the universal extras layer, which
@@ -552,6 +563,7 @@ def parse(path: Path) -> Manifest:
         layout_leaves=frozenset(raw.get("layout_leaves", [])),
         whitespace_nodes=frozenset(whitespace_nodes),
         prose_nodes=frozenset(prose_nodes),
+        prose_prefix_nodes=frozenset(prose_prefix_nodes),
         corpus_thresholds=_corpus_thresholds(raw, path),
     )
 

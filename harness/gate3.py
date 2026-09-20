@@ -240,6 +240,27 @@ def _prose(text: str) -> str:
     return "".join(out).strip(" ")
 
 
+def _logical_prose(node, source: bytes, prefix_kinds: frozenset[str]) -> str:
+    """A prose node's bytes with declared container prefixes removed."""
+    ranges = []
+
+    def collect(current):
+        for child in current.children:
+            if child.type in prefix_kinds:
+                ranges.append((child.start_byte, child.end_byte))
+            else:
+                collect(child)
+
+    collect(node)
+    parts = []
+    at = node.start_byte
+    for first, last in sorted(ranges):
+        parts.append(source[at:first])
+        at = last
+    parts.append(source[at:node.end_byte])
+    return _prose(b"".join(parts).decode())
+
+
 def _tokens(node, source: bytes, ignored=()) -> str | tuple[str, ...]:
     """The spelling of a node that has no named children, with the whitespace
     *between* its tokens dropped.
@@ -371,7 +392,10 @@ def _generic(
         # `not kids` test alone would route a link-bearing paragraph into the
         # recurse branch and compare its gaps exactly -- which is the rejection
         # this narrowing exists to lift.
-        return (kind, _prose(source[node.start_byte:node.end_byte].decode()))
+        return (
+            kind,
+            _logical_prose(node, source, manifest.prose_prefix_nodes),
+        )
     if node.type in layout:
         # A declared layout leaf is layout whatever its children are. Checking
         # this before `kids` matters now that anonymous children are visible:

@@ -287,6 +287,19 @@ class TriviaKindsManifestTests(unittest.TestCase):
             with self.assertRaisesRegex(manifest.ManifestError, "list of node kinds"):
                 self.parse(f'prose_nodes = {value}\n')
 
+    def test_prose_prefix_nodes_default_to_empty_and_preserve_declarations(self):
+        self.assertEqual(self.parse().prose_prefix_nodes, frozenset())
+        parsed = self.parse('prose_prefix_nodes = ["block_continuation"]\n')
+        self.assertEqual(
+            parsed.prose_prefix_nodes,
+            frozenset({"block_continuation"}),
+        )
+
+    def test_prose_prefix_nodes_require_a_list_of_kinds(self):
+        for value in ('"block_continuation"', '[1]', '{}', '[""]'):
+            with self.assertRaisesRegex(manifest.ManifestError, "list of node kinds"):
+                self.parse(f'prose_prefix_nodes = {value}\n')
+
     def test_prose_nodes_cannot_claim_a_comment_kind(self):
         """Comments are compared verbatim by the universal extras layer, which
         never consults this field. A kind in both would read as a permission
