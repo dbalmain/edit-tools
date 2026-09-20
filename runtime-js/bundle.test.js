@@ -1978,9 +1978,12 @@ test("table floors a column at three and never measures the ruler", () => {
   );
 });
 
-test("table keeps a container's per-line marker in front of its row", () => {
+test("table leaves its host's per-line marker to the host", () => {
   // What a table inside a block quote looks like: the host's `> ` arrives as
-  // a token child of the table, between the rows it prefixes.
+  // a token child of the table, between the rows it prefixes. The table
+  // consumes those tokens without emitting them, because a host that owns its
+  // prefix re-supplies the marker on every line the table breaks onto.
+  // Emitting both is how a quoted table grows a second `>`.
   const source = "| a |\n> |-|\n> | bb |\n";
   const root = {
     type: "table",
@@ -1996,8 +1999,45 @@ test("table keeps a container's per-line marker in front of its row", () => {
   };
   assert.strictEqual(
     runOn(tablePkg(), source, root, 80),
-    "| a   |\n> | --- |\n> | bb  |\n",
+    "| a   |\n| --- |\n| bb  |\n",
   );
+});
+
+// The other half of the rule above, and the case that would still pass if the
+// lead were simply deleted: a host owning the prefix must put the marker in
+// front of every row, including ones the table invents.
+test("a prefix-owning host marks every row of the table it contains", () => {
+  const source = "> | a |\n> |-|\n> | bb |\n";
+  const pkg = {
+    format: "et-doc-rules/1",
+    indent: 2,
+    tokens: ["|", "cont", "marker"],
+    rules: {
+      quote: ["prefix", "t:marker", "marker", ["child", "t:table"]],
+      table: ["table"],
+    },
+  };
+  const root = {
+    type: "quote",
+    start: 0,
+    end: 23,
+    children: [
+      span("marker", 0, 2, "> "),
+      {
+        type: "table",
+        start: 2,
+        end: 23,
+        children: [
+          row("head", 2, 7, [cell("cell", 4, 6)]),
+          { type: "cont", start: 8, end: 10, text: "> " },
+          row("ruler", 10, 13, [cell("rule", 11, 12)]),
+          { type: "cont", start: 14, end: 16, text: "> " },
+          row("body", 16, 22, [cell("cell", 18, 21)]),
+        ],
+      },
+    ],
+  };
+  assert.strictEqual(runOn(pkg, source, root, 80), "> | a   |\n> | --- |\n> | bb  |\n");
 });
 
 test("table leaves a ragged row ragged rather than squaring it off", () => {

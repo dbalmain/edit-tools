@@ -294,8 +294,14 @@
         "opt",
         "t:block_continuation",
         [
-          "discard",
-          "t:block_continuation"
+          "seq",
+          [
+            "srcsoft"
+          ],
+          [
+            "discard",
+            "t:block_continuation"
+          ]
         ]
       ]
     ],

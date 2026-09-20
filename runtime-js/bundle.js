@@ -1578,9 +1578,13 @@ class Ctx {
     });
 
     const parts = [];
+    // A row lead is the host container's own per-line continuation, and it is
+    // collected only to be checked: inside a `prefix` scope the Doc indent
+    // already supplies that text on every line the table emits, and re-emitting
+    // it here doubles the marker (`> >` for a quoted table). Outside a
+    // container a table has no continuation children at all.
     rows.forEach((row, r) => {
       if (r > 0) parts.push(hard);
-      if (row.lead !== "") parts.push(text(row.lead));
       const line = ["|"];
       row.cells.forEach((cell, c) => {
         const w = cols[c] ?? Math.max(width(cell), 3);
@@ -1589,7 +1593,6 @@ class Ctx {
       parts.push(text(line.join("")));
     });
     parts.push(hard);
-    if (lead !== "") parts.push(text(lead));
     return concat(parts);
   }
 

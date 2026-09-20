@@ -747,12 +747,15 @@ impl<'a> Ctx<'a> {
         }
 
         let mut parts = Vec::new();
-        for (r, (row_lead, cells)) in rows.iter().enumerate() {
+        // A row lead is the host container's own per-line continuation, and it
+        // is collected only to be checked: inside a `prefix` scope the Doc
+        // indent already supplies that text on every line the table emits, and
+        // re-emitting it here doubles the marker (`> >` for a quoted table).
+        // Outside a container a table has no continuation children at all, so
+        // there is never a lead to lose.
+        for (r, (_lead, cells)) in rows.iter().enumerate() {
             if r > 0 {
                 parts.push(Doc::Hard);
-            }
-            if !row_lead.is_empty() {
-                parts.push(Doc::text(row_lead.as_str()));
             }
             let mut line = String::from("|");
             for (c, cell) in cells.iter().enumerate() {
@@ -769,9 +772,6 @@ impl<'a> Ctx<'a> {
             parts.push(Doc::text(line));
         }
         parts.push(Doc::Hard);
-        if !lead.is_empty() {
-            parts.push(Doc::text(lead));
-        }
         Ok(Doc::Concat(parts))
     }
 
@@ -3569,9 +3569,12 @@ try {{
     }
 
     #[test]
-    fn table_keeps_a_containers_per_line_marker_in_front_of_its_row() {
+    fn table_leaves_its_hosts_per_line_marker_to_the_host() {
         // What a table inside a block quote looks like: the host's `> ` arrives
-        // as a token child of the table, between the rows it prefixes.
+        // as a token child of the table, between the rows it prefixes. The
+        // table consumes those tokens without emitting them, because a host
+        // that owns its prefix re-supplies the marker on every line the table
+        // breaks onto. Emitting both is how a quoted table grows a second `>`.
         let source = "| a |\n> |-|\n> | bb |\n";
         let root = json!({
             "type": "table", "start": 0, "end": 21,
@@ -3584,7 +3587,42 @@ try {{
             ],
         });
         let out = run_on(&table_pkg(), source, root, 80).expect("formats");
-        assert_eq!(out, "| a   |\n> | --- |\n> | bb  |\n");
+        assert_eq!(out, "| a   |\n| --- |\n| bb  |\n");
+    }
+
+    /// The other half of the rule above, and the case that would still pass if
+    /// the lead were simply deleted: a host owning the prefix must put the
+    /// marker in front of **every** row, including ones the table invents.
+    #[test]
+    fn a_prefix_owning_host_marks_every_row_of_the_table_it_contains() {
+        let source = "> | a |\n> |-|\n> | bb |\n";
+        let packages = one(
+            serde_json::from_value(json!({
+                "format": "et-doc-rules/1",
+                "indent": 2,
+                "tokens": ["|", "cont", "marker"],
+                "rules": {
+                    "quote": ["prefix", "t:marker", "marker", ["child", "t:table"]],
+                    "table": ["table"],
+                },
+            }))
+            .expect("quoted-table package parses"),
+        );
+        let root = json!({
+            "type": "quote", "start": 0, "end": 23,
+            "children": [
+                span("marker", 0, 2, "> "),
+                { "type": "table", "start": 2, "end": 23, "children": [
+                    trow("head", 2, 7, vec![tcell("cell", 4, 6)]),
+                    span("cont", 8, 10, "> "),
+                    trow("ruler", 10, 13, vec![tcell("rule", 11, 12)]),
+                    span("cont", 14, 16, "> "),
+                    trow("body", 16, 22, vec![tcell("cell", 18, 21)]),
+                ]},
+            ],
+        });
+        let out = run_on(&packages, source, root, 80).expect("formats");
+        assert_eq!(out, "> | a   |\n> | --- |\n> | bb  |\n");
     }
 
     #[test]
