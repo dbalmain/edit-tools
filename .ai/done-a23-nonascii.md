@@ -61,3 +61,22 @@ Discriminators to add: NBSP is one atom not a gap; `e`+U+0301 stays one atom;
 fullwidth `＊` is eligible (ASCII `*` still refuses); `١.` does not coalesce;
 a tilde beside `é` still refuses as `byte` — admitting Unicode must not punch
 a hole in the ASCII whitelist.
+
+## Implemented
+
+Policy as recorded above, in both `harness/prose.py` and `harness/prose.mjs`.
+The walk is over scalars with UTF-8 byte offsets. `_ACQUIRES` is `[0-9]`.
+`non-ascii` remains only for invalid UTF-8 (0 on the live corpus).
+
+Census at `238992f`: 2,538 eligible of 3,868, 975 `non-ascii`.
+Census at `3ad322c` (implementation + fixtures + this note, before the
+docs section): 3,490 eligible of 3,884, 0 `non-ascii`, `byte` 36 -> 72.
+The 975 were first-match: 36 next refuse as `byte`, 3 as `inline construct`.
+
+`./harness/probe_prose.py` green at `3ad322c`: 3,490 eligible, fixtures hold.
+
+Discriminators:
+- admitted: Latin-1, CJK, `𝄞`, NBSP-joined words, U+2028, ZWSP, combining
+  mark, fullwidth `＊`, Arabic-Indic `١.`
+- refused: `é` beside `~` (`byte`)
+- unit tests pin the gap after `é` at byte 2, and that `١.` does not coalesce
