@@ -715,32 +715,32 @@ Python `str`, so it is zero on the live corpus.
 First-match census from `./harness/probe_prose_ceiling.py`, same walk as
 `prose.reasons`. **Not comparable to the pricing-spike ceiling table
 above.** The before column is `238992f` (3,868 paragraphs in 141 files).
-The after column is `3ad322c` (3,884 paragraphs in 142 files -- the
-A2.3 done-note and the fixture edits). This section is not in either
-column; restamp the after cells when it lands.
+The after column is `fbafc0e`, which carries this section, the fixtures
+and the done-note (3,897 paragraphs in 142 files). Replacing the numeric
+cells of this table does not change the histogram.
 
-| Verdict | Before A2.3 (`238992f`) | After (`3ad322c`) |
+| Verdict | Before A2.3 (`238992f`) | After (`fbafc0e`) |
 | --- | ---: | ---: |
-| eligible | 2,538 | 3,490 |
+| eligible | 2,538 | 3,500 |
 | `non-ascii` | 975 | 0 |
-| `inline construct` | 275 | 278 |
+| `inline construct` | 275 | 280 |
 | `byte` | 36 | 72 |
-| `single atom` | 25 | 25 |
+| `single atom` | 25 | 26 |
 | `fence opener` | 6 | 6 |
 | `whitespace run` | 5 | 5 |
 | `delimiter row` | 3 | 3 |
 | `edge whitespace` | 3 | 3 |
 | `dirty inline parse` | 2 | 2 |
-| **total reaching the walk** | **3,868** | **3,884** |
+| **total reaching the walk** | **3,868** | **3,897** |
 
-Eligible moved 2,538 -> 3,490 (**+952**, 65.6% -> 89.9%). The 975
+Eligible moved 2,538 -> 3,500 (**+962**, 65.6% -> 89.8%). The 975
 `non-ascii` refusals were first-match: dropping the guard unmasked **36**
 paragraphs that next refuse as `byte` (an ASCII character the whitelist
 never admitted, sitting next to a non-ASCII letter the decode never
 reached) and **3** as `inline construct`. The rest became eligible. That
 unmasking is why the tilde-beside-`é` fixture exists.
 
-`./harness/probe_prose.py` at `3ad322c`: 3,490 eligible in 142 files;
+`./harness/probe_prose.py` at `fbafc0e`: 3,500 eligible in 142 files;
 fixtures hold; 744 reflow-reparse checks and both runtimes at both widths.
 
 ## Inputs and ownership
