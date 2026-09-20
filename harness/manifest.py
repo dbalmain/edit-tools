@@ -42,6 +42,7 @@ _REQUIRED = ("name", "extensions", "grammar", "grammar_module", "reference",
 _KNOWN = set(_REQUIRED) | {"grammar_symbol", "gate3_requires",
                            "transparent_wrappers", "equivalent_kinds",
                            "comment_kinds", "layout_leaves", "whitespace_nodes", "optional_tokens", "equivalent_tokens",
+                           "prose_nodes",
                            "injections",
                            "incomparable", "corpus_thresholds",
                            "secondary_grammars"}
@@ -132,6 +133,23 @@ class Manifest:
     # explicit-key canonicalisation), not a per-language spelling list.
     optional_tokens: frozenset[str] = frozenset()
     equivalent_tokens: tuple[frozenset[str], ...] = ()
+    # Node kinds whose text is prose: a run of words separated by whitespace
+    # the formatter may re-break. Inside one, gate 3 compares an ASCII
+    # whitespace run to any other ASCII whitespace run -- except two-or-more
+    # spaces before a newline, which is a Markdown hard break and stays one.
+    #
+    # Empty by default, which is the strict end, and **declared against the
+    # reparsed grammar** rather than against the projection: gate 3 reparses
+    # the formatter's output text, so it never sees a synthetic `prose_run`.
+    # Markdown names `inline`; HTML would name `text`.
+    #
+    # The narrowing is only sound where a newline in that node's text is
+    # *layout*. It is content in a YAML literal block scalar, where the line
+    # breaks are the value -- so declaring `block_scalar` here would let a
+    # formatter collapse `alpha\ngamma` to `alpha gamma` and gate 3 would not
+    # notice. `harness/test_gate3_prose.py` keeps that case as a live
+    # counterexample rather than a comment.
+    prose_nodes: frozenset[str] = frozenset()
     corpus_thresholds: dict[str, CorpusThreshold] = field(default_factory=dict)
 
     @property
@@ -489,7 +507,23 @@ def parse(path: Path) -> Manifest:
                 f"two or more anonymous token spellings"
             )
         tok_equiv.append(frozenset(group))
+    prose_nodes = raw.get("prose_nodes", [])
+    if not isinstance(prose_nodes, list) or not all(
+        isinstance(kind, str) and kind for kind in prose_nodes
+    ):
+        raise ManifestError(f"{path.name}: `prose_nodes` must be a list of node kinds")
     comment_kinds = _comment_kinds(raw, path)
+    if set(prose_nodes).intersection(comment_kinds):
+        # Comments are compared verbatim by the universal extras layer, which
+        # has no opt-out and never consults this field. A kind in both would
+        # read as a permission that layer will not honour.
+        raise ManifestError(
+            f"{path.name}: `prose_nodes` and `comment_kinds` must not overlap"
+        )
+    if set(prose_nodes).intersection(whitespace_nodes):
+        raise ManifestError(
+            f"{path.name}: `prose_nodes` and `whitespace_nodes` must not overlap"
+        )
     if set(whitespace_nodes).intersection(comment_kinds):
         raise ManifestError(f"{path.name}: `whitespace_nodes` and `comment_kinds` must not overlap")
 
@@ -517,6 +551,7 @@ def parse(path: Path) -> Manifest:
         equivalent_tokens=tuple(tok_equiv),
         layout_leaves=frozenset(raw.get("layout_leaves", [])),
         whitespace_nodes=frozenset(whitespace_nodes),
+        prose_nodes=frozenset(prose_nodes),
         corpus_thresholds=_corpus_thresholds(raw, path),
     )
 

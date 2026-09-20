@@ -51,6 +51,41 @@ the same way:
     equivalent_kinds = [["pattern_list", "tuple_pattern"]]
 
 With both declared, the generic default accepts black on 26/26 python runs.
+
+## The fourth narrowing: prose, and why it is keyed per language
+
+`prose_nodes` names node kinds whose text is a run of words separated by
+whitespace the formatter may re-break. Inside one, an ASCII whitespace run
+compares equal to any other -- except two-or-more spaces before a newline, which
+is a Markdown hard break and stays one.
+
+Measured, like the others. Prettier reflows HTML prose by inserting newlines
+into `text` leaves; `corpus/src/html/prose.html` is listed `incomparable` for
+exactly that, and the raw comparison rejects the reference's own correct output.
+The narrowing accepts it: raw signatures differ, canonicalised signatures agree.
+On markdown, `harness/probe_prose_equivalence.py` re-wrapped 186 paragraphs
+across 139 files and every one of the 183 rejections was this and nothing
+structural.
+
+**The declaration carries the whole correctness argument, because the transform
+cannot tell layout from content.** In a YAML literal block scalar the newlines
+*are* the value, so the same canonicalisation would let a formatter collapse
+`alpha\ngamma` to `alpha gamma` -- the regression `_tokens` below records from
+its own first version, and the one failure this gate exists to prevent. So the
+permission is per-language and empty by default, and
+`harness/test_gate3_prose.py` keeps the YAML case as a live counterexample
+rather than a comment.
+
+The field names kinds in the **reparsed grammar**, not in the projection: gate 3
+reparses the formatter's output text and never sees the synthetic `prose_run`
+that `harness/prose.py` builds. Markdown would name `inline`, HTML `text`. No
+shipped language declares one today, so all sixteen keep a byte-identical gate
+and the narrowing has no reachable call site until a package opts in.
+
+Comments are **not** reachable this way. `_extras` compares each comment's exact
+text in document order, has no opt-out, and never consults this field -- so
+reflowing a comment body needs a change to that layer whatever is declared here.
+`manifest.parse` rejects a kind that appears in both.
 Python's former `ast.dump` override agreed on all of those correct outputs, but
 the adversarial arm in `check_gate3.py` then proved it weaker on quote and number
 respellings. The generic default is selected; agreement on correct input was not
@@ -160,6 +195,45 @@ def _layout(node, source: bytes) -> str:
     if RULE.match(text):
         return f"{':' if text.startswith(':') else ''}-{':' if text.endswith(':') else ''}"
     return text
+
+
+# An ASCII whitespace run inside prose. Non-ASCII whitespace is deliberately
+# outside the class: a no-break space is content the author chose, not a break
+# opportunity, and `harness/prose.py` refuses a paragraph containing one for the
+# same reason.
+_PROSE_GAP = re.compile(r"[ \t\n\r\f]+")
+# Two or more spaces before a newline is a Markdown hard break. It survives as a
+# break rather than collapsing, because flattening one joins two lines the author
+# separated -- which is destruction, and is one of the controls in
+# `harness/probe_prose_equivalence.py`.
+_HARD_BREAK = re.compile(r" {2,}\r?\n")
+
+
+def _prose(text: str) -> str:
+    """`text` with every ASCII whitespace run reduced to what it *means*.
+
+    A run becomes one space, except a run containing hard breaks, which becomes
+    that many newlines. Comparing two texts through this accepts any re-wrap
+    that keeps every word in order and every hard break, and rejects everything
+    else -- a deleted word, a reordered one, a flattened break.
+
+    **Only declared `prose_nodes` reach this**, and the declaration is what
+    carries the correctness argument. The transform itself cannot tell layout
+    from content: in a YAML literal block scalar the newlines *are* the value,
+    so applying it there would let `alpha\ngamma` compare equal to
+    `alpha gamma`. That is the one failure gate 3 exists to prevent, which is
+    why the permission is per-language and empty by default.
+    """
+    out: list[str] = []
+    at = 0
+    for match in _PROSE_GAP.finditer(text):
+        out.append(text[at:match.start()])
+        run = match.group()
+        hard = len(_HARD_BREAK.findall(run))
+        out.append("\n" * hard if hard else " ")
+        at = match.end()
+    out.append(text[at:])
+    return "".join(out).strip(" ")
 
 
 def _tokens(node, source: bytes, ignored=()) -> str | tuple[str, ...]:
@@ -286,6 +360,14 @@ def _generic(
         and _whitespace_node(child, source, manifest, aliases)
     ]
     kids = [child for child in kids if child not in ignored]
+    if node.type in manifest.prose_nodes:
+        # Before the `kids` test, and before `layout`, because a prose node is
+        # prose whatever the grammar hangs under it. Markdown's `inline` has
+        # named children once a secondary grammar has run over it, so a
+        # `not kids` test alone would route a link-bearing paragraph into the
+        # recurse branch and compare its gaps exactly -- which is the rejection
+        # this narrowing exists to lift.
+        return (kind, _prose(source[node.start_byte:node.end_byte].decode()))
     if node.type in layout:
         # A declared layout leaf is layout whatever its children are. Checking
         # this before `kids` matters now that anonymous children are visible:

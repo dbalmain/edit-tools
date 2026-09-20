@@ -275,6 +275,33 @@ class TriviaKindsManifestTests(unittest.TestCase):
         with self.assertRaisesRegex(manifest.ManifestError, "must not overlap"):
             self.parse('whitespace_nodes = ["comment"]\ncomment_kinds = ["comment"]\n')
 
+    def test_prose_nodes_default_to_empty_and_preserve_declarations(self):
+        """Empty is the strict end, and every shipped language is at it: the
+        narrowing has no reachable call site until a package opts in."""
+        self.assertEqual(self.parse().prose_nodes, frozenset())
+        self.assertEqual(self.parse('prose_nodes = ["inline"]\n').prose_nodes,
+                         frozenset({"inline"}))
+
+    def test_prose_nodes_require_a_list_of_kinds(self):
+        for value in ('"inline"', '[1]', '{}', '[""]'):
+            with self.assertRaisesRegex(manifest.ManifestError, "list of node kinds"):
+                self.parse(f'prose_nodes = {value}\n')
+
+    def test_prose_nodes_cannot_claim_a_comment_kind(self):
+        """Comments are compared verbatim by the universal extras layer, which
+        never consults this field. A kind in both would read as a permission
+        that layer will not honour -- a declaration whose effect is nothing."""
+        with self.assertRaisesRegex(manifest.ManifestError, "must not overlap"):
+            self.parse('prose_nodes = ["comment"]\ncomment_kinds = ["comment"]\n')
+
+    def test_prose_nodes_cannot_also_be_whitespace(self):
+        """A whitespace node is dropped wholesale; a prose node has its gaps
+        canonicalised and its words kept. Declaring both is incoherent, and
+        `_whitespace_node` runs first, so the prose declaration would be the
+        silent loser."""
+        with self.assertRaisesRegex(manifest.ManifestError, "must not overlap"):
+            self.parse('prose_nodes = ["inline"]\nwhitespace_nodes = ["inline"]\n')
+
 
 class IncomparableManifestTests(unittest.TestCase):
     """A table keyed by filename, so a reason cannot drift off its file."""
