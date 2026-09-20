@@ -1,4 +1,4 @@
-"""The A2.2 prose projection's predicate and partition.
+"""The A2.3 prose projection's predicate and partition.
 
 These run without tree-sitter, on hand-built documents, because `test.sh` runs
 the harness suites with a plain `python3` that has no grammars installed --
@@ -52,14 +52,20 @@ def doc(
     the inline grammar surfaces one `code_span` -- and A2.1 reads the second.
     """
     source = " " * base + text
-    end = base + len(text)
+    encoded = source.encode("utf-8")
+    start = len((" " * base).encode("utf-8"))
+    end = len(encoded)
 
     def locate(spellings):
-        out, at = [], base
+        # Byte offsets, matching the real producers. `len(text)` is a scalar
+        # count and would put a Latin-1 letter's following gap on the wrong
+        # byte the moment A2.3 admits one.
+        out, at = [], start
         for kind, literal in spellings:
-            at = source.index(literal, at)
-            out.append({"type": kind, "start": at, "end": at + len(literal)})
-            at += len(literal)
+            needle = literal.encode("utf-8")
+            at = encoded.index(needle, at)
+            out.append({"type": kind, "start": at, "end": at + len(needle)})
+            at += len(needle)
         return out
 
     def secondary_nodes(spellings):
@@ -84,9 +90,9 @@ def doc(
 
     block_children = locate([(t, t) for t in tokens])
     for child in block_children:
-        child["text"] = source[child["start"] : child["end"]]
+        child["text"] = encoded[child["start"] : child["end"]].decode("utf-8")
 
-    node = {"type": "inline", "start": base, "end": end}
+    node = {"type": "inline", "start": start, "end": end}
     if block_children:
         node["children"] = block_children
     else:
@@ -96,9 +102,9 @@ def doc(
         "language": "markdown",
         "source": source,
         "root": {
-            "type": "document", "start": 0, "end": len(source),
+            "type": "document", "start": 0, "end": end,
             "children": [{
-                "type": "paragraph", "start": base, "end": end,
+                "type": "paragraph", "start": start, "end": end,
                 "children": [node],
             }],
         },
@@ -107,11 +113,11 @@ def doc(
         out["secondary"] = [{
             "language": INLINE_LANGUAGE,
             "within": "inline",
-            "start": base,
+            "start": start,
             "end": end,
             "outcome": "clean",
             "root": {
-                "type": "inline", "start": base, "end": end,
+                "type": "inline", "start": start, "end": end,
                 "children": secondary_nodes(inline),
             },
         }]
@@ -186,7 +192,9 @@ class Refusal(unittest.TestCase):
         ("tab", "alpha\tbeta", (), (), "byte"),
         ("leading space", " alpha beta", (), (), "edge whitespace"),
         ("trailing newline", "alpha beta\n", (), (), "edge whitespace"),
-        ("non-ascii", "alpha béta gamma", (), (), "non-ascii"),
+        ("latin-1 letter is atom content", "alpha béta gamma", (), (), None),
+        ("a tilde beside a latin-1 letter still refuses",
+         "alpha béta ~ gamma delta", (), (), "byte"),
 
         # A1 refused all of these as `block acquisition`. A2.1 coalesces them
         # instead; `BilateralProtection` below asserts the resulting partition.
@@ -562,13 +570,13 @@ class MutationControl(unittest.TestCase):
     }
 
     @staticmethod
-    def _left_only(start, end, text, candidates):
+    def _left_only(start, end, source, candidates):
         """The design that was wrong: bind a hazard to its predecessor only."""
         drop = set()
         edges = [start, *[gap + 1 for gap in candidates]]
         stops = [*candidates, end]
         for index, (first, last) in enumerate(zip(edges, stops)):
-            if not prose._hazardous(text[first - start : last - start]):
+            if not prose._hazardous(source[first:last].decode("utf-8")):
                 continue
             if index > 0:
                 drop.add(candidates[index - 1])
@@ -666,6 +674,66 @@ class Partition(unittest.TestCase):
         run = paragraph(out)["children"][0]
         self.assertEqual((run["start"], run["end"]), (17, 27))
         self.assertEqual(run["children"][0]["start"], 17)
+
+
+class NonAsciiAtoms(unittest.TestCase):
+    """A2.3: non-ASCII is atom content; the gaps stay ASCII space and newline.
+
+    Each case is the one a plausible-but-wrong walk would get wrong: a
+    character-index walk puts the gap after `é` on the wrong byte; treating
+    Zs/Cf/Zl as gaps splits a no-break; Unicode `\d` coalesces `١.`.
+    """
+
+    def test_a_gap_after_a_multibyte_character_is_at_its_byte_offset(self):
+        d = doc("é beta gamma")
+        self.assertIsNone(verdict(d))
+        gap = next(
+            child
+            for child in paragraph(prose.project(d))["children"][0]["children"]
+            if child["type"] == prose.GAP
+        )
+        self.assertEqual(gap["start"], len("é".encode("utf-8")))
+        self.assertEqual(gap["text"], " ")
+        self.assertEqual(atom_texts(d), ["é", "beta", "gamma"])
+
+    def test_nbsp_is_content_not_a_gap(self):
+        d = doc("alpha beta\u00a0gamma delta")
+        self.assertIsNone(verdict(d))
+        self.assertEqual(atom_texts(d), ["alpha", "beta\u00a0gamma", "delta"])
+
+    def test_a_line_separator_is_not_a_markdown_line_ending(self):
+        d = doc("alpha\u2028beta gamma delta")
+        self.assertIsNone(verdict(d))
+        self.assertEqual(atom_texts(d), ["alpha\u2028beta", "gamma", "delta"])
+
+    def test_zwsp_is_not_a_gap(self):
+        d = doc("alpha\u200bbeta gamma delta")
+        self.assertIsNone(verdict(d))
+        self.assertEqual(atom_texts(d), ["alpha\u200bbeta", "gamma", "delta"])
+
+    def test_a_combining_mark_stays_on_its_base(self):
+        d = doc("alpha cafe\u0301 beta gamma")
+        self.assertIsNone(verdict(d))
+        self.assertEqual(atom_texts(d), ["alpha", "cafe\u0301", "beta", "gamma"])
+
+    def test_arabic_indic_digits_do_not_acquire_a_list(self):
+        """Python `\d` matches `١`; the pinned grammar does not. Coalescing
+        here would be the producer split A2.3 makes live."""
+        d = doc("alpha ١. beta gamma")
+        self.assertIsNone(verdict(d))
+        self.assertEqual(atom_texts(d), ["alpha", "١.", "beta", "gamma"])
+        self.assertIsNone(prose._ACQUIRES.match("١."))
+        self.assertIsNotNone(prose._ACQUIRES.match("1."))
+
+    def test_a_fullwidth_asterisk_is_not_a_list_marker(self):
+        d = doc("alpha ＊ beta gamma delta")
+        self.assertIsNone(verdict(d))
+        self.assertEqual(atom_texts(d), ["alpha", "＊", "beta", "gamma", "delta"])
+
+    def test_a_non_bmp_scalar_is_one_atom(self):
+        d = doc("alpha 𝄞 beta gamma")
+        self.assertIsNone(verdict(d))
+        self.assertEqual(atom_texts(d), ["alpha", "𝄞", "beta", "gamma"])
 
 
 class Project(unittest.TestCase):

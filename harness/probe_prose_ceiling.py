@@ -53,11 +53,14 @@ loudly in the four ways it can fail silently:
   numbers.
 * **A reason string or node type that went dead.** Synthetic paragraphs are
   parsed with the real block and inline grammars and driven through the real
-  `prose.analyse`, each checked against its named verdict -- two eligible, and
-  one refused case each for `inline construct`, `byte`, `non-ascii`,
-  `single atom` and `whitespace run`. And `LIVE_KINDS` pins the still-refused
-  named kinds `prose.py` claims occur in this corpus's secondary trees, so a
-  grammar rename of `image` cannot pass as a census change.
+  `prose.analyse`, each checked against its named verdict -- three eligible
+  (plain, code span, emphasis; Latin-1 is eligible as of A2.3), and one
+  refused case each for `byte`, `single atom` and `whitespace run`.
+  `non-ascii` remains a decode-failure verdict and is unreachable through a
+  Python `str` source, so it is not a synthetic here. And `LIVE_KINDS` pins
+  the still-refused named kinds `prose.py` claims occur in this corpus's
+  secondary trees, so a grammar rename of `image` cannot pass as a census
+  change.
 * **Blockers that stopped resolving.** Every `inline construct` refusal must
   yield a clean, non-empty blocker set. An empty set would let every rung free
   everything, which prints as triumph and is the census lying.
@@ -134,7 +137,7 @@ VERDICTS = (
     ("a code span, protected whole", "alpha `beta` gamma\n", None),
     ("emphasis admitted by A2.2", "alpha *beta* gamma\n", None),
     ("a lone tilde, refused by byte", "alpha ~beta gamma\n", "byte"),
-    ("non-ascii atom content", "alpha b\u00e9ta gamma\n", "non-ascii"),
+    ("latin-1 atom content, A2.3", "alpha b\u00e9ta gamma\n", None),
     ("one word, no gap", "alpha\n", "single atom"),
     ("a double space", "alpha  beta\n", "whitespace run"),
 )
