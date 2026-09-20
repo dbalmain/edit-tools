@@ -268,7 +268,16 @@ function validateExpr(value) {
     case "prefix": {
       if (rest.length < 1) throw new Refusal("`prefix` takes a selector and a body");
       parseSelector(rest[0]);
-      rest.slice(1).forEach(validateExpr);
+      let body = rest.slice(1);
+      if (typeof body[0] === "string") {
+        const mode = body.shift();
+        if (!["source", "spaces", "marker"].includes(mode)) {
+          throw new Refusal(
+            `unknown \`prefix\` mode \`${mode}\`; expected \`source\`, \`spaces\` or \`marker\``,
+          );
+        }
+      }
+      body.forEach(validateExpr);
       return;
     }
     case "paren": {
@@ -296,6 +305,7 @@ function validateExpr(value) {
       return;
     case "child":
     case "autoparen":
+    case "discard":
       arity(1);
       parseSelector(rest[0]);
       return;
@@ -531,7 +541,8 @@ function parseGroupMax(value) {
   }
   return value;
 }
-const indent = (unit, d) => ({ k: "indent", unit, d, brk: d.brk });
+const indent = (unit, d) => ({ k: "indent", unit, blank: undefined, d, brk: d.brk });
+const prefixIndent = (unit, blank, d) => ({ k: "indent", unit, blank, d, brk: d.brk });
 const line = { k: "line", brk: false };
 const soft = { k: "soft", brk: false };
 const hard = { k: "hard", brk: true };
@@ -628,7 +639,7 @@ function fits(next, rest, rem, mustBeFlat = false) {
         stack.push([ind, mode, doc.content]);
         break;
       case "indent":
-        stack.push([ind + doc.unit, mode, doc.d]);
+        stack.push([pushIndent(ind, doc.unit, doc.blank), mode, doc.d]);
         break;
       case "line":
         if (mode === BREAK) return true;
@@ -662,12 +673,22 @@ function respell(ind, stop) {
   return "\t".repeat(Math.floor(ind.length / stop)) + " ".repeat(ind.length % stop);
 }
 
+const rootIndent = () => ({ full: "", blank: "" });
+
+function pushIndent(ind, unit, blank) {
+  return {
+    full: ind.full + unit,
+    blank: blank === undefined ? ind.blank : ind.full + blank,
+  };
+}
+
 function print(doc, cols, tabStop = 0) {
   const out = [];
   let pos = 0;
   let pending = "";
+  let pendingBlank = "";
   let suffixes = [];
-  let stack = [["", BREAK, doc]];
+  let stack = [[rootIndent(), BREAK, doc]];
 
   const write = (s) => {
     if (pending.length > 0) {
@@ -693,7 +714,7 @@ function print(doc, cols, tabStop = 0) {
           for (let i = d.parts.length - 1; i >= 0; i--) stack.push([ind, mode, d.parts[i]]);
           break;
         case "indent":
-          stack.push([ind + d.unit, mode, d.d]);
+          stack.push([pushIndent(ind, d.unit, d.blank), mode, d.d]);
           break;
         case "group": {
           let flat = !d.brk && fits([ind, FLAT, d.d], stack, cols - pos);
@@ -741,9 +762,11 @@ function print(doc, cols, tabStop = 0) {
             break;
           }
           if (breaking) {
+            if (pendingBlank.length > 0) out.push(pendingBlank);
             out.push("\n");
-            pending = respell(ind, tabStop);
-            pos = width(ind);
+            pending = respell(ind.full, tabStop);
+            pendingBlank = ind.blank;
+            pos = width(ind.full);
           } else if (d.k === "line") {
             write(" ");
             pos += 1;
@@ -1327,7 +1350,11 @@ class Ctx {
           concat([...rest.map((e) => this.eval(e)), this.flushAfter()]),
         );
       case "prefix":
-        return this.prefix(parseSelector(rest[0]), rest.slice(1));
+        return this.prefix(
+          parseSelector(rest[0]),
+          typeof rest[1] === "string" ? rest[1] : "source",
+          rest.slice(typeof rest[1] === "string" ? 2 : 1),
+        );
       case "line":
         return line;
       case "soft":
@@ -1352,6 +1379,8 @@ class Ctx {
         return this.srctrail(rest[0]);
       case "drop":
         return this.drop(rest[0]);
+      case "discard":
+        return this.discard(parseSelector(rest[0]));
       case "child":
         return this.child(parseSelector(rest[0]));
       case "each":
@@ -1608,8 +1637,8 @@ class Ctx {
   /** Indent the body by the selected child's source text, consuming it, so a
    *  host continuation marker survives onto lines an injected guest invents
    *  (FINDINGS 24). Zero matches is an empty prefix consuming nothing. */
-  prefix(sel, body) {
-    let unit = "";
+  prefix(sel, mode, body) {
+    let sourceUnit = "";
     if (this.matches(this.cursor, sel)) {
       const item = this.items[this.cursor];
       if (decorated(item)) throw this.refuse("no comment on the marker a `prefix` consumes");
@@ -1620,13 +1649,27 @@ class Ctx {
       if (node.end > this.fmt.bytes.length) {
         throw new Refusal(`\`${node.type}\` runs past the source`);
       }
-      unit = this.fmt.decoder.decode(this.fmt.bytes.subarray(node.start, node.end));
-      if (unit.includes("\n") || unit.includes("\r")) {
+      sourceUnit = this.fmt.decoder.decode(this.fmt.bytes.subarray(node.start, node.end));
+      if (sourceUnit.includes("\n") || sourceUnit.includes("\r")) {
         throw this.refuse("a single-line marker for `prefix`");
       }
       this.cursor++;
     }
-    return indent(unit, concat([...body.map((e) => this.eval(e)), this.flushAfter()]));
+    const unit = mode === "spaces" ? " ".repeat(width(sourceUnit)) : sourceUnit;
+    const blank = mode === "marker" ? sourceUnit.trimEnd() : undefined;
+    return prefixIndent(
+      unit,
+      blank,
+      concat([...body.map((e) => this.eval(e)), this.flushAfter()]),
+    );
+  }
+
+  discard(sel) {
+    if (!this.matches(this.cursor, sel)) throw this.refuse(`a child matching ${JSON.stringify(sel)}`);
+    const item = this.items[this.cursor++];
+    if (decorated(item)) throw this.refuse("no comment on a child `discard` consumes");
+    checkSource(this.fmt, item.node, "discard");
+    return nil;
   }
 
   drop(want) {

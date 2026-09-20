@@ -694,6 +694,10 @@ pub enum Expr {
     /// deletion, and the mirror of the linearity invariant that forbids
     /// inventing token text (FINDINGS 13).
     Drop(String),
+    /// Consume one source-backed child without emitting it. Unlike `drop`,
+    /// this is selector-driven so a projected layout range may contain
+    /// several source spellings (for example a Markdown continuation prefix).
+    Discard(Sel),
     /// A column break. `print` emits a marker; a later pass aligns runs.
     Cell,
     /// The whole node as an aligned pipe table. See `Ctx::table`.
@@ -708,7 +712,14 @@ pub enum Expr {
     /// including lines invented by an injected guest that has never heard of
     /// the host (FINDINGS 24). Zero matches is an empty prefix and consumes
     /// nothing, so one rule serves nested and top-level occurrences alike.
-    Prefix(Sel, Vec<Expr>),
+    Prefix(Sel, PrefixMode, Vec<Expr>),
+}
+
+#[derive(Clone, Copy, Debug)]
+pub enum PrefixMode {
+    Source,
+    Spaces,
+    Marker,
 }
 
 impl TryFrom<Value> for Expr {
@@ -752,7 +763,24 @@ impl TryFrom<Value> for Expr {
                     return Err("`prefix` takes a selector and a body".to_owned());
                 }
                 let sel = selector(&parts.remove(0))?;
-                Ok(Expr::Prefix(sel, rest(parts)?))
+                let mode = match parts.first() {
+                    Some(Value::String(mode)) => {
+                        let mode = match mode.as_str() {
+                            "source" => PrefixMode::Source,
+                            "spaces" => PrefixMode::Spaces,
+                            "marker" => PrefixMode::Marker,
+                            _ => {
+                                return Err(format!(
+                                    "unknown `prefix` mode `{mode}`; expected `source`, `spaces` or `marker`"
+                                ));
+                            }
+                        };
+                        parts.remove(0);
+                        mode
+                    }
+                    _ => PrefixMode::Source,
+                };
+                Ok(Expr::Prefix(sel, mode, rest(parts)?))
             }
             "paren" => {
                 let always = match parts.first() {
@@ -783,6 +811,10 @@ impl TryFrom<Value> for Expr {
             "drop" => {
                 arity(1)?;
                 Ok(Expr::Drop(literal(&parts[0])?))
+            }
+            "discard" => {
+                arity(1)?;
+                Ok(Expr::Discard(selector(&parts[0])?))
             }
             "child" => {
                 arity(1)?;

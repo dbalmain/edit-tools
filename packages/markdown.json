@@ -1,11 +1,12 @@
 {
   "format": "et-doc-rules/3",
   "source_partitions": [
-    "prose_run"
+    "prose_run",
+    "prose_atom",
+    "container_inline"
   ],
   "whitespace_nodes": [
-    "section",
-    "prose_gap"
+    "section"
   ],
   "indent": 2,
   "comment_gap": 1,
@@ -62,18 +63,87 @@
           "t:prose_run"
         ],
         [
+          "opt",
+          "t:block_continuation",
+          [
+            "discard",
+            "t:block_continuation"
+          ]
+        ],
+        [
           "hard"
         ]
       ],
       [
-        "verbatim"
+        "when",
+        [
+          "count",
+          "t:container_inline",
+          1
+        ],
+        [
+          "seq",
+          [
+            "child",
+            "t:container_inline"
+          ],
+          [
+            "opt",
+            "t:block_continuation",
+            [
+              "discard",
+              "t:block_continuation"
+            ]
+          ],
+          [
+            "hard"
+          ]
+        ],
+        [
+          "verbatim"
+        ]
       ]
     ],
     "prose_run": [
       "fill",
       "t:prose_atom",
       [
-        "line"
+        "seq",
+        [
+          "discard",
+          "t:prose_gap"
+        ],
+        [
+          "line"
+        ]
+      ]
+    ],
+    "prose_atom": [
+      "each",
+      "t:prose_segment",
+      [
+        "seq",
+        [
+          "discard",
+          "t:prose_continuation"
+        ],
+        [
+          "hard"
+        ]
+      ]
+    ],
+    "container_inline": [
+      "each",
+      "t:prose_segment",
+      [
+        "seq",
+        [
+          "discard",
+          "t:prose_continuation"
+        ],
+        [
+          "hard"
+        ]
       ]
     ],
     "inline": [
@@ -102,7 +172,7 @@
         "opt",
         "t:block_continuation",
         [
-          "child",
+          "discard",
           "t:block_continuation"
         ]
       ]
@@ -122,11 +192,9 @@
       ]
     ],
     "block_quote": [
-      "seq",
-      [
-        "child",
-        "t:block_quote_marker"
-      ],
+      "prefix",
+      "t:block_quote_marker",
+      "marker",
       [
         "use",
         "quote_blocks"
@@ -144,11 +212,9 @@
       ]
     ],
     "list_item": [
-      "seq",
-      [
-        "child",
-        "*"
-      ],
+      "prefix",
+      "*",
+      "spaces",
       [
         "when",
         [
@@ -199,14 +265,8 @@
         "opt",
         "t:block_continuation",
         [
-          "seq",
-          [
-            "srcsoft"
-          ],
-          [
-            "child",
-            "t:block_continuation"
-          ]
+          "discard",
+          "t:block_continuation"
         ]
       ]
     ],
@@ -245,7 +305,7 @@
                 "hard"
               ],
               [
-                "child",
+                "discard",
                 "t:block_continuation"
               ]
             ]
@@ -273,8 +333,15 @@
           ]
         ],
         [
-          "prefix",
-          "t:block_continuation",
+          "seq",
+          [
+            "opt",
+            "t:block_continuation",
+            [
+              "discard",
+              "t:block_continuation"
+            ]
+          ],
           [
             "hard"
           ],
@@ -387,7 +454,7 @@
           "opt",
           "t:block_continuation",
           [
-            "child",
+            "discard",
             "t:block_continuation"
           ]
         ]
@@ -406,7 +473,7 @@
           "opt",
           "t:block_continuation",
           [
-            "child",
+            "discard",
             "t:block_continuation"
           ]
         ]
@@ -428,7 +495,7 @@
           "opt",
           "t:block_continuation",
           [
-            "child",
+            "discard",
             "t:block_continuation"
           ]
         ]
@@ -446,7 +513,7 @@
           "opt",
           "t:block_continuation",
           [
-            "child",
+            "discard",
             "t:block_continuation"
           ]
         ]

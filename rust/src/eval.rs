@@ -10,7 +10,7 @@ use std::collections::HashMap;
 
 use crate::attach::{split, whitespace_node, Comment, Item};
 use crate::doc::Doc;
-use crate::pkg::{CommentCells, Expr, Package, Pred, Sel};
+use crate::pkg::{CommentCells, Expr, Package, Pred, PrefixMode, Sel};
 use crate::tree::{Node, TreeDoc};
 use crate::Refusal;
 
@@ -336,7 +336,8 @@ impl<'a> Ctx<'a> {
             Expr::SrcBreak => Ok(self.src_break(Doc::Line)),
             Expr::SrcTrail(sep) => self.srctrail(sep, f),
             Expr::Drop(want) => self.drop_token(want, f),
-            Expr::Prefix(sel, es) => self.prefix(sel, es, f),
+            Expr::Discard(sel) => self.discard(sel, f),
+            Expr::Prefix(sel, mode, es) => self.prefix(sel, *mode, es, f),
             Expr::Cell => Ok(Doc::Cell),
             Expr::CellBlock(es) => {
                 let mut parts = vec![Doc::CellBreak];
@@ -574,6 +575,15 @@ impl<'a> Ctx<'a> {
         Ok(Doc::nil())
     }
 
+    fn discard(&mut self, sel: &Sel, f: &Fmt<'a>) -> Result<Doc, Refusal> {
+        let at = self.take(sel, f)?;
+        if self.items[at].decorated() {
+            return Err(self.refuse("no comment on a child `discard` consumes"));
+        }
+        check_source(self.items[at].node, f.src, "discard")?;
+        Ok(Doc::nil())
+    }
+
     /// Indent the body by the selected child's own source text, consuming it.
     /// The prefix is a string rather than a column count, which is what lets a
     /// host continuation marker (`> `, or a list's spaces) survive onto lines
@@ -582,8 +592,14 @@ impl<'a> Ctx<'a> {
     ///
     /// Zero matches is an empty prefix consuming nothing, so a fence at the top
     /// of a document and a fence four levels into a list take the same rule.
-    fn prefix(&mut self, sel: &Sel, es: &[Expr], f: &Fmt<'a>) -> Result<Doc, Refusal> {
-        let unit = if self.matches(self.cursor, sel, f.pkg) {
+    fn prefix(
+        &mut self,
+        sel: &Sel,
+        mode: PrefixMode,
+        es: &[Expr],
+        f: &Fmt<'a>,
+    ) -> Result<Doc, Refusal> {
+        let source_unit = if self.matches(self.cursor, sel, f.pkg) {
             let at = self.cursor;
             if self.items[at].decorated() {
                 return Err(self.refuse("no comment on the marker a `prefix` consumes"));
@@ -607,9 +623,17 @@ impl<'a> Ctx<'a> {
         } else {
             String::new()
         };
+        let unit = match mode {
+            PrefixMode::Source | PrefixMode::Marker => source_unit.clone(),
+            PrefixMode::Spaces => " ".repeat(source_unit.chars().count()),
+        };
+        let blank = match mode {
+            PrefixMode::Marker => Some(source_unit.trim_end_matches(char::is_whitespace)),
+            PrefixMode::Source | PrefixMode::Spaces => None,
+        };
         let mut parts = self.eval_all(es, f)?;
         parts.push(self.flush_after(f));
-        Ok(Doc::indent_unit(&unit, Doc::Concat(parts)))
+        Ok(Doc::prefix_unit(&unit, blank, Doc::Concat(parts)))
     }
 
     fn child(&mut self, sel: &Sel, f: &Fmt<'a>) -> Result<Doc, Refusal> {

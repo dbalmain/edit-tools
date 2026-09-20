@@ -136,10 +136,14 @@ def verdict(d: dict) -> str | None:
 
 
 def atom_texts(d: dict) -> list[str]:
-    """The projected run's atoms, as source text. The partition, observably."""
+    """The projected run's logical atom text. The partition, observably."""
     run = paragraph(prose.project(d))["children"][0]
     return [
-        child["text"] for child in run["children"]
+        "".join(
+            "\n" if part["type"] == prose.CONTINUATION else part["text"]
+            for part in child["children"]
+        )
+        for child in run["children"]
         if child["type"] == prose.ATOM
     ]
 
@@ -282,10 +286,10 @@ class Refusal(unittest.TestCase):
             with self.subTest(name):
                 self.assertEqual(verdict(doc(text, tokens=tokens, inline=inline)), want)
 
-    def test_a_paragraph_with_no_inline_child_is_refused(self):
+    def test_a_paragraph_with_a_non_continuation_sibling_is_refused(self):
         d = doc("alpha beta")
         paragraph(d)["children"].append(
-            {"type": "block_continuation", "start": 10, "end": 10, "text": ""}
+            {"type": "other", "start": 10, "end": 10, "text": ""}
         )
         self.assertEqual(verdict(d), "paragraph shape")
 
@@ -571,13 +575,15 @@ class MutationControl(unittest.TestCase):
     }
 
     @staticmethod
-    def _left_only(start, end, source, candidates):
+    def _left_only(start, end, source, candidates, continuations):
         """The design that was wrong: bind a hazard to its predecessor only."""
         drop = set()
-        edges = [start, *[gap + 1 for gap in candidates]]
-        stops = [*candidates, end]
+        edges = [start, *[gap_end for _, gap_end in candidates]]
+        stops = [*[gap_start for gap_start, _ in candidates], end]
         for index, (first, last) in enumerate(zip(edges, stops)):
-            if not prose._hazardous(source[first:last].decode("utf-8")):
+            if not prose._hazardous(
+                prose._logical_text(source, first, last, continuations)
+            ):
                 continue
             if index > 0:
                 drop.add(candidates[index - 1])
@@ -648,15 +654,21 @@ class Partition(unittest.TestCase):
         ]
         self.assertEqual([gap["text"] for gap in gaps], [" ", "\n"])
 
-    def test_an_atom_is_a_leaf(self):
-        """`source_partitions` on the run validates leaf text, so the design
-        doc's interior wrapper bought nothing. See `prose.py`."""
+    def test_an_atom_is_a_source_partition(self):
+        """An atom can own continuation syntax without becoming breakable."""
         atom = prose.project(doc("alpha beta"))["root"]["children"][0][
             "children"
         ][0]["children"][0]
-        self.assertNotIn("children", atom)
         self.assertEqual(
-            atom, {"type": prose.ATOM, "start": 0, "end": 5, "text": "alpha"}
+            atom,
+            {
+                "type": prose.ATOM,
+                "start": 0,
+                "end": 5,
+                "children": [
+                    {"type": prose.SEGMENT, "start": 0, "end": 5, "text": "alpha"}
+                ],
+            },
         )
 
     def test_an_atom_text_is_exactly_its_source_range(self):
@@ -665,10 +677,12 @@ class Partition(unittest.TestCase):
         d = doc("alpha -- :- beta gamma")
         out = prose.project(d)
         source = out["source"].encode()
-        for child in paragraph(out)["children"][0]["children"]:
-            self.assertEqual(
-                child["text"], source[child["start"] : child["end"]].decode()
-            )
+        for atom in paragraph(out)["children"][0]["children"][::2]:
+            self.covers(atom, source)
+            for child in atom["children"]:
+                self.assertEqual(
+                    child["text"], source[child["start"] : child["end"]].decode()
+                )
 
     def test_offsets_are_absolute_not_paragraph_relative(self):
         out = prose.project(doc("alpha beta", base=17))
@@ -750,7 +764,7 @@ class Project(unittest.TestCase):
         self.assertEqual(json.dumps(d, sort_keys=True), before)
         self.assertEqual(paragraph(out)["children"][0]["type"], prose.RUN)
 
-    def test_a_paragraph_inside_a_container_is_never_offered(self):
+    def test_a_paragraph_inside_a_block_quote_is_offered(self):
         d = doc("alpha beta")
         para = paragraph(d)
         d["root"]["children"] = [
@@ -760,7 +774,7 @@ class Project(unittest.TestCase):
         out = prose.project(d)
         self.assertEqual(
             out["root"]["children"][0]["children"][0]["children"][0]["type"],
-            "inline",
+            prose.RUN,
         )
 
     def test_an_injected_region_is_never_offered(self):

@@ -34,6 +34,9 @@
 export const RUN = "prose_run";
 export const ATOM = "prose_atom";
 export const GAP = "prose_gap";
+export const SEGMENT = "prose_segment";
+export const CONTINUATION = "prose_continuation";
+export const CONTAINER_INLINE = "container_inline";
 
 const ALNUM = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 export const SAFE_PUNCTUATION = new Set(",;.'\"!?()-:/");
@@ -81,15 +84,42 @@ const DELIMITER_ROW = /^:?-+:?$/;
 const FENCE = /^[ \t]*(?:```|~~~)/;
 
 const CONTAINERS = new Set([
-  "block_quote",
-  "list_item",
-  "list",
   "fenced_code_block",
   "html_block",
 ]);
 
 const decoder = new TextDecoder("utf-8", { fatal: true });
 const encoder = new TextEncoder();
+
+function continuations(inline, source) {
+  const out = [];
+  for (const child of inline.children ?? []) {
+    if (child.type !== "block_continuation") continue;
+    const newline = child.start - 1;
+    if (newline < inline.start || source[newline] !== 0x0a) continue;
+    out.push([newline, child.start, child.end]);
+  }
+  return out;
+}
+
+function logicalText(source, first, last, continuationRanges) {
+  const parts = [];
+  let at = first;
+  for (const [, prefixStart, prefixEnd] of continuationRanges) {
+    if (prefixEnd <= first || prefixStart >= last) continue;
+    parts.push(source.subarray(at, Math.max(at, prefixStart)));
+    at = Math.max(at, prefixEnd);
+  }
+  parts.push(source.subarray(at, last));
+  const size = parts.reduce((sum, part) => sum + part.length, 0);
+  const joined = new Uint8Array(size);
+  let offset = 0;
+  for (const part of parts) {
+    joined.set(part, offset);
+    offset += part.length;
+  }
+  return decoder.decode(joined);
+}
 
 /**
  * `doc.secondary`'s inline records, keyed by the host range they cover.
@@ -143,12 +173,17 @@ const inside = (ranges, at) =>
  * the reason removing from one set is what unions the merges into connected
  * components.
  */
-function blockSafe(start, end, source, candidates) {
+function blockSafe(start, end, source, candidates, continuationRanges = []) {
   const drop = new Set();
-  const edges = [start, ...candidates.map((gap) => gap + 1)];
-  const stops = [...candidates, end];
+  const edges = [start, ...candidates.map(([, gapEnd]) => gapEnd)];
+  const stops = [...candidates.map(([gapStart]) => gapStart), end];
   for (let index = 0; index < edges.length; index += 1) {
-    const atom = decoder.decode(source.subarray(edges[index], stops[index]));
+    const atom = logicalText(
+      source,
+      edges[index],
+      stops[index],
+      continuationRanges,
+    );
     if (!ACQUIRES.test(atom)) continue;
     if (index > 0) drop.add(candidates[index - 1]);
     if (index < candidates.length) drop.add(candidates[index]);
@@ -161,13 +196,16 @@ function blockSafe(start, end, source, candidates) {
  * `prose.py`'s `_fence_hazard` carries the argument, including why an atom
  * after a breakable gap needs no check.
  */
-function fenceHazard(start, end, source, breakable) {
-  const edges = [start, ...breakable.map((gap) => gap + 1)];
-  const stops = [...breakable, end];
+function fenceHazard(start, end, source, breakable, continuationRanges = []) {
+  const edges = [start, ...breakable.map(([, gapEnd]) => gapEnd)];
+  const stops = [...breakable.map(([gapStart]) => gapStart), end];
   for (let index = 0; index < edges.length; index += 1) {
-    const lines = decoder
-      .decode(source.subarray(edges[index], stops[index]))
-      .split("\n");
+    const lines = logicalText(
+      source,
+      edges[index],
+      stops[index],
+      continuationRanges,
+    ).split("\n");
     for (let offset = 0; offset < lines.length; offset += 1) {
       if (offset === 0 && index > 0) continue;
       if (FENCE.test(lines[offset])) return true;
@@ -183,11 +221,16 @@ function fenceHazard(start, end, source, breakable) {
  */
 export function analyse(paragraph, source, secondary) {
   const children = paragraph.children ?? [];
-  if (children.length !== 1 || children[0].type !== "inline") {
+  if (
+    children.length === 0 ||
+    children[0].type !== "inline" ||
+    children.slice(1).some((child) => child.type !== "block_continuation")
+  ) {
     return ["paragraph shape", []];
   }
   const inline = children[0];
   const { start, end } = inline;
+  const continuationRanges = continuations(inline, source);
 
   const [ranges, why] = protectedRanges(
     inline,
@@ -197,7 +240,7 @@ export function analyse(paragraph, source, secondary) {
 
   let text;
   try {
-    text = decoder.decode(source.subarray(start, end));
+    text = logicalText(source, start, end, continuationRanges);
   } catch {
     return ["non-ascii", []];
   }
@@ -210,11 +253,33 @@ export function analyse(paragraph, source, secondary) {
   // UTF-16 code units. Indexing `text` by byte offset would disagree with
   // Python on either.
   const candidates = [];
+  const prefixRanges = continuationRanges.map(([, prefixStart, prefixEnd]) => [prefixStart, prefixEnd]);
+  const continuationAt = new Map(
+    continuationRanges.map(([newline, , prefixEnd]) => [newline, prefixEnd]),
+  );
   let byteAt = start;
+  let absorbedUntil = start;
   for (const char of text) {
     const size = encoder.encode(char).length;
+    while (inside(prefixRanges, byteAt)) {
+      byteAt = prefixRanges.find(
+        ([first, last]) => first <= byteAt && byteAt < last,
+      )[1];
+    }
+    if (byteAt < absorbedUntil) {
+      byteAt += size;
+      continue;
+    }
     if (!inside(ranges, byteAt)) {
-      if (GAPS.has(char)) candidates.push(byteAt);
+      if (GAPS.has(char)) {
+        let gapEnd = byteAt + size;
+        if (char === "\n" && continuationAt.has(byteAt)) {
+          gapEnd = continuationAt.get(byteAt);
+          while (gapEnd < end && source[gapEnd] === 0x20) gapEnd += 1;
+          absorbedUntil = gapEnd;
+        }
+        candidates.push([byteAt, gapEnd]);
+      }
       else if (char.codePointAt(0) < 128 && !SAFE.has(char)) {
         return ["byte", []];
       }
@@ -222,21 +287,28 @@ export function analyse(paragraph, source, secondary) {
     byteAt += size;
   }
   for (let i = 1; i < candidates.length; i += 1) {
-    if (candidates[i] - candidates[i - 1] === 1) return ["whitespace run", []];
+    if (candidates[i - 1][1] === candidates[i][0]) return ["whitespace run", []];
   }
 
   // The one hazard bilateral protection cannot repair; see DELIMITER_ROW.
   if (
     candidates.length > 0 &&
     DELIMITER_ROW.test(
-      decoder.decode(source.subarray(candidates[candidates.length - 1] + 1, end)),
+      logicalText(
+        source,
+        candidates[candidates.length - 1][1],
+        end,
+        continuationRanges,
+      ),
     )
   ) {
     return ["delimiter row", []];
   }
 
-  const breakable = blockSafe(start, end, source, candidates);
-  if (fenceHazard(start, end, source, breakable)) return ["fence opener", []];
+  const breakable = blockSafe(start, end, source, candidates, continuationRanges);
+  if (fenceHazard(start, end, source, breakable, continuationRanges)) {
+    return ["fence opener", []];
+  }
   if (breakable.length === 0) return ["single atom", []];
   return [null, breakable];
 }
@@ -253,26 +325,48 @@ export function refusal(paragraph, source, secondary) {
  * argument.
  */
 export function partition(inline, source, breakable) {
-  // A leaf, not a wrapper: `source_partitions` on the enclosing run validates
-  // leaf text against the source, so the interior node the design doc asked
-  // for bought nothing. `prose.py` carries the measurement.
-  const atom = (first, last) => ({
-    type: ATOM,
-    start: first,
-    end: last,
-    text: decoder.decode(source.subarray(first, last)),
-  });
+  const atom = (first, last) => {
+    const children = [];
+    let at = first;
+    for (const [newline, , prefixEnd] of continuations(inline, source)) {
+      if (newline < first || prefixEnd > last) continue;
+      if (at < newline) {
+        children.push({
+          type: SEGMENT,
+          start: at,
+          end: newline,
+          text: decoder.decode(source.subarray(at, newline)),
+        });
+      }
+      children.push({
+        type: CONTINUATION,
+        start: newline,
+        end: prefixEnd,
+        text: decoder.decode(source.subarray(newline, prefixEnd)),
+      });
+      at = prefixEnd;
+    }
+    if (at < last) {
+      children.push({
+        type: SEGMENT,
+        start: at,
+        end: last,
+        text: decoder.decode(source.subarray(at, last)),
+      });
+    }
+    return { type: ATOM, start: first, end: last, children };
+  };
   const out = [];
   let at = inline.start;
-  for (const gap of breakable) {
-    out.push(atom(at, gap));
+  for (const [gapStart, gapEnd] of breakable) {
+    out.push(atom(at, gapStart));
     out.push({
       type: GAP,
-      start: gap,
-      end: gap + 1,
-      text: decoder.decode(source.subarray(gap, gap + 1)),
+      start: gapStart,
+      end: gapEnd,
+      text: decoder.decode(source.subarray(gapStart, gapEnd)),
     });
-    at = gap + 1;
+    at = gapEnd;
   }
   out.push(atom(at, inline.end));
   return out;
@@ -324,8 +418,23 @@ export function project(doc) {
       const run = { type: RUN, start: inline.start, end: inline.end };
       if (inline.field !== undefined) run.field = inline.field;
       run.children = partition(inline, source, breakable);
-      node.children = [run];
+      node.children = [run, ...node.children.slice(1)];
       continue;
+    }
+    if (node.type === "paragraph" && (node.children ?? []).length > 0) {
+      const inline = node.children[0];
+      if (inline.type === "inline" && continuations(inline, source).length > 0) {
+        const atom = partition(inline, source, [])[0];
+        const logical = {
+          type: CONTAINER_INLINE,
+          start: inline.start,
+          end: inline.end,
+        };
+        if (inline.field !== undefined) logical.field = inline.field;
+        logical.children = atom.children;
+        node.children = [logical, ...node.children.slice(1)];
+        continue;
+      }
     }
     for (const child of node.children ?? []) stack.push(child);
   }

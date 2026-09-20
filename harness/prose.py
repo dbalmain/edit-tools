@@ -116,6 +116,9 @@ import re
 RUN = "prose_run"
 ATOM = "prose_atom"
 GAP = "prose_gap"
+SEGMENT = "prose_segment"
+CONTINUATION = "prose_continuation"
+CONTAINER_INLINE = "container_inline"
 
 # An atom is a **leaf**, and the design doc's argument for wrapping it in an
 # interior node is wrong. That argument was: `node_current` returns a leaf's
@@ -290,9 +293,42 @@ _FENCE = re.compile(r"^[ \t]*(?:```|~~~)")
 # a list indent -- that reflow would have to re-emit on every new line it
 # creates. `docs/prose-projection.md` defers that to a later slice, so A1 takes
 # only paragraphs that start at column zero.
-CONTAINERS = frozenset(
-    {"block_quote", "list_item", "list", "fenced_code_block", "html_block"}
-)
+CONTAINERS = frozenset({"fenced_code_block", "html_block"})
+
+
+def _continuations(inline: dict, source: bytes) -> list[tuple[int, int, int]]:
+    """Logical hard breaks as `(newline, prefix start, prefix end)`.
+
+    The range remains source-backed. Only its interpretation changes: the
+    newline is content/layout, while the following `block_continuation` bytes
+    are syntax owned by the enclosing container.
+    """
+    out = []
+    for child in inline.get("children", []):
+        if child["type"] != "block_continuation":
+            continue
+        newline = child["start"] - 1
+        if newline < inline["start"] or source[newline : newline + 1] != b"\n":
+            # A continuation that is not attached to a source line boundary
+            # cannot be removed without inventing a logical position for it.
+            continue
+        out.append((newline, child["start"], child["end"]))
+    return out
+
+
+def _logical_text(
+    source: bytes, first: int, last: int, continuations: list[tuple[int, int, int]]
+) -> str:
+    """Source text with owned continuation prefixes removed, not the newline."""
+    parts = []
+    at = first
+    for _, prefix_start, prefix_end in continuations:
+        if prefix_end <= first or prefix_start >= last:
+            continue
+        parts.append(source[at:max(at, prefix_start)])
+        at = max(at, prefix_end)
+    parts.append(source[at:last])
+    return b"".join(parts).decode("utf-8")
 
 
 def legacy_inline_token(paragraph: dict) -> bool:
@@ -408,7 +444,7 @@ def _hazardous(text: str) -> bool:
 
 def analyse(
     paragraph: dict, source: bytes, secondary: dict[tuple[int, int], dict]
-) -> tuple[str | None, list[int]]:
+) -> tuple[str | None, list[tuple[int, int]]]:
     """The verdict for this paragraph, and its breakable gap offsets.
 
     One function, because `refusal()` and `project()` must not be able to
@@ -417,17 +453,22 @@ def analyse(
     real decision instead of restating it.
     """
     children = paragraph.get("children", [])
-    if len(children) != 1 or children[0]["type"] != "inline":
+    if (
+        not children
+        or children[0]["type"] != "inline"
+        or any(child["type"] != "block_continuation" for child in children[1:])
+    ):
         return "paragraph shape", []
     inline = children[0]
     start, end = inline["start"], inline["end"]
+    continuations = _continuations(inline, source)
 
     ranges, why = _protected(inline, secondary.get((start, end)))
     if ranges is None:
         return why, []
 
     try:
-        text = source[start:end].decode("utf-8")
+        text = _logical_text(source, start, end, continuations)
     except UnicodeDecodeError:
         # Invalid UTF-8, not ordinary non-ASCII. Producers encode a Python
         # str, so this is unreachable on the live path; it stays so a hand
@@ -455,13 +496,28 @@ def analyse(
     # The walk is over scalars, tracking UTF-8 byte offsets. Indexing the
     # decoded string by byte offset is how a Latin-1 letter would put a gap
     # on the wrong byte and how a non-BMP scalar would disagree with JS.
-    candidates: list[int] = []
+    candidates: list[tuple[int, int]] = []
+    prefix_ranges = [(prefix_start, prefix_end) for _, prefix_start, prefix_end in continuations]
+    continuation_at = {newline: prefix_end for newline, _, prefix_end in continuations}
     byte_at = start
+    absorbed_until = start
     for char in text:
         size = len(char.encode("utf-8"))
+        while _inside(prefix_ranges, byte_at):
+            prefix_end = next(last for first, last in prefix_ranges if first <= byte_at < last)
+            byte_at = prefix_end
+        if byte_at < absorbed_until:
+            byte_at += size
+            continue
         if not _inside(ranges, byte_at):
             if char in GAPS:
-                candidates.append(byte_at)
+                gap_end = byte_at + size
+                if char == "\n" and byte_at in continuation_at:
+                    gap_end = continuation_at[byte_at]
+                    while gap_end < end and source[gap_end : gap_end + 1] == b" ":
+                        gap_end += 1
+                    absorbed_until = gap_end
+                candidates.append((byte_at, gap_end))
             elif ord(char) < 128 and char not in SAFE:
                 return "byte", []
         byte_at += size
@@ -471,17 +527,17 @@ def analyse(
     # a zero-width atom. Check the invariant the runtime checks, rather than a
     # lexical proxy for it. The distance is in *bytes*, so an NBSP between
     # two spaces is an atom, not a whitespace run.
-    if any(b - a == 1 for a, b in zip(candidates, candidates[1:])):
+    if any(left[1] == right[0] for left, right in zip(candidates, candidates[1:])):
         return "whitespace run", []
 
     # The one hazard bilateral protection cannot repair; see `_DELIMITER_ROW`.
     if candidates and _DELIMITER_ROW.match(
-        source[candidates[-1] + 1 : end].decode("utf-8")
+        _logical_text(source, candidates[-1][1], end, continuations)
     ):
         return "delimiter row", []
 
-    breakable = _block_safe(start, end, source, candidates)
-    if _fence_hazard(start, end, source, breakable):
+    breakable = _block_safe(start, end, source, candidates, continuations)
+    if _fence_hazard(start, end, source, breakable, continuations):
         return "fence opener", []
     if not breakable:
         # Every gap is protected, so the run would hold a single atom and
@@ -492,8 +548,12 @@ def analyse(
 
 
 def _block_safe(
-    start: int, end: int, source: bytes, candidates: list[int]
-) -> list[int]:
+    start: int,
+    end: int,
+    source: bytes,
+    candidates: list[tuple[int, int]],
+    continuations: list[tuple[int, int, int]] = [],
+) -> list[tuple[int, int]]:
     """`candidates`, less every gap flanking an atom that could open a block.
 
     **Bilateral, not predecessor-only, and that is the whole of this slice's
@@ -517,11 +577,11 @@ def _block_safe(
     them and coalesce into one atom; pairwise merging would have produced two
     overlapping pairs and no definition of what they mean together.
     """
-    drop: set[int] = set()
-    edges = [start, *[g + 1 for g in candidates]]
-    stops = [*candidates, end]
+    drop: set[tuple[int, int]] = set()
+    edges = [start, *[gap_end for _, gap_end in candidates]]
+    stops = [*[gap_start for gap_start, _ in candidates], end]
     for index, (first, last) in enumerate(zip(edges, stops)):
-        if not _hazardous(source[first:last].decode("utf-8")):
+        if not _hazardous(_logical_text(source, first, last, continuations)):
             continue
         if index > 0:
             drop.add(candidates[index - 1])
@@ -531,7 +591,11 @@ def _block_safe(
 
 
 def _fence_hazard(
-    start: int, end: int, source: bytes, breakable: list[int]
+    start: int,
+    end: int,
+    source: bytes,
+    breakable: list[tuple[int, int]],
+    continuations: list[tuple[int, int, int]] = [],
 ) -> bool:
     """Can any line start the output produces begin a fence? See `_FENCE`.
 
@@ -550,10 +614,10 @@ def _fence_hazard(
     output can make it. That is the conservative direction for a fence: adding
     more of the line can only introduce a backtick and stop it being one.
     """
-    edges = [start, *[gap + 1 for gap in breakable]]
-    stops = [*breakable, end]
+    edges = [start, *[gap_end for _, gap_end in breakable]]
+    stops = [*[gap_start for gap_start, _ in breakable], end]
     for index, (first, last) in enumerate(zip(edges, stops)):
-        lines = source[first:last].decode("utf-8").split("\n")
+        lines = _logical_text(source, first, last, continuations).split("\n")
         for offset, line in enumerate(lines):
             if offset == 0 and index > 0:
                 continue
@@ -575,7 +639,9 @@ def refusal(
     return analyse(paragraph, source, secondary)[0]
 
 
-def partition(inline: dict, source: bytes, breakable: list[int]) -> list[dict]:
+def partition(
+    inline: dict, source: bytes, breakable: list[tuple[int, int]]
+) -> list[dict]:
     """The alternating atom/gap children covering `inline`'s whole range.
 
     The atoms are the maximal source spans **between the breakable gaps**, so
@@ -590,26 +656,47 @@ def partition(inline: dict, source: bytes, breakable: list[int]) -> list[dict]:
     """
 
     def atom(first: int, last: int) -> dict:
-        return {
-            "type": ATOM,
-            "start": first,
-            "end": last,
-            "text": source[first:last].decode("utf-8"),
-        }
+        children = []
+        at = first
+        for newline, _, prefix_end in _continuations(inline, source):
+            if newline < first or prefix_end > last:
+                continue
+            if at < newline:
+                children.append({
+                    "type": SEGMENT,
+                    "start": at,
+                    "end": newline,
+                    "text": source[at:newline].decode("utf-8"),
+                })
+            children.append({
+                "type": CONTINUATION,
+                "start": newline,
+                "end": prefix_end,
+                "text": source[newline:prefix_end].decode("utf-8"),
+            })
+            at = prefix_end
+        if at < last:
+            children.append({
+                "type": SEGMENT,
+                "start": at,
+                "end": last,
+                "text": source[at:last].decode("utf-8"),
+            })
+        return {"type": ATOM, "start": first, "end": last, "children": children}
 
     out: list[dict] = []
     at = inline["start"]
-    for gap in breakable:
-        out.append(atom(at, gap))
+    for gap_start, gap_end in breakable:
+        out.append(atom(at, gap_start))
         out.append(
             {
                 "type": GAP,
-                "start": gap,
-                "end": gap + 1,
-                "text": source[gap : gap + 1].decode("utf-8"),
+                "start": gap_start,
+                "end": gap_end,
+                "text": source[gap_start:gap_end].decode("utf-8"),
             }
         )
-        at = gap + 1
+        at = gap_end
     out.append(atom(at, inline["end"]))
     return out
 
@@ -656,8 +743,9 @@ def project(doc: dict) -> dict:
     Returning a separate formatter view makes that impossible rather than
     merely discouraged.
 
-    Top-level only: the walk stops descending the moment it enters a container,
-    so a paragraph inside a blockquote is never even offered to `refusal`.
+    Block quotes and list items are traversed: their formatter rules own the
+    prefixes represented by `block_continuation` ranges. Fences, HTML blocks
+    and injected language regions remain opaque boundaries.
     """
     doc = copy.deepcopy(doc)
     source = doc["source"].encode("utf-8")
@@ -682,7 +770,21 @@ def project(doc: dict) -> dict:
             if "field" in inline:
                 run["field"] = inline["field"]
             run["children"] = partition(inline, source, breakable)
-            node["children"] = [run]
+            node["children"] = [run, *node["children"][1:]]
             continue
+        if node["type"] == "paragraph" and node.get("children"):
+            inline = node["children"][0]
+            if inline["type"] == "inline" and _continuations(inline, source):
+                atom = partition(inline, source, [])[0]
+                logical = {
+                    "type": CONTAINER_INLINE,
+                    "start": inline["start"],
+                    "end": inline["end"],
+                }
+                if "field" in inline:
+                    logical["field"] = inline["field"]
+                logical["children"] = atom["children"]
+                node["children"] = [logical, *node["children"][1:]]
+                continue
         stack.extend(node.get("children", []))
     return doc
