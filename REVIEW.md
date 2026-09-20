@@ -128,7 +128,51 @@ findings). Each should name the guard that will eventually retire it.
   main-thread time with the work on versus off, and it must be taken before a
   consumer lands and erases the baseline.
 
+- **Name the headline number, then ask what guards it.** Controls get built
+  where the prompt points, not where the value is: a probe can carry four
+  genuine controls over its inputs and none over the figure it reports. For any
+  measurement, identify the number a reader will quote and mutate the code that
+  produces *it* — not the code that feeds it. Retire this when a probe harness
+  makes the reported quantities assert their own conservation by construction.
+  (2026-09-20, `probe_prose_ceiling.py`.)
+
 ## Findings log
+
+### 2026-09-20 — every control guarded the input, none guarded the answer
+
+- **What:** `harness/probe_prose_ceiling.py` shipped with four working
+  controls — a paragraph floor, an eligible floor, a per-file cross-check
+  against `prose.reasons()`, and a pin on the live blocker kinds. Two of three
+  semantic mutations were caught with the exact messages its docstring
+  promised. The third — stopping the blocker-set counter from recording —
+  left **every one of them green** and printed the rung table as zeros.
+  "A2.2 frees 0 of 1779" is precisely the shape of answer the probe exists to
+  produce, so nothing about the output would have looked wrong.
+- **Why missed:** the brief asked for controls on *the census*, and the census
+  is what got controlled. The rung yields were downstream of it, were the
+  actual deliverable, and were named by nobody. This is the vacuous-gate class
+  again, one level out: not a gate that checks nothing, but a gate that checks
+  everything except the number it exists to report.
+- **Guard:** applied. A conservation check — every `inline construct` refusal
+  must contribute exactly one blocker set — rather than a floor, so it needs no
+  magic number and does not go stale as the corpus moves. The transferable half
+  is the review question, promoted below.
+
+### 2026-09-20 — a per-kind tally read as a yield
+
+- **What:** the punctuation whitelist was priced at "`|` blocks 564 paragraphs,
+  35× A2.4's entire yield", and reported that way. The real figure is **4**:
+  those 564 paragraphs also contain emphasis, so admitting `|` frees almost
+  none of them. All sixteen punctuation characters together free 79, against
+  A2.2's 1547.
+- **Why missed:** the two quantities have the same units and look alike in a
+  `Counter`. A blocker is a property of a paragraph, but a paragraph is only
+  freed when **every** blocker in its set is admitted — so the set is the unit
+  and the per-kind count is an upper bound that can be arbitrarily loose.
+- **Guard:** applied. `probe_prose_ceiling.py` reports blocker *sets* and
+  computes each rung by subset test; the per-kind tally is not printed as a
+  yield anywhere. It also prints the set distribution, which is what makes the
+  difference visible: `{strong_emphasis}` alone is 1147 of 1779.
 
 ### 2026-09-20 — a document landed without the tree it describes
 
