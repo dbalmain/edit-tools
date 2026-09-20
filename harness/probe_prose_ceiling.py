@@ -297,6 +297,20 @@ def main() -> int:
     missing = LIVE_KINDS - kinds
     if missing:
         failures.append(f"blocker kinds no longer occur in the corpus: {sorted(missing)}")
+    # A conservation law rather than a floor, because the rung yields are the
+    # headline and nothing else guards them: every `inline construct` refusal
+    # must have contributed exactly one blocker set. Without this, a
+    # `sets` that silently stopped recording prints a rung table of zeros --
+    # "A2.2 frees 0" -- with the census above it still correct and every other
+    # control still green. Found by mutating this probe against itself; it was
+    # the one mutation of three that survived.
+    recorded = sum(sets.values())
+    if recorded != totals["inline construct"]:
+        failures.append(
+            f"{recorded} blocker sets recorded for "
+            f"{totals['inline construct']} `inline construct` refusals -- the "
+            f"rung yields below are computed from the smaller number"
+        )
 
     punct = frozenset(kind for kind in kinds if len(kind) == 1 and not kind.isalnum())
 
