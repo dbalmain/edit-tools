@@ -199,8 +199,12 @@ def _layout(node, source: bytes) -> str:
 
 # An ASCII whitespace run inside prose. Non-ASCII whitespace is deliberately
 # outside the class: a no-break space is content the author chose, not a break
-# opportunity, and `harness/prose.py` refuses a paragraph containing one for the
-# same reason.
+# opportunity. `harness/prose.py` reaches the same answer from the other side:
+# a gap there is exactly one ASCII space or one ASCII newline, so a no-break
+# space is never a gap whether the paragraph is refused for containing one (as
+# A2.1 and A2.2 do) or admitted with it held inside an atom (A2.3). **The two
+# files must not diverge on this**, and the shared reason is the part to keep --
+# not the mechanism either one happens to use to honour it.
 _PROSE_GAP = re.compile(r"[ \t\n\r\f]+")
 # Two or more spaces before a newline is a Markdown hard break. It survives as a
 # break rather than collapsing, because flattening one joins two lines the author
