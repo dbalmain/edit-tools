@@ -28,9 +28,9 @@ blocker, which is derived from the corpus because nobody has enumerated it).
 
 **The numbers at the writing commit.** Census: 3807 top-level paragraphs, 1604
 eligible (42.1%), 1779 `inline construct`. Ceiling: A2.2 frees 1547, A2.4 frees
-1563, `punct` frees 79 alone and 1752 combined with A2.2. The table this file
-prints is the authority; the paragraph above is a promise that the controls
-force it to keep.
+1563, `punct` frees 79 alone and 1752 combined with A2.2. If the table this
+file prints ever shows anything else, the controls below fail rather than let a
+plausible wrong number through.
 
 **The controls, and the broken version each catches.** This repository has been
 bitten repeatedly by gates that pass while checking nothing, so the probe fails
@@ -48,11 +48,11 @@ loudly in the four ways it can fail silently:
   numbers.
 * **A reason string or node type that went dead.** Synthetic paragraphs are
   parsed with the real block and inline grammars and driven through the real
-  `prose.analyse`, each checked against its named verdict -- one eligible, one
-  refused for `inline construct`, and a refused case per reason that appears in
-  the census. And `LIVE_KINDS` pins the inline kinds `prose.py` claims occur in
-  this corpus's secondary trees, so a grammar rename of `emphasis` or `image`
-  cannot pass as a census change.
+  `prose.analyse`, each checked against its named verdict -- two eligible, and
+  one refused case each for `inline construct`, `byte`, `non-ascii`,
+  `single atom` and `whitespace run`. And `LIVE_KINDS` pins the inline kinds
+  `prose.py` claims occur in this corpus's secondary trees, so a grammar rename
+  of `emphasis` or `image` cannot pass as a census change.
 * **Blockers that stopped resolving.** Every `inline construct` refusal must
   yield a clean, non-empty blocker set. An empty set would let every rung free
   everything, which prints as triumph and is the census lying.
