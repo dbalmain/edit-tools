@@ -1,4 +1,4 @@
-"""The A2.1 prose projection's predicate and partition.
+"""The A2.2 prose projection's predicate and partition.
 
 These run without tree-sitter, on hand-built documents, because `test.sh` runs
 the harness suites with a plain `python3` that has no grammars installed --
@@ -62,6 +62,26 @@ def doc(
             at += len(literal)
         return out
 
+    def secondary_nodes(spellings):
+        out = locate(spellings)
+        for child in out:
+            count = prose._DELIMITER_COUNTS.get(child["type"])
+            if count is None:
+                continue
+            half = count // 2
+            child["children"] = [
+                {
+                    "type": prose._EMPHASIS_DELIMITER,
+                    "start": offset,
+                    "end": offset + 1,
+                }
+                for offset in (
+                    *range(child["start"], child["start"] + half),
+                    *range(child["end"] - half, child["end"]),
+                )
+            ]
+        return out
+
     block_children = locate([(t, t) for t in tokens])
     for child in block_children:
         child["text"] = source[child["start"] : child["end"]]
@@ -92,7 +112,7 @@ def doc(
             "outcome": "clean",
             "root": {
                 "type": "inline", "start": base, "end": end,
-                "children": locate(inline),
+                "children": secondary_nodes(inline),
             },
         }]
     return out
@@ -141,11 +161,12 @@ class Refusal(unittest.TestCase):
         ("uri autolink", "alpha <http://x.com/a> beta", ("<", ">"),
          (("uri_autolink", "<http://x.com/a>"),), None),
 
-        # Named constructs A2.1 does not admit. Each is a later rung.
-        ("emphasis is A2.2", "alpha *beta* gamma", ("*", "*"),
-         (("emphasis", "*beta*"),), "inline construct"),
-        ("strong is A2.2", "alpha **beta** gamma", ("*", "*", "*", "*"),
-         (("strong_emphasis", "**beta**"),), "inline construct"),
+        # A2.2 descends through emphasis: delimiters are opaque but the whole
+        # construct is not, so interior gaps can remain layout.
+        ("emphasis", "alpha *beta* gamma", ("*", "*"),
+         (("emphasis", "*beta*"),), None),
+        ("strong emphasis", "alpha **beta** gamma", ("*", "*", "*", "*"),
+         (("strong_emphasis", "**beta**"),), None),
         ("image is A2.4", "alpha ![beta](c) delta", (),
          (("image", "![beta](c)"),), "inline construct"),
         ("shortcut link is A2.4", "alpha [beta] gamma", ("[", "]"),
@@ -362,6 +383,47 @@ class ProtectedWhole(unittest.TestCase):
         """The discriminating case for the one above: only position differs."""
         d = doc("alpha a~b*c beta", inline=())
         self.assertEqual(verdict(d), "byte")
+
+
+class EmphasisDelimiters(unittest.TestCase):
+    """Delimiters stay adjacent to content while interior gaps stay layout."""
+
+    def test_emphasis_is_not_protected_whole(self):
+        d = doc(
+            "alpha *beta gamma delta* omega",
+            inline=(("emphasis", "*beta gamma delta*"),),
+        )
+        self.assertIsNone(verdict(d))
+        self.assertEqual(
+            atom_texts(d), ["alpha", "*beta", "gamma", "delta*", "omega"]
+        )
+
+    def test_underscore_delimiters_have_the_same_shape(self):
+        d = doc(
+            "alpha _beta gamma delta_ omega",
+            inline=(("emphasis", "_beta gamma delta_"),),
+        )
+        self.assertEqual(
+            atom_texts(d), ["alpha", "_beta", "gamma", "delta_", "omega"]
+        )
+
+    def test_strong_delimiter_runs_stay_with_their_adjacent_words(self):
+        d = doc(
+            "alpha **beta gamma delta** omega",
+            inline=(("strong_emphasis", "**beta gamma delta**"),),
+        )
+        self.assertEqual(
+            atom_texts(d), ["alpha", "**beta", "gamma", "delta**", "omega"]
+        )
+
+    def test_an_unpaired_delimiter_still_refuses(self):
+        d = doc("alpha beta * gamma delta", inline=(("*", "*"),))
+        self.assertEqual(verdict(d), "inline construct")
+
+    def test_a_malformed_emphasis_node_does_not_gain_admission(self):
+        d = doc("alpha *beta gamma* delta", inline=(("emphasis", "*beta gamma*"),))
+        d["secondary"][0]["root"]["children"][0]["children"].pop()
+        self.assertEqual(verdict(d), "inline construct")
 
 
 # The block-safety cases the design was derived from. Each names the source,
@@ -740,6 +802,13 @@ class Mirror(unittest.TestCase):
         self.assertIsNotNone(found, "CONSTRUCTS not found in prose.mjs")
         self.assertEqual(
             set(re.findall(r'"([^"]+)"', found.group(1))), set(prose.CONSTRUCTS)
+        )
+
+    def test_the_emphasis_set_matches(self):
+        found = re.search(r"EMPHASIS = new Set\(\[(.*?)\]\)", self.js, re.S)
+        self.assertIsNotNone(found, "EMPHASIS not found in prose.mjs")
+        self.assertEqual(
+            set(re.findall(r'"([^"]+)"', found.group(1))), set(prose.EMPHASIS)
         )
 
     def test_every_refusal_reason_is_spelled_in_both(self):

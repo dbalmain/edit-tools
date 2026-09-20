@@ -1,5 +1,5 @@
-// The A2.1 prose projection, in JavaScript. `harness/prose.py` is the original
-// and carries the design: what A2.1 added to A1, why the predicate outside a
+// The A2.2 prose projection, in JavaScript. `harness/prose.py` is the original
+// and carries the design: what A2.1/A2.2 added to A1, why the predicate outside a
 // protected range is still a whitelist, and the argument for every character
 // it admits. Read that file, not this one, to change the
 // policy -- and then change both, because `harness/probe_prose.py`
@@ -45,12 +45,21 @@ const GAPS = new Set([" ", "\n"]);
 // is a GFM one-column table delimiter row, which needs no pipe; `prose.py`
 // carries the counterexample that put it there. `$` rather than Python's `\Z`
 // because this regex is not multiline, where the two are the same.
-const ACQUIRES = /^(?:[-+*>#=|~]|\d+[.)]|```|~~~|:-+:?$)/;
+const ACQUIRES = /^(?:[-+>#=|~]|\d+[.)]|```|~~~|:-+:?$)/;
 
 // `prose.py`'s `CONSTRUCTS`: the three inline constructs A2.1 admits, each
 // protected whole. `prose.py` carries the argument for why `<` and `[` are
 // deliberately not also block-acquisition hazards.
 export const CONSTRUCTS = new Set(["code_span", "inline_link", "uri_autolink"]);
+
+// Unlike the protected-whole constructs, emphasis is traversed. Only its
+// delimiter leaves are opaque, so interior gaps remain layout candidates.
+export const EMPHASIS = new Set(["emphasis", "strong_emphasis"]);
+const DELIMITER_COUNTS = new Map([
+  ["emphasis", 2],
+  ["strong_emphasis", 4],
+]);
+const EMPHASIS_DELIMITER = "emphasis_delimiter";
 
 // `prose.py`'s `_DELIMITER_ROW`: a **last** atom spelling a GFM one-column
 // delimiter row refuses the whole paragraph, because it turns the *preceding
@@ -93,14 +102,32 @@ export function secondaryIndex(doc) {
   return out;
 }
 
-/** The A2.1 construct ranges over `inline`, or the reason it is refused. */
+/** Opaque construct and emphasis-delimiter ranges, or a refusal reason. */
 function protectedRanges(inline, record) {
   if (record === undefined) return [null, "no inline parse"];
   if (record.outcome !== "clean") return [null, "dirty inline parse"];
   const out = [];
+  const admit = (child, inEmphasis = false) => {
+    if (CONSTRUCTS.has(child.type)) {
+      out.push([child.start, child.end]);
+      return true;
+    }
+    if (EMPHASIS.has(child.type)) {
+      const children = child.children ?? [];
+      const delimiters = children.filter(
+        (nested) => nested.type === EMPHASIS_DELIMITER,
+      );
+      if (delimiters.length !== DELIMITER_COUNTS.get(child.type)) return false;
+      return children.every((nested) => admit(nested, true));
+    }
+    if (inEmphasis && child.type === EMPHASIS_DELIMITER) {
+      out.push([child.start, child.end]);
+      return true;
+    }
+    return SAFE_PUNCTUATION.has(child.type);
+  };
   for (const child of record.root.children ?? []) {
-    if (CONSTRUCTS.has(child.type)) out.push([child.start, child.end]);
-    else if (!SAFE_PUNCTUATION.has(child.type)) return [null, "inline construct"];
+    if (!admit(child)) return [null, "inline construct"];
   }
   return [out, null];
 }
