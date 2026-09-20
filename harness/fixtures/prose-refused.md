@@ -21,13 +21,20 @@
 > the predicate refusing something is not a device, because the predicate is the
 > thing under test.
 
-## An asterisk
+## An unpaired asterisk
 
-alpha b*eta gamma*d epsilon zeta eta theta
+alpha beta * gamma delta epsilon zeta eta theta
 
-## An underscore
+## An unpaired underscore
 
-alpha beta _gamma delta_ epsilon zeta eta theta
+alpha beta _ gamma delta epsilon zeta eta theta
+
+## A deferred construct nested inside emphasis
+
+> Descending through emphasis must not hide an unsupported child. The shortcut
+> link remains an A2.4 construct even though its enclosing emphasis is admitted.
+
+alpha beta *gamma [delta] epsilon* zeta eta theta
 
 ## An unterminated code span
 

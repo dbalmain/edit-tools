@@ -46,6 +46,38 @@ alpha beta [gamma delta](http://example.com/a) epsilon zeta eta
 
 alpha beta <http://example.com/a> epsilon zeta eta theta
 
+## Emphasis, with its interior gaps still breakable
+
+alpha beta *gamma delta epsilon zeta* eta theta iota
+
+## Underscore emphasis, with the same delimiter attachment
+
+alpha beta _gamma delta epsilon zeta_ eta theta iota
+
+## Strong emphasis, whose two-character delimiters stay attached
+
+alpha beta **gamma delta epsilon zeta** eta theta iota
+
+## Nested emphasis and strong delimiter runs
+
+alpha beta ***gamma delta epsilon zeta*** eta theta iota
+
+## Mixed nested emphasis
+
+alpha *beta **gamma delta** epsilon zeta* eta theta iota
+
+## A protected code span inside reflowable emphasis
+
+alpha *beta `gamma  delta` epsilon zeta* eta theta iota
+
+## Emphasis beside punctuation
+
+alpha beta (*gamma delta epsilon zeta*) eta theta iota
+
+## Emphasis at the first atom
+
+_alpha beta gamma delta epsilon_ zeta eta theta iota
+
 ## An indented line start inside a span, which is not a fence
 
 > The discriminating case for the fence rule. This has an embedded line start

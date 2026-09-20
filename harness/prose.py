@@ -1,4 +1,4 @@
-"""The A2.1 prose projection: a paragraph's words, as a source-backed partition.
+"""The A2.2 prose projection: a paragraph's words, as a source-backed partition.
 
 `docs/prose-projection.md` is the design. This is its first slice: turn an
 eligible markdown paragraph's `inline` node into a `prose_run` whose children
@@ -12,7 +12,7 @@ all this needs, and none of the parser's internals are.
 `harness/prose.mjs` is the mirror. The two must agree byte for byte on the same
 input document; `harness/probe_prose.py` is the gate that says so.
 
-# What A2.1 added to A1
+# What A2.1 and A2.2 added to A1
 
 A1 had no inline grammar, so it could not be told whether a `*` opened emphasis
 or was a literal asterisk, and it admitted only paragraphs in which **no
@@ -32,6 +32,11 @@ that changes the shape of the answer in two places:
   **both** sides of such an atom non-breakable, so the atom cannot reach a line
   start alone. `_ACQUIRES` is still the classifier; what changed is what is done
   with its verdict.
+- **A2.2 admits `emphasis` and `strong_emphasis` by descending.** Code spans
+  and links remain protected whole, but only emphasis delimiter leaves are
+  protected. Interior gaps remain candidates, so one fill can wrap through
+  nested emphasis while every delimiter stays attached to its content-side
+  atom.
 
 Refusal did not go away: `_DELIMITER_ROW` and `_FENCE` below are the two hazards
 gap protection provably cannot repair, and each carries the case that found it.
@@ -77,12 +82,14 @@ and a newline change how this character is read?**
                  also spells a GFM table delimiter row, which needs no pipe when
                  the table has one column -- see `_ACQUIRES`, which refuses it.
 
-Everything else -- asterisk, underscore, pipe, hash, tilde, ampersand,
-backslash, plus, equals, and every non-ASCII byte -- refuses the paragraph when
-it appears outside a protected range. Backtick, bracket and angle are no longer
+Everything else -- an unpaired asterisk or underscore, pipe, hash, tilde,
+ampersand, backslash, plus, equals, and every non-ASCII byte -- refuses the
+paragraph when it appears outside a protected range. Grammar-confirmed
+emphasis delimiters are protected leaves, not members of this whitelist.
+Backtick, bracket and angle are no longer
 in that list at the *construct* level: they are admitted when the inline grammar
 says they open a `code_span`, `inline_link` or `uri_autolink`, and refused when
-it does not. Emphasis is A2.2; non-ASCII atom content is A2.3.
+it does not. Non-ASCII atom content is A2.3.
 
 The argument above is reasoning, not evidence, and one character in it was
 wrong: `:` also spells a GFM table delimiter row. The evidence is
@@ -155,9 +162,13 @@ GAPS = (" ", "\n")
 # see this class at all and `probe_prose.py`'s phase A is blind to it. The guard
 # is the entry in `harness/fixtures/prose-refused.md`, not the sweep.
 #
-# Most of this pattern is unreachable and kept as documentation. `+ * > # = | ~`
+# Most of this pattern is unreachable and kept as documentation. `+ > # = | ~`
 # and the two fence spellings are not admitted characters, so an atom can never
-# begin with one and the `byte` check refuses the paragraph first. Only three
+# begin with one and the `byte` check refuses the paragraph first. `*` used to
+# be in the pattern too, but A2.2 makes it reachable as an emphasis delimiter:
+# attachment to the following non-whitespace content is what prevents `*word`
+# from becoming a list item or thematic break, and coalescing its following gap
+# would wrongly prevent a wrap after the first emphasized word. Only three
 # clauses can actually fire on an admitted atom: the leading `-`, the ordered
 # marker, and the colon-leading delimiter row. Exhaustively: over every
 # two-character atom the whitelist admits (5,476 of them, 5,381 admitted),
@@ -167,7 +178,7 @@ GAPS = (" ", "\n")
 # pattern misses, and 5,329 two-atom openers found no hit at all. Those three
 # searches are grok's, from the round-2 review; the fixture is what locks them
 # in, since none of them runs in `test.sh`.
-_ACQUIRES = re.compile(r"^(?:[-+*>#=|~]|\d+[.)]|```|~~~|:-+:?\Z)")
+_ACQUIRES = re.compile(r"^(?:[-+>#=|~]|\d+[.)]|```|~~~|:-+:?\Z)")
 
 # The inline constructs A2.1 admits, each **protected whole**: the construct's
 # whole source range becomes part of one atom, so no gap inside it is ever
@@ -182,11 +193,19 @@ _ACQUIRES = re.compile(r"^(?:[-+*>#=|~]|\d+[.)]|```|~~~|:-+:?\Z)")
 # grammar as well: neither construct changes the block tree when moved to a
 # line start or isolated on one.
 #
-# Everything else the inline grammar names -- `emphasis` and `strong_emphasis`
-# (A2.2), `image`, `shortcut_link`, `full_reference_link`, `backslash_escape`
-# (A2.4) -- refuses the paragraph. All four of the latter occur in this
-# corpus's secondary trees, so this is a live refusal and not a hypothetical.
+# Everything else the inline grammar names -- `image`, `shortcut_link`,
+# `full_reference_link`, `backslash_escape` (A2.4) -- refuses the paragraph.
+# All four occur in this corpus's secondary trees, so this is live refusal and
+# not a hypothetical.
 CONSTRUCTS = frozenset({"code_span", "inline_link", "uri_autolink"})
+
+# Emphasis is admitted by descending rather than by joining `CONSTRUCTS`.
+# Its delimiter leaves are opaque bytes, while gaps in the implicit text
+# between them remain candidates. That makes `*alpha beta*` two atoms --
+# `*alpha` and `beta*` -- instead of one protected span or three fill items.
+EMPHASIS = frozenset({"emphasis", "strong_emphasis"})
+_DELIMITER_COUNTS = {"emphasis": 2, "strong_emphasis": 4}
+_EMPHASIS_DELIMITER = "emphasis_delimiter"
 
 # A **last** atom spelling a GFM one-column delimiter row refuses the whole
 # paragraph. Bilateral protection cannot repair this one, and the reason is
@@ -349,32 +368,49 @@ def secondary_index(doc: dict) -> dict[tuple[int, int], dict]:
 
 
 def _protected(inline: dict, record: dict | None) -> tuple[list[tuple[int, int]] | None, str | None]:
-    """The A2.1 construct ranges over `inline`, or the reason it is refused.
+    """Opaque construct and delimiter ranges, or the reason for refusal.
 
     The inline CST is the oracle A1 did not have. A1 asked the *block* grammar
     which punctuation appeared under `inline` and refused anything it could not
     name; that question is subsumed here by a grammar that actually parses the
     inline layer, so a named node is classified rather than guessed at.
 
-    The walk is over the root's **direct children only**, and deliberately does
-    not descend. An admitted construct is protected whole -- it becomes source
-    bytes inside one atom -- so whatever it contains is emitted verbatim and
-    cannot be reached by a gap flip. Emphasis inside a link's text is A2.2's
-    problem only when the emphasis is *outside* a protected range.
+    Code spans and links stop the walk and stay protected whole. Emphasis does
+    the opposite: descend through it, protect only its delimiter leaves, and
+    leave its implicit interior text visible to the ordinary gap scan. Nested
+    emphasis and protected constructs inside emphasis therefore compose without
+    a second partitioning mechanism.
     """
     if record is None:
         return None, "no inline parse"
     if record.get("outcome") != "clean":
         return None, "dirty inline parse"
     out: list[tuple[int, int]] = []
-    for child in record["root"].get("children", []):
+
+    def admit(child: dict, in_emphasis: bool = False) -> bool:
         kind = child["type"]
         if kind in CONSTRUCTS:
             out.append((child["start"], child["end"]))
-        elif kind not in SAFE_PUNCTUATION:
-            # A named node A2.1 does not admit -- `emphasis`, `image`,
-            # `shortcut_link`, `full_reference_link`, `backslash_escape` -- or
-            # an anonymous token spelling a character the whitelist refuses.
+            return True
+        if kind in EMPHASIS:
+            children = child.get("children", [])
+            delimiters = [
+                nested for nested in children
+                if nested["type"] == _EMPHASIS_DELIMITER
+            ]
+            if len(delimiters) != _DELIMITER_COUNTS[kind]:
+                return False
+            return all(admit(nested, True) for nested in children)
+        if in_emphasis and kind == _EMPHASIS_DELIMITER:
+            out.append((child["start"], child["end"]))
+            return True
+        return kind in SAFE_PUNCTUATION
+
+    for child in record["root"].get("children", []):
+        if not admit(child):
+            # A named node A2.2 does not admit -- `image`, `shortcut_link`,
+            # `full_reference_link`, `backslash_escape` -- or an anonymous
+            # token spelling a character the whitelist refuses.
             return None, "inline construct"
     return out, None
 

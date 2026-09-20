@@ -578,31 +578,40 @@ protecting the gaps around an atom cannot control it. Bilateral protection is
 sound exactly against prefix hazards. The question A2.1 has to answer is whether
 any member of that class is left unhandled.
 
-**For A2.1's admitted set, yes -- closed.** Enumerated against CommonMark and
-GFM, a block opener can depend on:
+**Re-audited for A2.2: yes -- closed for emphasis and strong as implemented.**
+Enumerated again against CommonMark and GFM, a block opener can depend on:
 
 - **The preceding line.** Setext headings and GFM tables. Setext is modelled by
   the pinned block parser, so such source never arrives as a paragraph. GFM
   tables are the real blind spot -- the delimiter row converts its predecessor
   into a header -- and the pipeless one-column case is `_DELIMITER_ROW`.
 - **The remainder of its own line.** Fences, thematic breaks, ATX headings, list
-  markers, HTML block starts, link reference definitions. Thematic breaks are
-  neutralised by coalescing or already parsed in the source. `#`, `>`, `+`, `*`
-  and `_` are refused or disjoint from the three admitted constructs. Lists are
-  caught conservatively through their marker. Link definitions cannot interrupt
-  a paragraph, and their `[` shape is disjoint from an admitted `inline_link`.
-  **Fences are the only admitted shape whose invalidating suffix can be
-  removed**, and they are `_FENCE`.
+  markers, HTML block starts, link reference definitions. A2.2 makes `*` and
+  `_` reachable, so the A2.1 sentence saying they were refused no longer does
+  any work. The replacement is structural: an opening emphasis delimiter is
+  protected in the same atom as the immediately following non-whitespace
+  content, and a closing delimiter with the immediately preceding content. A
+  break can therefore produce `*word` or `_word`, never a bare marker. The
+  former is not a list item because `*` is not followed by whitespace, and
+  neither is a thematic break because its line contains non-marker content.
+  Strong and nested delimiter runs have the same content-side attachment.
+  `_ACQUIRES` consequently drops its old `*` alternative and never adds `_`:
+  coalescing the first interior gap would prevent the reference's real break
+  after `_several`, while attachment already closes the block hazard. Literal
+  unpaired `*` and `_` still refuse as inline constructs. The other A2.1 cases
+  are unchanged, and **fences remain the only admitted shape whose invalidating
+  suffix can be removed**; `_FENCE` still refuses them.
 - **Later lines or parser state.** HTML block termination, fence closing, list
-  continuation and tightness. None can newly *start* from A2.1's boundary set.
+  continuation and tightness. Neither emphasis delimiter adds a new start in
+  this class.
 - **Blank lines and indented code.** One space/newline flip cannot manufacture a
   blank line, and whitespace runs are refused outright.
 
-**This is not a theorem, and it expires.** It is a closure argument over *the
-shapes A2.1 admits*, and it must be re-audited the moment A2.2 admits new
-protected shapes -- emphasis and strong delimiters change which characters can
-reach a line start, and the enumeration above assumes they cannot. Treat the
-list as a checklist to re-walk, not as a result to cite.
+This remains a bounded closure argument rather than a theorem. It now covers
+A2.2's recursive emphasis shapes, including nested/mixed runs and protected
+code or links inside them, and `prose-admitted.md` carries those discriminators.
+It expires again when another inline shape is admitted or when projection starts
+descending into containers.
 
 The fence entry is worth one further note, because it is the one the argument
 got wrong first. `_FENCE` was originally anchored at column zero on the
@@ -614,13 +623,44 @@ opener is still a fence. The fix is not CommonMark's three-space bound either
 `prose-admitted.md` carries the discriminating case that keeps it from becoming
 a rule about whitespace.
 
-So A2.1 is proved the way A1 was, by the repository sweep in
+So A2.2 is proved the way A1 and A2.1 were, by the repository sweep in
 `harness/probe_prose.py` -- which is where 98.7% of the evidence lives anyway.
 Corpus files would still earn gates 0 through 3, which are reference-free and
 compare the two runtimes to each other rather than to prettier; what they cannot
 earn is an agreement number. That distinction is worth stating because the
 scoreboard everyone reads is the agreement one, and for prose it is structurally
 silent.
+
+### What A2.2 actually implements
+
+`emphasis` and `strong_emphasis` do not join `CONSTRUCTS`. The classifier
+descends through them recursively, adds each `emphasis_delimiter` leaf to the
+opaque ranges, and leaves grammar-confirmed interior ASCII gaps visible to the
+same candidate scan as ordinary prose. A protected-whole code span or link can
+stop that recursive walk inside emphasis; a nested emphasis node continues it.
+The partition mechanism itself is unchanged. For `alpha _beta gamma_ omega`
+the atoms are `alpha`, `_beta`, `gamma_`, `omega`, exactly the table below.
+
+This matches the pinned reference under the policy relevant to a reflow:
+Prettier 3.9.6 with `--prose-wrap always --print-width 40` breaks the live
+`prose_wrap.md` case after `_several` and again among the emphasized words. The
+committed reference files cannot show that fact because the manifest still pins
+Prettier's default `proseWrap=preserve`; they intentionally reproduce the
+source line.
+
+The A2.1 coalescing decision is not reopened here. The contradiction this
+document once carried was already resolved in favour of bilateral gap
+protection, and A2.2 composes delimiter attachment with that one block policy.
+No second coalescing pass and no format-pass clock were added.
+
+The implemented count also exposes why the ceiling must not be called
+eligibility. On the live corpus, A2.1's direct-child classifier identifies well
+over fifteen hundred paragraphs whose first refusal is only emphasis or strong,
+but hundreds next reach A2.3's `non-ascii` refusal and several dozen reach a
+different inline or byte refusal. `probe_prose_ceiling.py` now prints that
+transition by next verdict instead of claiming every removed first refusal is
+eligible. The exact stamped figures belong in the running done-note, because
+this document is itself part of the measured Markdown corpus.
 
 ## Inputs and ownership
 

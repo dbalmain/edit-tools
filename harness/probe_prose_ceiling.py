@@ -19,18 +19,23 @@ grouped by reason, walked exactly the way `prose.project` walks -- skip any
 node whose type is in `prose.CONTAINERS` or that carries a `"language"` key,
 and never descend once one is hit. The second half prices the rungs. Each
 paragraph refused as `inline construct` holds a **set** of blocking inline
-kinds: the inline record's root children outside `prose.CONSTRUCTS` and
-`prose.SAFE_PUNCTUATION`. A rung frees a paragraph only when it admits **every**
-kind in that set, so the per-paragraph set is the unit and a per-kind tally is
-the wrong answer. Reported here: A2.2 (emphasis + strong), A2.4 (A2.2 plus the
-seven named kinds), and `punct` (every single-character non-alphanumeric
-blocker, which is derived from the corpus because nobody has enumerated it).
+kinds found by the same recursive walk as the projection: protected-whole nodes
+stop, emphasis descends, and other nodes outside `SAFE_PUNCTUATION` block. A
+rung frees a paragraph only when it admits **every** kind in that set, so the
+per-paragraph set is the unit and a per-kind tally is the wrong answer. After
+A2.2, it also retains A2.1's direct-child classifier as
+a transition ruler: which construct refusals emphasis removed, and which real
+A2.2 verdict each paragraph reached next. The remaining planned rungs are A2.4
+(seven named kinds) and `punct` (every single-character non-alphanumeric
+blocker, derived from the corpus because nobody has enumerated it).
 
-**The numbers at the writing commit.** Census: 3807 top-level paragraphs, 1604
-eligible (42.1%), 1779 `inline construct`. Ceiling: A2.2 frees 1547, A2.4 frees
-1563, `punct` frees 79 alone and 1752 combined with A2.2. If the table this
-file prints ever shows anything else, the controls below fail rather than let a
-plausible wrong number through.
+**The price before implementation.** At commit `8100844`, the census found
+3,807 top-level paragraphs, 1,604 eligible and 1,779 `inline construct`; the
+A2.1 direct-child classifier said emphasis removed the first refusal from
+1,547. That was a ceiling, not an eligibility delta: A2.2 proved that hundreds
+then reach the deferred `non-ascii` check. The transition table below now makes
+that distinction visible instead of silently treating every removed first
+refusal as eligible.
 
 **The controls, and the broken version each catches.** This repository has been
 bitten repeatedly by gates that pass while checking nothing, so the probe fails
@@ -50,9 +55,9 @@ loudly in the four ways it can fail silently:
   parsed with the real block and inline grammars and driven through the real
   `prose.analyse`, each checked against its named verdict -- two eligible, and
   one refused case each for `inline construct`, `byte`, `non-ascii`,
-  `single atom` and `whitespace run`. And `LIVE_KINDS` pins the inline kinds
-  `prose.py` claims occur in this corpus's secondary trees, so a grammar rename
-  of `emphasis` or `image` cannot pass as a census change.
+  `single atom` and `whitespace run`. And `LIVE_KINDS` pins the still-refused
+  named kinds `prose.py` claims occur in this corpus's secondary trees, so a
+  grammar rename of `image` cannot pass as a census change.
 * **Blockers that stopped resolving.** Every `inline construct` refusal must
   yield a clean, non-empty blocker set. An empty set would let every rung free
   everything, which prints as triumph and is the census lying.
@@ -80,12 +85,12 @@ sys.path.insert(0, str(ROOT / "harness"))
 import probe_prose as pp  # noqa: E402
 import prose  # noqa: E402
 
-# The planned rungs as sets of admitted inline kinds. A2.4's added kinds are
-# prose.py's own list of the named constructs A2.1 refuses. `punct` is derived
+# The transition and next planned rung as sets of inline kinds. A2.4's added
+# kinds are prose.py's own list of the named constructs A2.2 refuses. `punct` is derived
 # from the corpus in `main`, not fixed here, because it is *every*
 # single-character non-alphanumeric blocker.
 RUNG_A22 = frozenset({"emphasis", "strong_emphasis"})
-RUNG_A24 = RUNG_A22 | frozenset(
+RUNG_A24 = frozenset(
     {
         "backslash_escape",
         "entity_reference",
@@ -111,8 +116,6 @@ MIN_ELIGIBLE = 800
 # read. `collapsed_reference_link` did not occur, so it is deliberately absent.
 LIVE_KINDS = frozenset(
     {
-        "emphasis",
-        "strong_emphasis",
         "backslash_escape",
         "entity_reference",
         "image",
@@ -129,7 +132,7 @@ LIVE_KINDS = frozenset(
 VERDICTS = (
     ("plain prose", "alpha beta gamma\n", None),
     ("a code span, protected whole", "alpha `beta` gamma\n", None),
-    ("emphasis, the A2.2 blocker", "alpha *beta* gamma\n", "inline construct"),
+    ("emphasis admitted by A2.2", "alpha *beta* gamma\n", None),
     ("a lone tilde, refused by byte", "alpha ~beta gamma\n", "byte"),
     ("non-ascii atom content", "alpha b\u00e9ta gamma\n", "non-ascii"),
     ("one word, no gap", "alpha\n", "single atom"),
@@ -205,11 +208,10 @@ def census_doc(
 def blockers(node: dict, secondary: dict[tuple[int, int], dict]) -> frozenset[str]:
     """The inline kinds standing between this paragraph and eligibility.
 
-    A mirror of `_protected`'s refusal test: the record root's children outside
-    `CONSTRUCTS` and `SAFE_PUNCTUATION`. `_protected` refuses `inline construct`
-    exactly when this set is non-empty, and it returns before reading the text,
-    so `record` is guaranteed clean and present here -- a violation of that is a
-    producer bug worth failing on, not a case to skip.
+    A mirror of `_protected`'s recursive refusal test. Protected-whole nodes stop
+    the walk; emphasis descends through its delimiter leaves; anything else
+    outside `SAFE_PUNCTUATION` is a blocker. `_protected` returns before reading
+    text, so `record` is guaranteed clean and present here.
     """
     inline = node["children"][0]
     record = secondary.get((inline["start"], inline["end"]))
@@ -218,18 +220,55 @@ def blockers(node: dict, secondary: dict[tuple[int, int], dict]) -> frozenset[st
             f"an `inline construct` refusal has no clean inline record at "
             f"{inline['start']}..{inline['end']}"
         )
-    found = frozenset(
+    found: set[str] = set()
+
+    def visit(child: dict, in_emphasis: bool = False) -> None:
+        kind = child["type"]
+        if kind in prose.CONSTRUCTS:
+            return
+        if kind in prose.EMPHASIS:
+            children = child.get("children", [])
+            delimiters = [
+                nested
+                for nested in children
+                if nested["type"] == prose._EMPHASIS_DELIMITER
+            ]
+            if len(delimiters) != prose._DELIMITER_COUNTS[kind]:
+                found.add(kind)
+                return
+            for nested in children:
+                visit(nested, True)
+            return
+        if in_emphasis and kind == prose._EMPHASIS_DELIMITER:
+            return
+        if kind not in prose.SAFE_PUNCTUATION:
+            found.add(kind)
+
+    for child in record["root"].get("children", []):
+        visit(child)
+    frozen = frozenset(found)
+    if not frozen:
+        raise Failed(
+            f"an `inline construct` refusal at {inline['start']}..{inline['end']} "
+            "yields an empty blocker set -- the refusal and its evidence disagree"
+        )
+    return frozen
+
+
+def a21_blockers(
+    node: dict, secondary: dict[tuple[int, int], dict]
+) -> frozenset[str]:
+    """A2.1's direct-child construct blockers, kept as a transition ruler."""
+    inline = node["children"][0]
+    record = secondary.get((inline["start"], inline["end"]))
+    if record is None or record.get("outcome") != "clean":
+        return frozenset()
+    return frozenset(
         child["type"]
         for child in record["root"].get("children", [])
         if child["type"] not in prose.CONSTRUCTS
         and child["type"] not in prose.SAFE_PUNCTUATION
     )
-    if not found:
-        raise Failed(
-            f"an `inline construct` refusal at {inline['start']}..{inline['end']} "
-            "yields an empty blocker set -- the refusal and its evidence disagree"
-        )
-    return found
 
 
 def main() -> int:
@@ -254,6 +293,7 @@ def main() -> int:
     totals: Counter[str] = Counter()
     sets: Counter[frozenset[str]] = Counter()
     kinds: set[str] = set()
+    a22_outcomes: Counter[str] = Counter()
     paragraphs = 0
     files = 0
     skipped = 0
@@ -274,6 +314,9 @@ def main() -> int:
         for node, verdict in found:
             paragraphs += 1
             totals[verdict or "eligible"] += 1
+            old_blockers = a21_blockers(node, secondary)
+            if old_blockers and old_blockers <= RUNG_A22:
+                a22_outcomes[verdict or "eligible"] += 1
             if verdict != "inline construct":
                 continue
             try:
@@ -317,10 +360,9 @@ def main() -> int:
     def freed(rung: frozenset[str]) -> int:
         return sum(count for blockers_set, count in sets.items() if blockers_set <= rung)
 
-    a22 = freed(RUNG_A22)
     a24 = freed(RUNG_A24)
     punct_alone = freed(punct)
-    a22_punct = freed(RUNG_A22 | punct)
+    a24_punct = freed(RUNG_A24 | punct)
 
     print(f"\nrefusal census, {paragraphs} top-level paragraphs in {files} "
           f"tracked markdown files ({skipped} unparseable)")
@@ -340,12 +382,18 @@ def main() -> int:
         label = "{" + ", ".join(sorted(blockers_set)) + "}"
         print(f"  {label:60} {count}")
 
-    print("\nplanned rung, paragraphs freed (a rung frees a paragraph only when")
+    print("\nA2.2 transition from A2.1's construct-first classifier")
+    print(f"  {'construct refusals removed':32} {sum(a22_outcomes.values())}")
+    for outcome, count in sorted(
+        a22_outcomes.items(), key=lambda item: (-item[1], item[0])
+    ):
+        print(f"  {outcome:32} {count}")
+
+    print("\nnext planned rung, paragraphs freed (a rung frees a paragraph only when")
     print("it admits every blocker in that paragraph's set)")
-    print(f"  A2.2 {{emphasis, strong_emphasis}}                       {a22}")
-    print(f"  A2.4 = A2.2 + seven named kinds                         {a24}")
+    print(f"  A2.4 seven named kinds                                  {a24}")
     print(f"  punct (single-char non-alphanumeric blockers)             {punct_alone} alone, "
-          f"{a22_punct} with A2.2")
+          f"{a24_punct} with A2.4")
 
     if failures:
         print("\nthis measurement does not stand:")

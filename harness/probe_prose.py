@@ -3,7 +3,7 @@
 # requires-python = ">=3.11"
 # dependencies = ["tree-sitter", "tree-sitter-markdown==0.5.1"]
 # ///
-"""The three things the A2.1 prose projection has to be true for.
+"""The three things the A2.2 prose projection has to be true for.
 
     ./harness/probe_prose.py [--quiet]
 
@@ -22,19 +22,19 @@ patterns are adversarial rather than realistic: one word per line is the worst
 case for a word that could start a block, and no particular width need produce
 it.
 
-**A'. An eligible paragraph holds only inline syntax A2.1 admits, and holds
-each piece of it whole.** Every eligible paragraph is re-parsed with the
+**A'. An eligible paragraph holds only inline syntax A2.2 admits, with each
+piece partitioned by its policy.** Every eligible paragraph is re-parsed with the
 package's *inline* grammar -- from its own bytes, not from the secondary table
 the producer attached, so a dropped or misranged record cannot hide here. Two
-things must hold: every named node is a `code_span`, `inline_link` or
-`uri_autolink`, and every one of those lies wholly **inside a single atom**.
+things must hold: every named node is protected whole or is emphasis/strong,
+every protected-whole node lies inside one atom, and every emphasis delimiter
+is attached to the atom on its content side.
 
-Under A1 this check demanded no named node at all. A2.1 admits three, so the
-oracle moves rather than retires -- `emphasis`, `image`, `shortcut_link` and
-`full_reference_link` all occur in this corpus and must still refuse. The
-protected-whole half is new, and it is the half a reflow-and-reparse sweep
-cannot do: the block grammar sees a paragraph's interior as one opaque node, so
-only the inline grammar can say whether a gap landed inside a code span.
+Under A1 this check demanded no named node at all. A2.1 admitted three whole;
+A2.2 additionally descends through `emphasis` and `strong_emphasis`, including
+nested combinations. `image`, `shortcut_link` and `full_reference_link` still
+occur and must still refuse. The partition checks are what a block reparse
+cannot do: the block grammar sees a paragraph's interior as one opaque node.
 
 **It is weaker than "contains no inline syntax", and the gap has a name.** GFM
 extended autolinks -- `www.example.com`, `https://example.com` -- *are* inline
@@ -300,10 +300,8 @@ def phase_a_inline(inline_parser, docs) -> int:
     a record would be invisible to a check that read the same table. This
     reparses the run's own bytes and asserts two things the projection claims.
 
-    **Every named node is an admitted construct.** A1 required *no* named node;
-    A2.1 admits three and still refuses the rest, so the oracle moves rather
-    than retires -- `emphasis`, `image`, `shortcut_link` and
-    `full_reference_link` all occur in this corpus and must still refuse.
+    **Every named node is admitted.** Protected-whole constructs stop the walk;
+    emphasis and strong recurse, and every other named node still refuses.
 
     **Every admitted construct lies wholly inside one atom.** This is the
     "protected whole" claim stated as a property of the emitted partition, and
@@ -321,33 +319,76 @@ def phase_a_inline(inline_parser, docs) -> int:
                     f"{path}: an eligible paragraph does not parse as inline: "
                     f"{text[:60]!r}"
                 )
-            found = [
-                child.type
-                for child in root.children
-                if child.type not in prose.CONSTRUCTS
-                and (child.is_named or child.type not in prose.SAFE_PUNCTUATION)
-            ]
-            if found:
-                raise Failed(
-                    f"{path}: an eligible paragraph holds inline syntax "
-                    f"({', '.join(sorted(set(found)))}) that A2.1 cannot reason "
-                    f"about: {text[:60]!r}"
-                )
             spans = [
                 (child["start"], child["end"])
                 for child in run["children"]
                 if child["type"] == prose.ATOM
             ]
+            found = []
+
+            def inside_atom(first, last):
+                return next(
+                    ((a, b) for a, b in spans if a <= first and last <= b),
+                    None,
+                )
+
+            def check(child, in_emphasis=False):
+                first = start + child.start_byte
+                last = start + child.end_byte
+                if child.type in prose.CONSTRUCTS:
+                    if inside_atom(first, last) is None:
+                        raise Failed(
+                            f"{path}: a {child.type} at {first}..{last} is split "
+                            f"across atoms {spans}, so it is not protected whole: "
+                            f"{text[:60]!r}"
+                        )
+                    return
+                if child.type in prose.EMPHASIS:
+                    delimiters = [
+                        nested for nested in child.children
+                        if nested.type == prose._EMPHASIS_DELIMITER
+                    ]
+                    want = prose._DELIMITER_COUNTS[child.type]
+                    if len(delimiters) != want:
+                        found.append(child.type)
+                        return
+                    half = want // 2
+                    opening = {
+                        (item.start_byte, item.end_byte)
+                        for item in delimiters[:half]
+                    }
+                    for nested in child.children:
+                        check(nested, True)
+                        if nested.type != prose._EMPHASIS_DELIMITER:
+                            continue
+                        n_first = start + nested.start_byte
+                        n_last = start + nested.end_byte
+                        atom = inside_atom(n_first, n_last)
+                        attached = atom is not None and (
+                            atom[1] > n_last
+                            if (nested.start_byte, nested.end_byte) in opening
+                            else atom[0] < n_first
+                        )
+                        if not attached:
+                            raise Failed(
+                                f"{path}: an emphasis delimiter at "
+                                f"{n_first}..{n_last} is not attached to its "
+                                f"content-side atom in {spans}: {text[:60]!r}"
+                            )
+                    return
+                if in_emphasis and child.type == prose._EMPHASIS_DELIMITER:
+                    return
+                if child.is_named or child.type not in prose.SAFE_PUNCTUATION:
+                    found.append(child.type)
+
             for child in root.children:
-                if child.type not in prose.CONSTRUCTS:
-                    continue
-                first, last = start + child.start_byte, start + child.end_byte
-                if not any(a <= first and last <= b for a, b in spans):
-                    raise Failed(
-                        f"{path}: a {child.type} at {first}..{last} is split "
-                        f"across atoms {spans}, so it is not protected whole: "
-                        f"{text[:60]!r}"
-                    )
+                check(child)
+            if found:
+                raise Failed(
+                    f"{path}: an eligible paragraph holds inline syntax "
+                    f"({', '.join(sorted(set(found)))}) that A2.2 cannot reason "
+                    f"about: {text[:60]!r}"
+                )
             checked += 1
     return checked
 

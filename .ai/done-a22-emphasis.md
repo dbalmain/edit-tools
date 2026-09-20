@@ -16,15 +16,67 @@ open: it records a 19 September resolution in favour of coalescing and the
 implementation already performs bilateral protection in `_block_safe`.
 A2.2 inherits that one policy; it will not add a second coalescing mechanism.
 
-## Still to establish
+## Mechanism and reference
 
-- Check the real emphasis-across-a-wrap-point case against Prettier 3.9.6.
-- Re-walk the block-hazard closure for `*` and `_`, including nested and strong
-  delimiter runs, and record whether `_ACQUIRES` plus delimiter attachment is
-  sufficient.
-- Add discriminating admitted/refused fixtures and mirror the implementation in
-  Python and JavaScript.
-- Run the live ceiling before and after the change and report the implemented
-  eligibility against the priced increment of 1,547 paragraphs.
-- Run the focused probe, at least 273 harness tests, and the full zero-warning
-  `./test.sh` gate before the final commit.
+The hypothesis was right. Prettier 3.9.6 with `--prose-wrap always` at width 40
+breaks the live `prose_wrap.md` case after `_several` and again inside the
+emphasized words. The committed references use `proseWrap=preserve`, so their
+unchanged line cannot answer this question.
+
+The implementation recursively descends through `emphasis` and
+`strong_emphasis`, protects each `emphasis_delimiter` leaf, and leaves interior
+ASCII space/newline gaps visible. Nested emphasis recurses; a code span, inline
+link or URI autolink inside it still stops the walk and stays protected whole.
+Malformed delimiter counts and every deferred nested construct refuse the
+paragraph. Python and JavaScript use the same traversal and refusal text.
+
+## Block-hazard closure
+
+The A2.1 four-part checklist was re-walked. The new reachable line prefixes are
+grammar-confirmed opening delimiter runs attached to immediate non-whitespace
+content: `*word`, `_word`, `**word` and nested variants. They cannot be list
+markers because `*` is not followed by whitespace, and cannot be thematic
+breaks because the line contains non-marker content. Closing runs stay attached
+on their left and cannot reach a line start alone. The preceding-line,
+later-state, blank-line, fence and delimiter-row cases add no new member.
+
+`_ACQUIRES` did not cover `_` and did cover `*`, but extending that asymmetry
+was the wrong answer. Its `*` branch would coalesce the first interior gap and
+prevent the reference break after the first emphasized word. A literal
+unpaired delimiter refuses before block classification, while a paired one is
+safe by attachment, so A2.2 removes `*` from `_ACQUIRES` and leaves `_` out.
+The admitted fixture exercises both at adversarial line starts; unit tests pin
+the actual atom boundaries.
+
+## Coalescing decision
+
+There was no open decision to make at this branch's base. Commit `3c296d1`
+already documents the A2.1 resolution in favour of bilateral gap coalescing,
+and `_block_safe` implements it. A2.2 retains that one pass. It adds neither a
+second coalescer nor a format-pass clock.
+
+## Measurement finding
+
+Before the changes, the live census was 3,847 paragraphs with 1,620 eligible;
+the old direct-child classifier priced 1,558 emphasis-only construct refusals.
+After the fixture and documentation changes currently in the worktree, the
+census is 3,856 with 2,526 eligible. Replaying A2.1's classifier identifies
+1,565 removed first refusals, but their next A2.2 verdicts are: 906 eligible,
+607 `non-ascii`, 36 another `inline construct`, 12 `byte`, two `single atom`,
+and one each `edge whitespace` and `whitespace run`.
+
+The brief's 1,547 at `8100844` is consistent with the construct-first ceiling,
+but its claimed eligibility near 3,151 is not: it counts the 607 paragraphs
+that immediately reach A2.3's deliberately deferred non-ASCII refusal. The
+mechanism is not causing that difference. `probe_prose_ceiling.py` now prints
+the transition by next verdict so the ceiling cannot be mistaken for actual
+eligibility again. Final figures will be restamped after the note and design
+text stop moving the tracked Markdown census.
+
+## Verification so far
+
+- `./harness/probe_prose.py`: green; 2,526 eligible, 732 reflow/reparse checks,
+  2,526 inline-oracle checks, 3,856 producer verdicts and 64 runtime/idempotence
+  checks. Both real-parser fixtures pass.
+- `python3 -m unittest discover -s harness`: 279 tests, green.
+- Full `./test.sh` remains to run before the final commit.
