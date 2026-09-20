@@ -425,6 +425,60 @@ test("prefixes nest and concatenate", () => {
   assert.strictEqual(runOn(pkg, "> ..", root, 80), "a\n> ..b\n");
 });
 
+test("marker prefix reflows more lines and marks a blank line", () => {
+  const pkg = prefixPkg({
+    block: [
+      "prefix", "t:marker", "marker",
+      ["child", "t:word"], ["hard"], ["hard"], ["child", "t:word"],
+    ],
+  });
+  const root = {
+    type: "block", start: 0, end: 2,
+    children: [span("marker", 0, 2), leaf("word", "alpha"), leaf("word", "beta")],
+  };
+  assert.equal(runOn(pkg, "> ", root, 80), "> alpha\n>\n> beta\n");
+});
+
+test("marker prefixes nest while a two-digit list hangs by width", () => {
+  const pkg = prefixPkg({
+    block: [
+      "prefix", "t:quote", "marker",
+      [
+        "prefix", "t:list", "spaces",
+        ["child", "t:word"], ["hard"], ["hard"], ["child", "t:word"],
+      ],
+    ],
+  });
+  const root = {
+    type: "block", start: 0, end: 6,
+    children: [
+      span("quote", 0, 2),
+      span("list", 2, 6),
+      leaf("word", "alpha"),
+      leaf("word", "beta"),
+    ],
+  };
+  assert.equal(runOn(pkg, "> 10. ", root, 80), "> 10. alpha\n>\n>     beta\n");
+});
+
+test("discard consumes a source-backed continuation range", () => {
+  const pkg = prefixPkg({
+    block: [
+      "seq", ["child", "t:word"], ["discard", "t:gap"],
+      ["hard"], ["child", "t:word"],
+    ],
+  });
+  const root = {
+    type: "block", start: 0, end: 6,
+    children: [
+      span("word", 0, 1, "a"),
+      span("gap", 1, 4, "\n> "),
+      span("word", 4, 5, "b"),
+    ],
+  };
+  assert.equal(runOn(pkg, "a\n> b\n", root, 80), "a\nb\n");
+});
+
 // A marker spanning a line ending would write a newline the printer never
 // accounted for, so it is refused rather than silently mis-measured.
 test("prefix refuses a multiline marker", () => {

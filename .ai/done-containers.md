@@ -60,4 +60,28 @@ the reference/output side; this avoids counting a replacement twice.
   after the Python projection change.
 - Rust runtime/package changes compile; JS runtime and projection parse.
 - Real-parser `probe_prose.py`: dependency fetch needed; sandbox-network
-  approval timed out before the probe ran.
+  approval initially timed out, then the existing pinned cache was approved.
+
+### Integrated checkpoint
+
+- `./harness/gen_trees.py --language markdown`: 24 formatter trees regenerated.
+- `./harness/gen_reference.py --language markdown`: 48 pinned Prettier 3.9.6
+  references regenerated; no reference bytes changed.
+- `./harness/probe_prose.py`: green — 5,632 eligible paragraphs in 143 files
+  (1 unparseable), 750 reflow/reparse checks, 3,505 inline-oracle checks,
+  6,271 producer verdicts, and 84 cross-runtime/idempotence checks. Its no-op JS
+  mutation control still fails.
+- Selected after-counts with the baseline metric:
+  - `prose_wrap@80`: 9 -> **0**, byte-identical to the reference.
+  - `prose_wrap@40`: 16 -> **0**.
+  - `sections@40`: 4 -> **0**.
+  - `normalisation@40`: 5 -> **0**.
+  - `normalisation@80`: 3 -> **0**.
+  - `lists@40`: 4 -> **2** (`-2/+1`), solely Prettier moving the trailing
+    inline HTML comment to its own line, the explicitly out-of-scope slice.
+- `blockquotes@40` now differs only on the same inline-comment attachment.
+- Focused Python suites: `test_prose` 56, `test_gate3_prose` 14,
+  `test_manifest` 44, all green.
+- Mirrored Rust/JS runtime tests cover marker-created extra lines, a bare quote
+  marker on a blank line, nested quote/list prefixes, a two-digit ordered
+  marker, a loose second paragraph, and source-backed continuation discard.

@@ -633,7 +633,13 @@ impl<'a> Ctx<'a> {
         };
         let mut parts = self.eval_all(es, f)?;
         parts.push(self.flush_after(f));
-        Ok(Doc::prefix_unit(&unit, blank, Doc::Concat(parts)))
+        let body = Doc::prefix_unit(&unit, blank, Doc::Concat(parts));
+        Ok(match mode {
+            PrefixMode::Source => body,
+            PrefixMode::Spaces | PrefixMode::Marker => {
+                Doc::Concat(vec![Doc::text(source_unit), body])
+            }
+        })
     }
 
     fn child(&mut self, sel: &Sel, f: &Fmt<'a>) -> Result<Doc, Refusal> {
@@ -1426,6 +1432,79 @@ mod tests {
         assert_eq!(
             run_on(&packages, "> ..", root, 80).expect("formats"),
             "a\n> ..b\n"
+        );
+    }
+
+    #[test]
+    fn marker_prefix_reflows_more_lines_and_marks_a_blank_line() {
+        let packages = prefix_pkg(json!({
+            "block": [
+                "prefix", "t:marker", "marker",
+                ["child", "t:word"], ["hard"], ["hard"],
+                ["child", "t:word"]
+            ]
+        }));
+        let root = json!({
+            "type": "block", "start": 0, "end": 2,
+            "children": [
+                { "type": "marker", "start": 0, "end": 2 },
+                leaf("word", "alpha"),
+                leaf("word", "beta"),
+            ]
+        });
+        assert_eq!(
+            run_on(&packages, "> ", root, 80).expect("formats"),
+            "> alpha\n>\n> beta\n"
+        );
+    }
+
+    #[test]
+    fn marker_prefixes_nest_while_a_two_digit_list_hangs_by_width() {
+        let packages = prefix_pkg(json!({
+            "block": [
+                "prefix", "t:quote", "marker",
+                [
+                    "prefix", "t:list", "spaces",
+                    ["child", "t:word"], ["hard"], ["hard"],
+                    ["child", "t:word"]
+                ]
+            ]
+        }));
+        let root = json!({
+            "type": "block", "start": 0, "end": 6,
+            "children": [
+                { "type": "quote", "start": 0, "end": 2 },
+                { "type": "list", "start": 2, "end": 6 },
+                leaf("word", "alpha"),
+                leaf("word", "beta"),
+            ]
+        });
+        assert_eq!(
+            run_on(&packages, "> 10. ", root, 80).expect("formats"),
+            "> 10. alpha\n>\n>     beta\n"
+        );
+    }
+
+    #[test]
+    fn discard_consumes_a_source_backed_continuation_range() {
+        let packages = prefix_pkg(json!({
+            "block": [
+                "seq", ["child", "t:word"],
+                ["discard", "t:gap"], ["hard"],
+                ["child", "t:word"]
+            ]
+        }));
+        let root = json!({
+            "type": "block", "start": 0, "end": 6,
+            "children": [
+                { "type": "word", "start": 0, "end": 1, "text": "a" },
+                { "type": "gap", "start": 1, "end": 4, "text": "\n> " },
+                { "type": "word", "start": 4, "end": 5, "text": "b" },
+            ]
+        });
+        assert_eq!(
+            run_on(&packages, "a\n> b\n", root, 80).expect("formats"),
+            "a\nb\n"
         );
     }
 

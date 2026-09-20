@@ -23,6 +23,10 @@ pub enum Doc {
     /// gofmt -- so nested indents concatenate and a language region can nest a
     /// tab-indented body inside a space-indented one.
     Indent(String, Option<String>, Box<Doc>),
+    /// Restore the enclosing indentation if the preceding body ended on a
+    /// pending line. Prefix containers need this at scope exit so a sibling's
+    /// first marker does not inherit the previous item's hanging indent.
+    ResetIndent,
     /// Space when flat, newline when broken.
     Line,
     /// Nothing when flat, newline when broken.
@@ -87,11 +91,14 @@ impl Doc {
     }
 
     pub fn prefix_unit(unit: &str, blank: Option<&str>, d: Doc) -> Doc {
-        Doc::Indent(
-            unit.to_owned(),
-            blank.map(str::to_owned),
-            Box::new(d),
-        )
+        Doc::Concat(vec![
+            Doc::Indent(
+                unit.to_owned(),
+                blank.map(str::to_owned),
+                Box::new(d),
+            ),
+            Doc::ResetIndent,
+        ])
     }
 }
 
@@ -135,7 +142,12 @@ fn collect_forced(doc: &Doc, forced: &mut Forced) -> bool {
             collect_forced(inner, forced);
             false
         }
-        Doc::Text(_) | Doc::Line | Doc::Soft | Doc::Cell | Doc::CellBreak => false,
+        Doc::Text(_)
+        | Doc::Line
+        | Doc::Soft
+        | Doc::ResetIndent
+        | Doc::Cell
+        | Doc::CellBreak => false,
     }
 }
 
@@ -266,7 +278,7 @@ fn fits<'a>(
             // do we: it is the difference between breaking a call and leaving
             // an over-long line behind a `# ...`.
             Doc::Suffix(inner) => stack.push((ind, Mode::Flat, inner)),
-            Doc::BreakParent | Doc::Cell | Doc::CellBreak => {}
+            Doc::BreakParent | Doc::ResetIndent | Doc::Cell | Doc::CellBreak => {}
         }
     }
 }
@@ -305,6 +317,7 @@ pub fn print(doc: &Doc, width: usize, tab_stop: u64) -> String {
                             out.push_str(&pending);
                             pending.clear();
                         }
+                        pending_blank.clear();
                         out.push_str(s);
                         pos = match s.rsplit_once('\n') {
                             Some((_, tail)) => scalars(tail) as usize,
@@ -434,6 +447,13 @@ pub fn print(doc: &Doc, width: usize, tab_stop: u64) -> String {
                 }
                 Doc::Suffix(inner) => suffixes.push((ind, Mode::Break, inner)),
                 Doc::BreakParent => {}
+                Doc::ResetIndent => {
+                    if !pending.is_empty() {
+                        pos = scalars(&ind.full) as usize;
+                        pending = respell(ind.full, tab_stop);
+                        pending_blank = ind.blank;
+                    }
+                }
                 Doc::Cell => {
                     if !pending.is_empty() {
                         out.push_str(&pending);

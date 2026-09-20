@@ -42,9 +42,18 @@ import gate3
 from test_check_gate3 import Node, make_manifest
 
 
-def signature_of(node, source: str, prose: frozenset[str] = frozenset()):
+def signature_of(
+    node,
+    source: str,
+    prose: frozenset[str] = frozenset(),
+    prefixes: frozenset[str] = frozenset(),
+):
     manifest = make_manifest(Path("/nonexistent/x.toml"), "x", "default")
-    manifest = replace(manifest, prose_nodes=prose)
+    manifest = replace(
+        manifest,
+        prose_nodes=prose,
+        prose_prefix_nodes=prefixes,
+    )
     return gate3._generic(
         node, source.encode(), manifest, {}, frozenset(), {}, frozenset()
     )
@@ -59,6 +68,29 @@ INLINE = frozenset({"inline"})
 
 
 class DeclaredProseTests(unittest.TestCase):
+    def test_a_declared_container_prefix_is_not_prose_content(self):
+        quoted = "alpha\n> beta"
+        inline = Node(
+            "inline",
+            0,
+            len(quoted),
+            (Node("block_continuation", 6, 8),),
+        )
+        plain = paragraph("alpha beta")
+        self.assertEqual(
+            signature_of(
+                inline,
+                quoted,
+                INLINE,
+                frozenset({"block_continuation"}),
+            ),
+            signature_of(plain, "alpha beta", INLINE),
+        )
+        self.assertNotEqual(
+            signature_of(inline, quoted, INLINE),
+            signature_of(plain, "alpha beta", INLINE),
+        )
+
     def test_a_soft_rewrap_is_accepted(self):
         """The whole point: prettier moving words between lines to fit a width
         keeps every word in order, and gate 3 must stop calling that

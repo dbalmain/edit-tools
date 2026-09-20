@@ -542,7 +542,11 @@ function parseGroupMax(value) {
   return value;
 }
 const indent = (unit, d) => ({ k: "indent", unit, blank: undefined, d, brk: d.brk });
-const prefixIndent = (unit, blank, d) => ({ k: "indent", unit, blank, d, brk: d.brk });
+const resetIndent = { k: "resetIndent", brk: false };
+const prefixIndent = (unit, blank, d) => concat([
+  { k: "indent", unit, blank, d, brk: d.brk },
+  resetIndent,
+]);
 const line = { k: "line", brk: false };
 const soft = { k: "soft", brk: false };
 const hard = { k: "hard", brk: true };
@@ -659,6 +663,7 @@ function fits(next, rest, rem, mustBeFlat = false) {
         break;
       case "cell":
       case "cellBreak":
+      case "resetIndent":
         break;
     }
   }
@@ -695,6 +700,7 @@ function print(doc, cols, tabStop = 0) {
       out.push(pending);
       pending = "";
     }
+    pendingBlank = "";
     out.push(s);
   };
 
@@ -778,6 +784,13 @@ function print(doc, cols, tabStop = 0) {
           break;
         case "suffix":
           suffixes.push([ind, BREAK, d.d]);
+          break;
+        case "resetIndent":
+          if (pending.length > 0) {
+            pending = respell(ind.full, tabStop);
+            pendingBlank = ind.blank;
+            pos = width(ind.full);
+          }
           break;
         case "cell":
           write("\v");
@@ -1657,11 +1670,12 @@ class Ctx {
     }
     const unit = mode === "spaces" ? " ".repeat(width(sourceUnit)) : sourceUnit;
     const blank = mode === "marker" ? sourceUnit.trimEnd() : undefined;
-    return prefixIndent(
+    const indented = prefixIndent(
       unit,
       blank,
       concat([...body.map((e) => this.eval(e)), this.flushAfter()]),
     );
+    return mode === "source" ? indented : concat([text(sourceUnit), indented]);
   }
 
   discard(sel) {

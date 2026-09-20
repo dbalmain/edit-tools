@@ -225,7 +225,14 @@
           "type": "prose_atom",
           "start": 170,
           "end": 179,
-          "text": "Autolink:"
+          "children": [
+           {
+            "type": "prose_segment",
+            "start": 170,
+            "end": 179,
+            "text": "Autolink:"
+           }
+          ]
          },
          {
           "type": "prose_gap",
@@ -237,7 +244,14 @@
           "type": "prose_atom",
           "start": 180,
           "end": 307,
-          "text": "<https://example.com/this/is/a/very/long/path/that-will-overflow-forty-and-eighty-columns-because-prettier-does-not-wrap-urls>."
+          "children": [
+           {
+            "type": "prose_segment",
+            "start": 180,
+            "end": 307,
+            "text": "<https://example.com/this/is/a/very/long/path/that-will-overflow-forty-and-eighty-columns-because-prettier-does-not-wrap-urls>."
+           }
+          ]
          }
         ]
        }

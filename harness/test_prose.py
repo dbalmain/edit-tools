@@ -916,7 +916,10 @@ class Package(unittest.TestCase):
 
     def test_the_shipped_package_opts_in(self):
         self.assertEqual(self.out["format"], "et-doc-rules/3")
-        self.assertEqual(self.out["source_partitions"], [prose.RUN])
+        self.assertEqual(
+            self.out["source_partitions"],
+            [prose.RUN, prose.ATOM, prose.CONTAINER_INLINE],
+        )
 
     def test_partitions_and_whitespace_nodes_stay_disjoint(self):
         """Both runtimes refuse a package whose two lists overlap."""
@@ -927,12 +930,17 @@ class Package(unittest.TestCase):
 
     def test_the_shipped_whitespace_nodes_survive(self):
         self.assertIn("section", self.out["whitespace_nodes"])
-        self.assertIn(prose.GAP, self.out["whitespace_nodes"])
+        self.assertNotIn(prose.GAP, self.out["whitespace_nodes"])
+        self.assertEqual(
+            self.out["rules"][prose.RUN][2][1],
+            ["discard", f"t:{prose.GAP}"],
+        )
 
     def test_an_unprojected_paragraph_still_reaches_verbatim(self):
         branch = self.out["rules"]["paragraph"]
         self.assertEqual(branch[0], "when")
-        self.assertEqual(branch[3], ["verbatim"])
+        self.assertEqual(branch[3][0], "when")
+        self.assertEqual(branch[3][3], ["verbatim"])
 
 
 class FormatterView(unittest.TestCase):

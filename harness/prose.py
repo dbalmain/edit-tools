@@ -2,8 +2,10 @@
 
 `docs/prose-projection.md` is the design. This harness view turns an
 eligible markdown paragraph's `inline` node into a `prose_run` whose children
-alternate `prose_atom` (a contiguous run of source bytes) and `prose_gap` (one
-space or one newline), so that the existing `fill` opcode can repack the words.
+alternate source-partitioned `prose_atom` and `prose_gap` nodes, so that the
+existing `fill` opcode can repack the words. In a container, one logical gap
+may cover a newline plus its continuation prefix; a straddling atom instead
+keeps that prefix inside its own unbreakable partition.
 Nothing here parses. It rewrites the document `gen_trees.py` and `ts_doc.mjs`
 already produce, exactly as `ts_inject.mjs` splices injections after conversion
 rather than during -- a node's type, its children's types and its byte range are
@@ -57,8 +59,9 @@ carries that argument and the searches behind it.
 
 # What reflow is allowed to do, and the argument for each admitted character
 
-The only edit this projection enables is replacing one gap -- exactly one
-space or exactly one newline -- with the other. No byte outside a gap moves,
+The only prose edit this projection enables is replacing one logical gap -- a
+space or line boundary, including any owned container prefix -- with the other.
+No content byte outside a gap moves,
 no byte is inserted, and no atom is ever split. So the question for each
 admitted character is narrow: **can flipping an adjacent gap between a space
 and a newline change how this character is read?**
@@ -109,30 +112,21 @@ from __future__ import annotations
 import copy
 import re
 
-# The run, the content atom, and the whitespace between two atoms. `prose_run`
-# is the kind a package declares in `source_partitions`; `prose_gap` is the kind
-# it declares in `whitespace_nodes`. The two lists must stay disjoint, which is
-# why the gap is not simply an atom of a different shape.
+# The run, the content atom, and the layout between two atoms. Both the run and
+# atom are source partitions. A gap is consumed explicitly rather than declared
+# attachment whitespace, because a container gap can contain `>` syntax.
 RUN = "prose_run"
 ATOM = "prose_atom"
 GAP = "prose_gap"
 SEGMENT = "prose_segment"
 CONTINUATION = "prose_continuation"
 CONTAINER_INLINE = "container_inline"
+BLANK = "container_blank"
 
-# An atom is a **leaf**, and the design doc's argument for wrapping it in an
-# interior node is wrong. That argument was: `node_current` returns a leaf's
-# `text` before it looks up a rule, so a `verbatim` rule on a leaf would never
-# run and the bytes would never be checked against the source. True in
-# isolation, and moot here -- `source_partitions` on the enclosing `prose_run`
-# runs `check_source` over the whole subtree, leaves included, before any Doc is
-# built. Measured: a leaf atom carrying `"XXXXX"` where the source says
-# `"alpha"` is refused by both runtimes with
-#
-#     source_partitions `prose_run` has a leaf whose text does not match the source
-#
-# So the wrapper bought nothing and cost a synthetic node type and a package
-# rule, both of which A2 would have inherited.
+# An atom is an interior source partition. The wrapper was unnecessary for
+# top-level prose, but becomes load-bearing when a protected construct crosses
+# a continuation: exact `prose_segment` leaves and owned continuation ranges
+# must still form one fill item.
 
 ALNUM = frozenset(
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -376,7 +370,11 @@ def secondary_index(doc: dict) -> dict[tuple[int, int], dict]:
     }
 
 
-def _protected(inline: dict, record: dict | None) -> tuple[list[tuple[int, int]] | None, str | None]:
+def _protected(
+    inline: dict,
+    record: dict | None,
+    owned: list[tuple[int, int]] = [],
+) -> tuple[list[tuple[int, int]] | None, str | None]:
     """Opaque construct and delimiter ranges, or the reason for refusal.
 
     The inline CST is the oracle A1 did not have. A1 asked the *block* grammar
@@ -397,6 +395,11 @@ def _protected(inline: dict, record: dict | None) -> tuple[list[tuple[int, int]]
     out: list[tuple[int, int]] = []
 
     def admit(child: dict, in_emphasis: bool = False) -> bool:
+        if any(
+            first <= child["start"] and child["end"] <= last
+            for first, last in owned
+        ):
+            return True
         kind = child["type"]
         if kind in CONSTRUCTS:
             out.append((child["start"], child["end"]))
@@ -463,7 +466,8 @@ def analyse(
     start, end = inline["start"], inline["end"]
     continuations = _continuations(inline, source)
 
-    ranges, why = _protected(inline, secondary.get((start, end)))
+    owned = [(prefix_start, prefix_end) for _, prefix_start, prefix_end in continuations]
+    ranges, why = _protected(inline, secondary.get((start, end)), owned)
     if ranges is None:
         return why, []
 
@@ -750,9 +754,9 @@ def project(doc: dict) -> dict:
     doc = copy.deepcopy(doc)
     source = doc["source"].encode("utf-8")
     secondary = secondary_index(doc)
-    stack = [doc["root"]]
+    stack = [(doc["root"], False)]
     while stack:
-        node = stack.pop()
+        node, in_list_item = stack.pop()
         if node["type"] in CONTAINERS or "language" in node:
             continue
         verdict, breakable = (
@@ -760,6 +764,14 @@ def project(doc: dict) -> dict:
             if node["type"] == "paragraph"
             else ("not a paragraph", [])
         )
+        if node["type"] == "paragraph" and in_list_item:
+            for child in node.get("children", [])[1:]:
+                if (
+                    child["type"] == "block_continuation"
+                    and child.get("text", "").startswith(">")
+                    and child["text"].rstrip() == child["text"]
+                ):
+                    child["type"] = BLANK
         if verdict is None:
             inline = node["children"][0]
             # Key order is `type, start, end, field, children`, the order
@@ -774,7 +786,11 @@ def project(doc: dict) -> dict:
             continue
         if node["type"] == "paragraph" and node.get("children"):
             inline = node["children"][0]
-            if inline["type"] == "inline" and _continuations(inline, source):
+            owns_prefix = _continuations(inline, source) or any(
+                child["type"] in {"block_continuation", BLANK}
+                for child in node["children"][1:]
+            )
+            if inline["type"] == "inline" and owns_prefix:
                 atom = partition(inline, source, [])[0]
                 logical = {
                     "type": CONTAINER_INLINE,
@@ -786,5 +802,8 @@ def project(doc: dict) -> dict:
                 logical["children"] = atom["children"]
                 node["children"] = [logical, *node["children"][1:]]
                 continue
-        stack.extend(node.get("children", []))
+        child_in_list_item = in_list_item or node["type"] == "list_item"
+        stack.extend(
+            (child, child_in_list_item) for child in node.get("children", [])
+        )
     return doc

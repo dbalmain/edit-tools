@@ -37,6 +37,7 @@ export const GAP = "prose_gap";
 export const SEGMENT = "prose_segment";
 export const CONTINUATION = "prose_continuation";
 export const CONTAINER_INLINE = "container_inline";
+export const BLANK = "container_blank";
 
 const ALNUM = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 export const SAFE_PUNCTUATION = new Set(",;.'\"!?()-:/");
@@ -135,11 +136,14 @@ export function secondaryIndex(doc) {
 }
 
 /** Opaque construct and emphasis-delimiter ranges, or a refusal reason. */
-function protectedRanges(inline, record) {
+function protectedRanges(inline, record, owned = []) {
   if (record === undefined) return [null, "no inline parse"];
   if (record.outcome !== "clean") return [null, "dirty inline parse"];
   const out = [];
   const admit = (child, inEmphasis = false) => {
+    if (owned.some(([first, last]) => first <= child.start && child.end <= last)) {
+      return true;
+    }
     if (CONSTRUCTS.has(child.type)) {
       out.push([child.start, child.end]);
       return true;
@@ -235,6 +239,7 @@ export function analyse(paragraph, source, secondary) {
   const [ranges, why] = protectedRanges(
     inline,
     secondary.get(`${start},${end}`),
+    continuationRanges.map(([, prefixStart, prefixEnd]) => [prefixStart, prefixEnd]),
   );
   if (ranges === null) return [why, []];
 
@@ -404,14 +409,25 @@ export function project(doc) {
   doc = structuredClone(doc);
   const source = encoder.encode(doc.source);
   const secondary = secondaryIndex(doc);
-  const stack = [doc.root];
+  const stack = [[doc.root, false]];
   while (stack.length > 0) {
-    const node = stack.pop();
+    const [node, inListItem] = stack.pop();
     if (CONTAINERS.has(node.type) || node.language !== undefined) continue;
     const [verdict, breakable] =
       node.type === "paragraph"
         ? analyse(node, source, secondary)
         : ["not a paragraph", []];
+    if (node.type === "paragraph" && inListItem) {
+      for (const child of (node.children ?? []).slice(1)) {
+        if (
+          child.type === "block_continuation" &&
+          (child.text ?? "").startsWith(">") &&
+          child.text.trimEnd() === child.text
+        ) {
+          child.type = BLANK;
+        }
+      }
+    }
     if (verdict === null) {
       const inline = node.children[0];
       // Key order is `type, start, end, field, children`; see prose.py.
@@ -423,7 +439,12 @@ export function project(doc) {
     }
     if (node.type === "paragraph" && (node.children ?? []).length > 0) {
       const inline = node.children[0];
-      if (inline.type === "inline" && continuations(inline, source).length > 0) {
+      const ownsPrefix =
+        continuations(inline, source).length > 0 ||
+        node.children.slice(1).some(
+          (child) => child.type === "block_continuation" || child.type === BLANK,
+        );
+      if (inline.type === "inline" && ownsPrefix) {
         const atom = partition(inline, source, [])[0];
         const logical = {
           type: CONTAINER_INLINE,
@@ -436,7 +457,8 @@ export function project(doc) {
         continue;
       }
     }
-    for (const child of node.children ?? []) stack.push(child);
+    const childInListItem = inListItem || node.type === "list_item";
+    for (const child of node.children ?? []) stack.push([child, childInListItem]);
   }
   return doc;
 }

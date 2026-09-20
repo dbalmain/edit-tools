@@ -13,6 +13,7 @@
   "blank_cap": 1,
   "tokens": [
     "block_continuation",
+    "container_blank",
     "fenced_code_block_delimiter",
     "atx_h1_marker",
     "atx_h2_marker",
@@ -71,6 +72,20 @@
           ]
         ],
         [
+          "opt",
+          "t:container_blank",
+          [
+            "seq",
+            [
+              "discard",
+              "t:container_blank"
+            ],
+            [
+              "hard"
+            ]
+          ]
+        ],
+        [
           "hard"
         ]
       ],
@@ -93,6 +108,20 @@
             [
               "discard",
               "t:block_continuation"
+            ]
+          ],
+          [
+            "opt",
+            "t:container_blank",
+            [
+              "seq",
+              [
+                "discard",
+                "t:container_blank"
+              ],
+              [
+                "hard"
+              ]
             ]
           ],
           [
@@ -369,7 +398,7 @@
         "opt",
         "t:block_continuation",
         [
-          "child",
+          "discard",
           "t:block_continuation"
         ]
       ]
