@@ -85,3 +85,69 @@ the reference/output side; this avoids counting a replacement twice.
 - Mirrored Rust/JS runtime tests cover marker-created extra lines, a bare quote
   marker on a blank line, nested quote/list prefixes, a two-digit ordered
   marker, a loose second paragraph, and source-backed continuation discard.
+
+## Finished in the main thread, 2026-09-21
+
+Codex hit its usage limit at 34 minutes and 384,692 tokens, with the slice
+integrated but never gated: its own note says "Full gate: not run yet." The
+worktree also had no `web/data/blobs/`, which are gitignored, so `./test.sh`
+could not have run there at all -- it stops with "missing generated parse
+table(s)". Seeding a worktree with those blobs is a prerequisite for any
+offload expected to own the gate.
+
+Four uncommitted Rust files were pure `cargo fmt` output with no semantic
+change. Two of them, `align.rs` and `ts/doc.rs`, this slice never touched:
+`main` is not `cargo fmt --check` clean and `test.sh` has no fmt step, so that
+is pre-existing drift. Reverted rather than swept in.
+
+### What the gate found
+
+Two defects, both the same shape -- a rule still doing by hand what the prefix
+scope now does for it.
+
+- `table` collected every token child into a row lead and printed it before the
+  row. That lead *is* the host's continuation, so a quoted table came out `> >`
+  and a doubly quoted one `> > > >`. Now consumed and checked but not emitted;
+  a `pipe_table` carries `block_continuation` children only inside a
+  `list_item` or `block_quote`, verified across the corpus, and those are
+  exactly the hosts that re-supply it.
+- `list_item`'s trailing arm lost its `srcsoft` when its `child` became a
+  `discard`, closing the blank line of a loose list. Restoring it then
+  double-broke inside a quote, because the paragraph's `container_blank` arm
+  was emitting a `hard` for the same line; that arm now discards without
+  breaking and list_item owns the break. `container_blank` occurs in exactly
+  one shape across the corpus -- block_quote > list > list_item > paragraph,
+  all three instances -- so that is the whole of its contract.
+
+The test pinning the old table contract was rewritten, not deleted: the table
+alone asserts the leads are dropped, and a second mirrored test puts a real
+`prefix` host around it and asserts the marker reaches every row. Deleting the
+lead emission without a host passes the first and fails the second.
+
+### Bookkeeping
+
+Five stale ledger records all resolved the same way and were retired:
+indented_code@40, nesting@40, normalisation@80/@40, tables_nested@40.
+
+`probe_secondary_grammar`'s audited range set is derived from
+`prose.CONTAINERS`, so it moved from 2,553 ranges to 3,747. Its corpus is
+frozen at AUDIT_COMMIT, so the set could only grow -- and it was checked to
+have done only that: all 2,553 earlier ranges still selected, 1,194 container
+paragraphs added across 74 files. The digest the probe printed is not evidence
+for itself; that subset check is.
+
+### Final
+
+`./test.sh` green. 292 harness tests, 423 reference outputs, 24/24 injection
+parity, 3,747/3,747 secondary ranges, 0 stale, 0 unreviewed, 0 defect.
+
+markdown 18 agreement / 28 comparable with 10 excluded, to **27 / 34 with 7**.
+Eligible paragraphs 3,502 -> 5,639.
+
+Our own overflow across the markdown corpus at widths 40 and 80 falls from 74
+lines to 58. Note the scoreboard's "its own overflow" is `reference_overflow`
+-- prettier's number, not ours -- and it moves when corpus membership changes;
+it is not a measure of this formatter.
+
+The three files still excluded wait on inline HTML-comment attachment, which
+is a separate slice.
