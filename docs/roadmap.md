@@ -232,6 +232,28 @@ this exposes: shipping reflow for the A2.1 subset and moving markdown's live
 reference to `proseWrap=always` are different questions, and only the second
 needs to agree with Prettier inside containers.
 
+**The gate half has landed.** `manifest.prose_nodes` declares, per language, the
+node kinds whose text may be re-wrapped; inside one gate 3 canonicalises ASCII
+whitespace runs and keeps two-space hard breaks. Nothing declares it, so
+reference agreement is unmoved at 269/400 and all sixteen gates are
+byte-identical -- the permission has no reachable call site until a package opts
+in. What remains before any output changes is a *consumer*: either markdown
+declaring `source_partitions` (which needs the mixed-output question answered,
+since at `8100844` A2.1 admitted 1604 of 3807 top-level paragraphs and leaves
+the rest as written), or HTML growing a projection it does not have. Those two
+counts move with every markdown edit in this repo -- the prose corpus is
+`git ls-files '*.md'`, so the paragraphs *documenting* the projection are inside
+it -- which is why they are stamped with a commit rather than quoted bare.
+
+Two figures worth carrying, both measured 2026-09-20 at `8100844` against the
+repo's own markdown. **A2.2 is the load-bearing rung and the rest are rounding:** resolving
+each construct-refused paragraph to the *set* of kinds blocking it, emphasis and
+strong free 1547 of 1779, A2.4's five further kinds add 16, and widening the
+punctuation whitelist adds 79 alone or 205 on top of A2.2. **And A2.3 is not
+schedulable as written** -- it carries an entry condition, that both runtimes be
+shown to agree on displayed width for non-ASCII, which had never been
+measured.
+
 ## 7. Is the tree interface actually independent of tree-sitter? — **closed, yes**
 
 The plan of record for Aven (no tree-sitter grammar, round 6) is to have its own

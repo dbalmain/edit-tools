@@ -904,6 +904,55 @@ flattened hard break and a quote-prefix reflow must all come out structural,
 and a plain soft re-wrap must not. A classifier that called everything soft
 would otherwise produce this table unchanged.
 
+### Landed as a declared narrowing, 2026-09-20
+
+`manifest.prose_nodes` names node kinds whose text is prose, and inside one
+`gate3` compares an ASCII whitespace run to any other — except two-or-more
+spaces before a newline, which stays a hard break. That is the equivalence the
+table above scoped, with no range-aware redesign attached.
+
+Three things about its shape are worth keeping, because each was a live
+alternative:
+
+**It is declared per language, and the declaration carries the correctness
+argument.** The transform cannot tell layout from content. In a YAML literal
+block scalar the newlines *are* the value, so the same canonicalisation applied
+there lets a formatter collapse `alpha\ngamma` to `alpha gamma` — the exact
+regression `gate3._tokens` records from its own first version, and the one
+failure the gate exists to prevent. `harness/test_gate3_prose.py` keeps that
+case as a test that passes today, rather than a comment: it *demonstrates* that
+declaring the wrong kind destroys source, which is a stronger claim than
+asserting the field is needed.
+
+**It names kinds in the reparsed grammar, not in the projection.** Gate 3
+reparses the formatter's output text and never sees the synthetic `prose_run`
+this document describes. Markdown will name `inline`; HTML would name `text`.
+
+**It does not reach comments, and cannot be made to.** `gate3._extras` compares
+each comment's exact text in document order, has no opt-out, and never consults
+this field — so reflowing a comment body needs a change to that layer whatever
+is declared here. `manifest.parse` refuses a kind declared as both `prose_nodes`
+and `comment_kinds`, so the declaration cannot imply a permission the extras
+layer will not honour. That settles the [comment-reflow][comments] question for
+this slice: it is out of scope rather than an argument within it.
+
+[comments]: gate-narrowing.md
+
+Nothing declares the field yet, so reference agreement is unmoved at 269/400 and
+all sixteen languages keep a byte-identical gate. A test asserts that emptiness
+and says to delete itself when the first language opts in.
+
+**A second consumer, found while scoping this.** The equivalence is not a
+markdown feature. `corpus/src/html/prose.html` has been listed `incomparable`
+since stage B because Prettier reflows HTML prose by inserting newlines into
+`text` leaves, and HTML has no `proseWrap` option to pin — the divergence is
+visible today, where markdown's is hidden behind a reference pinned at
+`preserve`. Driving the real `gate3.signature` over the committed reference at
+both widths: rejected undeclared, accepted with `text` declared, and a swapped
+word still rejected either way. HTML has no projection to produce the reflow,
+so this buys the gate half only — but it is the evidence that the design
+generalises past the language it was built for.
+
 **What this does and does not license.** It says the first equivalence slice is
 a declaration over top-level paragraphs, preserving hard breaks, plus its
 adversarial checks -- not a range-aware logical-prose redesign. It does **not**
