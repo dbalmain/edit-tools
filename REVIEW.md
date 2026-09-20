@@ -136,6 +136,19 @@ findings). Each should name the guard that will eventually retire it.
   makes the reported quantities assert their own conservation by construction.
   (2026-09-20, `probe_prose_ceiling.py`.)
 
+- **A refusal masks every check downstream of it, in both runtimes.** This repo
+  has twin implementations of the same logic, and a guard that refuses an input
+  class means nothing below it has ever run on that class -- so the two copies
+  can drift indefinitely with every gate green. When a slice *widens* what is
+  admitted, review the code downstream of the removed guard for constructs whose
+  two implementations differ: regex classes (`\d`, `\w`, `\s`, `\b` -- Python
+  matches Unicode, JS without `u` does not), case folding, string indexing (JS is
+  UTF-16, Rust `char` is a scalar), and normalisation. *Retired by:* nothing
+  automatic -- the mirror gate catches it only once the widening lands, which
+  makes it a late failure in someone else's slice rather than a finding.
+  (2026-09-20, `_ACQUIRES` `\d` vs `[0-9]`, found by reading before A2.3 was
+  written.)
+
 ## Findings log
 
 ### 2026-09-20 — every control guarded the input, none guarded the answer
