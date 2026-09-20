@@ -344,7 +344,7 @@ def main() -> int:
     # headline and nothing else guards them: every `inline construct` refusal
     # must have contributed exactly one blocker set. Without this, a
     # `sets` that silently stopped recording prints a rung table of zeros --
-    # "A2.2 frees 0" -- with the census above it still correct and every other
+    # "A2.4 frees 0" -- with the census above it still correct and every other
     # control still green. Found by mutating this probe against itself; it was
     # the one mutation of three that survived.
     recorded = sum(sets.values())

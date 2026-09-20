@@ -212,12 +212,13 @@ a different problem with its own ladder. The live reference is pinned at
 `proseWrap=preserve` because `fill` cannot see word-sized children inside an
 `inline` leaf; DESIGN.md's "Prose needs source atoms before it can use `fill`"
 states the limit, and [`docs/prose-projection.md`](prose-projection.md) holds
-the plan. A1 (block grammar only) and A2.0 (secondary inline grammars) and A2.1
-(inline constructs protected whole, with bilateral gap protection) have landed
-as a **harness** capability — no shipped package declares `source_partitions`
-and markdown still emits paragraphs `verbatim`, so nothing in the runtime path
-has changed yet. A2.2 (emphasis), A2.3 (non-ASCII) and A2.4 are open, and so is
-the gate-3 equivalence that switching the live reference would need.
+the plan. A1 (block grammar only), A2.0 (secondary inline grammars), A2.1
+(inline constructs protected whole, with bilateral gap protection) and A2.2
+(recursive emphasis with delimiters attached to adjacent atoms) have landed as
+a **harness** capability — no shipped package declares `source_partitions` and
+markdown still emits paragraphs `verbatim`, so nothing in the runtime path has
+changed yet. A2.3 (non-ASCII) and A2.4 are open; the gate-3 equivalence needed
+by a live reference switch has landed but remains undeclared by Markdown.
 
 That equivalence is smaller than this document used to imply.
 `harness/probe_prose_equivalence.py` re-wraps only what the projection admits
@@ -245,14 +246,14 @@ counts move with every markdown edit in this repo -- the prose corpus is
 `git ls-files '*.md'`, so the paragraphs *documenting* the projection are inside
 it -- which is why they are stamped with a commit rather than quoted bare.
 
-Two figures worth carrying, both measured 2026-09-20 at `8100844` against the
-repo's own markdown. **A2.2 is the load-bearing rung and the rest are rounding:** resolving
-each construct-refused paragraph to the *set* of kinds blocking it, emphasis and
-strong free 1547 of 1779, A2.4's five further kinds add 16, and widening the
-punctuation whitelist adds 79 alone or 205 on top of A2.2. **And A2.3 is not
-schedulable as written** -- it carries an entry condition, that both runtimes be
-shown to agree on displayed width for non-ASCII, which had never been
-measured.
+The price at `8100844` remains useful with its label intact: resolving each
+construct-refused paragraph to the *set* of kinds blocking it, emphasis and
+strong removed the first refusal from 1,547 of 1,779. A2.2 established that
+this was a construct ceiling, not an eligibility delta: hundreds of those
+paragraphs next reach A2.3's deferred `non-ascii` verdict. The live transition
+and its next-verdict breakdown are now printed by `probe_prose_ceiling.py`.
+A2.3's former entry condition has separately been measured and holds, but its
+non-ASCII policy remains its own rung.
 
 ## 7. Is the tree interface actually independent of tree-sitter? — **closed, yes**
 

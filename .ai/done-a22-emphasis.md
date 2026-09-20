@@ -57,26 +57,34 @@ second coalescer nor a format-pass clock.
 
 ## Measurement finding
 
-Before the changes, the live census was 3,847 paragraphs with 1,620 eligible;
-the old direct-child classifier priced 1,558 emphasis-only construct refusals.
-After the fixture and documentation changes currently in the worktree, the
-census is 3,856 with 2,526 eligible. Replaying A2.1's classifier identifies
-1,565 removed first refusals, but their next A2.2 verdicts are: 906 eligible,
-607 `non-ascii`, 36 another `inline construct`, 12 `byte`, two `single atom`,
-and one each `edge whitespace` and `whitespace run`.
+The final live census is 3,868 paragraphs with 2,538 eligible. Replaying A2.1's
+direct-child classifier on that same corpus gives 1,632 eligible, so A2.2's
+implemented increment is **906**. It removes the construct-first refusal from
+1,565 paragraphs, whose next verdicts are: 906 eligible, 607 `non-ascii`, 36
+another `inline construct`, 12 `byte`, two `single atom`, and one each
+`edge whitespace` and `whitespace run`.
 
 The brief's 1,547 at `8100844` is consistent with the construct-first ceiling,
 but its claimed eligibility near 3,151 is not: it counts the 607 paragraphs
 that immediately reach A2.3's deliberately deferred non-ASCII refusal. The
-mechanism is not causing that difference. `probe_prose_ceiling.py` now prints
-the transition by next verdict so the ceiling cannot be mistaken for actual
-eligibility again. Final figures will be restamped after the note and design
-text stop moving the tracked Markdown census.
+mechanism is not causing that difference. The live construct ceiling is 1,565,
+18 higher because this tracked Markdown corpus has moved since `8100844`.
+`probe_prose_ceiling.py` now prints the transition by next verdict so the
+ceiling cannot be mistaken for actual eligibility again.
 
 ## Verification so far
 
-- `./harness/probe_prose.py`: green; 2,526 eligible, 732 reflow/reparse checks,
-  2,526 inline-oracle checks, 3,856 producer verdicts and 64 runtime/idempotence
+- `./harness/probe_prose.py`: green; 2,538 eligible, 732 reflow/reparse checks,
+  2,538 inline-oracle checks, 3,868 producer verdicts and 64 runtime/idempotence
   checks. Both real-parser fixtures pass.
 - `python3 -m unittest discover -s harness`: 279 tests, green.
-- Full `./test.sh` remains to run before the final commit.
+- `./test.sh`: all 15 steps green with zero warnings; 279 harness tests, no
+  count drop.
+
+## Not settled by this slice
+
+A2.3 non-ASCII atoms, A2.4's remaining inline constructs and punctuation,
+container prefixes, the shipped Markdown package opt-in, and switching the live
+reference to `proseWrap=always` remain separate decisions. This slice changes
+only the harness projection pair and its evidence; no runtime, package or
+manifest declaration changed.

@@ -1,6 +1,6 @@
 """The A2.2 prose projection: a paragraph's words, as a source-backed partition.
 
-`docs/prose-projection.md` is the design. This is its first slice: turn an
+`docs/prose-projection.md` is the design. This harness view turns an
 eligible markdown paragraph's `inline` node into a `prose_run` whose children
 alternate `prose_atom` (a contiguous run of source bytes) and `prose_gap` (one
 space or one newline), so that the existing `fill` opcode can repack the words.

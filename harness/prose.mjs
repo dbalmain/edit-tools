@@ -102,7 +102,7 @@ export function secondaryIndex(doc) {
   return out;
 }
 
-/** The A2.1 construct ranges over `inline`, or the reason it is refused. */
+/** Opaque construct and emphasis-delimiter ranges, or a refusal reason. */
 function protectedRanges(inline, record) {
   if (record === undefined) return [null, "no inline parse"];
   if (record.outcome !== "clean") return [null, "dirty inline parse"];

@@ -581,7 +581,7 @@ def main(quiet: bool = False) -> int:
 
     # The mirror invariant: `prose-refused.md` must yield nothing, and
     # `prose-admitted.md` must refuse nothing. A refusal fixture can only
-    # detect a change in eligibility, so it cannot guard the shapes A2.1
+    # detect a change in eligibility, so it cannot guard the shapes A2.1/A2.2
     # deliberately admits -- those are eligible before and after any mutation
     # worth worrying about, and what changes is the partition. This file is
     # where the real parser, the real secondary grammar and both runtimes get
