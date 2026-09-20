@@ -203,11 +203,9 @@ class NotProseTests(unittest.TestCase):
                          frozenset({"block_scalar"})),
         )
 
-    def test_no_shipped_language_declares_prose_nodes(self):
-        """The narrowing is unreachable until a package opts in, which is what
-        makes landing it safe: every one of the sixteen keeps a byte-identical
-        gate. Delete this test when the first language declares one -- and
-        replace it with that language's own reference-agreement evidence."""
+    def test_only_markdown_declares_its_projected_inline_kind(self):
+        """The first consumer opts in narrowly; every other language retains
+        the generic whitespace-sensitive signature."""
         import manifest as mf
 
         declared = {
@@ -215,7 +213,7 @@ class NotProseTests(unittest.TestCase):
             for name, man in mf.load_all().items()
             if man.prose_nodes
         }
-        self.assertEqual(declared, {})
+        self.assertEqual(declared, {"markdown": ["inline"]})
 
 
 if __name__ == "__main__":

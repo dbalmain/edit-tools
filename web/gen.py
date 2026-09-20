@@ -82,17 +82,18 @@ LINE_COMMENT = {
 }
 
 
-# The parse layer, already ESM and already free of node imports. Copied rather
-# than imported across `../../harness/` so that `web/` is a directory a static
-# host can serve on its own -- which is the whole content of Q1's answer.
-PARSE_LAYER = ("ts_lr.mjs", "ts_doc.mjs", "ts_inject.mjs", "ts_secondary.mjs",
-               "ts_scanner_vm.mjs", "ts_scanner_pack.mjs", "prose.mjs")
+# Harness modules already written as ESM and free of node imports: the parse
+# layer plus the formatter's prose projection. Copied rather than imported
+# across `../../harness/` so that `web/` is a directory a static host can serve
+# by itself.
+VENDOR_MODULES = ("ts_lr.mjs", "ts_doc.mjs", "ts_inject.mjs", "ts_secondary.mjs",
+                  "ts_scanner_vm.mjs", "ts_scanner_pack.mjs", "prose.mjs")
 
 
 def vendor() -> None:
     """Copy vici and the parse layer, and re-export the CommonJS formatter as ESM."""
     VENDOR.mkdir(parents=True, exist_ok=True)
-    for name in PARSE_LAYER:
+    for name in VENDOR_MODULES:
         shutil.copy(ROOT / "harness" / name, VENDOR / name)
 
     target = VENDOR / "vici"

@@ -116,7 +116,9 @@ const FENCE_ONLY = "```\ncode\n```\n";
 const FIXTURES = {
   "markdown.blob.json": {},
   "markdown_inline.blob.json": {},
+  "plain.blob.json": {},
   "markdown.json": { source_partitions: ["prose_run"] },
+  "plain.json": {},
   "secondaries.json": {
     grammars: { markdown_inline: { source_language: "markdown" } },
     sites: {
@@ -225,4 +227,12 @@ test("formatting follows the package opt-in and projects a secondary-backed view
   assert.equal(askedFor("markdown.json"), true);
   assert.equal(askedFor("secondaries.json"), true);
   assert.equal(askedFor("markdown_inline.blob.json"), true);
+});
+
+test("formatting without a package opt-in keeps the syntax view", async () => {
+  prepare();
+  const output = JSON.parse(await lang.formatText("plain text\n", "plain", 40));
+  assert.deepEqual(output, { projected: false, secondary: false });
+  assert.equal(askedFor("secondaries.json"), false);
+  assert.equal(askedFor("markdown_inline.blob.json"), false);
 });

@@ -33,21 +33,75 @@
       "end": 117,
       "children": [
        {
-        "type": "inline",
+        "type": "prose_run",
         "start": 80,
         "end": 116,
         "children": [
          {
-          "type": ",",
-          "start": 91,
-          "end": 92,
-          "text": ","
+          "type": "prose_atom",
+          "start": 80,
+          "end": 81,
+          "text": "A"
          },
          {
-          "type": ":",
-          "start": 115,
+          "type": "prose_gap",
+          "start": 81,
+          "end": 82,
+          "text": " "
+         },
+         {
+          "type": "prose_atom",
+          "start": 82,
+          "end": 92,
+          "text": "paragraph,"
+         },
+         {
+          "type": "prose_gap",
+          "start": 92,
+          "end": 93,
+          "text": " "
+         },
+         {
+          "type": "prose_atom",
+          "start": 93,
+          "end": 97,
+          "text": "then"
+         },
+         {
+          "type": "prose_gap",
+          "start": 97,
+          "end": 98,
+          "text": " "
+         },
+         {
+          "type": "prose_atom",
+          "start": 98,
+          "end": 100,
+          "text": "an"
+         },
+         {
+          "type": "prose_gap",
+          "start": 100,
+          "end": 101,
+          "text": " "
+         },
+         {
+          "type": "prose_atom",
+          "start": 101,
+          "end": 109,
+          "text": "indented"
+         },
+         {
+          "type": "prose_gap",
+          "start": 109,
+          "end": 110,
+          "text": " "
+         },
+         {
+          "type": "prose_atom",
+          "start": 110,
           "end": 116,
-          "text": ":"
+          "text": "block:"
          }
         ]
        }
@@ -65,39 +119,291 @@
       "end": 264,
       "children": [
        {
-        "type": "inline",
+        "type": "prose_run",
         "start": 141,
         "end": 263,
         "children": [
          {
-          "type": ",",
-          "start": 172,
+          "type": "prose_atom",
+          "start": 141,
+          "end": 144,
+          "text": "And"
+         },
+         {
+          "type": "prose_gap",
+          "start": 144,
+          "end": 145,
+          "text": " "
+         },
+         {
+          "type": "prose_atom",
+          "start": 145,
+          "end": 148,
+          "text": "one"
+         },
+         {
+          "type": "prose_gap",
+          "start": 148,
+          "end": 149,
+          "text": " "
+         },
+         {
+          "type": "prose_atom",
+          "start": 149,
+          "end": 153,
+          "text": "that"
+         },
+         {
+          "type": "prose_gap",
+          "start": 153,
+          "end": 154,
+          "text": " "
+         },
+         {
+          "type": "prose_atom",
+          "start": 154,
+          "end": 159,
+          "text": "spans"
+         },
+         {
+          "type": "prose_gap",
+          "start": 159,
+          "end": 160,
+          "text": " "
+         },
+         {
+          "type": "prose_atom",
+          "start": 160,
+          "end": 161,
+          "text": "a"
+         },
+         {
+          "type": "prose_gap",
+          "start": 161,
+          "end": 162,
+          "text": " "
+         },
+         {
+          "type": "prose_atom",
+          "start": 162,
+          "end": 167,
+          "text": "blank"
+         },
+         {
+          "type": "prose_gap",
+          "start": 167,
+          "end": 168,
+          "text": " "
+         },
+         {
+          "type": "prose_atom",
+          "start": 168,
           "end": 173,
-          "text": ","
+          "text": "line,"
          },
          {
-          "type": "`",
+          "type": "prose_gap",
+          "start": 173,
+          "end": 174,
+          "text": " "
+         },
+         {
+          "type": "prose_atom",
+          "start": 174,
+          "end": 179,
+          "text": "which"
+         },
+         {
+          "type": "prose_gap",
+          "start": 179,
+          "end": 180,
+          "text": " "
+         },
+         {
+          "type": "prose_atom",
+          "start": 180,
+          "end": 182,
+          "text": "is"
+         },
+         {
+          "type": "prose_gap",
+          "start": 182,
+          "end": 183,
+          "text": " "
+         },
+         {
+          "type": "prose_atom",
+          "start": 183,
+          "end": 187,
+          "text": "what"
+         },
+         {
+          "type": "prose_gap",
+          "start": 187,
+          "end": 188,
+          "text": " "
+         },
+         {
+          "type": "prose_atom",
+          "start": 188,
+          "end": 192,
+          "text": "puts"
+         },
+         {
+          "type": "prose_gap",
+          "start": 192,
+          "end": 193,
+          "text": " "
+         },
+         {
+          "type": "prose_atom",
+          "start": 193,
+          "end": 194,
+          "text": "a"
+         },
+         {
+          "type": "prose_gap",
+          "start": 194,
+          "end": 195,
+          "text": " "
+         },
+         {
+          "type": "prose_atom",
           "start": 195,
-          "end": 196,
-          "text": "`"
-         },
-         {
-          "type": "_",
-          "start": 201,
-          "end": 202,
-          "text": "_"
-         },
-         {
-          "type": "`",
-          "start": 214,
           "end": 215,
-          "text": "`"
+          "text": "`block_continuation`"
          },
          {
-          "type": ":",
-          "start": 262,
+          "type": "prose_gap",
+          "start": 215,
+          "end": 216,
+          "text": "\n"
+         },
+         {
+          "type": "prose_atom",
+          "start": 216,
+          "end": 222,
+          "text": "inside"
+         },
+         {
+          "type": "prose_gap",
+          "start": 222,
+          "end": 223,
+          "text": " "
+         },
+         {
+          "type": "prose_atom",
+          "start": 223,
+          "end": 226,
+          "text": "the"
+         },
+         {
+          "type": "prose_gap",
+          "start": 226,
+          "end": 227,
+          "text": " "
+         },
+         {
+          "type": "prose_atom",
+          "start": 227,
+          "end": 231,
+          "text": "node"
+         },
+         {
+          "type": "prose_gap",
+          "start": 231,
+          "end": 232,
+          "text": " "
+         },
+         {
+          "type": "prose_atom",
+          "start": 232,
+          "end": 235,
+          "text": "and"
+         },
+         {
+          "type": "prose_gap",
+          "start": 235,
+          "end": 236,
+          "text": " "
+         },
+         {
+          "type": "prose_atom",
+          "start": 236,
+          "end": 240,
+          "text": "made"
+         },
+         {
+          "type": "prose_gap",
+          "start": 240,
+          "end": 241,
+          "text": " "
+         },
+         {
+          "type": "prose_atom",
+          "start": 241,
+          "end": 243,
+          "text": "it"
+         },
+         {
+          "type": "prose_gap",
+          "start": 243,
+          "end": 244,
+          "text": " "
+         },
+         {
+          "type": "prose_atom",
+          "start": 244,
+          "end": 248,
+          "text": "need"
+         },
+         {
+          "type": "prose_gap",
+          "start": 248,
+          "end": 249,
+          "text": " "
+         },
+         {
+          "type": "prose_atom",
+          "start": 249,
+          "end": 250,
+          "text": "a"
+         },
+         {
+          "type": "prose_gap",
+          "start": 250,
+          "end": 251,
+          "text": " "
+         },
+         {
+          "type": "prose_atom",
+          "start": 251,
+          "end": 255,
+          "text": "rule"
+         },
+         {
+          "type": "prose_gap",
+          "start": 255,
+          "end": 256,
+          "text": " "
+         },
+         {
+          "type": "prose_atom",
+          "start": 256,
+          "end": 258,
+          "text": "at"
+         },
+         {
+          "type": "prose_gap",
+          "start": 258,
+          "end": 259,
+          "text": " "
+         },
+         {
+          "type": "prose_atom",
+          "start": 259,
           "end": 263,
-          "text": ":"
+          "text": "all:"
          }
         ]
        }

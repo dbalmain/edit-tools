@@ -28,16 +28,14 @@ injection_aliases = ["markdown", "md"]
 # byte-identical on dirty input, so --parser is omitted. --no-config is
 # load-bearing (below). --print-width honours {width}: established by diffing
 # 80 vs 40 on a 27-item JSON fence, not by reading --help. The original
-# onboarding reference used proseWrap=preserve. Roadmap step 2 measured always:
-# agreement fell 27/32 -> 8/32 on the same 20 files, but gate 3 rejected 20
-# reference outputs. Keep the live pin green until a prose equivalence exists;
-# the generated always diff is retained in the report below.
+# onboarding reference used proseWrap=preserve. The prose projection and gate 3
+# narrowing now make `always` the live consumer policy. Paragraphs inside list
+# items and block quotes remain outside the top-level projection; their residual
+# differences are recorded against container-prefix ownership below.
 #
 # embeddedLanguageFormatting = "auto" remains the unnamed default that formats
 # fence interiors. Prose wrapping is independent of that guest-formatting policy.
-# The package still emits paragraphs verbatim. Switching prose policy requires
-# more than a package rule: see corpus/reports/markdown/prose-wrap.md.
-reference = "npx --yes prettier@3.9.6 --no-config --stdin-filepath x.md --print-width {width}"
+reference = "npx --yes prettier@3.9.6 --no-config --stdin-filepath x.md --print-width {width} --prose-wrap always"
 reference_version = "3.9.6"
 reference_width = "flag"
 
@@ -73,6 +71,11 @@ layout_leaves = ["pipe_table_cell", "pipe_table_delimiter_cell"]
 # may disappear. Meaningful sections still participate in the full tree check.
 whitespace_nodes = ["section"]
 
+# The package projects eligible top-level `inline` ranges into source-backed
+# prose partitions. Gate 3 may therefore compare space/newline choices inside
+# this kind as layout while continuing to compare every word and inline token.
+prose_nodes = ["inline"]
+
 # Anonymous tokens are compared by default (gate3.py, `_generic`). GFM makes a
 # pipe table's leading and trailing pipes optional, and prettier writes both
 # where the source may have written neither -- the same redraw `table`, the
@@ -86,15 +89,12 @@ optional_tokens = ["|"]
 # remain structurally checked and also feed gate 3's universal comment layer.
 comment_kinds = ["html_block"]
 
-# With proseWrap=preserve, print width affects Markdown only through formatted
-# guest code in fences. The current corpus has five such files. When the A2
-# inline-prose work permits the reference policy to change to proseWrap=always,
-# this floor must rise: prose will become width-sensitive without a corpus
-# change, so leaving five here would describe the old reference rather than the
-# new one.
+# With proseWrap=always, both eligible prose and formatted guest code make the
+# Markdown reference width-sensitive. The floor is updated from the regenerated
+# reference corpus rather than retaining the old five-fence preserve baseline.
 [corpus_thresholds.width_sensitive]
-minimum_files = 5
-reason = "prettier's pinned proseWrap=preserve policy makes only guest code in fences width-sensitive"
+minimum_files = 18
+reason = "prettier's pinned proseWrap=always policy makes top-level prose and guest code in fences width-sensitive"
 
 # Measurement exclusions forced by the linearity invariant. prettier rewrites
 # that no package may match, so each lives in its own file:
@@ -107,8 +107,14 @@ reason = "prettier's pinned proseWrap=preserve policy makes only guest code in f
 # `__strong__` -> `**strong**` are the same class; the corpus writes the
 # canonical form.
 [incomparable]
+"blockquotes.md" = "prettier reflows paragraphs inside block quotes; the top-level projection deliberately stops at block_quote until container-prefix ownership can reproduce every > prefix"
+"comments.md" = "prettier reflows a quoted paragraph across its > prefixes and a top-level paragraph around inline HTML; container-prefix ownership and inline-comment attachment are outside this projection"
 "emphasis.md" = "prettier rewrites *emphasis* to _emphasis_ (delimiter token)"
+"lists.md" = "prettier reflows list-item paragraphs across indentation prefixes; the top-level projection deliberately stops at list_item until container-prefix ownership lands"
 "list_markers.md" = "prettier respells unordered-list markers: * becomes -, and + becomes * so the second list stays a second list"
+"normalisation.md" = "prettier reflows block-quote and nested-list paragraphs; their per-line marker and indentation prefixes require the deferred container-prefix ownership slice"
+"prose_wrap.md" = "the top-level prose agrees, but prettier also reflows the fixture's list and quote paragraphs; emitting their continuation prefixes belongs to the deferred container-prefix ownership slice"
+"sections.md" = "prettier reflows list and quote paragraphs within sections; those paragraphs remain behind the container-prefix ownership boundary"
 "thematic.md" = "prettier rewrites ***, ___ and * * * thematic breaks to ---"
 "fence_delimiters.md" = "prettier rewrites ~~~ fence delimiters to ```, dropping the author's choice of character and count"
 

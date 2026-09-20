@@ -25,6 +25,7 @@ import re
 import unittest
 from pathlib import Path
 
+import gen_trees
 import prose
 
 INLINE_LANGUAGE = "markdown_inline"
@@ -677,7 +678,7 @@ class Partition(unittest.TestCase):
 
 
 class NonAsciiAtoms(unittest.TestCase):
-    """A2.3: non-ASCII is atom content; the gaps stay ASCII space and newline.
+    r"""A2.3: non-ASCII is atom content; the gaps stay ASCII space and newline.
 
     Each case is the one a plausible-but-wrong walk would get wrong: a
     character-index walk puts the gap after `é` on the wrong byte; treating
@@ -717,7 +718,7 @@ class NonAsciiAtoms(unittest.TestCase):
         self.assertEqual(atom_texts(d), ["alpha", "cafe\u0301", "beta", "gamma"])
 
     def test_arabic_indic_digits_do_not_acquire_a_list(self):
-        """Python `\d` matches `١`; the pinned grammar does not. Coalescing
+        r"""Python `\d` matches `١`; the pinned grammar does not. Coalescing
         here would be the producer split A2.3 makes live."""
         d = doc("alpha ١. beta gamma")
         self.assertIsNone(verdict(d))
@@ -918,6 +919,27 @@ class Package(unittest.TestCase):
         branch = self.out["rules"]["paragraph"]
         self.assertEqual(branch[0], "when")
         self.assertEqual(branch[3], ["verbatim"])
+
+
+class FormatterView(unittest.TestCase):
+    """Tree production is switched by package capability, not language name."""
+
+    def test_a_package_without_partitions_keeps_the_syntax_view(self):
+        syntax = doc("alpha beta")
+        self.assertIs(gen_trees.formatter_view(syntax, {}), syntax)
+
+    def test_a_package_with_partitions_projects_a_copy(self):
+        syntax = doc("alpha beta")
+        formatted = gen_trees.formatter_view(
+            syntax, {"source_partitions": [prose.RUN]}
+        )
+        self.assertIsNot(formatted, syntax)
+        self.assertEqual(
+            formatted["root"]["children"][0]["children"][0]["type"], prose.RUN
+        )
+        self.assertEqual(
+            syntax["root"]["children"][0]["children"][0]["type"], "inline"
+        )
 
 
 if __name__ == "__main__":
