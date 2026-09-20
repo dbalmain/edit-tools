@@ -1,4 +1,4 @@
-"""The A2.2 prose projection: a paragraph's words, as a source-backed partition.
+"""The A2.3 prose projection: a paragraph's words, as a source-backed partition.
 
 `docs/prose-projection.md` is the design. This harness view turns an
 eligible markdown paragraph's `inline` node into a `prose_run` whose children
@@ -83,13 +83,20 @@ and a newline change how this character is read?**
                  the table has one column -- see `_ACQUIRES`, which refuses it.
 
 Everything else -- an unpaired asterisk or underscore, pipe, hash, tilde,
-ampersand, backslash, plus, equals, and every non-ASCII byte -- refuses the
-paragraph when it appears outside a protected range. Grammar-confirmed
-emphasis delimiters are protected leaves, not members of this whitelist.
-Backtick, bracket and angle are no longer
-in that list at the *construct* level: they are admitted when the inline grammar
-says they open a `code_span`, `inline_link` or `uri_autolink`, and refused when
-it does not. Non-ASCII atom content is A2.3.
+ampersand, backslash, plus, equals -- refuses the paragraph when it appears
+outside a protected range. Grammar-confirmed emphasis delimiters are
+protected leaves, not members of this whitelist. Backtick, bracket and
+angle are no longer in that list at the *construct* level: they are admitted
+when the inline grammar says they open a `code_span`, `inline_link` or
+`uri_autolink`, and refused when it does not.
+
+A2.3 admits every non-ASCII scalar as atom content. The gaps stay ASCII
+space and newline; nothing else is a wrap opportunity, including NBSP,
+ideographic space, ZWSP, U+2028/2029, combining marks and bidi controls.
+Lookalikes of markdown syntax (fullwidth `＊`, em dash, Arabic-Indic `١.`)
+are not markers in the pinned grammar, so they do not refuse and they do
+not fire `_ACQUIRES`. The partition cannot split a grapheme cluster unless
+the source already had an ASCII gap inside it.
 
 The argument above is reasoning, not evidence, and one character in it was
 wrong: `:` also spells a GFM table delimiter row. The evidence is
@@ -137,9 +144,11 @@ SAFE = ALNUM | SAFE_PUNCTUATION
 GAPS = (" ", "\n")
 
 # An atom that would start a block construct if reflow moved it to a line start.
-# Most of these characters are already refused by `SAFE`; `-`, `\d+[.)]` and the
-# GFM delimiter row are not, and they are why this check exists rather than
-# being folded into the byte whitelist.
+# Most of these characters are already refused by `SAFE`; `-`, `[0-9]+[.)]` and
+# the GFM delimiter row are not, and they are why this check exists rather than
+# being folded into the byte whitelist. `[0-9]` is ASCII digits only: CommonMark
+# and the pinned grammar agree that `١.` is not an ordered-list marker, and
+# Python's `\d` matches Unicode `Nd`. That split was unreachable until A2.3.
 #
 # `:-+:?` is a **GFM one-column table delimiter row**, and it is the one entry
 # here found by a counterexample rather than by enumeration. GFM requires a pipe
@@ -178,7 +187,7 @@ GAPS = (" ", "\n")
 # pattern misses, and 5,329 two-atom openers found no hit at all. Those three
 # searches are grok's, from the round-2 review; the fixture is what locks them
 # in, since none of them runs in `test.sh`.
-_ACQUIRES = re.compile(r"^(?:[-+>#=|~]|\d+[.)]|```|~~~|:-+:?\Z)")
+_ACQUIRES = re.compile(r"^(?:[-+>#=|~]|[0-9]+[.)]|```|~~~|:-+:?\Z)")
 
 # The inline constructs A2.1 admits, each **protected whole**: the construct's
 # whole source range becomes part of one atom, so no gap inside it is ever
@@ -454,49 +463,61 @@ def analyse(
         return why, []
 
     try:
-        text = source[start:end].decode("ascii")
+        text = source[start:end].decode("utf-8")
     except UnicodeDecodeError:
-        # A2.3's rung, not this one. The gaps stay ASCII space and newline
-        # either way; what is deferred is non-ASCII *atom content*.
+        # Invalid UTF-8, not ordinary non-ASCII. Producers encode a Python
+        # str, so this is unreachable on the live path; it stays so a hand
+        # of raw bytes cannot be silently walked as Latin-1.
         return "non-ascii", []
 
     # A leading or trailing gap byte would make `partition` emit a zero-width
     # atom, which both runtimes refuse as `source_partitions ... has a
     # zero-width child`. Refusing the paragraph turns a format-time refusal
-    # into an ineligibility.
+    # into an ineligibility. Only ASCII space and newline are gaps; a
+    # leading NBSP is content.
     if not text or text[0] in GAPS or text[-1] in GAPS:
         return "edge whitespace", []
 
-    # Outside a protected range the A1 whitelist still governs, for exactly the
-    # A1 reason: nothing out here has been parsed, so a character that could
-    # open an inline construct makes the gap question unanswerable. Inside one,
-    # any ASCII byte is fine -- the construct is one atom and is emitted
-    # verbatim, so its interior is not a layout question at all. That is also
-    # why a double space inside a code span is not a "whitespace run": it never
+    # Outside a protected range the A1 whitelist still governs *ASCII*, for
+    # exactly the A1 reason: nothing out here has been parsed, so a character
+    # that could open an inline construct makes the gap question unanswerable.
+    # Non-ASCII is atom content: the pinned grammar's markers are ASCII, and
+    # a gap flip cannot split a grapheme because the only gaps are ASCII
+    # space and newline. Inside a protected range, any byte is fine -- the
+    # construct is one atom and is emitted verbatim. That is also why a
+    # double space inside a code span is not a "whitespace run": it never
     # becomes a gap.
+    #
+    # The walk is over scalars, tracking UTF-8 byte offsets. Indexing the
+    # decoded string by byte offset is how a Latin-1 letter would put a gap
+    # on the wrong byte and how a non-BMP scalar would disagree with JS.
     candidates: list[int] = []
-    for offset in range(start, end):
-        if _inside(ranges, offset):
-            continue
-        char = text[offset - start]
-        if char in GAPS:
-            candidates.append(offset)
-        elif char not in SAFE:
-            return "byte", []
+    byte_at = start
+    for char in text:
+        size = len(char.encode("utf-8"))
+        if not _inside(ranges, byte_at):
+            if char in GAPS:
+                candidates.append(byte_at)
+            elif ord(char) < 128 and char not in SAFE:
+                return "byte", []
+        byte_at += size
 
     # `partition` splits on these, so two abutting ones -- or one abutting a
     # protected range's edge in a way that leaves nothing between -- would emit
     # a zero-width atom. Check the invariant the runtime checks, rather than a
-    # lexical proxy for it.
+    # lexical proxy for it. The distance is in *bytes*, so an NBSP between
+    # two spaces is an atom, not a whitespace run.
     if any(b - a == 1 for a, b in zip(candidates, candidates[1:])):
         return "whitespace run", []
 
     # The one hazard bilateral protection cannot repair; see `_DELIMITER_ROW`.
-    if candidates and _DELIMITER_ROW.match(text[candidates[-1] + 1 - start :]):
+    if candidates and _DELIMITER_ROW.match(
+        source[candidates[-1] + 1 : end].decode("utf-8")
+    ):
         return "delimiter row", []
 
-    breakable = _block_safe(start, end, text, candidates)
-    if _fence_hazard(start, end, text, breakable):
+    breakable = _block_safe(start, end, source, candidates)
+    if _fence_hazard(start, end, source, breakable):
         return "fence opener", []
     if not breakable:
         # Every gap is protected, so the run would hold a single atom and
@@ -506,7 +527,9 @@ def analyse(
     return None, breakable
 
 
-def _block_safe(start: int, end: int, text: str, candidates: list[int]) -> list[int]:
+def _block_safe(
+    start: int, end: int, source: bytes, candidates: list[int]
+) -> list[int]:
     """`candidates`, less every gap flanking an atom that could open a block.
 
     **Bilateral, not predecessor-only, and that is the whole of this slice's
@@ -534,7 +557,7 @@ def _block_safe(start: int, end: int, text: str, candidates: list[int]) -> list[
     edges = [start, *[g + 1 for g in candidates]]
     stops = [*candidates, end]
     for index, (first, last) in enumerate(zip(edges, stops)):
-        if not _hazardous(text[first - start : last - start]):
+        if not _hazardous(source[first:last].decode("utf-8")):
             continue
         if index > 0:
             drop.add(candidates[index - 1])
@@ -543,7 +566,9 @@ def _block_safe(start: int, end: int, text: str, candidates: list[int]) -> list[
     return [gap for gap in candidates if gap not in drop]
 
 
-def _fence_hazard(start: int, end: int, text: str, breakable: list[int]) -> bool:
+def _fence_hazard(
+    start: int, end: int, source: bytes, breakable: list[int]
+) -> bool:
     """Can any line start the output produces begin a fence? See `_FENCE`.
 
     The line starts an output can have are exactly: the first atom's first
@@ -564,7 +589,7 @@ def _fence_hazard(start: int, end: int, text: str, breakable: list[int]) -> bool
     edges = [start, *[gap + 1 for gap in breakable]]
     stops = [*breakable, end]
     for index, (first, last) in enumerate(zip(edges, stops)):
-        lines = text[first - start : last - start].split("\n")
+        lines = source[first:last].decode("utf-8").split("\n")
         for offset, line in enumerate(lines):
             if offset == 0 and index > 0:
                 continue

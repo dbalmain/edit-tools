@@ -662,6 +662,87 @@ transition by next verdict instead of claiming every removed first refusal is
 eligible. The exact stamped figures belong in the running done-note, because
 this document is itself part of the measured Markdown corpus.
 
+### What A2.3 actually admits
+
+A2.3 drops the `decode("ascii")` guard. The brief named four hazardous
+categories; they collapse to one rule.
+
+**A gap is exactly one ASCII space or one ASCII newline. Every other scalar
+is opaque atom content.** ASCII outside a protected range still has to pass
+the A1 whitelist. `_ACQUIRES` uses `[0-9]`, not Python's `\d`, because
+CommonMark and tree-sitter-markdown 0.5.1 treat only ASCII digits as ordered
+list markers -- `١.` is a paragraph, and the two producers would otherwise
+disagree on whether its flanking gaps coalesce.
+
+That rule decides the four categories rather than special-casing them:
+
+- **Non-ASCII whitespace** (NBSP, U+2000-200A, U+3000, U+2028/2029) is
+  content, never a gap. Treating it as a gap would wrap where the author
+  joined words. This is the same decision `gate3._prose` already took
+  (`[ \t\n\r\f]+` only). The NBSP entry moved from `prose-refused.md` to
+  `prose-admitted.md`; `gamma` and `delta` joined by U+00A0 are one atom.
+  U+2028 is not a markdown line ending in the pinned grammar.
+- **Zero-width, format, and combining marks** cannot land on a break the
+  source did not already have. The partition splits only on ASCII space and
+  newline, so `e` plus U+0301 stays one atom, and a ZWSP between letters is
+  content, not a gap.
+- **Lookalikes of markdown syntax** are not markers. Checked against the
+  pinned grammar: fullwidth `＊＃＿～＋＞＝`, em/en dash, minus sign, and
+  Arabic-Indic / fullwidth / Devanagari digits all parse as a paragraph.
+  The inline CST leaves them as implicit text. `prose-admitted.md` carries
+  the fullwidth asterisk and `١.`.
+- **Bidi spanning controls** change UBA paragraph boundaries when a gap
+  flips (newline is class B, space is WS). Markdown parse does not change;
+  both runtimes emit the same bytes. Admitted, the same class of accepted
+  display consequence as narrow CJK. The fact that would reverse it is a
+  consumer that parses markdown in visual order.
+
+The ASCII whitelist still binds. A paragraph that holds both `é` and `~`
+refuses as `byte`; that is the entry that replaced "a non-ASCII letter" in
+`prose-refused.md`. Admitting Unicode must not punch a hole in the A1 set.
+
+The walk is over scalars, tracking UTF-8 byte offsets. Indexing the decoded
+string by byte offset is how a Latin-1 letter would put a gap on the wrong
+byte, and how a non-BMP scalar (`𝄞`) would disagree with JavaScript's
+UTF-16 string index. `harness/test_prose.py` pins the gap after `é` at byte
+2.
+
+The `non-ascii` verdict remains for invalid UTF-8 only. Producers encode a
+Python `str`, so it is zero on the live corpus.
+
+#### Eligibility, before and after
+
+First-match census from `./harness/probe_prose_ceiling.py`, same walk as
+`prose.reasons`. **Not comparable to the pricing-spike ceiling table
+above.** The before column is `238992f` (3,868 paragraphs in 141 files).
+The after column is `fbafc0e`, which carries this section, the fixtures
+and the done-note (3,897 paragraphs in 142 files). Replacing the numeric
+cells of this table does not change the histogram.
+
+| Verdict | Before A2.3 (`238992f`) | After (`fbafc0e`) |
+| --- | ---: | ---: |
+| eligible | 2,538 | 3,500 |
+| `non-ascii` | 975 | 0 |
+| `inline construct` | 275 | 280 |
+| `byte` | 36 | 72 |
+| `single atom` | 25 | 26 |
+| `fence opener` | 6 | 6 |
+| `whitespace run` | 5 | 5 |
+| `delimiter row` | 3 | 3 |
+| `edge whitespace` | 3 | 3 |
+| `dirty inline parse` | 2 | 2 |
+| **total reaching the walk** | **3,868** | **3,897** |
+
+Eligible moved 2,538 -> 3,500 (**+962**, 65.6% -> 89.8%). The 975
+`non-ascii` refusals were first-match: dropping the guard unmasked **36**
+paragraphs that next refuse as `byte` (an ASCII character the whitelist
+never admitted, sitting next to a non-ASCII letter the decode never
+reached) and **3** as `inline construct`. The rest became eligible. That
+unmasking is why the tilde-beside-`é` fixture exists.
+
+`./harness/probe_prose.py` at `fbafc0e`: 3,500 eligible in 142 files;
+fixtures hold; 744 reflow-reparse checks and both runtimes at both widths.
+
 ## Inputs and ownership
 
 The projection takes the original UTF-8 source, its clean block CST, a clean

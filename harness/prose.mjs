@@ -1,4 +1,4 @@
-// The A2.2 prose projection, in JavaScript. `harness/prose.py` is the original
+// The A2.3 prose projection, in JavaScript. `harness/prose.py` is the original
 // and carries the design: what A2.1/A2.2 added to A1, why the predicate outside a
 // protected range is still a whitelist, and the argument for every character
 // it admits. Read that file, not this one, to change the
@@ -45,7 +45,9 @@ const GAPS = new Set([" ", "\n"]);
 // is a GFM one-column table delimiter row, which needs no pipe; `prose.py`
 // carries the counterexample that put it there. `$` rather than Python's `\Z`
 // because this regex is not multiline, where the two are the same.
-const ACQUIRES = /^(?:[-+>#=|~]|\d+[.)]|```|~~~|:-+:?$)/;
+// `[0-9]` not `\d`: Python's `\d` matches Unicode Nd, JS's does not, and
+// the pinned grammar agrees with CommonMark that `١.` is not a list marker.
+const ACQUIRES = /^(?:[-+>#=|~]|[0-9]+[.)]|```|~~~|:-+:?$)/;
 
 // `prose.py`'s `CONSTRUCTS`: the three inline constructs A2.1 admits, each
 // protected whole. `prose.py` carries the argument for why `<` and `[` are
@@ -141,12 +143,12 @@ const inside = (ranges, at) =>
  * the reason removing from one set is what unions the merges into connected
  * components.
  */
-function blockSafe(start, end, text, candidates) {
+function blockSafe(start, end, source, candidates) {
   const drop = new Set();
   const edges = [start, ...candidates.map((gap) => gap + 1)];
   const stops = [...candidates, end];
   for (let index = 0; index < edges.length; index += 1) {
-    const atom = text.slice(edges[index] - start, stops[index] - start);
+    const atom = decoder.decode(source.subarray(edges[index], stops[index]));
     if (!ACQUIRES.test(atom)) continue;
     if (index > 0) drop.add(candidates[index - 1]);
     if (index < candidates.length) drop.add(candidates[index]);
@@ -159,12 +161,12 @@ function blockSafe(start, end, text, candidates) {
  * `prose.py`'s `_fence_hazard` carries the argument, including why an atom
  * after a breakable gap needs no check.
  */
-function fenceHazard(start, end, text, breakable) {
+function fenceHazard(start, end, source, breakable) {
   const edges = [start, ...breakable.map((gap) => gap + 1)];
   const stops = [...breakable, end];
   for (let index = 0; index < edges.length; index += 1) {
-    const lines = text
-      .slice(edges[index] - start, stops[index] - start)
+    const lines = decoder
+      .decode(source.subarray(edges[index], stops[index]))
       .split("\n");
     for (let offset = 0; offset < lines.length; offset += 1) {
       if (offset === 0 && index > 0) continue;
@@ -199,19 +201,25 @@ export function analyse(paragraph, source, secondary) {
   } catch {
     return ["non-ascii", []];
   }
-  // `decode` only rejects invalid UTF-8. Python asked for ASCII, so a valid
-  // multi-byte character has to refuse here too or the two disagree.
-  if (/[^\x00-\x7f]/.test(text)) return ["non-ascii", []];
   if (text.length === 0 || GAPS.has(text[0]) || GAPS.has(text[text.length - 1])) {
     return ["edge whitespace", []];
   }
 
+  // Scalars, not bytes and not UTF-16 code units. A Latin-1 letter is one
+  // scalar and two UTF-8 bytes; a non-BMP scalar is one scalar and two
+  // UTF-16 code units. Indexing `text` by byte offset would disagree with
+  // Python on either.
   const candidates = [];
-  for (let offset = start; offset < end; offset += 1) {
-    if (inside(ranges, offset)) continue;
-    const char = text[offset - start];
-    if (GAPS.has(char)) candidates.push(offset);
-    else if (!SAFE.has(char)) return ["byte", []];
+  let byteAt = start;
+  for (const char of text) {
+    const size = encoder.encode(char).length;
+    if (!inside(ranges, byteAt)) {
+      if (GAPS.has(char)) candidates.push(byteAt);
+      else if (char.codePointAt(0) < 128 && !SAFE.has(char)) {
+        return ["byte", []];
+      }
+    }
+    byteAt += size;
   }
   for (let i = 1; i < candidates.length; i += 1) {
     if (candidates[i] - candidates[i - 1] === 1) return ["whitespace run", []];
@@ -220,13 +228,15 @@ export function analyse(paragraph, source, secondary) {
   // The one hazard bilateral protection cannot repair; see DELIMITER_ROW.
   if (
     candidates.length > 0 &&
-    DELIMITER_ROW.test(text.slice(candidates[candidates.length - 1] + 1 - start))
+    DELIMITER_ROW.test(
+      decoder.decode(source.subarray(candidates[candidates.length - 1] + 1, end)),
+    )
   ) {
     return ["delimiter row", []];
   }
 
-  const breakable = blockSafe(start, end, text, candidates);
-  if (fenceHazard(start, end, text, breakable)) return ["fence opener", []];
+  const breakable = blockSafe(start, end, source, candidates);
+  if (fenceHazard(start, end, source, breakable)) return ["fence opener", []];
   if (breakable.length === 0) return ["single atom", []];
   return [null, breakable];
 }

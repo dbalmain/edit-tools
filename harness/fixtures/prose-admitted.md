@@ -126,3 +126,73 @@ alpha -- :- beta gamma delta epsilon zeta eta
 ## A hazardous first atom, repaired by the right gap alone
 
 --- alpha beta gamma delta epsilon zeta eta theta
+
+## A Latin-1 letter
+
+> The paragraph `prose-refused.md` used to hold for "a non-ASCII letter".
+> Dropping the ASCII decode without walking scalars would put the gap after
+> `á` on the wrong byte.
+
+alpha beta gámma delta epsilon zeta eta theta
+
+## CJK ideographs, wrapping as scalars
+
+> One scalar, one column, as `docs/a23-width-parity.md` recorded. A walk that
+> admitted Latin-1 but not three-byte UTF-8 would miss this.
+
+alpha 東京 beta gamma delta epsilon zeta eta theta
+
+## A non-BMP scalar
+
+> Discriminates a UTF-16 code-unit walk: `𝄞` is one scalar and two UTF-16
+> units. Latin-1 and CJK would not catch that.
+
+alpha 𝄞 beta gamma delta epsilon zeta eta theta
+
+## A no-break space, which is content this layer must not treat as a gap
+
+> `gamma` and `delta` are one atom. A walk that classified Unicode Zs as a
+> gap would split them and could wrap where the author joined the words.
+> `gate3._prose` excludes non-ASCII from its whitespace class for the same
+> reason.
+
+alpha beta gamma delta epsilon zeta eta theta
+
+## A line separator is not a markdown line ending
+
+> U+2028 is Unicode Zl. The pinned grammar does not treat it as a line
+> break (`alpha` then U+2028 then `- word` stays a paragraph). A walk that
+> used Unicode line breaks as gaps would split this atom and could turn a
+> following `-` into a list.
+
+alpha beta gamma delta epsilon zeta eta theta
+
+## A zero-width space is not a gap
+
+> U+200B is Cf, not Zs. The Zs case above would not catch a walk that
+> treated Unicode line-break opportunities as gaps.
+
+alpha​beta gamma delta epsilon zeta eta theta
+
+## A combining mark stays on its base
+
+> The partition splits only on ASCII space and newline, so it cannot land a
+> break between `e` and U+0301 unless the source already had one.
+
+alpha café beta gamma delta epsilon zeta eta
+
+## A fullwidth asterisk is not a list marker
+
+> Checked against tree-sitter-markdown 0.5.1: `＊ word` is a paragraph, not
+> a list. An unpaired ASCII `*` still refuses as an inline construct; this
+> is the lookalike that must not.
+
+alpha ＊ beta gamma delta epsilon zeta eta theta
+
+## An Arabic-Indic digit is not an ordered-list marker
+
+> Python `\d` matches `١`; CommonMark and the pinned grammar do not. Both
+> producers use `[0-9]`, or they disagree on whether the gaps around `١.`
+> coalesce.
+
+alpha ١. beta gamma delta epsilon zeta eta theta

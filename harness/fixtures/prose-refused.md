@@ -89,13 +89,14 @@ alpha beta gamma  delta epsilon zeta eta theta
 
 alpha beta	gamma delta epsilon zeta eta theta
 
-## A non-ASCII letter
+## A tilde beside a Latin-1 letter
 
-alpha beta gámma delta epsilon zeta eta theta
+> Admitting non-ASCII atom content must not punch a hole in the ASCII
+> whitelist. `é` is eligible on its own; `~` is the byte that still refuses.
+> A walk that treated "any non-ASCII paragraph" as eligible would pass the
+> admitted fixture and fail here.
 
-## A non-breaking space, which is whitespace this layer must not move
-
-alpha beta gamma delta epsilon zeta eta theta
+alpha béta ~ gamma delta epsilon zeta eta theta
 
 ## A word that would become a heading at a line start
 
